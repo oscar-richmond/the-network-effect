@@ -1,0 +1,44 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
+  z-index: 100;
+  background: #ffffff;
+  overflow: hidden;
+  --splash-offset-y: 104px;
+}
+
+.splash__surface {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-1 * var(--splash-offset-y));
+  width: 100%;
+  height: calc(100% + var(--splash-offset-y));
+}
+
+.splash__surface canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.splash__preload {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.splash-active {
+  overflow: hidden;
+}
+
+html.splash-active [data-splash-gate] {
+  visibility: hidden;
+  pointer-events: none;
+}

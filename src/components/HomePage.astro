@@ -16,8 +16,12 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
   data-default-slide={defaultSlideIndex}
   style={`--slide-count: ${carouselSlides.length};`}
 >
+  <h1 class="home__logo">THE NETWORK EFFECT</h1>
+
   <div class="home__chrome">
-    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    <nav class="home__ctas" aria-label="Site">
+      <a href="/about">about</a><span aria-hidden="true">, </span><a href="/team">team</a><span aria-hidden="true">, </span><a href="/contact">contact</a>
+    </nav>
 
     <ul class="home__clients" aria-label="Clients">
       {
@@ -33,6 +37,11 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
         ))
       }
     </ul>
+
+    <div class="home__theme">
+      <span>Light mode</span>
+      <img src="/assets/images/ui/toggle.svg" alt="" width="51" height="21" />
+    </div>
 
     <aside class="home__intro">
       <p>
@@ -59,12 +68,41 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
       {defaultSlide.number}
     </span>
 
-    <footer class="home__footer">
-      <p>All rights reserved. ©2026 The Network Effect</p>
-      <div class="home__theme">
-        <span>Light mode</span>
-        <img src="/assets/images/ui/toggle.svg" alt="" width="51" height="21" />
+    <div class="carousel-ui" aria-hidden="true">
+      <div class="carousel-ui__frame" data-carousel-frame>
+        <img
+          class="carousel-ui__bracket carousel-ui__bracket--left"
+          src="/assets/images/ui/bracket.svg"
+          alt=""
+          width="48"
+          height="95"
+        />
+        <img
+          class="carousel-ui__bracket carousel-ui__bracket--right"
+          src="/assets/images/ui/bracket.svg"
+          alt=""
+          width="48"
+          height="95"
+        />
+        <img
+          class="carousel-ui__dot carousel-ui__dot--left"
+          src="/assets/images/ui/dot.svg"
+          alt=""
+          width="13"
+          height="13"
+        />
+        <img
+          class="carousel-ui__dot carousel-ui__dot--right"
+          src="/assets/images/ui/dot.svg"
+          alt=""
+          width="13"
+          height="13"
+        />
       </div>
+    </div>
+
+    <footer class="home__footer">
+      <p class="home__copyright">All rights reserved. ©2026 The Network Effect</p>
     </footer>
   </div>
 
@@ -75,38 +113,6 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
         data-curve-canvas
         aria-hidden="true"
       ></canvas>
-      <div class="carousel-ui" aria-hidden="true">
-        <div class="carousel-ui__frame" data-carousel-frame>
-          <img
-            class="carousel-ui__bracket carousel-ui__bracket--left"
-            src="/assets/images/ui/bracket.svg"
-            alt=""
-            width="48"
-            height="95"
-          />
-          <img
-            class="carousel-ui__bracket carousel-ui__bracket--right"
-            src="/assets/images/ui/bracket.svg"
-            alt=""
-            width="48"
-            height="95"
-          />
-          <img
-            class="carousel-ui__dot carousel-ui__dot--left"
-            src="/assets/images/ui/dot.svg"
-            alt=""
-            width="13"
-            height="13"
-          />
-          <img
-            class="carousel-ui__dot carousel-ui__dot--right"
-            src="/assets/images/ui/dot.svg"
-            alt=""
-            width="13"
-            height="13"
-          />
-        </div>
-      </div>
 
       <div class="carousel-track" data-carousel-track>
         {
@@ -155,19 +161,38 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
   import { initHomeCarousel } from '../scripts/home-carousel.js';
   import { initSphereGalleryOverlay } from '../scripts/sphere-gallery.js';
 
-  const root = document.querySelector('[data-home-carousel]');
-  const slideData = JSON.parse(root?.dataset.slides || '[]');
-  const galleryItems = slideData.map((slide) => ({
-    src: slide.image,
-    alt: slide.client,
-    label: slide.client,
-  }));
+  const boot = () => {
+    const root = document.querySelector('[data-home-carousel]');
+    const slideData = JSON.parse(root?.dataset.slides || '[]');
+    const galleryItems = slideData.map((slide) => ({
+      src: slide.image,
+      alt: slide.client,
+      label: slide.client,
+      width: slide.width,
+      height: slide.height,
+    }));
 
-  const sphereGallery = initSphereGalleryOverlay(root, galleryItems);
-  let cleanup = initHomeCarousel(root, { onImageClick: () => sphereGallery.open() });
+    let sphereGallery = { open: () => {}, destroy: () => {} };
 
-  document.addEventListener('astro:before-swap', () => {
-    cleanup?.();
-    sphereGallery.destroy();
-  });
+    let cleanup = initHomeCarousel(root, {
+      onImageClick: () => sphereGallery.open(),
+    });
+
+    try {
+      sphereGallery = initSphereGalleryOverlay(root, galleryItems);
+    } catch (error) {
+      console.warn('[sphere-gallery] Init failed.', error);
+    }
+
+    document.addEventListener('astro:before-swap', () => {
+      cleanup?.();
+      sphereGallery.destroy();
+    });
+  };
+
+  if (document.documentElement.classList.contains('splash-active')) {
+    document.addEventListener('splash:complete', boot, { once: true });
+  } else {
+    boot();
+  }
 </script>

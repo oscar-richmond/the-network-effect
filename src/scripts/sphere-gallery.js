@@ -22,7 +22,7 @@ const DEFAULTS = {
   fov: 70,
   tileColor: '#F8F8F8',
   sphereColor: '#ffffff',
-  revealDuration: 2,
+  revealDuration: 1.2,
   focusDuration: 1,
   focusScale: 1.7,
   mouseParallax: 0.2,
@@ -249,9 +249,9 @@ function buildTileLayout(rows, columns, latitudeRange) {
  * @param {ReturnType<typeof buildTileLayout>[number]} tile
  * @param {number} index
  * @param {typeof DEFAULTS} config
+ * @param {number} imageAspect
  */
-function createTileMaterial(texture, tile, index, config) {
-  const image = /** @type {HTMLImageElement} */ (texture.image);
+function createTileMaterial(texture, tile, index, config, imageAspect) {
   return new THREE.ShaderMaterial({
     glslVersion: THREE.GLSL3,
     uniforms: {
@@ -259,7 +259,7 @@ function createTileMaterial(texture, tile, index, config) {
       uFocus: { value: 0 },
       uLatitude: { value: tile.latitude },
       uAngularSpan: { value: tile.span },
-      uImageAspect: { value: image.width / image.height },
+      uImageAspect: { value: imageAspect },
       uTileSize: { value: new THREE.Vector2(tile.width, tile.height) },
       uGap: { value: config.gap },
       uPadding: { value: config.padding },
@@ -280,7 +280,7 @@ function createTileMaterial(texture, tile, index, config) {
 }
 
 /**
- * @typedef {{ src: string, alt: string, label?: string }} SphereGalleryItem
+ * @typedef {{ src: string, alt: string, label?: string, width?: number, height?: number }} SphereGalleryItem
  */
 
 /**
@@ -300,6 +300,7 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
   let lastTime = performance.now();
   let previousCameraZ = /** @type {number | null} */ (null);
   let lensMotion = 0;
+  let lastPointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
   const tileLayout = buildTileLayout(config.rows, config.columns, config.latitudeRange);
   const orientation = {
@@ -376,25 +377,56 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
   const peekMeshes = [];
 
   const loader = new THREE.TextureLoader();
-  const textures = items.map(
-    (item) =>
-      loader.load(item.src, (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-      }),
-  );
+  /** @type {THREE.Texture[]} */
+  const loadedTextures = [];
 
-  tileLayout.forEach((tile, i) => {
-    const texture = textures[i % textures.length];
-    const material = createTileMaterial(texture, tile, i, config);
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(tile.width, tile.height, 24, 24),
-      material,
-    );
-    mesh.position.copy(tile.position);
-    mesh.quaternion.copy(tile.quaternion);
-    mesh.userData.tileIndex = i;
-    group.add(mesh);
-    tileMeshes.push({ mesh, index: i, material, tile });
+  const loadTextures = () =>
+    Promise.all(
+      items.map(
+        (item) =>
+          new Promise((resolve, reject) => {
+            loader.load(
+              item.src,
+              (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                const aspect =
+                  item.width && item.height
+                    ? item.width / item.height
+                    : texture.image.width / texture.image.height;
+                resolve({ texture, aspect });
+              },
+              undefined,
+              reject,
+            );
+          }),
+      ),
+    ).then((loaded) => {
+      if (disposed) {
+        loaded.forEach(({ texture }) => texture.dispose());
+        return;
+      }
+
+      loaded.forEach(({ texture }) => loadedTextures.push(texture));
+
+      tileLayout.forEach((tile, i) => {
+        const { texture, aspect } = loaded[i % loaded.length];
+        const material = createTileMaterial(texture, tile, i, config, aspect);
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(tile.width, tile.height, 24, 24),
+          material,
+        );
+        mesh.position.copy(tile.position);
+        mesh.quaternion.copy(tile.quaternion);
+        mesh.userData.tileIndex = i;
+        group.add(mesh);
+        tileMeshes.push({ mesh, index: i, material, tile });
+      });
+
+      ready = true;
+    });
+
+  const texturesReady = loadTextures().catch((error) => {
+    console.warn('[sphere-gallery] Texture load failed.', error);
   });
 
   const peekGroup = new THREE.Group();
@@ -425,7 +457,7 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
       const neighbor = tileLayout[index];
       return {
         index,
-        texture: textures[index % textures.length],
+        texture: loadedTextures[index % loadedTextures.length],
         position: focused.position
           .clone()
           .addScaledVector(sideAxis, side * sideOffset)
@@ -608,9 +640,80 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
   /** @type {(() => void) | undefined} */
   let onEmptyClick;
 
+  const syncInteractionState = () => {
+    gsap.killTweensOf(group.rotation);
+    gsap.killTweensOf(group.scale);
+
+    updatePointer(lastPointer.x, lastPointer.y);
+    parallax.set(
+      pointerOffset.x * config.mouseParallax,
+      pointerOffset.y * config.mouseParallax,
+    );
+    orientation.spin = group.rotation.y - parallax.x;
+    orientation.tilt = group.rotation.x - parallax.y;
+    orientation.targetSpin = orientation.spin;
+    orientation.targetTilt = orientation.tilt;
+  };
+
+  const clearPeekMeshes = () => {
+    peekMeshes.forEach(({ mesh, material }) => {
+      peekGroup.remove(mesh);
+      mesh.geometry.dispose();
+      material.dispose();
+    });
+    peekMeshes.length = 0;
+  };
+
+  const resetTilesToDefault = () => {
+    tileMeshes.forEach((entry) => {
+      const { material, mesh } = entry;
+      gsap.killTweensOf(material.uniforms.uFocus);
+      gsap.killTweensOf(material.uniforms.uDissolve);
+      gsap.killTweensOf(material.uniforms.uGap);
+      gsap.killTweensOf(material.uniforms.uPadding);
+      gsap.killTweensOf(material.uniforms.uRadius);
+      gsap.killTweensOf(material.uniforms.uBackgroundAlpha);
+      gsap.killTweensOf(material.uniforms.uReveal);
+      gsap.killTweensOf(mesh.scale);
+
+      material.uniforms.uFocus.value = 0;
+      material.uniforms.uDissolve.value = 0;
+      material.uniforms.uGap.value = config.gap;
+      material.uniforms.uPadding.value = config.padding;
+      material.uniforms.uRadius.value = config.cornerRadius;
+      material.uniforms.uBackgroundAlpha.value = 1;
+      material.uniforms.uReveal.value = 1;
+      material.uniforms.uOpacity.value = 1;
+      mesh.scale.set(1, 1, 1);
+    });
+  };
+
+  const finishTileReveal = () => {
+    const progress = Math.min(activeTimeline?.progress() ?? 1, 1);
+    const remaining = config.revealDuration * Math.max(0, 1 - progress);
+
+    tileMeshes.forEach((entry) => {
+      entry.material.uniforms.uReveal.value = progress;
+      gsap.to(entry.material.uniforms.uReveal, {
+        value: 1,
+        duration: remaining,
+        ease: REVEAL_EASE,
+      });
+      gsap.fromTo(
+        entry.material.uniforms.uDissolve,
+        { value: 0.5 * (1 - progress) },
+        { value: 0, duration: remaining, ease: REVEAL_EASE },
+      );
+    });
+  };
+
   const runRevealAnimation = () => {
     activeTimeline?.kill();
+    animating.current = false;
     revealComplete = false;
+    lensMotion = 0;
+    lensMaterial.uniforms.uMotion.value = 0;
+    lensMaterial.uniforms.uStrength.value = config.lensBlur;
     camera.position.z = INITIAL_DISTANCE;
     camera.fov = config.fov;
     camera.updateProjectionMatrix();
@@ -626,20 +729,8 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
 
     activeTimeline = gsap.timeline({
       onComplete: () => {
-        pointerOffset.set(0, 0);
+        syncInteractionState();
         revealComplete = true;
-        tileMeshes.forEach((entry) => {
-          gsap.to(entry.material.uniforms.uReveal, {
-            value: 1,
-            duration: config.revealDuration * 1.2,
-            ease: REVEAL_EASE,
-          });
-          gsap.fromTo(
-            entry.material.uniforms.uDissolve,
-            { value: 0.5 },
-            { value: 0, duration: config.revealDuration * 1.2, ease: REVEAL_EASE },
-          );
-        });
       },
     });
 
@@ -666,6 +757,28 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
       duration: config.revealDuration * 0.7,
       ease: FOCUS_EASE,
     }, config.revealDuration * 0.7);
+
+    tileMeshes.forEach((entry) => {
+      activeTimeline.to(
+        entry.material.uniforms.uReveal,
+        {
+          value: 1,
+          duration: config.revealDuration,
+          ease: REVEAL_EASE,
+        },
+        0,
+      );
+      activeTimeline.fromTo(
+        entry.material.uniforms.uDissolve,
+        { value: 0.5 },
+        {
+          value: 0,
+          duration: config.revealDuration,
+          ease: REVEAL_EASE,
+        },
+        0,
+      );
+    });
   };
 
   const runFocusAnimation = () => {
@@ -730,6 +843,11 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
   const render = (time) => {
     if (disposed || !open) return;
     rafId = requestAnimationFrame(render);
+
+    if (surface.clientWidth < 1 || surface.clientHeight < 1) {
+      resize();
+      if (surface.clientWidth < 1 || surface.clientHeight < 1) return;
+    }
 
     const delta = Math.max((time - lastTime) / 1000, 0.0001);
     lastTime = time;
@@ -829,6 +947,8 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
   };
 
   const onPointerMove = (event) => {
+    lastPointer.x = event.clientX;
+    lastPointer.y = event.clientY;
     if (!open) return;
     updatePointer(event.clientX, event.clientY);
     if (!drag.active) return;
@@ -886,6 +1006,8 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
   };
 
   const onPointerHover = (event) => {
+    lastPointer.x = event.clientX;
+    lastPointer.y = event.clientY;
     if (!open || !revealComplete || dragging.current || drag.active) return;
     updatePointer(event.clientX, event.clientY);
     raycaster.setFromCamera(pointer, camera);
@@ -895,18 +1017,7 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
     setPointer(onTile && (!focused || hits[0].object.userData.tileIndex === activeTile));
   };
 
-  const waitReady = () =>
-    Promise.all(
-      textures.map(
-        (texture) =>
-          new Promise((resolve) => {
-            if (texture.image?.complete) resolve(texture);
-            else texture.addEventListener('load', () => resolve(texture), { once: true });
-          }),
-      ),
-    ).then(() => {
-      ready = true;
-    });
+  const waitReady = () => texturesReady;
 
   surface.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);
@@ -929,21 +1040,56 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
       if (open) return;
       open = true;
       activeTile = null;
-      resize();
-      lastTime = performance.now();
-      previousCameraZ = null;
-      waitReady().then(() => {
+      animating.current = false;
+      dragging.current = false;
+      drag.active = false;
+      dragMoved.current = false;
+      pointerOnTile.current = false;
+
+      requestAnimationFrame(() => {
         if (!open || disposed) return;
-        runRevealAnimation();
+
+        resize();
+        lastTime = performance.now();
+        previousCameraZ = null;
         rafId = requestAnimationFrame(render);
+
+        const beginReveal = () => {
+          if (!open || disposed) return;
+          clearPeekMeshes();
+          resetTilesToDefault();
+          runRevealAnimation();
+        };
+
+        if (ready) {
+          beginReveal();
+        } else {
+          beginReveal();
+          waitReady().then(() => {
+            if (!open || disposed) return;
+            finishTileReveal();
+          });
+        }
       });
     },
     closeGallery() {
       open = false;
       activeTile = null;
       revealComplete = false;
+      animating.current = false;
+      dragging.current = false;
+      drag.active = false;
+      dragMoved.current = false;
+      pointerOnTile.current = false;
       cancelAnimationFrame(rafId);
       activeTimeline?.kill();
+      gsap.killTweensOf(group.rotation);
+      gsap.killTweensOf(group.scale);
+      gsap.killTweensOf(sphereMaterial);
+      gsap.killTweensOf(camera.position);
+      resetTilesToDefault();
+      clearPeekMeshes();
+      surface.style.cursor = '';
       onActiveChange?.(null);
     },
     dismissFocus,
@@ -966,7 +1112,7 @@ export function createSphereGallery(surface, canvas, items, options = {}) {
       sphereMaterial.dispose();
       lensMaterial.dispose();
       fbo.dispose();
-      textures.forEach((texture) => texture.dispose());
+      loadedTextures.forEach((texture) => texture.dispose());
       renderer.dispose();
     },
   };
@@ -994,6 +1140,14 @@ export function initSphereGalleryOverlay(root, items) {
 
   const gallery = createSphereGallery(surface, canvas, items);
 
+  items.forEach((item) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = item.src;
+  });
+
+  gallery.waitReady().catch(() => {});
+
   gallery.onActiveChange = (index) => {
     if (!(label instanceof HTMLElement)) return;
     if (index === null) {
@@ -1009,7 +1163,9 @@ export function initSphereGalleryOverlay(root, items) {
   const open = () => {
     overlay.hidden = false;
     document.body.classList.add('sphere-gallery-open');
-    gallery.openGallery();
+    requestAnimationFrame(() => {
+      gallery.openGallery();
+    });
   };
 
   const close = () => {

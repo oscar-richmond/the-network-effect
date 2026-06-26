@@ -1,0 +1,23 @@
+---
+import { splashImage } from '../data/splash.js';
+import '../styles/splash-screen.css';
+
+const { src, width, height, alt } = splashImage;
+---
+
+<div class="splash" data-splash aria-hidden="false">
+  <div class="splash__surface touch-none" data-splash-surface>
+    <canvas data-splash-canvas aria-hidden="true"></canvas>
+  </div>
+  <img
+    class="splash__preload"
+    data-splash-image
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    decoding="async"
+    fetchpriority="high"
+    hidden
+  />
+</div>

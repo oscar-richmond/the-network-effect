@@ -13,11 +13,24 @@ function wrapIndex(index, length) {
 }
 
 /**
+ * @param {number} distance
+ * @param {number} range
+ */
+function focusFromDistance(distance, range) {
+  const t = Math.min(1, Math.max(0, distance / range));
+  return 1 - t * t * (3 - 2 * t);
+}
+
+/**
  * @param {HTMLElement} root
  * @param {{ onImageClick?: () => void }} [options]
  */
 export function initHomeCarousel(root, options = {}) {
   if (!root) return () => {};
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
 
   const pin = root.querySelector('[data-carousel-pin]');
   const viewport = root.querySelector('[data-carousel-viewport]');
@@ -37,6 +50,9 @@ export function initHomeCarousel(root, options = {}) {
     ...root.querySelectorAll('[data-carousel-client]'),
   ]);
   const frame = root.querySelector('[data-carousel-frame]');
+  if (frame instanceof HTMLElement) {
+    frame.style.cssText = '';
+  }
 
   /** @type {import('../data/carousel.js').CarouselSlide[]} */
   const slideData = JSON.parse(root.dataset.slides || '[]');
@@ -99,12 +115,23 @@ export function initHomeCarousel(root, options = {}) {
     });
   };
 
-  const syncFrame = () => {
-    const activeSlide = slides[activeIndex];
-    if (!(frame instanceof HTMLElement) || !activeSlide) return;
+  const updateSlideFocus = () => {
+    const viewportRect = viewport.getBoundingClientRect();
+    const viewportCenterY = viewportRect.top + viewportRect.height / 2;
 
-    frame.style.width = `${activeSlide.offsetWidth}px`;
-    frame.style.height = `${activeSlide.offsetHeight}px`;
+    slides.forEach((slide) => {
+      const rect = slide.getBoundingClientRect();
+      if (rect.height < 1) {
+        slide.style.setProperty('--slide-focus', '0');
+        return;
+      }
+
+      const slideCenterY = rect.top + rect.height / 2;
+      const distance = Math.abs(slideCenterY - viewportCenterY);
+      const range = Math.max(rect.height * 0.85, viewportRect.height * 0.28);
+      const focus = focusFromDistance(distance, range);
+      slide.style.setProperty('--slide-focus', focus.toFixed(4));
+    });
   };
 
   const setActiveSlide = (index) => {
@@ -130,7 +157,7 @@ export function initHomeCarousel(root, options = {}) {
     });
 
     preloadNearbyImages(activeIndex);
-    syncFrame();
+    updateSlideFocus();
   };
 
   const getOffsets = () => {
@@ -231,6 +258,7 @@ export function initHomeCarousel(root, options = {}) {
           if (isWrapping) return;
           const index = Math.round(self.progress * (slideCount - 1));
           setActiveSlide(index);
+          updateSlideFocus();
         },
         onLeave(self) {
           if (self.direction === 1 && !wrapLock) {
@@ -247,11 +275,11 @@ export function initHomeCarousel(root, options = {}) {
 
     scrollTrigger = tween.scrollTrigger ?? null;
     ScrollTrigger.refresh();
-    syncFrame();
+    updateSlideFocus();
 
     requestAnimationFrame(() => {
       jumpToSlide(defaultIndex);
-      syncFrame();
+      updateSlideFocus();
       markReady();
     });
   };

@@ -26,6 +26,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform sampler2D uMap;
   uniform float uVelocity;
   uniform float uAberration;
+  uniform float uFocus;
   out vec4 fragColor;
 
   void main() {
@@ -34,7 +35,9 @@ const FRAGMENT_SHADER = /* glsl */ `
     float r = texture(uMap, vUv + offset).r;
     float g = texture(uMap, vUv).g;
     float b = texture(uMap, vUv - offset).b;
-    fragColor = vec4(r, g, b, 1.0);
+    vec3 color = vec3(r, g, b);
+    float alpha = mix(0.5, 1.0, uFocus);
+    fragColor = vec4(color, alpha);
   }
 `;
 
@@ -87,10 +90,12 @@ class CurveMediaPlane {
         uVelocity: { value: 0 },
         uAmplitude: { value: config.amplitude },
         uAberration: { value: config.aberration },
+        uFocus: { value: 0 },
       },
       vertexShader: VERTEX_SHADER,
       fragmentShader: FRAGMENT_SHADER,
       transparent: true,
+      depthWrite: false,
     });
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
@@ -160,8 +165,9 @@ class CurveMediaPlane {
 
   /**
    * @param {DOMRect} containerRect
+   * @param {number} delta
    */
-  sync(containerRect) {
+  sync(containerRect, delta) {
     if (!this.mesh.visible) return;
 
     const rect = this.img.getBoundingClientRect();
@@ -178,6 +184,18 @@ class CurveMediaPlane {
 
     this.mesh.position.set(x, y, 0);
     this.mesh.scale.set(rect.width, rect.height, 1);
+
+    const slide = this.img.closest('[data-carousel-slide]');
+    const inlineFocus = slide?.style.getPropertyValue('--slide-focus');
+    const targetFocus =
+      inlineFocus !== '' ? Number.parseFloat(inlineFocus) : 0;
+
+    this.material.uniforms.uFocus.value = THREE.MathUtils.damp(
+      this.material.uniforms.uFocus.value,
+      Number.isFinite(targetFocus) ? targetFocus : 0,
+      12,
+      delta,
+    );
   }
 
   destroy() {
@@ -260,7 +278,7 @@ export function initCurveMedia(viewport, canvas, images, options = {}) {
 
     for (const plane of planes) {
       plane.material.uniforms.uVelocity.value = velocity;
-      plane.sync(containerRect);
+      plane.sync(containerRect, delta);
     }
 
     renderer.render(scene, camera);
