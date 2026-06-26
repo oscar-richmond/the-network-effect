@@ -3,10 +3,12 @@ import {
   carouselSlides,
   defaultSlideIndex,
 } from '../data/carousel.js';
+import { asset } from '../utils/asset.js';
 import '../styles/home.css';
 
 const slidesJson = JSON.stringify(carouselSlides);
 const defaultSlide = carouselSlides[defaultSlideIndex];
+const base = import.meta.env.BASE_URL;
 ---
 
 <div
@@ -20,7 +22,7 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
 
   <div class="home__chrome">
     <nav class="home__ctas" aria-label="Site">
-      <a href="/about">about</a><span aria-hidden="true">, </span><a href="/team">team</a><span aria-hidden="true">, </span><a href="/contact">contact</a>
+      <a href={`${base}about`}>about</a><span aria-hidden="true">, </span><a href={`${base}team`}>team</a><span aria-hidden="true">, </span><a href={`${base}contact`}>contact</a>
     </nav>
 
     <ul class="home__clients" aria-label="Clients">
@@ -40,7 +42,7 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
 
     <div class="home__theme">
       <span>Light mode</span>
-      <img src="/assets/images/ui/toggle.svg" alt="" width="51" height="21" />
+      <img src={asset('/assets/images/ui/toggle.svg')} alt="" width="51" height="21" />
     </div>
 
     <aside class="home__intro">
@@ -72,28 +74,28 @@ const defaultSlide = carouselSlides[defaultSlideIndex];
       <div class="carousel-ui__frame" data-carousel-frame>
         <img
           class="carousel-ui__bracket carousel-ui__bracket--left"
-          src="/assets/images/ui/bracket.svg"
+          src={asset('/assets/images/ui/bracket.svg')}
           alt=""
           width="48"
           height="95"
         />
         <img
           class="carousel-ui__bracket carousel-ui__bracket--right"
-          src="/assets/images/ui/bracket.svg"
+          src={asset('/assets/images/ui/bracket.svg')}
           alt=""
           width="48"
           height="95"
         />
         <img
           class="carousel-ui__dot carousel-ui__dot--left"
-          src="/assets/images/ui/dot.svg"
+          src={asset('/assets/images/ui/dot.svg')}
           alt=""
           width="13"
           height="13"
         />
         <img
           class="carousel-ui__dot carousel-ui__dot--right"
-          src="/assets/images/ui/dot.svg"
+          src={asset('/assets/images/ui/dot.svg')}
           alt=""
           width="13"
           height="13"

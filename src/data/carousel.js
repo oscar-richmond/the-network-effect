@@ -1,5 +1,7 @@
 /** @typedef {{ id: string, client: string, leftLabel: string, rightLabel: string, number: string, image: string, width: number, height: number }} CarouselSlide */
 
+import { asset } from '../utils/asset.js';
+
 /** @type {string[]} */
 export const clientList = [
   'Netflix',
@@ -37,18 +39,18 @@ const slideCopy = {
 
 /** One image per client — shuffled before assignment. */
 const slideAssets = [
-  { image: '/assets/images/carousel/slide-01.png', width: 736, height: 920 },
-  { image: '/assets/images/carousel/slide-02.png', width: 819, height: 1024 },
-  { image: '/assets/images/carousel/slide-03.png', width: 819, height: 1024 },
-  { image: '/assets/images/carousel/slide-04.png', width: 767, height: 1024 },
-  { image: '/assets/images/carousel/slide-05.png', width: 682, height: 1024 },
-  { image: '/assets/images/carousel/slide-06.png', width: 764, height: 1024 },
-  { image: '/assets/images/carousel/slide-07.png', width: 796, height: 1024 },
-  { image: '/assets/images/carousel/slide-08.png', width: 736, height: 1024 },
-  { image: '/assets/images/carousel/slide-09.png', width: 744, height: 1024 },
-  { image: '/assets/images/carousel/slide-10.png', width: 708, height: 1024 },
-  { image: '/assets/images/carousel/slide-11.png', width: 827, height: 1024 },
-  { image: '/assets/images/carousel/slide-12.png', width: 812, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-01.png'), width: 736, height: 920 },
+  { image: asset('/assets/images/carousel/slide-02.png'), width: 819, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-03.png'), width: 819, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-04.png'), width: 767, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-05.png'), width: 682, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-06.png'), width: 764, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-07.png'), width: 796, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-08.png'), width: 736, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-09.png'), width: 744, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-10.png'), width: 708, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-11.png'), width: 827, height: 1024 },
+  { image: asset('/assets/images/carousel/slide-12.png'), width: 812, height: 1024 },
 ];
 
 /**
