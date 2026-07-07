@@ -284,6 +284,22 @@ export function initHomeCarousel(root, options = {}) {
     });
   };
 
+  const onResize = () => {
+    buildScroll();
+  };
+
+  window.addEventListener('wheel', onWheel, { passive: false });
+  window.addEventListener('resize', onResize);
+
+  const onImageClick = (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLImageElement)) return;
+    if (!target.matches('[data-carousel-image]')) return;
+    options.onImageClick?.();
+  };
+
+  root.addEventListener('click', onImageClick);
+
   slides.forEach((slide, index) => {
     if (Math.abs(index - defaultIndex) <= 1) {
       loadSlideImage(slide);
@@ -296,22 +312,6 @@ export function initHomeCarousel(root, options = {}) {
     console.error('[home-carousel] Scroll setup failed.', error);
     markReady();
   }
-  window.addEventListener('wheel', onWheel, { passive: false });
-
-  const onResize = () => {
-    buildScroll();
-  };
-
-  window.addEventListener('resize', onResize);
-
-  const onImageClick = (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLImageElement)) return;
-    if (!target.matches('[data-carousel-image]')) return;
-    options.onImageClick?.();
-  };
-
-  root.addEventListener('click', onImageClick);
 
   return () => {
     root.removeEventListener('click', onImageClick);

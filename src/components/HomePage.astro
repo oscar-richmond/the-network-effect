@@ -5,10 +5,10 @@ import {
 } from '../data/carousel.js';
 import { asset } from '../utils/asset.js';
 import '../styles/home.css';
+import Menu from './Menu.astro';
 
 const slidesJson = JSON.stringify(carouselSlides);
 const defaultSlide = carouselSlides[defaultSlideIndex];
-const base = import.meta.env.BASE_URL;
 ---
 
 <div
@@ -20,11 +20,23 @@ const base = import.meta.env.BASE_URL;
 >
   <h1 class="home__logo">THE NETWORK EFFECT</h1>
 
-  <div class="home__chrome">
-    <nav class="home__ctas" aria-label="Site">
-      <a href={`${base}about`}>about</a><span aria-hidden="true">, </span><a href={`${base}team`}>team</a><span aria-hidden="true">, </span><a href={`${base}contact`}>contact</a>
-    </nav>
+  <nav class="home__menu-cta" aria-label="Site">
+    <button
+      type="button"
+      class="home__menu-toggle"
+      data-menu-toggle
+      aria-expanded="false"
+      aria-controls="site-menu"
+    >
+      <span data-menu-label-menu>menu</span>
+      <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
+        <span class="home__menu-toggle-close-text">close</span>
+        <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
+      </span>
+    </button>
+  </nav>
 
+  <div class="home__chrome">
     <ul class="home__clients" aria-label="Clients">
       {
         carouselSlides.map((slide) => (
@@ -110,6 +122,7 @@ const base = import.meta.env.BASE_URL;
 
   <section class="carousel-pin" data-carousel-pin aria-label="Work carousel">
     <div class="carousel-viewport" data-carousel-viewport>
+
       <canvas
         class="carousel-viewport__gl"
         data-curve-canvas
@@ -158,6 +171,8 @@ const base = import.meta.env.BASE_URL;
     <p class="sphere-gallery__label" data-sphere-label hidden></p>
   </div>
 </div>
+
+<Menu />
 
 <script>
   import { initHomeCarousel } from '../scripts/home-carousel.js';

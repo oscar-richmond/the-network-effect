@@ -1,0 +1,291 @@
+---
+import { asset } from '../../utils/asset.js';
+import '../../styles/about-2/about-scroll.css';
+import 'lenis/dist/lenis.css';
+import AboutHero from './AboutHero.astro';
+import AboutStickyClients from './AboutStickyClients.astro';
+import AboutParaTrio from './AboutParaTrio.astro';
+
+const image2 = (file) => asset(`/assets/about-scroll/img2/${file}`);
+const heroIntro = asset('/assets/about-scroll/hero-intro.jpg');
+const ashleyTeam = asset('/assets/about-scroll/ashley-team.png');
+const robboTeam = asset('/assets/about-scroll/robbo-team.png');
+const rowLeft2 = asset('/assets/about-scroll/row-left-2.jpg');
+const rowLeft1 = asset('/assets/about-scroll/row-left-1.jpg');
+const rowRight1 = asset('/assets/about-scroll/row-right-1.jpg');
+const rowRight2 = asset('/assets/about-scroll/row-right-2.jpg');
+---
+
+<!-- Loading screen + hero image scatter animation -->
+<AboutHero />
+
+<!--
+  Permanent spacer: keeps 100dvh of document flow reserved so the
+  about-scroll content always starts at scrollY = 100dvh.
+  The hero stays position:fixed forever (never settles into the flow),
+  so this spacer is never removed — it IS the scroll offset.
+-->
+<div class="about-hero-spacer" data-about-hero-spacer aria-hidden="true"></div>
+
+<div class="about-scroll" data-about-scroll>
+  <main>
+
+		<section class="para-hero-section" data-para-hero-section>
+				<p data-para-anim-p>Nearly 20 years building global <span data-para-word>relationships</span> meets 30 years at the heart of <span data-para-word>music</span>, <span data-para-word>film</span> and <span data-para-word>television</span>.<br /><br />Together, the network effect combines deep <span data-para-word>cultural&nbsp;credibility</span> with trusted access and strategic <span data-para-word>relationships</span>.</p>
+		</section>
+
+		<AboutParaTrio />
+
+		<AboutStickyClients />
+
+			<div class="gallery-wrap gallery-wrap--large">
+				<div class="gallery gallery--grid gallery--breakout" id="gallery-2">
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-1-1.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-1-2.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-1-3.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-2-1.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-2-2.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-2-3.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-3-1.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-3-2.jpg')})`}></div></div>
+					<div class="gallery__item gallery__item-cut"><div class="gallery__item-inner" style={`background-image:url(${image2('ne-grid-3-3.jpg')})`}></div></div>
+					<div class="caption">
+						<p>Devoid of inherent knowledge, the language model relies solely on probabilities to craft a peculiar vision. As a result, the earrings hang in curious defiance of physics, inviting us to ponder the implications of relinquishing human understanding in the pursuit of artificial creativity.</p>
+					</div>
+				</div>
+			</div>
+			<section class="project project--details project--right">
+				<span class="project__label project__label--default">Preserving Artistic Identity</span>
+				<p>While AI offers new avenues for artistic exploration, there is a concern that it may overshadow or replace human creativity. Balancing the integration of AI tools and techniques with preserving the unique perspectives, emotional depth, and artistic identity of human artists is a significant challenge. Striking the right balance between AI-generated art and the irreplaceable human touch requires thoughtful consideration and an ongoing dialogue between artists, technologists, and the wider art community.</p>
+			</section>
+			<div class="gallery-wrap">
+				<div class="gallery gallery--grid10" id="gallery-3">
+					<canvas class="gallery--row__gl" data-curve-canvas aria-hidden="true"></canvas>
+					<div class="gallery__item pos-1"><img class="gallery__item-media" data-curve-image src={image2('img-23.jpg')} alt="" /></div>
+					<div class="gallery__item pos-2"><img class="gallery__item-media" data-curve-image src={image2('img-37.jpg')} alt="" /></div>
+					<div class="gallery__item pos-3"><img class="gallery__item-media" data-curve-image src={image2('img-03.jpg')} alt="" /></div>
+					<div class="gallery__item pos-4"><img class="gallery__item-media" data-curve-image src={image2('img-62.jpg')} alt="" /></div>
+					<div class="gallery__item pos-5"><img class="gallery__item-media" data-curve-image src={image2('img-10.jpg')} alt="" /></div>
+					<div class="gallery__item pos-6"><img class="gallery__item-media" data-curve-image src={image2('img-52.jpg')} alt="" /></div>
+					<div class="gallery__item pos-7"><img class="gallery__item-media" data-curve-image src={image2('img-18.jpg')} alt="" /></div>
+					<div class="gallery__item pos-8"><img class="gallery__item-media" data-curve-image src={image2('img-59.jpg')} alt="" /></div>
+					<div class="gallery__item pos-9"><img class="gallery__item-media" data-curve-image src={image2('img-48.jpg')} alt="" /></div>
+					<div class="gallery__item pos-10"><img class="gallery__item-media" data-curve-image src={image2('img-30.jpg')} alt="" /></div>
+					<div class="gallery__item pos-11"><img class="gallery__item-media" data-curve-image src={image2('img-12.jpg')} alt="" /></div>
+					<div class="gallery__item pos-12"><img class="gallery__item-media" data-curve-image src={image2('img-15.jpg')} alt="" /></div>
+					<div class="gallery__item pos-13"><img class="gallery__item-media" data-curve-image src={image2('img-25.jpg')} alt="" /></div>
+					<div class="gallery__item pos-14"><img class="gallery__item-media" data-curve-image src={image2('img-22.jpg')} alt="" /></div>
+					<div class="gallery__item pos-15"><img class="gallery__item-media" data-curve-image src={image2('img-19.jpg')} alt="" /></div>
+					<div class="gallery__item pos-16"><img class="gallery__item-media" data-curve-image src={image2('img-13.jpg')} alt="" /></div>
+					<div class="caption"><p>The Art of Perfection?</p></div>
+				</div>
+			</div>
+			<section class="project project--details">
+				<span class="project__label project__label--default">Societal Impact</span>
+				<p>As AI-generated art becomes more prevalent, its long-term impact on the art market, art institutions, and the broader societal perception of art needs to be carefully examined. Understanding the implications of AI-generated art for art sales, copyright laws, and the dynamics of the art market is crucial for shaping future policies and practices. Additionally, exploring the ways in which AI-generated art can democratize artistic expression and challenge traditional hierarchies is an ongoing challenge that requires proactive engagement and collaboration.</p>
+			</section>
+			<div class="gallery-wrap gallery-wrap--dense">
+				<div class="gallery gallery--stack gallery--stack-inverse gallery--stack-dark" id="gallery-4">
+					<div class="gallery__item" style={`background-image:url(${ashleyTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${ashleyTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${ashleyTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${ashleyTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${ashleyTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${ashleyTeam})`}></div>
+					<div class="caption">
+						<p>AI-generated art captivates with varied creations, sometimes senseless, yet impressively enigmatic.</p>
+					</div>
+				</div>
+			</div>
+			<div class="gallery-wrap gallery-wrap--dense">
+				<div class="gallery gallery--stack gallery--stack-glass" id="gallery-5">
+					<div class="gallery__item" style={`background-image:url(${robboTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${robboTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${robboTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${robboTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${robboTeam})`}></div>
+					<div class="gallery__item" style={`background-image:url(${robboTeam})`}></div>
+					<div class="caption">
+						<p>In the realm of unpredictable algorithms, some variations may appear random or without purpose, challenging traditional notions of beauty and meaning.</p>
+					</div>
+				</div>
+			</div>
+			<section class="project project--details project--right">
+				<span class="project__label project__label--default">Unmasking the Void of Authenticity</span>
+				<p>While AI-generated art showcases impressive technical prowess, it leaves behind an unsettling void in the quest for authenticity. As humans, we seek the genuine touch of human hands and the depth of emotional connection embedded within traditional art forms. The lack of human essence in AI-generated creations may leave us yearning for the profound human expression that sparks true resonance, evoking a sense of emptiness in the face of machine-driven artistry.</p>
+			</section>
+			<div class="gallery-wrap">
+				<div class="gallery gallery--gridtiny" id="gallery-7">
+					<div class="gallery__item" style={`background-image:url(${image2('img-56.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-53.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-50.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-02.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-40.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-39.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-09.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-46.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-26.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-29.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-61.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-34.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-17.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-28.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-57.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-55.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-43.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-21.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-27.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-36.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-04.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-51.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-11.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-33.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-31.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-20.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-14.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-38.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-35.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-26.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-40.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-30.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-33.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-48.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-14.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-51.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-20.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-06.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-16.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-32.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-43.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-10.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-27.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-41.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-46.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-17.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-34.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-59.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-25.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-09.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-42.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-52.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-60.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-44.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-05.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-54.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-50.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-31.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-36.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-12.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-24.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-35.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-56.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-13.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-22.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-55.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-62.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-61.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-08.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-29.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-18.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-07.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-63.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-28.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-38.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-11.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-39.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-21.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-58.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-45.jpg')})`}></div>
+					<div class="caption"><p>What is creativity?</p></div>
+				</div>
+			</div>
+			<section class="project project--details project--left">
+				<span class="project__label project__label--default">Photographic Flaws in Perfect Harmony</span>
+				<p>In the realm of AI-generated photography, the quest for flawlessness inadvertently unveils a striking paradox - the absence of authentic imperfections. Even in the most human-like subjects, wrinkles and blemishes appear too immaculate, leaving us yearning for the raw, unfiltered beauty that only true imperfection can evoke. </p>
+			</section>
+			<div class="gallery-wrap">
+				<div class="gallery gallery--bento" id="gallery-8">
+					<div class="gallery__item" style={`background-image:url(${image2('img-37.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-49.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-23.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-19.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-15.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-53.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-47.jpg')})`}></div>
+					<div class="gallery__item" style={`background-image:url(${image2('img-57.jpg')})`}></div>
+					<div class="caption"><p>Perfect Imperfections</p></div>
+				</div>
+			</div>
+			
+		  </main>
+</div>
+
+<!-- ── Para-anim: images that orbit the cursor when hovering highlighted words ── -->
+<!-- position:fixed so it escapes any stacking context; pointer-events:none       -->
+<!-- so it never blocks clicks on the page beneath it.                            -->
+<div class="para-orbit" data-para-orbit aria-hidden="true">
+  <div class="para-orbit__item"><img src={image2('img-32.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-16.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-54.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-63.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-49.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-45.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-58.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-40.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-43.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-46.jpg')} alt="" loading="lazy" /></div>
+  <div class="para-orbit__item"><img src={image2('img-47.jpg')} alt="" loading="lazy" /></div>
+</div>
+
+<script>
+  import { initAboutScroll } from '../../scripts/about-2/about-scroll.js';
+
+  // Disable scroll restoration so the browser doesn’t restore a mid-page
+  // position before the spacer has its correct JS height.
+  // NOTE: window.scrollTo(0,0) is intentionally omitted — the hero animation
+  // locks scroll via body.overflow:hidden for its full duration, guaranteeing
+  // scrollY=0 when the about-scroll system initialises.
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  /**
+   * Initialise the about-scroll galleries and animations.
+   *
+   * If the AboutHero loading-screen component is present on this page,
+   * we defer initialisation until it fires 'about-hero:settled'.  By that
+   * point the hero has switched from position:fixed → position:relative and
+   * added its 100vh to the document height, so ScrollTrigger can calculate
+   * all pin start/end positions correctly.
+   *
+   * If there is no hero (e.g. direct navigation in future), boot immediately.
+   */
+  const boot = () => {
+    const root = document.querySelector('[data-about-scroll]');
+    const cleanup = initAboutScroll(root);
+
+    document.addEventListener('astro:before-swap', () => {
+      cleanup();
+    }, { once: true });
+  };
+
+  const heroEl = document.querySelector('[data-about-hero]');
+
+  if (heroEl) {
+    // Hero present — wait for the entry animation to complete before booting
+    // ScrollTrigger.  The spacer is already in the flow from page load, so
+    // ScrollTrigger will calculate all pin positions correctly the moment boot()
+    // runs (no layout change happens between now and then).
+    document.addEventListener('about-hero:settled', () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          boot();
+        });
+      });
+    }, { once: true });
+  } else {
+    // No hero — boot immediately (original behaviour)
+    boot();
+  }
+</script>
+

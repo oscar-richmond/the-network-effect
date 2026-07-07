@@ -9,10 +9,10 @@ const BLOCK_TAGS = new Set([
   'table',
 ]);
 
-const TARGET_SELECTOR =
+const DEFAULT_TARGET_SELECTOR =
   'h1, h2, h3, p, .home__intro-links a, .home__clients li, .home__theme > span';
 
-const EXCLUDE_SELECTOR = [
+const DEFAULT_EXCLUDE_SELECTOR = [
   '[data-carousel-left-label]',
   '[data-carousel-right-label]',
   '[data-carousel-index]',
@@ -139,16 +139,14 @@ function revealElement(el) {
   return el;
 }
 
-/**
- * @param {{ readyEvent?: string }} [options]
- */
-export function initLineReveal(options = {}) {
-  const readyEvent = options.readyEvent ?? 'splash:finished';
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let lineRevealStylesInjected = false;
 
-  if (prefersReduced) return () => {};
+function ensureLineRevealStyles() {
+  if (lineRevealStylesInjected) return;
+  lineRevealStylesInjected = true;
 
   const css = document.createElement('style');
+  css.id = 'line-reveal-styles';
   css.textContent = `
     .lr-clip { overflow: hidden; display: block; }
     .lr-inner {
@@ -161,9 +159,87 @@ export function initLineReveal(options = {}) {
     }
   `;
   document.head.appendChild(css);
+}
 
-  const targets = Array.from(document.querySelectorAll(TARGET_SELECTOR)).filter(
-    (el) => !(/** @type {Element} */ (el).closest(EXCLUDE_SELECTOR)),
+/**
+ * @param {HTMLElement} el
+ */
+export function playLineRevealElement(el) {
+  ensureLineRevealStyles();
+
+  const clips = el.querySelectorAll(':scope > .lr-clip');
+  if (clips.length > 0) {
+    clips.forEach((clip) => clip.classList.add('lr-visible'));
+    return;
+  }
+
+  if (el.classList.contains('lr-clip')) {
+    el.classList.add('lr-visible');
+    return;
+  }
+
+  const parentClip = el.parentElement;
+  if (el.classList.contains('lr-inner') && parentClip?.classList.contains('lr-clip')) {
+    parentClip.classList.add('lr-visible');
+    return;
+  }
+
+  el.classList.add('lr-visible');
+}
+
+/**
+ * @param {HTMLElement} el
+ */
+export function wrapLineRevealElement(el) {
+  ensureLineRevealStyles();
+  return revealElement(el);
+}
+
+/**
+ * @param {HTMLElement} el
+ */
+export function animateLineReveal(el) {
+  if (!(el instanceof HTMLElement)) return;
+
+  const wrapped = wrapLineRevealElement(el);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (wrapped instanceof HTMLElement && wrapped.classList.contains('lr-clip')) {
+        playLineRevealElement(wrapped);
+      } else {
+        playLineRevealElement(el);
+      }
+    });
+  });
+}
+
+/**
+ * @param {{
+ *   readyEvent?: string,
+ *   trigger?: 'ready' | 'scroll',
+ *   selector?: string,
+ *   exclude?: string,
+ *   threshold?: number,
+ *   rootMargin?: string,
+ *   onWrapped?: () => void,
+ * }} [options]
+ */
+export function initLineReveal(options = {}) {
+  const readyEvent = options.readyEvent ?? 'splash:finished';
+  const trigger = options.trigger ?? 'ready';
+  const targetSelector = options.selector ?? DEFAULT_TARGET_SELECTOR;
+  const excludeSelector = options.exclude ?? DEFAULT_EXCLUDE_SELECTOR;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (prefersReduced) {
+    options.onWrapped?.();
+    return () => {};
+  }
+
+  ensureLineRevealStyles();
+
+  const targets = Array.from(document.querySelectorAll(targetSelector)).filter(
+    (el) => !excludeSelector || !(/** @type {Element} */ (el).closest(excludeSelector)),
   );
 
   /** @type {Set<HTMLElement>} */
@@ -176,12 +252,7 @@ export function initLineReveal(options = {}) {
    * @param {HTMLElement} target
    */
   const revealTarget = (target) => {
-    const clips = target.querySelectorAll(':scope > .lr-clip');
-    if (clips.length > 0) {
-      clips.forEach((clip) => clip.classList.add('lr-visible'));
-    } else {
-      target.classList.add('lr-visible');
-    }
+    playLineRevealElement(target);
     revealed.add(target);
   };
 
@@ -189,6 +260,48 @@ export function initLineReveal(options = {}) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         toObserve.forEach((el) => revealTarget(el));
+      });
+    });
+  };
+
+  /** @type {IntersectionObserver | null} */
+  let scrollObserver = null;
+
+  /** @type {Map<Element, HTMLElement>} */
+  const observedNodeToTarget = new Map();
+
+  const startScrollObserving = () => {
+    scrollObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const target = observedNodeToTarget.get(entry.target);
+          if (!target || revealed.has(target)) return;
+          revealTarget(target);
+          target.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
+            scrollObserver?.unobserve(clip);
+            observedNodeToTarget.delete(clip);
+          });
+          scrollObserver?.unobserve(entry.target);
+          observedNodeToTarget.delete(entry.target);
+        });
+      },
+      {
+        threshold: options.threshold ?? 0.15,
+        rootMargin: options.rootMargin ?? '0px 0px -10% 0px',
+      },
+    );
+
+    toObserve.forEach((el) => {
+      // Observe the tight-fitting per-line clips rather than `el` itself:
+      // `el` may carry large decorative padding (e.g. gallery caption
+      // layouts) that has nothing to do with the actual visible text, which
+      // would make the observer fire while only empty padding is on screen.
+      const clips = el.querySelectorAll(':scope > .lr-clip');
+      const observeNodes = clips.length > 0 ? Array.from(clips) : [el];
+      observeNodes.forEach((node) => {
+        observedNodeToTarget.set(node, el);
+        scrollObserver?.observe(node);
       });
     });
   };
@@ -208,6 +321,13 @@ export function initLineReveal(options = {}) {
     toObserve = targets
       .map((el) => revealElement(/** @type {HTMLElement} */ (el)))
       .filter((el) => el instanceof HTMLElement);
+
+    options.onWrapped?.();
+
+    if (trigger === 'scroll') {
+      startScrollObserving();
+      return;
+    }
 
     if (readyFired) {
       startObserving();
@@ -238,6 +358,13 @@ export function initLineReveal(options = {}) {
               });
             });
           });
+        } else if (trigger === 'scroll' && scrollObserver) {
+          const clips = target.querySelectorAll(':scope > .lr-clip');
+          const observeNodes = clips.length > 0 ? Array.from(clips) : [target];
+          observeNodes.forEach((node) => {
+            observedNodeToTarget.set(node, target);
+            scrollObserver?.observe(node);
+          });
         }
       });
     }, 200);
@@ -248,6 +375,6 @@ export function initLineReveal(options = {}) {
   return () => {
     window.removeEventListener('resize', onResize);
     clearTimeout(resizeTimer);
-    css.remove();
+    scrollObserver?.disconnect();
   };
 }

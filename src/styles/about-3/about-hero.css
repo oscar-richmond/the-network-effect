@@ -1,0 +1,311 @@
+/* ─── About-3 Hero — /about-2 loading + sort, /about tagline ─────────────── */
+
+.about-page-3 .about-hero {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	z-index: 250;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.about-page-3 .about-hero__bg {
+	position: absolute;
+	inset: 0;
+	background: #F9F9F9;
+	z-index: 0;
+}
+
+.about-page-3 [data-about-hero-spacer] {
+	position: relative;
+	height: 100vh;
+	height: 100dvh;
+	width: 100%;
+	pointer-events: none;
+	overflow: visible;
+}
+
+.about-page-3 [data-about-hero-spacer] .about-hero__img {
+	z-index: 110;
+}
+
+.about-page-3 .about-hero__gallery {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	z-index: 1;
+}
+
+.about-page-3 .about-hero__img {
+	position: absolute;
+	overflow: hidden;
+}
+
+.about-page-3 .about-hero__flash-stack {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.about-page-3 .about-hero__flash {
+	position: absolute;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.about-page-3 .about-hero__flash img,
+.about-page-3 .about-hero__img img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* ── Hero tagline (duplicated from /about — unchanged) ─────────────────────── */
+
+.about-page-3 .about-hero__tagline {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 var(--home-margin-x, 24px);
+	pointer-events: none;
+	z-index: 115;
+	visibility: hidden;
+	/* Blend on wrapper so text composites with cards below; image opts out via isolation. */
+	mix-blend-mode: difference;
+	color: #ffffff;
+}
+
+.about-page-3 .about-hero__tagline-text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 0;
+	opacity: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	/* 55% × 1.05 of original 84px */
+	font-size: 48.51px;
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+	color: inherit;
+	mix-blend-mode: normal;
+}
+
+.about-page-3 .about-hero__tagline-line {
+	margin: 0;
+	width: max-content;
+	text-align: left;
+	mix-blend-mode: normal;
+}
+
+.about-page-3 .about-hero__tagline-line--left {
+	align-self: flex-start;
+}
+
+.about-page-3 .about-hero__tagline-line--indent {
+	align-self: flex-start;
+	margin-left: 1em;
+}
+
+.about-page-3 .about-hero__tagline-cultural {
+	display: flex;
+	align-items: center;
+	width: max-content;
+}
+
+.about-page-3 .about-hero__tagline-cultural .lr-clip {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.about-page-3 .about-hero__tagline-cultural .lr-inner {
+	display: inline-block;
+}
+
+.about-page-3 .about-hero__tagline-line.lr-inner {
+	width: max-content;
+}
+
+.about-page-3 .about-hero__tagline-cultural-img-wrap {
+	display: block;
+	flex-shrink: 0;
+}
+
+/* This is now an always-invisible layout slot only — it reserves the exact
+   width/height/margins the video needs inline in the text, so the
+   surrounding words wrap correctly, but never paints anything itself.
+   `isolation`/`mix-blend-mode: normal` used to live here to try to opt a
+   real <video> out of the ancestor `.about-hero__tagline`'s
+   `mix-blend-mode: difference` — that does NOT work reliably (an ancestor's
+   own blend-mode flattens+differences its whole subtree as one unit
+   regardless of a descendant's isolation), so the real, visible video is
+   now rendered by `.about-hero__tagline-cultural-video-overlay` below,
+   which lives outside the difference-blend subtree entirely and is
+   position-synced to this slot's on-screen rect in JS. */
+.about-page-3 .about-hero__tagline-cultural-img {
+	width: 83.7375px;
+	height: 0.75em;
+	height: 1cap;
+	margin-inline: 9.24px;
+	display: block;
+	visibility: hidden;
+}
+
+/* The real, visible video — a sibling of `.about-hero__tagline` (not a
+   descendant), so it is never inside a `mix-blend-mode: difference`
+   subtree and always renders at true colour. Position/size are kept in
+   sync with the invisible slot above via a rAF loop in this component's
+   script. */
+.about-page-3 .about-hero__tagline-cultural-video-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	object-fit: cover;
+	display: block;
+	pointer-events: none;
+	/* Matches .about-hero__tagline--persist's z-index (100) — the persisted
+	   tagline text already sits below the three images (110) once the
+	   scroll sequence starts, so the video overlay needs the same value
+	   rather than the pre-reveal tagline's z-index (115), or it would float
+	   above the images as they scroll over it. */
+	z-index: 100;
+	mix-blend-mode: normal;
+}
+
+.about-page-3 .about-hero__tagline-cultural-video-overlay.is-pending {
+	opacity: 0;
+}
+
+.about-page-3 .about-hero__tagline-rotate {
+	display: inline-block;
+	min-width: 11ch;
+	text-align: left;
+}
+
+/* Line-reveal clip on the rotate row — bleed room for blur without shifting layout */
+.about-page-3 .about-hero__tagline-line:has([data-about-hero-tagline-rotate]) > .lr-clip {
+	padding: 12px;
+	margin: -12px;
+}
+
+.about-page-3 .about-hero__tagline-rotate-inner {
+	display: inline-block;
+	opacity: 1;
+	filter: none;
+	mix-blend-mode: normal;
+	transition:
+		opacity 2s ease,
+		filter 2s ease;
+	will-change: opacity, filter;
+}
+
+.about-page-3 .about-hero__tagline-rotate-inner.is-exiting {
+	opacity: 0;
+	filter: blur(10px);
+	transition:
+		opacity 1s ease,
+		filter 1s ease;
+}
+
+.about-page-3 .about-hero__tagline-rotate-inner.is-entering {
+	opacity: 0;
+	filter: blur(10px);
+}
+
+.about-page-3 .about-hero__tagline--persist,
+.about-page-3 [data-about-hero-spacer] > .about-hero__tagline {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	visibility: visible;
+	pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+	.about-page-3 .about-hero__tagline-text {
+		font-size: clamp(1.7325rem, 4.0425vw, 48.51px);
+	}
+}
+
+/* ── Scroll-revealed intro paragraph (new pre-sequence phase) ──────────────── */
+
+.about-page-3 .about-hero__intro {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 100;
+	visibility: hidden;
+}
+
+.about-page-3 .about-hero__intro-text {
+	position: absolute;
+	top: 50%;
+	right: 290px;
+	transform: translateY(-50%);
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-size: 14px;
+	line-height: 20px;
+	color: #161616;
+	mix-blend-mode: normal;
+}
+
+.about-page-3 .about-hero__intro-text p {
+	margin: 0;
+}
+
+.about-page-3 .about-hero__intro-text p + p {
+	margin-top: 20px;
+}
+
+.about-page-3 .about-hero__intro--persist,
+.about-page-3 [data-about-hero-spacer] > .about-hero__intro {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	visibility: visible;
+	pointer-events: none;
+}
+
+/* ── Loading text labels (from /about-2) ───────────────────────────────────── */
+
+.about-page-3 .about-hero__header {
+	position: absolute;
+	width: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.about-page-3 .about-hero__text {
+	position: relative;
+	width: max-content;
+	padding: 10px;
+	overflow: hidden;
+}
+
+.about-page-3 .about-hero__text p {
+	position: relative;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	color: var(--color-ink, #121212);
+	margin: 0;
+	line-height: 1.2;
+	white-space: nowrap;
+}

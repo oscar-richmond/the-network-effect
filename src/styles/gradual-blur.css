@@ -1,0 +1,36 @@
+.gradual-blur {
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.3s ease-out;
+	isolation: isolate;
+}
+
+.gradual-blur.is-visible,
+.gradual-blur[data-gradual-blur-animated='false'] {
+	opacity: 1;
+}
+
+.gradual-blur-parent {
+	overflow: hidden;
+}
+
+.gradual-blur-inner {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.gradual-blur-inner > div {
+	position: absolute;
+	inset: 0;
+	-webkit-backdrop-filter: inherit;
+	backdrop-filter: inherit;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+	.gradual-blur-inner > div {
+		background: rgba(0, 0, 0, 0.3);
+		opacity: 0.5;
+	}
+}

@@ -1,0 +1,269 @@
+/* ─── Sticky client list (Animmaster reference) ──────────────────────────── */
+
+[data-about-sticky-clients] {
+	position: relative;
+	width: 100%;
+	background: var(--color-page-bg, #fff);
+}
+
+[data-sticky-clients-bar] {
+	position: fixed;
+	left: 0;
+	width: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	padding: 1em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 120;
+	pointer-events: none;
+	visibility: hidden;
+	mix-blend-mode: difference;
+	color: #ffffff;
+}
+
+.about-sticky-clients__bar-default {
+	display: flex;
+	width: 100%;
+	align-items: center;
+}
+
+[data-sticky-clients-bar].is-founder .about-sticky-clients__bar-default {
+	display: none;
+}
+
+.about-sticky-clients__bar-founder {
+	display: none;
+	width: 100%;
+	text-align: center;
+}
+
+[data-sticky-clients-bar].is-founder .about-sticky-clients__bar-founder {
+	display: block;
+}
+
+[data-sticky-clients-bar] .about-sticky-clients__bar-item:nth-child(1),
+[data-sticky-clients-bar] .about-sticky-clients__bar-item:nth-child(3) {
+	flex: 2;
+}
+
+[data-sticky-clients-bar] .about-sticky-clients__bar-item:nth-child(3) {
+	text-align: right;
+}
+
+[data-sticky-clients-bar] .about-sticky-clients__bar-item:nth-child(2) {
+	flex: 1;
+	text-align: center;
+}
+
+[data-sticky-clients-bar] .about-sticky-clients__bar-default p {
+	margin: 0;
+	text-transform: uppercase;
+	color: #ffffff;
+	mix-blend-mode: normal;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-weight: 600;
+	font-size: 1.25vw;
+	letter-spacing: 0.06em;
+	line-height: 1.1;
+}
+
+[data-sticky-clients-bar] .about-sticky-clients__bar-founder p {
+	margin: 0;
+	text-transform: uppercase;
+	color: #ffffff;
+	mix-blend-mode: normal;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-weight: 600;
+	font-size: 82.65px;
+	letter-spacing: 0.04em;
+	line-height: 1.1;
+	text-align: center;
+}
+
+/* Dynamic height — positions list 180px below the right trio image. */
+[data-sticky-clients-lead] {
+	width: 100%;
+	height: 0;
+	pointer-events: none;
+}
+
+[data-sticky-clients-list] {
+	width: 100%;
+	padding: 0 1em;
+}
+
+[data-sticky-clients-founder] {
+	width: 100%;
+	margin: 180px 0 0;
+	padding: 0;
+	z-index: 1;
+}
+
+.about-sticky-clients__founder-inner {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	width: 100%;
+	min-height: 100vh;
+	min-height: 100dvh;
+	--founder-side-width: auto;
+}
+
+.about-sticky-clients__founder-bio {
+	grid-column: 1;
+	grid-row: 1;
+	justify-self: end;
+	align-self: center;
+	margin: 0 48px 0 0;
+	padding: 0;
+	width: var(--founder-side-width, auto);
+	max-width: 100%;
+	text-align: right;
+	text-transform: uppercase;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0.04em;
+	color: var(--color-ink-strong, #161616);
+}
+
+.about-sticky-clients__founder-bio p {
+	margin: 0;
+}
+
+.about-sticky-clients__founder-bio p + p {
+	margin-top: 1.4em;
+}
+
+[data-sticky-clients-founder] img {
+	grid-column: 2;
+	grid-row: 1;
+	display: block;
+	height: 100vh;
+	height: 100dvh;
+	width: auto;
+	max-width: 100%;
+	margin-inline: 0;
+	object-fit: contain;
+	object-position: center;
+	cursor: crosshair;
+}
+
+[data-sticky-clients-founder] img.is-liquid-active {
+	opacity: 0;
+}
+
+.about-sticky-clients__founder-industries {
+	grid-column: 3;
+	grid-row: 1;
+	justify-self: start;
+	align-self: center;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0 0 0 48px;
+	padding: 0;
+	width: var(--founder-side-width, auto);
+	max-width: 100%;
+	text-align: left;
+}
+
+.about-sticky-clients__founder-industries-lead {
+	margin: 0 0 1em;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0.04em;
+	color: var(--color-ink-strong, #161616);
+}
+
+.about-sticky-clients__founder-industries-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65em;
+}
+
+.about-sticky-clients__founder-industries-line {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: baseline;
+}
+
+.about-sticky-clients__founder-industry {
+	display: inline-flex;
+	align-items: flex-start;
+	gap: 3px;
+	white-space: nowrap;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	letter-spacing: 0.04em;
+	color: var(--color-ink-strong, #161616);
+}
+
+.about-sticky-clients__founder-industry-name {
+	text-transform: uppercase;
+}
+
+.about-sticky-clients__founder-industry-num {
+	margin: 4px 0 0;
+	padding: 0;
+	font-family: inherit;
+	font-size: 6px;
+	font-weight: 600;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.about-sticky-clients__founder-industries-sep {
+	flex: 0 0 auto;
+	margin: 0 6px;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--color-ink-strong, #161616);
+}
+
+[data-sticky-clients-row] {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	gap: 1em;
+}
+
+.about-sticky-clients__logo p {
+	margin: 0;
+	font-family: var(--font-display, 'Dazzed', sans-serif);
+	font-size: clamp(1.25rem, 3.2vw, 2.5rem);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--color-ink-strong, #161616);
+}
+
+[data-sticky-clients-footer] {
+	width: 100%;
+	min-height: 100vh;
+	min-height: 100dvh;
+	pointer-events: none;
+}
+
+@media (max-width: 900px) {
+	[data-sticky-clients-bar] .about-sticky-clients__bar-default p {
+		font-size: 2.5vw;
+	}
+
+	[data-sticky-clients-bar] .about-sticky-clients__bar-founder p {
+		font-size: clamp(2.85rem, 14.25vw, 82.65px);
+	}
+
+	.about-sticky-clients__logo p {
+		font-size: 1.25rem;
+	}
+}

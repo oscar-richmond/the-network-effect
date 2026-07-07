@@ -1,0 +1,105 @@
+---
+import { asset } from '../../utils/asset.js';
+import { stickyClientRows } from '../../data/sticky-clients.js';
+import '../../styles/about-2/about-sticky-clients.css';
+import '../../styles/liquid-media.css';
+
+const founderImage = asset('/assets/about-scroll/founders/robbo-founder.png');
+---
+
+<section class="about-sticky-clients" data-about-sticky-clients aria-label="Clients">
+	<div class="about-sticky-clients__bar" data-sticky-clients-bar>
+		<div class="about-sticky-clients__bar-default" data-sticky-clients-bar-default>
+			<div class="about-sticky-clients__bar-item"><p>Meet the</p></div>
+			<div class="about-sticky-clients__bar-item"><p>&amp;</p></div>
+			<div class="about-sticky-clients__bar-item"><p>Founders</p></div>
+		</div>
+		<div class="about-sticky-clients__bar-founder" data-sticky-clients-bar-founder>
+			<p>Robbo Mccallum</p>
+		</div>
+	</div>
+
+	<div class="about-sticky-clients__lead" data-sticky-clients-lead aria-hidden="true"></div>
+
+	<div class="about-sticky-clients__list" data-sticky-clients-list>
+		{stickyClientRows.map((pair) => (
+			<div class="about-sticky-clients__row" data-sticky-clients-row>
+				{pair.map((name) => (
+					<div class="about-sticky-clients__logo">
+						<p>{name}</p>
+					</div>
+				))}
+			</div>
+		))}
+	</div>
+
+	<figure class="about-sticky-clients__founder" data-sticky-clients-founder>
+		<div class="about-sticky-clients__founder-inner">
+			<div class="about-sticky-clients__founder-bio" data-sticky-clients-founder-bio>
+				<p>Relationship architect with nearly 20 years building global partnerships.</p>
+				<p>Trusted connector. Strategic operator.</p>
+			</div>
+			<img
+				src={founderImage}
+				alt="Robbo Mccallum"
+				data-liquid-media
+				data-liquid-intensity="0.22"
+				data-liquid-radius="5"
+				data-liquid-expand-rate="10"
+				data-liquid-decay-rate="4"
+				data-liquid-max-ripples="38"
+				data-liquid-contrast="0.94"
+				data-liquid-brightness="0.065"
+				data-liquid-segments="32"
+				data-liquid-ripple={asset('/assets/liquid-media/ripple.png')}
+				loading="lazy"
+				decoding="async"
+			/>
+			<div class="about-sticky-clients__founder-industries" data-sticky-clients-founder-industries>
+				<p class="about-sticky-clients__founder-industries-lead">Relationships across:</p>
+				<div class="about-sticky-clients__founder-industries-list">
+					<div class="about-sticky-clients__founder-industries-line">
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Talent</span>
+							<sup class="about-sticky-clients__founder-industry-num">/01</sup>
+						</span>
+						<span class="about-sticky-clients__founder-industries-sep" aria-hidden="true">/</span>
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Hospitality</span>
+							<sup class="about-sticky-clients__founder-industry-num">/02</sup>
+						</span>
+						<span class="about-sticky-clients__founder-industries-sep" aria-hidden="true">/</span>
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Brands</span>
+							<sup class="about-sticky-clients__founder-industry-num">/04</sup>
+						</span>
+					</div>
+					<div class="about-sticky-clients__founder-industries-line">
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Food &amp; Beverage</span>
+							<sup class="about-sticky-clients__founder-industry-num">/03</sup>
+						</span>
+						<span class="about-sticky-clients__founder-industries-sep" aria-hidden="true">/</span>
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Events</span>
+							<sup class="about-sticky-clients__founder-industry-num">/05</sup>
+						</span>
+					</div>
+					<div class="about-sticky-clients__founder-industries-line">
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Production</span>
+							<sup class="about-sticky-clients__founder-industry-num">/06</sup>
+						</span>
+						<span class="about-sticky-clients__founder-industries-sep" aria-hidden="true">/</span>
+						<span class="about-sticky-clients__founder-industry">
+							<span class="about-sticky-clients__founder-industry-name">Design</span>
+							<sup class="about-sticky-clients__founder-industry-num">/07</sup>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</figure>
+
+	<div class="about-sticky-clients__footer" data-sticky-clients-footer aria-hidden="true"></div>
+</section>

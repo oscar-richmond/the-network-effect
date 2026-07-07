@@ -11,6 +11,18 @@
   --splash-offset-y: 104px;
 }
 
+@media (max-width: 402px) {
+  .splash {
+    --splash-offset-y: 64px;
+  }
+}
+
+@media (min-width: 403px) and (max-width: 440px) {
+  .splash {
+    --splash-offset-y: 80px;
+  }
+}
+
 .splash__surface {
   position: absolute;
   left: 0;

@@ -1,0 +1,117 @@
+/* TeX Gyre Heros + Serrif — fallback stack */
+
+@font-face {
+  font-family: 'Network Effect';
+  src: url('../assets/fonts/texgyreheros-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Network Effect';
+  src: url('../assets/fonts/Serrif-TRIAL-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Network Effect';
+  src: url('../assets/fonts/texgyreheros-bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Arial Black';
+  src: url('../assets/fonts/Arial Black.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Serrif — serif accent */
+
+@font-face {
+  font-family: 'Serrif';
+  src:
+    url('../assets/fonts/Serrif-TRIAL-Regular.woff2') format('woff2'),
+    url('../assets/fonts/Serrif-TRIAL-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Serrif';
+  src:
+    url('../assets/fonts/Serrif-TRIAL-Medium.woff2') format('woff2'),
+    url('../assets/fonts/Serrif-TRIAL-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Dazzed — primary brand sans */
+
+@font-face {
+  font-family: 'Dazzed';
+  src:
+    url('../assets/fonts/Dazzed-TRIAL-Thin.woff2') format('woff2'),
+    url('../assets/fonts/Dazzed-TRIAL-Thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzed';
+  src:
+    url('../assets/fonts/Dazzed-TRIAL-Regular.woff2') format('woff2'),
+    url('../assets/fonts/Dazzed-TRIAL-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzed';
+  src:
+    url('../assets/fonts/Dazzed-TRIAL-Medium.woff2') format('woff2'),
+    url('../assets/fonts/Dazzed-TRIAL-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzed';
+  src:
+    url('../assets/fonts/Dazzed-TRIAL-SemiBold.woff2') format('woff2'),
+    url('../assets/fonts/Dazzed-TRIAL-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzed';
+  src:
+    url('../assets/fonts/Dazzed-TRIAL-Bold.woff2') format('woff2'),
+    url('../assets/fonts/Dazzed-TRIAL-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Dazzed';
+  src:
+    url('../assets/fonts/Dazzed-TRIAL-Heavy.woff2') format('woff2'),
+    url('../assets/fonts/Dazzed-TRIAL-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}

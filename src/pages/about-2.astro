@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AboutScroll from '../components/about-2/AboutScroll.astro';
+import GradualBlur from '../components/GradualBlur.astro';
+import Menu from '../components/Menu.astro';
+import '../styles/home.css';
+---
+
+<BaseLayout title="The Network Effect — About (Archive)" bodyClass="about-page-2 loading" htmlClass="js">
+  <header class="home__topbar">
+    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    <span class="home__topbar-dot" aria-hidden="true"></span>
+    <nav class="home__menu-cta" aria-label="Site">
+      <button
+        type="button"
+        class="home__menu-toggle"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-controls="site-menu"
+      >
+        <span data-menu-label-menu>menu</span>
+        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
+          <span class="home__menu-toggle-close-text">close</span>
+          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
+        </span>
+      </button>
+    </nav>
+    <span class="home__topbar-dot" aria-hidden="true"></span>
+    <a class="home__topbar-email" href="mailto:hello@thenetworkeffect.com">
+      hello@thenetworkeffect.com
+    </a>
+  </header>
+
+  <div class="about-page__blur-root">
+    <GradualBlur
+      target="parent"
+      position="top"
+      strength={1.5}
+      divCount={2}
+      exponential={true}
+      opacity={0.8}
+    />
+  </div>
+
+  <AboutScroll />
+  <Menu />
+</BaseLayout>

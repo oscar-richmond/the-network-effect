@@ -1,0 +1,311 @@
+/* ─── About Hero — Loading Screen + 3-Card Staircase ─────────────────────── */
+/*
+ * Card sizing is entirely JS-driven (computed from window.innerWidth).
+ * GSAP controls all card position, width, and height.
+ *
+ * The hero stays position:fixed throughout the ENTIRE animation.
+ * No position change ever fires on the hero.
+ *
+ * After the animation:
+ *   1. The image cards are moved (via JS) from inside the fixed hero
+ *      into the in-flow spacer div.  At scrollY=0 both share the same
+ *      top-left origin, so the images appear in the same screen position.
+ *   2. The hero's white background fades out, then the hero is removed.
+ *   3. Images are now in the normal document flow — they scroll away
+ *      naturally as the user scrolls into the about-scroll content.
+ *
+ * Zero layout changes during animation → zero jump.
+ * Images in flow after animation → scroll away normally.
+ */
+
+.about-hero {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 250;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* White splash — visible until cards fly out */
+.about-hero__white {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--color-page-bg, #ffffff);
+}
+
+/* Video hero background — hidden until fly-out crossfade */
+.about-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.about-hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.about-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+/* Persisted in spacer after splash — fixed viewport hero background */
+.about-hero__media--persist,
+[data-about-hero-spacer] > .about-hero__media {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 100;
+  opacity: 1;
+  pointer-events: none;
+}
+
+[data-about-hero-spacer] .about-hero__img {
+  z-index: 110;
+}
+
+/*
+ * Spacer — sits in the document flow from page load.
+ * Images are moved INTO this div after the animation, then scroll normally.
+ * Must be position:relative so absolute-positioned images anchor to it.
+ * Must be overflow:visible so cards that extend below 100dvh show correctly.
+ */
+[data-about-hero-spacer] {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  pointer-events: none;
+  overflow: visible;
+  /* Hero (z:250) sits on top during animation, so this is not visible then */
+}
+
+/* ── Hero tagline ──────────────────────────────────────────────────────────── */
+
+.about-hero__tagline {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--home-margin-x, 24px);
+  pointer-events: none;
+  z-index: 115;
+  visibility: hidden;
+  /* Blend on the fixed wrapper (not inner text) so it composites with video + cards below. */
+  mix-blend-mode: difference;
+  color: #ffffff;
+}
+
+.about-hero__tagline-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  opacity: 0;
+  font-family: 'Dazzed', var(--font-display, sans-serif);
+  font-size: 84px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: inherit;
+  mix-blend-mode: normal;
+}
+
+.about-hero__tagline-line {
+  margin: 0;
+  width: max-content;
+  text-align: left;
+  mix-blend-mode: normal;
+}
+
+.about-hero__tagline-line--left {
+  align-self: flex-start;
+}
+
+.about-hero__tagline-line--indent {
+  align-self: flex-start;
+  margin-left: 84px;
+}
+
+.about-hero__tagline-cultural {
+  display: flex;
+  align-items: center;
+  width: max-content;
+}
+
+.about-hero__tagline-cultural .lr-clip {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.about-hero__tagline-cultural .lr-inner {
+  display: inline-block;
+}
+
+.about-hero__tagline-line.lr-inner {
+  width: max-content;
+}
+
+.about-hero__tagline-cultural-img {
+  width: 145px;
+  height: 0.75em;
+  height: 1cap;
+  margin-inline: 16px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+  mix-blend-mode: normal;
+}
+
+.about-hero__tagline-cultural-img.is-pending {
+  opacity: 0;
+}
+
+.about-hero__tagline-rotate {
+  display: inline-block;
+  min-width: 11ch;
+  text-align: left;
+}
+
+.about-hero__tagline-rotate-inner {
+  display: inline-block;
+  opacity: 1;
+  filter: none;
+  mix-blend-mode: normal;
+  transition:
+    opacity 2s ease,
+    filter 2s ease;
+  will-change: opacity, filter;
+}
+
+.about-hero__tagline-rotate-inner.is-exiting {
+  opacity: 0;
+  filter: blur(10px);
+  transition:
+    opacity 1s ease,
+    filter 1s ease;
+}
+
+.about-hero__tagline-rotate-inner.is-entering {
+  opacity: 0;
+  filter: blur(10px);
+}
+
+.about-hero__tagline--persist,
+[data-about-hero-spacer] > .about-hero__tagline {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  visibility: visible;
+  pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+  .about-hero__tagline-text {
+    font-size: clamp(3rem, 7vw, 84px);
+  }
+}
+
+/* ── Loading text labels ───────────────────────────────────────────────────── */
+
+.about-hero__header {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.about-hero__text {
+  position: relative;
+  width: max-content;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.about-hero__text p {
+  position: relative;
+  font-family: var(--font-display, 'Dazzed', sans-serif);
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-ink, #121212);
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Gallery wrapper inside the fixed hero during animation */
+.about-hero__gallery {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 2;
+}
+
+/* Individual card */
+.about-hero__img {
+  position: absolute;
+  overflow: hidden;
+}
+
+/* Flash stack — centre burst only, removed before fly-out */
+.about-hero__flash-stack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.about-hero__flash {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.about-hero__flash img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.about-hero__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* WebGL dissolve layer — replaces push-up exit at full viewport */
+.hero-dissolve__canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 249;
+  pointer-events: none;
+}

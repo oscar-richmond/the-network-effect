@@ -1,0 +1,733 @@
+---
+/**
+ * About-3 Hero — /about-2 loading + staircase sort + white bg,
+ * plus /about centre tagline (exact copy, timing, easing).
+ */
+import { asset } from '../../utils/asset.js';
+import '../../styles/about-3/about-hero.css';
+
+const heroImages = [
+  asset('/assets/about-hero/hero-1.jpg'),
+  asset('/assets/about-hero/hero-2.jpg'),
+  asset('/assets/about-hero/hero-3.jpg'),
+];
+const heroFullSrc = asset('/assets/about-hero/hero-2-full.jpg');
+
+const stackImages = [
+  asset('/assets/about-hero/stack/stack-01.png'),
+  asset('/assets/about-hero/stack/stack-03.png'),
+  asset('/assets/about-hero/stack/stack-04.png'),
+];
+
+const TAGLINE_STACK_INDEX = 2;
+const taglineStackImage = stackImages[TAGLINE_STACK_INDEX];
+const taglineCulturalVideo = asset('/assets/about-hero/tagline-cultural-video.mp4');
+---
+
+<div class="about-hero" data-about-hero aria-hidden="true">
+
+  <div class="about-hero__bg" data-about-hero-bg></div>
+
+  <div class="about-hero__header" data-about-hero-header>
+    <div class="about-hero__text"><p>Built on Trust.</p></div>
+    <div class="about-hero__text"><p>Powered by Access.</p></div>
+  </div>
+
+  <div class="about-hero__tagline" data-about-hero-tagline aria-hidden="true">
+    <div class="about-hero__tagline-text" data-about-hero-tagline-text>
+      <p class="about-hero__tagline-line about-hero__tagline-line--left">WE ARE A</p>
+      <div class="about-hero__tagline-line about-hero__tagline-line--indent">
+        <div class="about-hero__tagline-cultural">
+          <span class="about-hero__tagline-cultural-word">CULTURAL</span>
+          <span class="about-hero__tagline-cultural-img-wrap" aria-hidden="true">
+            <span
+              class="about-hero__tagline-cultural-img"
+              data-about-hero-tagline-img
+            ></span>
+          </span>
+          <span class="about-hero__tagline-cultural-amp">&amp;</span>
+        </div>
+      </div>
+      <p class="about-hero__tagline-line about-hero__tagline-line--left">PARTNERSHIPS</p>
+      <p class="about-hero__tagline-line about-hero__tagline-line--indent">
+        <span class="about-hero__tagline-rotate" data-about-hero-tagline-rotate aria-live="polite">
+          <span class="about-hero__tagline-rotate-inner">CONSULTANCY</span>
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <video
+    class="about-hero__tagline-cultural-video-overlay is-pending"
+    data-about-hero-tagline-img-overlay
+    src={taglineCulturalVideo}
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    aria-hidden="true"
+  />
+
+  <div class="about-hero__intro" data-about-hero-intro aria-hidden="true">
+    <div class="about-hero__intro-text" data-about-hero-intro-text>
+      <p>Nearly 20 years building global relationships meets 30 years at the heart of music, film and television.</p>
+      <p>Together, the network effect combines deep cultural credibility with trusted access and strategic relationships.</p>
+    </div>
+  </div>
+
+  <div class="about-hero__gallery" data-about-hero-gallery>
+    <div class="about-hero__flash-stack" data-about-hero-flash-stack aria-hidden="true">
+      {stackImages.map((src, i) => (
+        <div
+          class="about-hero__flash"
+          {...(i === TAGLINE_STACK_INDEX ? { 'data-about-hero-tagline-flash': '' } : {})}
+          style={`z-index:${i + 1}`}
+        >
+          <img src={src} alt="" decoding="async" />
+        </div>
+      ))}
+    </div>
+    {heroImages.map((src, i) => (
+      <div class="about-hero__img" style={`z-index:${i + 10}`}>
+        <img src={i === 1 ? heroFullSrc : src} alt="" decoding="async" />
+      </div>
+    ))}
+  </div>
+
+</div>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { whenCoverRevealed } from '../../scripts/page-transition.js';
+  import { wrapLineRevealElement, playLineRevealElement } from '../../scripts/line-reveal.js';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ── /about-2 layout + timing (about-3 uses its own GAP — 8px row gaps vs
+  //    about-2's 40px; everything else here is unchanged) ───────────────────
+  const MARGIN        = 24;
+  const GAP           = 8;
+  const ASPECT        = 600 / 533.33;
+  const IMAGE_PEEK    = 120;
+
+  const N             = 3;
+  const BURST_STAGGER = 0.12;
+  const BURST_DUR     = 0.75;
+  const FLY_STAGGER   = 0.10;
+  const FLY_DUR       = 1.00;
+  const TEXT_STAGGER  = 0.12;
+  const TEXT_DUR      = 0.80;
+  const BURST_SCALE   = 0.55;
+  const STACK_HOLD    = 1.0;
+  const FLASH_OUT_DUR = 0.35;
+  const FLY_TOTAL     = (N - 1) * FLY_STAGGER + FLY_DUR;
+  const TEXT_TOTAL    = (N - 1) * TEXT_STAGGER + TEXT_DUR;
+
+  // ── /about tagline timing (unchanged) ─────────────────────────────────────
+  const TAGLINE_DELAY = -0.5;
+  const TAGLINE_LINE_COUNT = 4;
+  const TAGLINE_REVEAL_TOTAL = (TAGLINE_LINE_COUNT - 1) * 0.12 + 1.2;
+  const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
+  const TAGLINE_ROTATE_MS = 3000;
+  const TAGLINE_ROTATE_EXIT_MS = 1000;
+
+  let cleanupTaglineRotate = null;
+
+  const CULTURAL_TEXT_SELECTOR =
+    '.about-hero__tagline-cultural-word, .about-hero__tagline-cultural-amp';
+
+  function getDimensions(vw, vh) {
+    const cardW = (vw - 2 * MARGIN - 2 * GAP) / 3;
+    const cardH = cardW * ASPECT;
+    const rowTop = vh - IMAGE_PEEK;
+    return {
+      cardW,
+      cardH,
+      positions: [
+        { top: rowTop, left: MARGIN },
+        { top: rowTop, left: MARGIN + cardW + GAP },
+        { top: rowTop, left: MARGIN + 2 * (cardW + GAP) },
+      ],
+    };
+  }
+
+  function getCentreOffsets(vw, vh, cardW, cardH, positions) {
+    return positions.map(({ top, left }) => ({
+      x: (vw / 2 - cardW / 2) - left,
+      y: (vh / 2 - cardH / 2) - top,
+    }));
+  }
+
+  // ── /about tagline helpers (duplicated verbatim) ──────────────────────────
+
+  function isCulturalTaglineLine(line) {
+    return line instanceof HTMLElement && line.querySelector('.about-hero__tagline-cultural') != null;
+  }
+
+  function playLineRevealTarget(el) {
+    if (!(el instanceof HTMLElement)) return;
+    const clip = el.querySelector(':scope > .lr-clip');
+    playLineRevealElement(clip instanceof HTMLElement ? clip : el);
+  }
+
+  function wrapTaglineLines(container) {
+    if (!(container instanceof HTMLElement)) return [];
+
+    const lines = Array.from(container.querySelectorAll('.about-hero__tagline-line'));
+    lines.forEach((line, index) => {
+      if (!(line instanceof HTMLElement)) return;
+      line.dataset.revealDelay = String(index * 0.12);
+
+      if (isCulturalTaglineLine(line)) {
+        line.querySelectorAll(CULTURAL_TEXT_SELECTOR).forEach((el) => {
+          if (el instanceof HTMLElement) {
+            el.dataset.revealDelay = line.dataset.revealDelay;
+            wrapLineRevealElement(el);
+          }
+        });
+        return;
+      }
+
+      wrapLineRevealElement(line);
+    });
+
+    return lines;
+  }
+
+  function playTaglineLineReveals(container) {
+    if (!(container instanceof HTMLElement)) return;
+
+    container.querySelectorAll('.about-hero__tagline-line').forEach((line) => {
+      if (!(line instanceof HTMLElement)) return;
+
+      if (isCulturalTaglineLine(line)) {
+        line.querySelectorAll(CULTURAL_TEXT_SELECTOR).forEach(playLineRevealTarget);
+        return;
+      }
+
+      playLineRevealTarget(line);
+    });
+  }
+
+  function scheduleTaglineRotate(container, lineCount) {
+    const rotate = container.querySelector('[data-about-hero-tagline-rotate]');
+    if (!(rotate instanceof HTMLElement)) return;
+
+    const revealCompleteMs = (lineCount - 1) * 120 + 1200;
+    setTimeout(() => {
+      cleanupTaglineRotate?.();
+      cleanupTaglineRotate = initTaglineRotate(rotate);
+    }, revealCompleteMs + TAGLINE_ROTATE_MS);
+  }
+
+  function measureTaglineImgSlot(taglineImg, tagline) {
+    if (!(taglineImg instanceof HTMLElement)) return null;
+
+    const taglineEl = tagline instanceof HTMLElement
+      ? tagline
+      : taglineImg.closest('[data-about-hero-tagline]');
+    const wasHidden = taglineEl instanceof HTMLElement
+      && getComputedStyle(taglineEl).visibility === 'hidden';
+
+    if (wasHidden && taglineEl instanceof HTMLElement) {
+      taglineEl.style.visibility = 'visible';
+    }
+
+    const rect = taglineImg.getBoundingClientRect();
+
+    if (wasHidden && taglineEl instanceof HTMLElement) {
+      taglineEl.style.visibility = 'hidden';
+    }
+
+    if (rect.width <= 0 || rect.height <= 0) return null;
+    return {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
+  function flyTaglineFlashWithCards(flash, slot, duration) {
+    if (!(flash instanceof HTMLElement) || !slot) {
+      handoffTaglineFlashToPlaceholder();
+      return;
+    }
+
+    gsap.to(flash, {
+      top: slot.top,
+      left: slot.left,
+      width: slot.width,
+      height: slot.height,
+      scale: 1,
+      duration,
+      ease: 'power2.inOut',
+      overwrite: 'auto',
+    });
+  }
+
+  function handoffTaglineFlashToPlaceholder() {
+    gsap.killTweensOf('[data-about-hero-tagline-flash]');
+    document.querySelector('[data-about-hero-tagline-flash]')?.remove();
+    // The real video is the overlay (a sibling of .about-hero__tagline, kept
+    // outside the difference-blend subtree) — the in-flow slot is always
+    // invisible and never gets its pending state cleared.
+    document.querySelector('[data-about-hero-tagline-img-overlay]')?.classList.remove('is-pending');
+    const stack = document.querySelector('[data-about-hero-flash-stack]');
+    if (stack && !stack.querySelector('.about-hero__flash')) {
+      stack.remove();
+    }
+  }
+
+  function revealHeroTagline(container) {
+    if (!(container instanceof HTMLElement)) return;
+
+    document.fonts.ready.then(() => {
+      const lines = wrapTaglineLines(container);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          playTaglineLineReveals(container);
+        });
+      });
+      scheduleTaglineRotate(container, lines.length);
+    });
+  }
+
+  function beginTaglineSequence(tagline, taglineText) {
+    if (tagline instanceof HTMLElement) {
+      tagline.style.visibility = 'visible';
+    }
+    if (taglineText instanceof HTMLElement) {
+      gsap.set(taglineText, { opacity: 1 });
+    }
+
+    if (!(taglineText instanceof HTMLElement)) return;
+
+    document.fonts.ready.then(() => {
+      wrapTaglineLines(taglineText);
+      requestAnimationFrame(() => {
+        playTaglineLineReveals(taglineText);
+      });
+      scheduleTaglineRotate(
+        taglineText,
+        taglineText.querySelectorAll('.about-hero__tagline-line').length,
+      );
+    });
+  }
+
+  function initTaglineRotate(root) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return () => {};
+    }
+
+    const inner = root.querySelector('.about-hero__tagline-rotate-inner');
+    if (!(inner instanceof HTMLElement)) return () => {};
+
+    let index = 0;
+    let active = true;
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
+    let timeoutId;
+
+    const schedule = (fn, delay) => {
+      timeoutId = setTimeout(() => {
+        if (!active) return;
+        fn();
+      }, delay);
+    };
+
+    const cycle = () => {
+      inner.classList.add('is-exiting');
+
+      schedule(() => {
+        inner.classList.remove('is-exiting');
+        index = (index + 1) % TAGLINE_ROTATE_WORDS.length;
+        inner.textContent = TAGLINE_ROTATE_WORDS[index];
+        inner.classList.add('is-entering');
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            inner.classList.remove('is-entering');
+          });
+        });
+
+        schedule(cycle, TAGLINE_ROTATE_MS);
+      }, TAGLINE_ROTATE_EXIT_MS);
+    };
+
+    schedule(cycle, TAGLINE_ROTATE_MS);
+
+    return () => {
+      active = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }
+
+  function settleTaglineInlineImage() {
+    handoffTaglineFlashToPlaceholder();
+  }
+
+  function getChromeItems(topbar) {
+    if (!(topbar instanceof HTMLElement)) return [];
+    return Array.from(
+      topbar.querySelectorAll(
+        '.home__menu-cta, .home__topbar-dot--before, .home__logo, .home__topbar-dot--after, .home__topbar-email',
+      ),
+    );
+  }
+
+  function isChromeMotionItem(el) {
+    return el instanceof HTMLElement && !el.classList.contains('home__topbar-dot');
+  }
+
+  function setChromeHidden(chromeEls) {
+    gsap.set(chromeEls, { opacity: 0 });
+    chromeEls.forEach((el) => {
+      if (isChromeMotionItem(el)) {
+        gsap.set(el, { y: 15 });
+      }
+    });
+  }
+
+  function revealChrome(chromeEls) {
+    document.dispatchEvent(new CustomEvent('about-3:position-nav-dots'));
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        gsap.set(chromeEls, { clearProps: 'opacity,transform' });
+        document.dispatchEvent(new CustomEvent('about-3:position-nav-dots'));
+      },
+    });
+
+    tl.to(chromeEls, {
+      opacity: 1,
+      duration: 1.2,
+      ease: 'power4.out',
+      stagger: 0.12,
+    }, 0);
+
+    chromeEls.forEach((el, index) => {
+      if (!isChromeMotionItem(el)) return;
+      tl.to(el, {
+        y: 0,
+        duration: 1.2,
+        ease: 'power4.out',
+      }, index * 0.12);
+    });
+  }
+
+  function runHeroTimeline(
+    hero,
+    heroBg,
+    header,
+    texts,
+    tagline,
+    taglineText,
+    imgs,
+    flashImgs,
+    flashImgsToHide,
+    taglineFlash,
+    spacer,
+    topbar,
+    chromeEls,
+    intro,
+  ) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const taglineImg = document.querySelector('[data-about-hero-tagline-img]');
+
+    const { cardW, cardH, positions } = getDimensions(vw, vh);
+    const offsets = getCentreOffsets(vw, vh, cardW, cardH, positions);
+    const centerTop  = (vh - cardH) / 2;
+    const centerLeft = (vw - cardW) / 2;
+
+    gsap.set(imgs, {
+      top:      (i) => positions[i].top,
+      left:     (i) => positions[i].left,
+      width:    cardW,
+      height:   cardH,
+      x:        (i) => offsets[i].x,
+      y:        (i) => offsets[i].y,
+      xPercent: 0,
+      yPercent: 0,
+      scale:    0,
+    });
+
+    gsap.set(flashImgs, {
+      top:   centerTop,
+      left:  centerLeft,
+      width: cardW,
+      height: cardH,
+      scale: 0,
+      opacity: 1,
+    });
+
+    gsap.set(tagline, { visibility: 'hidden' });
+    gsap.set(taglineText, { opacity: 0 });
+
+    const tl = gsap.timeline();
+    const stackEls = [...flashImgs, ...imgs];
+    const stackTotal = (stackEls.length - 1) * BURST_STAGGER + BURST_DUR;
+
+    tl.addLabel('textIn', 0.2);
+    tl.from(texts, {
+      y: 50,
+      opacity: 0,
+      ease: 'power4.inOut',
+      duration: 1,
+      stagger: { amount: 0.15 },
+    }, 'textIn');
+
+    tl.addLabel('stack', 0.45);
+    tl.to(stackEls, {
+      scale: BURST_SCALE,
+      ease: 'power2.out',
+      duration: BURST_DUR,
+      stagger: BURST_STAGGER,
+    }, 'stack');
+
+    tl.addLabel('stackHold', `stack+=${stackTotal}`);
+    tl.to({}, { duration: STACK_HOLD }, 'stackHold');
+
+    tl.addLabel('flashOut', `stackHold+=${STACK_HOLD - FLASH_OUT_DUR}`);
+    tl.to(flashImgsToHide, {
+      opacity: 0,
+      scale: 0,
+      ease: 'power2.in',
+      duration: FLASH_OUT_DUR,
+      stagger: { amount: 0.12 },
+      onComplete: () => {
+        flashImgsToHide.forEach((el) => el.remove());
+      },
+    }, 'flashOut');
+
+    // Side labels exit before cards sort into row positions
+    tl.addLabel('textOut', `stackHold+=${STACK_HOLD}`);
+    tl.to(texts, {
+      y: -60,
+      opacity: 0,
+      ease: 'power4.inOut',
+      duration: TEXT_DUR,
+      stagger: { amount: TEXT_STAGGER },
+      onComplete: () => { if (header) header.remove(); },
+    }, 'textOut');
+
+    tl.addLabel('fly', `textOut+=${TEXT_TOTAL}`);
+    tl.add(() => {
+      const slot = measureTaglineImgSlot(taglineImg, tagline);
+      if (taglineFlash instanceof HTMLElement && slot) {
+        flyTaglineFlashWithCards(taglineFlash, slot, FLY_DUR);
+      } else {
+        handoffTaglineFlashToPlaceholder();
+      }
+    }, 'fly');
+    tl.to(imgs, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      ease: 'power3.inOut',
+      duration: FLY_DUR,
+      stagger: FLY_STAGGER,
+    }, 'fly');
+
+    tl.addLabel('cardsLand', `fly+=${FLY_TOTAL}`);
+
+    const taglineTextAt = FLY_TOTAL + TAGLINE_DELAY;
+    tl.add(() => {
+      beginTaglineSequence(tagline, taglineText);
+    }, `fly+=${taglineTextAt}`);
+
+    // Keep image handoff at cards land — same as before text timing moved earlier.
+    tl.add(() => {
+      handoffTaglineFlashToPlaceholder();
+    }, 'cardsLand');
+
+    // Wait for line reveals to finish before settling hero — bg fade mid-reveal
+    // breaks mix-blend-mode: difference on the tagline (white flash).
+    tl.addLabel('reveal', `fly+=${taglineTextAt + TAGLINE_REVEAL_TOTAL}`);
+    tl.add(() => {
+      revealHero(hero, heroBg, imgs, spacer, topbar, chromeEls, tagline, intro);
+    }, 'reveal');
+  }
+
+  function bootAboutHero() {
+    const hero = document.querySelector('[data-about-hero]');
+    const heroBg = document.querySelector('[data-about-hero-bg]');
+    const header = document.querySelector('[data-about-hero-header]');
+    const texts = document.querySelectorAll('.about-page-3 .about-hero__text p');
+    const tagline = document.querySelector('[data-about-hero-tagline]');
+    const taglineText = document.querySelector('[data-about-hero-tagline-text]');
+    const intro = document.querySelector('[data-about-hero-intro]');
+    const imgs = Array.from(document.querySelectorAll('.about-page-3 .about-hero__img'));
+    const flashImgs = Array.from(document.querySelectorAll('.about-page-3 .about-hero__flash'));
+    const spacer = document.querySelector('[data-about-hero-spacer]');
+    const topbar = document.querySelector('.home__topbar');
+
+    if (!hero || !imgs.length) return;
+
+    document.body.classList.remove('loading');
+
+    const chromeEls = getChromeItems(topbar);
+    document.body.style.overflow = 'hidden';
+
+    const taglineFlash = document.querySelector('[data-about-hero-tagline-flash]');
+    const flashImgsToHide = flashImgs.filter((el) => el !== taglineFlash);
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      flashImgs.forEach((el) => el.remove());
+      handoffTaglineFlashToPlaceholder();
+      const { cardW, cardH, positions } = getDimensions(window.innerWidth, window.innerHeight);
+      gsap.set(imgs, {
+        top: (i) => positions[i].top,
+        left: (i) => positions[i].left,
+        width: cardW,
+        height: cardH,
+        x: 0,
+        y: 0,
+        scale: 1,
+      });
+      document.fonts.ready.then(() => {
+        revealHeroTagline(taglineText);
+      });
+      revealHero(hero, heroBg, imgs, spacer, topbar, chromeEls, tagline, intro);
+      return;
+    }
+
+    document.fonts.ready.then(() => {
+      runHeroTimeline(
+        hero,
+        heroBg,
+        header,
+        texts,
+        tagline,
+        taglineText,
+        imgs,
+        flashImgs,
+        flashImgsToHide,
+        taglineFlash,
+        spacer,
+        topbar,
+        chromeEls,
+        intro,
+      );
+    });
+  }
+
+  function revealHero(hero, heroBg, imgs, spacer, topbar, chromeEls, tagline, intro) {
+    window.scrollTo(0, 0);
+    settleTaglineInlineImage();
+
+    document.body.style.overflow = '';
+    revealChrome(chromeEls);
+
+    const scrollY = window.scrollY;
+
+    // Detach tagline before hero bg/images settle so difference blend stays stable.
+    if (spacer && tagline instanceof HTMLElement) {
+      tagline.classList.add('about-hero__tagline--persist');
+      spacer.appendChild(tagline);
+    }
+
+    // Detach intro text block the same way — it's revealed later, on scroll.
+    if (spacer && intro instanceof HTMLElement) {
+      intro.classList.add('about-hero__intro--persist');
+      spacer.appendChild(intro);
+    }
+
+    // The video overlay is `position: fixed` so its on-screen placement
+    // doesn't depend on its DOM parent, but it still needs to survive past
+    // `hero.remove()` below — detach it to the spacer alongside the tagline.
+    const videoOverlay = document.querySelector('[data-about-hero-tagline-img-overlay]');
+    if (spacer && videoOverlay instanceof HTMLElement) {
+      spacer.appendChild(videoOverlay);
+    }
+
+    gsap.set(imgs, { clearProps: 'transform' });
+
+    gsap.set(heroBg, { opacity: 0 });
+
+    if (spacer) {
+      imgs.forEach((img) => {
+        const top = parseFloat(img.style.top || '0');
+        const left = parseFloat(img.style.left || '0');
+        img.style.top = (top + scrollY) + 'px';
+        img.style.left = left + 'px';
+        img.style.zIndex = '110';
+        spacer.appendChild(img);
+      });
+    }
+
+    requestAnimationFrame(() => {
+      hero.remove();
+      ScrollTrigger.refresh();
+      document.dispatchEvent(new CustomEvent('about-hero:settled'));
+    });
+  }
+
+  // Keeps the real, visible video (outside the difference-blend subtree)
+  // positioned exactly over the invisible in-flow slot inside the tagline
+  // text — the slot moves whenever the text reflows or the Phase 0 scroll
+  // tween slides the tagline, so this has to track it continuously rather
+  // than being measured once.
+  let videoOverlaySyncActive = true;
+  function syncTaglineVideoOverlay() {
+    if (!videoOverlaySyncActive) return;
+
+    const slot = document.querySelector('[data-about-hero-tagline-img]');
+    const overlay = document.querySelector('[data-about-hero-tagline-img-overlay]');
+    if (slot instanceof HTMLElement && overlay instanceof HTMLElement) {
+      const rect = slot.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        overlay.style.top = `${rect.top}px`;
+        overlay.style.left = `${rect.left}px`;
+        overlay.style.width = `${rect.width}px`;
+        overlay.style.height = `${rect.height}px`;
+      }
+    }
+
+    requestAnimationFrame(syncTaglineVideoOverlay);
+  }
+  requestAnimationFrame(syncTaglineVideoOverlay);
+
+  (() => {
+    const topbar = document.querySelector('.home__topbar');
+    const chromeEls = getChromeItems(topbar);
+    setChromeHidden(chromeEls);
+    document.body.style.overflow = 'hidden';
+
+    whenCoverRevealed(bootAboutHero);
+  })();
+
+  window.addEventListener('resize', () => {
+    const imgs = Array.from(document.querySelectorAll('.about-page-3 .about-hero__img'));
+    if (!imgs.length) return;
+    const { cardW, cardH, positions } = getDimensions(window.innerWidth, window.innerHeight);
+    gsap.set(imgs, {
+      top: (i) => positions[i].top,
+      left: (i) => positions[i].left,
+      width: cardW,
+      height: cardH,
+    });
+    ScrollTrigger.refresh();
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    document.body.style.overflow = '';
+    cleanupTaglineRotate?.();
+    cleanupTaglineRotate = null;
+    videoOverlaySyncActive = false;
+    document.querySelector('[data-about-hero-tagline-img-overlay]')?.remove();
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    gsap.killTweensOf(
+      '.about-page-3 .about-hero__img, .about-page-3 .about-hero__flash, .about-page-3 .about-hero__text p, [data-about-hero-tagline-flash], [data-about-hero-bg], .home__topbar'
+    );
+    settleTaglineInlineImage();
+    getChromeItems(document.querySelector('.home__topbar')).forEach((el) => {
+      if (el instanceof HTMLElement) {
+        el.style.opacity = '';
+        el.style.transform = '';
+      }
+    });
+  }, { once: true });
+</script>

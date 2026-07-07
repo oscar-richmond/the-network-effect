@@ -1,0 +1,693 @@
+---
+/**
+ * AboutHero — Loading screen + 3-card scatter layout
+ *
+ * FINAL APPROACH — no jump, no fixed images, no white flash:
+ *
+ *  1. Hero stays position:fixed throughout the ENTIRE animation.
+ *     No position change = no layout reflow = no jump.
+ *
+ *  2. After animation the video background moves into the in-flow spacer
+ *     (fixed, looping) while image cards scroll on top.
+ *  3. The hero shell is removed; video stays until the hero scroll section ends.
+ *
+ *  Why moving images when hero is transparent works:
+ *     Hero is fixed; inset:0 → origin = viewport (0,0).
+ *     Spacer is position:relative, first element in flow → origin = document (0,0).
+ *     At scrollY=0 both origins are the same point. top/left values are
+ *     identical in both coordinate systems → zero visual change.
+ *     scrollY compensation is added for any scroll that occurred during fade.
+ */
+import { asset } from '../utils/asset.js';
+import '../styles/about-hero.css';
+
+const heroImages = [
+  asset('/assets/about-hero/hero-1.jpg'),
+  asset('/assets/about-hero/hero-2.jpg'),
+  asset('/assets/about-hero/hero-3.jpg'),
+];
+const heroFullSrc = asset('/assets/about-hero/hero-2-full.jpg');
+const heroVideoSrc = asset('/assets/about-hero/hero-bg.mov');
+
+/** Flash images — stack at centre during loading, gone before cards fly out. */
+const stackImages = [
+  asset('/assets/about-hero/stack/stack-01.png'),
+  asset('/assets/about-hero/stack/stack-03.png'),
+  asset('/assets/about-hero/stack/stack-04.png'),
+];
+
+/** Top stack card — flies into the CULTURAL tagline inline slot. */
+const TAGLINE_STACK_INDEX = 2;
+const taglineStackImage = stackImages[TAGLINE_STACK_INDEX];
+
+---
+
+<div class="about-hero" data-about-hero aria-hidden="true">
+
+  <!-- White splash — visible during stack, fades when cards fly out -->
+  <div class="about-hero__white" data-about-hero-white></div>
+
+  <!-- Video hero background — revealed as white fades during fly-out -->
+  <div class="about-hero__media" data-about-hero-media>
+    <video
+      class="about-hero__video"
+      data-about-hero-video
+      src={heroVideoSrc}
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+    />
+    <div class="about-hero__overlay" aria-hidden="true"></div>
+  </div>
+
+  <div class="about-hero__header" data-about-hero-header>
+    <div class="about-hero__text"><p>Built on Trust.</p></div>
+    <div class="about-hero__text"><p>Powered by Access.</p></div>
+  </div>
+
+  <div class="about-hero__tagline" data-about-hero-tagline aria-hidden="true">
+    <div class="about-hero__tagline-text" data-about-hero-tagline-text>
+      <p class="about-hero__tagline-line about-hero__tagline-line--left">WE ARE A</p>
+      <div class="about-hero__tagline-line about-hero__tagline-line--indent">
+        <div class="about-hero__tagline-cultural">
+          <span class="about-hero__tagline-cultural-word">CULTURAL</span>
+          <img
+            class="about-hero__tagline-cultural-img is-pending"
+            data-about-hero-tagline-img
+            src={taglineStackImage}
+            alt=""
+            decoding="async"
+          />
+          <span class="about-hero__tagline-cultural-amp">&amp;</span>
+        </div>
+      </div>
+      <p class="about-hero__tagline-line about-hero__tagline-line--left">PARTNERSHIPS</p>
+      <p class="about-hero__tagline-line about-hero__tagline-line--indent">
+        <span class="about-hero__tagline-rotate" data-about-hero-tagline-rotate aria-live="polite">
+          <span class="about-hero__tagline-rotate-inner">CONSULTANCY</span>
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <div class="about-hero__gallery" data-about-hero-gallery>
+    <div class="about-hero__flash-stack" data-about-hero-flash-stack aria-hidden="true">
+      {stackImages.map((src, i) => (
+        <div
+          class="about-hero__flash"
+          {...(i === TAGLINE_STACK_INDEX ? { 'data-about-hero-tagline-flash': '' } : {})}
+          style={`z-index:${i + 1}`}
+        >
+          <img src={src} alt="" decoding="async" />
+        </div>
+      ))}
+    </div>
+    {heroImages.map((src, i) => (
+      <div class="about-hero__img" style={`z-index:${i + 10}`}>
+        <img src={i === 1 ? heroFullSrc : src} alt="" decoding="async" />
+      </div>
+    ))}
+  </div>
+
+</div>
+
+<script>
+  import gsap from 'gsap';
+  import { whenCoverRevealed } from '../scripts/page-transition.js';
+  import { wrapLineRevealElement, playLineRevealElement } from '../scripts/line-reveal.js';
+
+  // ── Stack layout — matches /about-2 burst sizing ───────────────────────────
+  const MARGIN        = 24;
+  const GAP           = 40;
+  const BOTTOM_ANCHOR = 32;
+  const STEP          = 140;
+  const ASPECT        = 600 / 533.33;
+
+  // ── Final landing layout (viewport-relative) ───────────────────────────────
+  // Index 0 = left, 1 = middle, 2 = right
+  const LANDING_TARGETS = [
+    { width: 293, height: 329.83, left: 80, bottom: 105 },
+    { width: 151.9, height: 171, right: 128, bottom: 127 },
+    { width: 151.9, height: 171, right: 135, top: 195 },
+  ];
+
+  // ── Timing ───────────────────────────────────────────────────────────────────
+  const N             = 3;
+  const BURST_STAGGER = 0.12;
+  const BURST_DUR     = 0.75;
+  const FLY_STAGGER   = 0.15;
+  const FLY_DUR       = 1.75;
+  const TEXT_STAGGER  = 0.12;
+  const TEXT_DUR      = 0.80;
+  const BURST_SCALE   = 0.55;
+  const STACK_HOLD    = 1.0;  // pause after cards stack, before fly-out
+  const FLASH_OUT_DUR = 0.35;
+  const FLY_TOTAL   = (N - 1) * FLY_STAGGER + FLY_DUR;
+  const BG_CROSSFADE_DUR = 1.1;
+  const TAGLINE_DELAY = 0.35; // beat after cards land, before centre text
+
+  function getStackLayout(vw, vh) {
+    const cardW = (vw - 2 * MARGIN - 2 * GAP) / 3;
+    const cardH = cardW * ASPECT;
+    const c1Left = MARGIN;
+    const c1Top = vh - BOTTOM_ANCHOR - cardH;
+    const c2Left = c1Left + cardW + GAP;
+    const c2Top = c1Top + STEP;
+    const c3Left = vw - MARGIN - cardW;
+    const c3Top = c2Top + STEP;
+
+    return {
+      cardW,
+      cardH,
+      positions: [
+        { top: c1Top, left: c1Left },
+        { top: c2Top, left: c2Left },
+        { top: c3Top, left: c3Left },
+      ],
+    };
+  }
+
+  function getLandingTargets(vw, vh) {
+    const targets = LANDING_TARGETS.map((target) => {
+      const { width, height } = target;
+      let top;
+      let left;
+
+      if ('left' in target && 'bottom' in target) {
+        left = target.left;
+        top = vh - target.bottom - height;
+      } else if ('right' in target && 'bottom' in target) {
+        left = vw - target.right - width;
+        top = vh - target.bottom - height;
+      } else {
+        left = vw - target.right - width;
+        top = target.top;
+      }
+
+      return { width, height, top, left };
+    });
+
+    return { targets };
+  }
+
+  const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
+  const TAGLINE_ROTATE_MS = 3000;
+  const TAGLINE_ROTATE_EXIT_MS = 1000;
+
+  let cleanupTaglineRotate = null;
+
+  const CULTURAL_TEXT_SELECTOR =
+    '.about-hero__tagline-cultural-word, .about-hero__tagline-cultural-amp';
+
+  function isCulturalTaglineLine(line) {
+    return line instanceof HTMLElement && line.querySelector('.about-hero__tagline-cultural') != null;
+  }
+
+  function playLineRevealTarget(el) {
+    if (!(el instanceof HTMLElement)) return;
+    const clip = el.querySelector(':scope > .lr-clip');
+    playLineRevealElement(clip instanceof HTMLElement ? clip : el);
+  }
+
+  function wrapTaglineLines(container) {
+    if (!(container instanceof HTMLElement)) return [];
+
+    const lines = Array.from(container.querySelectorAll('.about-hero__tagline-line'));
+    lines.forEach((line, index) => {
+      if (!(line instanceof HTMLElement)) return;
+      line.dataset.revealDelay = String(index * 0.12);
+
+      if (isCulturalTaglineLine(line)) {
+        line.querySelectorAll(CULTURAL_TEXT_SELECTOR).forEach((el) => {
+          if (el instanceof HTMLElement) {
+            el.dataset.revealDelay = line.dataset.revealDelay;
+            wrapLineRevealElement(el);
+          }
+        });
+        return;
+      }
+
+      wrapLineRevealElement(line);
+    });
+
+    return lines;
+  }
+
+  function playTaglineLineReveals(container) {
+    if (!(container instanceof HTMLElement)) return;
+
+    container.querySelectorAll('.about-hero__tagline-line').forEach((line) => {
+      if (!(line instanceof HTMLElement)) return;
+
+      if (isCulturalTaglineLine(line)) {
+        line.querySelectorAll(CULTURAL_TEXT_SELECTOR).forEach(playLineRevealTarget);
+        return;
+      }
+
+      playLineRevealTarget(line);
+    });
+  }
+
+  function scheduleTaglineRotate(container, lineCount) {
+    const rotate = container.querySelector('[data-about-hero-tagline-rotate]');
+    if (!(rotate instanceof HTMLElement)) return;
+
+    const revealCompleteMs = (lineCount - 1) * 120 + 1200;
+    setTimeout(() => {
+      cleanupTaglineRotate?.();
+      cleanupTaglineRotate = initTaglineRotate(rotate);
+    }, revealCompleteMs + TAGLINE_ROTATE_MS);
+  }
+
+  function measureTaglineImgSlot(taglineImg) {
+    if (!(taglineImg instanceof HTMLImageElement)) return null;
+    const rect = taglineImg.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return null;
+    return {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
+  /** Same absolute GSAP path as hero cards — no fixed-position conversion. */
+  function flyTaglineFlashWithCards(flash, slot, duration) {
+    if (!(flash instanceof HTMLElement) || !slot) {
+      handoffTaglineFlashToPlaceholder();
+      return;
+    }
+
+    gsap.to(flash, {
+      top: slot.top,
+      left: slot.left,
+      width: slot.width,
+      height: slot.height,
+      scale: 1,
+      duration,
+      ease: 'power2.inOut',
+      overwrite: 'auto',
+    });
+  }
+
+  function handoffTaglineFlashToPlaceholder() {
+    gsap.killTweensOf('[data-about-hero-tagline-flash]');
+    document.querySelector('[data-about-hero-tagline-flash]')?.remove();
+    document.querySelector('[data-about-hero-tagline-img]')?.classList.remove('is-pending');
+    const stack = document.querySelector('[data-about-hero-flash-stack]');
+    if (stack && !stack.querySelector('.about-hero__flash')) {
+      stack.remove();
+    }
+  }
+
+  function revealHeroTagline(container) {
+    if (!(container instanceof HTMLElement)) return;
+
+    document.fonts.ready.then(() => {
+      const lines = wrapTaglineLines(container);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          playTaglineLineReveals(container);
+        });
+      });
+      scheduleTaglineRotate(container, lines.length);
+    });
+  }
+
+  function beginTaglineSequence(tagline, taglineText) {
+    if (tagline instanceof HTMLElement) {
+      tagline.style.visibility = 'visible';
+    }
+    if (taglineText instanceof HTMLElement) {
+      gsap.set(taglineText, { opacity: 1 });
+    }
+
+    handoffTaglineFlashToPlaceholder();
+
+    if (!(taglineText instanceof HTMLElement)) return;
+
+    document.fonts.ready.then(() => {
+      wrapTaglineLines(taglineText);
+      requestAnimationFrame(() => {
+        playTaglineLineReveals(taglineText);
+      });
+      scheduleTaglineRotate(
+        taglineText,
+        taglineText.querySelectorAll('.about-hero__tagline-line').length,
+      );
+    });
+  }
+
+  function initTaglineRotate(root) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return () => {};
+    }
+
+    const inner = root.querySelector('.about-hero__tagline-rotate-inner');
+    if (!(inner instanceof HTMLElement)) return () => {};
+
+    let index = 0;
+    let active = true;
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
+    let timeoutId;
+
+    const schedule = (fn, delay) => {
+      timeoutId = setTimeout(() => {
+        if (!active) return;
+        fn();
+      }, delay);
+    };
+
+    const cycle = () => {
+      inner.classList.add('is-exiting');
+
+      schedule(() => {
+        inner.classList.remove('is-exiting');
+        index = (index + 1) % TAGLINE_ROTATE_WORDS.length;
+        inner.textContent = TAGLINE_ROTATE_WORDS[index];
+        inner.classList.add('is-entering');
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            inner.classList.remove('is-entering');
+          });
+        });
+
+        schedule(cycle, TAGLINE_ROTATE_MS);
+      }, TAGLINE_ROTATE_EXIT_MS);
+    };
+
+    schedule(cycle, TAGLINE_ROTATE_MS);
+
+    return () => {
+      active = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }
+
+  function getStackOffsets(vw, vh, positions, stackWidth, stackHeight) {
+    return positions.map(({ top, left }) => ({
+      x: (vw / 2 - stackWidth / 2) - left,
+      y: (vh / 2 - stackHeight / 2) - top,
+    }));
+  }
+
+  function settleTaglineInlineImage() {
+    handoffTaglineFlashToPlaceholder();
+  }
+
+  function runHeroTimeline(hero, heroWhite, heroMedia, heroVideo, header, texts, tagline, taglineText, imgs, flashImgs, flashImgsToHide, taglineFlash, spacer, topbar, chromeEls) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const taglineImg = document.querySelector('[data-about-hero-tagline-img]');
+    const taglineSlot = measureTaglineImgSlot(taglineImg);
+
+    const { cardW, cardH, positions: stackPositions } = getStackLayout(vw, vh);
+    const { targets } = getLandingTargets(vw, vh);
+    const offsets = getStackOffsets(vw, vh, stackPositions, cardW, cardH);
+    const centerTop = (vh - cardH) / 2;
+    const centerLeft = (vw - cardW) / 2;
+
+    gsap.set(imgs, {
+      top:      (i) => stackPositions[i].top,
+      left:     (i) => stackPositions[i].left,
+      width:    cardW,
+      height:   cardH,
+      x:        (i) => offsets[i].x,
+      y:        (i) => offsets[i].y,
+      xPercent: 0,
+      yPercent: 0,
+      scale:    0,
+    });
+
+    gsap.set(flashImgs, {
+      top:   centerTop,
+      left:  centerLeft,
+      width: cardW,
+      height: cardH,
+      scale: 0,
+      opacity: 1,
+    });
+
+    gsap.set(tagline, { visibility: 'hidden' });
+    gsap.set(taglineText, { opacity: 0 });
+
+    const tl = gsap.timeline();
+    const stackEls = [...flashImgs, ...imgs];
+    const stackTotal = (stackEls.length - 1) * BURST_STAGGER + BURST_DUR;
+
+    tl.addLabel('textIn', 0.2);
+    tl.from(texts, {
+      y: 50,
+      opacity: 0,
+      ease: 'power4.inOut',
+      duration: 1,
+      stagger: { amount: 0.15 },
+    }, 'textIn');
+
+    tl.addLabel('stack', 0.45);
+    tl.to(stackEls, {
+      scale: BURST_SCALE,
+      ease: 'power2.out', duration: BURST_DUR, stagger: BURST_STAGGER,
+    }, 'stack');
+
+    tl.addLabel('stackHold', `stack+=${stackTotal}`);
+    tl.to({}, { duration: STACK_HOLD }, 'stackHold');
+
+    tl.addLabel('flashOut', `stackHold+=${STACK_HOLD - FLASH_OUT_DUR}`);
+    tl.to(flashImgsToHide, {
+      opacity: 0,
+      scale: 0,
+      ease: 'power2.in',
+      duration: FLASH_OUT_DUR,
+      stagger: { amount: 0.12 },
+      onComplete: () => {
+        flashImgsToHide.forEach((el) => el.remove());
+      },
+    }, 'flashOut');
+
+    tl.addLabel('textOut', `stackHold+=${STACK_HOLD}`);
+    tl.to(texts, {
+      y: -60,
+      opacity: 0,
+      ease: 'power4.inOut',
+      duration: TEXT_DUR,
+      stagger: { amount: TEXT_STAGGER },
+      onComplete: () => { if (header) header.remove(); },
+    }, 'textOut');
+
+    tl.addLabel('fly', `textOut+=${TEXT_DUR + TEXT_STAGGER}`);
+    tl.to(heroWhite, {
+      opacity: 0,
+      ease: 'power2.inOut',
+      duration: BG_CROSSFADE_DUR,
+    }, 'fly');
+    tl.to(heroMedia, {
+      opacity: 1,
+      ease: 'power2.inOut',
+      duration: BG_CROSSFADE_DUR,
+      onStart: () => {
+        if (heroVideo instanceof HTMLVideoElement) {
+          heroVideo.play().catch(() => {});
+        }
+      },
+    }, 'fly');
+    if (taglineFlash instanceof HTMLElement && taglineSlot) {
+      tl.add(() => {
+        flyTaglineFlashWithCards(taglineFlash, taglineSlot, FLY_DUR);
+      }, 'fly');
+    } else {
+      tl.add(() => {
+        handoffTaglineFlashToPlaceholder();
+      }, 'fly');
+    }
+    tl.to(imgs, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      top: (i) => targets[i].top,
+      left: (i) => targets[i].left,
+      width: (i) => targets[i].width,
+      height: (i) => targets[i].height,
+      ease: 'power2.inOut',
+      duration: FLY_DUR,
+      stagger: FLY_STAGGER,
+    }, 'fly');
+
+    tl.addLabel('cardsLand', `fly+=${FLY_TOTAL}`);
+
+    tl.add(() => {
+      beginTaglineSequence(tagline, taglineText);
+    }, `cardsLand+=${TAGLINE_DELAY}`);
+
+    tl.addLabel('reveal', `cardsLand+=${TAGLINE_DELAY}`);
+    tl.add(() => {
+      revealHero(hero, heroMedia, imgs, spacer, chromeEls, tagline);
+    }, 'reveal');
+  }
+
+  // ── bootAboutHero ─────────────────────────────────────────────────────────────
+  function bootAboutHero() {
+    const hero   = document.querySelector('[data-about-hero]');
+    const heroWhite = document.querySelector('[data-about-hero-white]');
+    const heroMedia = document.querySelector('[data-about-hero-media]');
+    const heroVideo = document.querySelector('[data-about-hero-video]');
+    const header = document.querySelector('[data-about-hero-header]');
+    const texts = document.querySelectorAll('.about-hero__text p');
+    const tagline = document.querySelector('[data-about-hero-tagline]');
+    const taglineText = document.querySelector('[data-about-hero-tagline-text]');
+    const imgs      = Array.from(document.querySelectorAll('.about-hero__img'));
+    const flashImgs = Array.from(document.querySelectorAll('.about-hero__flash'));
+    const spacer = document.querySelector('[data-about-hero-spacer]');
+    const topbar = document.querySelector('.home__topbar');
+
+    if (!hero || !imgs.length) return;
+
+    gsap.set([heroWhite, heroMedia].filter(Boolean), { clearProps: 'opacity' });
+    gsap.set(heroWhite, { opacity: 1 });
+    gsap.set(heroMedia, { opacity: 0 });
+
+    document.body.classList.remove('loading');
+
+    const chromeEls = [topbar].filter(Boolean);
+
+    // Lock scroll so scrollY stays 0 during the animation.
+    // This ensures the coordinate swap in revealHero is exact.
+    document.body.style.overflow = 'hidden';
+
+    // ── Reduced-motion shortcut ────────────────────────────────────────────────
+    const taglineFlash = document.querySelector('[data-about-hero-tagline-flash]');
+    const flashImgsToHide = flashImgs.filter((el) => el !== taglineFlash);
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      flashImgs.forEach((el) => el.remove());
+      handoffTaglineFlashToPlaceholder();
+      const { targets } = getLandingTargets(window.innerWidth, window.innerHeight);
+      gsap.set(imgs, {
+        top: (i) => targets[i].top,
+        left: (i) => targets[i].left,
+        width: (i) => targets[i].width,
+        height: (i) => targets[i].height,
+        x: 0,
+        y: 0,
+        scale: 1,
+      });
+      gsap.set(heroWhite, { opacity: 0 });
+      gsap.set(heroMedia, { opacity: 1 });
+      if (heroVideo instanceof HTMLVideoElement) {
+        heroVideo.play().catch(() => {});
+      }
+      document.fonts.ready.then(() => {
+        revealHeroTagline(taglineText);
+      });
+      revealHero(hero, heroMedia, imgs, spacer, chromeEls, tagline);
+      return;
+    }
+
+    document.fonts.ready.then(() => {
+      runHeroTimeline(
+        hero,
+        heroWhite,
+        heroMedia,
+        heroVideo,
+        header,
+        texts,
+        tagline,
+        taglineText,
+        imgs,
+        flashImgs,
+        flashImgsToHide,
+        taglineFlash,
+        spacer,
+        topbar,
+        chromeEls,
+      );
+    });
+  }
+
+  // ── revealHero ────────────────────────────────────────────────────────────────
+  function revealHero(hero, heroMedia, imgs, spacer, chromeEls, tagline) {
+    window.scrollTo(0, 0);
+    settleTaglineInlineImage();
+
+    document.body.style.overflow = '';
+    gsap.to(chromeEls, {
+      y: 0, opacity: 1,
+      duration: 1.2, ease: 'power4.out', stagger: 0.12,
+    });
+
+    const scrollY = window.scrollY;
+
+    gsap.set(imgs, { clearProps: 'transform' });
+
+    if (spacer) {
+      if (heroMedia instanceof HTMLElement) {
+        heroMedia.classList.add('about-hero__media--persist');
+        gsap.set(heroMedia, { opacity: 1 });
+        spacer.prepend(heroMedia);
+      }
+
+      if (tagline instanceof HTMLElement) {
+        tagline.classList.add('about-hero__tagline--persist');
+        spacer.appendChild(tagline);
+      }
+
+      imgs.forEach((img) => {
+        const top  = parseFloat(img.style.top  || '0');
+        const left = parseFloat(img.style.left || '0');
+        img.style.top  = (top + scrollY) + 'px';
+        img.style.left = left + 'px';
+        img.style.zIndex = '110';
+        spacer.appendChild(img);
+      });
+    }
+
+    requestAnimationFrame(() => {
+      hero.remove();
+      document.dispatchEvent(new CustomEvent('about-hero:settled'));
+    });
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────────
+  // Hide chrome immediately; wait for the page-cover window reveal before
+  // starting the loading-screen card animation.
+  (() => {
+    const topbar = document.querySelector('.home__topbar');
+    const chromeEls = [topbar].filter(Boolean);
+    gsap.set(chromeEls, { opacity: 0, y: 15 });
+    document.body.style.overflow = 'hidden';
+
+    whenCoverRevealed(bootAboutHero);
+  })();
+
+  // Resize handler — recalculates positions (useful before reveal fires)
+  window.addEventListener('resize', () => {
+    const imgs = Array.from(document.querySelectorAll('.about-hero__img'));
+    if (!imgs.length) return;
+    const { targets } = getLandingTargets(window.innerWidth, window.innerHeight);
+    gsap.set(imgs, {
+      top: (i) => targets[i].top,
+      left: (i) => targets[i].left,
+      width: (i) => targets[i].width,
+      height: (i) => targets[i].height,
+    });
+  });
+
+  // Cleanup on Astro page transition
+  document.addEventListener('astro:before-swap', () => {
+    document.body.style.overflow = '';
+    cleanupTaglineRotate?.();
+    cleanupTaglineRotate = null;
+    gsap.killTweensOf(
+      '.about-hero__img, .about-hero__flash, .about-hero__text p, [data-about-hero-tagline-flash], [data-about-hero-media], [data-about-hero-white], .home__topbar'
+    );
+    settleTaglineInlineImage();
+    const topbar = document.querySelector('.home__topbar');
+    if (topbar instanceof HTMLElement) {
+      topbar.style.opacity  = '';
+      topbar.style.transform = '';
+    }
+  }, { once: true });
+</script>

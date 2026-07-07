@@ -1,0 +1,361 @@
+---
+/**
+ * AboutHero — Loading screen + 3-card staircase
+ *
+ * FINAL APPROACH — no jump, no fixed images, no white flash:
+ *
+ *  1. Hero stays position:fixed throughout the ENTIRE animation.
+ *     No position change = no layout reflow = no jump.
+ *
+ *  2. After animation the WHITE BACKGROUND fades out FIRST (0.5s)
+ *     while images are still inside the hero. During this fade the hero
+ *     (fixed, z:250) still covers the viewport, so any repaints are hidden.
+ *
+ *  3. Once the background reaches opacity:0 (hero now fully transparent):
+ *     - Images are moved from the hero into the in-flow spacer div.
+ *     - At this instant the hero is invisible, so the DOM move is invisible.
+ *     - One rAF later the browser has painted the spacer content, so we
+ *       safely remove the hero with zero flash.
+ *
+ *  4. Images are now in the document flow — they scroll away normally.
+ *
+ *  Why moving images when hero is transparent works:
+ *     Hero is fixed; inset:0 → origin = viewport (0,0).
+ *     Spacer is position:relative, first element in flow → origin = document (0,0).
+ *     At scrollY=0 both origins are the same point. top/left values are
+ *     identical in both coordinate systems → zero visual change.
+ *     scrollY compensation is added for any scroll that occurred during fade.
+ */
+import { asset } from '../../utils/asset.js';
+import '../../styles/about-2/about-hero.css';
+
+const heroImages = [
+  asset('/assets/about-hero/hero-1.jpg'),
+  asset('/assets/about-hero/hero-2.jpg'),
+  asset('/assets/about-hero/hero-3.jpg'),
+];
+const heroFullSrc = asset('/assets/about-hero/hero-2-full.jpg');
+
+/** Flash images — stack at centre during loading, gone before cards fly out. */
+const stackImages = [
+  asset('/assets/about-hero/stack/stack-01.png'),
+  asset('/assets/about-hero/stack/stack-03.png'),
+  asset('/assets/about-hero/stack/stack-04.png'),
+];
+
+---
+
+<div class="about-hero" data-about-hero aria-hidden="true">
+
+  <!-- Separate white background layer — faded first, while images stay inside -->
+  <div class="about-hero__bg" data-about-hero-bg></div>
+
+  <div class="about-hero__header" data-about-hero-header>
+    <div class="about-hero__text"><p>Built on Trust.</p></div>
+    <div class="about-hero__text"><p>Powered by Access.</p></div>
+  </div>
+
+  <div class="about-hero__gallery" data-about-hero-gallery>
+    <div class="about-hero__flash-stack" data-about-hero-flash-stack aria-hidden="true">
+      {stackImages.map((src, i) => (
+        <div class="about-hero__flash" style={`z-index:${i + 1}`}>
+          <img src={src} alt="" decoding="async" />
+        </div>
+      ))}
+    </div>
+    {heroImages.map((src, i) => (
+      <div class="about-hero__img" style={`z-index:${i + 10}`}>
+        <img src={i === 1 ? heroFullSrc : src} alt="" decoding="async" />
+      </div>
+    ))}
+  </div>
+
+</div>
+
+<script>
+  import gsap from 'gsap';
+  import { whenCoverRevealed } from '../../scripts/page-transition.js';
+
+  // ── Layout constants ──────────────────────────────────────────────────────────
+  const MARGIN        = 24;
+  const GAP           = 40;
+  const BOTTOM_ANCHOR = 32;
+  const STEP          = 140;
+  const ASPECT        = 600 / 533.33;
+
+  // ── Timing ───────────────────────────────────────────────────────────────────
+  const N             = 3;
+  const BURST_STAGGER = 0.12;
+  const BURST_DUR     = 0.75;
+  const FLY_STAGGER   = 0.10;
+  const FLY_DUR       = 1.00;
+  const TEXT_STAGGER  = 0.12;
+  const TEXT_DUR      = 0.80;
+  const BURST_SCALE   = 0.55;
+  const STACK_HOLD    = 1.0;  // pause after cards stack, before fly-out
+  const FLASH_OUT_DUR = 0.35;
+  const FLY_TOTAL   = (N - 1) * FLY_STAGGER   + FLY_DUR;  // 1.20s
+  const TEXT_TOTAL  = (N - 1) * TEXT_STAGGER   + TEXT_DUR; // 1.04s
+
+  function getDimensions(vw, vh) {
+    const cardW  = (vw - 2 * MARGIN - 2 * GAP) / 3;
+    const cardH  = cardW * ASPECT;
+    const c1Left = MARGIN;
+    const c1Top  = vh - BOTTOM_ANCHOR - cardH;
+    const c2Left = c1Left + cardW + GAP;
+    const c2Top  = c1Top + STEP;
+    const c3Left = vw - MARGIN - cardW;
+    const c3Top  = c2Top + STEP;
+    return {
+      cardW, cardH,
+      positions: [
+        { top: c1Top, left: c1Left },
+        { top: c2Top, left: c2Left },
+        { top: c3Top, left: c3Left },
+      ],
+    };
+  }
+
+  function getCentreOffsets(vw, vh, cardW, cardH, positions) {
+    return positions.map(({ top, left }) => ({
+      x: (vw / 2 - cardW / 2) - left,
+      y: (vh / 2 - cardH / 2) - top,
+    }));
+  }
+
+  // ── bootAboutHero ─────────────────────────────────────────────────────────────
+  function bootAboutHero() {
+    const hero   = document.querySelector('[data-about-hero]');
+    const heroBg = document.querySelector('[data-about-hero-bg]');
+    const header = document.querySelector('[data-about-hero-header]');
+    const imgs      = Array.from(document.querySelectorAll('.about-hero__img'));
+    const flashImgs = Array.from(document.querySelectorAll('.about-hero__flash'));
+    const texts     = document.querySelectorAll('.about-hero__text p');
+    const spacer = document.querySelector('[data-about-hero-spacer]');
+    const topbar = document.querySelector('.home__topbar');
+
+    if (!hero || !imgs.length) return;
+
+    document.body.classList.remove('loading');
+
+    const chromeEls = [topbar].filter(Boolean);
+
+    // Lock scroll so scrollY stays 0 during the animation.
+    // This ensures the coordinate swap in revealHero is exact.
+    document.body.style.overflow = 'hidden';
+
+    // ── Reduced-motion shortcut ────────────────────────────────────────────────
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      flashImgs.forEach((el) => el.remove());
+      const { cardW, cardH, positions } = getDimensions(window.innerWidth, window.innerHeight);
+      gsap.set(imgs, {
+        top: (i) => positions[i].top, left: (i) => positions[i].left,
+        width: cardW, height: cardH, x: 0, y: 0, scale: 1,
+      });
+      revealHero(hero, heroBg, imgs, spacer, chromeEls);
+      return;
+    }
+
+    const { cardW, cardH, positions } = getDimensions(window.innerWidth, window.innerHeight);
+    const offsets = getCentreOffsets(
+      window.innerWidth, window.innerHeight, cardW, cardH, positions
+    );
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const centerTop  = (vh - cardH) / 2;
+    const centerLeft = (vw - cardW) / 2;
+
+    // Place cards at final top/left (set once, never animated).
+    // Centre them visually via x/y transforms.
+    gsap.set(imgs, {
+      top:      (i) => positions[i].top,
+      left:     (i) => positions[i].left,
+      width:    cardW,
+      height:   cardH,
+      x:        (i) => offsets[i].x,
+      y:        (i) => offsets[i].y,
+      xPercent: 0,
+      yPercent: 0,
+      scale:    0,
+    });
+
+    // Flash images — same centre anchor, stack underneath hero cards.
+    gsap.set(flashImgs, {
+      top:   centerTop,
+      left:  centerLeft,
+      width: cardW,
+      height: cardH,
+      scale: 0,
+      opacity: 1,
+    });
+
+    const tl = gsap.timeline();
+    const stackEls = [...flashImgs, ...imgs];
+    const stackTotal = (stackEls.length - 1) * BURST_STAGGER + BURST_DUR;
+
+    // 1. Text in
+    tl.addLabel('textIn', 0.2);
+    tl.from(texts, {
+      y: 50, opacity: 0,
+      ease: 'power4.inOut', duration: 1, stagger: { amount: 0.15 },
+    }, 'textIn');
+
+    // 2. All stack images — flash + hero — one continuous sequence
+    tl.addLabel('stack', 0.45);
+    tl.to(stackEls, {
+      scale: BURST_SCALE,
+      ease: 'power2.out', duration: BURST_DUR, stagger: BURST_STAGGER,
+    }, 'stack');
+
+    // 2b. Hold — let the user read the side labels before cards move
+    tl.addLabel('stackHold', `stack+=${stackTotal}`);
+    tl.to({}, { duration: STACK_HOLD }, 'stackHold');
+
+    // 2c. Flash images out — gone before hero cards fly to staircase
+    tl.addLabel('flashOut', `stackHold+=${STACK_HOLD - FLASH_OUT_DUR}`);
+    tl.to(flashImgs, {
+      opacity: 0,
+      scale: 0,
+      ease: 'power2.in',
+      duration: FLASH_OUT_DUR,
+      stagger: { amount: 0.12 },
+      onComplete: () => {
+        flashImgs.forEach((el) => el.remove());
+        document.querySelector('[data-about-hero-flash-stack]')?.remove();
+      },
+    }, 'flashOut');
+
+    // 3. Cards fly to staircase positions (x/y → 0)
+    tl.addLabel('fly', `stackHold+=${STACK_HOLD}`);
+    tl.to(imgs, {
+      x: 0, y: 0, scale: 1,
+      ease: 'power3.inOut', duration: FLY_DUR, stagger: FLY_STAGGER,
+    }, 'fly');
+
+    // 4. Text out, header removed
+    tl.addLabel('textOut', `fly+=${FLY_TOTAL}`);
+    tl.to(texts, {
+      y: -60, opacity: 0,
+      ease: 'power4.inOut', duration: TEXT_DUR, stagger: { amount: TEXT_STAGGER },
+      onComplete: () => { if (header) header.remove(); },
+    }, 'textOut');
+
+    // 5. Reveal — fires only after ALL text has completely gone
+    tl.addLabel('reveal', `textOut+=${TEXT_TOTAL}`);
+    tl.add(() => { revealHero(hero, heroBg, imgs, spacer, chromeEls); }, 'reveal');
+  }
+
+  // ── revealHero ────────────────────────────────────────────────────────────────
+  function revealHero(hero, heroBg, imgs, spacer, chromeEls) {
+    /*
+     * CRITICAL: Reset scroll to 0 before releasing the overflow lock.
+     *
+     * The browser's scroll restoration API sets window.scrollY to the user's
+     * previous position BEFORE any scripts run. body.overflow:hidden (set in
+     * bootAboutHero) prevents further user scrolling but does NOT reset the
+     * existing scroll position — so scrollY can be e.g. 1000px throughout the
+     * entire hero animation even though the user never touched the scroll.
+     *
+     * If we release overflow first and then capture scrollY in onComplete(), we
+     * get a corrupted offset: images land 1000px too low in the spacer, and
+     * initHeroImageScroll() calculates all scroll phases from those wrong
+     * positions — causing sections to overlap and allowing scroll above the hero.
+     *
+     * Calling window.scrollTo(0,0) while overflow:hidden is still active is
+     * a programmatic scroll that bypasses the CSS overflow restriction.
+     */
+    window.scrollTo(0, 0);
+
+    // Release scroll lock and start topbar immediately
+    document.body.style.overflow = '';
+    gsap.to(chromeEls, {
+      y: 0, opacity: 1,
+      duration: 1.2, ease: 'power4.out', stagger: 0.12,
+    });
+
+    /*
+     * STEP 1 — Fade the background while images stay inside the hero.
+     *   The hero (fixed z:250) still covers the viewport during the fade,
+     *   so any repaints caused by upcoming DOM operations are hidden.
+     *   This prevents the GPU-layer teardown flash seen when images are
+     *   moved while the background is still visible.
+     */
+    gsap.to(heroBg, {
+      opacity:  0,
+      duration: 0.5,
+      ease:     'power2.inOut',
+      onComplete() {
+        /*
+         * STEP 2 — Background is now at opacity:0 (hero is transparent).
+         *   Move images from the fixed hero into the in-flow spacer.
+         *   The hero is invisible so this DOM move is invisible.
+         *
+         *   Coordinate note: at scrollY=0, fixed-hero origin == spacer origin.
+         *   We capture scrollY here to compensate for any scroll the user
+         *   triggered during the 0.5s fade (should be 0 or very close).
+         */
+        const scrollY = window.scrollY;
+
+        // Clear GSAP transform (x=0, y=0, scale=1 at this point)
+        gsap.set(imgs, { clearProps: 'transform' });
+
+        if (spacer) {
+          imgs.forEach((img) => {
+            const top  = parseFloat(img.style.top  || '0');
+            const left = parseFloat(img.style.left || '0');
+            img.style.top  = (top + scrollY) + 'px';
+            img.style.left = left + 'px';
+            spacer.appendChild(img);
+          });
+        }
+
+        /*
+         * STEP 3 — One rAF: let the browser paint the spacer with images
+         *   before removing the hero. This ensures there is never a frame
+         *   where neither the hero nor the spacer has the images rendered.
+         */
+        requestAnimationFrame(() => {
+          hero.remove();
+          document.dispatchEvent(new CustomEvent('about-hero:settled'));
+        });
+      },
+    });
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────────
+  // Hide chrome immediately; wait for the page-cover window reveal before
+  // starting the loading-screen card animation.
+  (() => {
+    const topbar = document.querySelector('.home__topbar');
+    const chromeEls = [topbar].filter(Boolean);
+    gsap.set(chromeEls, { opacity: 0, y: 15 });
+    document.body.style.overflow = 'hidden';
+
+    whenCoverRevealed(bootAboutHero);
+  })();
+
+  // Resize handler — recalculates positions (useful before reveal fires)
+  window.addEventListener('resize', () => {
+    const imgs = Array.from(document.querySelectorAll('.about-hero__img'));
+    if (!imgs.length) return;
+    const { cardW, cardH, positions } = getDimensions(window.innerWidth, window.innerHeight);
+    gsap.set(imgs, {
+      top:   (i) => positions[i].top,
+      left:  (i) => positions[i].left,
+      width: cardW, height: cardH,
+    });
+  });
+
+  // Cleanup on Astro page transition
+  document.addEventListener('astro:before-swap', () => {
+    document.body.style.overflow = ''; // restore if killed mid-animation
+    gsap.killTweensOf(
+      '.about-hero__img, .about-hero__flash, .about-hero__text p, [data-about-hero-bg], .home__topbar'
+    );
+    const topbar = document.querySelector('.home__topbar');
+    if (topbar instanceof HTMLElement) {
+      topbar.style.opacity  = '';
+      topbar.style.transform = '';
+    }
+  }, { once: true });
+</script>

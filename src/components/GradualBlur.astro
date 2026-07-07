@@ -1,0 +1,102 @@
+---
+import '../styles/gradual-blur.css';
+import {
+  buildBlurLayers,
+  getContainerStyle,
+  resolveGradualBlurConfig,
+} from '../lib/gradual-blur.js';
+
+/** @typedef {import('../lib/gradual-blur.js').GradualBlurConfig} GradualBlurConfig */
+
+interface Props extends GradualBlurConfig {
+  style?: Record<string, string | number>;
+}
+
+const {
+  position,
+  strength,
+  height,
+  width,
+  divCount,
+  exponential,
+  zIndex,
+  animated = false,
+  duration,
+  easing,
+  opacity,
+  curve,
+  target,
+  className = '',
+  hoverIntensity,
+  preset,
+  style = {},
+} = Astro.props;
+
+const config = resolveGradualBlurConfig({
+  position,
+  strength,
+  height,
+  width,
+  divCount,
+  exponential,
+  zIndex,
+  animated,
+  duration,
+  easing,
+  opacity,
+  curve,
+  target,
+  hoverIntensity,
+  preset,
+});
+
+const layers = buildBlurLayers(config);
+const containerStyle = getContainerStyle(config, { height, width });
+const animatedAttr = animated === true ? 'true' : animated === 'scroll' ? 'scroll' : 'false';
+const targetClass = config.target === 'page' ? 'gradual-blur-page' : 'gradual-blur-parent';
+const styleEntries = Object.entries({ ...containerStyle, ...style });
+---
+
+<div
+  class:list={[
+    'gradual-blur',
+    targetClass,
+    className,
+    animated === true ? 'is-visible' : '',
+  ]}
+  data-gradual-blur
+  data-gradual-blur-position={config.position}
+  data-gradual-blur-strength={config.strength}
+  data-gradual-blur-height={config.height}
+  data-gradual-blur-width={width ?? ''}
+  data-gradual-blur-div-count={config.divCount}
+  data-gradual-blur-exponential={config.exponential ? 'true' : 'false'}
+  data-gradual-blur-curve={config.curve}
+  data-gradual-blur-opacity={config.opacity}
+  data-gradual-blur-target={config.target}
+  data-gradual-blur-animated={animatedAttr}
+  data-gradual-blur-hover-intensity={hoverIntensity ?? ''}
+  data-gradual-blur-preset={preset ?? ''}
+  style={Object.fromEntries(styleEntries.map(([key, value]) => [key, String(value)]))}
+>
+  <div class="gradual-blur-inner">
+    {
+      layers.map((layer) => (
+        <div
+          data-gradual-blur-layer
+          style={{
+            maskImage: layer.gradient,
+            WebkitMaskImage: layer.gradient,
+            backdropFilter: `blur(${layer.blurValue.toFixed(3)}rem)`,
+            WebkitBackdropFilter: `blur(${layer.blurValue.toFixed(3)}rem)`,
+            opacity: config.opacity,
+            transition:
+              config.animated && config.animated !== 'scroll'
+                ? `backdrop-filter ${config.duration} ${config.easing}`
+                : undefined,
+          }}
+        />
+      ))
+    }
+  </div>
+</div>

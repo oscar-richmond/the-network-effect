@@ -1,0 +1,74 @@
+---
+import { menuLinks, menuFooterLinks } from '../data/menu.js';
+import { asset } from '../utils/asset.js';
+import '../styles/menu.css';
+
+const base = import.meta.env.BASE_URL;
+const defaultImage = asset(`/assets/images/menu/${menuLinks[0]?.image ?? 'home.png'}`);
+---
+
+<div class="site-menu" data-menu id="site-menu" aria-hidden="true">
+  <div class="site-menu__backdrop" data-menu-backdrop aria-hidden="true"></div>
+  <div class="site-menu__panel" data-menu-panel>
+    <div class="site-menu__wrapper">
+      <div class="site-menu__container">
+        <nav class="site-menu__body" data-menu-body aria-label="Main">
+          {
+            menuLinks.map((link, index) => (
+              <a
+                href={`${base}${link.href}`}
+                class="site-menu__link"
+                data-index={String(index)}
+                data-src={asset(`/assets/images/menu/${link.image}`)}
+              >
+                {link.label}
+              </a>
+            ))
+          }
+        </nav>
+
+        <div class="site-menu__footer">
+          {
+            menuFooterLinks.map((link) => (
+              <ul>
+                <li>
+                  <a
+                    href={link.external ? link.href : `${base}${link.href}`}
+                    class="site-menu__footer-link"
+                    {...(link.external
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              </ul>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="site-menu__image" data-menu-image aria-hidden="true">
+        <img src={defaultImage} alt="" data-menu-image-el decoding="async" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initMenu } from '../scripts/menu.js';
+
+  const bootMenu = () => {
+    const cleanup = initMenu(document);
+
+    document.addEventListener('astro:before-swap', () => {
+      cleanup();
+    });
+  };
+
+  if (document.documentElement.classList.contains('splash-active')) {
+    document.addEventListener('splash:complete', bootMenu, { once: true });
+  } else {
+    bootMenu();
+  }
+</script>

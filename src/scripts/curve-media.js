@@ -27,6 +27,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform float uVelocity;
   uniform float uAberration;
   uniform float uFocus;
+  uniform float uBrightness;
   out vec4 fragColor;
 
   void main() {
@@ -35,11 +36,13 @@ const FRAGMENT_SHADER = /* glsl */ `
     float r = texture(uMap, vUv + offset).r;
     float g = texture(uMap, vUv).g;
     float b = texture(uMap, vUv - offset).b;
-    vec3 color = vec3(r, g, b);
+    vec3 color = vec3(r, g, b) * uBrightness;
     float alpha = mix(0.5, 1.0, uFocus);
     fragColor = vec4(color, alpha);
   }
 `;
+
+const BRIGHTNESS_PATTERN = /brightness\(([\d.]+)\)/;
 
 /**
  * @param {THREE.PlaneGeometry} geometry
@@ -91,6 +94,7 @@ class CurveMediaPlane {
         uAmplitude: { value: config.amplitude },
         uAberration: { value: config.aberration },
         uFocus: { value: 0 },
+        uBrightness: { value: 1 },
       },
       vertexShader: VERTEX_SHADER,
       fragmentShader: FRAGMENT_SHADER,
@@ -187,8 +191,11 @@ class CurveMediaPlane {
 
     const slide = this.img.closest('[data-carousel-slide]');
     const inlineFocus = slide?.style.getPropertyValue('--slide-focus');
-    const targetFocus =
-      inlineFocus !== '' ? Number.parseFloat(inlineFocus) : 0;
+    // Outside the homepage carousel there is no focus-fade concept, so
+    // planes should render fully opaque rather than defaulting to 0.
+    const targetFocus = slide
+      ? (inlineFocus !== '' ? Number.parseFloat(inlineFocus) : 0)
+      : 1;
 
     this.material.uniforms.uFocus.value = THREE.MathUtils.damp(
       this.material.uniforms.uFocus.value,
@@ -196,6 +203,17 @@ class CurveMediaPlane {
       12,
       delta,
     );
+
+    this.material.uniforms.uBrightness.value = this.readBrightness();
+  }
+
+  readBrightness() {
+    const target = this.img.parentElement ?? this.img;
+    const filterValue = getComputedStyle(target).filter;
+    const match = filterValue.match(BRIGHTNESS_PATTERN);
+    if (!match) return 1;
+    const value = Number.parseFloat(match[1]);
+    return Number.isFinite(value) ? value : 1;
   }
 
   destroy() {

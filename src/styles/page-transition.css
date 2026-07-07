@@ -1,0 +1,37 @@
+/* ─── Cover Page Transition Overlay ───────────────────────────────────────── */
+
+.page-cover {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: repeat(2, 1fr);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.page-cover__row {
+  background: var(--color-fg, #121212);
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+/* Top row expands downward from the top */
+.page-cover__row:first-child {
+  transform-origin: 50% 0%;
+}
+
+/* Bottom row expands upward from the bottom */
+.page-cover__row:last-child {
+  transform-origin: 50% 100%;
+}
+
+/*
+ * While the cover is animating in we need pointer-events
+ * so users can't click through and trigger another navigation.
+ */
+.page-cover--active {
+  pointer-events: all;
+}

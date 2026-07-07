@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AboutScroll from '../components/about-3/AboutScroll.astro';
+import Menu from '../components/Menu.astro';
+import '../styles/home.css';
+import '../styles/about-3/about-page.css';
+import '../styles/fonts.css';
+---
+
+<BaseLayout title="The Network Effect — About V3" bodyClass="about-page-3 loading" htmlClass="js">
+  <header class="home__topbar home__topbar--about">
+    <nav class="home__menu-cta" aria-label="Site">
+      <button
+        type="button"
+        class="home__menu-toggle"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-controls="site-menu"
+      >
+        <span data-menu-label-menu>menu</span>
+        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
+          <span class="home__menu-toggle-close-text">close</span>
+          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
+        </span>
+      </button>
+    </nav>
+    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    <span class="home__topbar-dot home__topbar-dot--before" aria-hidden="true"></span>
+    <span class="home__topbar-dot home__topbar-dot--after" aria-hidden="true"></span>
+    <a class="home__topbar-email" href="mailto:hello@thenetworkeffect.com">
+      hello@thenetworkeffect.com
+    </a>
+  </header>
+
+  <AboutScroll />
+  <Menu />
+</BaseLayout>
+
+<script>
+  import { initAbout3NavDots } from '../scripts/about-3/nav-dots.js';
+
+  let cleanupNavDots = initAbout3NavDots();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupNavDots?.();
+    cleanupNavDots = undefined;
+  }, { once: true });
+</script>

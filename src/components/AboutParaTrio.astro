@@ -1,0 +1,36 @@
+---
+import { asset } from '../utils/asset.js';
+
+const trioItems = [
+  {
+    src: asset('/assets/about-scroll/trio/trio-left.png'),
+    flex: 357.33,
+    aspect: '357.33 / 402',
+  },
+  {
+    src: asset('/assets/about-scroll/trio/trio-middle.png'),
+    flex: 493,
+    aspect: '493 / 255',
+  },
+  {
+    src: asset('/assets/about-scroll/trio/trio-right.png'),
+    flex: 749,
+    aspect: '749 / 640',
+    anchor: true,
+  },
+];
+---
+
+<section class="para-trio-section" data-para-trio-section aria-label="Team">
+	<div class="para-trio" data-para-trio-row>
+		{trioItems.map((item, i) => (
+			<div
+				class="para-trio__item"
+				data-para-trio-item={i === 0 ? 'left' : item.anchor ? 'right' : undefined}
+				style={`--trio-flex:${item.flex};--trio-aspect:${item.aspect}`}
+			>
+				<img src={item.src} alt="" loading="lazy" decoding="async" />
+			</div>
+		))}
+	</div>
+</section>

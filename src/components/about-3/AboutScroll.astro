@@ -1,0 +1,19 @@
+---
+import AboutHero from './AboutHero.astro';
+import 'lenis/dist/lenis.css';
+---
+
+<AboutHero />
+
+<div class="about-hero-spacer" data-about-hero-spacer aria-hidden="true"></div>
+
+<script>
+  import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
+
+  let cleanupAbout3Scroll = initAbout3Scroll();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupAbout3Scroll?.();
+    cleanupAbout3Scroll = undefined;
+  }, { once: true });
+</script>

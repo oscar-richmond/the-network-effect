@@ -5,7 +5,9 @@
   --color-muted: #9a9a9a;
   --color-border: #f1f3f4;
 
-  --font-display: "Neue Montreal", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: 'Dazzed', 'Network Effect', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-logo: 'Arial Black', 'Dazzed', sans-serif;
+  --font-meta: 'Dazzed', 'Network Effect', sans-serif;
 
   --home-margin-x: 24px;
   --home-margin-y: 32px;
@@ -14,21 +16,32 @@
   --carousel-gap: 1.5rem;
   --carousel-focus-width: clamp(15rem, 20vw, 21.5rem);
   --carousel-symbol-offset: 88px;
+  --carousel-intro-column-offset: 204px;
   --carousel-bracket-width: 3rem;
   --carousel-bracket-bar-width: 0.9375rem;
+  --carousel-bracket-height: 5.9375rem;
+  --carousel-dot-size: 0.8125rem;
   --carousel-bracket-overhang: calc(
     var(--carousel-bracket-width) - var(--carousel-bracket-bar-width)
   );
   --carousel-right-symbol-end: calc(
     50% + (var(--carousel-focus-width) / 2) + var(--carousel-symbol-offset) -
-      var(--carousel-bracket-overhang) + var(--carousel-bracket-width) + 0.8125rem + 204px
+      var(--carousel-bracket-overhang) + var(--carousel-bracket-width) + 0.8125rem +
+      var(--carousel-intro-column-offset)
   );
+
+  /* Sidebar columns — tuned for 16" MacBook Pro (1728 × 1117) */
+  --home-sidebar-width: min(15.625rem, 34vw);
+  --home-clients-width: min(17.875rem, 42vw);
+  --home-meta-left-inset: max(calc(var(--home-margin-x) + 11rem), 18vw);
+  --home-logo-size-add: 6px;
 }
 
 .home {
   position: relative;
   color: var(--color-ink);
   background: #ffffff;
+  font-synthesis: none;
 }
 
 .home:not(.is-ready) .carousel-track {
@@ -57,22 +70,21 @@
 .home__chrome label,
 .home__chrome select,
 .home__chrome [data-cursor='expand'],
-.home__chrome .home__ctas,
 .home__chrome .home__intro-links {
   pointer-events: auto;
 }
 
 .home__logo {
   position: fixed;
-  top: 32px;
+  top: var(--home-margin-y);
   left: 0;
   right: 0;
   z-index: 4;
   margin: 0;
   padding: 0;
-  font-family: var(--font-display);
-  font-size: calc(clamp(1.5rem, 1.1rem + 1.2vw, 2rem) + 6px);
-  font-weight: 700;
+  font-family: var(--font-logo);
+  font-size: calc(clamp(1.5rem, 1.1rem + 1.2vw, 2rem) + var(--home-logo-size-add));
+  font-weight: 400;
   letter-spacing: 0.03em;
   line-height: 1.1;
   text-align: center;
@@ -81,18 +93,114 @@
   pointer-events: none;
 }
 
+/* ── About-page top bar ────────────────────────────────────────────────────── */
+/*
+ * A single fixed flex row: [Logo] ● [Menu] ● [Email]
+ * Contextual overrides below reset the individual element positioning so they
+ * sit naturally inside the flex container without interfering with the
+ * homepage's own logo / menu styles.
+ */
+.home__topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 260; /* above expanding hero card (249) and about-hero container (250) */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--home-margin-y) * 2 + 1.125rem);
+  padding: 0 var(--home-margin-x);
+  pointer-events: none;
+  margin: 0;
+  /* White items + difference blend = black on light, white on dark */
+  mix-blend-mode: difference;
+  color: #ffffff;
+}
+
+/* Reset logo when inside the topbar */
+.home__topbar .home__logo {
+  position: static;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: auto;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-align: left;
+  /* White so mix-blend-mode: difference on the parent inverts against the background */
+  color: #ffffff;
+  mix-blend-mode: normal;
+  white-space: nowrap;
+}
+
+/* Separator dots — white so the parent's difference blend inverts them correctly */
+.home__topbar-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+/* Reset menu-cta when inside the topbar */
+.home__topbar .home__menu-cta {
+  position: static;
+  top: auto;
+  left: auto;
+  z-index: auto;
+  pointer-events: auto;
+  color: #ffffff;
+}
+
+/* Email link */
+.home__topbar-email {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.home__topbar-email:hover {
+  opacity: 0.6;
+}
+
+
 .home__clients {
   position: fixed;
   top: 50%;
   left: var(--home-margin-x);
   transform: translateY(-50%);
-  width: min(17.875rem, 42vw);
+  width: var(--home-clients-width);
   margin: 0;
   padding: 0;
   list-style: none;
   font-family: var(--font-display);
   font-size: 0.875rem;
   line-height: 1.714;
+}
+
+.home__menu-cta {
+  position: fixed;
+  top: var(--home-margin-y);
+  left: var(--home-margin-x);
+  z-index: 260; /* above expanding hero card (249) and about-hero (250); below menu panel (500) */
+  margin: 0;
+  pointer-events: auto;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.333;
+  color: var(--color-ink-strong);
 }
 
 .home__ctas {
@@ -136,7 +244,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: min(15.625rem, 34vw);
+  width: var(--home-sidebar-width);
+  max-width: calc(100vw - var(--carousel-right-symbol-end) - var(--home-margin-x));
   margin: 0;
   font-family: var(--font-display);
   font-size: 0.75rem;
@@ -178,7 +287,8 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 0.75rem;
-  width: min(15.625rem, 34vw);
+  width: max-content;
+  max-width: calc(100vw - (var(--home-margin-x) * 2));
   margin: 0;
   font-family: var(--font-display);
   font-size: 0.75rem;
@@ -190,6 +300,7 @@
   color: var(--color-muted);
   line-height: 1.833;
   text-align: right;
+  white-space: nowrap;
 }
 
 .home__theme {
@@ -219,14 +330,15 @@
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  font-family: var(--font-display);
+  font-family: var(--font-meta);
   font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1.833;
   white-space: nowrap;
 }
 
 .home__meta--left {
-  left: max(calc(var(--home-margin-x) + 11rem), 18vw);
+  left: var(--home-meta-left-inset);
 }
 
 .home__meta--right {
@@ -398,8 +510,8 @@ body.sphere-gallery-open .home__logo {
 }
 
 .carousel-ui__bracket {
-  width: 3rem;
-  height: 5.9375rem;
+  width: var(--carousel-bracket-width);
+  height: var(--carousel-bracket-height);
   transform: translateY(-50%);
 }
 
@@ -413,8 +525,8 @@ body.sphere-gallery-open .home__logo {
 }
 
 .carousel-ui__dot {
-  width: 0.8125rem;
-  height: 0.8125rem;
+  width: var(--carousel-dot-size);
+  height: var(--carousel-dot-size);
   transform: translateY(-50%);
 }
 
@@ -432,6 +544,58 @@ body.sphere-gallery-open .home__logo {
   );
 }
 
+/* 14.2" MacBook Pro — 1512 × 982, proportional to 16" (×0.875) */
+@media (max-width: 1512px) and (min-width: 961px) {
+  :root {
+    --home-margin-x: 21px;
+    --home-margin-y: 28px;
+    --carousel-gap: 1.3125rem;
+    --carousel-focus-width: clamp(13.125rem, 20vw, 18.8125rem);
+    --carousel-symbol-offset: 77px;
+    --carousel-intro-column-offset: 179px;
+    --carousel-bracket-width: 2.625rem;
+    --carousel-bracket-bar-width: 0.8203125rem;
+    --carousel-bracket-height: 5.1953125rem;
+    --carousel-dot-size: 0.8203125rem;
+    --home-sidebar-width: min(13.671875rem, 34vw);
+    --home-clients-width: min(15.640625rem, 42vw);
+    --home-meta-left-inset: max(calc(var(--home-margin-x) + 9.625rem), 18vw);
+    --home-logo-size-add: 5px;
+  }
+
+  .home__logo {
+    font-size: calc(clamp(1.3125rem, 0.9625rem + 1.05vw, 1.75rem) + var(--home-logo-size-add));
+  }
+}
+
+/* 15.3" MacBook Pro — 1440 × 932, proportional to 16" (×0.833) */
+@media (max-width: 1440px) and (min-width: 961px) {
+  :root {
+    --home-margin-x: 20px;
+    --home-margin-y: 27px;
+    --carousel-gap: 1.25rem;
+    --carousel-focus-width: clamp(12.5rem, 20vw, 17.90625rem);
+    --carousel-symbol-offset: 73px;
+    --carousel-intro-column-offset: 170px;
+    --carousel-bracket-width: 2.5rem;
+    --carousel-bracket-bar-width: 0.78125rem;
+    --carousel-bracket-height: 4.94791667rem;
+    --carousel-dot-size: 0.78125rem;
+    --home-sidebar-width: min(13.020833rem, 34vw);
+    --home-clients-width: min(14.895833rem, 42vw);
+    --home-meta-left-inset: max(calc(var(--home-margin-x) + 9.166667rem), 18vw);
+    --home-logo-size-add: 5px;
+  }
+
+  .home__logo {
+    font-size: calc(clamp(1.25rem, 0.917rem + 1vw, 1.667rem) + var(--home-logo-size-add));
+  }
+
+  .home__meta--right {
+    right: var(--home-margin-x);
+  }
+}
+
 @media (max-width: 960px) {
   .home__clients {
     display: flex;
@@ -447,13 +611,150 @@ body.sphere-gallery-open .home__logo {
   }
 
   .home__footer {
-    width: min(15.625rem, calc(100% - (var(--home-margin-x) * 2)));
+    max-width: calc(100% - (var(--home-margin-x) * 2));
   }
 
   .home__meta--left,
   .home__meta--right,
   .home__meta--index {
     display: none;
+  }
+}
+
+/*
+ * iPhone 17 Pro (402×874), iPhone 16 Plus (430×932), iPhone 17 Pro Max (440×956).
+ * Scoped to ≤440px so desktop (≥961px) and tablet layouts are unchanged.
+ */
+@media (max-width: 440px) {
+  :root {
+    --home-margin-x: max(20px, env(safe-area-inset-left, 0px));
+    --home-margin-y: max(20px, env(safe-area-inset-top, 0px));
+    --home-margin-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    --carousel-focus-width: min(70vw, 17.25rem);
+    --carousel-gap: 1.125rem;
+    --home-logo-size-add: 2px;
+    --home-phone-header-stack: 4.25rem;
+  }
+
+  .home__logo {
+    font-size: calc(clamp(1.125rem, 4.5vw, 1.375rem) + var(--home-logo-size-add));
+    padding-inline: var(--home-margin-x);
+  }
+
+  .home__ctas {
+    font-size: 0.6875rem;
+    max-width: calc(100% - var(--home-margin-x) * 2);
+  }
+
+  .home__intro {
+    top: calc(var(--home-margin-y) + var(--home-phone-header-stack));
+    right: var(--home-margin-x);
+    left: var(--home-margin-x);
+    width: auto;
+    max-width: none;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    gap: 0.625rem;
+  }
+
+  .home__intro-links {
+    gap: 0.625rem;
+  }
+
+  .home__clients {
+    top: auto;
+    bottom: calc(3.75rem + var(--home-margin-bottom));
+    left: 0;
+    right: 0;
+    transform: none;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.75rem;
+    width: auto;
+    max-width: none;
+    padding-inline: var(--home-margin-x);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .home__clients::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home__clients li {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .home__footer {
+    bottom: var(--home-margin-bottom);
+    font-size: 0.6875rem;
+  }
+
+  .home__copyright {
+    line-height: 1.5;
+  }
+
+  .home__theme {
+    bottom: var(--home-margin-bottom);
+    font-size: 0.6875rem;
+    gap: 0.625rem;
+  }
+
+  .home__theme img {
+    width: 2.75rem;
+  }
+
+  .carousel-ui {
+    display: none;
+  }
+
+  .sphere-gallery__close {
+    top: var(--home-margin-y);
+    right: var(--home-margin-x);
+  }
+
+  .sphere-gallery__label {
+    bottom: var(--home-margin-bottom);
+    width: min(18rem, calc(100vw - var(--home-margin-x) * 2));
+    text-align: center;
+    font-size: 0.8125rem;
+  }
+}
+
+/* iPhone 17 Pro — 402 × 874 */
+@media (max-width: 402px) {
+  :root {
+    --carousel-focus-width: min(68vw, 16.5rem);
+    --home-phone-header-stack: 4rem;
+  }
+
+  .home__intro {
+    font-size: 0.65625rem;
+  }
+}
+
+/* iPhone 16 Plus — 430 × 932 */
+@media (min-width: 403px) and (max-width: 430px) {
+  :root {
+    --carousel-focus-width: min(69vw, 17rem);
+    --home-phone-header-stack: 4.125rem;
+  }
+}
+
+/* iPhone 17 Pro Max — 440 × 956 */
+@media (min-width: 431px) and (max-width: 440px) {
+  :root {
+    --carousel-focus-width: min(72vw, 17.5rem);
+    --home-phone-header-stack: 4.375rem;
+  }
+
+  .home__intro {
+    font-size: 0.75rem;
   }
 }
 

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { FOCUS_EASE } from './sphere-focus.js';
 
-const HOLD_MS = 3000;
+const HOLD_MS = 2000;
 const DISSOLVE_DURATION = 1;
 const VERTICAL_OFFSET_PX = 104;
 
@@ -173,7 +173,10 @@ export function initSplashScreen(root, options) {
     return () => {};
   }
 
-  root.style.setProperty('--splash-offset-y', `${VERTICAL_OFFSET_PX}px`);
+  root.style.setProperty(
+    '--splash-offset-y',
+    `${window.matchMedia('(max-width: 402px)').matches ? 64 : window.matchMedia('(max-width: 440px)').matches ? 80 : VERTICAL_OFFSET_PX}px`,
+  );
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) {
