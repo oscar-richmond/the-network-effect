@@ -103,11 +103,21 @@
 
 /* ── Bio + tag list ──────────────────────────────────────────────────────── */
 
-/* Figma @1728×966: left 1020, top ~361, width 419. */
+/* Figma @1728×966: left 1020, width 419. Vertically CENTRED on the
+   stage as one unit (bio + heading + tags) via absolute top/bottom 0 +
+   auto block margins + fit-content height — each slide centres on its
+   own block height (Robbo 7 tags, Ashley 5), and it re-centres itself
+   when the content height changes. Deliberately NOT transform-based
+   centring: although the name is a sibling (not a descendant), keeping
+   this box transform-free stays inside the section's blend-safety
+   conventions. */
 .about-page-3 .founders__meta {
 	position: absolute;
 	left: 59.03%;
-	top: 37.4%;
+	top: 0;
+	bottom: 0;
+	margin-block: auto;
+	height: fit-content;
 	width: clamp(300px, 24.25%, 440px);
 	z-index: 20;
 	color: #f9f9f9;
@@ -141,7 +151,12 @@
 	font-family: 'Dazzed', sans-serif;
 	font-weight: 600;
 	font-size: 14px;
-	line-height: 18px;
+	/* Matches the bio's line-height so the two blocks' visible
+	   row spacing is identical. This is the ONLY property producing the
+	   tag rows' baseline-to-baseline distance: line-reveal wrapping turns
+	   each visual line into a block .lr-clip whose height equals the
+	   line-height, stacked with no margins/gap. */
+	line-height: 24px;
 	text-transform: uppercase;
 	color: #ffffff;
 }
