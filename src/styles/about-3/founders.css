@@ -1,0 +1,306 @@
+/* Founders section — /about-3 only.
+ *
+ * Architecture mirrors the hero's convention (no GSAP pin): the <section>
+ * is an in-flow, empty scroll runway whose height is set by
+ * founders-scroll.js; the visible stage is position: fixed and its
+ * elements are driven by scrubbed ScrollTriggers anchored to the
+ * section's document position.
+ *
+ * Stacking: the section carries z-index 150 — above the hero's fixed
+ * bg-fade backdrop (50), persisted tagline/intro (100) and the WebGL
+ * canvas/images (110), below the nav (270). Without this the fixed
+ * z-indexed hero layers would paint over the whole section.
+ *
+ * Blend safety: .founders__name uses mix-blend-mode: difference. The
+ * stage is explicitly isolated so the name composites against the slide
+ * backgrounds/portraits inside it, and NOTHING between the stage and the
+ * name may carry opacity/transform/filter — the crossfade animates the
+ * name's own opacity directly (self-opacity does not isolate a blend;
+ * an animated ancestor would). Slide wrappers stay layout-only.
+ */
+
+.about-page-3 .founders {
+	position: relative;
+	z-index: 150;
+	width: 100%;
+	pointer-events: none;
+}
+
+.about-page-3 .founders__stage {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	isolation: isolate;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.about-page-3 .founders__slide {
+	/* Layout-only wrapper — never receives opacity/transform/filter (see
+	   blend-safety note above). z-index: auto keeps children participating
+	   in the stage's stacking context so cross-slide z layering works. */
+	position: absolute;
+	inset: 0;
+}
+
+/* ── Full-bleed background (pre-blurred + pre-darkened asset) ────────────── */
+
+.about-page-3 .founders__bg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	z-index: 1;
+}
+
+.about-page-3 .founders__slide + .founders__slide .founders__bg {
+	/* Slide 2's background crossfades in ON TOP of slide 1's (which stays
+	   opaque beneath) — a single fade, no mid-fade dip to the layers below. */
+	z-index: 2;
+}
+
+/* ── Sharp portrait ──────────────────────────────────────────────────────── */
+
+/* Figma @1728×966: left 326, top 173, 445×620 (values as % of frame). */
+.about-page-3 .founders__portrait {
+	position: absolute;
+	left: 18.87%;
+	top: 17.9%;
+	width: 25.75%;
+	height: 64.2%;
+	border-radius: 4px;
+	overflow: hidden;
+	z-index: 10;
+}
+
+.about-page-3 .founders__portrait img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center top;
+	display: block;
+}
+
+/* ── Bio + tag list ──────────────────────────────────────────────────────── */
+
+/* Figma @1728×966: left 1020, top ~361, width 419. */
+.about-page-3 .founders__meta {
+	position: absolute;
+	left: 59.03%;
+	top: 37.4%;
+	width: clamp(300px, 24.25%, 440px);
+	z-index: 20;
+	color: #f9f9f9;
+}
+
+.about-page-3 .founders__bio p {
+	margin: 0;
+	font-family: 'Dazzed', sans-serif;
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 24px;
+	text-transform: uppercase;
+}
+
+.about-page-3 .founders__bio p + p {
+	margin-top: 24px;
+}
+
+.about-page-3 .founders__tags-heading {
+	margin: 48px 0 0;
+	font-family: 'Dazzed', sans-serif;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 18px;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+.about-page-3 .founders__tags {
+	margin: 8px 0 0;
+	font-family: 'Dazzed', sans-serif;
+	font-weight: 600;
+	font-size: 14px;
+	line-height: 18px;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+.about-page-3 .founders__tag {
+	white-space: nowrap;
+}
+
+.about-page-3 .founders__tag-index {
+	font-size: 6px;
+	font-weight: 600;
+	line-height: 1;
+	vertical-align: super;
+	margin-left: 2px;
+}
+
+/* ── Large name (difference-blend, matching nav/tagline pattern) ─────────── */
+
+/* Figma @1728×966: 73px "Serrif Light", left 255, centre-y 697.5. Light
+   (300) isn't among the project's font files — Serrif Regular (400) is
+   the approved placeholder until a Light weight is added. The h2 is a
+   pure overflow clip for the rise entrance (no opacity/transform/filter,
+   so it never isolates the blend); the inner span carries the blend and
+   is the only element the crossfade/entrance animates. */
+.about-page-3 .founders__name-clip {
+	position: absolute;
+	left: 14.75%;
+	top: calc(72.2% - 0.6em);
+	margin: 0;
+	font-size: clamp(40px, 4.225vw, 88px);
+	overflow: hidden;
+	z-index: 30;
+	font-weight: 400;
+}
+
+.about-page-3 .founders__name {
+	display: inline-block;
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-size: 1em;
+	line-height: 1.15;
+	white-space: nowrap;
+	color: #ffffff;
+	mix-blend-mode: difference;
+}
+
+/* ── Top-right slide index (thumbnail stack + marker) ────────────────────── */
+
+/* Figma @1728×966: thumbs 80×48 at right 40px, top 44.2%, 16px gap.
+   Current slide's thumb carries a 0.5px #f9f9f9 border (an overlay span
+   so it can crossfade); the tick + /0n label sit left of the stack at
+   the active thumb's vertical centre. */
+.about-page-3 .founders__index {
+	position: absolute;
+	right: 40px;
+	top: 44.2%;
+	z-index: 40;
+}
+
+.about-page-3 .founders__thumb {
+	position: relative;
+	width: 80px;
+	height: 48px;
+	overflow: hidden;
+}
+
+.about-page-3 .founders__thumb + .founders__thumb {
+	margin-top: 16px;
+}
+
+.about-page-3 .founders__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.about-page-3 .founders__thumb-border {
+	position: absolute;
+	inset: 0;
+	border: 0.5px solid #f9f9f9;
+	pointer-events: none;
+}
+
+.about-page-3 .founders__marker {
+	position: absolute;
+	right: calc(100% + 8px);
+	top: 24px; /* centre of thumb 1; JS translates +64px to thumb 2 */
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.about-page-3 .founders__marker-labels {
+	display: grid;
+}
+
+.about-page-3 .founders__marker-label {
+	grid-area: 1 / 1;
+	font-family: 'Dazzed', sans-serif;
+	font-weight: 600;
+	font-size: 6px;
+	line-height: 1;
+	text-transform: uppercase;
+	color: #f9f9f9;
+}
+
+.about-page-3 .founders__marker-tick {
+	width: 16px;
+	height: 0.5px;
+	background: #f9f9f9;
+}
+
+/* ── Initial hidden states — CSS-level, from FIRST PAINT ─────────────────── */
+
+/* Same pattern as the hero's intro-paragraph fix: everything the scroll
+   sequence reveals is hidden by CSS before any JS runs, and GSAP's
+   fromTo's take over from identical values (no flash window, no jump).
+   Scoped to no-preference: under reduced motion the script never boots
+   and the static layout below shows everything. */
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .founders__bg,
+	.about-page-3 .founders__portrait,
+	.about-page-3 .founders__index {
+		opacity: 0;
+	}
+
+	/* Slide 1's name rises out of its clip; slide 2's arrives revealed but
+	   transparent, via the crossfade. */
+	.about-page-3 .founders__slide:first-of-type .founders__name {
+		transform: translateY(120%);
+	}
+
+	.about-page-3 .founders__slide + .founders__slide .founders__name,
+	.about-page-3 .founders__slide + .founders__slide .founders__meta {
+		opacity: 0;
+	}
+
+	/* Slide 1's meta children are line-reveal wrapped by founders-scroll.js;
+	   until the .lr-clip wrappers exist, keep the raw paragraphs hidden —
+	   closes the first-paint window exactly like the hero intro fix. */
+	.about-page-3 .founders__slide:first-of-type .founders__meta p:not(:has(> .lr-clip)),
+	.about-page-3 .founders__slide:first-of-type .founders__meta .founders__bio p:not(:has(> .lr-clip)) {
+		visibility: hidden;
+	}
+
+	/* Queued thumb's border and label start hidden (Robbo active first). */
+	.about-page-3 [data-founders-thumb-border='1'],
+	.about-page-3 [data-founders-label='1'] {
+		opacity: 0;
+	}
+}
+
+/* ── Reduced motion: static stacked slides, no fixed layer, no index ─────── */
+
+@media (prefers-reduced-motion: reduce) {
+	.about-page-3 .founders {
+		height: auto !important; /* JS never runs, but guard against stale inline height */
+	}
+
+	.about-page-3 .founders__stage {
+		position: static;
+		height: auto;
+		overflow: visible;
+	}
+
+	.about-page-3 .founders__slide {
+		position: relative;
+		inset: auto;
+		min-height: 100vh;
+		min-height: 100dvh;
+	}
+
+	.about-page-3 .founders__index {
+		display: none;
+	}
+}

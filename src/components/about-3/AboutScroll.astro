@@ -1,5 +1,6 @@
 ---
 import AboutHero from './AboutHero.astro';
+import FoundersSection from './FoundersSection.astro';
 import { asset } from '../../utils/asset.js';
 import 'lenis/dist/lenis.css';
 
@@ -25,6 +26,12 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
 />
 
 <div class="about-hero-spacer" data-about-hero-spacer aria-hidden="true"></div>
+
+<!-- Founders two-slide carousel — begins where the bg-fade above completes
+     (its first trigger fires as the section's top crosses the viewport
+     bottom, 60px after BG_FADE_END). z-index 150 lifts it above the fixed
+     bg-fade (50) and hero layers (100/110), below the nav (270). -->
+<FoundersSection />
 
 <script>
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';

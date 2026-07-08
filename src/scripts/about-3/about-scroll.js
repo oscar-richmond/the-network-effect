@@ -399,15 +399,23 @@ export function initAbout3Scroll() {
 
   initSmoothScrolling();
 
+  // initHeroImageScroll's own cleanup doesn't kill the ScrollTriggers it
+  // creates, so a re-run (settle, then a resize shortly after) would
+  // otherwise stack duplicate/orphaned triggers on top of each other.
+  // The Founders section's triggers (founders-scroll.js, all id-prefixed
+  // 'founders-') share this page and manage their own lifecycle — spare
+  // them, kill everything else (it all belongs to this hero sequence).
+  const killHeroTriggers = () => {
+    ScrollTrigger.getAll().forEach((trigger) => {
+      if (typeof trigger.vars.id === 'string' && trigger.vars.id.startsWith('founders-')) return;
+      trigger.kill();
+    });
+  };
+
   const bootHeroScroll = () => {
     if (cancelled) return;
     cleanupHero();
-    // initHeroImageScroll's own cleanup doesn't kill the ScrollTriggers it
-    // creates, so a re-run (settle, then a resize shortly after) would
-    // otherwise stack duplicate/orphaned triggers on top of each other.
-    // Every ScrollTrigger on this page belongs to this sequence, so it's
-    // safe to clear all of them before rebuilding.
-    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    killHeroTriggers();
     cleanupHero = initHeroImageScroll();
     ScrollTrigger.refresh();
   };
@@ -433,7 +441,7 @@ export function initAbout3Scroll() {
   onResize = () => {
     if (cancelled) return;
     cleanupHero();
-    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    killHeroTriggers();
     cleanupHero = initHeroImageScroll();
     ScrollTrigger.refresh();
   };

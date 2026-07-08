@@ -1,0 +1,105 @@
+---
+/**
+ * Founders section — /about-3 only. Two-slide, scroll-driven carousel:
+ * full-bleed pre-blurred background, sharp portrait, bio + tag list,
+ * large difference-blend name, and a top-right thumbnail index.
+ *
+ * Data-driven from `founders.js` — a third founder is a new array entry.
+ *
+ * Blend-safety contract (do not restructure casually): the crossfade in
+ * `founders-scroll.js` animates opacity on each slide's individual
+ * children (background / portrait / meta / name), NEVER on the
+ * `.founders__slide` wrapper. An opacity-animated ancestor would create
+ * a stacking context that isolates the name's mix-blend-mode: difference
+ * from the backgrounds it must composite against.
+ */
+import { asset } from '../../utils/asset.js';
+import { founders } from '../../data/about-3/founders.js';
+import '../../styles/about-3/founders.css';
+---
+
+<section class="founders" data-founders-section aria-label="The founders">
+  <div class="founders__stage" data-founders-stage>
+    {founders.map((slide, i) => (
+      <article
+        class="founders__slide"
+        data-founder-slide
+        data-founder-id={slide.id}
+        data-founder-index={i}
+      >
+        <img
+          class="founders__bg"
+          data-founder-bg
+          src={asset(slide.background)}
+          alt=""
+          loading="eager"
+          decoding="async"
+          aria-hidden="true"
+        />
+        <div class="founders__portrait" data-founder-portrait>
+          <img src={asset(slide.photo)} alt={slide.alt} loading="eager" decoding="async" />
+        </div>
+        <div class="founders__meta" data-founder-meta>
+          <div class="founders__bio" data-founder-bio>
+            {slide.bio.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+          </div>
+          <p class="founders__tags-heading" data-founder-tags-heading>{slide.tagsHeading}</p>
+          <p class="founders__tags" data-founder-tags>
+            {slide.tags.map((tag, j) => (
+              <>
+                {/* Real spaces around the slash — they're the tag line's only
+                    break opportunities (each tag span is nowrap). */}
+                {j > 0 && <span class="founders__tag-sep" aria-hidden="true">{' / '}</span>}
+                <span class="founders__tag">
+                  {tag.label}
+                  <sup class="founders__tag-index">{tag.index}</sup>
+                </span>
+              </>
+            ))}
+          </p>
+        </div>
+        <h2 class="founders__name-clip">
+          <span class="founders__name" data-founder-name>{slide.name}</span>
+        </h2>
+      </article>
+    ))}
+
+    <!-- Slide index — fixed order (Robbo top, Ashley bottom). Per Figma,
+         the CURRENT slide's thumbnail carries a 0.5px #f9f9f9 border (the
+         .founders__thumb-border overlay, opacity-scrubbed by the
+         crossfade) and the tick + /0n marker sits at the active thumb's
+         vertical centre, travelling to the other during the transition.
+         Hidden entirely under prefers-reduced-motion (static layout). -->
+    <div class="founders__index" data-founders-index aria-hidden="true">
+      {founders.map((slide, i) => (
+        <div class="founders__thumb" data-founders-thumb={i}>
+          <img src={asset(slide.photo)} alt="" loading="eager" decoding="async" />
+          <span class="founders__thumb-border" data-founders-thumb-border={i}></span>
+        </div>
+      ))}
+      <div class="founders__marker" data-founders-marker>
+        <span class="founders__marker-labels">
+          {founders.map((_, i) => (
+            <span class="founders__marker-label" data-founders-label={i}>
+              {`/0${i + 1}`}
+            </span>
+          ))}
+        </span>
+        <span class="founders__marker-tick"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initFoundersScroll } from '../../scripts/about-3/founders-scroll.js';
+
+  let cleanupFounders = initFoundersScroll();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupFounders?.();
+    cleanupFounders = undefined;
+  }, { once: true });
+</script>
