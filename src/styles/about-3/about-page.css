@@ -53,7 +53,11 @@ html.js body.about-page-3.loading::after {
 	}
 }
 
-/* Site chrome — /about layout, solid nav on white background */
+/* Site chrome — /about layout. Each item below carries its own permanent
+   mix-blend-mode: difference — no active/idle toggle, no hit-testing. The
+   container and .home__menu-cta wrapper are layout-only (no background or
+   isolation), so each item's blend composites directly against whatever
+   is behind it live: plain background, hero image, or WebGL canvas. */
 body.about-page-3 .home__topbar--about {
 	position: fixed;
 	top: 0;
@@ -64,8 +68,6 @@ body.about-page-3 .home__topbar--about {
 	grid-template-columns: 1fr auto 1fr;
 	align-items: center;
 	background: transparent;
-	mix-blend-mode: normal;
-	color: #161616;
 	pointer-events: none;
 }
 
@@ -74,8 +76,6 @@ body.about-page-3 .home__topbar--about .home__menu-cta {
 	justify-self: start;
 	position: static;
 	transform: none;
-	color: #161616;
-	mix-blend-mode: normal;
 	pointer-events: auto;
 }
 
@@ -84,8 +84,8 @@ body.about-page-3 .home__topbar--about .home__menu-cta [data-menu-label-menu],
 body.about-page-3 .home__topbar--about .home__menu-cta [data-menu-label-close],
 body.about-page-3 .home__topbar--about .home__menu-cta .home__menu-toggle-close-text,
 body.about-page-3 .home__topbar--about .home__menu-cta .home__menu-toggle-x {
-	color: #161616;
-	mix-blend-mode: normal;
+	color: #ffffff;
+	mix-blend-mode: difference;
 }
 
 body.about-page-3 .home__topbar--about .home__logo {
@@ -99,8 +99,8 @@ body.about-page-3 .home__topbar--about .home__logo {
 	font-weight: 500;
 	line-height: 1;
 	text-align: center;
-	color: #161616;
-	mix-blend-mode: normal;
+	color: #ffffff;
+	mix-blend-mode: difference;
 	pointer-events: none;
 	white-space: nowrap;
 }
@@ -112,19 +112,19 @@ body.about-page-3 .home__topbar--about .home__topbar-dot {
 	margin: 0;
 	padding: 0;
 	transform: translate(-50%, -50%);
-	background-color: #161616;
-	mix-blend-mode: normal;
+	background-color: #ffffff;
+	mix-blend-mode: difference;
 	pointer-events: none;
 }
 
 body.about-page-3 .home__topbar--about .home__topbar-email {
 	grid-column: 3;
 	justify-self: end;
-	color: #161616;
-	mix-blend-mode: normal;
+	color: #ffffff;
+	mix-blend-mode: difference;
 	pointer-events: auto;
 }
 
 body.about-page-3 .home__topbar--about .home__topbar-email:hover {
-	color: #161616;
+	color: #ffffff;
 }

@@ -197,22 +197,142 @@ function initHeroImageScroll() {
     );
   });
 
-  // ── Tagline fade (opacity on wrapper — not internal rotate code) ─────────
-  const tagline = spacer.querySelector('[data-about-hero-tagline]');
-  const middleMoveStart = pinScrollY + STAGGER_TRAVEL;
-  const FADE_TAGLINE_DUR = 200;
+  // ── Phase C exit: bottom-up blur/fade wipe over both text blocks ─────────
+  // REPLACES the old whole-block tagline opacity fade (previously keyed to
+  // the middle image starting to move) — this is now the only exit
+  // animation on the tagline block, and gives the intro block (which
+  // previously had no exit) the same treatment. Visual character sampled
+  // from the rolling word's own exit
+  // (.about-hero__tagline-rotate-inner.is-exiting in about-hero.css):
+  // filter: blur(10px) + fade to opacity 0, both animated together. Here
+  // that endpoint is scroll-scrubbed per line, bottom line first, timed
+  // against the covering image's upward travel so each block is fully
+  // gone by the time the image's leading (top) edge reaches the block's
+  // top. Scrubbing means reverse scroll runs the same wipe backwards
+  // (un-blur, fade-in, bottom-up in reverse) back to fully crisp.
+  //
+  // The word roll keeps running inside its line until that line fades —
+  // nothing internal to the roll (or to the intro's line-reveal entrance,
+  // which drives .lr-inner transforms while this drives .lr-clip
+  // opacity/filter) is touched. Blur is applied per-line (the minimum
+  // sweep unit), no will-change: at most ~9 small elements filter only
+  // while the wipe window is active. The filters create stacking contexts
+  // on the LINE elements only — z-order between the blocks (z 100) and
+  // the images/canvas (z 110) lives on their fixed-position ancestors, so
+  // layering is unaffected, as is the difference-blend on the tagline
+  // wrapper (an ancestor's blend flattens its subtree regardless of
+  // descendant stacking contexts — same reason the rolling word's own
+  // blur already works inside it).
+  const EXIT_BLUR_PX = 10;
+  /** Scroll-px of onset before the covering image's top edge reaches the
+   * block's bottom — the text is visibly disappearing just before the
+   * image arrives, not only once it overlaps. */
+  const WIPE_LEAD = 120;
+  /** Per-line stagger in timeline-seconds (scrub normalizes the total to
+   * the trigger window, so only the ratio to the 1s line duration
+   * matters — 0.5 gives an overlapping, continuous bottom-up sweep). */
+  const WIPE_STAGGER = 0.5;
 
-  if (tagline instanceof HTMLElement) {
+  // scrollY at which image i's top edge sits at screen-space `y` during
+  // its exit travel — inverse of the per-image tween above:
+  // screenTop = restTop + (sequenceOffset + pinScrollY + startOffsets[i]) - scrollY.
+  const scrollWhenImageTopAt = (i, y) =>
+    restTop + sequenceOffset + pinScrollY + startOffsets[i] - y;
+
+  /**
+   * @param {(HTMLElement | HTMLElement[])[]} lineGroups bottom-most line first
+   * @param {number} imgIndex index of the covering image the wipe tracks
+   * @param {DOMRect} rect the block's viewport rect (both blocks are
+   *   position: fixed, so this is scroll-stable)
+   */
+  const buildExitWipe = (lineGroups, imgIndex, rect) => {
+    const groups = lineGroups.filter((g) => (Array.isArray(g) ? g.length > 0 : !!g));
+    if (!groups.length) return;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: spacer,
+        start: `top+=${scrollWhenImageTopAt(imgIndex, rect.bottom + WIPE_LEAD)} top`,
+        end: `top+=${scrollWhenImageTopAt(imgIndex, rect.top)} top`,
+        scrub: true,
+      },
+    });
+
+    groups.forEach((group, i) => {
+      tl.fromTo(
+        group,
+        { opacity: 1, filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          filter: `blur(${EXIT_BLUR_PX}px)`,
+          ease: 'none',
+          duration: 1,
+          immediateRender: false,
+        },
+        i * WIPE_STAGGER,
+      );
+    });
+  };
+
+  if (taglineText instanceof HTMLElement) {
+    // Bottom-up: reverse DOM order (rotate line first, "WE ARE A" last).
+    const taglineLines = Array.from(
+      taglineText.querySelectorAll('.about-hero__tagline-line'),
+    ).reverse();
+    // The visible video is a position-synced SIBLING of the tagline (kept
+    // outside the difference-blend subtree — see AboutHero.astro), so it
+    // must be wiped explicitly, grouped with its host "CULTURAL & " line
+    // (2nd from top = 2nd-from-last bottom-up).
+    const videoOverlay = document.querySelector('[data-about-hero-tagline-img-overlay]');
+    const taglineGroups = taglineLines.map((line, i) =>
+      videoOverlay instanceof HTMLElement && i === taglineLines.length - 2
+        ? [line, videoOverlay]
+        : line,
+    );
+    // After the Phase-A slide (to left: 290px) the block sits almost
+    // entirely under the LEFT image's column — and the left image is also
+    // the first mover, so tracking it guarantees the text is gone before
+    // any of the three images reaches it.
+    buildExitWipe(taglineGroups, 0, taglineText.getBoundingClientRect());
+  }
+
+  if (introText instanceof HTMLElement) {
+    // Per-line clips (bottom-up). The exit animates the .lr-clip wrappers;
+    // the phase-B entrance animates the .lr-inner children's transforms —
+    // separate elements and properties, so the entrance is untouched.
+    const introClips = Array.from(introText.querySelectorAll('.lr-clip')).reverse();
+    // The block sits mostly under the RIGHT image, but the MIDDLE image's
+    // right edge grazes its left edge ~80px of travel earlier — track the
+    // middle image so the text is gone before ANY coverage begins.
+    buildExitWipe(introClips, 1, introText.getBoundingClientRect());
+  }
+
+  // ── Scroll-scrubbed background-image fade (Phase C backdrop) ────────────
+  // Fades the fixed full-viewport backdrop image (see AboutScroll.astro /
+  // about-hero.css, z-index 50 — above the #F9F9F9 base, below everything
+  // else) from 0 → 1, scrubbed linearly to scroll. Both thresholds are
+  // derived from the same per-image exit maths as EXIT_END above — no
+  // hand-tuned scroll numbers:
+  // START — the left image (i = 0, first to travel) has 2/3 of its height
+  //   above the viewport top, i.e. its screen top sits at -cardH * 2/3,
+  //   which is cardH / 3 of scroll before its full exit point exitAt(0).
+  // END — the right image (i = 2, last to travel) has fully cleared the
+  //   top, i.e. exactly its exit point exitAt(2).
+  const BG_FADE_START = exitAt(0) - cardH / 3;
+  const BG_FADE_END = exitAt(2);
+
+  const bgFade = document.querySelector('body.about-page-3 [data-about-hero-bg-fade]');
+  if (bgFade instanceof HTMLElement) {
     gsap.fromTo(
-      tagline,
-      { opacity: 1 },
+      bgFade,
+      { opacity: 0 },
       {
-        opacity: 0,
+        opacity: 1,
         ease: 'none',
         scrollTrigger: {
           trigger: spacer,
-          start: at(middleMoveStart),
-          end: at(middleMoveStart + FADE_TAGLINE_DUR),
+          start: at(BG_FADE_START),
+          end: at(BG_FADE_END),
           scrub: true,
         },
       },

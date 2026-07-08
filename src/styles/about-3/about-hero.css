@@ -320,6 +320,26 @@
 	pointer-events: none;
 }
 
+/* ── Scroll-scrubbed background-image fade (Phase C backdrop) ─────────────── */
+
+/* Full-viewport backdrop image, opacity-scrubbed by about-scroll.js from
+   0 → 1 across the hero images' exit window. z-index 50: above the
+   body's #F9F9F9 base, below the persisted tagline/intro (100), the
+   video overlay (100), the hero images/WebGL canvas (110) and the nav
+   (270). Only opacity is ever animated — fixed position + object-fit
+   cover means zero layout impact. */
+.about-page-3 .about-hero__bg-fade {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	z-index: 50;
+	opacity: 0;
+	pointer-events: none;
+}
+
 /* ── Loading text labels (from /about-2) ───────────────────────────────────── */
 
 .about-page-3 .about-hero__header {

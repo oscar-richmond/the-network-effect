@@ -1,9 +1,28 @@
 ---
 import AboutHero from './AboutHero.astro';
+import { asset } from '../../utils/asset.js';
 import 'lenis/dist/lenis.css';
+
+const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
 ---
 
 <AboutHero />
+
+<!-- Scroll-scrubbed full-viewport backdrop — fades in (opacity only) as
+     the hero images exit; sits above the #F9F9F9 base but below the
+     tagline/intro (z 100), images/WebGL canvas (z 110) and nav (z 270).
+     An eager <img> (not a CSS background) so it starts loading at page
+     init and is decoded long before the fade window ~3000px down the
+     scroll runway. Driven by about-scroll.js via [data-about-hero-bg-fade]. -->
+<img
+  class="about-hero__bg-fade"
+  data-about-hero-bg-fade
+  src={bgFadeSrc}
+  alt=""
+  loading="eager"
+  decoding="async"
+  aria-hidden="true"
+/>
 
 <div class="about-hero-spacer" data-about-hero-spacer aria-hidden="true"></div>
 
