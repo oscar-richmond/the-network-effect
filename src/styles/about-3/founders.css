@@ -160,12 +160,19 @@
 
 /* ── Large name (difference-blend, matching nav/tagline pattern) ─────────── */
 
-/* Figma @1728×966: 73px "Serrif Light", left 255, centre-y 697.5. Light
-   (300) isn't among the project's font files — Serrif Regular (400) is
-   the approved placeholder until a Light weight is added. The h2 is a
-   pure overflow clip for the rise entrance (no opacity/transform/filter,
-   so it never isolates the blend); the inner span carries the blend and
-   is the only element the crossfade/entrance animates. */
+/* Figma @1728×966: 73px Serrif Light, centre-y 697.5, horizontally
+   centred on the portrait (NOT a fixed left — see founders-scroll.js's
+   centerNameOnPortrait, which derives `left` per-slide from the live
+   portrait rect + rendered name width on every build/resize; a fixed
+   left only happened to look right for Robbo because his name's width
+   coincidentally centred near the portrait — Ashley's didn't). The
+   value below is a same-origin fallback for the instant before that JS
+   runs; it's never visible (the name is hidden by opacity/transform
+   gating until then — see the initial-hidden-states block below).
+   The h2 is a pure overflow clip for the rise entrance (no
+   opacity/transform/filter, so it never isolates the blend); the inner
+   span carries the blend and is the only element the crossfade/
+   entrance animates. */
 .about-page-3 .founders__name-clip {
 	position: absolute;
 	left: 14.75%;
@@ -173,14 +180,33 @@
 	margin: 0;
 	font-size: clamp(40px, 4.225vw, 88px);
 	overflow: hidden;
-	z-index: 30;
-	font-weight: 400;
+	/* z-index intentionally NOT set here — see .founders__name below for
+	   why: this clip's only child is the blend span, and a positioned
+	   element with a non-auto z-index unconditionally creates its own
+	   stacking context (CSS stacking rules) regardless of
+	   opacity/transform/filter. With z-index living here, the span was
+	   trapped alone inside an otherwise-empty local stacking context —
+	   nothing else was ever painted inside it for the difference blend
+	   to composite against, so it rendered flat white no matter what
+	   was drawn beneath (canvas, portrait, meta) — this was the actual
+	   root cause of the "blend renders as plain white" bug. */
+	font-weight: 300;
 }
 
 .about-page-3 .founders__name {
 	display: inline-block;
+	/* position: relative + z-index here (not on the clip above) climbs
+	   this element's stacking directly into the STAGE's isolated
+	   context, alongside the canvas/portrait/meta/index it needs to
+	   blend against and layer correctly with — instead of creating a
+	   new, empty one of its own. mix-blend-mode also creates a stacking
+	   context on this element, but that's harmless: it only governs how
+	   this element's own (nonexistent) children would stack, not
+	   whether it can see the backdrop beneath it. */
+	position: relative;
+	z-index: 30;
 	font-family: 'Serrif', serif;
-	font-weight: 400;
+	font-weight: 300;
 	font-size: 1em;
 	line-height: 1.15;
 	white-space: nowrap;
@@ -281,11 +307,14 @@
 		opacity: 0;
 	}
 
-	/* Slide 1's meta children are line-reveal wrapped by founders-scroll.js;
-	   until the .lr-clip wrappers exist, keep the raw paragraphs hidden —
-	   closes the first-paint window exactly like the hero intro fix. */
-	.about-page-3 .founders__slide:first-of-type .founders__meta p:not(:has(> .lr-clip)),
-	.about-page-3 .founders__slide:first-of-type .founders__meta .founders__bio p:not(:has(> .lr-clip)) {
+	/* BOTH slides' meta children are line-reveal wrapped by
+	   founders-scroll.js (slide 1 for the scrubbed entrance, slide 2 for the
+	   timeline-driven reveal at the snap transition's midpoint); until the
+	   .lr-clip wrappers exist, keep the raw paragraphs hidden — closes the
+	   first-paint window exactly like the hero intro fix. After wrapping,
+	   each line's inline translateY(110%) keeps it hidden inside its clip
+	   until its tween runs. */
+	.about-page-3 .founders__meta p:not(:has(> .lr-clip)) {
 		visibility: hidden;
 	}
 

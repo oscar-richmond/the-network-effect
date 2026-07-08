@@ -37,6 +37,26 @@
 @font-face {
   font-family: 'Serrif';
   src:
+    url('../assets/fonts/Serrif-TRIAL-Thin.woff2') format('woff2'),
+    url('../assets/fonts/Serrif-TRIAL-Thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Serrif';
+  src:
+    url('../assets/fonts/Serrif-TRIAL-Light.woff2') format('woff2'),
+    url('../assets/fonts/Serrif-TRIAL-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Serrif';
+  src:
     url('../assets/fonts/Serrif-TRIAL-Regular.woff2') format('woff2'),
     url('../assets/fonts/Serrif-TRIAL-Regular.otf') format('opentype');
   font-weight: 400;

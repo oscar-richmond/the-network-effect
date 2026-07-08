@@ -1,9 +1,15 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { CustomEase } from 'gsap/CustomEase';
 import { wrapLineRevealElement } from '../line-reveal.js';
 import { createFoundersDissolve } from './founders-dissolve.js';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, CustomEase);
+
+/** The site-wide line-reveal curve (line-reveal.js's CSS transition ease),
+ * registered as a GSAP ease so slide 2's timeline-driven line reveal matches
+ * the class-toggle reveals' visual character exactly. */
+const LINE_REVEAL_EASE = CustomEase.create('foundersLineReveal', 'M0,0 C0.42,0 0.24,1 1,1');
 
 /**
  * /about-3 Founders section — two-slide carousel: scroll-scrubbed entrance,
@@ -64,6 +70,27 @@ const TRANSITION_EASE = 'power2.inOut';
 const MARKER_TRAVEL = 64;
 
 /**
+ * Horizontally centre a slide's name on its own portrait — derived live
+ * from both elements' rects (never two hand-tuned per-slide offsets), so
+ * it holds for any name width and self-corrects on resize/font-load.
+ * Sets `left` in px on the CLIP (never `transform`: a transform here
+ * would create a new stacking context on this blend ancestor and
+ * isolate the name from everything painted beneath it — see
+ * founders.css's blend-safety note. `left` has no such effect).
+ * @param {HTMLElement} nameClip the `.founders__name-clip` (h2)
+ * @param {HTMLElement} portrait the same slide's `.founders__portrait`
+ */
+function centerNameOnPortrait(nameClip, portrait) {
+  const slide = nameClip.closest('[data-founder-slide]');
+  if (!(slide instanceof HTMLElement)) return;
+  const slideRect = slide.getBoundingClientRect();
+  const portraitRect = portrait.getBoundingClientRect();
+  const nameWidth = nameClip.getBoundingClientRect().width;
+  const portraitCenter = portraitRect.left + portraitRect.width / 2;
+  nameClip.style.left = `${portraitCenter - slideRect.left - nameWidth / 2}px`;
+}
+
+/**
  * Wrap slide-1's meta paragraphs into line-reveal clips (same technique
  * as the hero intro), resetting to original text first so re-wrapping on
  * resize re-measures line breaks cleanly.
@@ -118,6 +145,10 @@ function buildFoundersTriggers(section, dissolve) {
 
   const q1 = (sel) => slide1.querySelector(sel);
   const q2 = (sel) => slide2.querySelector(sel);
+
+  // Name centering is handled unconditionally in initFoundersScroll
+  // (runs under reduced motion too, where this function never executes)
+  // — not repeated here.
 
   // ── Slide 1 entrance ─────────────────────────────────────────────────
   const bg1 = q1('[data-founder-bg]');
@@ -233,7 +264,6 @@ function buildFoundersTriggers(section, dissolve) {
   }
 
   const textIn = [
-    q2('[data-founder-meta]'),
     q2('[data-founder-name]'),
     section.querySelector('[data-founders-thumb-border="1"]'),
     section.querySelector('[data-founders-label="1"]'),
@@ -243,6 +273,38 @@ function buildFoundersTriggers(section, dissolve) {
       textIn,
       { opacity: 0 },
       { opacity: 1, duration: half, ease: 'power2.out', immediateRender: false },
+      half,
+    );
+  }
+
+  // Slide 2's bio + tags arrive as a LINE REVEAL (masked upward rise, site
+  // curve, per-line stagger) rather than a block fade — but as tweens ON
+  // this timeline, NOT line-reveal.js's class-toggle transitions (a CSS
+  // transition can't be scrubbed backwards by reverse(); wrapMetaLines
+  // strips the inline transition for exactly this reason). Starts at the
+  // midpoint — mirroring slide 1's text-out/text-in phasing — and the
+  // stagger is sized so the LAST line lands exactly at the timeline's end.
+  const meta2 = q2('[data-founder-meta]');
+  // The container itself is gated opacity: 0 at rest (closes a first-paint
+  // leak — see founders.css); only the .lr-inner children are ever
+  // animated, so the container needs a one-time release here, same as
+  // name2's yPercent release below.
+  if (meta2 instanceof HTMLElement) gsap.set(meta2, { opacity: 1 });
+  const meta2Lines = meta2 instanceof HTMLElement ? wrapMetaLines(meta2) : [];
+  if (meta2Lines.length) {
+    const lineDuration = half * 0.7;
+    const staggerSpread = half - lineDuration;
+    tl.fromTo(
+      meta2Lines,
+      { yPercent: 110, y: 0 },
+      {
+        yPercent: 0,
+        y: 0,
+        duration: lineDuration,
+        ease: LINE_REVEAL_EASE,
+        stagger: meta2Lines.length > 1 ? staggerSpread / (meta2Lines.length - 1) : 0,
+        immediateRender: false,
+      },
       half,
     );
   }
@@ -291,10 +353,41 @@ function killFoundersTriggers() {
  */
 export function initFoundersScroll() {
   if (!document.body.classList.contains('about-page-3')) return () => {};
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {};
 
   const section = document.querySelector('body.about-page-3 [data-founders-section]');
   if (!(section instanceof HTMLElement)) return () => {};
+
+  // Name centering is a static layout correction (derived from the
+  // portrait's live rect — see centerNameOnPortrait), not a scroll
+  // animation, so it runs REGARDLESS of reduced motion — including in
+  // the static stacked layout below, where a slide's portrait can sit
+  // at a different width/position than the scroll build assumes.
+  let centeringCancelled = false;
+  const runCentering = () => {
+    if (centeringCancelled) return;
+    section.querySelectorAll('[data-founder-slide]').forEach((slide) => {
+      const clip = slide.querySelector('[data-founder-name-clip]');
+      const portrait = slide.querySelector('[data-founder-portrait]');
+      if (clip instanceof HTMLElement && portrait instanceof HTMLElement) {
+        centerNameOnPortrait(clip, portrait);
+      }
+    });
+  };
+  document.fonts.ready.then(runCentering);
+  let centeringLastW = window.innerWidth;
+  const onCenteringResize = () => {
+    if (window.innerWidth === centeringLastW) return;
+    centeringLastW = window.innerWidth;
+    runCentering();
+  };
+  window.addEventListener('resize', onCenteringResize);
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return () => {
+      centeringCancelled = true;
+      window.removeEventListener('resize', onCenteringResize);
+    };
+  }
 
   // WebGL dissolve — created ONCE (persists across trigger rebuilds; only
   // torn down with the module). null → the timeline builds the DOM
@@ -363,6 +456,8 @@ export function initFoundersScroll() {
   window.addEventListener('resize', onResize);
 
   return () => {
+    centeringCancelled = true;
+    window.removeEventListener('resize', onCenteringResize);
     cancelled = true;
     window.removeEventListener('resize', onResize);
     killFoundersTriggers();
