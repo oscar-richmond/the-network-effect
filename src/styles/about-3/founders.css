@@ -45,6 +45,22 @@
 	inset: 0;
 }
 
+/* ── WebGL dissolve canvas (founders-dissolve.js, JS-appended) ───────────── */
+
+/* Replaces the paint duties of the bg imgs (z 1/2) and portrait (z 10) —
+   below meta (20), name-clip (30) and the index (40), so the name's
+   difference blend composites against live shader output exactly as it
+   did against the DOM images. The DOM imgs become invisible measurement
+   proxies (visibility: hidden, set by JS) once textures are ready. */
+.about-page-3 .founders__canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 10;
+	pointer-events: none;
+}
+
 /* ── Full-bleed background (pre-blurred + pre-darkened asset) ────────────── */
 
 .about-page-3 .founders__bg {
@@ -285,6 +301,10 @@
 @media (prefers-reduced-motion: reduce) {
 	.about-page-3 .founders {
 		height: auto !important; /* JS never runs, but guard against stale inline height */
+	}
+
+	.about-page-3 .founders__canvas {
+		display: none; /* never created under RM (script early-returns) — belt & braces */
 	}
 
 	.about-page-3 .founders__stage {
