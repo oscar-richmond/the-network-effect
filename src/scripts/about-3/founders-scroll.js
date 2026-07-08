@@ -68,6 +68,13 @@ const TRANSITION_DURATION = 1.2;
 const TRANSITION_EASE = 'power2.inOut';
 /** Marker travel between thumb centres: 48px thumb + 16px gap. */
 const MARKER_TRAVEL = 64;
+/** Slide 1 portrait's blur-to-sharp entrance — value sampled from the
+ * hero's rolling-word swap (.about-hero__tagline-rotate-inner.is-entering
+ * / .is-exiting: filter: blur(10px), about-hero.css), the same reference
+ * the hero text's phase-C exit wipe reuses. The reference's 1s CSS ease
+ * becomes scrub-synced linear here so the blur resolves exactly with the
+ * rise movement, and reverses symmetrically with it. */
+const PORTRAIT_ENTRANCE_BLUR_PX = 10;
 
 /**
  * Horizontally centre a slide's name on its own portrait — derived live
@@ -162,10 +169,25 @@ function buildFoundersTriggers(section, dissolve) {
 
   const portrait1 = q1('[data-founder-portrait]');
   if (portrait1) {
+    // filter rides the SAME tween/trigger as the rise (movement values,
+    // window and ease unchanged) so blur-to-sharp is frame-locked to the
+    // motion in both directions. It lives on the portrait wrapper only —
+    // never a shared ancestor — so the stacking context filter creates
+    // can't isolate the name's difference blend (the name is a sibling).
+    // With WebGL active this DOM element doesn't paint (img visibility:
+    // hidden); founders-dissolve.js mirrors the computed blur into the
+    // portrait plane's shader each frame. On the no-WebGL fallback the
+    // CSS blur itself is the visible effect.
     gsap.fromTo(
       portrait1,
-      { opacity: 0, y: 48 },
-      { opacity: 1, y: 0, ease: 'none', scrollTrigger: scrub(...ENTRANCE_PORTRAIT, 'portrait1') },
+      { opacity: 0, y: 48, filter: `blur(${PORTRAIT_ENTRANCE_BLUR_PX}px)` },
+      {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        ease: 'none',
+        scrollTrigger: scrub(...ENTRANCE_PORTRAIT, 'portrait1'),
+      },
     );
   }
 

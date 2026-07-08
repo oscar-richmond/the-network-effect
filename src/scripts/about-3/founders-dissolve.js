@@ -72,6 +72,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform float uMaxDistort;
   uniform float uEdgeSoftness;
   uniform float uRadiusPx;
+  uniform float uBlurPx;
 
   varying vec2 vUv;
 
@@ -143,7 +144,32 @@ const FRAGMENT_SHADER = /* glsl */ `
     vec2 uvFrom = coverUv(vUv, uPlaneSizePx, uImageSizeFrom) + warp * m;
     vec2 uvTo = coverUv(vUv, uPlaneSizePx, uImageSizeTo) - warp * (1.0 - m);
 
-    vec3 col = mix(texture2D(uTextureFrom, uvFrom).rgb, texture2D(uTextureTo, uvTo).rgb, m);
+    vec3 colFrom = texture2D(uTextureFrom, uvFrom).rgb;
+
+    // Entrance blur (uBlurPx mirrors the DOM proxy's CSS filter: blur(),
+    // scrubbed by founders-scroll.js's portrait entrance tween). Poisson-
+    // disc average of the FROM texture only: blur and dissolve never
+    // coexist (blur lives in the entrance window, uProgress still 0), so
+    // the TO texture never needs the extra taps. Disc radius 2× the CSS
+    // blur value approximates a gaussian of that std deviation.
+    if (uBlurPx > 0.01) {
+      vec2 radiusUv = vec2(uBlurPx * 2.0) / uPlaneSizePx;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.326, -0.406) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.840, -0.074) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.696,  0.457) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.203,  0.621) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.962, -0.195) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.473, -0.480) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.519,  0.767) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.185, -0.893) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.507,  0.064) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.896,  0.412) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.322, -0.933) * radiusUv).rgb;
+      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.792, -0.598) * radiusUv).rgb;
+      colFrom /= 13.0;
+    }
+
+    vec3 col = mix(colFrom, texture2D(uTextureTo, uvTo).rgb, m);
 
     // Rounded-corner mask (portrait plane only; uRadiusPx 0 on the bg
     // plane skips it) — ~1px smoothed SDF edge against aliasing.
@@ -190,6 +216,7 @@ class DissolvePlane {
         uMaxDistort: { value: MAX_DISTORT },
         uEdgeSoftness: { value: EDGE_SOFTNESS },
         uRadiusPx: { value: radiusPx },
+        uBlurPx: { value: 0 },
       },
       cullFace: false,
     });
@@ -243,9 +270,16 @@ class DissolvePlane {
     this.mesh.scale.y = (viewport.height * rect.height) / screen.height;
     this.program.uniforms.uPlaneSizePx.value = [rect.width, rect.height];
 
-    // The entrance tweens (founders-scroll.js) animate the proxy's opacity;
-    // read the result rather than duplicating that timing here.
-    this.program.uniforms.uAlpha.value = parseFloat(getComputedStyle(this.proxyEl).opacity) || 0;
+    // The entrance tweens (founders-scroll.js) animate the proxy's opacity
+    // and (portrait only) its filter: blur(); read the results rather than
+    // duplicating that timing here. The proxy's own paint is off (img
+    // visibility: hidden), so its CSS blur exists purely as this mirroring
+    // source — and doubles as the real visible blur on the DOM-fallback
+    // path when WebGL is unavailable.
+    const style = getComputedStyle(this.proxyEl);
+    this.program.uniforms.uAlpha.value = parseFloat(style.opacity) || 0;
+    const blurMatch = style.filter.match(/blur\((\d*\.?\d+)px\)/);
+    this.program.uniforms.uBlurPx.value = blurMatch ? parseFloat(blurMatch[1]) : 0;
   }
 
   setProgress(value) {
