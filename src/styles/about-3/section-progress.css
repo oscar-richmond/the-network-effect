@@ -1,0 +1,92 @@
+/* Section-progress indicator — /about-3 only.
+ *
+ * Fixed to the left edge, vertically centred, read-only (reflects scroll
+ * position, never drives it). All visual state — which rows render, their
+ * opacity, label visibility, dash draw — is set by section-progress.js
+ * from a single active index; this file only provides the resting layout.
+ *
+ * Blend treatment — copied from the nav's actual working mechanism
+ * (.home__topbar in home.css): `mix-blend-mode: difference` sits on THIS
+ * fixed container itself, and the visible children are plain white with
+ * no blend of their own. It cannot go on the leaves instead: the
+ * container's `position: fixed` + `z-index` stacking context is an
+ * isolated compositing group in Chromium, so a difference blend on a
+ * nested leaf only sees the group's transparent interior and flattens to
+ * flat white (that's the bug this arrangement fixes — verified against
+ * the two working blends on this page, the topbar and the persisted
+ * tagline, both of which carry the blend on the fixed element itself).
+ *
+ * With the blend at container level, per-leaf `opacity` (the JS
+ * distance-dimming) just lowers each leaf's alpha inside the group
+ * before the single difference composite — half-strength inversion,
+ * same as the nav email link's 0.6 hover. Ancestors of the leaves must
+ * still stay free of transform/filter/opacity so nothing isolates a
+ * leaf from the group, hence the full-height flex column for vertical
+ * centring instead of `top: 50%; translateY(-50%)`.
+ */
+
+.about-page-3 .section-progress {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 40px;
+	z-index: 200; /* above all page content (founders 150, hero 110), below nav (270) */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	pointer-events: none;
+	/* White children + difference blend = black on light, inverted on imagery */
+	color: #ffffff;
+	mix-blend-mode: difference;
+}
+
+/* Fixed height + hidden overflow so the JS window slide (height -> 0 for
+   rows more than two places from the active row) collapses a row cleanly
+   without its content spilling. */
+.about-page-3 .section-progress__row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 24px;
+	overflow: hidden;
+}
+
+.about-page-3 .section-progress__numeral {
+	font-family: 'Serrif', serif;
+	font-weight: 100;
+	font-size: 12px;
+	line-height: 1;
+	/* Fixed slot so the dashes align regardless of numeral glyph widths. */
+	min-width: 16px;
+	color: #ffffff;
+}
+
+/* Hairline: a full 1px element compressed to 0.25px via transform, which
+   rasterises crisply where a literal 0.25px height would anti-alias away.
+   scaleY is the resting state; the JS active-row "draw" animates scaleX
+   (origin left) and GSAP preserves the scaleY component. */
+.about-page-3 .section-progress__dash {
+	width: 16px;
+	height: 1px;
+	flex-shrink: 0;
+	background-color: #ffffff;
+	transform: scaleY(0.25);
+	transform-origin: left center;
+}
+
+.about-page-3 .section-progress__label {
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 1;
+	text-transform: lowercase;
+	white-space: nowrap;
+	color: #ffffff;
+	opacity: 0; /* revealed by JS on the active row only */
+}
+
+@media (max-width: 1023px) {
+	.about-page-3 .section-progress {
+		display: none;
+	}
+}

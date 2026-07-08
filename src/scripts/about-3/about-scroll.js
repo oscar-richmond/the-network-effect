@@ -402,12 +402,18 @@ export function initAbout3Scroll() {
   // initHeroImageScroll's own cleanup doesn't kill the ScrollTriggers it
   // creates, so a re-run (settle, then a resize shortly after) would
   // otherwise stack duplicate/orphaned triggers on top of each other.
-  // The Founders section's triggers (founders-scroll.js, all id-prefixed
-  // 'founders-') share this page and manage their own lifecycle — spare
-  // them, kill everything else (it all belongs to this hero sequence).
+  // The Founders section's triggers (founders-scroll.js, id-prefixed
+  // 'founders-') and the section-progress indicator's (section-progress.js,
+  // id-prefixed 'section-progress-') share this page and manage their own
+  // lifecycles — spare them, kill everything else (it all belongs to this
+  // hero sequence).
+  const SPARED_TRIGGER_PREFIXES = ['founders-', 'section-progress-'];
   const killHeroTriggers = () => {
     ScrollTrigger.getAll().forEach((trigger) => {
-      if (typeof trigger.vars.id === 'string' && trigger.vars.id.startsWith('founders-')) return;
+      if (
+        typeof trigger.vars.id === 'string' &&
+        SPARED_TRIGGER_PREFIXES.some((prefix) => trigger.vars.id.startsWith(prefix))
+      ) return;
       trigger.kill();
     });
   };
