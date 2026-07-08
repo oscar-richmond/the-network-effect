@@ -31,6 +31,20 @@
 	z-index: 110;
 }
 
+/* WebGL rotating-gallery takeover canvas — same stacking level as the
+   `.about-hero__img` elements it visually replaces (their inner <img> is
+   faded to opacity: 0 once this is ready), so it keeps the same
+   in-front-of-tagline/intro-text layering the DOM images had. Appended by
+   rotating-gallery.js, one per hero settle. */
+.about-hero__gallery-canvas {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 110;
+	pointer-events: none;
+}
+
 .about-page-3 .about-hero__gallery {
 	position: absolute;
 	inset: 0;
@@ -266,6 +280,23 @@
 
 .about-page-3 .about-hero__intro-text p + p {
 	margin-top: 20px;
+}
+
+/* Hidden from FIRST PAINT until the line-reveal setup takes over — closes
+   the ~75ms flash window at settle where revealHero()'s --persist class
+   made the container visible before initHeroImageScroll()'s
+   wrapIntroLines() + GSAP fromTo existed to clip the lines away. The
+   selector stops matching at the exact synchronous moment wrapping
+   inserts the .lr-clip wrappers, whose .lr-inner children are already
+   hidden by their own translateY(110%) — so neither a gap nor a fight
+   between the two hiding mechanisms is possible. Scoped to
+   no-preference: under reduced motion the scroll sequence never boots,
+   lines are never wrapped, and the intro is intentionally left readable
+   at settle. */
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .about-hero__intro-text p:not(:has(> .lr-clip)) {
+		visibility: hidden;
+	}
 }
 
 .about-page-3 .about-hero__intro--persist,

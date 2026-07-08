@@ -2,7 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import imagesLoaded from 'imagesloaded';
-import { createHeroDissolve } from '../hero-dissolve.js';
+import { createRotatingGallery } from './rotating-gallery.js';
 import { wrapLineRevealElement } from '../line-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -35,15 +35,19 @@ function wrapIntroLines(introTextEl) {
 }
 
 /**
- * /about-3 hero image scroll — based on /about-2 initHeroImageScroll with
- * row layout + 80px start offsets (left → middle → right).
+ * /about-3 hero image scroll — row layout + 80px start offsets
+ * (left → middle → right).
  *
- * A new Phase 0 is prepended: the images stay put while (a) the central
- * tagline slides right to its resting position, then (b) a new intro
- * paragraph reveals line by line. Only once Phase 0 completes does the
- * original staggered pin → fade → expand → dissolve sequence begin —
- * that sequence is otherwise untouched, just uniformly shifted later on
- * the scroll timeline by `sequenceOffset`.
+ * Phase 0 is prepended: the images stay put while (a) the central tagline
+ * slides right to its resting position, then (b) a new intro paragraph
+ * reveals line by line. Only once Phase 0 completes does Phase 1 begin:
+ * the staggered upward exit, handled by the WebGL rotating-gallery module
+ * (see `rotating-gallery.js`) — this function's own job for Phase 1 is
+ * just to drive each `.about-hero__img`'s `y` (DOM position, which the
+ * gallery module reads back every frame via `getBoundingClientRect`) from
+ * its rest position up until it fully clears the top of the viewport.
+ * There is no pin, no middle-image expansion, and no dissolve handoff —
+ * those were removed for the WebGL takeover, per the approved plan.
  */
 function initHeroImageScroll() {
   const spacer = document.querySelector('body.about-page-3 [data-about-hero-spacer]');
@@ -54,7 +58,6 @@ function initHeroImageScroll() {
   if (!spacer || imgs.length < 3) return () => {};
 
   const vh = window.innerHeight;
-  const vw = window.innerWidth;
 
   const cardH = parseFloat(imgs[0].style.height || '0');
   const cardW = parseFloat(imgs[1].style.width || '0');
@@ -62,27 +65,28 @@ function initHeroImageScroll() {
   const centreViewportY = (vh - cardH) / 2;
 
   // Row layout — all cards share the same document top.
-  const pinScrollY = Math.max(0, parseFloat(imgs[0].style.top || '0') - centreViewportY);
+  const restTop = parseFloat(imgs[0].style.top || '0');
+  const pinScrollY = Math.max(0, restTop - centreViewportY);
   const startOffsets = [0, STAGGER_TRAVEL, STAGGER_TRAVEL * 2];
 
-  // Right card pins last: starts at pinScrollY + 160, pins after pinScrollY travel.
-  const lastPinScrollY = pinScrollY + startOffsets[2] + pinScrollY;
-
-  const FADE_SIDE_START = lastPinScrollY + 80;
-  const FADE_SIDE_DUR = 200;
-  const EXPAND_START = FADE_SIDE_START + FADE_SIDE_DUR + 60;
-  const EXPAND_DUR = 700;
-  const EXPAND_END = EXPAND_START + EXPAND_DUR;
-
-  const DISSOLVE_DUR = vh;
-  const DISSOLVE_END = EXPAND_END + DISSOLVE_DUR;
+  // Scroll distance (relative to Phase 0's end) for each image to travel
+  // from its rest position to fully clear the top of the viewport, i.e.
+  // until its screen-space top reaches -cardH. Derived from how the
+  // per-image tween below moves `y`: screenTop = restTop - scrollY + y,
+  // and y is held at `startScroll[i]` for all scrollY > startScroll[i], so
+  // screenTop = restTop + startScroll[i] - scrollY. Solving
+  // restTop + startScroll[i] - scrollY <= -cardH for scrollY gives the
+  // per-image exit point below; the last (right) image's is the max and
+  // sizes the required scroll runway, with a small settle buffer.
+  const EXIT_BUFFER = 60;
+  const exitAt = (i) => restTop + pinScrollY + startOffsets[i] + cardH;
+  const EXIT_END = exitAt(2) + EXIT_BUFFER;
 
   // ── Phase 0: tagline slides right, then intro paragraph reveals ──────────
   // Images are untouched throughout — every trigger below is scoped to
-  // `sequenceOffset .. sequenceOffset + DISSOLVE_END`, so the existing
-  // sequence's own internal choreography (pinScrollY, FADE_SIDE_START,
-  // EXPAND_START/END, DISSOLVE_END) is completely unchanged — only its
-  // start point on the scroll timeline moves later.
+  // `sequenceOffset .. sequenceOffset + EXIT_END`, so Phase 1's own internal
+  // choreography (pinScrollY, startOffsets, EXIT_END) is unaffected by
+  // Phase 0 — only its start point on the scroll timeline moves later.
   const PRE_MOVE_DUR = 400; // scroll px for tagline rightward travel — not specified, interpreted
   const PRE_MOVE_TARGET_LEFT = 290; // exact at 1728px viewport per spec
   const PRE_REVEAL_LINE_PX = 130; // scroll px per revealed line — not specified, interpreted
@@ -150,51 +154,46 @@ function initHeroImageScroll() {
   /** Converts an existing-sequence scroll offset to an absolute one. */
   const at = (px) => `top+=${sequenceOffset + px} top`;
 
-  const requiredHeight = sequenceOffset + DISSOLVE_END;
+  // Every trigger above is anchored by absolute scroll-distance-from-top
+  // ('top+=N top'), so the last one (at scroll position `sequenceOffset +
+  // EXIT_END`) must actually be *reachable* by native scroll. Native max
+  // scroll is `document.scrollHeight - vh`, not `scrollHeight` itself — so
+  // the spacer needs an extra `vh` of height on top of the raw trigger
+  // distance, or the final ~viewport-height of triggers (here, the last
+  // image's exit) can never be scrolled to.
+  const requiredHeight = sequenceOffset + EXIT_END + vh;
   spacer.style.height = `${requiredHeight}px`;
 
-  // ── Phase 1: staggered scrub pin (left → middle → right) ───────────────
+  // ── Phase 1: staggered upward exit (left → middle → right) ─────────────
   // Images are absolutely positioned at a fixed document offset, so plain
   // scrolling alone would drift them upward during Phase 0 too. Each image
-  // gets a single scrubbed timeline spanning the FULL range (0..sequenceOffset
-  // +DISSOLVE_END) with two segments: a "hold" segment that counter-scrolls
-  // 1:1 to cancel that drift during Phase 0, then a gap (left untouched, so
-  // the image resumes its original natural rise), then the original
-  // pin-catch-up segment — reproducing the exact pre-existing motion, just
-  // shifted later by sequenceOffset.
+  // gets a single scrubbed tween counter-scrolling `y` 1:1 to cancel that
+  // drift, holding flat until its own start offset is reached; once the
+  // tween's range ends the ScrollTrigger clamps at progress 1 and `y` stays
+  // frozen at that value, so the image's screen position then falls purely
+  // from natural document scroll — rising, and eventually exiting, with no
+  // further JS driving it. The rotating-gallery module (see
+  // `rotating-gallery.js`) reads this resulting screen position back every
+  // frame via `getBoundingClientRect` to drive the WebGL planes; nothing
+  // here needs to know about WebGL at all.
   imgs.forEach((img, i) => {
     const startScroll = pinScrollY + startOffsets[i];
-    const yTravel = DISSOLVE_END - startScroll;
-    if (yTravel <= 0) return;
+    const holdEnd = sequenceOffset + startScroll;
+    if (holdEnd <= 0) return;
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: spacer,
-        start: 'top top',
-        end: at(DISSOLVE_END),
-        scrub: true,
-      },
-    });
-
-    if (sequenceOffset > 0) {
-      tl.fromTo(img, { y: 0 }, { y: sequenceOffset, ease: 'none', duration: sequenceOffset }, 0);
-    }
-
-    tl.fromTo(
+    gsap.fromTo(
       img,
-      { y: sequenceOffset },
+      { y: 0 },
       {
-        y: sequenceOffset + yTravel,
+        y: holdEnd,
         ease: 'none',
-        duration: yTravel,
-        // Without this, GSAP's default immediateRender renders THIS tween's
-        // `from` value (y: sequenceOffset) the instant it's added — even
-        // though its start position is far later in the timeline — which
-        // clobbers the hold tween's correct y:0 render at page load, before
-        // any scroll has occurred.
-        immediateRender: false,
+        scrollTrigger: {
+          trigger: spacer,
+          start: 'top top',
+          end: at(startScroll),
+          scrub: true,
+        },
       },
-      sequenceOffset + startScroll,
     );
   });
 
@@ -220,253 +219,20 @@ function initHeroImageScroll() {
     );
   }
 
-  // ── Phase 2: fade side images (inner <img> only — same as /about-2) ────
-  [imgs[0], imgs[2]].forEach((img) => {
-    const innerImg = img.querySelector('img') ?? img;
-    gsap.fromTo(
-      innerImg,
-      { opacity: 1 },
-      {
-        opacity: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: spacer,
-          start: at(FADE_SIDE_START),
-          end: at(FADE_SIDE_START + FADE_SIDE_DUR),
-          scrub: true,
-        },
-      },
-    );
-  });
-
-  const middleImg = imgs[1];
-  const middleLeft = parseFloat(middleImg.style.left || '0');
-  const docTopMiddle = parseFloat(middleImg.style.top || '0');
-
-  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
-
-  const pinScrollY1 = pinScrollY + startOffsets[1];
-  const travelAfterPin1 = DISSOLVE_END - pinScrollY1;
-
-  // Mirrors the per-image timeline above for the middle image: counter-scroll
-  // hold during Phase 0, flat during its natural pre-pin rise, then catch-up.
-  const getPhase1Y = () => {
-    const scrollY = window.scrollY;
-    if (scrollY <= sequenceOffset) return Math.max(0, scrollY);
-    const effective = scrollY - sequenceOffset;
-    return Math.min(
-      sequenceOffset + Math.max(0, effective - pinScrollY1),
-      sequenceOffset + travelAfterPin1,
-    );
-  };
-
-  const getMiddlePinY = () => {
-    const y = gsap.getProperty(middleImg, 'y');
-    return typeof y === 'number' ? y : getPhase1Y();
-  };
-
-  const syncFullViewportFixed = () => {
-    ensureMiddleInFlow();
-    if (middleImg.style.position !== 'fixed') return;
-
-    const pinY = getMiddlePinY();
-
-    Object.assign(middleImg.style, {
-      top: `${-pinY}px`,
-      left: '0px',
-      width: `${window.innerWidth}px`,
-      height: `${window.innerHeight}px`,
+  // ── WebGL takeover ───────────────────────────────────────────────────────
+  // Swaps in once the DOM entrance (stack → sort) has fully settled — this
+  // function only ever runs post-settle (see initAbout3Scroll below) — so
+  // there is no visible seam between the DOM entrance and the WebGL planes.
+  const gallery = createRotatingGallery(imgs);
+  gallery?.ready.then(() => {
+    imgs.forEach((img) => {
+      const innerImg = img.querySelector('img');
+      if (innerImg) innerImg.style.opacity = '0';
     });
-  };
-
-  /** @type {ReturnType<typeof createHeroDissolve> | null} */
-  let heroDissolve = null;
-
-  const destroyHeroDissolve = () => {
-    heroDissolve?.destroy();
-    heroDissolve = null;
-  };
-
-  const getMiddleImageEl = () => {
-    const img = middleImg.querySelector('img');
-    return img instanceof HTMLImageElement ? img : null;
-  };
-
-  const restoreMiddleImageOpacity = () => {
-    // Scoped to 'opacity' only — killTweensOf(middleImg) with no property
-    // filter would also kill the per-image hold/catch-up y-scrub timeline
-    // created in imgs.forEach, permanently freezing the middle image after
-    // the first reverse-scroll past the expansion point.
-    gsap.killTweensOf(middleImg, 'opacity');
-    const innerImg = getMiddleImageEl();
-    if (innerImg) gsap.killTweensOf(innerImg, 'opacity');
-
-    middleImg.style.opacity = '';
-    gsap.set(middleImg, { clearProps: 'opacity' });
-
-    if (innerImg) {
-      innerImg.style.opacity = '';
-      gsap.set(innerImg, { clearProps: 'opacity' });
-    }
-  };
-
-  const restoreMiddleToFlow = () => {
-    if (middleImg.style.position !== 'fixed') return;
-
-    restoreMiddleImageOpacity();
-
-    Object.assign(middleImg.style, {
-      position: 'absolute',
-      top: `${docTopMiddle}px`,
-      left: `${middleLeft}px`,
-      width: `${cardW}px`,
-      height: `${cardH}px`,
-      zIndex: '',
-      overflow: '',
-    });
-
-    gsap.set(middleImg, { y: getPhase1Y() });
-  };
-
-  const ensureMiddleInFlow = () => {
-    if (window.scrollY < sequenceOffset + EXPAND_START && middleImg.style.position === 'fixed') {
-      restoreMiddleToFlow();
-    }
-  };
-
-  ScrollTrigger.create({
-    trigger: spacer,
-    start: at(pinScrollY1),
-    end: at(EXPAND_START),
-    onUpdate: () => {
-      if (middleImg.style.position === 'fixed') return;
-      gsap.set(middleImg, { y: getPhase1Y() });
-    },
   });
-
-  ScrollTrigger.create({
-    trigger: spacer,
-    start: at(EXPAND_START),
-    onEnter() {
-      const y = getMiddlePinY();
-      Object.assign(middleImg.style, {
-        position: 'fixed',
-        top: `${centreViewportY - y}px`,
-        left: `${middleLeft}px`,
-        width: `${cardW}px`,
-        height: `${cardH}px`,
-        zIndex: '249',
-        overflow: 'hidden',
-      });
-    },
-    onLeaveBack() {
-      restoreMiddleToFlow();
-    },
-  });
-
-  ScrollTrigger.create({
-    trigger: spacer,
-    start: at(EXPAND_START),
-    end: at(EXPAND_END),
-    onUpdate(self) {
-      ensureMiddleInFlow();
-      if (middleImg.style.position !== 'fixed') return;
-
-      const p = easeInOut(self.progress);
-      const y = getMiddlePinY();
-      const fixedTop = centreViewportY * (1 - p) - y;
-      Object.assign(middleImg.style, {
-        top: `${fixedTop}px`,
-        left: `${middleLeft * (1 - p)}px`,
-        width: `${cardW * (1 - p) + vw * p}px`,
-        height: `${cardH * (1 - p) + vh * p}px`,
-      });
-    },
-    onLeave() {
-      syncFullViewportFixed();
-    },
-  });
-
-  ScrollTrigger.create({
-    trigger: spacer,
-    start: at(EXPAND_END),
-    end: at(DISSOLVE_END),
-    onUpdate: syncFullViewportFixed,
-    onEnter: syncFullViewportFixed,
-    onEnterBack: syncFullViewportFixed,
-    onLeaveBack() {
-      if (window.scrollY < sequenceOffset + EXPAND_START) restoreMiddleToFlow();
-    },
-  });
-
-  const handoffToDissolveCanvas = () => {
-    if (heroDissolve) return;
-
-    const imgEl = getMiddleImageEl();
-    if (!imgEl) return;
-
-    syncFullViewportFixed();
-    restoreMiddleImageOpacity();
-
-    heroDissolve = createHeroDissolve(imgEl);
-    heroDissolve.reveal(0);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!heroDissolve) return;
-        middleImg.style.opacity = '0';
-      });
-    });
-  };
-
-  /** @type {ScrollTrigger} */
-  let dissolveTrigger;
-
-  dissolveTrigger = ScrollTrigger.create({
-    trigger: spacer,
-    start: at(EXPAND_END),
-    end: at(DISSOLVE_END),
-    onEnter: syncFullViewportFixed,
-    onUpdate(self) {
-      syncFullViewportFixed();
-      if (self.progress > 0) {
-        handoffToDissolveCanvas();
-        heroDissolve?.setProgress(self.progress);
-      }
-    },
-    onLeave() {
-      heroDissolve?.setProgress(1);
-      destroyHeroDissolve();
-      syncFullViewportFixed();
-      middleImg.style.opacity = '0';
-    },
-    onEnterBack() {
-      syncFullViewportFixed();
-      if (dissolveTrigger.progress > 0) {
-        handoffToDissolveCanvas();
-        heroDissolve?.setProgress(dissolveTrigger.progress);
-      } else {
-        restoreMiddleImageOpacity();
-      }
-    },
-    onLeaveBack() {
-      destroyHeroDissolve();
-      if (window.scrollY < sequenceOffset + EXPAND_START) {
-        restoreMiddleToFlow();
-      } else {
-        restoreMiddleImageOpacity();
-        syncFullViewportFixed();
-      }
-    },
-  });
-
-  const onDissolveResize = () => heroDissolve?.resize();
-
-  window.addEventListener('resize', onDissolveResize);
 
   return () => {
-    window.removeEventListener('resize', onDissolveResize);
-    destroyHeroDissolve();
+    gallery?.destroy();
   };
 }
 

@@ -6,18 +6,31 @@
 import { asset } from '../../utils/asset.js';
 import '../../styles/about-3/about-hero.css';
 
+// Asset-scoped to /about-3 only — /about and /about-2 keep their own
+// originals under /assets/about-hero/ (hero-1/2/3.jpg, hero-2-full.jpg).
 const heroImages = [
-  asset('/assets/about-hero/hero-1.jpg'),
-  asset('/assets/about-hero/hero-2.jpg'),
-  asset('/assets/about-hero/hero-3.jpg'),
+  asset('/assets/about-hero/about-3/hero-1.jpg'),
+  asset('/assets/about-hero/about-3/hero-2.jpg'),
+  asset('/assets/about-hero/about-3/hero-3.jpg'),
 ];
-const heroFullSrc = asset('/assets/about-hero/hero-2-full.jpg');
+// The middle card (i === 1 below) actually renders `heroFullSrc`, not
+// `heroImages[1]` — a leftover from the removed full-screen expansion
+// feature (see git history). Both are pointed at the same new middle
+// image so the correct file renders regardless of which is read.
+const heroFullSrc = asset('/assets/about-hero/about-3/hero-2.jpg');
 
 const stackImages = [
   asset('/assets/about-hero/stack/stack-01.png'),
   asset('/assets/about-hero/stack/stack-03.png'),
   asset('/assets/about-hero/stack/stack-04.png'),
 ];
+
+// Entrance-pile z-index only (left/middle/right, index 0/1/2) — the middle
+// card (index 1) gets the highest value so it lands on TOP of the burst
+// pile, arriving last (see the reordered stagger in `runHeroTimeline`'s
+// `stackEls`). This has no effect on the settled row: `revealHero` below
+// unconditionally resets every card's z-index to 110 once sorted.
+const HERO_STACK_Z_INDEX = [10, 12, 11];
 
 const TAGLINE_STACK_INDEX = 2;
 const taglineStackImage = stackImages[TAGLINE_STACK_INDEX];
@@ -89,7 +102,7 @@ const taglineCulturalVideo = asset('/assets/about-hero/tagline-cultural-video.mp
       ))}
     </div>
     {heroImages.map((src, i) => (
-      <div class="about-hero__img" style={`z-index:${i + 10}`}>
+      <div class="about-hero__img" style={`z-index:${HERO_STACK_Z_INDEX[i]}`}>
         <img src={i === 1 ? heroFullSrc : src} alt="" decoding="async" />
       </div>
     ))}
@@ -382,6 +395,11 @@ const taglineCulturalVideo = asset('/assets/about-hero/tagline-cultural-video.mp
   }
 
   function setChromeHidden(chromeEls) {
+    // JS-applied hide after first paint — only flash-safe because the
+    // `body.loading::before` full-page loader overlay (z-index 1000, set
+    // in the initial HTML class) covers everything until bootAboutHero
+    // removes it. If the loader is ever re-timed or removed, this hide
+    // must move to a CSS-level initial state or the chrome will flash.
     gsap.set(chromeEls, { opacity: 0 });
     chromeEls.forEach((el) => {
       if (isChromeMotionItem(el)) {
@@ -467,7 +485,14 @@ const taglineCulturalVideo = asset('/assets/about-hero/tagline-cultural-video.mp
     gsap.set(taglineText, { opacity: 0 });
 
     const tl = gsap.timeline();
-    const stackEls = [...flashImgs, ...imgs];
+    // Burst-in stagger order only (arrival onto the pile) — middle (imgs[1])
+    // goes last so it's the last card to land, sitting on top per its
+    // z-index (see HERO_STACK_Z_INDEX). `imgs` itself keeps its original
+    // left/middle/right order everywhere else (gsap.set above, the sort/fly
+    // stagger below, and every /about-3 scroll script), so nothing about
+    // the final row or the sort animation changes.
+    const stackOrderImgs = [imgs[0], imgs[2], imgs[1]];
+    const stackEls = [...flashImgs, ...stackOrderImgs];
     const stackTotal = (stackEls.length - 1) * BURST_STAGGER + BURST_DUR;
 
     tl.addLabel('textIn', 0.2);
