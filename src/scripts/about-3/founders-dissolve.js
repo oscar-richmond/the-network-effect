@@ -2,22 +2,26 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
 
 /**
  * /about-3 Founders section — WebGL noise-dissolve for the slide 1 → 2
- * image transition (full-bleed background + sharp portrait). OGL, following
- * rotating-gallery.js's established patterns: inline glsl template-string
- * shaders, DOM-rect-synced plane sizing, own rAF, resize/destroy lifecycle.
+ * PORTRAIT transition. OGL, following rotating-gallery.js's established
+ * patterns: inline glsl template-string shaders, DOM-rect-synced plane
+ * sizing, own rAF, resize/destroy lifecycle.
  *
- * Architecture (per the approved plan):
- * - TWO planes, one per image PAIR (background pair, portrait pair) — the
- *   dissolve needs both slides' textures in one fragment shader
- *   (uTextureFrom/uTextureTo mixed per-pixel), and both slides' backgrounds /
- *   portraits occupy identical rects, so one quad per pair covers both
- *   endpoints exactly.
- * - Invisible DOM proxies: each plane mirrors slide 1's corresponding DOM
- *   element every frame via getBoundingClientRect() (position/size — the
- *   portrait's entrance rise comes free) and reads its computed opacity into
- *   uAlpha (the scroll-scrubbed entrance fades stay owned by GSAP in
- *   founders-scroll.js; this module only reads their result). The four
- *   slide <img>s are set visibility: hidden once textures are ready —
+ * Architecture:
+ * - ONE plane, for the portrait pair only — backgrounds are now a DOM
+ *   media layer (video for slide 1, image for slide 2) with a live
+ *   `.founders__overlay` treatment above them (see FoundersSection.astro),
+ *   which supersedes the old paired background plane this module used to
+ *   also carry. A pre-treated background texture can't play video, so the
+ *   treatment moved off this module entirely. The dissolve needs both
+ *   slides' portrait textures in one fragment shader (uTextureFrom/
+ *   uTextureTo mixed per-pixel), and both slides' portraits occupy an
+ *   identical rect, so one quad covers both endpoints exactly.
+ * - Invisible DOM proxy: the plane mirrors slide 1's portrait wrapper every
+ *   frame via getBoundingClientRect() (position/size — the portrait's
+ *   entrance rise comes free) and reads its computed opacity into uAlpha
+ *   (the scroll-scrubbed entrance fades stay owned by GSAP in
+ *   founders-scroll.js; this module only reads their result). The two
+ *   portrait <img>s are set visibility: hidden once textures are ready —
  *   rects/opacity still measurable, paint off.
  * - uProgress is written straight through from the snap timeline's proxy
  *   tween (no lerp-toward-target — the tween is already smooth and eased,
@@ -25,8 +29,9 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
  *   GSAP renders exact final values at completion, so distortion
  *   (sin(uProgress·π)) is exactly zero at both resting endpoints.
  * - Returns null if the WebGL renderer can't be created — the caller keeps
- *   the DOM image crossfade as the degradation path (same console.warn +
- *   fallback contract as createRotatingGallery).
+ *   the DOM portrait crossfade as the degradation path (same console.warn +
+ *   fallback contract as createRotatingGallery). The background media
+ *   crossfade is unconditional DOM either way (see founders-scroll.js).
  */
 
 /** Noise frequency in UV space — higher = smaller dissolve cells. */
@@ -302,12 +307,10 @@ export function createFoundersDissolve(stage) {
   if (slides.length < 2) return null;
   const [slide1, slide2] = slides;
 
-  const bgFrom = slide1.querySelector('[data-founder-bg]');
-  const bgTo = slide2.querySelector('[data-founder-bg]');
   const portraitWrap = slide1.querySelector('[data-founder-portrait]');
   const portraitFrom = portraitWrap?.querySelector('img');
   const portraitTo = slide2.querySelector('[data-founder-portrait] img');
-  if (!(bgFrom && bgTo && portraitWrap && portraitFrom && portraitTo)) return null;
+  if (!(portraitWrap && portraitFrom && portraitTo)) return null;
 
   const canvas = document.createElement('canvas');
   canvas.className = 'founders__canvas';
@@ -334,21 +337,15 @@ export function createFoundersDissolve(stage) {
   const scene = new Transform();
   const geometry = new Plane(gl);
 
-  // Draw order: full-bleed background first, portrait composited above it.
+  // Single plane — the portrait dissolve. Backgrounds are DOM now (see
+  // module doc comment above).
   const planes = [
-    new DissolvePlane(gl, geometry, scene, {
-      proxyEl: bgFrom,
-      imgFrom: bgFrom,
-      imgTo: bgTo,
-      radiusPx: 0,
-      renderOrder: 0,
-    }),
     new DissolvePlane(gl, geometry, scene, {
       proxyEl: portraitWrap,
       imgFrom: portraitFrom,
       imgTo: portraitTo,
       radiusPx: PORTRAIT_RADIUS_PX,
-      renderOrder: 1,
+      renderOrder: 0,
     }),
   ];
 
@@ -388,7 +385,7 @@ export function createFoundersDissolve(stage) {
   // can never show blank imagery, however slow the load. visibility (not
   // opacity/display) keeps their rects and computed opacity measurable for
   // the per-frame proxy mirroring above.
-  const proxyImgs = [bgFrom, bgTo, portraitFrom, portraitTo];
+  const proxyImgs = [portraitFrom, portraitTo];
   const ready = Promise.all(planes.map((p) => p.readyPromise)).then(() => {
     if (disposed) return;
     proxyImgs.forEach((img) => {

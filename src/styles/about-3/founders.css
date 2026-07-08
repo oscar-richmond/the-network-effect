@@ -24,6 +24,17 @@
 	z-index: 150;
 	width: 100%;
 	pointer-events: none;
+	/* Named constant for the live treatment's blur radius (measured against
+	   the Figma spec — background blur 250 ≈ 125px CSS blur at this frame's
+	   1728px reference — and confirmed against the previously-committed
+	   pre-treated JPG look). Lives on .founders__media, NOT as a
+	   backdrop-filter on the overlay above it: backdrop-filter over a
+	   <video> element has no visible effect in Chromium when the video is
+	   composited via its hardware-overlay fast path (confirmed live — the
+	   same backdrop-filter overlay blurred the plain <img> correctly but
+	   left the <video> perfectly sharp). filter: blur() applied directly to
+	   the media element forces normal compositing and works for both. */
+	--founders-blur-px: 125px;
 }
 
 .about-page-3 .founders__stage {
@@ -47,11 +58,13 @@
 
 /* ── WebGL dissolve canvas (founders-dissolve.js, JS-appended) ───────────── */
 
-/* Replaces the paint duties of the bg imgs (z 1/2) and portrait (z 10) —
-   below meta (20), name-clip (30) and the index (40), so the name's
-   difference blend composites against live shader output exactly as it
-   did against the DOM images. The DOM imgs become invisible measurement
-   proxies (visibility: hidden, set by JS) once textures are ready. */
+/* Portrait-only now (see founders-dissolve.js) — sits above the media
+   groups (1/2) AND the treatment overlay (5), below meta (20), name-clip
+   (30) and the index (40), so the name's difference blend composites
+   against the live media+overlay+portrait result exactly as it did
+   against the old DOM images. The portrait DOM imgs become invisible
+   measurement proxies (visibility: hidden, set by JS) once textures are
+   ready. */
 .about-page-3 .founders__canvas {
 	position: absolute;
 	inset: 0;
@@ -61,22 +74,69 @@
 	pointer-events: none;
 }
 
-/* ── Full-bleed background (pre-blurred + pre-darkened asset) ────────────── */
+/* ── Full-bleed RAW media (video for slide 1, image for slide 2) ─────────── */
 
-.about-page-3 .founders__bg {
+/* Raw source files — no asset-level blur/darken baked in. The live
+   treatment is applied HERE, per-media, via filter: blur() (see
+   .founders__media below) plus the plain darken .founders__overlay above
+   it, rather than as a single backdrop-filter overlay — see the
+   --founders-blur-px comment on .founders for why. */
+.about-page-3 .founders__media-group {
 	position: absolute;
 	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
 	z-index: 1;
 }
 
-.about-page-3 .founders__slide + .founders__slide .founders__bg {
-	/* Slide 2's background crossfades in ON TOP of slide 1's (which stays
+.about-page-3 .founders__slide + .founders__slide .founders__media-group {
+	/* Slide 2's media crossfades in ON TOP of slide 1's (which stays
 	   opaque beneath) — a single fade, no mid-fade dip to the layers below. */
 	z-index: 2;
+}
+
+.about-page-3 .founders__media {
+	position: absolute;
+	/* Overscan beyond the stage's inset:0 bounds so the heavy blur radius
+	   samples real (scaled-up) image/video content at the edges instead of
+	   fading toward transparent against .founders__stage's overflow:
+	   hidden clip — a plain inset:0 box would show a darker halo band
+	   around all four edges once blurred this far. */
+	inset: -8%;
+	width: 116%;
+	height: 116%;
+	object-fit: cover;
+	object-position: center;
+	filter: blur(var(--founders-blur-px));
+}
+
+/* Raw poster fallback — hidden unless the video load/play fails (JS toggles
+   .is-video-fallback on the media-group; see founders-scroll.js's
+   createFoundersVideoController). Same rect/z as the video it replaces. */
+.about-page-3 .founders__media-fallback {
+	opacity: 0;
+}
+
+.about-page-3 .founders__media-group.is-video-fallback .founders__media[data-founder-media-type='video'] {
+	opacity: 0;
+}
+
+.about-page-3 .founders__media-group.is-video-fallback .founders__media-fallback {
+	opacity: 1;
+}
+
+/* ── Live treatment overlay (rgba(22,22,22,0.2) darken only) ─────────────── */
+
+/* ONE element for the whole stage — sits above BOTH media groups, below
+   the portrait canvas/meta/name/index. Persistent: revealed by the same
+   entrance tween as slide 1's media group (founders-scroll.js) and never
+   animated again — the slide 1↔2 transition only crossfades the media
+   underneath it. Darken only — no backdrop-filter here; the blur lives on
+   .founders__media itself (see --founders-blur-px on .founders above). */
+.about-page-3 .founders__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	background: rgba(22, 22, 22, 0.2);
+	pointer-events: none;
 }
 
 /* ── Sharp portrait ──────────────────────────────────────────────────────── */
@@ -305,7 +365,8 @@
    Scoped to no-preference: under reduced motion the script never boots
    and the static layout below shows everything. */
 @media (prefers-reduced-motion: no-preference) {
-	.about-page-3 .founders__bg,
+	.about-page-3 .founders__media-group,
+	.about-page-3 .founders__overlay,
 	.about-page-3 .founders__portrait,
 	.about-page-3 .founders__index {
 		opacity: 0;
@@ -352,7 +413,14 @@
 	}
 
 	.about-page-3 .founders__stage {
-		position: static;
+		/* relative (not static): the single stage-level .founders__overlay
+		   is absolute/inset:0, so it needs stage's auto height (computed
+		   from the in-flow stacked slides below) as its containing block —
+		   static would let it escape to some ancestor further up the tree
+		   and cover the wrong region (or none at all). Still "no fixed
+		   layer": relative keeps the stage in normal flow exactly like
+		   static would. */
+		position: relative;
 		height: auto;
 		overflow: visible;
 	}

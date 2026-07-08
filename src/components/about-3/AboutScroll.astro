@@ -14,7 +14,45 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
      tagline/intro (z 100), images/WebGL canvas (z 110) and nav (z 270).
      An eager <img> (not a CSS background) so it starts loading at page
      init and is decoded long before the fade window ~3000px down the
-     scroll runway. Driven by about-scroll.js via [data-about-hero-bg-fade]. -->
+     scroll runway. Driven by about-scroll.js via [data-about-hero-bg-fade].
+
+     THIS IS A STATIC STAND-IN FOR THE LIVE FOUNDERS BACKGROUND IT HANDS
+     OFF TO — it must be baked from the SAME source as slide 1's video
+     (founders.js's media.src) using the SAME treatment as the live
+     `.founders__overlay`/`.founders__media` filter, or the handoff reads
+     as two mismatched scenes (diagnosed once already: this file was
+     previously baked from the pre-rearchitecture Robbo PHOTO background,
+     stale the moment slide 1 became a video of an unrelated scene).
+     Confirmed via live scroll-speed testing (fast fling + simulated slow
+     scroll, video sampled at t≈0s and t≈3.76s at the takeover moment):
+     125px of blur fully masks the frozen-frame → playing-video transition
+     — no visible "pop" at any point in the loop — so a single representative
+     frame is sufficient; no need to special-case scroll speed.
+
+     REGENERATE THIS FILE whenever founders.js's Robbo `media.src` changes
+     (e.g. the licensed clip replacing the stock preview) — same crop
+     target (1024×749), same blur radius (86.5px Gaussian ≈ the live
+     overlay's 125px CSS blur, per the original asset-spec measurement),
+     same darken (20% blend with #161616), JPEG quality 80:
+
+       ffmpeg -y -ss 0 -i public/assets/about-hero/about-3/founders-bg-robbo.mp4 \
+         -frames:v 1 /tmp/bg-fade-frame.jpg
+
+       python3 -c "
+       from PIL import Image, ImageFilter
+       src = Image.open('/tmp/bg-fade-frame.jpg').convert('RGB')
+       sw, sh = src.size
+       target_aspect = 1024 / 749
+       crop_w = int(sh * target_aspect)
+       left = (sw - crop_w) // 2
+       cropped = src.crop((left, 0, left + crop_w, sh)).resize((1024, 749), Image.LANCZOS)
+       blurred = cropped.filter(ImageFilter.GaussianBlur(radius=86.5))
+       treated = Image.blend(blurred, Image.new('RGB', blurred.size, (22, 22, 22)), 0.2)
+       treated.save('public/assets/about-hero/about-3/bg-fade.jpg', quality=80)
+       "
+
+     Then re-verify the handoff live (this file's history has the full
+     checklist) before committing. -->
 <img
   class="about-hero__bg-fade"
   data-about-hero-bg-fade

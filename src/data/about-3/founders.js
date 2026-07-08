@@ -7,12 +7,20 @@
  * both Figma frames.
  *
  * Data-driven so a third founder/team member is a new array entry, not
- * new markup. `photo` doubles as the sharp portrait and the thumbnail;
- * `background` is a pre-blurred + pre-darkened full-bleed asset (blur and
- * the Figma rgba(22,22,22,0.2) overlay baked into the file — no runtime
- * backdrop-filter).
+ * new markup. `photo` doubles as the sharp portrait and the thumbnail.
+ *
+ * `media` is the RAW (untreated) full-bleed background asset — blur and
+ * the Figma rgba(22,22,22,0.2) overlay are now a LIVE `.founders__overlay`
+ * layer (backdrop-filter + rgba background) rendered above the media, not
+ * baked into the file. This lets slide 1's media be a playing video: a
+ * pre-treated JPG/MP4 can't carry motion, so the treatment moved from the
+ * asset to the DOM.
  *
  * @typedef {{ label: string, index: string }} FounderTag
+ * @typedef {
+ *   { type: 'video', src: string, poster: string } |
+ *   { type: 'image', src: string }
+ * } FounderMedia
  * @typedef {{
  *   id: string,
  *   name: string,
@@ -20,7 +28,7 @@
  *   tagsHeading: string,
  *   tags: FounderTag[],
  *   photo: string,
- *   background: string,
+ *   media: FounderMedia,
  *   alt: string,
  * }} FounderSlide
  */
@@ -45,7 +53,21 @@ export const founders = [
       { label: 'Design', index: '/07' },
     ],
     photo: '/assets/about-scroll/robbo-team.png',
-    background: '/assets/about-hero/about-3/founders-bg-robbo.jpg',
+    media: {
+      type: 'video',
+      // Stock preview stand-in — spec-for-purpose only. Swap this file
+      // (same path) for the licensed clip; no code changes needed.
+      // IMPORTANT: also regenerate public/assets/about-hero/about-3/bg-fade.jpg
+      // from the new clip's first frame at swap time — see the recipe
+      // comment above bgFadeSrc in AboutScroll.astro. bg-fade is a static
+      // frame used as the hero→founders handoff backdrop; left pointing at
+      // the old clip's frame it goes visually stale the moment this file
+      // changes (this exact staleness — bg-fade baked from the ORIGINAL
+      // pre-rearchitecture Robbo photo, not this video — was diagnosed and
+      // fixed once already).
+      src: '/assets/about-hero/about-3/founders-bg-robbo.mp4',
+      poster: '/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg',
+    },
     alt: 'Portrait of Robbo McCallum',
   },
   {
@@ -63,7 +85,10 @@ export const founders = [
       { label: 'Authenticity Within Culture', index: '/05' },
     ],
     photo: '/assets/about-scroll/ashley-team.png',
-    background: '/assets/about-hero/about-3/founders-bg-ashley.jpg',
+    media: {
+      type: 'image',
+      src: '/assets/about-scroll/ashley-team.png',
+    },
     alt: 'Portrait of Ashley Walters',
   },
 ];

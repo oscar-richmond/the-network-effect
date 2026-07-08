@@ -1,14 +1,26 @@
 ---
 /**
  * Founders section — /about-3 only. Two-slide, scroll-driven carousel:
- * full-bleed pre-blurred background, sharp portrait, bio + tag list,
+ * full-bleed RAW media (video for slide 1, image for slide 2) with a
+ * LIVE blur+darken overlay above it, sharp portrait, bio + tag list,
  * large difference-blend name, and a top-right thumbnail index.
  *
  * Data-driven from `founders.js` — a third founder is a new array entry.
  *
+ * Two-layer background architecture (supersedes the old pre-treated
+ * WebGL background plane): each slide's `.founders__media-group` holds
+ * its RAW media (untreated — slide 1's video, or slide 2's raw image).
+ * The blur lives on the media itself (`filter: blur()` in founders.css —
+ * backdrop-filter on a separate overlay has no visible effect over a
+ * <video> in Chromium once it's composited via its hardware-overlay fast
+ * path, confirmed live); ONE shared `.founders__overlay` sits above BOTH
+ * media groups and applies only the rgba(22,22,22,0.2) darken. The
+ * overlay is not per-slide — it's persistent and never animates once
+ * revealed (see founders-scroll.js's entrance tween).
+ *
  * Blend-safety contract (do not restructure casually): the crossfade in
  * `founders-scroll.js` animates opacity on each slide's individual
- * children (background / portrait / meta / name), NEVER on the
+ * children (media-group / portrait / meta / name), NEVER on the
  * `.founders__slide` wrapper. An opacity-animated ancestor would create
  * a stacking context that isolates the name's mix-blend-mode: difference
  * from the backgrounds it must composite against.
@@ -27,15 +39,45 @@ import '../../styles/about-3/founders.css';
         data-founder-id={slide.id}
         data-founder-index={i}
       >
-        <img
-          class="founders__bg"
-          data-founder-bg
-          src={asset(slide.background)}
-          alt=""
-          loading="eager"
-          decoding="async"
-          aria-hidden="true"
-        />
+        <div class="founders__media-group" data-founder-media-group>
+          {slide.media.type === 'video' ? (
+            <>
+              <video
+                class="founders__media"
+                data-founder-media
+                data-founder-media-type="video"
+                muted
+                playsinline
+                loop
+                preload="none"
+                poster={asset(slide.media.poster)}
+                aria-hidden="true"
+              >
+                <source src={asset(slide.media.src)} type="video/mp4" />
+              </video>
+              <img
+                class="founders__media founders__media-fallback"
+                data-founder-media-fallback
+                src={asset(slide.media.poster)}
+                alt=""
+                loading="eager"
+                decoding="async"
+                aria-hidden="true"
+              />
+            </>
+          ) : (
+            <img
+              class="founders__media"
+              data-founder-media
+              data-founder-media-type="image"
+              src={asset(slide.media.src)}
+              alt=""
+              loading="eager"
+              decoding="async"
+              aria-hidden="true"
+            />
+          )}
+        </div>
         <div class="founders__portrait" data-founder-portrait>
           <img src={asset(slide.photo)} alt={slide.alt} loading="eager" decoding="async" />
         </div>
@@ -65,6 +107,12 @@ import '../../styles/about-3/founders.css';
         </h2>
       </article>
     ))}
+
+    <!-- Single live treatment layer above BOTH media groups, below the
+         portrait/meta/name/index — see the component doc comment above.
+         Persistent once revealed; never animates again after its entrance
+         fade-in (founders-scroll.js). -->
+    <div class="founders__overlay" data-founders-overlay aria-hidden="true"></div>
 
     <!-- Slide index — fixed order (Robbo top, Ashley bottom). Per Figma,
          the CURRENT slide's thumbnail carries a 0.5px #f9f9f9 border (the

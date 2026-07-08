@@ -37,16 +37,29 @@ const LINE_REVEAL_EASE = CustomEase.create('foundersLineReveal', 'M0,0 C0.42,0 0
  *   SNAP_THRESHOLD         crossing plays the dissolve + text swap (timed)
  *   … TOTAL_RUNWAY         hold — slide 2 fully shown; end of page
  *
- * Imagery: the WebGL noise dissolve (founders-dissolve.js) supersedes the
- * DOM image crossfade — the timeline drives its uProgress via a proxy
- * tween. If WebGL is unavailable the module returns null and the timeline
- * carries DOM opacity tweens instead (today's crossfade as degradation).
+ * Imagery: backgrounds are a DOM media-group crossfade (slide 2's group
+ * fades in on top of slide 1's, which stays opaque beneath — single fade,
+ * no mid-fade dip). The portrait uses the WebGL noise dissolve
+ * (founders-dissolve.js), which supersedes the DOM portrait crossfade —
+ * the timeline drives its uProgress via a proxy tween. If WebGL is
+ * unavailable the module returns null and the timeline carries a DOM
+ * portrait opacity crossfade instead (today's crossfade as degradation);
+ * the background media crossfade is unconditional either way.
+ *
+ * Slide 1's media is a raw (untreated) video; the visual treatment
+ * (blur + darken) lives in ONE persistent `.founders__overlay` layer
+ * above both media groups, revealed by the same entrance tween as the
+ * media group itself and never touched again — see buildFoundersTriggers.
+ * Playback lifecycle (play only while the section is active AND slide 1
+ * is showing or the transition is in progress; pause otherwise/on
+ * cleanup/never under reduced motion) is managed by
+ * initFoundersVideoLifecycle below.
  *
  * Blend safety (see founders.css): all transition opacity animates on each
  * slide's individual children — never on a wrapper above the name — so the
  * name's mix-blend-mode: difference keeps compositing against the full
- * backgrounds (now canvas content, still ordinary paintable content in the
- * stage's isolated stacking context) throughout.
+ * backgrounds (media + overlay + canvas, still ordinary paintable content
+ * in the stage's isolated stacking context) throughout.
  */
 
 /** Entrance sub-windows (px from handoff). */
@@ -124,13 +137,86 @@ function wrapMetaLines(meta) {
 }
 
 /**
+ * One-time video playback lifecycle controller for slide 1's raw video
+ * media. Constructed once in initFoundersScroll (never under reduced
+ * motion — see its early return) and reused across resize rebuilds: the
+ * video element itself never changes, so its one-time setup (preload
+ * upgrade, error listener) must not repeat on every rebuild the way the
+ * scrubbed triggers do. Per-build wiring (the section-active window, the
+ * snap timeline reference) is supplied separately by buildFoundersTriggers
+ * / initFoundersScroll's build() via setActive/setTimeline.
+ *
+ * Fallback contract: any video load/play failure (network error, decode
+ * error, or a rejected play() promise — e.g. an autoplay policy block)
+ * permanently swaps to the raw poster image already sitting in the same
+ * media-group (see FoundersSection.astro) via a CSS class — the poster
+ * still sits UNDER the live overlay, so the treatment is unaffected.
+ * @param {HTMLElement} section
+ * @returns {{ setActive: (v: boolean) => void, setTimeline: (tl: gsap.core.Timeline | undefined) => void, destroy: () => void } | null}
+ */
+function createFoundersVideoController(section) {
+  const video = section.querySelector('[data-founder-media][data-founder-media-type="video"]');
+  const mediaGroup = video?.closest('[data-founder-media-group]');
+  if (!(video instanceof HTMLVideoElement) || !(mediaGroup instanceof HTMLElement)) return null;
+
+  let failed = false;
+  let sectionActive = false;
+  /** @type {gsap.core.Timeline | undefined} */
+  let tl;
+
+  const updatePlayback = () => {
+    if (failed) return;
+    const shouldPlay = sectionActive && (!tl || tl.progress() < 1);
+    if (shouldPlay) {
+      if (video.paused) video.play().catch(handleFailure);
+    } else if (!video.paused) {
+      video.pause();
+    }
+  };
+
+  function handleFailure() {
+    if (failed) return;
+    failed = true;
+    mediaGroup.classList.add('is-video-fallback');
+    video.pause();
+  }
+
+  video.addEventListener('error', handleFailure);
+  // Upgrade from the reduced-motion-safe `preload="none"` server default
+  // (FoundersSection.astro) — reaching this module at all already means
+  // reduced motion is off, so it's safe to start buffering now.
+  video.preload = 'auto';
+  video.load();
+
+  return {
+    setActive(value) {
+      sectionActive = value;
+      updatePlayback();
+    },
+    setTimeline(nextTl) {
+      tl = nextTl;
+      // onUpdate only fires on live play()/reverse() ticks, not on the
+      // playhead-jump renders build()'s state-restoration uses — callers
+      // re-invoke setTimeline after any such jump to resync explicitly.
+      tl?.eventCallback('onUpdate', updatePlayback);
+      updatePlayback();
+    },
+    destroy() {
+      video.removeEventListener('error', handleFailure);
+      video.pause();
+    },
+  };
+}
+
+/**
  * Build all triggers for the section. Assumes fonts are ready (line
  * wrapping measures rendered text).
  * @param {HTMLElement} section
  * @param {ReturnType<typeof createFoundersDissolve>} dissolve WebGL module, or null (DOM fallback)
+ * @param {ReturnType<typeof createFoundersVideoController>} videoController null when slide 1 has no video
  * @returns {gsap.core.Timeline | undefined} the snap transition timeline (kill on rebuild)
  */
-function buildFoundersTriggers(section, dissolve) {
+function buildFoundersTriggers(section, dissolve, videoController) {
   const slides = Array.from(section.querySelectorAll('[data-founder-slide]'));
   if (slides.length < 2) return;
   const [slide1, slide2] = slides;
@@ -158,12 +244,18 @@ function buildFoundersTriggers(section, dissolve) {
   // — not repeated here.
 
   // ── Slide 1 entrance ─────────────────────────────────────────────────
-  const bg1 = q1('[data-founder-bg]');
-  if (bg1) {
+  // Media group and the shared treatment overlay fade in together, same
+  // window — the overlay has no CSS default-visible state (see founders.css
+  // initial-hidden-states), so nothing paints before this crossing (closes
+  // the hero-leak gap the same way the old bg1 entrance did).
+  const mediaGroup1 = q1('[data-founder-media-group]');
+  const overlay = section.querySelector('[data-founders-overlay]');
+  const bgEntranceTargets = [mediaGroup1, overlay].filter(Boolean);
+  if (bgEntranceTargets.length) {
     gsap.fromTo(
-      bg1,
+      bgEntranceTargets,
       { opacity: 0 },
-      { opacity: 1, ease: 'none', scrollTrigger: scrub(...ENTRANCE_BG, 'bg1') },
+      { opacity: 1, ease: 'none', scrollTrigger: scrub(...ENTRANCE_BG, 'media1') },
     );
   }
 
@@ -237,6 +329,21 @@ function buildFoundersTriggers(section, dissolve) {
   const half = TRANSITION_DURATION / 2;
   const tl = gsap.timeline({ paused: true });
 
+  // Background media crossfade — ALWAYS DOM now (the background WebGL
+  // plane is gone; live video can't be a shader texture cheaply). Slide 1's
+  // media-group stays opaque underneath (untouched here) — slide 2's fades
+  // in over it (z-index 2 in CSS), the same single-fade/no-dip trick the
+  // old bg crossfade used.
+  const mediaGroup2 = q2('[data-founder-media-group]');
+  if (mediaGroup2) {
+    tl.fromTo(
+      mediaGroup2,
+      { opacity: 0 },
+      { opacity: 1, duration: TRANSITION_DURATION, ease: TRANSITION_EASE, immediateRender: false },
+      0,
+    );
+  }
+
   if (dissolve) {
     const progress = { value: 0 };
     tl.to(
@@ -250,9 +357,8 @@ function buildFoundersTriggers(section, dissolve) {
       0,
     );
   } else {
-    // DOM fallback (WebGL unavailable): the pre-dissolve opacity crossfade.
-    // Slide 1's background stays opaque underneath — slide 2's fades in
-    // over it (z-index 2 in CSS), no mid-fade dip to the layers below.
+    // DOM fallback (WebGL unavailable): the pre-dissolve portrait opacity
+    // crossfade only — background media crossfade above is unconditional.
     tl.fromTo(
       portrait1,
       { opacity: 1 },
@@ -260,7 +366,7 @@ function buildFoundersTriggers(section, dissolve) {
       0,
     );
     tl.fromTo(
-      [q2('[data-founder-bg]'), q2('[data-founder-portrait]')].filter(Boolean),
+      q2('[data-founder-portrait]'),
       { opacity: 0 },
       { opacity: 1, duration: TRANSITION_DURATION, ease: TRANSITION_EASE, immediateRender: false },
       0,
@@ -357,6 +463,23 @@ function buildFoundersTriggers(section, dissolve) {
     onLeaveBack: () => tl.reverse(),
   });
 
+  // Video lifecycle — "section active" half of the play/pause gate (the
+  // other half, "slide 1 showing or transition in progress", reads tl's
+  // own progress — see createFoundersVideoController's updatePlayback).
+  // Rebuilt every call (like founders-snap above) so it survives
+  // killFoundersTriggers(); the controller itself is NOT rebuilt (see its
+  // own doc comment) — only re-pointed at the fresh section-active state.
+  if (videoController) {
+    const activeTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: at(0),
+      end: at(TOTAL_RUNWAY),
+      id: 'founders-video-active',
+      onToggle: (self) => videoController.setActive(self.isActive),
+    });
+    videoController.setActive(activeTrigger.isActive);
+  }
+
   return tl;
 }
 
@@ -417,6 +540,10 @@ export function initFoundersScroll() {
   const stage = section.querySelector('[data-founders-stage]');
   const dissolve = stage instanceof HTMLElement ? createFoundersDissolve(stage) : null;
 
+  // Video controller — also created ONCE, same reasoning (see its doc
+  // comment). null when slide 1 has no video element.
+  const videoController = createFoundersVideoController(section);
+
   let cancelled = false;
   /** @type {gsap.core.Timeline | undefined} */
   let transitionTl;
@@ -429,7 +556,7 @@ export function initFoundersScroll() {
     const prevProgress = transitionTl ? transitionTl.progress() : 0;
     killFoundersTriggers();
     transitionTl?.kill();
-    transitionTl = buildFoundersTriggers(section, dissolve);
+    transitionTl = buildFoundersTriggers(section, dissolve, videoController);
     ScrollTrigger.refresh();
     // State restoration: rebuilding (resize / late refresh) while already
     // past the threshold must resolve to slide 2 INSTANTLY — never replay
@@ -453,6 +580,11 @@ export function initFoundersScroll() {
         dissolve?.setProgress(0);
       }
     }
+    // Resync AFTER the state-restoration jumps above — jump-renders don't
+    // fire onUpdate (see createFoundersVideoController's doc comment), so
+    // without this the video could be left playing/paused against a
+    // stale progress reading from before the jump.
+    videoController?.setTimeline(transitionTl);
   };
 
   // Fonts must be ready before line-reveal wrapping measures line breaks
@@ -486,9 +618,10 @@ export function initFoundersScroll() {
     transitionTl?.kill();
     transitionTl = undefined;
     dissolve?.destroy();
+    videoController?.destroy();
     gsap.killTweensOf(
       section.querySelectorAll(
-        '[data-founder-bg], [data-founder-portrait], [data-founder-meta], [data-founder-name], [data-founders-index], [data-founders-marker], [data-founders-thumb-border], [data-founders-label], .lr-inner',
+        '[data-founder-media-group], [data-founders-overlay], [data-founder-portrait], [data-founder-meta], [data-founder-name], [data-founders-index], [data-founders-marker], [data-founders-thumb-border], [data-founders-label], .lr-inner',
       ),
     );
   };
