@@ -33,9 +33,13 @@ const LINE_REVEAL_EASE = CustomEase.create('foundersLineReveal', 'M0,0 C0.42,0 0
  *
  * Scroll map (px from handoff):
  *   0 … 600                slide 1 entrance (bg, portrait, name, meta, index)
- *   600 … SNAP_THRESHOLD   hold — slide 1 fully shown
- *   SNAP_THRESHOLD         crossing plays the dissolve + text swap (timed)
- *   … EXIT_START           hold — slide 2 fully shown
+ *   600 … SNAP_THRESHOLD   slide 1 hold — Robbo's name travels down the
+ *                          portrait, scroll-scrubbed (top+24 → bottom−24);
+ *                          everything else stationary
+ *   SNAP_THRESHOLD         name completes its travel — crossing plays the
+ *                          dissolve + text swap (timed)
+ *   … EXIT_START           slide 2 hold — Ashley's name runs the same
+ *                          travel, same window length, same speed
  *   EXIT_START … +BEAT1    exhale exit beat 1 — content departs (meta lines
  *                          bottom-up, name, index, portrait: blur+fade in
  *                          the hero-exit vocabulary, scrubbed)
@@ -76,12 +80,31 @@ const ENTRANCE_PORTRAIT = [60, 360];
 const ENTRANCE_INDEX = [150, 450];
 const ENTRANCE_NAME = [180, 480];
 const ENTRANCE_META = [240, 600];
+/** End of the entrance choreography — slide 1's name-travel window opens
+ * here (equals ENTRANCE_META's close). */
+const ENTRANCE_END = 600;
+/** Name travel margins — the name's top edge starts this far below the
+ * portrait's top, and its bottom edge finishes this far above the
+ * portrait's bottom. Travel distance is therefore viewport-derived:
+ * portraitHeight − nameClipHeight − 2 × this. */
+const NAME_TRAVEL_MARGIN_PX = 24;
+/** Per-slide hold runway = each name's travel window. EQUAL for both
+ * slides so the scroll-to-travel speed is identical for the identical
+ * gesture (the old 700/500 split would have given Robbo a ~0.7 px/px
+ * crawl and Ashley a ~0.97 near-1:1). 600+600 also preserves the old
+ * 700+500 total, so EXIT_START and TOTAL_RUNWAY — and everything
+ * anchored downstream of them (exhale beats, landing handoff) — are
+ * numerically unchanged. */
+const SLIDE_HOLD = 600;
 /** Scroll position (px from handoff) whose crossing triggers the snap
- * transition — down past it plays 0→1, back up past it plays 1→0. */
-const SNAP_THRESHOLD = 1300;
-/** Exhale exit start (px from handoff) — SNAP_THRESHOLD + a 500px hold
- * on slide 2, i.e. the old end of the page before the exit existed. */
-const EXIT_START = 1800;
+ * transition — down past it plays 0→1, back up past it plays 1→0.
+ * DERIVED, not hand-tuned: it is slide 1's travel-window close, so "the
+ * name completes its travel" and "scroll crosses this point" are the
+ * same event by construction. */
+const SNAP_THRESHOLD = ENTRANCE_END + SLIDE_HOLD;
+/** Exhale exit start (px from handoff) — slide 2's travel-window close,
+ * same derivation as SNAP_THRESHOLD above. */
+const EXIT_START = SNAP_THRESHOLD + SLIDE_HOLD;
 /** Exit beat 1 — content departs (meta, name, index, portrait). */
 const EXIT_BEAT1_PX = 420;
 /** Exit beat 2 — background over-blur + #F9F9F9 veil melt. */
@@ -360,6 +383,68 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
       { opacity: 1, ease: 'none', scrollTrigger: scrub(...ENTRANCE_INDEX, 'index') },
     );
   }
+
+  // ── Scroll-scrubbed name travel (both slides' hold windows) ──────────
+  // Each name rides its hold window down the portrait: top edge starting
+  // NAME_TRAVEL_MARGIN_PX below the portrait's top, bottom edge finishing
+  // the same margin above its bottom. Endpoints derived live from rects
+  // (same pattern as centerNameOnPortrait), so they hold for any name/
+  // portrait size and self-correct on resize rebuilds.
+  //
+  // BLEND SAFETY — the travel drives `top` (px) on the NAME-CLIP, the
+  // exact element+property-class centerNameOnPortrait already uses for
+  // `left`: layout properties never create a stacking context on this
+  // blend ancestor, unlike transform (see centerNameOnPortrait's doc
+  // comment and founders.css's name-clip z-index note). Ownership stays
+  // disjoint: clip left = centering, clip top = this travel, span
+  // transform = entrance rise, span opacity/filter = snap timeline +
+  // exhale exit. The blend visibly shifting as the name traverses image
+  // tones is intentional and accepted, not a defect.
+  //
+  // Fling behaviour needs no guard of its own: these are plain scrubs,
+  // so a hard jump clamps them to the window edge in the same update
+  // pass that ensureSnapResolved stamps the snap's endpoint — the names
+  // land exactly where the resolved state expects them.
+  const buildNameTravel = (slide, windowStart, windowEnd, id) => {
+    if (!(slide instanceof HTMLElement)) return;
+    const clip = slide.querySelector('[data-founder-name-clip]');
+    const portrait = slide.querySelector('[data-founder-portrait]');
+    if (!(clip instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return;
+    const slideRect = slide.getBoundingClientRect();
+    const portraitRect = portrait.getBoundingClientRect();
+    const clipHeight = clip.getBoundingClientRect().height;
+    // The travel windows open only after the entrance completes, so the
+    // endpoints must be derived from the portrait's SETTLED layout
+    // position — but slide 1's entrance tween stamps its from-state
+    // (y: 48) the moment it's created just above, and a rebuild can land
+    // mid-scrub at any y. Subtracting the live GSAP y at measurement
+    // time yields the y-0 layout rect in every case (slide 2's portrait
+    // has no y tween; subtracting its 0 is a no-op). Measured live:
+    // without this, slide 1's endpoints sat exactly 48px low — a 72px
+    // top margin and a 24px overshoot past the portrait's bottom.
+    const portraitY = Number(gsap.getProperty(portrait, 'y')) || 0;
+    const topStart = portraitRect.top - portraitY - slideRect.top + NAME_TRAVEL_MARGIN_PX;
+    const topEnd =
+      portraitRect.bottom - portraitY - slideRect.top - NAME_TRAVEL_MARGIN_PX - clipHeight;
+    // Inline start position immediately (replacing the CSS resting top,
+    // which remains the reduced-motion/static state) — the name is still
+    // invisible pre-entrance, and on mid-travel resize rebuilds the
+    // refresh at the end of build() re-renders the scrubbed value in the
+    // same frame, so neither path can paint a wrong-position frame.
+    clip.style.top = `${topStart}px`;
+    gsap.fromTo(
+      clip,
+      { top: topStart },
+      {
+        top: topEnd,
+        ease: 'none',
+        immediateRender: false,
+        scrollTrigger: scrub(windowStart, windowEnd, id),
+      },
+    );
+  };
+  buildNameTravel(slide1, ENTRANCE_END, SNAP_THRESHOLD, 'name-travel-1');
+  buildNameTravel(lastSlide, SNAP_THRESHOLD, EXIT_START, 'name-travel-2');
 
   // ── Slide 1 → slide 2: snap transition timeline ──────────────────────
   // One persistent PAUSED timeline holds the dissolve progress AND all the
@@ -889,7 +974,7 @@ export function initFoundersScroll() {
     videoController?.destroy();
     gsap.killTweensOf(
       section.querySelectorAll(
-        '[data-founder-media-group], [data-founders-overlay], [data-founder-portrait], [data-founder-meta], [data-founder-name], [data-founder-media], [data-founders-index], [data-founders-marker], [data-founders-thumb-border], [data-founders-label], [data-founders-exit-veil], .lr-inner, .lr-clip',
+        '[data-founder-media-group], [data-founders-overlay], [data-founder-portrait], [data-founder-meta], [data-founder-name], [data-founder-name-clip], [data-founder-media], [data-founders-index], [data-founders-marker], [data-founders-thumb-border], [data-founders-label], [data-founders-exit-veil], .lr-inner, .lr-clip',
       ),
     );
   };
