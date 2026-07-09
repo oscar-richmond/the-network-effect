@@ -150,31 +150,54 @@ const FRAGMENT_SHADER = /* glsl */ `
     vec2 uvTo = coverUv(vUv, uPlaneSizePx, uImageSizeTo) - warp * (1.0 - m);
 
     vec3 colFrom = texture2D(uTextureFrom, uvFrom).rgb;
+    vec3 colTo = texture2D(uTextureTo, uvTo).rgb;
 
-    // Entrance blur (uBlurPx mirrors the DOM proxy's CSS filter: blur(),
-    // scrubbed by founders-scroll.js's portrait entrance tween). Poisson-
-    // disc average of the FROM texture only: blur and dissolve never
-    // coexist (blur lives in the entrance window, uProgress still 0), so
-    // the TO texture never needs the extra taps. Disc radius 2× the CSS
-    // blur value approximates a gaussian of that std deviation.
+    // Proxy-mirrored blur (uBlurPx tracks the DOM proxy's CSS filter:
+    // blur(), scrubbed by founders-scroll.js). Poisson-disc average of
+    // ONE endpoint texture per direction: blur and dissolve never coexist
+    // (entrance blur lives at uProgress 0 showing FROM; the exhale-exit
+    // blur lives at uProgress 1 showing TO — the fling guard force-
+    // resolves the snap before any exit tween paints), so a single set of
+    // taps serves both, switched on which endpoint is displayed. Disc
+    // radius 2× the CSS blur value approximates a gaussian of that std
+    // deviation.
+    // The two branches duplicate the tap pattern because GLSL ES 1.0
+    // forbids dynamic sampler selection (no ternary between sampler
+    // uniforms) — each branch must name its sampler statically.
     if (uBlurPx > 0.01) {
       vec2 radiusUv = vec2(uBlurPx * 2.0) / uPlaneSizePx;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.326, -0.406) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.840, -0.074) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.696,  0.457) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.203,  0.621) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.962, -0.195) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.473, -0.480) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.519,  0.767) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.185, -0.893) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.507,  0.064) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.896,  0.412) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.322, -0.933) * radiusUv).rgb;
-      colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.792, -0.598) * radiusUv).rgb;
-      colFrom /= 13.0;
+      if (uProgress >= 0.5) {
+        colTo += texture2D(uTextureTo, uvTo + vec2(-0.326, -0.406) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2(-0.840, -0.074) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2(-0.696,  0.457) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2(-0.203,  0.621) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2( 0.962, -0.195) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2( 0.473, -0.480) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2( 0.519,  0.767) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2( 0.185, -0.893) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2( 0.507,  0.064) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2( 0.896,  0.412) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2(-0.322, -0.933) * radiusUv).rgb;
+        colTo += texture2D(uTextureTo, uvTo + vec2(-0.792, -0.598) * radiusUv).rgb;
+        colTo /= 13.0;
+      } else {
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.326, -0.406) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.840, -0.074) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.696,  0.457) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.203,  0.621) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.962, -0.195) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.473, -0.480) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.519,  0.767) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.185, -0.893) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.507,  0.064) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2( 0.896,  0.412) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.322, -0.933) * radiusUv).rgb;
+        colFrom += texture2D(uTextureFrom, uvFrom + vec2(-0.792, -0.598) * radiusUv).rgb;
+        colFrom /= 13.0;
+      }
     }
 
-    vec3 col = mix(colFrom, texture2D(uTextureTo, uvTo).rgb, m);
+    vec3 col = mix(colFrom, colTo, m);
 
     // Rounded-corner mask (portrait plane only; uRadiusPx 0 on the bg
     // plane skips it) — ~1px smoothed SDF edge against aliasing.
@@ -299,7 +322,7 @@ class DissolvePlane {
 
 /**
  * @param {HTMLElement} stage the `.founders__stage` element
- * @returns {{ setProgress: (v: number) => void, ready: Promise<void>, resize: () => void, destroy: () => void } | null}
+ * @returns {{ setProgress: (v: number) => void, setPaused: (v: boolean) => void, ready: Promise<void>, resize: () => void, destroy: () => void } | null}
  *   null when WebGL is unavailable — caller falls back to the DOM crossfade.
  */
 export function createFoundersDissolve(stage) {
@@ -366,9 +389,10 @@ export function createFoundersDissolve(stage) {
 
   let rafId = 0;
   let disposed = false;
+  let paused = false;
 
   const tick = () => {
-    if (disposed) return;
+    if (disposed || paused) return;
     rafId = requestAnimationFrame(tick);
     planes.forEach((plane) => plane.update(screen, viewport));
     renderer.render({ scene, camera });
@@ -398,6 +422,18 @@ export function createFoundersDissolve(stage) {
     resize,
     setProgress(value) {
       planes.forEach((plane) => plane.setProgress(value));
+    },
+    /** Idle/resume the rAF loop — used by the exhale-exit teardown once
+     * the stage is visibility: hidden (nothing paints; per-frame proxy
+     * mirroring + renders are pure waste). Idempotent both ways. */
+    setPaused(value) {
+      if (paused === value || disposed) return;
+      paused = value;
+      if (paused) {
+        cancelAnimationFrame(rafId);
+      } else {
+        rafId = requestAnimationFrame(tick);
+      }
     },
     destroy() {
       disposed = true;

@@ -138,6 +138,16 @@ import '../../styles/about-3/founders.css';
         <span class="founders__marker-tick"></span>
       </div>
     </div>
+
+    <!-- Exhale-exit veil — #F9F9F9, opacity-scrubbed 0→1 across exit
+         beat 2 (founders-scroll.js) while the last slide's media over-
+         blurs beneath it, melting the section into the page base colour.
+         z 45: above the index (40)/name (30), but beat 1 has already
+         faded all content by the time this gains any opacity, so it
+         never occludes (or blend-isolates — it's a sibling of the name,
+         not an ancestor) anything visible. display: none under reduced
+         motion (founders.css). -->
+    <div class="founders__exit-veil" data-founders-exit-veil aria-hidden="true"></div>
   </div>
 </section>
 

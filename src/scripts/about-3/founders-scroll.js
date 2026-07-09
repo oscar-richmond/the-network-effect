@@ -35,7 +35,15 @@ const LINE_REVEAL_EASE = CustomEase.create('foundersLineReveal', 'M0,0 C0.42,0 0
  *   0 … 600                slide 1 entrance (bg, portrait, name, meta, index)
  *   600 … SNAP_THRESHOLD   hold — slide 1 fully shown
  *   SNAP_THRESHOLD         crossing plays the dissolve + text swap (timed)
- *   … TOTAL_RUNWAY         hold — slide 2 fully shown; end of page
+ *   … EXIT_START           hold — slide 2 fully shown
+ *   EXIT_START … +BEAT1    exhale exit beat 1 — content departs (meta lines
+ *                          bottom-up, name, index, portrait: blur+fade in
+ *                          the hero-exit vocabulary, scrubbed)
+ *   … TOTAL_RUNWAY         exhale exit beat 2 — the last slide's media
+ *                          over-blurs while the #F9F9F9 veil ramps 0→1
+ *   TOTAL_RUNWAY           teardown: stage + hero bg-fade visibility:hidden,
+ *                          dissolve rAF idled (applyExitState); the in-flow
+ *                          .about-landing section follows
  *
  * Imagery: backgrounds are a DOM media-group crossfade (slide 2's group
  * fades in on top of slide 1's, which stays opaque beneath — single fade,
@@ -71,10 +79,40 @@ const ENTRANCE_META = [240, 600];
 /** Scroll position (px from handoff) whose crossing triggers the snap
  * transition — down past it plays 0→1, back up past it plays 1→0. */
 const SNAP_THRESHOLD = 1300;
-/** Total runway — also the section's in-flow height. The transition no
- * longer consumes scroll distance (was a 900px scrubbed window), so the
- * runway is SNAP_THRESHOLD + a 500px hold on slide 2. */
-const TOTAL_RUNWAY = 1800;
+/** Exhale exit start (px from handoff) — SNAP_THRESHOLD + a 500px hold
+ * on slide 2, i.e. the old end of the page before the exit existed. */
+const EXIT_START = 1800;
+/** Exit beat 1 — content departs (meta, name, index, portrait). */
+const EXIT_BEAT1_PX = 420;
+/** Exit beat 2 — background over-blur + #F9F9F9 veil melt. */
+const EXIT_BEAT2_PX = 360;
+/** Total runway — also the section's in-flow height. */
+const TOTAL_RUNWAY = EXIT_START + EXIT_BEAT1_PX + EXIT_BEAT2_PX;
+/** Beat-1 sub-windows (px from handoff) — the entrance stagger mirrored:
+ * meta leaves first (its lines bottom-up), name and index next, the
+ * portrait last; each window overlaps the next like the entrance does. */
+const EXIT_META = [EXIT_START, EXIT_START + 260];
+const EXIT_NAME = [EXIT_START + 80, EXIT_START + 320];
+const EXIT_INDEX = [EXIT_START + 80, EXIT_START + 320];
+const EXIT_PORTRAIT = [EXIT_START + 140, EXIT_START + EXIT_BEAT1_PX];
+/** Beat-2 window (px from handoff). */
+const EXIT_BG = [EXIT_START + EXIT_BEAT1_PX, TOTAL_RUNWAY];
+/** Blur endpoint for the departing text/name/index — the same 10px the
+ * hero's phase-C exit wipe uses (about-scroll.js's EXIT_BLUR_PX, itself
+ * sampled from the rolling word's .is-exiting treatment). */
+const EXIT_TEXT_BLUR_PX = 10;
+/** Beat-2 target radius for the last slide's media — deepens from the
+ * resting --founders-blur-px (125, read live from the CSS custom
+ * property) so the image melts into the veil rather than being covered
+ * by it. SAFETY VALVE: set equal to the resting value (125) to make the
+ * radius animation a no-op (veil-only melt) if beat-2 frame timing ever
+ * measures poorly — the visual delta is small at this baseline blur. */
+const EXIT_MEDIA_BLUR_PX = 250;
+/** Per-line stagger for the beat-1 meta wipe, in timeline-seconds (scrub
+ * normalizes the total to the trigger window; only the ratio to the 1s
+ * line duration matters — 0.5 = overlapping bottom-up sweep, same as the
+ * hero's WIPE_STAGGER). */
+const EXIT_WIPE_STAGGER = 0.5;
 /** Snap transition length, seconds. Text phasing mirrors the old scrubbed
  * midpoint: outgoing text in the first half, incoming from the midpoint. */
 const TRANSITION_DURATION = 1.2;
@@ -214,12 +252,17 @@ function createFoundersVideoController(section) {
  * @param {HTMLElement} section
  * @param {ReturnType<typeof createFoundersDissolve>} dissolve WebGL module, or null (DOM fallback)
  * @param {ReturnType<typeof createFoundersVideoController>} videoController null when slide 1 has no video
+ * @param {(done: boolean) => void} applyExitState exit-completion teardown/restore (owned by initFoundersScroll)
  * @returns {gsap.core.Timeline | undefined} the snap transition timeline (kill on rebuild)
  */
-function buildFoundersTriggers(section, dissolve, videoController) {
+function buildFoundersTriggers(section, dissolve, videoController, applyExitState) {
   const slides = Array.from(section.querySelectorAll('[data-founder-slide]'));
   if (slides.length < 2) return;
   const [slide1, slide2] = slides;
+  // The exhale exit always targets the FINAL slide, whatever it is — a
+  // third founder changes the snap logic (future work), not the exit.
+  const lastSlide = slides.at(-1);
+  const qLast = (sel) => lastSlide.querySelector(sel);
 
   section.style.height = `${TOTAL_RUNWAY}px`;
 
@@ -480,6 +523,172 @@ function buildFoundersTriggers(section, dissolve, videoController) {
     videoController.setActive(activeTrigger.isActive);
   }
 
+  // ── Exhale exit: beat 1 (content departs) + beat 2 (melt to #F9F9F9) ──
+  // All scrubbed, fully reversible. Every exit trigger runs the fling
+  // guard on entry: a hard fling from slide 1 can land scroll in the exit
+  // range while the snap timeline is still mid-play — the exit tweens
+  // assume the resolved slide-2 endpoint (name/meta at their snap end
+  // values, video paused via the progress gate), so the snap is force-
+  // resolved before any exit tween paints. Idempotent; a no-op in every
+  // ordinary crossing (the snap resolved ~500px of scroll earlier).
+  const ensureSnapResolved = () => {
+    if (tl.progress() < 0.999) {
+      tl.progress(1).pause();
+      // Playhead JUMPS suppress onUpdate — write the dissolve uniform and
+      // resync the video's play/pause gate explicitly (same rule as
+      // build()'s state restoration).
+      dissolve?.setProgress(1);
+      videoController?.setTimeline(tl);
+    }
+  };
+  const exitScrub = (start, end, id) => ({
+    ...scrub(start, end, id),
+    onEnter: ensureSnapResolved,
+  });
+
+  // Beat 1a — the last slide's meta lines, bottom-up, in the hero-exit
+  // vocabulary (about-scroll.js's buildExitWipe: opacity + blur(10px)
+  // together per line, reversed order, overlapping stagger, ease none).
+  // Targets the .lr-clip wrappers while the snap timeline owns the
+  // .lr-inner transforms — the same clip/inner property split the hero
+  // uses between its exit wipe and the line-reveal entrance, so the two
+  // never fight over a property.
+  const lastMeta = qLast('[data-founder-meta]');
+  const exitMetaClips =
+    lastMeta instanceof HTMLElement
+      ? Array.from(lastMeta.querySelectorAll('.lr-clip')).reverse()
+      : [];
+  if (exitMetaClips.length) {
+    const exitMetaTl = gsap.timeline({
+      scrollTrigger: exitScrub(...EXIT_META, 'exit-meta'),
+    });
+    exitMetaClips.forEach((clip, i) => {
+      exitMetaTl.fromTo(
+        clip,
+        { opacity: 1, filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          filter: `blur(${EXIT_TEXT_BLUR_PX}px)`,
+          ease: 'none',
+          duration: 1,
+          immediateRender: false,
+        },
+        i * EXIT_WIPE_STAGGER,
+      );
+    });
+  }
+
+  // Beat 1b — the name departs on SELF properties only (it carries the
+  // difference blend; self opacity/filter never isolate a blend from its
+  // backdrop, unlike an animated ancestor — the filtered result still
+  // composites difference against the media+overlay beneath until it's
+  // fully gone). Shares its opacity with the snap timeline's textIn tween
+  // — safe: non-overlapping scroll ranges, and the fling guard stamps the
+  // snap's end value before this scrub's window can paint.
+  const lastName = qLast('[data-founder-name]');
+  if (lastName) {
+    gsap.fromTo(
+      lastName,
+      { opacity: 1, filter: 'blur(0px)' },
+      {
+        opacity: 0,
+        filter: `blur(${EXIT_TEXT_BLUR_PX}px)`,
+        ease: 'none',
+        immediateRender: false,
+        scrollTrigger: exitScrub(...EXIT_NAME, 'exit-name'),
+      },
+    );
+  }
+
+  // Beat 1c — the index block as one unit.
+  if (index) {
+    gsap.fromTo(
+      index,
+      { opacity: 1, filter: 'blur(0px)' },
+      {
+        opacity: 0,
+        filter: `blur(${EXIT_TEXT_BLUR_PX}px)`,
+        ease: 'none',
+        immediateRender: false,
+        scrollTrigger: exitScrub(...EXIT_INDEX, 'exit-index'),
+      },
+    );
+  }
+
+  // Beat 1d — the portrait exits blur-to-soft + fade: the entrance's
+  // blur-to-sharp mirrored (same 10px endpoint). WHICH element carries it
+  // depends on the path: with WebGL, slide 1's wrapper — the plane's
+  // per-frame PROXY (founders-dissolve.js mirrors its computed opacity
+  // into uAlpha and its blur into uBlurPx; at uProgress 1 the amended
+  // shader applies those taps to the TO texture, i.e. the portrait
+  // actually showing). Its own opacity is still 1 here (the WebGL snap
+  // path never touches it), so fromTo { opacity: 1 } matches. On the DOM
+  // fallback the visible portrait is the LAST slide's (crossfaded to 1
+  // by the snap timeline), so the tween targets that instead — targeting
+  // both unconditionally would stamp opacity 1 back onto slide 1's
+  // crossfaded-out portrait on the fallback path.
+  const exitPortrait = dissolve ? portrait1 : qLast('[data-founder-portrait]');
+  if (exitPortrait) {
+    gsap.fromTo(
+      exitPortrait,
+      { opacity: 1, filter: 'blur(0px)' },
+      {
+        opacity: 0,
+        filter: `blur(${PORTRAIT_ENTRANCE_BLUR_PX}px)`,
+        ease: 'none',
+        immediateRender: false,
+        scrollTrigger: exitScrub(...EXIT_PORTRAIT, 'exit-portrait'),
+      },
+    );
+  }
+
+  // Beat 2 — the last slide's media over-blurs (resting radius → target,
+  // read live from --founders-blur-px so the from-value always equals the
+  // CSS resting state) while the #F9F9F9 veil ramps over it: the image
+  // melts into the base colour rather than being covered by a shape. Only
+  // THIS media animates — slide 1's stays at its static (cached) blur,
+  // paused video beneath, fully occluded. By beat 2 all content is gone
+  // (beat 1), so the veil never covers or blend-isolates anything visible.
+  const lastMedia = qLast('[data-founder-media]');
+  const veil = section.querySelector('[data-founders-exit-veil]');
+  if (lastMedia && veil) {
+    const restingBlurPx =
+      parseFloat(getComputedStyle(section).getPropertyValue('--founders-blur-px')) || 125;
+    const exitBgTl = gsap.timeline({
+      scrollTrigger: exitScrub(...EXIT_BG, 'exit-bg'),
+    });
+    exitBgTl.fromTo(
+      lastMedia,
+      { filter: `blur(${restingBlurPx}px)` },
+      { filter: `blur(${EXIT_MEDIA_BLUR_PX}px)`, ease: 'none', duration: 1, immediateRender: false },
+      0,
+    );
+    exitBgTl.fromTo(
+      veil,
+      { opacity: 0 },
+      { opacity: 1, ease: 'none', duration: 1, immediateRender: false },
+      0,
+    );
+  }
+
+  // Exit completion — point trigger at the runway's end. Teardown going
+  // down; restore going up. Flash-free by construction: at this anchor
+  // the veil is at opacity 1 (its scrub ends exactly here), so hidden
+  // stage (body #F9F9F9 shows) and restored stage (veil #F9F9F9 shows)
+  // are pixel-identical, and both the visibility flip and any first veil
+  // scrub-back happen in the same frame's style flush. onEnter also
+  // self-fires during build()'s refresh when the page loads/rebuilds
+  // already past this point; the stale-hidden inverse case (rebuild below
+  // the anchor) is handled by build()'s explicit applyExitState call.
+  ScrollTrigger.create({
+    trigger: section,
+    start: at(TOTAL_RUNWAY),
+    end: at(TOTAL_RUNWAY),
+    id: 'founders-exit-end',
+    onEnter: () => applyExitState(true),
+    onLeaveBack: () => applyExitState(false),
+  });
+
   return tl;
 }
 
@@ -544,6 +753,23 @@ export function initFoundersScroll() {
   // comment). null when slide 1 has no video element.
   const videoController = createFoundersVideoController(section);
 
+  // Exit-completion teardown/restore — idempotent both ways, owned here
+  // (not per-build) because it touches module-lifetime objects: the
+  // stage, the dissolve's rAF loop, and the hero's fixed bg-fade (z 50),
+  // which would otherwise paint its blurred frame over the in-flow
+  // landing once the stage hides (finding confirmed in the exit plan —
+  // the hero never fades it back out; hiding it here is invisible
+  // because the stage's opaque media covers it everywhere near the
+  // exit). No hero logic changes: visibility only, on the element.
+  // The video needs nothing here — it's already paused by the progress
+  // gate (tl.progress() === 1) long before the exit range.
+  const bgFade = document.querySelector('body.about-page-3 [data-about-hero-bg-fade]');
+  const applyExitState = (done) => {
+    if (stage instanceof HTMLElement) stage.style.visibility = done ? 'hidden' : '';
+    if (bgFade instanceof HTMLElement) bgFade.style.visibility = done ? 'hidden' : '';
+    dissolve?.setPaused(done);
+  };
+
   let cancelled = false;
   /** @type {gsap.core.Timeline | undefined} */
   let transitionTl;
@@ -556,7 +782,7 @@ export function initFoundersScroll() {
     const prevProgress = transitionTl ? transitionTl.progress() : 0;
     killFoundersTriggers();
     transitionTl?.kill();
-    transitionTl = buildFoundersTriggers(section, dissolve, videoController);
+    transitionTl = buildFoundersTriggers(section, dissolve, videoController, applyExitState);
     ScrollTrigger.refresh();
     // State restoration: rebuilding (resize / late refresh) while already
     // past the threshold must resolve to slide 2 INSTANTLY — never replay
@@ -585,6 +811,13 @@ export function initFoundersScroll() {
     // without this the video could be left playing/paused against a
     // stale progress reading from before the jump.
     videoController?.setTimeline(transitionTl);
+    // Exit-state restoration, both directions: the fresh exit-end trigger
+    // self-fires onEnter during the refresh above when already past it,
+    // but the inverse (rebuilding BELOW the anchor while the stage carries
+    // a stale visibility:hidden from before the rebuild) fires nothing —
+    // derive the correct state from the live scroll position explicitly.
+    const exitEnd = ScrollTrigger.getById('founders-exit-end');
+    if (exitEnd) applyExitState(window.scrollY >= exitEnd.start);
   };
 
   // Fonts must be ready before line-reveal wrapping measures line breaks
@@ -614,6 +847,11 @@ export function initFoundersScroll() {
     window.removeEventListener('resize', onCenteringResize);
     cancelled = true;
     window.removeEventListener('resize', onResize);
+    // Restore before teardown — clears the stage/bg-fade inline
+    // visibility and resumes the rAF so dissolve.destroy() below runs
+    // against a live module (also leaves no stale styles for a future
+    // re-init to trip over).
+    applyExitState(false);
     killFoundersTriggers();
     transitionTl?.kill();
     transitionTl = undefined;
@@ -621,7 +859,7 @@ export function initFoundersScroll() {
     videoController?.destroy();
     gsap.killTweensOf(
       section.querySelectorAll(
-        '[data-founder-media-group], [data-founders-overlay], [data-founder-portrait], [data-founder-meta], [data-founder-name], [data-founders-index], [data-founders-marker], [data-founders-thumb-border], [data-founders-label], .lr-inner',
+        '[data-founder-media-group], [data-founders-overlay], [data-founder-portrait], [data-founder-meta], [data-founder-name], [data-founder-media], [data-founders-index], [data-founders-marker], [data-founders-thumb-border], [data-founders-label], [data-founders-exit-veil], .lr-inner, .lr-clip',
       ),
     );
   };

@@ -71,6 +71,14 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
      bg-fade (50) and hero layers (100/110), below the nav (270). -->
 <FoundersSection />
 
+<!-- Plain #F9F9F9 landing — in-flow scroll hold after the founders
+     exhale-exit completes, and the future home of the next section's
+     content. The fixed founders stage (and the fixed bg-fade above)
+     are visibility:hidden once the exit completes — founders-scroll.js's
+     applyExitState — so nothing paints over this (same fixed-layer
+     lesson as the hero handoff). Empty for now. -->
+<section class="about-landing" data-about-landing aria-label="Next section"></section>
+
 <script>
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
 

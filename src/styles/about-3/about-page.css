@@ -128,3 +128,13 @@ body.about-page-3 .home__topbar--about .home__topbar-email {
 body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	color: #ffffff;
 }
+
+/* In-flow landing after the founders exhale-exit — plain #F9F9F9 scroll
+   hold + future section content home. The fixed founders stage and the
+   hero's fixed bg-fade are visibility:hidden once the exit completes
+   (founders-scroll.js's applyExitState), so nothing paints over this. */
+.about-page-3 .about-landing {
+	min-height: 100vh;
+	min-height: 100dvh;
+	background-color: #f9f9f9;
+}

@@ -357,6 +357,25 @@
 	background: #f9f9f9;
 }
 
+/* ── Exhale-exit veil (#F9F9F9 melt, exit beat 2) ─────────────────────────── */
+
+/* Opacity-scrubbed 0→1 by founders-scroll.js across exit beat 2 while
+   the last slide's media over-blurs beneath it. z 45 — above the index
+   (40) and name (30), but beat 1 has already faded all content to 0
+   before this gains opacity, so it never covers anything visible; and
+   it's a SIBLING of the name (never an ancestor), so its opacity can't
+   isolate the difference blend while the name is still showing.
+   Initial opacity 0 lives in the initial-hidden-states block below
+   (hero-leak gating); display: none under reduced motion (it must never
+   paint over the static stacked slides). */
+.about-page-3 .founders__exit-veil {
+	position: absolute;
+	inset: 0;
+	z-index: 45;
+	background: #f9f9f9;
+	pointer-events: none;
+}
+
 /* ── Initial hidden states — CSS-level, from FIRST PAINT ─────────────────── */
 
 /* Same pattern as the hero's intro-paragraph fix: everything the scroll
@@ -368,7 +387,8 @@
 	.about-page-3 .founders__media-group,
 	.about-page-3 .founders__overlay,
 	.about-page-3 .founders__portrait,
-	.about-page-3 .founders__index {
+	.about-page-3 .founders__index,
+	.about-page-3 .founders__exit-veil {
 		opacity: 0;
 	}
 
@@ -433,6 +453,12 @@
 	}
 
 	.about-page-3 .founders__index {
+		display: none;
+	}
+
+	.about-page-3 .founders__exit-veil {
+		/* No exit effect under reduced motion — the veil would paint
+		   #F9F9F9 over the static stacked slides. */
 		display: none;
 	}
 }
