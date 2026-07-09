@@ -16,6 +16,11 @@ const LANDING_LINE_STAGGER = 0.12;
 /** Per-line reveal duration — mirrors line-reveal.js's 1.2s transition. */
 const LANDING_LINE_DURATION = 1.2;
 
+/** Runway segment constants */
+const LANDING_SETTLE_BEAT = 300;
+const LANDING_HOLD = 1000;
+const LANDING_RUNWAY = LANDING_SETTLE_BEAT + LANDING_HOLD;
+
 /**
  * Wrap each landing column's copy into line-reveal clips and collect the
  * per-line `.lr-inner` elements in reading order.
@@ -57,8 +62,16 @@ export function initLandingScroll() {
   const landing = document.querySelector('body.about-page-3 [data-about-landing]');
   if (!(landing instanceof HTMLElement)) return () => {};
 
+  const stage = document.querySelector('body.about-page-3 [data-about-landing-stage]');
+  const applyLandingExitState = (done) => {
+    if (stage instanceof HTMLElement) stage.style.visibility = done ? 'hidden' : '';
+  };
+
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduceMotion) return () => {};
+  if (reduceMotion) {
+    applyLandingExitState(false);
+    return () => {};
+  }
 
   /** @type {gsap.core.Timeline | undefined} */
   let revealTl;
@@ -78,6 +91,9 @@ export function initLandingScroll() {
     if (!inners.length) return;
 
     gsap.set(inners, { yPercent: 110, y: 0 });
+
+    // Set runway height
+    landing.style.height = `${LANDING_RUNWAY}px`;
 
     revealTl = gsap.timeline({ paused: true });
 
@@ -104,7 +120,7 @@ export function initLandingScroll() {
 
     const trigger = ScrollTrigger.create({
       trigger: landing,
-      start: 'top 85%',
+      start: `top+=${LANDING_SETTLE_BEAT} bottom`,
       end: 'bottom top',
       id: 'about-landing-reveal',
       onEnter: () => revealTl?.play(),
@@ -113,6 +129,22 @@ export function initLandingScroll() {
 
     if (window.scrollY >= trigger.start) {
       revealTl.progress(1).pause();
+    }
+
+    // Teardown trigger for future sections
+    const exitEnd = ScrollTrigger.create({
+      trigger: landing,
+      start: `top+=${LANDING_RUNWAY} bottom`,
+      end: `top+=${LANDING_RUNWAY} bottom`,
+      id: 'about-landing-exit-end',
+      onEnter: () => applyLandingExitState(true),
+      onLeaveBack: () => applyLandingExitState(false),
+    });
+
+    if (window.scrollY >= exitEnd.start) {
+      applyLandingExitState(true);
+    } else {
+      applyLandingExitState(false);
     }
 
     ScrollTrigger.refresh();
@@ -142,5 +174,6 @@ export function initLandingScroll() {
       }
     });
     revealTl?.kill();
+    applyLandingExitState(false);
   };
 }
