@@ -102,7 +102,7 @@ export function initLandingScroll() {
       });
     });
 
-    ScrollTrigger.create({
+    const trigger = ScrollTrigger.create({
       trigger: landing,
       start: 'top 85%',
       end: 'bottom top',
@@ -110,6 +110,10 @@ export function initLandingScroll() {
       onEnter: () => revealTl?.play(),
       onLeaveBack: () => revealTl?.reverse(),
     });
+
+    if (window.scrollY >= trigger.start) {
+      revealTl.progress(1).pause();
+    }
 
     ScrollTrigger.refresh();
   };
