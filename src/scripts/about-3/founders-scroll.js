@@ -39,7 +39,10 @@ const LINE_REVEAL_EASE = CustomEase.create('foundersLineReveal', 'M0,0 C0.42,0 0
  *   SNAP_THRESHOLD         name completes its travel — crossing plays the
  *                          dissolve + text swap (timed)
  *   … EXIT_START           slide 2 hold — Ashley's name runs the same
- *                          travel, same window length, same speed
+ *                          travel, but anchored to the snap's RESOLUTION
+ *                          (not the threshold): pinned at top until the
+ *                          timed transition completes, then the window's
+ *                          remaining scroll maps onto the full travel
  *   EXIT_START … +BEAT1    exhale exit beat 1 — content departs (meta lines
  *                          bottom-up, name, index, portrait: blur+fade in
  *                          the hero-exit vocabulary, scrubbed)
@@ -405,11 +408,11 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
   // so a hard jump clamps them to the window edge in the same update
   // pass that ensureSnapResolved stamps the snap's endpoint — the names
   // land exactly where the resolved state expects them.
-  const buildNameTravel = (slide, windowStart, windowEnd, id) => {
-    if (!(slide instanceof HTMLElement)) return;
+  const measureNameTravel = (slide) => {
+    if (!(slide instanceof HTMLElement)) return null;
     const clip = slide.querySelector('[data-founder-name-clip]');
     const portrait = slide.querySelector('[data-founder-portrait]');
-    if (!(clip instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return;
+    if (!(clip instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return null;
     const slideRect = slide.getBoundingClientRect();
     const portraitRect = portrait.getBoundingClientRect();
     const clipHeight = clip.getBoundingClientRect().height;
@@ -429,22 +432,32 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
     // Inline start position immediately (replacing the CSS resting top,
     // which remains the reduced-motion/static state) — the name is still
     // invisible pre-entrance, and on mid-travel resize rebuilds the
-    // refresh at the end of build() re-renders the scrubbed value in the
+    // refresh at the end of build() re-renders the correct value in the
     // same frame, so neither path can paint a wrong-position frame.
     clip.style.top = `${topStart}px`;
+    return { clip, topStart, topEnd };
+  };
+
+  // Slide 1 — a plain scrub: his travel window IS the hold window by
+  // construction (its close defines SNAP_THRESHOLD).
+  const travel1 = measureNameTravel(slide1);
+  if (travel1) {
     gsap.fromTo(
-      clip,
-      { top: topStart },
+      travel1.clip,
+      { top: travel1.topStart },
       {
-        top: topEnd,
+        top: travel1.topEnd,
         ease: 'none',
         immediateRender: false,
-        scrollTrigger: scrub(windowStart, windowEnd, id),
+        scrollTrigger: scrub(ENTRANCE_END, SNAP_THRESHOLD, 'name-travel-1'),
       },
     );
-  };
-  buildNameTravel(slide1, ENTRANCE_END, SNAP_THRESHOLD, 'name-travel-1');
-  buildNameTravel(lastSlide, SNAP_THRESHOLD, EXIT_START, 'name-travel-2');
+  }
+
+  // Slide 2's travel is NOT a plain scrub — it's anchored to the snap's
+  // RESOLUTION, created after the snap timeline below so it can observe
+  // it. See the "slide 2 name travel" block after the snap trigger.
+  const travel2 = measureNameTravel(lastSlide);
 
   // ── Slide 1 → slide 2: snap transition timeline ──────────────────────
   // One persistent PAUSED timeline holds the dissolve progress AND all the
@@ -591,6 +604,92 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
     onLeaveBack: () => tl.reverse(),
   });
 
+  // ── Slide 2 name travel — anchored to the snap's RESOLUTION ─────────
+  // A plain [SNAP_THRESHOLD, EXIT_START] scrub would let scroll consumed
+  // DURING the 1.2s timed transition eat into the travel window, so the
+  // name would fade in already mid-portrait. Instead the outer trigger
+  // window stays static (EXIT_START and everything downstream untouched)
+  // and position is a pure function of (scroll px, anchor):
+  //
+  //   anchor == null   → snap unresolved → pinned at topStart. This is
+  //                      what guarantees the name is AT the top whenever
+  //                      it becomes visible — the fade-in happens while
+  //                      the transition plays, i.e. strictly pre-anchor.
+  //   anchor == px₀    → the px-from-handoff at which the snap RESOLVED;
+  //                      the window's remaining scroll [px₀, EXIT_START]
+  //                      maps linearly onto the full travel (slightly
+  //                      faster than slide 1's — accepted trade).
+  //
+  // Anchor lifecycle: set from live scroll on the timeline's natural
+  // onComplete; set to the CANONICAL SNAP_THRESHOLD by ensureSnapResolved
+  // (hard flings — full-window mapping, so a reverse walk out of the
+  // exit range travels smoothly bottom → top) and by onRefresh on
+  // rebuild-restoration when already past the threshold (same canonical
+  // rule build()'s tl.progress(1) restoration implies; playhead JUMPS
+  // suppress onComplete, so those sites must set it explicitly — same
+  // GSAP rule the dissolve-uniform resyncs follow). Cleared on
+  // onReverseComplete so the next forward pass re-anchors fresh.
+  //
+  // Reversal symmetry: scrolling up, the mapping returns the name to
+  // topStart at px₀ — above SNAP_THRESHOLD by construction — so it is
+  // already at the top BEFORE the reverse transition can play.
+  //
+  // Same blend-safety contract as slide 1: gsap.set of `top` on the
+  // clip, no transforms, no new properties on any blend ancestor.
+  let travel2AnchorPx = null;
+  /** @type {ScrollTrigger | undefined} */
+  let travel2Trigger;
+  const travel2PxNow = () =>
+    travel2Trigger ? SNAP_THRESHOLD + (window.scrollY - travel2Trigger.start) : SNAP_THRESHOLD;
+  const applyTravel2 = (px) => {
+    if (!travel2) return;
+    let progress = 0;
+    if (travel2AnchorPx !== null) {
+      const start = Math.min(Math.max(travel2AnchorPx, SNAP_THRESHOLD), EXIT_START);
+      const span = EXIT_START - start;
+      progress = span > 0 ? Math.min(Math.max((px - start) / span, 0), 1) : 1;
+    }
+    gsap.set(travel2.clip, {
+      top: travel2.topStart + progress * (travel2.topEnd - travel2.topStart),
+    });
+  };
+  if (travel2) {
+    tl.eventCallback('onComplete', () => {
+      // Clamp the capture: a completion registered at/past EXIT_START
+      // (fling-adjacent paths — measured live: ensureSnapResolved's
+      // progress(1) jump CAN fire this with the deep-exit px, despite
+      // jumps suppressing onUpdate) would leave a degenerate zero-width
+      // window that maps the whole hold to the bottom position and
+      // breaks the reverse walk. Fall back to the canonical full-window
+      // anchor in that case, same as the fling guard.
+      const px = travel2PxNow();
+      travel2AnchorPx = px < EXIT_START ? px : SNAP_THRESHOLD;
+      applyTravel2(travel2PxNow());
+    });
+    tl.eventCallback('onReverseComplete', () => {
+      travel2AnchorPx = null;
+      applyTravel2(travel2PxNow());
+    });
+    travel2Trigger = ScrollTrigger.create({
+      trigger: section,
+      start: at(SNAP_THRESHOLD),
+      end: at(EXIT_START),
+      id: 'founders-name-travel-2',
+      onUpdate: () => applyTravel2(travel2PxNow()),
+      onRefresh: (self) => {
+        const px = SNAP_THRESHOLD + (window.scrollY - self.start);
+        // Rebuild/reload restoration: past the threshold with no anchor
+        // means build() is about to (or just did) stamp the snap
+        // resolved — adopt the canonical full-window mapping. (A live
+        // refresh mid-transition would adopt it a beat early; only
+        // reachable via a resize burst mid-snap, which rebuilds this
+        // whole module anyway.)
+        if (travel2AnchorPx === null && px >= SNAP_THRESHOLD) travel2AnchorPx = SNAP_THRESHOLD;
+        applyTravel2(px);
+      },
+    });
+  }
+
   // Video lifecycle — "section active" half of the play/pause gate (the
   // other half, "slide 1 showing or transition in progress", reads tl's
   // own progress — see createFoundersVideoController's updatePlayback).
@@ -618,12 +717,24 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
   // ordinary crossing (the snap resolved ~500px of scroll earlier).
   const ensureSnapResolved = () => {
     if (tl.progress() < 0.999) {
+      // Whether the anchor was set before this jump must be read BEFORE
+      // progress(1): the jump suppresses onUpdate but (measured live)
+      // CAN fire onComplete, whose handler writes the anchor — reading
+      // afterwards would mistake that side effect for a real pre-fling
+      // resolution.
+      const hadAnchor = travel2AnchorPx !== null;
       tl.progress(1).pause();
-      // Playhead JUMPS suppress onUpdate — write the dissolve uniform and
-      // resync the video's play/pause gate explicitly (same rule as
-      // build()'s state restoration).
+      // Write the dissolve uniform and resync the video's play/pause
+      // gate explicitly (jump-suppressed onUpdate — same rule as
+      // build()'s state restoration), and anchor slide 2's name travel
+      // canonically: the fling landed deep, so the full-window mapping
+      // puts the name at the bottom here (consistent with the resolved
+      // endpoint the exit tweens assume) and gives a smooth
+      // bottom → top reverse walk.
       dissolve?.setProgress(1);
       videoController?.setTimeline(tl);
+      if (!hadAnchor) travel2AnchorPx = SNAP_THRESHOLD;
+      applyTravel2(travel2PxNow());
     }
   };
   const exitScrub = (start, end, id) => ({
