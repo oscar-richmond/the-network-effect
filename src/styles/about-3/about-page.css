@@ -137,4 +137,55 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	min-height: 100vh;
 	min-height: 100dvh;
 	background-color: #f9f9f9;
+	display: flex;
+	align-items: center;
+	padding-block: 40px;
+}
+
+.about-page-3 .about-landing__row {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 40px;
+	width: 100%;
+	padding-inline: 40px;
+	/* TOP-aligned columns — switch to center or baseline here if needed. */
+	align-items: start;
+}
+
+.about-page-3 .about-landing__text {
+	margin: 0;
+	color: #ffffff;
+	mix-blend-mode: difference;
+}
+
+.about-page-3 .about-landing__text--body {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 400;
+	font-size: 13px;
+	line-height: 1.35;
+}
+
+.about-page-3 .about-landing__text--headline {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-size: 22px;
+	line-height: 1.15;
+	text-transform: uppercase;
+	letter-spacing: -0.01em;
+}
+
+.about-page-3 .about-landing__text--serif {
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-size: 15px;
+	line-height: 1.3;
+}
+
+/* Hidden from first paint until line-reveal wrapping clips the lines —
+   same flash-window standard as the hero intro (about-hero.css). Under
+   reduced motion the scroll script never boots and lines stay readable. */
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .about-landing__text:not(:has(> .lr-clip)) {
+		visibility: hidden;
+	}
 }

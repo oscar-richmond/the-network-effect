@@ -72,20 +72,37 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
 <FoundersSection />
 
 <!-- Plain #F9F9F9 landing — in-flow scroll hold after the founders
-     exhale-exit completes, and the future home of the next section's
-     content. The fixed founders stage (and the fixed bg-fade above)
-     are visibility:hidden once the exit completes — founders-scroll.js's
-     applyExitState — so nothing paints over this (same fixed-layer
-     lesson as the hero handoff). Empty for now. -->
-<section class="about-landing" data-about-landing aria-label="Next section"></section>
+     exhale-exit completes. The fixed founders stage (and the fixed
+     bg-fade above) are visibility:hidden once the exit completes —
+     founders-scroll.js's applyExitState — so nothing paints over this. -->
+<section class="about-landing" data-about-landing aria-label="Next section">
+  <div class="about-landing__row">
+    <p class="about-landing__text about-landing__text--body" data-about-landing-col>
+      We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
+    </p>
+    <p class="about-landing__text about-landing__text--headline" data-about-landing-col>
+      FROM ACCESS TO IMPACT
+    </p>
+    <p class="about-landing__text about-landing__text--serif" data-about-landing-col>
+      The network effect
+    </p>
+    <p class="about-landing__text about-landing__text--serif" data-about-landing-col>
+      Delivered through three disciplines.
+    </p>
+  </div>
+</section>
 
 <script>
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
+  import { initLandingScroll } from '../../scripts/about-3/landing-scroll.js';
 
   let cleanupAbout3Scroll = initAbout3Scroll();
+  let cleanupLandingScroll = initLandingScroll();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupAbout3Scroll?.();
     cleanupAbout3Scroll = undefined;
+    cleanupLandingScroll?.();
+    cleanupLandingScroll = undefined;
   }, { once: true });
 </script>

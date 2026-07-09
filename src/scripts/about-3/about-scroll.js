@@ -407,7 +407,7 @@ export function initAbout3Scroll() {
   // id-prefixed 'section-progress-') share this page and manage their own
   // lifecycles — spare them, kill everything else (it all belongs to this
   // hero sequence).
-  const SPARED_TRIGGER_PREFIXES = ['founders-', 'section-progress-'];
+  const SPARED_TRIGGER_PREFIXES = ['founders-', 'section-progress-', 'about-landing-'];
   const killHeroTriggers = () => {
     ScrollTrigger.getAll().forEach((trigger) => {
       if (
