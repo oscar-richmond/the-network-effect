@@ -172,6 +172,15 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	line-height: 1.15;
 	text-transform: uppercase;
 	letter-spacing: -0.01em;
+	text-align: center;
+}
+
+.about-page-3 .about-landing__text--center {
+	text-align: center;
+}
+
+.about-page-3 .about-landing__text--right {
+	text-align: right;
 }
 
 .about-page-3 .about-landing__text--serif {
