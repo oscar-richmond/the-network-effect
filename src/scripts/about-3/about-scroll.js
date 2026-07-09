@@ -424,6 +424,12 @@ export function initAbout3Scroll() {
     killHeroTriggers();
     cleanupHero = initHeroImageScroll();
     ScrollTrigger.refresh();
+    // Signals that the hero spacer now carries its final scroll-sequence
+    // height (initHeroImageScroll's `requiredHeight`, set just above) —
+    // the moment the document height above the Founders section is stable.
+    // founders-scroll.js waits for this before computing its own
+    // ScrollTrigger positions (see its doc comment for why).
+    document.dispatchEvent(new CustomEvent('about-3:hero-scroll-ready'));
   };
 
   const onHeroSettled = () => {

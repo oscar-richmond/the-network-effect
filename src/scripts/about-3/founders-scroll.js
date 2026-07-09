@@ -768,6 +768,13 @@ export function initFoundersScroll() {
     if (stage instanceof HTMLElement) stage.style.visibility = done ? 'hidden' : '';
     if (bgFade instanceof HTMLElement) bgFade.style.visibility = done ? 'hidden' : '';
     dissolve?.setPaused(done);
+    // Broadcasts this exact state transition so a downstream section (the
+    // /about-3 landing stage) can make its own reveal a direct function
+    // of THIS one, rather than a second, independently-computed
+    // ScrollTrigger that merely happens to land on the same scroll
+    // position — closing off any risk of the two ever firing a tick
+    // apart. See landing-scroll.js's listener for the consumer side.
+    document.dispatchEvent(new CustomEvent('about-founders:exit-state', { detail: { done } }));
   };
 
   let cancelled = false;
@@ -821,8 +828,31 @@ export function initFoundersScroll() {
   };
 
   // Fonts must be ready before line-reveal wrapping measures line breaks
-  // (same gate the hero uses).
-  document.fonts.ready.then(build);
+  // (same gate the hero uses) — AND the hero's own scroll sequence must
+  // have set its FINAL spacer height before this section's entrance
+  // ScrollTriggers are built: their `top+=X bottom` positions are computed
+  // relative to the document height above this section, which is still the
+  // hero spacer's small `100vh` CSS default at fonts.ready time (the hero's
+  // multi-second reveal timeline — and the resize-triggered
+  // initHeroImageScroll() that sizes the spacer to the full scroll-sequence
+  // height, about-scroll.js — both finish well after fonts load). Building
+  // against that placeholder height can compute a start/end pair already
+  // behind scroll 0, which renders the entrance tweens at full opacity
+  // immediately — flashing this section's content over the hero until a
+  // later refresh recomputes the (by-then-correct, much taller) positions
+  // and snaps it back to hidden. `about-3:hero-scroll-ready`
+  // (about-scroll.js) fires right after it sets that final height; the
+  // existing-height check covers this script attaching after that already
+  // happened.
+  const whenHeroScrollReady = () =>
+    new Promise((resolve) => {
+      if (document.querySelector('body.about-page-3 [data-about-hero-spacer]')?.style.height) {
+        resolve();
+        return;
+      }
+      document.addEventListener('about-3:hero-scroll-ready', () => resolve(), { once: true });
+    });
+  Promise.all([document.fonts.ready, whenHeroScrollReady()]).then(build);
 
   // Own resize handling — deliberately separate from about-scroll.js's
   // handler (which rebuilds only the hero's triggers). Line breaks and

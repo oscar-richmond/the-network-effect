@@ -71,24 +71,39 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
      bg-fade (50) and hero layers (100/110), below the nav (270). -->
 <FoundersSection />
 
-<!-- Plain #F9F9F9 landing — in-flow scroll hold after the founders
-     exhale-exit completes. The fixed founders stage (and the fixed
-     bg-fade above) are visibility:hidden once the exit completes —
-     founders-scroll.js's applyExitState — so nothing paints over this. -->
+<!-- Fixed settled stage — in-flow scroll runway (landing-scroll.js sets
+     its height) whose visible content is a position: fixed, full-
+     viewport #F9F9F9 panel. The stage is visibility:hidden by CSS
+     default (about-page.css, no-preference media query only — see its
+     comment) and revealed ONLY by landing-scroll.js's entry-gate
+     ScrollTrigger at the exact scroll position the founders exhale
+     resolves (founders-scroll.js's applyExitState hides the founders
+     stage + hero bg-fade at that same position) — a pixel-identical
+     #F9F9F9-to-#F9F9F9 swap, no wrong-state frame in either direction.
+     FUTURE SECTIONS: any new fixed, opaque, full-viewport stage after
+     this one MUST follow the same contract — CSS-default
+     visibility:hidden, revealed only by a ScrollTrigger onEnter/
+     onLeaveBack pair anchored to ITS OWN section's document position.
+     Skipping the entry gate (opaque-by-default, exit-only visibility)
+     is exactly the bug a previous attempt shipped here: it painted
+     over the hero's fixed z:110 images/canvas from initial page load
+     because nothing hid it before scroll earned it. -->
 <section class="about-landing" data-about-landing aria-label="Next section">
-  <div class="about-landing__row">
-    <p class="about-landing__text about-landing__text--body" data-about-landing-col>
-      We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
-    </p>
-    <p class="about-landing__text about-landing__text--headline" data-about-landing-col>
-      FROM ACCESS TO IMPACT<sup class="founders__tag-index">/00</sup>
-    </p>
-    <p class="about-landing__text about-landing__text--serif about-landing__text--center" data-about-landing-col>
-      The network effect
-    </p>
-    <p class="about-landing__text about-landing__text--serif about-landing__text--right" data-about-landing-col>
-      Delivered through three disciplines.
-    </p>
+  <div class="about-landing__stage" data-about-landing-stage>
+    <div class="about-landing__row">
+      <p class="about-landing__text about-landing__text--body" data-about-landing-col>
+        We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
+      </p>
+      <p class="about-landing__text about-landing__text--headline" data-about-landing-col>
+        FROM ACCESS TO IMPACT<sup class="founders__tag-index">/00</sup>
+      </p>
+      <p class="about-landing__text about-landing__text--serif about-landing__text--center" data-about-landing-col>
+        The network effect
+      </p>
+      <p class="about-landing__text about-landing__text--serif about-landing__text--right" data-about-landing-col>
+        Delivered through three disciplines.
+      </p>
+    </div>
   </div>
 </section>
 
