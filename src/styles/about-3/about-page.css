@@ -385,6 +385,62 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	pointer-events: none;
 }
 
+/* Hover overlay text ("READ MORE" + sentence) — hidden entirely as the
+   base state: it only exists for the hover-capable/WebGL path, where
+   gallery-hover-blur.js rect-syncs and fades it (under RM, on touch, or
+   without WebGL the module never runs and these must never appear). */
+.about-page-3 .about-landing__gallery-overlay {
+	display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* BLEND ON THIS WRAPPER, plain-white children — the nav/section-
+	   progress pattern, and load-bearing here: the wrapper needs
+	   position + z-index (a self-created stacking context, safe for its
+	   OWN blend per the founders-name precedent), so a leaf blend on the
+	   children would see only the wrapper's transparent interior and
+	   flatten white (the section-progress.css finding). z-index 1: above
+	   the JS-appended hover canvas (z auto) it must blend against.
+	   left/top/width/height are written per-tick by gallery-hover-blur.js
+	   (layout properties — never transform, which would be fine on a
+	   blend SELF but is avoided for consistency with the name-clip
+	   idiom); opacity rides the hover progress, 0 at rest. */
+	.about-page-3 .about-landing__gallery-overlay {
+		display: flex;
+		position: absolute;
+		left: 0;
+		top: 0;
+		z-index: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding-inline: 16px;
+		text-align: center;
+		opacity: 0;
+		pointer-events: none;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.about-page-3 .about-landing__gallery-overlay-title {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: 14px;
+		line-height: 1.2;
+		text-transform: uppercase;
+	}
+
+	.about-page-3 .about-landing__gallery-overlay-text {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 400;
+		font-size: 14px;
+		line-height: 1.35;
+	}
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	/* Full-stage band — absolute (no z-index!) so the text row's layout
 	   is untouched by this subtree existing. The composition occupies

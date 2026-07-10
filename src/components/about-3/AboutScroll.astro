@@ -158,6 +158,32 @@ const galleryItems = [
           </figure>
         ))}
       </div>
+
+      <!-- Hover overlay text — one per image, but deliberately OUTSIDE
+           the track: the track carries per-frame animated transforms (a
+           stacking context), and the visible imagery is the WebGL hover
+           canvas painted ABOVE the whole track, so text nested in a
+           frame would be blend-isolated from — and covered by — the very
+           blur it must sit on. These siblings are rect-synced to their
+           frames each tick by gallery-hover-blur.js (left/top/size), and
+           their opacity rides the same hover progress as the dissolve.
+           z-index 1 lifts them above the JS-appended canvas (z auto);
+           that self-stacking-context is exactly why the difference blend
+           lives on THIS wrapper with plain-white children (the
+           nav/section-progress pattern) — a leaf blend nested inside it
+           would see only the wrapper's transparent interior and flatten
+           (the section-progress.css finding). pointer-events:none so
+           hits pass through to the frames beneath. -->
+      {galleryItems.map((_, i) => (
+        <div
+          class="about-landing__gallery-overlay"
+          data-about-landing-gallery-overlay={i}
+          aria-hidden="true"
+        >
+          <p class="about-landing__gallery-overlay-title">READ MORE</p>
+          <p class="about-landing__gallery-overlay-text">Take a moment to explore our services</p>
+        </div>
+      ))}
     </div>
     <div class="about-landing__row">
       <p class="about-landing__text about-landing__text--body" data-about-landing-col>

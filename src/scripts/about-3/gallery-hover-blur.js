@@ -358,16 +358,24 @@ export function createGalleryHoverBlur(galleryEl) {
   const scene = new Transform();
   const geometry = new Plane(gl);
 
-  /** @typedef {{ imgEl: HTMLImageElement, frameEl: HTMLElement, plane: HoverBlurPlane | null, progress: { value: number }, blurPx: number }} ItemState */
+  /** @typedef {{ imgEl: HTMLImageElement, frameEl: HTMLElement, overlayEl: HTMLElement | null, plane: HoverBlurPlane | null, progress: { value: number }, blurPx: number }} ItemState */
   /** @type {ItemState[]} */
   const itemStates = items
     .map((imgEl, i) => {
       const frameEl = imgEl.closest('.about-landing__gallery-frame');
       if (!(frameEl instanceof HTMLElement)) return null;
       const width = frameEl.getBoundingClientRect().width || frameEl.offsetWidth;
+      // Hover overlay text — a SIBLING outside the track (see
+      // AboutScroll.astro's comment for why it can't live in the frame),
+      // rect-synced to this frame + opacity-synced to this progress in
+      // tick() below. Optional: older markup without overlays still works.
+      const overlayEl = galleryEl.querySelector(
+        `[data-about-landing-gallery-overlay="${i}"]`,
+      );
       return {
         imgEl,
         frameEl,
+        overlayEl: overlayEl instanceof HTMLElement ? overlayEl : null,
         plane: null,
         progress: { value: 0 },
         blurPx: Math.max(1, width * GALLERY_HOVER_BLUR_RATIO),
@@ -399,6 +407,9 @@ export function createGalleryHoverBlur(galleryEl) {
     state.plane.destroy();
     state.plane = null;
     state.imgEl.style.visibility = '';
+    // An unmount mid-hover (scrolled away with the pointer still down on
+    // the frame's last position) must not strand visible overlay text.
+    if (state.overlayEl) state.overlayEl.style.opacity = '0';
   };
 
   const isNear = (rect, screenWidth) =>
@@ -463,6 +474,21 @@ export function createGalleryHoverBlur(galleryEl) {
         state.plane.setProgress(state.progress.value);
         state.plane.program.uniforms.uBlurPx.value = state.blurPx;
         state.plane.update(rect, screen, viewport);
+
+        // Overlay text: rect-synced via left/top/width/height (LAYOUT
+        // properties on a blend element — the name-clip idiom; never
+        // transform on the children's ancestor... here the wrapper IS
+        // the blend element, so layout writes keep even self-created
+        // stacking noise out) and faded with the same hover progress
+        // the dissolve runs on — text and blur arrive as one gesture.
+        if (state.overlayEl) {
+          const o = state.overlayEl.style;
+          o.left = `${rect.left}px`;
+          o.top = `${rect.top}px`;
+          o.width = `${rect.width}px`;
+          o.height = `${rect.height}px`;
+          o.opacity = String(state.progress.value);
+        }
       }
     });
 
