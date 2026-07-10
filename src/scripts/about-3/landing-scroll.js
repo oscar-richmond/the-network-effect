@@ -32,28 +32,34 @@ const LANDING_SETTLE_BEAT = 150;
 /** Text alone on stage after its reveal fires (the reveal itself is the
  * existing timed play at the settle beat — untouched). */
 const LANDING_TEXT_HOLD = 500;
-/** Gallery phase — the horizontal track scrub window. Sized to the
- * reference's ~1:0.75 scroll-to-travel ratio against the measured track
- * overflow (~1650px at 1728): travel distance is MEASURED at build,
- * this constant fixes the scroll length. Retunable. */
-const GALLERY_SCROLL_PX = 2400;
+/** Gallery phase — the horizontal track scrub window. The x travel now
+ * starts from FULLY OFF-RIGHT (offset = the gallery's own width,
+ * measured at build — the corner entry), so total travel ≈ the track's
+ * full width (~3800px at 1728). Sized for the reference's ~1:0.75-0.8
+ * scroll-to-travel ratio. Retunable. */
+const GALLERY_SCROLL_PX = 4800;
 /** Opening slice of the gallery window: the track rises from FULLY
- * BELOW the band's clip (yPercent 105 → 0, CSS-defaulted so nothing
+ * BELOW the stage's clip (yPercent 105 → 0, CSS-defaulted so nothing
  * paints during the settle/text phases) while x is already scrubbing
- * leftward from an off-right offset = the bottom-right entry
- * impression; the remainder is pure horizontal. Measured live: a
- * partial px rise left the first images visible in the band during the
- * text phases — the track must start clipped out entirely. */
-const GALLERY_ENTER_PX = 420;
+ * leftward from fully off-right = the LEADING images appear in the
+ * bottom-right corner region and travel diagonally up+left into the
+ * middle band; nothing is pre-distributed across the left. DERIVED so
+ * the rise completes exactly as the leading image's left edge crosses
+ * the stage's centre line: Δx to centre ≈ (stageW − stageW/2 + track
+ * padding) ≈ 904px at 1728, over the ~0.79 travel ratio ≈ 1100px of
+ * scroll (measured live: leading edge at 897px vs centre 864 at rise
+ * end). After this the motion is pure horizontal. */
+const GALLERY_ENTER_PX = 1100;
 const GALLERY_RISE_YPERCENT = 105;
-/** Off-right x offset at the window start — the first images enter from
- * the right edge (approved mechanism). Also part of the scroll-to-
- * travel ratio: (offset + measured overflow) / GALLERY_SCROLL_PX. */
-const GALLERY_ENTER_X_OFFSET = 300;
 /** Text columns' receded opacity during the gallery phase — scrubbed on
  * the blend columns THEMSELVES (self opacity never isolates a blend —
- * founders-exit precedent; the row wrapper must NEVER carry it). */
-const LANDING_TEXT_RECEDE_OPACITY = 0.35;
+ * founders-exit precedent; the row wrapper must NEVER carry it — its
+ * position:relative paint-order fix is deliberately z-index-free).
+ * Lowered from the bottom-band design's 0.35: the composition now
+ * occupies the middle band, so receded text sits over/under passing
+ * imagery constantly — 0.25 keeps the inversion moments present but
+ * quieter. One-line retune. */
+const LANDING_TEXT_RECEDE_OPACITY = 0.25;
 /** Per-image parallax magnitude — xPercent of the img's own width; imgs
  * are 115% of their clip frame, so 13 is the exact full-coverage bound. */
 const GALLERY_PARALLAX_PCT = 13;
@@ -261,11 +267,14 @@ export function initLandingScroll() {
         id,
       });
 
-      // Main horizontal scrub — the whole gallery window, starting from
-      // the off-right entry offset.
+      // Main horizontal scrub — the whole gallery window. The start
+      // offset is the gallery's own width (measured, viewport-derived):
+      // the track's leading edge sits exactly at the right edge of the
+      // stage, so the first images enter FROM the corner — nothing is
+      // on-stage horizontally until scroll brings it in.
       gsap.fromTo(
         track,
-        { x: GALLERY_ENTER_X_OFFSET },
+        { x: gallery.clientWidth },
         {
           x: -galleryTravel,
           ease: 'none',

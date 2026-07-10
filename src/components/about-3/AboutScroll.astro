@@ -9,10 +9,26 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
 // Landing gallery — PLACEHOLDER content (real gallery imagery/captions
 // are a later content task). Pulled from /about's unused img2 pool;
 // referencing these files touches no other page's code.
-const galleryItems = Array.from({ length: 8 }, (_, i) => ({
+//
+// COMPOSITION ARRAY — a designed, hand-set editorial layout (staggered,
+// rhythmic, breathing), NOT randomness. Per item: size class (see the
+// size-class rules in about-page.css), xGap (extra horizontal air
+// before the item, on top of the track's base gap) and yOff (vertical
+// offset from the stage's centre line — negative rises above centre).
+// This is data: real content later slots in by editing values.
+const galleryItems = [
+  { size: 'medium', xGap: 0, yOff: 40 },
+  { size: 'small', xGap: 48, yOff: -120 },
+  { size: 'large', xGap: 72, yOff: 80 },
+  { size: 'small', xGap: 56, yOff: -60 },
+  { size: 'portrait', xGap: 96, yOff: 120 },
+  { size: 'medium', xGap: 48, yOff: -140 },
+  { size: 'large', xGap: 88, yOff: 60 },
+  { size: 'small', xGap: 64, yOff: -40 },
+].map((item, i) => ({
+  ...item,
   src: asset(`/assets/about-scroll/img2/img-0${i + 1}.jpg`),
   label: `PLACEHOLDER /0${i + 1}`,
-  band: ['upper', 'lower', 'upper', 'span', 'lower', 'upper', 'lower', 'span'][i],
 }));
 ---
 
@@ -99,34 +115,25 @@ const galleryItems = Array.from({ length: 8 }, (_, i) => ({
      because nothing hid it before scroll earned it. -->
 <section class="about-landing" data-about-landing aria-label="Next section">
   <div class="about-landing__stage" data-about-landing-stage>
-    <div class="about-landing__row">
-      <p class="about-landing__text about-landing__text--body" data-about-landing-col>
-        We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
-      </p>
-      <p class="about-landing__text about-landing__text--headline" data-about-landing-col>
-        FROM ACCESS TO IMPACT<sup class="founders__tag-index">/00</sup>
-      </p>
-      <p class="about-landing__text about-landing__text--serif about-landing__text--center" data-about-landing-col>
-        The network effect
-      </p>
-      <p class="about-landing__text about-landing__text--serif about-landing__text--right" data-about-landing-col>
-        Delivered through three disciplines.
-      </p>
-    </div>
-
     <!-- Horizontal gallery — the landing's scrubbed phase after the text
          hold (landing-scroll.js). A SIBLING of the blend row under the
-         stage's isolation root, absolutely positioned so the row's
-         layout never shifts: transforms/will-change live strictly
+         stage's isolation root: transforms/will-change live strictly
          inside this subtree, never on a blend ancestor, and it carries
-         NO z-index (source order paints it after the row). Under
+         NO z-index. PAINT ORDER: this comes BEFORE the row in source and
+         the row is position:relative (no z-index — no stacking context),
+         so the difference-blend text paints ABOVE the passing images and
+         visibly inverts against them — the intended reading. Under
          reduced motion the no-preference styles never apply and this
-         renders as a static, natively-scrollable in-flow strip below
-         the text (about-page.css). -->
+         renders as a static, natively-scrollable in-flow strip
+         (about-page.css) — note it then sits above the text in flow
+         order per the same source position. -->
     <div class="about-landing__gallery" data-about-landing-gallery aria-hidden="true">
       <div class="about-landing__gallery-track" data-about-landing-gallery-track>
         {galleryItems.map((item) => (
-          <figure class={`about-landing__gallery-item about-landing__gallery-item--${item.band}`}>
+          <figure
+            class={`about-landing__gallery-item about-landing__gallery-item--${item.size}`}
+            style={`margin-left:${item.xGap}px; --gallery-y:${item.yOff}px`}
+          >
             <figcaption class="about-landing__gallery-caption">
               <span class="about-landing__gallery-caption-dot" aria-hidden="true"></span>
               {item.label}
@@ -143,6 +150,20 @@ const galleryItems = Array.from({ length: 8 }, (_, i) => ({
           </figure>
         ))}
       </div>
+    </div>
+    <div class="about-landing__row">
+      <p class="about-landing__text about-landing__text--body" data-about-landing-col>
+        We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
+      </p>
+      <p class="about-landing__text about-landing__text--headline" data-about-landing-col>
+        FROM ACCESS TO IMPACT<sup class="founders__tag-index">/00</sup>
+      </p>
+      <p class="about-landing__text about-landing__text--serif about-landing__text--center" data-about-landing-col>
+        The network effect
+      </p>
+      <p class="about-landing__text about-landing__text--serif about-landing__text--right" data-about-landing-col>
+        Delivered through three disciplines.
+      </p>
     </div>
   </div>
 </section>
