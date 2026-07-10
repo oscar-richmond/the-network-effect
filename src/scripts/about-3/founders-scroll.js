@@ -94,11 +94,35 @@ const NAME_TRAVEL_MARGIN_PX = 24;
 /** Per-slide hold runway = each name's travel window. EQUAL for both
  * slides so the scroll-to-travel speed is identical for the identical
  * gesture (the old 700/500 split would have given Robbo a ~0.7 px/px
- * crawl and Ashley a ~0.97 near-1:1). 600+600 also preserves the old
- * 700+500 total, so EXIT_START and TOTAL_RUNWAY — and everything
- * anchored downstream of them (exhale beats, landing handoff) — are
- * numerically unchanged. */
-const SLIDE_HOLD = 600;
+ * crawl and Ashley a ~0.97 near-1:1).
+ *
+ * EXTENDED from 600 — traced through applyTravel2/travel2PxNow: slide
+ * 2's mapped span is (EXIT_START − anchor), and the anchor captures at
+ * SNAP_THRESHOLD + lag, where lag ≈ scrollRate × TRANSITION_DURATION
+ * (real seconds consumed by the timed dissolve before onComplete reads
+ * scrollY — this shrinks the span symmetrically in both directions,
+ * since reverse crawl runs the SAME anchor-to-boundary distance before
+ * onLeaveBack/onReverseComplete ever fire). At the previous 600,
+ * lag already exceeded half the window at a normal pace, compressing
+ * the mapped span to a fraction of Robbo's full-window crawl — read as
+ * "cut short," confirmed live both directions.
+ *
+ * Sized so the mapped span matches Robbo's original 600px crawl (the
+ * already-approved reference) even after the lag, at an ASSUMED normal
+ * continuous scroll rate of ~600px/sec (~1 viewport per 1.6s at this
+ * page's ~962px height — a common comfortable-narrative-scroll pace;
+ * this can't be measured from tooling with no working rAF, same
+ * limitation as blend rendering — Oscar's real-browser number
+ * recalibrates this exactly if it's still off):
+ *   lag = 600 × TRANSITION_DURATION(0.7) = 420
+ *   SLIDE_HOLD ≥ 600 (target span) + 420 (lag) = 1020
+ * 1020 is the literal minimum from that assumption — used as-is, no
+ * padding, so a shortfall directly tells us the real rate and lets the
+ * next retune solve for it precisely rather than re-guessing.
+ *
+ * Real page-length cost, accepted: EXIT_START/TOTAL_RUNWAY grow with
+ * it — see their comments for the resulting deltas. */
+const SLIDE_HOLD = 1020;
 /** Scroll position (px from handoff) whose crossing triggers the snap
  * transition — down past it plays 0→1, back up past it plays 1→0.
  * DERIVED, not hand-tuned: it is slide 1's travel-window close, so "the
