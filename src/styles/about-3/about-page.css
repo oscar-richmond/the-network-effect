@@ -385,10 +385,10 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	pointer-events: none;
 }
 
-/* Hover overlay text ("READ MORE" + sentence) — hidden entirely as the
-   base state: it only exists for the hover-capable/WebGL path, where
-   gallery-hover-blur.js rect-syncs and fades it (under RM, on touch, or
-   without WebGL the module never runs and these must never appear). */
+/* Hover overlay text — hidden entirely as the base state: it only
+   exists for the hover-capable/WebGL path, where gallery-hover-blur.js
+   rect-syncs and fades it (under RM, on touch, or without WebGL the
+   module never runs and these must never appear). */
 .about-page-3 .about-landing__gallery-overlay {
 	display: none;
 }
@@ -421,15 +421,6 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		pointer-events: none;
 		color: #ffffff;
 		mix-blend-mode: difference;
-	}
-
-	.about-page-3 .about-landing__gallery-overlay-title {
-		margin: 0;
-		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 600;
-		font-size: 12px;
-		line-height: 1.2;
-		text-transform: uppercase;
 	}
 
 	.about-page-3 .about-landing__gallery-overlay-text {
