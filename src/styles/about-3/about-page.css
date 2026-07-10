@@ -369,6 +369,22 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	object-fit: cover;
 }
 
+/* Hover-blur WebGL canvas (gallery-hover-blur.js, JS-appended, hover-
+   capable pointers only — see the module's own hover/pointer gate).
+   Same positioning idiom as founders__canvas/about-hero__gallery-canvas.
+   No z-index: appended LAST (after the track), so it paints above the
+   DOM images by plain DOM order alone — its own background is
+   transparent (alpha:true) and each plane only paints opaque pixels
+   exactly over its own frame's rect, so it can't cover captions (a
+   sibling-earlier, non-overlapping layout element) regardless. */
+.about-page-3 .about-landing__gallery-hover-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	/* Full-stage band — absolute (no z-index!) so the text row's layout
 	   is untouched by this subtree existing. The composition occupies

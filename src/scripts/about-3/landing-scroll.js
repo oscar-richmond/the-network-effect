@@ -3,6 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CustomEase } from 'gsap/CustomEase';
 import { wrapLineRevealElement } from '../line-reveal.js';
 import { EXIT_BEAT2_PX } from './founders-scroll.js';
+import { createGalleryHoverBlur } from './gallery-hover-blur.js';
 
 gsap.registerPlugin(ScrollTrigger, CustomEase);
 
@@ -138,8 +139,19 @@ export function initLandingScroll() {
    * the regression note on `.about-landing__stage` in AboutScroll.astro.
    * @param {boolean} visible
    */
+  // Created ONCE (module-instance scope, like founders-scroll.js's
+  // dissolve/videoController) — the gallery markup is static (server-
+  // rendered, never recreated by JS), so it doesn't need rebuilding on
+  // resize, only re-pointing via resize()/setPaused(). Paused in lockstep
+  // with the stage itself: gallery-hover-blur.js's tick loop (and its
+  // per-frame mount/unmount reconciliation) has no reason to run while
+  // the stage — and therefore the whole gallery — is invisible.
+  const galleryEl = document.querySelector('body.about-page-3 [data-about-landing-gallery]');
+  const hoverBlur = galleryEl instanceof HTMLElement ? createGalleryHoverBlur(galleryEl) : null;
+
   const setStageVisible = (visible) => {
     if (stage instanceof HTMLElement) stage.style.visibility = visible ? 'visible' : 'hidden';
+    hoverBlur?.setPaused(!visible);
   };
 
   // Primary handoff signal — founders-scroll.js's applyExitState
@@ -305,6 +317,12 @@ export function initLandingScroll() {
       landing.querySelectorAll('[data-about-landing-gallery-img]'),
     ).filter((el) => el instanceof HTMLImageElement);
     if (gallery instanceof HTMLElement && track instanceof HTMLElement) {
+      // Re-sync screen/viewport dims + each item's frame-width-derived
+      // blur radius — the module itself is NOT recreated (no texture
+      // reload), only re-pointed, same as founders-scroll.js's
+      // dissolve/videoController on their own resize path.
+      hoverBlur?.resize();
+
       // Travel distance is MEASURED (track overflow beyond its clip
       // window); GALLERY_SCROLL_PX fixes the scroll length — viewport
       // changes alter speed slightly, never correctness. Rebuilds
@@ -506,6 +524,7 @@ export function initLandingScroll() {
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));
+    hoverBlur?.destroy();
     setStageVisible(false);
   };
 }
