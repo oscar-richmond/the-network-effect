@@ -165,6 +165,21 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 @media (prefers-reduced-motion: no-preference) {
 	.about-page-3 .about-landing {
 		position: relative;
+		/* Z-ORDER LIVES HERE, ON THE IN-FLOW WRAPPER — NOT on the fixed
+		   stage below. This is the founders section's proven split
+		   (.founders carries z-index 150; .founders__stage carries only
+		   fixed + isolation), and it is load-bearing for the blend: a
+		   difference leaf nested inside a container that is fixed +
+		   z-indexed + isolated at once reads a backdrop that EXCLUDES
+		   compositor-promoted (scroll-animated) sibling layers in real
+		   Chromium — the text blended against the bare #f9f9f9 only and
+		   read flat over the gallery imagery (three regressions before
+		   the differential against the working founders chain found
+		   this). Moving z-index off the stage makes the landing text's
+		   ancestor chain shape-identical to the founders name's, which
+		   blends correctly live over animated media. NEVER move z-index
+		   back onto the stage. 140: directly below founders (150). */
+		z-index: 140;
 	}
 
 	.about-page-3 .about-landing__stage {
@@ -177,7 +192,6 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		isolation: isolate;
 		visibility: hidden;
 		pointer-events: none;
-		z-index: 140; /* directly below founders stage (150) */
 		display: flex;
 		align-items: center;
 		padding-block: 40px;
