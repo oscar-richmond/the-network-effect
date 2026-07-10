@@ -152,8 +152,14 @@ const SNAP_THRESHOLD = ENTRANCE_END + SLIDE_HOLD;
 const EXIT_START = SNAP_THRESHOLD + SLIDE_HOLD;
 /** Exit beat 1 — content departs (meta, name, index, portrait). */
 const EXIT_BEAT1_PX = 420;
-/** Exit beat 2 — background over-blur + #F9F9F9 veil melt. */
-const EXIT_BEAT2_PX = 360;
+/** Exit beat 2 — background over-blur + #F9F9F9 veil melt. Exported (the
+ * only exported constant besides initFoundersScroll): landing-scroll.js's
+ * indicator-hide window mirrors this exact span, anchored backwards from
+ * the shared founders/landing boundary — importing it here avoids
+ * duplicating the value where a future beat-2 retune could silently
+ * desync the two, the same no-duplicated-constant principle the
+ * boundary's own entry gate already relies on (see landing-scroll.js). */
+export const EXIT_BEAT2_PX = 360;
 /** Total runway — also the section's in-flow height. */
 const TOTAL_RUNWAY = EXIT_START + EXIT_BEAT1_PX + EXIT_BEAT2_PX;
 /** Beat-1 sub-windows (px from handoff) — the entrance stagger mirrored:

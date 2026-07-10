@@ -2,6 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CustomEase } from 'gsap/CustomEase';
 import { wrapLineRevealElement } from '../line-reveal.js';
+import { EXIT_BEAT2_PX } from './founders-scroll.js';
 
 gsap.registerPlugin(ScrollTrigger, CustomEase);
 
@@ -54,11 +55,23 @@ const GALLERY_RISE_YPERCENT = 105;
 /** Per-image parallax magnitude — xPercent of the img's own width; imgs
  * are 115% of their clip frame, so 13 is the exact full-coverage bound. */
 const GALLERY_PARALLAX_PCT = 13;
-/** Section-progress indicator hide — a short scrub at the gallery's
- * start (house exit vocabulary: opacity + blur together), reversed
- * symmetrically on scroll-up. Window length and blur endpoint. */
-const GALLERY_PROGRESS_HIDE_PX = 250;
-const GALLERY_PROGRESS_HIDE_BLUR_PX = 10;
+/** Section-progress indicator hide — house exit vocabulary (opacity +
+ * blur together), reversed symmetrically on scroll-up. Window is
+ * founders' own EXIT_BG (the veil-melt / background-fade-out beat),
+ * NOT a landing-side offset: re-expressed relative to `landing`'s own
+ * top-vs-viewport-bottom anchor (the SAME anchor the entry gate already
+ * uses) as `top-=EXIT_BEAT2_PX bottom` .. `top bottom` — negative lead,
+ * ending exactly at the boundary. This holds because landing.top is,
+ * by plain document flow, exactly founders.top + TOTAL_RUNWAY (no gap,
+ * founders' height set to that constant) — so EXIT_BG's absolute
+ * position ([TOTAL_RUNWAY - EXIT_BEAT2_PX, TOTAL_RUNWAY] from the
+ * founders handoff) maps to [-EXIT_BEAT2_PX, 0] from landing's own top,
+ * with zero risk of drift and no need to import EXIT_START/TOTAL_RUNWAY
+ * at all — same principle as the entry gate's own derivation. Result:
+ * the indicator is fully gone by the moment founders' veil finishes
+ * melting to #F9F9F9 — i.e. by the boundary handoff itself, not later
+ * in the gallery phase. */
+const INDICATOR_HIDE_BLUR_PX = 10;
 /** Rest on the gallery's final frame before the stage tears down. */
 const LANDING_TAIL_HOLD = 300;
 /** Lead distance upstream of the landing boundary at which the gallery
@@ -239,6 +252,48 @@ export function initLandingScroll() {
       onLeaveBack: () => revealTl?.reverse(),
     });
 
+    // Section-progress indicator hide — AUTHORIZED exception to the
+    // SectionProgress guard, scoped to exactly this behaviour, and
+    // implemented WITHOUT touching any SectionProgress file: driven
+    // from the landing's own phase maths, anchored to the SAME
+    // `landing`-top-vs-viewport-bottom point the entry gate above uses
+    // (a negative lead, not a new independent trigger — see
+    // INDICATOR_HIDE_BLUR_PX's comment for the exact derivation),
+    // targeting the indicator's fixed CONTAINER with self opacity +
+    // filter. The container carries the difference blend (see
+    // section-progress.css's header for why it must live there), and
+    // self-properties never isolate an element's own blend — the same
+    // rule as the nav email link's 0.6-opacity hover and the founders
+    // exit name fade. section-progress.js's own tweens touch only the
+    // leaf elements — disjoint targets, no overwrite risk. Placed here
+    // (not inside the gallery block below) because it's a function of
+    // the founders/landing BOUNDARY, not the gallery feature — it must
+    // still hide correctly even if the gallery markup is ever removed.
+    // Under reduced motion none of this runs, matching the component's
+    // existing RM handling (static, visible).
+    const progressIndicator = document.querySelector(
+      'body.about-page-3 [data-section-progress]',
+    );
+    if (progressIndicator instanceof HTMLElement) {
+      gsap.fromTo(
+        progressIndicator,
+        { opacity: 1, filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          filter: `blur(${INDICATOR_HIDE_BLUR_PX}px)`,
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: landing,
+            start: `top-=${EXIT_BEAT2_PX} bottom`,
+            end: 'top bottom',
+            scrub: true,
+            id: 'about-landing-progress-hide',
+          },
+        },
+      );
+    }
+
     // ── Gallery phase — all pure scrubs (ease none, ScrollTrigger
     // scrub), so reversal is inherently symmetric and hard flings clamp
     // to window edges in the same update pass the gates fire — no timed
@@ -325,41 +380,6 @@ export function initLandingScroll() {
       // now stays full-strength throughout the gallery phase; the
       // inversion-over-imagery moments this produces are the intended
       // reference feel, not recession.
-
-      // Section-progress indicator hide — AUTHORIZED exception to the
-      // SectionProgress guard, scoped to exactly this behaviour, and
-      // implemented WITHOUT touching any SectionProgress file: driven
-      // from the landing's own phase maths (same scrub helper/window
-      // family as the other gallery tweens — never an independent
-      // trigger), targeting the indicator's fixed CONTAINER with self
-      // opacity + filter. The container carries the difference blend
-      // (see section-progress.css's header for why it must live there),
-      // and self-properties never isolate an element's own blend — the
-      // same rule as the nav email link's 0.6-opacity hover and the
-      // founders exit name fade. section-progress.js's own tweens touch
-      // only the leaf elements — disjoint targets, no overwrite risk.
-      // Under reduced motion none of this runs, matching the
-      // component's existing RM handling (static, visible).
-      const progressIndicator = document.querySelector(
-        'body.about-page-3 [data-section-progress]',
-      );
-      if (progressIndicator instanceof HTMLElement) {
-        gsap.fromTo(
-          progressIndicator,
-          { opacity: 1, filter: 'blur(0px)' },
-          {
-            opacity: 0,
-            filter: `blur(${GALLERY_PROGRESS_HIDE_BLUR_PX}px)`,
-            ease: 'none',
-            immediateRender: false,
-            scrollTrigger: galleryScrub(
-              GALLERY_START,
-              GALLERY_START + GALLERY_PROGRESS_HIDE_PX,
-              'about-landing-progress-hide',
-            ),
-          },
-        );
-      }
 
       // Per-image parallax — one timeline off the same window; each img
       // (115% of its clip frame) drifts its own xPercent, magnitudes
