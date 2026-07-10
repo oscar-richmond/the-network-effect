@@ -51,15 +51,6 @@ const GALLERY_SCROLL_PX = 7400;
  * end). After this the motion is pure horizontal. */
 const GALLERY_ENTER_PX = 1100;
 const GALLERY_RISE_YPERCENT = 105;
-/** Text columns' receded opacity during the gallery phase — scrubbed on
- * the blend columns THEMSELVES (self opacity never isolates a blend —
- * founders-exit precedent; the row wrapper must NEVER carry it — its
- * position:relative paint-order fix is deliberately z-index-free).
- * Lowered from the bottom-band design's 0.35: the composition now
- * occupies the middle band, so receded text sits over/under passing
- * imagery constantly — 0.25 keeps the inversion moments present but
- * quieter. One-line retune. */
-const LANDING_TEXT_RECEDE_OPACITY = 0.25;
 /** Per-image parallax magnitude — xPercent of the img's own width; imgs
  * are 115% of their clip frame, so 13 is the exact full-coverage bound. */
 const GALLERY_PARALLAX_PCT = 13;
@@ -321,26 +312,19 @@ export function initLandingScroll() {
         },
       );
 
-      // Text recession — SELF opacity on the blend columns, never the
-      // row wrapper (see LANDING_TEXT_RECEDE_OPACITY's comment; the
-      // requested "non-blend wrapper" placement is impossible — every
-      // wrapper here is a blend ancestor). Owns only the columns'
-      // opacity; the reveal timeline owns their .lr-inner descendants'
-      // transforms — disjoint properties, disjoint scroll ranges.
-      gsap.fromTo(
-        columns,
-        { opacity: 1 },
-        {
-          opacity: LANDING_TEXT_RECEDE_OPACITY,
-          ease: 'none',
-          immediateRender: false,
-          scrollTrigger: galleryScrub(
-            GALLERY_START,
-            GALLERY_START + GALLERY_ENTER_PX,
-            'about-landing-text-recede',
-          ),
-        },
-      );
+      // NOTE: an earlier revision receded the text columns to partial
+      // opacity here (self opacity on the blend <p>s — never the row,
+      // which would isolate the blend). Removed: at low opacity,
+      // mix-blend-mode: difference still composites correctly but the
+      // inverted result is faint enough to read as "the blend is
+      // broken" — this was the actual cause of three rounds of
+      // structural blend-regression chasing (eeff4d8, e1c383b), not
+      // the ancestor chain. Diagnosed live by Oscar in a real browser
+      // (my occluded automation tab can't render blend compositing at
+      // all — see feedback_blend_verification_manual_only.md). Text
+      // now stays full-strength throughout the gallery phase; the
+      // inversion-over-imagery moments this produces are the intended
+      // reference feel, not recession.
 
       // Section-progress indicator hide — AUTHORIZED exception to the
       // SectionProgress guard, scoped to exactly this behaviour, and

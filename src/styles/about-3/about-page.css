@@ -262,9 +262,9 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
    into the fixed stage's absolute bottom band with the JS-scrubbed
    track. BLEND SAFETY: this whole subtree is a SIBLING of the blend
    row — transforms/will-change stay inside it, and nothing here (or on
-   the row) may gain z-index/opacity/transform; the text recession is
-   scrubbed on the column elements THEMSELVES (self opacity never
-   isolates a blend — founders-exit precedent), never on the row. */
+   the row) may gain z-index/opacity/transform. Text stays full-
+   strength throughout the gallery phase (no recession — see
+   landing-scroll.js's note on why a receded blend reads as broken). */
 .about-page-3 .about-landing__stage {
 	width: 100%;
 }
