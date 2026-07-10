@@ -91,6 +91,24 @@ const ENTRANCE_END = 600;
  * portrait's bottom. Travel distance is therefore viewport-derived:
  * portraitHeight − nameClipHeight − 2 × this. */
 const NAME_TRAVEL_MARGIN_PX = 24;
+/** Name-travel display smoothing — fraction of the remaining distance
+ * to the scroll-derived target consumed per frame (lower = lazier),
+ * same idiom as about-scroll.js's SCROLL_LERP. A SECOND, independent
+ * smoothing layer on top of Lenis's own: Lenis (SCROLL_LERP) eases the
+ * PAGE's scroll position; this eases the name clip's rendered position
+ * toward whatever that (already-eased) scroll position implies, so the
+ * clip visibly lags and catches up rather than tracking 1:1. 0.12 is a
+ * starting point — noticeably softer than instant without reading
+ * sluggish — a feel constant, retuned live same as SCROLL_LERP.
+ * Boundary/threshold logic (snap firing, EXIT_START, reversal) is
+ * unaffected by construction: every ScrollTrigger here keys off
+ * window.scrollY, never off the clip's rendered/eased position. */
+const NAME_TRAVEL_LERP = 0.12;
+/** Snap-to-target threshold, px — below this the eased display jumps
+ * the remaining (imperceptible) distance and stops writing to the DOM,
+ * guaranteeing exact convergence (no perpetual asymptotic drift) and
+ * skipping redundant per-frame writes once settled. */
+const NAME_TRAVEL_LERP_EPSILON = 0.05;
 /** Per-slide hold runway = each name's travel window. EQUAL for both
  * slides so the scroll-to-travel speed is identical for the identical
  * gesture (the old 700/500 split would have given Robbo a ~0.7 px/px
@@ -240,6 +258,29 @@ function wrapMetaLines(meta) {
 }
 
 /**
+ * A name-travel clip's scroll-derived TARGET (`target.top`, written by the
+ * scrub tween or applyTravel2 — unchanged, still 1:1 with scroll) versus
+ * its eased DISPLAY (`display`/`clip.style.top`, written only by
+ * tickNameTravel or forceSyncNameTravel below). Kept as separate numbers
+ * so easing the render never touches what the scroll-position math reads.
+ * @typedef {{ clip: HTMLElement, topStart: number, topEnd: number, target: { top: number }, display: number }} NameTravel
+ */
+
+/**
+ * Snaps a name-travel clip's DISPLAY straight to its current TARGET,
+ * bypassing the per-frame lerp — for every context that already does an
+ * instant jump elsewhere (hard-fling resolution, rebuild/resize
+ * restoration): the eased catch-up must never be visible on top of an
+ * otherwise-instant state resolution.
+ * @param {NameTravel | null | undefined} travel
+ */
+function forceSyncNameTravel(travel) {
+  if (!travel) return;
+  travel.display = travel.target.top;
+  travel.clip.style.top = `${travel.display}px`;
+}
+
+/**
  * One-time video playback lifecycle controller for slide 1's raw video
  * media. Constructed once in initFoundersScroll (never under reduced
  * motion — see its early return) and reused across resize rebuilds: the
@@ -318,7 +359,10 @@ function createFoundersVideoController(section) {
  * @param {ReturnType<typeof createFoundersDissolve>} dissolve WebGL module, or null (DOM fallback)
  * @param {ReturnType<typeof createFoundersVideoController>} videoController null when slide 1 has no video
  * @param {(done: boolean) => void} applyExitState exit-completion teardown/restore (owned by initFoundersScroll)
- * @returns {gsap.core.Timeline | undefined} the snap transition timeline (kill on rebuild)
+ * @returns {{ tl: gsap.core.Timeline | undefined, travel1: NameTravel | null, travel2: NameTravel | null } | undefined}
+ *   tl: the snap transition timeline (kill on rebuild). travel1/travel2:
+ *   fresh name-travel refs for initFoundersScroll's ticker/force-sync
+ *   (undefined, not this shape, if the section has fewer than 2 slides).
  */
 function buildFoundersTriggers(section, dissolve, videoController, applyExitState) {
   const slides = Array.from(section.querySelectorAll('[data-founder-slide]'));
@@ -474,15 +518,19 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
     // refresh at the end of build() re-renders the correct value in the
     // same frame, so neither path can paint a wrong-position frame.
     clip.style.top = `${topStart}px`;
-    return { clip, topStart, topEnd };
+    return { clip, topStart, topEnd, target: { top: topStart }, display: topStart };
   };
 
   // Slide 1 — a plain scrub: his travel window IS the hold window by
-  // construction (its close defines SNAP_THRESHOLD).
+  // construction (its close defines SNAP_THRESHOLD). Targets `target`
+  // (a plain object), NOT the clip directly — the scroll-to-target
+  // mapping stays exactly 1:1/instant as before; only the RENDER of
+  // `target.top` onto the clip is eased, by the shared tickNameTravel
+  // ticker below (registered once in initFoundersScroll).
   const travel1 = measureNameTravel(slide1);
   if (travel1) {
     gsap.fromTo(
-      travel1.clip,
+      travel1.target,
       { top: travel1.topStart },
       {
         top: travel1.topEnd,
@@ -673,8 +721,12 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
   // topStart at px₀ — above SNAP_THRESHOLD by construction — so it is
   // already at the top BEFORE the reverse transition can play.
   //
-  // Same blend-safety contract as slide 1: gsap.set of `top` on the
-  // clip, no transforms, no new properties on any blend ancestor.
+  // Same blend-safety contract as slide 1: a plain `top` number, no
+  // transforms, no new properties on any blend ancestor. Writes
+  // travel2.target ONLY (the eased render is tickNameTravel's job) —
+  // EXCEPT the two rebuild/fling call sites below, which force-sync the
+  // display too: those are already-instant jumps elsewhere in this
+  // function, and the eased catch-up must never be visible on top of one.
   let travel2AnchorPx = null;
   /** @type {ScrollTrigger | undefined} */
   let travel2Trigger;
@@ -688,9 +740,7 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
       const span = EXIT_START - start;
       progress = span > 0 ? Math.min(Math.max((px - start) / span, 0), 1) : 1;
     }
-    gsap.set(travel2.clip, {
-      top: travel2.topStart + progress * (travel2.topEnd - travel2.topStart),
-    });
+    travel2.target.top = travel2.topStart + progress * (travel2.topEnd - travel2.topStart);
   };
   if (travel2) {
     tl.eventCallback('onComplete', () => {
@@ -774,6 +824,11 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
       videoController?.setTimeline(tl);
       if (!hadAnchor) travel2AnchorPx = SNAP_THRESHOLD;
       applyTravel2(travel2PxNow());
+      // Force the DISPLAY to the resolved endpoint too — a hard fling is
+      // an instant state resolution everywhere else (dissolve, video,
+      // exit tweens all snap); the eased catch-up must not be visibly
+      // lagging behind that on top of it.
+      forceSyncNameTravel(travel2);
     }
   };
   const exitScrub = (start, end, id) => ({
@@ -924,7 +979,7 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
     onLeaveBack: () => applyExitState(false),
   });
 
-  return tl;
+  return { tl, travel1, travel2 };
 }
 
 /** Kill only this module's triggers (all carry a `founders-` id). */
@@ -1015,6 +1070,32 @@ export function initFoundersScroll() {
   let cancelled = false;
   /** @type {gsap.core.Timeline | undefined} */
   let transitionTl;
+  /** @type {NameTravel | null} */
+  let travel1Ref = null;
+  /** @type {NameTravel | null} */
+  let travel2Ref = null;
+
+  // Name-travel display easing — registered ONCE, module-instance
+  // lifetime (like dissolve/videoController below), not per-build: it
+  // reads travel1Ref/travel2Ref through this closure, so build()
+  // re-pointing those on every rebuild is all a resize needs — no
+  // duplicate/stale ticker registrations to manage. See
+  // NAME_TRAVEL_LERP's comment for why this exists (a second, secondary
+  // smoothing layer on top of Lenis's own) and forceSyncNameTravel's
+  // comment for the instant-jump contexts this does NOT apply to.
+  const tickNameTravel = () => {
+    [travel1Ref, travel2Ref].forEach((travel) => {
+      if (!travel) return;
+      const delta = travel.target.top - travel.display;
+      if (Math.abs(delta) < NAME_TRAVEL_LERP_EPSILON) {
+        if (travel.display !== travel.target.top) forceSyncNameTravel(travel);
+        return;
+      }
+      travel.display += delta * NAME_TRAVEL_LERP;
+      travel.clip.style.top = `${travel.display}px`;
+    });
+  };
+  gsap.ticker.add(tickNameTravel);
 
   const build = () => {
     if (cancelled) return;
@@ -1024,7 +1105,10 @@ export function initFoundersScroll() {
     const prevProgress = transitionTl ? transitionTl.progress() : 0;
     killFoundersTriggers();
     transitionTl?.kill();
-    transitionTl = buildFoundersTriggers(section, dissolve, videoController, applyExitState);
+    const built = buildFoundersTriggers(section, dissolve, videoController, applyExitState);
+    transitionTl = built?.tl;
+    travel1Ref = built?.travel1 ?? null;
+    travel2Ref = built?.travel2 ?? null;
     ScrollTrigger.refresh();
     // State restoration: rebuilding (resize / late refresh) while already
     // past the threshold must resolve to slide 2 INSTANTLY — never replay
@@ -1060,6 +1144,12 @@ export function initFoundersScroll() {
     // derive the correct state from the live scroll position explicitly.
     const exitEnd = ScrollTrigger.getById('founders-exit-end');
     if (exitEnd) applyExitState(window.scrollY >= exitEnd.start);
+    // Force both name-travel displays to their (by-now-correct, per the
+    // refresh + restoration above) targets — a rebuild must never show
+    // the eased ticker visibly re-animating toward the fresh position;
+    // it should already just BE there, same as every other element here.
+    forceSyncNameTravel(travel1Ref);
+    forceSyncNameTravel(travel2Ref);
   };
 
   // Fonts must be ready before line-reveal wrapping measures line breaks
@@ -1120,6 +1210,9 @@ export function initFoundersScroll() {
     killFoundersTriggers();
     transitionTl?.kill();
     transitionTl = undefined;
+    gsap.ticker.remove(tickNameTravel);
+    travel1Ref = null;
+    travel2Ref = null;
     dissolve?.destroy();
     videoController?.destroy();
     gsap.killTweensOf(
