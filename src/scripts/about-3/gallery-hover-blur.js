@@ -106,6 +106,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform float uMaxDistort;
   uniform float uEdgeSoftness;
   uniform float uBlurPx;
+  uniform float uLodBias;
 
   varying vec2 vUv;
 
@@ -172,29 +173,35 @@ const FRAGMENT_SHADER = /* glsl */ `
 
     vec3 colSharp = texture2D(uTexture, uvSharp).rgb;
 
-    // Blurred sample of the SAME texture — founders-dissolve's exact
-    // 12-tap Poisson disc average (disc radius 2x the CSS-equivalent
-    // blur value), gated on a UNIFORM (cheap: skipped for the whole draw
-    // call, not a per-pixel branch) so a resting (never-hovered) plane
-    // costs exactly one texture read, same as a plain image. Defaults to
-    // the sharp sample so a stray non-zero m at uBlurPx 0 (shouldn't
-    // happen — m is 0 whenever uProgress is 0) still has a defined value.
+    // Blurred sample of the SAME texture — founders-dissolve's 12-tap
+    // Poisson disc (disc radius 2x the CSS-equivalent blur value), but
+    // with every tap LOD-BIASED into the texture's mip chain (uLodBias,
+    // computed per-frame in JS): each tap reads a pre-blurred mip level
+    // sized to the spacing between taps, so the sparse taps blend into a
+    // smooth heavy blur. Without the bias, 13 LOD-0 taps across this
+    // module's 27-49px blur radius resolved as 13 visible ghost copies —
+    // a double-exposure artifact wrongly read as the dissolve animation
+    // leaving residue (founders' identical taps are fine because its
+    // blur mirror is ~10px). Uniform-gated as before: a resting plane
+    // costs exactly one texture read. colBlur defaults to the sharp
+    // sample so a stray non-zero m at uBlurPx 0 (shouldn't happen — m is
+    // 0 whenever uProgress is 0) still has a defined value.
     vec3 colBlur = colSharp;
     if (uBlurPx > 0.01) {
       vec2 radiusUv = vec2(uBlurPx * 2.0) / uPlaneSizePx;
-      colBlur = texture2D(uTexture, uvBlur).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2(-0.326, -0.406) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2(-0.840, -0.074) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2(-0.696,  0.457) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2(-0.203,  0.621) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2( 0.962, -0.195) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2( 0.473, -0.480) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2( 0.519,  0.767) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2( 0.185, -0.893) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2( 0.507,  0.064) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2( 0.896,  0.412) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2(-0.322, -0.933) * radiusUv).rgb;
-      colBlur += texture2D(uTexture, uvBlur + vec2(-0.792, -0.598) * radiusUv).rgb;
+      colBlur = texture2D(uTexture, uvBlur, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2(-0.326, -0.406) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2(-0.840, -0.074) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2(-0.696,  0.457) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2(-0.203,  0.621) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2( 0.962, -0.195) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2( 0.473, -0.480) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2( 0.519,  0.767) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2( 0.185, -0.893) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2( 0.507,  0.064) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2( 0.896,  0.412) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2(-0.322, -0.933) * radiusUv, uLodBias).rgb;
+      colBlur += texture2D(uTexture, uvBlur + vec2(-0.792, -0.598) * radiusUv, uLodBias).rgb;
       colBlur /= 13.0;
     }
 
@@ -211,7 +218,22 @@ class HoverBlurPlane {
    * @param {{ src: string, blurPx: number, renderOrder: number }} opts
    */
   constructor(gl, geometry, scene, { src, blurPx, renderOrder }) {
-    const texture = new Texture(gl, { generateMipmaps: false });
+    // Mipmapped + trilinear — the blur pass samples LOD-biased (see
+    // uLodBias in the fragment shader): each Poisson tap reads a
+    // pre-blurred mip level sized to the spacing between taps, so 13
+    // taps blend into a smooth heavy blur instead of 13 visible ghost
+    // copies (the artifact this replaces — founders' identical taps are
+    // fine at its ~10px blur; this module's ratio-derived 27-49px blur
+    // radius drastically outruns 13 samples at LOD 0). NPOT mipmaps
+    // need WebGL2 (OGL's Renderer prefers it; OGL self-guards the
+    // WebGL1 fallback by disabling mipmaps, where this degrades back to
+    // the sparse-tap look rather than breaking). Trilinear minFilter
+    // also slightly improves the SHARP sample (the images minify into
+    // their frames), not just the blur.
+    const texture = new Texture(gl, {
+      generateMipmaps: true,
+      minFilter: gl.LINEAR_MIPMAP_LINEAR,
+    });
 
     this.program = new Program(gl, {
       depthTest: false,
@@ -228,6 +250,7 @@ class HoverBlurPlane {
         uMaxDistort: { value: MAX_DISTORT },
         uEdgeSoftness: { value: EDGE_SOFTNESS },
         uBlurPx: { value: blurPx },
+        uLodBias: { value: 0 },
       },
       cullFace: false,
     });
@@ -268,6 +291,22 @@ class HoverBlurPlane {
     this.mesh.scale.x = (viewport.width * rect.width) / screen.width;
     this.mesh.scale.y = (viewport.height * rect.height) / screen.height;
     this.program.uniforms.uPlaneSizePx.value = [rect.width, rect.height];
+
+    // LOD bias for the blur taps — sized so each tap's mip footprint
+    // covers roughly the spacing between the 13 Poisson samples across
+    // the disc, in TEXTURE texels: blur radius in CSS px × the
+    // texture-texels-per-CSS-px scale this plane displays at. Recomputed
+    // here (not at mount) because rect width — and, on resize, uBlurPx —
+    // both move under it. log2(σ_texels) ≈ footprint 2^L texels ≈ σ.
+    const imgW = this.program.uniforms.uImageSize.value[0];
+    const blurPx = this.program.uniforms.uBlurPx.value;
+    if (imgW > 1 && blurPx > 0) {
+      const sigmaTexels = (blurPx * imgW) / rect.width;
+      this.program.uniforms.uLodBias.value = Math.max(
+        0,
+        Math.min(Math.log2(Math.max(sigmaTexels, 1)), 10),
+      );
+    }
   }
 
   setProgress(value) {
