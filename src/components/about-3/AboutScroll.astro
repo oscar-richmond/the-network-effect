@@ -6,29 +6,37 @@ import 'lenis/dist/lenis.css';
 
 const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
 
-// Landing gallery — PLACEHOLDER content (real gallery imagery/captions
-// are a later content task). Pulled from /about's unused img2 pool;
-// referencing these files touches no other page's code.
+// Landing gallery — real imagery from the TNE CIMGS pool (see
+// public/assets/landing-gallery/). CONTENT STATUS: every image below
+// is a social/press/Flickr-sourced STAND-IN pending licensed final
+// content; captions are filename-derived placeholders pending
+// founder-approved copy.
 //
 // COMPOSITION ARRAY — a designed, hand-set editorial layout (staggered,
-// rhythmic, breathing), NOT randomness. Per item: size class (see the
-// size-class rules in about-page.css), xGap (extra horizontal air
-// before the item, on top of the track's base gap) and yOff (vertical
-// offset from the stage's centre line — negative rises above centre).
-// This is data: real content later slots in by editing values.
+// rhythmic, breathing), NOT randomness. Portrait-dominant to match the
+// pool's aspect skew, with three B&W landscape moments as rhythm
+// breaks; visually-heavy images are never adjacent. Per item: size
+// class (see the size-class rules in about-page.css), xGap (extra
+// horizontal air before the item, on top of the track's base gap) and
+// yOff (vertical offset from the stage's centre line — negative rises
+// above centre). This is data: content edits slot in by editing values.
 const galleryItems = [
-  { size: 'medium', xGap: 0, yOff: 40 },
-  { size: 'small', xGap: 48, yOff: -120 },
-  { size: 'large', xGap: 72, yOff: 80 },
-  { size: 'small', xGap: 56, yOff: -60 },
-  { size: 'portrait', xGap: 96, yOff: 120 },
-  { size: 'medium', xGap: 48, yOff: -140 },
-  { size: 'large', xGap: 88, yOff: 60 },
-  { size: 'small', xGap: 64, yOff: -40 },
+  { file: 'cult-culture-flatlay', size: 'portrait-m', xGap: 0, yOff: 40 },
+  { file: 'red-car-blur', size: 'portrait-s', xGap: 48, yOff: -110 },
+  { file: 'depp-bar', size: 'landscape', xGap: 72, yOff: 70 },
+  { file: 'jacquemus-bag', size: 'portrait-l', xGap: 64, yOff: -70 },
+  { file: 'retro-phone-cocktail', size: 'portrait-s', xGap: 88, yOff: 120 },
+  { file: 'nike-dinner', size: 'portrait-m', xGap: 48, yOff: -140 },
+  { file: 'kitchen-smoke', size: 'landscape', xGap: 96, yOff: 60 },
+  { file: 'door-313', size: 'portrait-s', xGap: 56, yOff: -100 },
+  { file: 'bottega-jacket', size: 'portrait-l', xGap: 72, yOff: 90 },
+  { file: 'vinyl-candlelight', size: 'portrait-m', xGap: 48, yOff: -50 },
+  { file: 'bw-stairs', size: 'portrait-s', xGap: 64, yOff: 130 },
+  { file: 'lagerfeld-pharrell', size: 'landscape', xGap: 88, yOff: -60 },
 ].map((item, i) => ({
   ...item,
-  src: asset(`/assets/about-scroll/img2/img-0${i + 1}.jpg`),
-  label: `PLACEHOLDER /0${i + 1}`,
+  src: asset(`/assets/landing-gallery/${item.file}.jpg`),
+  label: `${item.file.replace(/-/g, ' ').toUpperCase()} /${String(i + 1).padStart(2, '0')}`,
 }));
 ---
 

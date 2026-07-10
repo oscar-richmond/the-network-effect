@@ -32,12 +32,12 @@ const LANDING_SETTLE_BEAT = 150;
 /** Text alone on stage after its reveal fires (the reveal itself is the
  * existing timed play at the settle beat — untouched). */
 const LANDING_TEXT_HOLD = 500;
-/** Gallery phase — the horizontal track scrub window. The x travel now
+/** Gallery phase — the horizontal track scrub window. The x travel
  * starts from FULLY OFF-RIGHT (offset = the gallery's own width,
  * measured at build — the corner entry), so total travel ≈ the track's
- * full width (~3800px at 1728). Sized for the reference's ~1:0.75-0.8
- * scroll-to-travel ratio. Retunable. */
-const GALLERY_SCROLL_PX = 4800;
+ * full width (~5850px at 1728 with the 12-slot composition). Sized for
+ * the reference's ~1:0.75-0.8 scroll-to-travel ratio. Retunable. */
+const GALLERY_SCROLL_PX = 7400;
 /** Opening slice of the gallery window: the track rises from FULLY
  * BELOW the stage's clip (yPercent 105 → 0, CSS-defaulted so nothing
  * paints during the settle/text phases) while x is already scrubbing

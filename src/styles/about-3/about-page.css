@@ -286,30 +286,31 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 }
 
 /* Size classes — the composition array's vocabulary. Hand-set editorial
-   scale steps, not a generated ramp. */
-.about-page-3 .about-landing__gallery-item--small {
+   scale steps, not a generated ramp. Portrait-dominant to match the
+   content pool's aspect skew; the landscape class is the rhythm break. */
+.about-page-3 .about-landing__gallery-item--portrait-s {
 	width: 300px;
 }
-.about-page-3 .about-landing__gallery-item--small .about-landing__gallery-frame {
-	height: 230px;
+.about-page-3 .about-landing__gallery-item--portrait-s .about-landing__gallery-frame {
+	height: 400px;
 }
-.about-page-3 .about-landing__gallery-item--medium {
-	width: 400px;
+.about-page-3 .about-landing__gallery-item--portrait-m {
+	width: 360px;
 }
-.about-page-3 .about-landing__gallery-item--medium .about-landing__gallery-frame {
-	height: 320px;
+.about-page-3 .about-landing__gallery-item--portrait-m .about-landing__gallery-frame {
+	height: 470px;
 }
-.about-page-3 .about-landing__gallery-item--large {
-	width: 520px;
+.about-page-3 .about-landing__gallery-item--portrait-l {
+	width: 430px;
 }
-.about-page-3 .about-landing__gallery-item--large .about-landing__gallery-frame {
-	height: 420px;
+.about-page-3 .about-landing__gallery-item--portrait-l .about-landing__gallery-frame {
+	height: 560px;
 }
-.about-page-3 .about-landing__gallery-item--portrait {
-	width: 340px;
+.about-page-3 .about-landing__gallery-item--landscape {
+	width: 540px;
 }
-.about-page-3 .about-landing__gallery-item--portrait .about-landing__gallery-frame {
-	height: 440px;
+.about-page-3 .about-landing__gallery-item--landscape .about-landing__gallery-frame {
+	height: 360px;
 }
 
 .about-page-3 .about-landing__gallery-caption {
@@ -344,6 +345,12 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 .about-page-3 .about-landing__gallery-frame img {
 	display: block;
 	width: 115%;
+	/* The site-wide img { max-width: 100% } reset silently capped the
+	   115% parallax over-width back to the frame width (measured live:
+	   computed 360px on a 360px frame), so the parallax drift would
+	   expose a gap at the frame's edge. The over-width is the whole
+	   point here — the img slides within the clipping frame. */
+	max-width: none;
 	height: 100%;
 	object-fit: cover;
 }
