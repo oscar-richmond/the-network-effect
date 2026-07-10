@@ -427,7 +427,7 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
-		font-size: 14px;
+		font-size: 12px;
 		line-height: 1.2;
 		text-transform: uppercase;
 	}
@@ -436,7 +436,7 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 400;
-		font-size: 14px;
+		font-size: 12px;
 		line-height: 1.35;
 	}
 }
