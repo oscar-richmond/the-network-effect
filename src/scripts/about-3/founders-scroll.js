@@ -140,8 +140,23 @@ const EXIT_MEDIA_BLUR_PX = 250;
  * hero's WIPE_STAGGER). */
 const EXIT_WIPE_STAGGER = 0.5;
 /** Snap transition length, seconds. Text phasing mirrors the old scrubbed
- * midpoint: outgoing text in the first half, incoming from the midpoint. */
-const TRANSITION_DURATION = 1.2;
+ * midpoint: outgoing text in the first half, incoming from the midpoint.
+ *
+ * Lowered from 1.2: this is TIME consumed in real seconds while
+ * SLIDE_HOLD (the scroll-px window either name's travel maps onto) stays
+ * fixed. Slide 2's travel is anchored to the transition's RESOLUTION
+ * (see travel2AnchorPx below) — at any continuous scroll speed, real
+ * scroll distance keeps accruing for the full TRANSITION_DURATION before
+ * the anchor is captured, and that consumed distance is what's left
+ * over for visible mapped travel in the remaining
+ * [anchor, EXIT_START] window. A shorter duration leaves more of
+ * SLIDE_HOLD's 600px for travel at any given scroll speed — zero
+ * scroll-px/page-length cost, since duration is a time value, not a
+ * position. Symmetric for the reverse case (onReverseComplete gates the
+ * same way). Cheapest fix for the travel-runway-timing bug; if 0.7s
+ * doesn't give comfortable travel visibility at normal scroll speed,
+ * the next lever is extending SLIDE_HOLD (real page-length cost). */
+const TRANSITION_DURATION = 0.7;
 const TRANSITION_EASE = 'power2.inOut';
 /** Marker travel between thumb centres: 48px thumb + 16px gap. */
 const MARKER_TRAVEL = 64;
