@@ -10,6 +10,12 @@ gsap.registerPlugin(ScrollTrigger);
 /** 80px travel on the leading card before the next card begins moving. */
 const STAGGER_TRAVEL = 80;
 
+/** Lenis smoothing — fraction of the remaining scroll distance consumed
+ * per frame (lower = lazier: longer drift, softer catch-up after input
+ * stops). Was 0.1; 0.065 is the first ~35%-lazier iteration — a feel
+ * constant, retuned live by scrolling, one line to change. */
+const SCROLL_LERP = 0.065;
+
 /**
  * Wrap each <p> in the intro block into line-reveal clip spans (same
  * technique used site-wide via line-reveal.js), resetting to original
@@ -363,7 +369,7 @@ function initSmoothScrolling() {
   document.documentElement.classList.add('lenis');
 
   lenis = new Lenis({
-    lerp: 0.1,
+    lerp: SCROLL_LERP,
     smoothWheel: true,
   });
 
