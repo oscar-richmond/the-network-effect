@@ -29,8 +29,43 @@ const LANDING_LINE_DURATION = 1.2;
  * measured exactly correct at the trigger level but FELT long live
  * (660px total) for exactly this double-counted-white reason. */
 const LANDING_SETTLE_BEAT = 150;
-const LANDING_HOLD = 1000;
-const LANDING_RUNWAY = LANDING_SETTLE_BEAT + LANDING_HOLD;
+/** Text alone on stage after its reveal fires (the reveal itself is the
+ * existing timed play at the settle beat — untouched). */
+const LANDING_TEXT_HOLD = 500;
+/** Gallery phase — the horizontal track scrub window. Sized to the
+ * reference's ~1:0.75 scroll-to-travel ratio against the measured track
+ * overflow (~1650px at 1728): travel distance is MEASURED at build,
+ * this constant fixes the scroll length. Retunable. */
+const GALLERY_SCROLL_PX = 2400;
+/** Opening slice of the gallery window: the track rises from FULLY
+ * BELOW the band's clip (yPercent 105 → 0, CSS-defaulted so nothing
+ * paints during the settle/text phases) while x is already scrubbing
+ * leftward from an off-right offset = the bottom-right entry
+ * impression; the remainder is pure horizontal. Measured live: a
+ * partial px rise left the first images visible in the band during the
+ * text phases — the track must start clipped out entirely. */
+const GALLERY_ENTER_PX = 420;
+const GALLERY_RISE_YPERCENT = 105;
+/** Off-right x offset at the window start — the first images enter from
+ * the right edge (approved mechanism). Also part of the scroll-to-
+ * travel ratio: (offset + measured overflow) / GALLERY_SCROLL_PX. */
+const GALLERY_ENTER_X_OFFSET = 300;
+/** Text columns' receded opacity during the gallery phase — scrubbed on
+ * the blend columns THEMSELVES (self opacity never isolates a blend —
+ * founders-exit precedent; the row wrapper must NEVER carry it). */
+const LANDING_TEXT_RECEDE_OPACITY = 0.35;
+/** Per-image parallax magnitude — xPercent of the img's own width; imgs
+ * are 115% of their clip frame, so 13 is the exact full-coverage bound. */
+const GALLERY_PARALLAX_PCT = 13;
+/** Rest on the gallery's final frame before the stage tears down. */
+const LANDING_TAIL_HOLD = 300;
+/** Lead distance upstream of the landing boundary at which the gallery
+ * images are force-fetched + decoded (mid-founders-exhale) — native
+ * loading="lazy" alone is unreliable inside a hidden fixed stage. */
+const GALLERY_PRELOAD_LEAD_PX = 1500;
+
+const GALLERY_START = LANDING_SETTLE_BEAT + LANDING_TEXT_HOLD;
+const LANDING_RUNWAY = GALLERY_START + GALLERY_SCROLL_PX + LANDING_TAIL_HOLD;
 
 /**
  * Wrap each landing column's copy into line-reveal clips and collect the
@@ -202,6 +237,145 @@ export function initLandingScroll() {
       onLeaveBack: () => revealTl?.reverse(),
     });
 
+    // ── Gallery phase — all pure scrubs (ease none, ScrollTrigger
+    // scrub), so reversal is inherently symmetric and hard flings clamp
+    // to window edges in the same update pass the gates fire — no timed
+    // elements, no guards needed. All ids carry the about-landing-
+    // prefix so the existing kill/cleanup paths cover them.
+    const gallery = landing.querySelector('[data-about-landing-gallery]');
+    const track = landing.querySelector('[data-about-landing-gallery-track]');
+    const galleryImgs = Array.from(
+      landing.querySelectorAll('[data-about-landing-gallery-img]'),
+    ).filter((el) => el instanceof HTMLImageElement);
+    if (gallery instanceof HTMLElement && track instanceof HTMLElement) {
+      // Travel distance is MEASURED (track overflow beyond its clip
+      // window); GALLERY_SCROLL_PX fixes the scroll length — viewport
+      // changes alter speed slightly, never correctness. Rebuilds
+      // re-measure.
+      const galleryTravel = Math.max(0, track.scrollWidth - gallery.clientWidth);
+      const galleryScrub = (startPx, endPx, id) => ({
+        trigger: landing,
+        start: `top+=${startPx} bottom`,
+        end: `top+=${endPx} bottom`,
+        scrub: true,
+        id,
+      });
+
+      // Main horizontal scrub — the whole gallery window, starting from
+      // the off-right entry offset.
+      gsap.fromTo(
+        track,
+        { x: GALLERY_ENTER_X_OFFSET },
+        {
+          x: -galleryTravel,
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: galleryScrub(
+            GALLERY_START,
+            GALLERY_START + GALLERY_SCROLL_PX,
+            'about-landing-gallery-x',
+          ),
+        },
+      );
+
+      // Diagonal rise — yPercent settles from fully-below-the-clip over
+      // the opening slice while x is already moving (separate GSAP
+      // transform channels compose), so entries travel up-and-left into
+      // their bands: the bottom-right entry impression, symmetric in
+      // reverse. The CSS default transform (about-page.css) holds the
+      // same fully-clipped state before GSAP's first render, so the
+      // track can never paint during the settle/text phases.
+      // `y: 0` in from AND to: the CSS initial state is a % translate,
+      // which GSAP's matrix parse bakes into a PIXEL `y` — left
+      // unmanaged it would survive the yPercent tween and hold the
+      // track below the clip forever (the same guard founders-scroll.js
+      // documents on its entrance tweens; reproduced live here without
+      // it: y stuck at +556px through the whole gallery).
+      gsap.fromTo(
+        track,
+        { yPercent: GALLERY_RISE_YPERCENT, y: 0 },
+        {
+          yPercent: 0,
+          y: 0,
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: galleryScrub(
+            GALLERY_START,
+            GALLERY_START + GALLERY_ENTER_PX,
+            'about-landing-gallery-rise',
+          ),
+        },
+      );
+
+      // Text recession — SELF opacity on the blend columns, never the
+      // row wrapper (see LANDING_TEXT_RECEDE_OPACITY's comment; the
+      // requested "non-blend wrapper" placement is impossible — every
+      // wrapper here is a blend ancestor). Owns only the columns'
+      // opacity; the reveal timeline owns their .lr-inner descendants'
+      // transforms — disjoint properties, disjoint scroll ranges.
+      gsap.fromTo(
+        columns,
+        { opacity: 1 },
+        {
+          opacity: LANDING_TEXT_RECEDE_OPACITY,
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: galleryScrub(
+            GALLERY_START,
+            GALLERY_START + GALLERY_ENTER_PX,
+            'about-landing-text-recede',
+          ),
+        },
+      );
+
+      // Per-image parallax — one timeline off the same window; each img
+      // (115% of its clip frame) drifts its own xPercent, magnitudes
+      // alternating by position. Compositor-only, clipped by the frame.
+      if (galleryImgs.length) {
+        const parallaxTl = gsap.timeline({
+          scrollTrigger: galleryScrub(
+            GALLERY_START,
+            GALLERY_START + GALLERY_SCROLL_PX,
+            'about-landing-gallery-parallax',
+          ),
+        });
+        galleryImgs.forEach((img, i) => {
+          parallaxTl.fromTo(
+            img,
+            { xPercent: 0 },
+            {
+              xPercent: -(i % 2 === 0 ? 1 : 0.55) * GALLERY_PARALLAX_PCT,
+              ease: 'none',
+              duration: 1,
+              immediateRender: false,
+            },
+            0,
+          );
+        });
+      }
+
+      // Ahead-of-phase preload — one-shot, anchored upstream of the
+      // boundary (mid-founders-exhale): force fetch + decode so the
+      // images are painted-ready before the gallery window is
+      // reachable. Native loading="lazy" in the markup is the
+      // do-no-harm baseline (lazy heuristics are unreliable inside a
+      // hidden fixed stage); an extreme fling can still outrun decode —
+      // accepted, frames fill in.
+      ScrollTrigger.create({
+        trigger: landing,
+        start: `top-=${GALLERY_PRELOAD_LEAD_PX} bottom`,
+        end: `top-=${GALLERY_PRELOAD_LEAD_PX} bottom`,
+        id: 'about-landing-gallery-preload',
+        once: true,
+        onEnter: () => {
+          galleryImgs.forEach((img) => {
+            img.loading = 'eager';
+            img.decode?.().catch(() => {});
+          });
+        },
+      });
+    }
+
     // Teardown — hides the stage once the landing's own runway is
     // spent, handing off to whatever (currently nothing) follows next.
     // Any future section must gate its OWN fixed stage the same way —
@@ -273,6 +447,11 @@ export function initLandingScroll() {
       }
     });
     revealTl?.kill();
+    gsap.killTweensOf(
+      landing.querySelectorAll(
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col]',
+      ),
+    );
     setStageVisible(false);
   };
 }

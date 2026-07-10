@@ -5,6 +5,15 @@ import { asset } from '../../utils/asset.js';
 import 'lenis/dist/lenis.css';
 
 const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
+
+// Landing gallery — PLACEHOLDER content (real gallery imagery/captions
+// are a later content task). Pulled from /about's unused img2 pool;
+// referencing these files touches no other page's code.
+const galleryItems = Array.from({ length: 8 }, (_, i) => ({
+  src: asset(`/assets/about-scroll/img2/img-0${i + 1}.jpg`),
+  label: `PLACEHOLDER /0${i + 1}`,
+  band: ['upper', 'lower', 'upper', 'span', 'lower', 'upper', 'lower', 'span'][i],
+}));
 ---
 
 <AboutHero />
@@ -103,6 +112,37 @@ const bgFadeSrc = asset('/assets/about-hero/about-3/bg-fade.jpg');
       <p class="about-landing__text about-landing__text--serif about-landing__text--right" data-about-landing-col>
         Delivered through three disciplines.
       </p>
+    </div>
+
+    <!-- Horizontal gallery — the landing's scrubbed phase after the text
+         hold (landing-scroll.js). A SIBLING of the blend row under the
+         stage's isolation root, absolutely positioned so the row's
+         layout never shifts: transforms/will-change live strictly
+         inside this subtree, never on a blend ancestor, and it carries
+         NO z-index (source order paints it after the row). Under
+         reduced motion the no-preference styles never apply and this
+         renders as a static, natively-scrollable in-flow strip below
+         the text (about-page.css). -->
+    <div class="about-landing__gallery" data-about-landing-gallery aria-hidden="true">
+      <div class="about-landing__gallery-track" data-about-landing-gallery-track>
+        {galleryItems.map((item) => (
+          <figure class={`about-landing__gallery-item about-landing__gallery-item--${item.band}`}>
+            <figcaption class="about-landing__gallery-caption">
+              <span class="about-landing__gallery-caption-dot" aria-hidden="true"></span>
+              {item.label}
+            </figcaption>
+            <div class="about-landing__gallery-frame">
+              <img
+                src={item.src}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                data-about-landing-gallery-img
+              />
+            </div>
+          </figure>
+        ))}
+      </div>
     </div>
   </div>
 </section>
