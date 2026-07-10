@@ -399,6 +399,23 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		pointer-events: none;
 	}
 
+	/* HIT-TESTING RE-ENABLED on the frames only — pointer-events is
+	   per-element, so children can opt back in under a `none` parent.
+	   Load-bearing for the hover blur: the stage and gallery are
+	   pointer-events:none (correctly — they must never block page
+	   interactions), which disables hit-testing for the whole subtree,
+	   and real pointerenter NEVER fires without it (diagnosed live:
+	   render loop, plane mounting and the full mount->texture->hide
+	   chain all healthy, but elementsFromPoint at an image's centre
+	   returned an empty stack — synthetic dispatchEvent tests passed
+	   only because they bypass hit-testing). The hover canvas painted
+	   above these frames is itself pointer-events:none, so hits pass
+	   through it to the frames. Wheel/scroll events still bubble —
+	   Lenis unaffected. */
+	.about-page-3 .about-landing__gallery-frame {
+		pointer-events: auto;
+	}
+
 	.about-page-3 .about-landing__gallery-track {
 		height: 100%;
 		align-items: center;
