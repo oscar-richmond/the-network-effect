@@ -63,6 +63,11 @@ const LANDING_TEXT_RECEDE_OPACITY = 0.25;
 /** Per-image parallax magnitude — xPercent of the img's own width; imgs
  * are 115% of their clip frame, so 13 is the exact full-coverage bound. */
 const GALLERY_PARALLAX_PCT = 13;
+/** Section-progress indicator hide — a short scrub at the gallery's
+ * start (house exit vocabulary: opacity + blur together), reversed
+ * symmetrically on scroll-up. Window length and blur endpoint. */
+const GALLERY_PROGRESS_HIDE_PX = 250;
+const GALLERY_PROGRESS_HIDE_BLUR_PX = 10;
 /** Rest on the gallery's final frame before the stage tears down. */
 const LANDING_TAIL_HOLD = 300;
 /** Lead distance upstream of the landing boundary at which the gallery
@@ -337,6 +342,41 @@ export function initLandingScroll() {
         },
       );
 
+      // Section-progress indicator hide — AUTHORIZED exception to the
+      // SectionProgress guard, scoped to exactly this behaviour, and
+      // implemented WITHOUT touching any SectionProgress file: driven
+      // from the landing's own phase maths (same scrub helper/window
+      // family as the other gallery tweens — never an independent
+      // trigger), targeting the indicator's fixed CONTAINER with self
+      // opacity + filter. The container carries the difference blend
+      // (see section-progress.css's header for why it must live there),
+      // and self-properties never isolate an element's own blend — the
+      // same rule as the nav email link's 0.6-opacity hover and the
+      // founders exit name fade. section-progress.js's own tweens touch
+      // only the leaf elements — disjoint targets, no overwrite risk.
+      // Under reduced motion none of this runs, matching the
+      // component's existing RM handling (static, visible).
+      const progressIndicator = document.querySelector(
+        'body.about-page-3 [data-section-progress]',
+      );
+      if (progressIndicator instanceof HTMLElement) {
+        gsap.fromTo(
+          progressIndicator,
+          { opacity: 1, filter: 'blur(0px)' },
+          {
+            opacity: 0,
+            filter: `blur(${GALLERY_PROGRESS_HIDE_BLUR_PX}px)`,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: galleryScrub(
+              GALLERY_START,
+              GALLERY_START + GALLERY_PROGRESS_HIDE_PX,
+              'about-landing-progress-hide',
+            ),
+          },
+        );
+      }
+
       // Per-image parallax — one timeline off the same window; each img
       // (115% of its clip frame) drifts its own xPercent, magnitudes
       // alternating by position. Compositor-only, clipped by the frame.
@@ -461,6 +501,7 @@ export function initLandingScroll() {
         '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col]',
       ),
     );
+    gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));
     setStageVisible(false);
   };
 }

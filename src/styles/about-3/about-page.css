@@ -366,7 +366,15 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		height: 100%;
 		align-items: center;
 		padding-block: 0;
-		will-change: transform;
+		/* NO will-change here — deliberately. will-change: transform
+		   promotes the track to its own compositor layer, and Chromium
+		   then EXCLUDES that layer from the blend backdrop of the
+		   difference text row (known crbug family: mix-blend-mode vs
+		   independently-composited siblings) — the text read flat over
+		   passing images, diagnosed and pixel-verified live. The stage's
+		   isolation root is not enough to force a shared render surface
+		   once the sibling is promoted. GSAP's scrubbed inline matrix
+		   works fine unpromoted. */
 		/* Initial hidden state — fully below the stage's overflow clip
 		   until the gallery phase's rise scrub takes over (same idiom as
 		   founders' initial-hidden states: CSS holds the exact from-value
