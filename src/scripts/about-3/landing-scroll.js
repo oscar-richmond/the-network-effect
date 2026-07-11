@@ -96,9 +96,10 @@ const ROW_WIPE_STAGGER = 0.5;
 /** Pillar cycle chain (all anchors DERIVED at build, nothing hand-timed
  * past these three rhythm constants): each pillar row holds alone on
  * stage for PILLAR_HOLD_PX before its wave begins; each wave's 6 images
- * travel straight up from below the stage over WAVE_SCROLL_PX (the
- * container scrubs as one sheet — arrival rhythm comes from the
- * composed per-item offsets in AboutScroll.astro). When a wave's LAST
+ * travel straight up from below the stage over WAVE_SCROLL_PX (a
+ * container base scrub plus a per-item drift at each image's composed
+ * speed multiplier — arrival rhythm comes from the per-item offsets
+ * and speeds in AboutScroll.astro). When a wave's LAST
  * image passes over the docked row, the NEXT row starts rising from
  * below the stage over PILLAR_RISE_PX, and the outgoing row wipes under
  * the RISING ROW's top edge — the exact intro → row 0 swap behaviour
@@ -728,12 +729,22 @@ export function initLandingScroll() {
 
           // offsetTop is layout-only (transform-independent) and
           // resolves against the wave container = stage box: parked
-          // item top = stageH + composed offset.
+          // item top = stageH + composed offset. Each item's effective
+          // speed is its composed multiplier (data-wave-speed) times
+          // the container's base scrub, so the travel bound divides
+          // each item's own exit requirement by its multiplier — the
+          // SLOWEST item still fully clears the stage top by wave end.
+          const itemSpeed = (item) => parseFloat(item.dataset.waveSpeed || '1') || 1;
           let waveTravel = 0;
           let lastTopLocal = 0;
+          let lastSpeed = 1;
           items.forEach((item) => {
-            waveTravel = Math.max(waveTravel, item.offsetTop + item.offsetHeight);
-            lastTopLocal = Math.max(lastTopLocal, item.offsetTop);
+            const speed = itemSpeed(item);
+            waveTravel = Math.max(waveTravel, (item.offsetTop + item.offsetHeight) / speed);
+            if (item.offsetTop > lastTopLocal) {
+              lastTopLocal = item.offsetTop;
+              lastSpeed = speed;
+            }
           });
 
           const waveEndPx = waveStartPx + WAVE_SCROLL_PX;
@@ -748,11 +759,42 @@ export function initLandingScroll() {
             },
           );
 
+          // Per-item speed variance — the composed multiplier as an
+          // additional y drift on the item itself, riding the same
+          // window as the container's base scrub (parent + child
+          // transforms compose): item displacement = speed × the base
+          // travel, so neighbours rise at slightly different rates
+          // instead of as one rigid sheet. Same idiom as the gallery's
+          // per-image parallax: plain scrubbed inline transforms on
+          // blend-free subtree elements, NO will-change (the Chromium
+          // blend-backdrop finding), reversal symmetric by scrub.
+          items.forEach((item, j) => {
+            const speed = itemSpeed(item);
+            if (speed === 1) return;
+            gsap.fromTo(
+              item,
+              { y: 0 },
+              {
+                y: -(speed - 1) * waveTravel,
+                ease: 'none',
+                immediateRender: false,
+                scrollTrigger: galleryScrub(
+                  waveStartPx,
+                  waveEndPx,
+                  `about-landing-wave-${i}-drift-${j}`,
+                ),
+              },
+            );
+          });
+
           // Last image's top edge at stage-space y ↔ scroll px — the
           // same linear inversion as the lift trigger, on this wave's
-          // scrub mapping.
+          // scrub mapping at the last item's own effective speed
+          // (composition contract keeps it at 1.0, but the maths stays
+          // general).
           const waveStart = waveStartPx;
-          const pxAtLastTop = (y) => waveStart + ((lastTopLocal - y) / waveTravel) * WAVE_SCROLL_PX;
+          const pxAtLastTop = (y) =>
+            waveStart + ((lastTopLocal - y) / (waveTravel * lastSpeed)) * WAVE_SCROLL_PX;
 
           // Row swap — the SAME behaviour as the intro → row 0 swap
           // (confirmed correct live): the last image's pass is only the
@@ -923,7 +965,7 @@ export function initLandingScroll() {
     revealTl?.kill();
     gsap.killTweensOf(
       landing.querySelectorAll(
-        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], .about-landing__wave-item, [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));

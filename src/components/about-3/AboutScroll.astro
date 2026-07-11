@@ -40,39 +40,45 @@ const galleryItems = [
 }));
 
 // Pillar image waves — one 6-image wave per pillar row, rising straight
-// up from below the stage (landing-scroll.js scrubs each wave container's
-// y; items never move relative to each other). Same content pool and
-// STAND-IN status as the gallery above. Per item: size class (square/
-// rectangle vocabulary — see the wave size classes in about-page.css),
-// x (left edge, % of stage width) and y (px below the stage bottom —
-// arrival order). HAND-SET compositions, not randomness: sizes and
-// ratios alternate, x zigzags across the stage so no two consecutive
-// arrivals share a lane, and the LAST item of each wave (max y) is the
-// swap trigger landing-scroll.js keys the row wipe to — keep it last.
+// up from below the stage. Same content pool and STAND-IN status as the
+// gallery above. Per item: size class (square/rectangle vocabulary —
+// see the wave size classes in about-page.css), x (left edge, % of
+// stage width), y (px below the stage bottom — arrival order) and
+// speed (per-item scroll-speed multiplier: landing-scroll.js scrubs
+// the container as the base motion and drifts each item by its own
+// multiplier on top, so the images rise at slightly different rates
+// instead of as one rigid sheet). HAND-SET compositions, not
+// randomness: sizes and ratios alternate, x zigzags across the stage
+// so no two consecutive arrivals share a lane, speeds alternate
+// fast/slow between vertical neighbours. CONTRACT: the LAST item of
+// each wave (max y) is the swap trigger landing-scroll.js keys the row
+// swap to — keep it last, and keep its speed at 1.0 so no faster
+// neighbour can overtake its pass across the docked row (the ±0.15
+// variance band cannot close the ≥220px y gap ahead of it).
 const pillarWaves = [
   [
-    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0 },
-    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180 },
-    { file: 'projection-dinner', size: 'sq-m', x: 30, y: 420 },
-    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 640 },
-    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 820 },
-    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1100 },
+    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0, speed: 1.12 },
+    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180, speed: 0.9 },
+    { file: 'projection-dinner', size: 'sq-m', x: 30, y: 420, speed: 1.0 },
+    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 640, speed: 1.15 },
+    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 820, speed: 0.88 },
+    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1100, speed: 1.0 },
   ],
   [
-    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0 },
-    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200 },
-    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400 },
-    { file: 'collectors-key', size: 'sq-m', x: 28, y: 660 },
-    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 860 },
-    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1120 },
+    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0, speed: 0.9 },
+    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200, speed: 1.12 },
+    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400, speed: 0.86 },
+    { file: 'collectors-key', size: 'sq-m', x: 28, y: 660, speed: 1.08 },
+    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 860, speed: 0.95 },
+    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1120, speed: 1.0 },
   ],
   [
-    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0 },
-    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220 },
-    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 460 },
-    { file: 'portre-flatlay', size: 'sq-s', x: 8, y: 700 },
-    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 64, y: 880 },
-    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1140 },
+    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0, speed: 1.1 },
+    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220, speed: 0.88 },
+    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 460, speed: 1.05 },
+    { file: 'portre-flatlay', size: 'sq-s', x: 8, y: 700, speed: 0.92 },
+    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 64, y: 880, speed: 1.12 },
+    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1140, speed: 1.0 },
   ],
 ].map((wave) =>
   wave.map((item) => ({ ...item, src: asset(`/assets/pillar-waves/${item.file}.jpg`) })),
@@ -269,6 +275,7 @@ const pillarRows = [
           <figure
             class={`about-landing__wave-item about-landing__wave-item--${item.size}`}
             style={`left:${item.x}%; margin-top:${item.y}px`}
+            data-wave-speed={item.speed}
           >
             <img src={item.src} alt="" loading="lazy" decoding="async" data-about-landing-wave-img />
           </figure>
