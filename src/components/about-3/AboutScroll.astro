@@ -40,39 +40,65 @@ const galleryItems = [
 }));
 
 // Pillar image waves — one 6-image wave per pillar row, rising straight
-// up from below the stage (landing-scroll.js scrubs each wave container's
-// y; items never move relative to each other). Same content pool and
-// STAND-IN status as the gallery above. Per item: size class (square/
-// rectangle vocabulary — see the wave size classes in about-page.css),
-// x (left edge, % of stage width) and y (px below the stage bottom —
-// arrival order). HAND-SET compositions, not randomness: sizes and
-// ratios alternate, x zigzags across the stage so no two consecutive
-// arrivals share a lane, and the LAST item of each wave (max y) is the
-// swap trigger landing-scroll.js keys the row wipe to — keep it last.
+// up from below the stage. Same content pool and STAND-IN status as the
+// gallery above. Per item: size class (square/rectangle vocabulary —
+// see the wave size classes in about-page.css), x (left edge, % of
+// stage width), y (px below the stage bottom — arrival order) and
+// speed (per-item scroll-speed multiplier: landing-scroll.js scrubs
+// the container as the base motion and drifts each item by its own
+// multiplier on top, so the images rise at slightly different rates
+// instead of as one rigid sheet).
+//
+// NO-OVERLAP INVARIANTS (per explicit request — no two images may ever
+// overlap at ANY scroll position, while keeping the ORIGINAL zigzag x
+// layout and a LARGER drift spread with the strongest speed contrast
+// between vertical neighbours). Under differential speeds a faster
+// lower image closes on a slower upper one by up to
+// Δspeed × waveTravel (~1100px at the largest contrasts), so the
+// vertical offsets — not lanes — absorb it. Solved pair-by-pair and
+// verified live with dense sweeps at 1280×800 and 1728×1084:
+//  1. For every pair whose horizontal ranges intersect anywhere in the
+//     ≥1280px design band (left% fixed, px widths widest at 1280),
+//     either the LOWER item is no faster than the upper (the parked
+//     gap can only open), or the parked gap exceeds the worst-case
+//     closing Δspeed × waveTravel + margin computed at the design
+//     ceiling (~1200px viewport height). Pairs with disjoint x ranges
+//     need no vertical guard — those diagonal neighbours are exactly
+//     where the biggest 0.30–0.40 speed contrasts live.
+//  2. The big closing contrasts forced the compositions ~400–600px
+//     taller than the rigid-sheet originals; WAVE_SCROLL_PX grew
+//     3000 → 3600 (landing-scroll.js) to keep the felt pace.
+//  3. LAST-ITEM CONTRACT — each wave's last item (max y) is the swap
+//     trigger landing-scroll.js keys the row swap to: keep it last,
+//     speed 1.0, and every slower item's (stage-adjusted) row-pass
+//     metric (rowGap + y)/speed strictly below the last item's, so
+//     nothing crosses the docked row after the swap has fired.
+// EDITING RULE: changing any x, size, y or speed re-opens the pair
+// maths — re-run the dense overlap sweep before shipping.
 const pillarWaves = [
   [
-    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0 },
-    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180 },
-    { file: 'projection-dinner', size: 'sq-m', x: 30, y: 420 },
-    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 640 },
-    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 820 },
-    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1100 },
+    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0, speed: 1.25 },
+    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180, speed: 0.85 },
+    { file: 'projection-dinner', size: 'sq-m', x: 28, y: 480, speed: 1.22 },
+    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 700, speed: 0.88 },
+    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 890, speed: 1.18 },
+    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1560, speed: 1.0 },
   ],
   [
-    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0 },
-    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200 },
-    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400 },
-    { file: 'collectors-key', size: 'sq-m', x: 28, y: 660 },
-    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 860 },
-    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1120 },
+    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0, speed: 1.25 },
+    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200, speed: 0.85 },
+    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400, speed: 1.2 },
+    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 880, speed: 0.88 },
+    { file: 'collectors-key', size: 'sq-m', x: 28, y: 1290, speed: 1.05 },
+    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1720, speed: 1.0 },
   ],
   [
-    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0 },
-    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220 },
-    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 460 },
-    { file: 'portre-flatlay', size: 'sq-s', x: 8, y: 700 },
-    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 64, y: 880 },
-    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1140 },
+    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0, speed: 1.25 },
+    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220, speed: 0.85 },
+    { file: 'portre-flatlay', size: 'sq-s', x: 6, y: 560, speed: 1.22 },
+    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 66, y: 740, speed: 0.88 },
+    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 1290, speed: 1.05 },
+    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1700, speed: 1.0 },
   ],
 ].map((wave) =>
   wave.map((item) => ({ ...item, src: asset(`/assets/pillar-waves/${item.file}.jpg`) })),
@@ -269,6 +295,7 @@ const pillarRows = [
           <figure
             class={`about-landing__wave-item about-landing__wave-item--${item.size}`}
             style={`left:${item.x}%; margin-top:${item.y}px`}
+            data-wave-speed={item.speed}
           >
             <img src={item.src} alt="" loading="lazy" decoding="async" data-about-landing-wave-img />
           </figure>

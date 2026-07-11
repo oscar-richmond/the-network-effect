@@ -588,9 +588,10 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 
 	/* Wave items — parked below the stage bottom (top:100%), pushed
 	   further down per item by the composition's inline margin-top, and
-	   placed across the stage by its inline left %. The whole wave moves
-	   as one sheet (container y scrub) — arrival order and rhythm come
-	   entirely from these composed offsets. */
+	   placed across the stage by its inline left %. Motion is the
+	   container's base y scrub plus a per-item drift at the composed
+	   data-wave-speed multiplier (landing-scroll.js) — arrival order
+	   and rhythm come from these composed offsets and speeds. */
 	.about-page-3 .about-landing__wave-item {
 		position: absolute;
 		top: 100%;
