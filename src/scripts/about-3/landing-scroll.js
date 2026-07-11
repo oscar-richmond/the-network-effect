@@ -71,14 +71,35 @@ const GALLERY_PARALLAX_PCT = 13;
  * on the rows, which are blend-leaf parents). */
 const GALLERY_EXIT_TRIGGER_RATIO = 0.25;
 const GALLERY_LIFT_PX = 900;
-/** Scroll px of the intro row's exit fade, ENDING exactly at the
- * derived touch point (the lift-window progress where the rising
- * pillar row's top edge reaches the intro row's bottom edge). The
- * intro stays at its centred rest the whole time — it yields by
- * fading, not moving — and because the fade completes before the
- * pillar can reach it, the two texts can never visibly overlap at any
- * scroll position, forward or reverse. */
-const SWAP_FADE_PX = 140;
+/** Row exit wipes — the hero "WE ARE A.." exit vocabulary
+ * (about-scroll.js's buildExitWipe), re-expressed for the landing rows:
+ * per-line bottom-up opacity+blur sweep, scrubbed against the COVERING
+ * element's upward travel (pillar row 0 covering the intro row; each
+ * wave's LAST image covering its pillar row). Same constants as the
+ * hero: 10px blur endpoint, 120px of screen-space onset lead before the
+ * coverer's top edge reaches the row's bottom, and a 0.5 stagger ratio
+ * against 1s line durations (scrub normalizes the total to the trigger
+ * window — only the ratio matters). Wipe windows END when the coverer's
+ * top edge reaches the row's TOP: every line below the leading edge is
+ * already gone (plus the lead margin), so covering text/imagery and the
+ * wiped row can never visibly overlap, forward or reverse. */
+const ROW_WIPE_BLUR_PX = 10;
+const ROW_WIPE_LEAD_PX = 120;
+const ROW_WIPE_STAGGER = 0.5;
+/** Pillar cycle chain (all anchors DERIVED at build, nothing hand-timed
+ * past these three rhythm constants): each pillar row holds alone on
+ * stage for PILLAR_HOLD_PX before its wave begins; each wave's 6 images
+ * travel straight up from below the stage over WAVE_SCROLL_PX (the
+ * container scrubs as one sheet — arrival rhythm comes from the
+ * composed per-item offsets in AboutScroll.astro); when a wave's LAST
+ * image passes over the row, the row wipes (constants above) and the
+ * next row rises from below the stage over PILLAR_RISE_PX, starting
+ * exactly at the wipe's completion. Three waves after "01 — IMMERSE";
+ * the third wipes "03 — AMPLIFY" with no successor — the stage empties
+ * before the tail hold and teardown. */
+const PILLAR_HOLD_PX = 600;
+const PILLAR_RISE_PX = 700;
+const WAVE_SCROLL_PX = 3000;
 /** Section-progress indicator hide — house exit vocabulary (opacity +
  * blur together), reversed symmetrically on scroll-up. Window is
  * founders' own EXIT_BG (the veil-melt / background-fade-out beat),
@@ -104,6 +125,11 @@ const LANDING_TAIL_HOLD = 300;
 const GALLERY_PRELOAD_LEAD_PX = 1500;
 
 const GALLERY_START = LANDING_SETTLE_BEAT + LANDING_TEXT_HOLD;
+/** FALLBACK runway only — the real runway is BUILD-DERIVED (runwayPx in
+ * build()): the pillar-cycle chain's end depends on live geometry (lift
+ * trigger, wave travel distances), so the total can't be a constant.
+ * This value covers the defensive no-gallery/no-rows paths, where the
+ * gallery window is all there is. */
 const LANDING_RUNWAY = GALLERY_START + GALLERY_SCROLL_PX + LANDING_TAIL_HOLD;
 
 /**
@@ -135,6 +161,66 @@ function wrapLandingColumns(landing) {
   });
 
   return inners;
+}
+
+/**
+ * Line-wrap a pillar row's columns purely to obtain per-line `.lr-clip`
+ * units for the exit wipes — NO reveal choreography: every clip is made
+ * instantly visible (lr-visible + transitions off), because these rows
+ * enter positionally (the rise scrubs) with their text plainly readable.
+ * Same origHtml restore idiom as wrapLandingColumns, so rebuilds start
+ * from clean markup (also discarding any inline opacity/filter a
+ * previous build's wipe left on the old clips).
+ * @param {HTMLElement} row
+ * @returns {HTMLElement[]} the row's `.lr-clip` elements
+ */
+function wrapStaticRowLines(row) {
+  /** @type {HTMLElement[]} */
+  const clips = [];
+  row.querySelectorAll('.about-landing__text').forEach((col) => {
+    if (!(col instanceof HTMLElement)) return;
+    if (col.dataset.origHtml === undefined) {
+      col.dataset.origHtml = col.innerHTML;
+    } else {
+      col.innerHTML = col.dataset.origHtml;
+    }
+    wrapLineRevealElement(col);
+    col.querySelectorAll('.lr-clip').forEach((clip) => {
+      if (!(clip instanceof HTMLElement)) return;
+      clip.classList.add('lr-visible');
+      const inner = clip.querySelector('.lr-inner');
+      if (inner instanceof HTMLElement) inner.style.transition = 'none';
+      clips.push(clip);
+    });
+  });
+  return clips;
+}
+
+/**
+ * Group a row's line clips into bottom-up wipe units: clips whose
+ * bottoms sit within a few px of each other (the same line band across
+ * the row's four top-aligned columns) wipe together; bands are ordered
+ * bottom-most first — the hero wipe's bottom-up sweep, widened across a
+ * multi-column row. Positions are relative (rows may be measured while
+ * parked offscreen at top:100% — band structure is position-independent).
+ * @param {HTMLElement[]} clips
+ * @returns {HTMLElement[][]} bottom-most band first
+ */
+function groupClipsBottomUp(clips) {
+  const measured = clips
+    .map((clip) => ({ clip, bottom: clip.getBoundingClientRect().bottom }))
+    .sort((a, b) => b.bottom - a.bottom);
+  /** @type {HTMLElement[][]} */
+  const groups = [];
+  let bandBottom = Infinity;
+  measured.forEach(({ clip, bottom }) => {
+    if (Math.abs(bottom - bandBottom) > 4) {
+      groups.push([]);
+      bandBottom = bottom;
+    }
+    groups[groups.length - 1].push(clip);
+  });
+  return groups;
 }
 
 /**
@@ -214,13 +300,12 @@ export function initLandingScroll() {
 
     gsap.set(inners, { yPercent: 110, y: 0 });
 
-    // Runway height, padded by one extra vh — mirrors about-scroll.js's
-    // hero `requiredHeight` idiom. Landing is currently the page's last
-    // section, so without this the exit-end trigger below would sit
-    // exactly at native max scroll (document.scrollHeight - vh), a
-    // rounding hazard rather than real headroom. Self-contained: holds
-    // regardless of what (if anything) follows.
-    landing.style.height = `${LANDING_RUNWAY + window.innerHeight}px`;
+    // Total runway — BUILD-DERIVED: starts at the constant fallback and
+    // is extended by the pillar-cycle chain derivation in the gallery
+    // block below (whose end depends on live geometry). The landing's
+    // in-flow height and the exit-end trigger both read this AFTER the
+    // chain is derived — see the height set just before exitEnd.
+    let runwayPx = LANDING_RUNWAY;
 
     revealTl = gsap.timeline({ paused: true });
 
@@ -448,21 +533,26 @@ export function initLandingScroll() {
         });
       }
 
-      // ── Gallery lift-out + text-row swap ─────────────────────────
-      // Trigger DERIVED from live geometry: the scroll px at which the
-      // first image's left edge sits GALLERY_EXIT_TRIGGER_RATIO of its
-      // own width past the viewport's left edge. rect.left = itemOffset
-      // + trackX (the gallery spans the stage from x 0; offsetLeft is
-      // transform-independent), and the x scrub maps [GALLERY_START,
-      // GALLERY_START+GALLERY_SCROLL_PX] linearly onto
+      // ── Gallery lift-out + pillar cycle chain ────────────────────
+      // Lift trigger DERIVED from live geometry: the scroll px at which
+      // the first image's left edge sits GALLERY_EXIT_TRIGGER_RATIO of
+      // its own width past the viewport's left edge. rect.left =
+      // itemOffset + trackX (the gallery spans the stage from x 0;
+      // offsetLeft is transform-independent), and the x scrub maps
+      // [GALLERY_START, GALLERY_START+GALLERY_SCROLL_PX] linearly onto
       // [+galleryWidth, -galleryTravel] — invert for the trigger px.
       const introRow = landing.querySelector('[data-about-landing-row-intro]');
-      const pillarRow = landing.querySelector('[data-about-landing-row-pillar]');
+      const pillarRows = Array.from(
+        landing.querySelectorAll('[data-about-landing-pillar-row]'),
+      ).filter((el) => el instanceof HTMLElement);
+      const waves = Array.from(landing.querySelectorAll('[data-about-landing-wave]')).filter(
+        (el) => el instanceof HTMLElement,
+      );
       const firstItem = track.querySelector('.about-landing__gallery-item');
       const firstFrame = firstItem?.querySelector('.about-landing__gallery-frame');
       if (
         introRow instanceof HTMLElement &&
-        pillarRow instanceof HTMLElement &&
+        pillarRows.length &&
         firstItem instanceof HTMLElement &&
         firstFrame instanceof HTMLElement
       ) {
@@ -492,51 +582,171 @@ export function initLandingScroll() {
           },
         );
 
-        // Text-row swap: the intro row STAYS at its centred rest — it
-        // never moves. The pillar row rises from below the viewport
-        // (scrubbed on layout `top`; the rows are blend-leaf PARENTS,
-        // and a transform here would isolate the columns' difference
-        // blend — the name-clip idiom, applied to rows) and docks at
-        // the centred slot. The replacement is a FADE on the intro
-        // columns' SELF opacity (blend-safe, founders-exit precedent —
-        // never the row wrapper), whose window is DERIVED to end
-        // exactly at the touch point: the lift progress where the
-        // pillar's top edge reaches the intro's bottom edge. Before
-        // that point the pillar is entirely below the intro; at it the
-        // intro is already at opacity 0 — no scroll position exists
-        // where the two texts visibly overlap, in either direction.
-        // Inline top reset before measuring so resize rebuilds
-        // re-derive from the pillar's true CSS top:100% initial state.
-        pillarRow.style.top = '';
-        const introRect = introRow.getBoundingClientRect();
-        const pillarH = pillarRow.getBoundingClientRect().height;
-        const dockTop = (stageH - pillarH) / 2;
-        const touchProgress = (stageH - introRect.bottom) / (stageH - dockTop);
-        const fadeEndPx = liftStartPx + touchProgress * GALLERY_LIFT_PX;
-        gsap.fromTo(
-          introRow.querySelectorAll('[data-about-landing-col]'),
-          { opacity: 1 },
-          {
-            opacity: 0,
-            ease: 'none',
-            immediateRender: false,
-            scrollTrigger: galleryScrub(
-              fadeEndPx - SWAP_FADE_PX,
-              fadeEndPx,
-              'about-landing-row-intro-fade',
-            ),
-          },
+        // Per-row prep — inline top reset BEFORE measuring (so resize
+        // rebuilds re-derive from the true CSS top:100% initial state),
+        // then line-wrap for wipe units, then measure. Dock slots are
+        // each row's own centred position.
+        const rowClips = pillarRows.map((row) => {
+          row.style.top = '';
+          return wrapStaticRowLines(row);
+        });
+        const dockTops = pillarRows.map(
+          (row) => (stageH - row.getBoundingClientRect().height) / 2,
         );
+        const rowBottoms = pillarRows.map(
+          (row, i) => dockTops[i] + row.getBoundingClientRect().height,
+        );
+
+        // Row exit wipe — the hero exit vocabulary (about-scroll.js's
+        // buildExitWipe): bottom-up per-line band sweep, each band a
+        // 1s opacity+blur fromTo offset by the stagger ratio, scrub-
+        // normalized across the derived window. Animates the `.lr-clip`
+        // wrappers — DISJOINT from the reveal timeline (which drives
+        // `.lr-inner` transforms) and blend-safe: the clips are
+        // DESCENDANTS of the difference-blend leaf <p>s, and an
+        // ancestor's blend flattens its subtree regardless of the
+        // stacking contexts the per-line filters create (the hero
+        // tagline precedent, verified live there).
+        const buildRowWipe = (clips, startPx, endPx, id) => {
+          const groups = groupClipsBottomUp(clips);
+          if (!groups.length) return;
+          const tl = gsap.timeline({ scrollTrigger: galleryScrub(startPx, endPx, id) });
+          groups.forEach((group, i) => {
+            tl.fromTo(
+              group,
+              { opacity: 1, filter: 'blur(0px)' },
+              {
+                opacity: 0,
+                filter: `blur(${ROW_WIPE_BLUR_PX}px)`,
+                ease: 'none',
+                duration: 1,
+                immediateRender: false,
+              },
+              i * ROW_WIPE_STAGGER,
+            );
+          });
+        };
+
+        // Intro exit — wiped by pillar row 0 scrolling over it (the
+        // intro row itself never moves from its centred rest). The
+        // rise scrub maps row-0-top linearly over [stageH → dockTop]
+        // across the lift window — invert for the px at which the
+        // row's top edge sits at a given stage-space y. Window: onset
+        // when the row's top is ROW_WIPE_LEAD_PX below the intro's
+        // bottom edge; complete when it reaches the intro's top (or at
+        // dock, if the intro's top line sits above the dock slot —
+        // possible when the intro is taller than the pillar row).
+        const introRect = introRow.getBoundingClientRect();
+        const pxAtRow0Top = (y) =>
+          liftStartPx + ((stageH - y) / (stageH - dockTops[0])) * GALLERY_LIFT_PX;
+        buildRowWipe(
+          Array.from(introRow.querySelectorAll('.lr-clip')).filter(
+            (el) => el instanceof HTMLElement,
+          ),
+          pxAtRow0Top(introRect.bottom + ROW_WIPE_LEAD_PX),
+          pxAtRow0Top(Math.max(introRect.top, dockTops[0])),
+          'about-landing-row-intro-wipe',
+        );
+
+        // Pillar row 0 rises with the gallery lift, docking at centre.
+        // Layout `top`, never transform — blend-leaf parent (name-clip
+        // idiom, applied to rows).
         gsap.fromTo(
-          pillarRow,
+          pillarRows[0],
           { top: stageH },
           {
-            top: dockTop,
+            top: dockTops[0],
             ease: 'none',
             immediateRender: false,
-            scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-row-pillar-in'),
+            scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-pillar-rise-0'),
           },
         );
+
+        // ── Wave chain — 3 cycles, every anchor derived ─────────────
+        // Each wave scrubs its container's y straight up (transform is
+        // safe here: no blend text inside, sibling of the rows like the
+        // gallery track) from its parked layout position (items at
+        // top:100% + composed offset) until every item is fully above
+        // the stage — travel measured from live layout. The wave's
+        // LAST item (max composed offset, by contract in
+        // AboutScroll.astro) is the swap trigger: as its top edge
+        // passes the docked row, the row wipes; the successor rises
+        // starting exactly at wipe completion, so the outgoing text is
+        // fully gone before the incoming row's top edge even leaves
+        // the stage's bottom edge — no overlap at any scroll position.
+        let waveStartPx = liftEndPx + PILLAR_HOLD_PX;
+        let chainEndPx = liftEndPx;
+        waves.forEach((wave, i) => {
+          const row = pillarRows[i];
+          if (!(row instanceof HTMLElement)) return;
+          const items = Array.from(wave.children).filter((el) => el instanceof HTMLElement);
+          if (!items.length) return;
+
+          // offsetTop is layout-only (transform-independent) and
+          // resolves against the wave container = stage box: parked
+          // item top = stageH + composed offset.
+          let waveTravel = 0;
+          let lastTopLocal = 0;
+          items.forEach((item) => {
+            waveTravel = Math.max(waveTravel, item.offsetTop + item.offsetHeight);
+            lastTopLocal = Math.max(lastTopLocal, item.offsetTop);
+          });
+
+          const waveEndPx = waveStartPx + WAVE_SCROLL_PX;
+          gsap.fromTo(
+            wave,
+            { y: 0 },
+            {
+              y: -waveTravel,
+              ease: 'none',
+              immediateRender: false,
+              scrollTrigger: galleryScrub(waveStartPx, waveEndPx, `about-landing-wave-${i}`),
+            },
+          );
+
+          // Last image's top edge at stage-space y ↔ scroll px — the
+          // same linear inversion as the lift trigger, on this wave's
+          // scrub mapping.
+          const waveStart = waveStartPx;
+          const pxAtLastTop = (y) => waveStart + ((lastTopLocal - y) / waveTravel) * WAVE_SCROLL_PX;
+          const wipeEndPx = pxAtLastTop(dockTops[i]);
+          buildRowWipe(
+            rowClips[i],
+            pxAtLastTop(rowBottoms[i] + ROW_WIPE_LEAD_PX),
+            wipeEndPx,
+            `about-landing-pillar-wipe-${i}`,
+          );
+
+          // Successor rise (rows 1 and 2; wave 3 wipes row 2 with no
+          // successor — the flagged interpretation of "3 times").
+          let riseEndPx = wipeEndPx;
+          const next = pillarRows[i + 1];
+          if (next instanceof HTMLElement) {
+            riseEndPx = wipeEndPx + PILLAR_RISE_PX;
+            gsap.fromTo(
+              next,
+              { top: stageH },
+              {
+                top: dockTops[i + 1],
+                ease: 'none',
+                immediateRender: false,
+                scrollTrigger: galleryScrub(
+                  wipeEndPx,
+                  riseEndPx,
+                  `about-landing-pillar-rise-${i + 1}`,
+                ),
+              },
+            );
+          }
+
+          chainEndPx = Math.max(waveEndPx, riseEndPx);
+          waveStartPx = chainEndPx + PILLAR_HOLD_PX;
+        });
+
+        // The chain extends the runway past the gallery window's own
+        // end when (as at any current viewport) the last wave resolves
+        // after the horizontal scrub does.
+        runwayPx = Math.max(runwayPx, chainEndPx + LANDING_TAIL_HOLD);
       }
 
       // Ahead-of-phase preload — one-shot, anchored upstream of the
@@ -545,7 +755,12 @@ export function initLandingScroll() {
       // reachable. Native loading="lazy" in the markup is the
       // do-no-harm baseline (lazy heuristics are unreliable inside a
       // hidden fixed stage); an extreme fling can still outrun decode —
-      // accepted, frames fill in.
+      // accepted, frames fill in. The wave images share the trigger:
+      // their first window is thousands of px later, but they're the
+      // same hidden-fixed-stage case and the whole pool is ~1.6MB.
+      const waveImgs = Array.from(
+        landing.querySelectorAll('[data-about-landing-wave-img]'),
+      ).filter((el) => el instanceof HTMLImageElement);
       ScrollTrigger.create({
         trigger: landing,
         start: `top-=${GALLERY_PRELOAD_LEAD_PX} bottom`,
@@ -553,7 +768,7 @@ export function initLandingScroll() {
         id: 'about-landing-gallery-preload',
         once: true,
         onEnter: () => {
-          galleryImgs.forEach((img) => {
+          [...galleryImgs, ...waveImgs].forEach((img) => {
             img.loading = 'eager';
             img.decode?.().catch(() => {});
           });
@@ -561,14 +776,26 @@ export function initLandingScroll() {
       });
     }
 
+    // Runway height, padded by one extra vh — mirrors about-scroll.js's
+    // hero `requiredHeight` idiom. Landing is currently the page's last
+    // section, so without this the exit-end trigger below would sit
+    // exactly at native max scroll (document.scrollHeight - vh), a
+    // rounding hazard rather than real headroom. Self-contained: holds
+    // regardless of what (if anything) follows. Set HERE — after the
+    // gallery block has derived the pillar chain's end into runwayPx —
+    // and before the final ScrollTrigger.refresh(), which recomputes
+    // every trigger (including the earlier entry/reveal ones) against
+    // the final document height.
+    landing.style.height = `${runwayPx + window.innerHeight}px`;
+
     // Teardown — hides the stage once the landing's own runway is
     // spent, handing off to whatever (currently nothing) follows next.
     // Any future section must gate its OWN fixed stage the same way —
     // see AboutScroll.astro's comment.
     const exitEnd = ScrollTrigger.create({
       trigger: landing,
-      start: `top+=${LANDING_RUNWAY} bottom`,
-      end: `top+=${LANDING_RUNWAY} bottom`,
+      start: `top+=${runwayPx} bottom`,
+      end: `top+=${runwayPx} bottom`,
       id: 'about-landing-exit-end',
       onEnter: () => setStageVisible(false),
       onLeaveBack: () => setStageVisible(true),
@@ -634,7 +861,7 @@ export function initLandingScroll() {
     revealTl?.kill();
     gsap.killTweensOf(
       landing.querySelectorAll(
-        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-row-pillar]',
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));

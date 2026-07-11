@@ -400,6 +400,15 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	display: none;
 }
 
+/* Pillar image waves — hidden as the base state: purely decorative
+   scroll choreography (aria-hidden), so under reduced motion (where
+   landing-scroll.js never boots and nothing could ever move them out
+   of their parked-below-stage positions) they simply don't exist. The
+   no-preference block further down holds the full treatment. */
+.about-page-3 .about-landing__wave {
+	display: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	/* BLEND ON THIS WRAPPER, plain-white children — the nav/section-
 	   progress pattern, and load-bearing here: the wrapper needs
@@ -518,10 +527,77 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 
 	/* Pillar row initial-hidden state — parked fully below the stage
 	   (the fixed stage spans the viewport, so top:100% = offscreen)
-	   until the swap scrub carries it up. CSS holds this before any JS
-	   runs — same initial-state idiom as the gallery track's
+	   until each row's rise scrub carries it up. CSS holds this before
+	   any JS runs — same initial-state idiom as the gallery track's
 	   translateY(105%). */
 	.about-page-3 .about-landing__row--pillar {
 		top: 100%;
+	}
+
+	/* ── Pillar image waves (no-preference treatment) ─────────────────
+	   Full-stage positioning context, same idiom as the gallery band:
+	   absolute with NO z-index (paints in source order — above the
+	   lifted-out gallery, below the blend text rows, which is what lets
+	   the difference text invert against passing wave imagery), and NO
+	   will-change (the track's Chromium blend-backdrop finding applies
+	   to any scrub-animated sibling of the rows). pointer-events: none —
+	   nothing interactive inside. No overflow clip needed: the items
+	   park below the fixed full-viewport stage, i.e. off-screen by
+	   definition, and travel straight up out the top the same way. */
+	.about-page-3 .about-landing__wave {
+		display: block;
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	/* Wave items — parked below the stage bottom (top:100%), pushed
+	   further down per item by the composition's inline margin-top, and
+	   placed across the stage by its inline left %. The whole wave moves
+	   as one sheet (container y scrub) — arrival order and rhythm come
+	   entirely from these composed offsets. */
+	.about-page-3 .about-landing__wave-item {
+		position: absolute;
+		top: 100%;
+		margin: 0;
+	}
+
+	.about-page-3 .about-landing__wave-item img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		/* Site-wide img reset guard — same finding as the gallery frame
+		   imgs (harmless at width:100%, load-bearing consistency). */
+		max-width: none;
+		object-fit: cover;
+	}
+
+	/* Wave size vocabulary — square/rectangle hand-set scale steps (the
+	   brief's "different size & ratio"), distinct from the gallery's
+	   portrait-dominant classes. Width/height live on the figure; the
+	   img cover-fills. */
+	.about-page-3 .about-landing__wave-item--sq-s {
+		width: 280px;
+		height: 280px;
+	}
+	.about-page-3 .about-landing__wave-item--sq-m {
+		width: 360px;
+		height: 360px;
+	}
+	.about-page-3 .about-landing__wave-item--sq-l {
+		width: 440px;
+		height: 440px;
+	}
+	.about-page-3 .about-landing__wave-item--rect-p {
+		width: 320px;
+		height: 430px;
+	}
+	.about-page-3 .about-landing__wave-item--rect-l {
+		width: 500px;
+		height: 330px;
+	}
+	.about-page-3 .about-landing__wave-item--rect-pl {
+		width: 380px;
+		height: 510px;
 	}
 }

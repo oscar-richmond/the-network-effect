@@ -38,6 +38,70 @@ const galleryItems = [
   src: asset(`/assets/landing-gallery/${item.file}.jpg`),
   label: `${item.file.replace(/-/g, ' ').toUpperCase()} /${String(i + 1).padStart(2, '0')}`,
 }));
+
+// Pillar image waves — one 6-image wave per pillar row, rising straight
+// up from below the stage (landing-scroll.js scrubs each wave container's
+// y; items never move relative to each other). Same content pool and
+// STAND-IN status as the gallery above. Per item: size class (square/
+// rectangle vocabulary — see the wave size classes in about-page.css),
+// x (left edge, % of stage width) and y (px below the stage bottom —
+// arrival order). HAND-SET compositions, not randomness: sizes and
+// ratios alternate, x zigzags across the stage so no two consecutive
+// arrivals share a lane, and the LAST item of each wave (max y) is the
+// swap trigger landing-scroll.js keys the row wipe to — keep it last.
+const pillarWaves = [
+  [
+    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0 },
+    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180 },
+    { file: 'projection-dinner', size: 'sq-m', x: 30, y: 420 },
+    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 640 },
+    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 820 },
+    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1100 },
+  ],
+  [
+    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0 },
+    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200 },
+    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400 },
+    { file: 'collectors-key', size: 'sq-m', x: 28, y: 660 },
+    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 860 },
+    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1120 },
+  ],
+  [
+    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0 },
+    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220 },
+    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 460 },
+    { file: 'portre-flatlay', size: 'sq-s', x: 8, y: 700 },
+    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 64, y: 880 },
+    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1140 },
+  ],
+].map((wave) =>
+  wave.map((item) => ({ ...item, src: asset(`/assets/pillar-waves/${item.file}.jpg`) })),
+);
+
+// Pillar rows — one per discipline, each replacing the previous via the
+// wave-keyed wipe/rise chain (landing-scroll.js). COPY STATUS: rows 02
+// and 03 are PLACEHOLDER drafts pending founder approval; row 01 is the
+// approved IMMERSE copy.
+const pillarRows = [
+  {
+    body: 'Designing immersive experiences, strategic partnerships and cultural moments that bring brands, talent and communities together.',
+    headline: '01 — IMMERSE',
+    center: 'Activate Experiences & Cultural Moments',
+    right: 'We create the environments where culture happens',
+  },
+  {
+    body: 'Brokering strategic partnerships that align brands and talent around shared values, shared audiences and long-term cultural equity.',
+    headline: '02 — CONNECT',
+    center: 'Broker Strategic Partnerships & Collaborations',
+    right: 'We build the relationships that move culture forward',
+  },
+  {
+    body: 'Amplifying every moment through media, content and storytelling that carry cultural impact far beyond the room it happened in.',
+    headline: '03 — AMPLIFY',
+    center: 'Amplify Stories Across Media & Content',
+    right: 'We carry the moment to the audiences that matter',
+  },
+];
 ---
 
 <AboutHero />
@@ -184,6 +248,34 @@ const galleryItems = [
         </div>
       ))}
     </div>
+
+    <!-- Pillar image waves — one per pillar row, parked fully below the
+         stage (items are absolute at top:100% + their composed y offset)
+         until landing-scroll.js scrubs the container's y straight up.
+         PAINT ORDER: positioned siblings with no z-index paint in source
+         order — these sit AFTER the gallery (above it; it has lifted out
+         by the time a wave runs) and BEFORE the text rows, so the rows'
+         difference text paints above passing wave imagery and inverts
+         against it, exactly like the gallery phase. BLEND SAFETY: no
+         blend text inside, so the scrubbed transform is safe here (it
+         is a sibling of the blend rows, same as the gallery track), and
+         like the track these must never gain will-change (Chromium
+         excludes promoted siblings from the blend backdrop). display:
+         none under reduced motion (about-page.css base state) — purely
+         decorative, aria-hidden. -->
+    {pillarWaves.map((wave, waveIndex) => (
+      <div class="about-landing__wave" data-about-landing-wave={waveIndex} aria-hidden="true">
+        {wave.map((item) => (
+          <figure
+            class={`about-landing__wave-item about-landing__wave-item--${item.size}`}
+            style={`left:${item.x}%; margin-top:${item.y}px`}
+          >
+            <img src={item.src} alt="" loading="lazy" decoding="async" data-about-landing-wave-img />
+          </figure>
+        ))}
+      </div>
+    ))}
+
     <div class="about-landing__row" data-about-landing-row-intro>
       <p class="about-landing__text about-landing__text--body" data-about-landing-col>
         We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
@@ -199,36 +291,42 @@ const galleryItems = [
       </p>
     </div>
 
-    <!-- Pillar row ("01 — IMMERSE") — scrolls up from below the viewport
-         to REPLACE the intro row during the gallery's upward lift-out.
-         The intro row STAYS at its centred rest and yields by a derived
-         fade (landing-scroll.js) that completes exactly as this row's
-         top edge reaches it — no scroll position where both texts
-         visibly overlap. This row's motion is scrubbed on `top`, a
-         layout property — NEVER transform, which on these blend-leaf
-         parents would isolate the columns' difference blend; the same
-         name-clip idiom as everywhere else on this page. Columns
-         mirror the intro row's per-position styles exactly, but
-         deliberately do NOT carry data-about-landing-col: that attr is
-         the wrap/reveal system's roster (and the flash-guard's
-         selector) — this row enters positionally, no line reveal, and
-         must be plainly visible when it arrives. Its CSS default
-         top: 100% (below the stage) is the initial-hidden state;
-         build() re-derives the px positions per rebuild. -->
-    <div class="about-landing__row about-landing__row--pillar" data-about-landing-row-pillar>
-      <p class="about-landing__text about-landing__text--body">
-        Designing immersive experiences, strategic partnerships and cultural moments that bring brands, talent and communities together.
-      </p>
-      <p class="about-landing__text about-landing__text--headline">
-        01 — IMMERSE
-      </p>
-      <p class="about-landing__text about-landing__text--serif about-landing__text--center">
-        Activate Experiences &amp; Cultural Moments
-      </p>
-      <p class="about-landing__text about-landing__text--serif about-landing__text--right">
-        We create the environments where culture happens
-      </p>
-    </div>
+    <!-- Pillar rows ("01 — IMMERSE" / "02 — CONNECT" / "03 — AMPLIFY") —
+         each scrolls up from below the viewport to REPLACE the previous
+         text at the centred slot. Row 0 rides the gallery's lift-out
+         (the intro row stays at rest and exits via the hero-vocabulary
+         bottom-up wipe as row 0 scrolls over it); rows 1 and 2 each rise
+         after their predecessor is wiped by its wave's LAST image
+         passing over it (landing-scroll.js derives the whole chain).
+         Motion is scrubbed on `top`, a layout property — NEVER
+         transform, which on these blend-leaf parents would isolate the
+         columns' difference blend; the name-clip idiom, applied to
+         rows. Columns mirror the intro row's per-position styles
+         exactly, but deliberately do NOT carry data-about-landing-col:
+         that attr is the wrap/reveal system's roster (and the flash-
+         guard's selector) — these rows enter positionally, no line
+         reveal, and must be plainly visible when they arrive.
+         landing-scroll.js DOES line-wrap them at build (lr-visible,
+         transitions off) purely to obtain per-line units for the exit
+         wipes. The CSS default top: 100% (below the stage) is the
+         initial-hidden state; build() re-derives px positions per
+         rebuild. -->
+    {pillarRows.map((row, rowIndex) => (
+      <div class="about-landing__row about-landing__row--pillar" data-about-landing-pillar-row={rowIndex}>
+        <p class="about-landing__text about-landing__text--body">
+          {row.body}
+        </p>
+        <p class="about-landing__text about-landing__text--headline">
+          {row.headline}
+        </p>
+        <p class="about-landing__text about-landing__text--serif about-landing__text--center">
+          {row.center}
+        </p>
+        <p class="about-landing__text about-landing__text--serif about-landing__text--right">
+          {row.right}
+        </p>
+      </div>
+    ))}
   </div>
 </section>
 
