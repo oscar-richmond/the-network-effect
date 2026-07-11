@@ -109,7 +109,12 @@ const ROW_WIPE_STAGGER = 0.5;
  * before the tail hold and teardown. */
 const PILLAR_HOLD_PX = 600;
 const PILLAR_RISE_PX = 700;
-const WAVE_SCROLL_PX = 3000;
+/** 3000 → 3600 with the no-overlap recomposition: the stretched
+ * vertical gaps (sized to absorb worst-case differential-speed closing
+ * — see the invariants on pillarWaves in AboutScroll.astro) made each
+ * wave's travel ~20% longer, so the window grows to match and the felt
+ * px-per-scroll pace stays where it was tuned. */
+const WAVE_SCROLL_PX = 3600;
 /** Section-progress indicator hide — house exit vocabulary (opacity +
  * blur together), reversed symmetrically on scroll-up. Window is
  * founders' own EXIT_BG (the veil-melt / background-fade-out beat),

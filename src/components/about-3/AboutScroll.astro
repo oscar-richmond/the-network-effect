@@ -50,49 +50,55 @@ const galleryItems = [
 // instead of as one rigid sheet).
 //
 // NO-OVERLAP INVARIANTS (per explicit request — no two images may ever
-// overlap at ANY scroll position; under differential speeds a faster
-// lower image CAN catch a slower upper one, so plain parked gaps are
-// not enough. Verified live across full walks at 1280+ widths):
-//  1. TWO X-DISJOINT LANES — left lane right-edges stay ≤ ~43% of the
-//     stage (x ≤ 10% for narrow items, ≤ 6% for wide), right lane
-//     starts at x ≥ 56%. Cross-lane pairs can never touch at any
-//     speed, and the freed centre band is exactly where the docked
-//     pillar text sits. Holds for viewports ≥ ~1280px (the desktop
-//     design target).
-//  2. WITHIN A LANE, SPEEDS NON-INCREASING DOWNWARD — the upper item
-//     is always as fast or faster than the one below it, so parked
-//     vertical gaps (all ≥ 70px) can only OPEN during the scroll,
-//     never close. Overlap within a lane is impossible by
-//     construction.
+// overlap at ANY scroll position, while keeping the ORIGINAL zigzag x
+// layout and a LARGER drift spread with the strongest speed contrast
+// between vertical neighbours). Under differential speeds a faster
+// lower image closes on a slower upper one by up to
+// Δspeed × waveTravel (~1100px at the largest contrasts), so the
+// vertical offsets — not lanes — absorb it. Solved pair-by-pair and
+// verified live with dense sweeps at 1280×800 and 1728×1084:
+//  1. For every pair whose horizontal ranges intersect anywhere in the
+//     ≥1280px design band (left% fixed, px widths widest at 1280),
+//     either the LOWER item is no faster than the upper (the parked
+//     gap can only open), or the parked gap exceeds the worst-case
+//     closing Δspeed × waveTravel + margin computed at the design
+//     ceiling (~1200px viewport height). Pairs with disjoint x ranges
+//     need no vertical guard — those diagonal neighbours are exactly
+//     where the biggest 0.30–0.40 speed contrasts live.
+//  2. The big closing contrasts forced the compositions ~400–600px
+//     taller than the rigid-sheet originals; WAVE_SCROLL_PX grew
+//     3000 → 3600 (landing-scroll.js) to keep the felt pace.
 //  3. LAST-ITEM CONTRACT — each wave's last item (max y) is the swap
 //     trigger landing-scroll.js keys the row swap to: keep it last,
 //     speed 1.0, and every slower item's (stage-adjusted) row-pass
 //     metric (rowGap + y)/speed strictly below the last item's, so
 //     nothing crosses the docked row after the swap has fired.
+// EDITING RULE: changing any x, size, y or speed re-opens the pair
+// maths — re-run the dense overlap sweep before shipping.
 const pillarWaves = [
   [
-    { file: 'ommo-orange-panel', size: 'rect-p', x: 6, y: 0, speed: 1.15 },
-    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180, speed: 1.1 },
-    { file: 'public-kitchen-cards', size: 'sq-s', x: 10, y: 520, speed: 0.9 },
-    { file: 'projection-dinner', size: 'sq-m', x: 64, y: 620, speed: 1.02 },
-    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 4, y: 900, speed: 0.88 },
-    { file: 'hotel-balzac-door', size: 'sq-l', x: 56, y: 1140, speed: 1.0 },
+    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0, speed: 1.25 },
+    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180, speed: 0.85 },
+    { file: 'projection-dinner', size: 'sq-m', x: 28, y: 480, speed: 1.22 },
+    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 700, speed: 0.88 },
+    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 890, speed: 1.18 },
+    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1560, speed: 1.0 },
   ],
   [
-    { file: 'alaia-table-setting', size: 'rect-l', x: 4, y: 0, speed: 1.12 },
-    { file: 'wax-seal-envelope', size: 'sq-s', x: 64, y: 120, speed: 1.08 },
-    { file: 'collectors-key', size: 'sq-m', x: 8, y: 450, speed: 0.95 },
-    { file: 'skims-taxi', size: 'rect-p', x: 58, y: 560, speed: 1.05 },
-    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 6, y: 900, speed: 0.9 },
-    { file: 'rhode-corvette-plate', size: 'sq-l', x: 60, y: 1120, speed: 1.0 },
+    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0, speed: 1.25 },
+    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200, speed: 0.85 },
+    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400, speed: 1.2 },
+    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 880, speed: 0.88 },
+    { file: 'collectors-key', size: 'sq-m', x: 28, y: 1290, speed: 1.05 },
+    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1720, speed: 1.0 },
   ],
   [
-    { file: 'rotary-phone-story', size: 'rect-p', x: 8, y: 0, speed: 1.12 },
-    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 160, speed: 1.1 },
-    { file: 'red-socks-car', size: 'sq-m', x: 4, y: 540, speed: 1.0 },
-    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 62, y: 600, speed: 1.02 },
-    { file: 'portre-flatlay', size: 'sq-s', x: 10, y: 1000, speed: 0.95 },
-    { file: 'red-leather-tie', size: 'sq-l', x: 58, y: 1180, speed: 1.0 },
+    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0, speed: 1.25 },
+    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220, speed: 0.85 },
+    { file: 'portre-flatlay', size: 'sq-s', x: 6, y: 560, speed: 1.22 },
+    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 66, y: 740, speed: 0.88 },
+    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 1290, speed: 1.05 },
+    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1700, speed: 1.0 },
   ],
 ].map((wave) =>
   wave.map((item) => ({ ...item, src: asset(`/assets/pillar-waves/${item.file}.jpg`) })),
