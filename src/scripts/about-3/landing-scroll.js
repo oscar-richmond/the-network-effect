@@ -56,6 +56,21 @@ const GALLERY_RISE_YPERCENT = 105;
 /** Per-image parallax magnitude — xPercent of the img's own width; imgs
  * are 115% of their clip frame, so 13 is the exact full-coverage bound. */
 const GALLERY_PARALLAX_PCT = 13;
+/** Gallery lift-out + text-row swap — the beat where the gallery era
+ * ends and the pillar era ("01 — IMMERSE") begins. The trigger point is
+ * DERIVED, not hand-tuned: the scroll position at which the FIRST
+ * image's left edge has travelled this fraction of its own width past
+ * the viewport's left edge (computed at build from the live track
+ * geometry and the x-scrub's endpoints — see the lift block in build()).
+ * From there, over GALLERY_LIFT_PX of scroll: the track scrubs upward
+ * out of the stage (x keeps scrubbing beneath it — later images stream
+ * diagonally up-left rather than freezing), the intro text row exits
+ * up, and the pillar row rises from below the viewport to dock at the
+ * centred slot the intro row held. All pure scrubs on layout `top`/
+ * GSAP y — reversal symmetric, fling-clamped, blend-safe (no transforms
+ * on the rows, which are blend-leaf parents). */
+const GALLERY_EXIT_TRIGGER_RATIO = 0.25;
+const GALLERY_LIFT_PX = 900;
 /** Section-progress indicator hide — house exit vocabulary (opacity +
  * blur together), reversed symmetrically on scroll-up. Window is
  * founders' own EXIT_BG (the veil-melt / background-fade-out beat),
@@ -425,6 +440,84 @@ export function initLandingScroll() {
         });
       }
 
+      // ── Gallery lift-out + text-row swap ─────────────────────────
+      // Trigger DERIVED from live geometry: the scroll px at which the
+      // first image's left edge sits GALLERY_EXIT_TRIGGER_RATIO of its
+      // own width past the viewport's left edge. rect.left = itemOffset
+      // + trackX (the gallery spans the stage from x 0; offsetLeft is
+      // transform-independent), and the x scrub maps [GALLERY_START,
+      // GALLERY_START+GALLERY_SCROLL_PX] linearly onto
+      // [+galleryWidth, -galleryTravel] — invert for the trigger px.
+      const introRow = landing.querySelector('[data-about-landing-row-intro]');
+      const pillarRow = landing.querySelector('[data-about-landing-row-pillar]');
+      const firstItem = track.querySelector('.about-landing__gallery-item');
+      const firstFrame = firstItem?.querySelector('.about-landing__gallery-frame');
+      if (
+        introRow instanceof HTMLElement &&
+        pillarRow instanceof HTMLElement &&
+        firstItem instanceof HTMLElement &&
+        firstFrame instanceof HTMLElement
+      ) {
+        const stageH = gallery.clientHeight;
+        const frameW = firstFrame.getBoundingClientRect().width;
+        const xTrigger = -(GALLERY_EXIT_TRIGGER_RATIO * frameW) - firstItem.offsetLeft;
+        const xStart = gallery.clientWidth;
+        const liftStartPx =
+          GALLERY_START + ((xStart - xTrigger) / (xStart + galleryTravel)) * GALLERY_SCROLL_PX;
+        const liftEndPx = liftStartPx + GALLERY_LIFT_PX;
+
+        // Track lifts fully out the top. Drives `y` (pixel channel) —
+        // the rise tween above owns `yPercent`, a SEPARATE GSAP
+        // transform channel, so the two never fight over a property
+        // (rise holds yPercent at 0 up here; this holds y at 0 down
+        // there — each clamps outside its own window). x keeps
+        // scrubbing beneath the lift, so later images stream
+        // diagonally up-left rather than freezing mid-frame.
+        gsap.fromTo(
+          track,
+          { y: 0 },
+          {
+            y: -stageH,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-gallery-lift'),
+          },
+        );
+
+        // Text-row swap, same window: intro row exits up; pillar row
+        // rises from below the viewport and docks at the centred slot.
+        // Motion is scrubbed on layout `top` — the rows are blend-leaf
+        // PARENTS, and a transform here would isolate the columns'
+        // difference blend (the name-clip idiom, applied to rows).
+        // Inline tops are reset before measuring so resize rebuilds
+        // re-derive from the true resting layout (intro: flex-static
+        // centre; pillar: its CSS top:100% initial state).
+        introRow.style.top = '';
+        pillarRow.style.top = '';
+        const introRect = introRow.getBoundingClientRect();
+        const pillarH = pillarRow.getBoundingClientRect().height;
+        gsap.fromTo(
+          introRow,
+          { top: introRect.top },
+          {
+            top: -(introRect.height + 40),
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-row-intro-out'),
+          },
+        );
+        gsap.fromTo(
+          pillarRow,
+          { top: stageH },
+          {
+            top: (stageH - pillarH) / 2,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-row-pillar-in'),
+          },
+        );
+      }
+
       // Ahead-of-phase preload — one-shot, anchored upstream of the
       // boundary (mid-founders-exhale): force fetch + decode so the
       // images are painted-ready before the gallery window is
@@ -520,7 +613,7 @@ export function initLandingScroll() {
     revealTl?.kill();
     gsap.killTweensOf(
       landing.querySelectorAll(
-        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col]',
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-row-pillar]',
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));

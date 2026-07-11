@@ -184,7 +184,7 @@ const galleryItems = [
         </div>
       ))}
     </div>
-    <div class="about-landing__row">
+    <div class="about-landing__row" data-about-landing-row-intro>
       <p class="about-landing__text about-landing__text--body" data-about-landing-col>
         We are a relationship-led consultancy connecting Talent, Brands and Audiences through Experiences, Strategic Partnerships and Media.
       </p>
@@ -196,6 +196,34 @@ const galleryItems = [
       </p>
       <p class="about-landing__text about-landing__text--serif about-landing__text--right" data-about-landing-col>
         Delivered through three disciplines.
+      </p>
+    </div>
+
+    <!-- Pillar row ("01 — IMMERSE") — scrolls up from below the viewport
+         to REPLACE the intro row during the gallery's upward lift-out
+         (landing-scroll.js: both rows' motion is scrubbed on `top`, a
+         layout property — NEVER transform, which on these blend-leaf
+         parents would isolate the columns' difference blend; the same
+         name-clip idiom as everywhere else on this page). Columns
+         mirror the intro row's per-position styles exactly, but
+         deliberately do NOT carry data-about-landing-col: that attr is
+         the wrap/reveal system's roster (and the flash-guard's
+         selector) — this row enters positionally, no line reveal, and
+         must be plainly visible when it arrives. Its CSS default
+         top: 100% (below the stage) is the initial-hidden state;
+         build() re-derives the px positions per rebuild. -->
+    <div class="about-landing__row about-landing__row--pillar" data-about-landing-row-pillar>
+      <p class="about-landing__text about-landing__text--body">
+        Designing immersive experiences, strategic partnerships and cultural moments that bring brands, talent and communities together.
+      </p>
+      <p class="about-landing__text about-landing__text--headline">
+        01 — IMMERSE
+      </p>
+      <p class="about-landing__text about-landing__text--serif about-landing__text--center">
+        Activate Experiences &amp; Cultural Moments
+      </p>
+      <p class="about-landing__text about-landing__text--serif about-landing__text--right">
+        We create the environments where culture happens
       </p>
     </div>
   </div>

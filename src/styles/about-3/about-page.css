@@ -250,7 +250,14 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
    same flash-window standard as the hero intro (about-hero.css). Under
    reduced motion the scroll script never boots and lines stay readable. */
 @media (prefers-reduced-motion: no-preference) {
-	.about-page-3 .about-landing__text:not(:has(> .lr-clip)) {
+	/* Scoped to the wrap/reveal ROSTER (the data attr), not the shared
+	   text class: the pillar row's columns share .about-landing__text
+	   for typography but are never line-wrapped (they enter
+	   positionally with the swap scrub) — the class-wide selector would
+	   hide them forever. Coverage is unchanged for everything that IS
+	   wrapped: the intro row's columns and the footer label all carry
+	   the attr. */
+	.about-page-3 [data-about-landing-col]:not(:has(> .lr-clip)) {
 		visibility: hidden;
 	}
 }
@@ -494,6 +501,27 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	   order puts it ABOVE the gallery: the difference text visibly
 	   inverts against passing images. NEVER add z-index here. */
 	.about-page-3 .about-landing__row {
-		position: relative;
+		/* absolute (was relative) since the pillar-row swap: BOTH rows
+		   need independent vertical motion, scrubbed on `top` (layout
+		   property — never transform, which on a blend-leaf parent would
+		   isolate the columns' difference). Still deliberately
+		   z-index-free: absolute with z auto is positioned (paints above
+		   the gallery, the original purpose of this rule) but creates NO
+		   stacking context. With `top: auto` an absolutely-positioned
+		   flex child keeps its flex-aligned static position, so the
+		   intro row rests exactly where the old relative layout put it;
+		   landing-scroll.js re-derives explicit px tops per build for
+		   the swap scrubs. NEVER add z-index here. */
+		position: absolute;
+		inset-inline: 0;
+	}
+
+	/* Pillar row initial-hidden state — parked fully below the stage
+	   (the fixed stage spans the viewport, so top:100% = offscreen)
+	   until the swap scrub carries it up. CSS holds this before any JS
+	   runs — same initial-state idiom as the gallery track's
+	   translateY(105%). */
+	.about-page-3 .about-landing__row--pillar {
+		top: 100%;
 	}
 }
