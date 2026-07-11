@@ -17,6 +17,13 @@ const LANDING_COL_STAGGER = 0.18;
 const LANDING_LINE_STAGGER = 0.12;
 /** Per-line reveal duration — mirrors line-reveal.js's 1.2s transition. */
 const LANDING_LINE_DURATION = 1.2;
+/** Footer label entry dissolve — rides ON TOP of the label's line-reveal
+ * roll-up (it shares the reveal timeline beat): a concurrent blur+
+ * opacity melt-in using the menu items' dissolve vocabulary (menu.js's
+ * hover state, 4px), per explicit request "roll-up + fade/blur, same as
+ * menu items". Applied to the label's `.lr-clip` — a DESCENDANT of the
+ * difference-blend leaf <p>, blend-safe per the hero-wipe precedent. */
+const FOOTER_LABEL_DISSOLVE_BLUR_PX = 4;
 
 /** Runway segment constants (px of scroll past the founders boundary).
  *
@@ -331,6 +338,38 @@ export function initLandingScroll() {
         );
       });
     });
+
+    // Footer label dissolve — same timeline, same beat, same ease as
+    // the label's own roll-up tween above (the label is the last
+    // wrapped column, so this sits at its column-stagger position):
+    // blur+opacity melt-in on its clip, concurrent with the roll — the
+    // "roll-up + fade/blur" entry. Reverses with the timeline on
+    // scroll-back like everything else; the deep-scroll restoration
+    // (progress(1) below) lands it crisp and full-strength. Targets the
+    // `.lr-clip` (leaf-descendant, blend-safe), disjoint from both the
+    // roll (`.lr-inner` transforms) and the intro wipes (intro-row
+    // clips only — the label belongs to no row and is never wiped).
+    const footerLabel = landing.querySelector('.about-footer-label');
+    if (footerLabel instanceof HTMLElement) {
+      const labelClips = Array.from(footerLabel.querySelectorAll('.lr-clip')).filter(
+        (el) => el instanceof HTMLElement,
+      );
+      const labelIndex = columns.indexOf(footerLabel);
+      if (labelClips.length && labelIndex !== -1) {
+        revealTl.fromTo(
+          labelClips,
+          { opacity: 0, filter: `blur(${FOOTER_LABEL_DISSOLVE_BLUR_PX}px)` },
+          {
+            opacity: 1,
+            filter: 'blur(0px)',
+            duration: LANDING_LINE_DURATION,
+            ease: LINE_REVEAL_EASE,
+            immediateRender: false,
+          },
+          labelIndex * LANDING_COL_STAGGER,
+        );
+      }
+    }
 
     // Entry gate — the stage's ONLY reveal mechanism. Anchored to the
     // landing section's own top-vs-viewport-bottom crossing, which by
@@ -884,7 +923,7 @@ export function initLandingScroll() {
     revealTl?.kill();
     gsap.killTweensOf(
       landing.querySelectorAll(
-        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));

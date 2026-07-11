@@ -262,6 +262,41 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	}
 }
 
+/* ── Bottom-centre label ("our services — three pillars") ──────────────
+   Ported from the unmerged footer-services-label branch (2f3ab49 +
+   34984eb — it never reached this line of history, which is why the
+   label vanished). Landing-stage-scoped: a child of
+   .about-landing__stage (see AboutScroll.astro), carrying the SHARED
+   .about-landing__text class, so it inherits that class's color/blend/
+   margin AND its flash-guard (:not(:has(> .lr-clip))) for free — no
+   duplicate rules. Only position + font are its own. Text-align
+   centring, no transform — keeps this blend element free of any
+   self-created stacking-context noise. bottom 40px per the current
+   spec (was 36px, the logo mirror, in the original build). Absolute
+   WITHIN the stage's own full-viewport fixed box (not position:fixed
+   itself — that would escape the stage and lose its inherited
+   visibility gating), so it shows/hides exactly when the stage does.
+   RM: font applies unscoped (harmless), position stays out of the
+   no-preference block so the label is a plain in-flow paragraph,
+   matching the stage's own RM fallback. */
+.about-page-3 .about-footer-label {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 1;
+	text-align: center;
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .about-footer-label {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 40px;
+	}
+}
+
 /* ── Landing gallery ───────────────────────────────────────────────────
    Base rules are the REDUCED-MOTION state: a static, in-flow strip
    below the text row (the stage is a plain block under RM), natively

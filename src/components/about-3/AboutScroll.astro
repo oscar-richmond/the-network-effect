@@ -329,6 +329,31 @@ const pillarRows = [
         </p>
       </div>
     ))}
+
+    <!-- Bottom-centre label — SCOPED to this stage only (ported from the
+         unmerged footer-services-label branch, rebased onto the pillar-
+         cycle era): a direct child of the stage, not fixed page chrome,
+         so it inherits the stage's own visibility lifecycle — present
+         from the landing reveal ("FROM ACCESS TO IMPACT") through the
+         full pillar chain ("03 — AMPLIFY") and gone at exit-end, via
+         the already-verified entry-gate/exit/fling/resize machinery,
+         with no new triggers. It belongs to NO row, so no wipe ever
+         touches it — it holds fixed at the stage bottom while rows and
+         waves cycle above. `data-about-landing-col` + the shared
+         `about-landing__text` class pull it into the same wrap/reveal
+         system as the intro columns (the hero-tagline line-reveal
+         vocabulary — "same entry as WE ARE A.."); landing-scroll.js
+         additionally rides a blur+opacity dissolve on its clip during
+         that same reveal beat (see the footer-label block in build()).
+         Ordered last so it paints above the gallery/waves on any frame
+         their bounds graze it. -->
+    <p
+      class="about-landing__text about-footer-label"
+      data-about-landing-col
+      aria-hidden="true"
+    >
+      our services — three pillars
+    </p>
   </div>
 </section>
 
