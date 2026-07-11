@@ -295,9 +295,11 @@ const pillarRows = [
          each scrolls up from below the viewport to REPLACE the previous
          text at the centred slot. Row 0 rides the gallery's lift-out
          (the intro row stays at rest and exits via the hero-vocabulary
-         bottom-up wipe as row 0 scrolls over it); rows 1 and 2 each rise
-         after their predecessor is wiped by its wave's LAST image
-         passing over it (landing-scroll.js derives the whole chain).
+         bottom-up wipe as row 0 scrolls over it); rows 1 and 2 each
+         start rising the moment their predecessor's wave's LAST image
+         reaches it, wiping the predecessor under their own leading
+         edge as they arrive — the same swap behaviour as row 0 over
+         the intro (landing-scroll.js derives the whole chain).
          Motion is scrubbed on `top`, a layout property — NEVER
          transform, which on these blend-leaf parents would isolate the
          columns' difference blend; the name-clip idiom, applied to

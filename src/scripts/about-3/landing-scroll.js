@@ -91,11 +91,13 @@ const ROW_WIPE_STAGGER = 0.5;
  * stage for PILLAR_HOLD_PX before its wave begins; each wave's 6 images
  * travel straight up from below the stage over WAVE_SCROLL_PX (the
  * container scrubs as one sheet — arrival rhythm comes from the
- * composed per-item offsets in AboutScroll.astro); when a wave's LAST
- * image passes over the row, the row wipes (constants above) and the
- * next row rises from below the stage over PILLAR_RISE_PX, starting
- * exactly at the wipe's completion. Three waves after "01 — IMMERSE";
- * the third wipes "03 — AMPLIFY" with no successor — the stage empties
+ * composed per-item offsets in AboutScroll.astro). When a wave's LAST
+ * image passes over the docked row, the NEXT row starts rising from
+ * below the stage over PILLAR_RISE_PX, and the outgoing row wipes under
+ * the RISING ROW's top edge — the exact intro → row 0 swap behaviour
+ * (confirmed correct live), replayed per cycle. Three waves after
+ * "01 — IMMERSE"; the third wipes "03 — AMPLIFY" with no successor
+ * (its wave's last image is the coverer instead) — the stage empties
  * before the tail hold and teardown. */
 const PILLAR_HOLD_PX = 600;
 const PILLAR_RISE_PX = 700;
@@ -670,10 +672,13 @@ export function initLandingScroll() {
         // the stage — travel measured from live layout. The wave's
         // LAST item (max composed offset, by contract in
         // AboutScroll.astro) is the swap trigger: as its top edge
-        // passes the docked row, the row wipes; the successor rises
-        // starting exactly at wipe completion, so the outgoing text is
-        // fully gone before the incoming row's top edge even leaves
-        // the stage's bottom edge — no overlap at any scroll position.
+        // reaches the docked row's bottom, the successor row starts
+        // rising, and the outgoing row wipes under the riser exactly
+        // like the intro under row 0 — see the swap block below. The
+        // no-overlap guarantee is the same as the intro swap's: the
+        // wipe completes as the riser's top reaches the outgoing row's
+        // top, and every line below the riser's leading edge (plus the
+        // lead margin) is already gone.
         let waveStartPx = liftEndPx + PILLAR_HOLD_PX;
         let chainEndPx = liftEndPx;
         waves.forEach((wave, i) => {
@@ -709,20 +714,23 @@ export function initLandingScroll() {
           // scrub mapping.
           const waveStart = waveStartPx;
           const pxAtLastTop = (y) => waveStart + ((lastTopLocal - y) / waveTravel) * WAVE_SCROLL_PX;
-          const wipeEndPx = pxAtLastTop(dockTops[i]);
-          buildRowWipe(
-            rowClips[i],
-            pxAtLastTop(rowBottoms[i] + ROW_WIPE_LEAD_PX),
-            wipeEndPx,
-            `about-landing-pillar-wipe-${i}`,
-          );
 
-          // Successor rise (rows 1 and 2; wave 3 wipes row 2 with no
-          // successor — the flagged interpretation of "3 times").
-          let riseEndPx = wipeEndPx;
+          // Row swap — the SAME behaviour as the intro → row 0 swap
+          // (confirmed correct live): the last image's pass is only the
+          // TRIGGER; the successor row rises from below the stage from
+          // that moment, and the outgoing row wipes under the RISING
+          // ROW's top edge — onset when the riser is ROW_WIPE_LEAD_PX
+          // below the row's bottom, complete exactly as the riser
+          // reaches the row's top (or its own dock, if higher) — so the
+          // handoff reads as one continuous cover-and-replace, never a
+          // wipe followed by a detached late arrival. The final row has
+          // no successor to do the covering, so it alone keeps the
+          // image-keyed wipe: the wave's last image is its coverer.
+          let riseEndPx = pxAtLastTop(dockTops[i]);
           const next = pillarRows[i + 1];
           if (next instanceof HTMLElement) {
-            riseEndPx = wipeEndPx + PILLAR_RISE_PX;
+            const riseStartPx = pxAtLastTop(rowBottoms[i]);
+            riseEndPx = riseStartPx + PILLAR_RISE_PX;
             gsap.fromTo(
               next,
               { top: stageH },
@@ -731,11 +739,26 @@ export function initLandingScroll() {
                 ease: 'none',
                 immediateRender: false,
                 scrollTrigger: galleryScrub(
-                  wipeEndPx,
+                  riseStartPx,
                   riseEndPx,
                   `about-landing-pillar-rise-${i + 1}`,
                 ),
               },
+            );
+            const pxAtRiserTop = (y) =>
+              riseStartPx + ((stageH - y) / (stageH - dockTops[i + 1])) * PILLAR_RISE_PX;
+            buildRowWipe(
+              rowClips[i],
+              pxAtRiserTop(rowBottoms[i] + ROW_WIPE_LEAD_PX),
+              pxAtRiserTop(Math.max(dockTops[i], dockTops[i + 1])),
+              `about-landing-pillar-wipe-${i}`,
+            );
+          } else {
+            buildRowWipe(
+              rowClips[i],
+              pxAtLastTop(rowBottoms[i] + ROW_WIPE_LEAD_PX),
+              riseEndPx,
+              `about-landing-pillar-wipe-${i}`,
             );
           }
 
