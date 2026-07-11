@@ -250,8 +250,50 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
    same flash-window standard as the hero intro (about-hero.css). Under
    reduced motion the scroll script never boots and lines stay readable. */
 @media (prefers-reduced-motion: no-preference) {
-	.about-page-3 .about-landing__text:not(:has(> .lr-clip)) {
+	/* Scoped to the wrap/reveal ROSTER (the data attr), not the shared
+	   text class: the pillar row's columns share .about-landing__text
+	   for typography but are never line-wrapped (they enter
+	   positionally with the swap scrub) — the class-wide selector would
+	   hide them forever. Coverage is unchanged for everything that IS
+	   wrapped: the intro row's columns and the footer label all carry
+	   the attr. */
+	.about-page-3 [data-about-landing-col]:not(:has(> .lr-clip)) {
 		visibility: hidden;
+	}
+}
+
+/* ── Bottom-centre label ("our services — three pillars") ──────────────
+   Ported from the unmerged footer-services-label branch (2f3ab49 +
+   34984eb — it never reached this line of history, which is why the
+   label vanished). Landing-stage-scoped: a child of
+   .about-landing__stage (see AboutScroll.astro), carrying the SHARED
+   .about-landing__text class, so it inherits that class's color/blend/
+   margin AND its flash-guard (:not(:has(> .lr-clip))) for free — no
+   duplicate rules. Only position + font are its own. Text-align
+   centring, no transform — keeps this blend element free of any
+   self-created stacking-context noise. bottom 40px per the current
+   spec (was 36px, the logo mirror, in the original build). Absolute
+   WITHIN the stage's own full-viewport fixed box (not position:fixed
+   itself — that would escape the stage and lose its inherited
+   visibility gating), so it shows/hides exactly when the stage does.
+   RM: font applies unscoped (harmless), position stays out of the
+   no-preference block so the label is a plain in-flow paragraph,
+   matching the stage's own RM fallback. */
+.about-page-3 .about-footer-label {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 1;
+	text-align: center;
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .about-footer-label {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 40px;
 	}
 }
 
@@ -369,6 +411,78 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	object-fit: cover;
 }
 
+/* Hover-blur WebGL canvas (gallery-hover-blur.js, JS-appended, hover-
+   capable pointers only — see the module's own hover/pointer gate).
+   Same positioning idiom as founders__canvas/about-hero__gallery-canvas.
+   No z-index: appended LAST (after the track), so it paints above the
+   DOM images by plain DOM order alone — its own background is
+   transparent (alpha:true) and each plane only paints opaque pixels
+   exactly over its own frame's rect, so it can't cover captions (a
+   sibling-earlier, non-overlapping layout element) regardless. */
+.about-page-3 .about-landing__gallery-hover-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Hover overlay text — hidden entirely as the base state: it only
+   exists for the hover-capable/WebGL path, where gallery-hover-blur.js
+   rect-syncs and fades it (under RM, on touch, or without WebGL the
+   module never runs and these must never appear). */
+.about-page-3 .about-landing__gallery-overlay {
+	display: none;
+}
+
+/* Pillar image waves — hidden as the base state: purely decorative
+   scroll choreography (aria-hidden), so under reduced motion (where
+   landing-scroll.js never boots and nothing could ever move them out
+   of their parked-below-stage positions) they simply don't exist. The
+   no-preference block further down holds the full treatment. */
+.about-page-3 .about-landing__wave {
+	display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* BLEND ON THIS WRAPPER, plain-white children — the nav/section-
+	   progress pattern, and load-bearing here: the wrapper needs
+	   position + z-index (a self-created stacking context, safe for its
+	   OWN blend per the founders-name precedent), so a leaf blend on the
+	   children would see only the wrapper's transparent interior and
+	   flatten white (the section-progress.css finding). z-index 1: above
+	   the JS-appended hover canvas (z auto) it must blend against.
+	   left/top/width/height are written per-tick by gallery-hover-blur.js
+	   (layout properties — never transform, which would be fine on a
+	   blend SELF but is avoided for consistency with the name-clip
+	   idiom); opacity rides the hover progress, 0 at rest. */
+	.about-page-3 .about-landing__gallery-overlay {
+		display: flex;
+		position: absolute;
+		left: 0;
+		top: 0;
+		z-index: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding-inline: 16px;
+		text-align: center;
+		opacity: 0;
+		pointer-events: none;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.about-page-3 .about-landing__gallery-overlay-text {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 400;
+		font-size: 12px;
+		line-height: 1.35;
+	}
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	/* Full-stage band — absolute (no z-index!) so the text row's layout
 	   is untouched by this subtree existing. The composition occupies
@@ -381,6 +495,23 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		margin-block: 0;
 		overflow: clip;
 		pointer-events: none;
+	}
+
+	/* HIT-TESTING RE-ENABLED on the frames only — pointer-events is
+	   per-element, so children can opt back in under a `none` parent.
+	   Load-bearing for the hover blur: the stage and gallery are
+	   pointer-events:none (correctly — they must never block page
+	   interactions), which disables hit-testing for the whole subtree,
+	   and real pointerenter NEVER fires without it (diagnosed live:
+	   render loop, plane mounting and the full mount->texture->hide
+	   chain all healthy, but elementsFromPoint at an image's centre
+	   returned an empty stack — synthetic dispatchEvent tests passed
+	   only because they bypass hit-testing). The hover canvas painted
+	   above these frames is itself pointer-events:none, so hits pass
+	   through it to the frames. Wheel/scroll events still bubble —
+	   Lenis unaffected. */
+	.about-page-3 .about-landing__gallery-frame {
+		pointer-events: auto;
 	}
 
 	.about-page-3 .about-landing__gallery-track {
@@ -414,6 +545,94 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	   order puts it ABOVE the gallery: the difference text visibly
 	   inverts against passing images. NEVER add z-index here. */
 	.about-page-3 .about-landing__row {
-		position: relative;
+		/* absolute (was relative) since the pillar-row swap: BOTH rows
+		   need independent vertical motion, scrubbed on `top` (layout
+		   property — never transform, which on a blend-leaf parent would
+		   isolate the columns' difference). Still deliberately
+		   z-index-free: absolute with z auto is positioned (paints above
+		   the gallery, the original purpose of this rule) but creates NO
+		   stacking context. With `top: auto` an absolutely-positioned
+		   flex child keeps its flex-aligned static position, so the
+		   intro row rests exactly where the old relative layout put it;
+		   landing-scroll.js re-derives explicit px tops per build for
+		   the swap scrubs. NEVER add z-index here. */
+		position: absolute;
+		inset-inline: 0;
+	}
+
+	/* Pillar row initial-hidden state — parked fully below the stage
+	   (the fixed stage spans the viewport, so top:100% = offscreen)
+	   until each row's rise scrub carries it up. CSS holds this before
+	   any JS runs — same initial-state idiom as the gallery track's
+	   translateY(105%). */
+	.about-page-3 .about-landing__row--pillar {
+		top: 100%;
+	}
+
+	/* ── Pillar image waves (no-preference treatment) ─────────────────
+	   Full-stage positioning context, same idiom as the gallery band:
+	   absolute with NO z-index (paints in source order — above the
+	   lifted-out gallery, below the blend text rows, which is what lets
+	   the difference text invert against passing wave imagery), and NO
+	   will-change (the track's Chromium blend-backdrop finding applies
+	   to any scrub-animated sibling of the rows). pointer-events: none —
+	   nothing interactive inside. No overflow clip needed: the items
+	   park below the fixed full-viewport stage, i.e. off-screen by
+	   definition, and travel straight up out the top the same way. */
+	.about-page-3 .about-landing__wave {
+		display: block;
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	/* Wave items — parked below the stage bottom (top:100%), pushed
+	   further down per item by the composition's inline margin-top, and
+	   placed across the stage by its inline left %. The whole wave moves
+	   as one sheet (container y scrub) — arrival order and rhythm come
+	   entirely from these composed offsets. */
+	.about-page-3 .about-landing__wave-item {
+		position: absolute;
+		top: 100%;
+		margin: 0;
+	}
+
+	.about-page-3 .about-landing__wave-item img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		/* Site-wide img reset guard — same finding as the gallery frame
+		   imgs (harmless at width:100%, load-bearing consistency). */
+		max-width: none;
+		object-fit: cover;
+	}
+
+	/* Wave size vocabulary — square/rectangle hand-set scale steps (the
+	   brief's "different size & ratio"), distinct from the gallery's
+	   portrait-dominant classes. Width/height live on the figure; the
+	   img cover-fills. */
+	.about-page-3 .about-landing__wave-item--sq-s {
+		width: 280px;
+		height: 280px;
+	}
+	.about-page-3 .about-landing__wave-item--sq-m {
+		width: 360px;
+		height: 360px;
+	}
+	.about-page-3 .about-landing__wave-item--sq-l {
+		width: 440px;
+		height: 440px;
+	}
+	.about-page-3 .about-landing__wave-item--rect-p {
+		width: 320px;
+		height: 430px;
+	}
+	.about-page-3 .about-landing__wave-item--rect-l {
+		width: 500px;
+		height: 330px;
+	}
+	.about-page-3 .about-landing__wave-item--rect-pl {
+		width: 380px;
+		height: 510px;
 	}
 }
