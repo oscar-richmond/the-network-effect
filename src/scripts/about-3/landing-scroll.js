@@ -71,6 +71,14 @@ const GALLERY_PARALLAX_PCT = 13;
  * on the rows, which are blend-leaf parents). */
 const GALLERY_EXIT_TRIGGER_RATIO = 0.25;
 const GALLERY_LIFT_PX = 900;
+/** Scroll px of the intro row's exit fade, ENDING exactly at the
+ * derived touch point (the lift-window progress where the rising
+ * pillar row's top edge reaches the intro row's bottom edge). The
+ * intro stays at its centred rest the whole time — it yields by
+ * fading, not moving — and because the fade completes before the
+ * pillar can reach it, the two texts can never visibly overlap at any
+ * scroll position, forward or reverse. */
+const SWAP_FADE_PX = 140;
 /** Section-progress indicator hide — house exit vocabulary (opacity +
  * blur together), reversed symmetrically on scroll-up. Window is
  * founders' own EXIT_BG (the veil-melt / background-fade-out beat),
@@ -484,33 +492,46 @@ export function initLandingScroll() {
           },
         );
 
-        // Text-row swap, same window: intro row exits up; pillar row
-        // rises from below the viewport and docks at the centred slot.
-        // Motion is scrubbed on layout `top` — the rows are blend-leaf
-        // PARENTS, and a transform here would isolate the columns'
-        // difference blend (the name-clip idiom, applied to rows).
-        // Inline tops are reset before measuring so resize rebuilds
-        // re-derive from the true resting layout (intro: flex-static
-        // centre; pillar: its CSS top:100% initial state).
-        introRow.style.top = '';
+        // Text-row swap: the intro row STAYS at its centred rest — it
+        // never moves. The pillar row rises from below the viewport
+        // (scrubbed on layout `top`; the rows are blend-leaf PARENTS,
+        // and a transform here would isolate the columns' difference
+        // blend — the name-clip idiom, applied to rows) and docks at
+        // the centred slot. The replacement is a FADE on the intro
+        // columns' SELF opacity (blend-safe, founders-exit precedent —
+        // never the row wrapper), whose window is DERIVED to end
+        // exactly at the touch point: the lift progress where the
+        // pillar's top edge reaches the intro's bottom edge. Before
+        // that point the pillar is entirely below the intro; at it the
+        // intro is already at opacity 0 — no scroll position exists
+        // where the two texts visibly overlap, in either direction.
+        // Inline top reset before measuring so resize rebuilds
+        // re-derive from the pillar's true CSS top:100% initial state.
         pillarRow.style.top = '';
         const introRect = introRow.getBoundingClientRect();
         const pillarH = pillarRow.getBoundingClientRect().height;
+        const dockTop = (stageH - pillarH) / 2;
+        const touchProgress = (stageH - introRect.bottom) / (stageH - dockTop);
+        const fadeEndPx = liftStartPx + touchProgress * GALLERY_LIFT_PX;
         gsap.fromTo(
-          introRow,
-          { top: introRect.top },
+          introRow.querySelectorAll('[data-about-landing-col]'),
+          { opacity: 1 },
           {
-            top: -(introRect.height + 40),
+            opacity: 0,
             ease: 'none',
             immediateRender: false,
-            scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-row-intro-out'),
+            scrollTrigger: galleryScrub(
+              fadeEndPx - SWAP_FADE_PX,
+              fadeEndPx,
+              'about-landing-row-intro-fade',
+            ),
           },
         );
         gsap.fromTo(
           pillarRow,
           { top: stageH },
           {
-            top: (stageH - pillarH) / 2,
+            top: dockTop,
             ease: 'none',
             immediateRender: false,
             scrollTrigger: galleryScrub(liftStartPx, liftEndPx, 'about-landing-row-pillar-in'),

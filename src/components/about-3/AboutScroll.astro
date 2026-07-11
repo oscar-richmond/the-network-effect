@@ -200,11 +200,14 @@ const galleryItems = [
     </div>
 
     <!-- Pillar row ("01 — IMMERSE") — scrolls up from below the viewport
-         to REPLACE the intro row during the gallery's upward lift-out
-         (landing-scroll.js: both rows' motion is scrubbed on `top`, a
+         to REPLACE the intro row during the gallery's upward lift-out.
+         The intro row STAYS at its centred rest and yields by a derived
+         fade (landing-scroll.js) that completes exactly as this row's
+         top edge reaches it — no scroll position where both texts
+         visibly overlap. This row's motion is scrubbed on `top`, a
          layout property — NEVER transform, which on these blend-leaf
          parents would isolate the columns' difference blend; the same
-         name-clip idiom as everywhere else on this page). Columns
+         name-clip idiom as everywhere else on this page. Columns
          mirror the intro row's per-position styles exactly, but
          deliberately do NOT carry data-about-landing-col: that attr is
          the wrap/reveal system's roster (and the flash-guard's
