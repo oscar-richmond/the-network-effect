@@ -154,8 +154,11 @@
 	position: absolute;
 	inset: -50%;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-	background-size: 220px 220px;
-	opacity: 0.21; /* was 0.07 at first pass; x3 per Oscar's review */
+	/* Tile renders above its 220px intrinsic size = bigger specks
+	   ("slightly increase the size", Oscar; stitchTiles keeps the scaled
+	   tile seamless). */
+	background-size: 280px 280px;
+	opacity: 0.63; /* 0.07 -> x3 -> 0.21 -> x3 again per Oscar's review */
 	animation: founders-grain-jump 0.9s steps(1, end) infinite;
 }
 
