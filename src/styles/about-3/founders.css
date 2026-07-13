@@ -155,7 +155,7 @@
 	inset: -50%;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 	background-size: 220px 220px;
-	opacity: 0.07;
+	opacity: 0.21; /* was 0.07 at first pass; x3 per Oscar's review */
 	animation: founders-grain-jump 0.9s steps(1, end) infinite;
 }
 
@@ -240,7 +240,11 @@
 	height: fit-content;
 	width: clamp(300px, 24.25%, 440px);
 	z-index: 20;
-	color: #f9f9f9;
+	/* Dark since the paper rearchitecture (Oscar's call at its review):
+	   the light-over-dark-video palette inverted with the background —
+	   bio inherits this; tags/index follow below. The large name needs
+	   no change: its difference blend self-inverts over the paper. */
+	color: #161616;
 }
 
 .about-page-3 .founders__bio p {
@@ -263,7 +267,7 @@
 	font-size: 14px;
 	line-height: 18px;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #161616;
 }
 
 .about-page-3 .founders__tags {
@@ -278,7 +282,7 @@
 	   line-height, stacked with no margins/gap. */
 	line-height: 24px;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #161616;
 }
 
 .about-page-3 .founders__tag {
@@ -383,7 +387,9 @@
 .about-page-3 .founders__thumb-border {
 	position: absolute;
 	inset: 0;
-	border: 0.5px solid #f9f9f9;
+	/* Dark with the rest of the index (paper palette) — the old #f9f9f9
+	   hairline was invisible white-on-paper. */
+	border: 0.5px solid #161616;
 	pointer-events: none;
 }
 
@@ -408,13 +414,13 @@
 	font-size: 6px;
 	line-height: 1;
 	text-transform: uppercase;
-	color: #f9f9f9;
+	color: #161616; /* index block follows the meta's dark-over-paper palette */
 }
 
 .about-page-3 .founders__marker-tick {
 	width: 16px;
 	height: 0.5px;
-	background: #f9f9f9;
+	background: #161616;
 }
 
 /* ── Exhale-exit veil (#F9F9F9 melt, exit beat 2) ─────────────────────────── */
