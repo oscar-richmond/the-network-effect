@@ -45,30 +45,35 @@ const LINE_REVEAL_EASE = CustomEase.create('detailLineReveal', 'M0,0 C0.42,0 0.2
  * 1x. */
 const DETAIL_TIMESCALE = 2;
 
-/** FLIP flight — LinesToLayout's own timing (power4.inOut, ~1.15s). */
-const FLIP_DURATION = 1.15;
+/** FLIP flight — authored at 2.3 so the flight runs 50% SLOWER than the
+ * rest of the sequence (per direction: the image was moving too fast
+ * once the global tempo doubled): under DETAIL_TIMESCALE 2 this is an
+ * effective ~1.15s — LinesToLayout's original weight — while every
+ * other element keeps the doubled tempo. */
+const FLIP_DURATION = 2.3;
 const FLIP_EASE = 'power4.inOut';
 /** Choreography beats (timeline-seconds from 'start') — SEQUENCED, one
  * element family at a time, per explicit direction ("timed and
- * sequenced … things animate in one by one"), replacing the original
- * Codrops-style heavy overlap. Each beat begins as the previous
- * resolves, with just enough overlap to keep momentum. Retune here. */
+ * sequenced … things animate in one by one"). OPEN: everything after
+ * the flight waits for it to DOCK (flight + FLIP_DURATION = 3.15)
+ * before entering. CLOSE: the flight leaves only once the text out
+ * (0.3 + 0.9 + line staggers ≈ 1.4) has resolved. Retune here. */
 const OPEN_BEATS = {
   textOut: 0, // landing text rolls away (0.9s)
   fade: 0.45, // landing imagery out / detail bg in (0.5s)
-  flight: 0.85, // clone flight (1.15s → docks at 2.0)
-  content: 1.85, // title + body roll in as the image settles
-  carousel: 2.5, // right column fades up
-  label: 2.6, // overlay label rolls in (line-reveal vocabulary)
-  return: 2.9, // Return CTA arrives last
+  flight: 0.85, // clone flight (2.3 → docks at 3.15)
+  content: 3.15, // title + body roll in once the image has stopped
+  carousel: 3.8, // right column fades up
+  label: 3.9, // overlay label rolls in (line-reveal vocabulary)
+  return: 4.2, // Return CTA arrives last
 };
 const CLOSE_BEATS = {
   return: 0, // Return CTA leaves first
   carousel: 0.15, // right column + label out
-  textOut: 0.3, // title + body roll away
-  flight: 1.05, // clone flies home (docks at 2.2)
-  fade: 1.75, // bg out / landing imagery back, completing with the flight
-  landingIn: 2.1, // landing text rolls back in
+  textOut: 0.3, // title + body roll away (resolved ~1.4)
+  flight: 1.4, // clone flies home once everything else has gone (docks 3.7)
+  fade: 3.2, // bg out / landing imagery back, completing with the flight
+  landingIn: 3.6, // landing text rolls back in as the image docks
 };
 /** Line roll timings — entry mirrors the landing reveal (1.2s / 0.12
  * stagger); exits are snappier (Codrops' 0.8) with a tight stagger. */
