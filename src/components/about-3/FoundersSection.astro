@@ -108,17 +108,11 @@ import '../../styles/about-3/founders.css';
       </article>
     ))}
 
-    <!-- Single treatment layer above BOTH media groups, below the
+    <!-- Single live treatment layer above BOTH media groups, below the
          portrait/meta/name/index — see the component doc comment above.
          Persistent once revealed; never animates again after its entrance
-         fade-in (founders-scroll.js). Since the paper rearchitecture
-         (Oscar, 2026-07-14) it carries no darken — it hosts the moving
-         grain, which thereby occupies exactly the layer the old treatment
-         held and rides the same entrance reveal (mechanism: founders.css's
-         .founders__grain comment). -->
-    <div class="founders__overlay" data-founders-overlay aria-hidden="true">
-      <div class="founders__grain" aria-hidden="true"></div>
-    </div>
+         fade-in (founders-scroll.js). -->
+    <div class="founders__overlay" data-founders-overlay aria-hidden="true"></div>
 
     <!-- Slide index — fixed order (Robbo top, Ashley bottom). Per Figma,
          the CURRENT slide's thumbnail carries a 0.5px #f9f9f9 border (the

@@ -24,16 +24,17 @@
 	z-index: 150;
 	width: 100%;
 	pointer-events: none;
-	/* ZERO since the paper-background rearchitecture (Oscar, 2026-07-14):
-	   the section background is now the flat, UNTREATED paper texture —
-	   no blur, no darken (the overlay below keeps only the grain layer).
-	   The variable and the filter hook on .founders__media are kept for
-	   cheap reversal; the original 125px value and the load-bearing
-	   Chromium finding it encoded (backdrop-filter over a <video> is a
-	   no-op in the hardware-overlay fast path — blur must live as
-	   filter: blur() ON the media element) survive in git history and in
-	   partners.css's --partners-blur-px comment, which cites it. */
-	--founders-blur-px: 0px;
+	/* Named constant for the live treatment's blur radius (measured against
+	   the Figma spec — background blur 250 ≈ 125px CSS blur at this frame's
+	   1728px reference — and confirmed against the previously-committed
+	   pre-treated JPG look). Lives on .founders__media, NOT as a
+	   backdrop-filter on the overlay above it: backdrop-filter over a
+	   <video> element has no visible effect in Chromium when the video is
+	   composited via its hardware-overlay fast path (confirmed live — the
+	   same backdrop-filter overlay blurred the plain <img> correctly but
+	   left the <video> perfectly sharp). filter: blur() applied directly to
+	   the media element forces normal compositing and works for both. */
+	--founders-blur-px: 125px;
 }
 
 .about-page-3 .founders__stage {
@@ -94,12 +95,14 @@
 
 .about-page-3 .founders__media {
 	position: absolute;
-	/* Plain full-bleed box: the old -8%/116% blur overscan (edge-halo
-	   remedy) went with the blur itself — at --founders-blur-px: 0 there
-	   is no radius to feed, and overscanning would only crop the paper. */
-	inset: 0;
-	width: 100%;
-	height: 100%;
+	/* Overscan beyond the stage's inset:0 bounds so the heavy blur radius
+	   samples real (scaled-up) image/video content at the edges instead of
+	   fading toward transparent against .founders__stage's overflow:
+	   hidden clip — a plain inset:0 box would show a darker halo band
+	   around all four edges once blurred this far. */
+	inset: -8%;
+	width: 116%;
+	height: 116%;
 	object-fit: cover;
 	object-position: center;
 	filter: blur(var(--founders-blur-px));
@@ -120,89 +123,20 @@
 	opacity: 1;
 }
 
-/* ── Treatment overlay — now the GRAIN carrier ───────────────────────────── */
+/* ── Live treatment overlay (rgba(22,22,22,0.2) darken only) ─────────────── */
 
 /* ONE element for the whole stage — sits above BOTH media groups, below
    the portrait canvas/meta/name/index. Persistent: revealed by the same
    entrance tween as slide 1's media group (founders-scroll.js) and never
    animated again — the slide 1↔2 transition only crossfades the media
-   underneath it. Since the paper rearchitecture (Oscar, 2026-07-14) it
-   carries NO darken (the paper shows untreated); it survives as the host
-   of the animated grain child below, keeping the grain on exactly the
-   layer the old treatment occupied and riding the existing entrance
-   reveal with zero founders-scroll.js changes. */
+   underneath it. Darken only — no backdrop-filter here; the blur lives on
+   .founders__media itself (see --founders-blur-px on .founders above). */
 .about-page-3 .founders__overlay {
 	position: absolute;
 	inset: 0;
 	z-index: 5;
-	background: none;
+	background: rgba(22, 22, 22, 0.2);
 	pointer-events: none;
-	overflow: hidden; /* clips the oversized grain child's jumps */
-}
-
-/* Moving grain — a tiled SVG feTurbulence speckle (black, alpha-mapped,
-   self-contained data URI — no asset) on an oversized child, jumped to a
-   new offset ~11x per second by a stepped transform loop: film-grain
-   flicker, compositor-only (transform on a leaf with no blend
-   descendants — blend-safe by the house rules; deliberately NO
-   will-change, the Chromium blend-backdrop finding). Subtlety = the
-   opacity here + the turbulence's sparseness — both feel-tunables for
-   Oscar's pass. Under reduced motion the speckle stays as a static
-   texture; only the jumping stops (motion is the RM concern, not the
-   texture). */
-.about-page-3 .founders__grain {
-	position: absolute;
-	inset: -50%;
-	/* WHITE specks (RGB offset 1 in the feColorMatrix) since the flat
-	   #161616 background revision — the paper era's black specks are
-	   invisible on near-black. */
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.9 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-	/* Tile renders above its 220px intrinsic size = bigger specks
-	   ("slightly increase the size", Oscar; stitchTiles keeps the scaled
-	   tile seamless). */
-	background-size: 280px 280px;
-	opacity: 0.63; /* 0.07 -> x3 -> 0.21 -> x3 again per Oscar's review */
-	animation: founders-grain-jump 0.9s steps(1, end) infinite;
-}
-
-@keyframes founders-grain-jump {
-	0%,
-	100% {
-		transform: translate(0, 0);
-	}
-	10% {
-		transform: translate(-4%, -8%);
-	}
-	20% {
-		transform: translate(-13%, 4%);
-	}
-	30% {
-		transform: translate(6%, -14%);
-	}
-	40% {
-		transform: translate(-5%, 13%);
-	}
-	50% {
-		transform: translate(-12%, 7%);
-	}
-	60% {
-		transform: translate(12%, 2%);
-	}
-	70% {
-		transform: translate(2%, 11%);
-	}
-	80% {
-		transform: translate(4%, 16%);
-	}
-	90% {
-		transform: translate(-9%, 9%);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.about-page-3 .founders__grain {
-		animation: none;
-	}
 }
 
 /* ── Sharp portrait ──────────────────────────────────────────────────────── */
@@ -246,8 +180,6 @@
 	height: fit-content;
 	width: clamp(300px, 24.25%, 440px);
 	z-index: 20;
-	/* Light again with the flat #161616 background (Oscar's second
-	   revision — the brief dark-over-paper palette lives in history). */
 	color: #f9f9f9;
 }
 
