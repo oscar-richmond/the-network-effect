@@ -44,7 +44,8 @@
 
 .about-page-3 .about-partners__media-group,
 .about-page-3 .about-partners__overlay,
-.about-page-3 .about-partners__divider {
+.about-page-3 .about-partners__divider,
+.about-page-3 .about-partners__image-gl {
 	display: none;
 }
 
@@ -290,10 +291,10 @@
 		   vertical centre, shared with the name anchor and description. */
 		top: 50%;
 		transform: translateY(-50%);
-		/* Re-pass tune 2: 1/3 of the Figma-measured 8.1vw (140/1728) —
-		   the literal slot size read oversized live. Centre line and the
-		   white-out filter treatment unchanged. */
-		width: 2.7vw;
+		/* Stage-2 amendment 2: the 1/3 reduction is REVERTED — back to
+		   the Figma-measured 8.1vw (140/1728) after Oscar saw both live.
+		   Centre line and white-out filter treatment unchanged. */
+		width: 8.1vw;
 		aspect-ratio: 140 / 118;
 	}
 
@@ -336,6 +337,33 @@
 		height: 100%;
 		max-width: none;
 		object-fit: cover;
+	}
+
+	/* ── WebGL image slot (amendment 5) ───────────────────────────────
+	   Same geometry as .about-partners__sat-image; partners-image-
+	   dissolve.js's canvas fills it. When the GL module boots, the DOM
+	   per-brand image slots hide (visibility, not display — their <img>
+	   elements remain the loading/fallback source of truth) and the
+	   canvas owns the slot; without WebGL the class never lands and the
+	   CSS blur-dissolve path below stands untouched. */
+	.about-page-3 .about-partners__image-gl {
+		display: block;
+		position: absolute;
+		right: 40px;
+		bottom: 60px;
+		width: 14.2vw;
+		aspect-ratio: 245 / 160;
+		overflow: clip;
+	}
+
+	.about-page-3 .about-partners__image-gl canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.about-page-3 .about-partners__stage.has-gl-image .about-partners__sat-image {
+		visibility: hidden;
 	}
 
 }

@@ -2,11 +2,21 @@
 /**
  * Left-side section-progress indicator — /about-3 only.
  *
- * Rows 01/02 map to real sections (hero runway, founders); 03/04/05 are
- * placeholders for sections that don't exist yet — they render and take
- * part in the distance-opacity/window logic but never activate (no
- * ScrollTrigger anchor). When those sections are built, add their anchor
- * to REAL_ANCHORS in section-progress.js and the row comes alive.
+ * Rows 01/02/04 map to real sections (hero runway, founders, partners —
+ * the last per the AUTHORIZED exception in section-progress.js); 03/05
+ * are placeholders — they render and take part in the
+ * distance-opacity/window logic but never activate (no ScrollTrigger
+ * anchor). When those sections are built, add their anchor to
+ * REAL_ANCHORS in section-progress.js and the row comes alive.
+ *
+ * REMAINING FIGMA DISCREPANCY (logged, deliberately NOT resolved here —
+ * out of the authorized scope): the Figma nav (node 8:399 recon) shows
+ * SIX rows and numbers the partners row "03 — partners"; this component
+ * has FIVE rows with partners at "04 — our partners" (Oscar's requested
+ * label), row 03 = "three pillars" (real section, still un-anchored: the
+ * founders row keeps focus through it), and row 05 a placeholder.
+ * Reconciling count/numbering/labels wholesale needs its own
+ * authorization + label copy from Oscar.
  *
  * Labels are cased by `text-transform: lowercase` in CSS, not by how the
  * strings here happen to be written.

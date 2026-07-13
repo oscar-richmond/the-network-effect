@@ -33,14 +33,36 @@ const DUR = 0.4;
 const EASE = 'power2.out';
 
 /**
- * Real section anchors, by row index. Rows without an entry here (03/04/05
+ * Real section anchors, by row index. Rows without an entry here (03/05
  * placeholders) simply never receive focus — no trigger is faked for them.
  * `prevIndex` is who becomes active when this section is left backwards
- * (scrolling up out of it).
+ * (scrolling up out of it). Optional `start`/`end` override the default
+ * viewport-centre window when a section's composition needs a different
+ * activation point.
+ *
+ * Row 3 ("04 — our partners") — AUTHORIZED SectionProgress exception
+ * (Oscar, Stage-2 amendments): activates at the partners section's own
+ * top-vs-viewport-bottom crossing (the landing->partners handoff
+ * boundary), NOT the default 'top center' — the indicator re-shows over
+ * the dark partners stage during the runway's head rest beat
+ * (partners-scroll.js's progress-show scrub, starting AT this same
+ * boundary), so by the time it has any opacity the row swap to 04 has
+ * already happened: no stale "02 — the founders" label is ever legible
+ * over the dark section, forward or reverse. prevIndex 1 matches the
+ * standing behaviour that founders' row keeps focus through the landing
+ * (row 2 "three pillars" has no anchor — see the remaining-discrepancy
+ * note in SectionProgress.astro).
  */
 const REAL_ANCHORS = [
   { index: 0, prevIndex: 0, selector: 'body.about-page-3 [data-about-hero-spacer]' },
   { index: 1, prevIndex: 0, selector: 'body.about-page-3 [data-founders-section]' },
+  {
+    index: 3,
+    prevIndex: 1,
+    selector: 'body.about-page-3 [data-about-partners]',
+    start: 'top bottom',
+    end: 'bottom top',
+  },
 ];
 
 /**
@@ -118,15 +140,15 @@ export function initSectionProgress() {
   /** @type {{ index: number, st: ScrollTrigger }[]} */
   const triggers = [];
 
-  REAL_ANCHORS.forEach(({ index, prevIndex, selector }) => {
+  REAL_ANCHORS.forEach(({ index, prevIndex, selector, start, end }) => {
     const el = document.querySelector(selector);
     if (!(el instanceof HTMLElement)) return;
 
     const st = ScrollTrigger.create({
       id: `section-progress-${index}`,
       trigger: el,
-      start: 'top center',
-      end: 'bottom center',
+      start: start ?? 'top center',
+      end: end ?? 'bottom center',
       onEnter: () => setActive(index),
       onEnterBack: () => setActive(index),
       // Leaving backwards (scrolling up out of this section) hands focus

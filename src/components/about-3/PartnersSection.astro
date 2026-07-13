@@ -136,6 +136,15 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
       }
     </div>
 
+    <!-- WebGL mount for the satellite image slot (Stage-2 amendment 5):
+         partners-image-dissolve.js draws the per-brand photo here with
+         the founders noise-dissolve. Same geometry as the per-brand
+         .about-partners__sat-image slots, which stay in the DOM as the
+         no-WebGL fallback (CSS blur-dissolve) — they're hidden only via
+         the has-gl-image class partners-scroll.js adds on successful GL
+         boot. -->
+    <div class="about-partners__image-gl" data-about-partners-image-gl aria-hidden="true"></div>
+
     <!-- The #F9F9F9 -> dark entry transition has NO element here any
          more (Stage-1 amendment, fix 1): it's a crossfade of this whole
          STAGE over the still-running landing beneath it, scrubbed by
