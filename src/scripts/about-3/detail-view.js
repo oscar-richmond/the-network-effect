@@ -36,6 +36,15 @@ gsap.registerPlugin(CustomEase);
  * character, also used in reverse for every roll-out here. */
 const LINE_REVEAL_EASE = CustomEase.create('detailLineReveal', 'M0,0 C0.42,0 0.24,1 1,1');
 
+/** Open/close tempo — applied as gsap timeScale to both sequence
+ * timelines, so every transition, duration ratio and beat order is
+ * preserved EXACTLY, just compressed. 2 = twice as fast (50% shorter),
+ * per direction. The one piece outside the timelines — the close's
+ * nested landing-text roll-in, spawned in a callback — divides by the
+ * same constant. All beat/duration constants below stay authored at
+ * 1x. */
+const DETAIL_TIMESCALE = 2;
+
 /** FLIP flight — LinesToLayout's own timing (power4.inOut, ~1.15s). */
 const FLIP_DURATION = 1.15;
 const FLIP_EASE = 'power4.inOut';
@@ -567,6 +576,7 @@ export function initDetailView() {
         state = 'open';
       },
     });
+    tl.timeScale(DETAIL_TIMESCALE);
     tl.addLabel('start', 0)
       // Landing text out — the reverse of the WE ARE A.. entry.
       // overwrite auto: the landing reveal timeline may still be actively
@@ -723,6 +733,7 @@ export function initDetailView() {
         activeSourceImg = null;
       },
     });
+    tl.timeScale(DETAIL_TIMESCALE);
     tl.addLabel('start', 0);
     // Return CTA leaves first (the mirror of it arriving last).
     if (part.returnBtn) {
@@ -790,13 +801,15 @@ export function initDetailView() {
         // roll-in runs as its own tween (no reversal need).
         const backInners = collectVisibleLandingInners();
         gsap.set(backInners, { yPercent: 110, y: 0 });
+        // Standalone tween (created in a callback — outside the
+        // timeline's timeScale), so the tempo divides in directly.
         gsap.to(backInners, {
           yPercent: 0,
           y: 0,
           overwrite: 'auto',
-          duration: LINE_IN_DURATION,
+          duration: LINE_IN_DURATION / DETAIL_TIMESCALE,
           ease: LINE_REVEAL_EASE,
-          stagger: LINE_OUT_STAGGER,
+          stagger: LINE_OUT_STAGGER / DETAIL_TIMESCALE,
         });
       }, `start+=${CLOSE_BEATS.landingIn}`);
   };
