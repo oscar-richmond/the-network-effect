@@ -517,6 +517,15 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		cursor: pointer;
 	}
 
+	/* Detail-view freeze (landing-scroll.js adds/removes the class):
+	   frames must NOT stay hit-testable beneath the open detail view —
+	   the detail stage is pointer-events:none outside its own opt-ins,
+	   so hovers would otherwise reach these frames and churn hover
+	   state that snaps visible on unfreeze. */
+	.about-page-3 .about-landing__stage.is-frozen .about-landing__gallery-frame {
+		pointer-events: none;
+	}
+
 	.about-page-3 .about-landing__gallery-track {
 		height: 100%;
 		align-items: center;

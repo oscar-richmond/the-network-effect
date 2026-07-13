@@ -39,12 +39,28 @@ const LINE_REVEAL_EASE = CustomEase.create('detailLineReveal', 'M0,0 C0.42,0 0.2
 /** FLIP flight — LinesToLayout's own timing (power4.inOut, ~1.15s). */
 const FLIP_DURATION = 1.15;
 const FLIP_EASE = 'power4.inOut';
-/** Delay before the flight starts, letting the text-out lead (Codrops
- * starts its Flip immediately but overlaps everything; a small lead
- * reads cleaner against our longer line roll). */
-const FLIP_DELAY = 0.25;
-/** Entry-content beat — Codrops' 'start+=0.7'. */
-const CONTENT_DELAY = 0.7;
+/** Choreography beats (timeline-seconds from 'start') — SEQUENCED, one
+ * element family at a time, per explicit direction ("timed and
+ * sequenced … things animate in one by one"), replacing the original
+ * Codrops-style heavy overlap. Each beat begins as the previous
+ * resolves, with just enough overlap to keep momentum. Retune here. */
+const OPEN_BEATS = {
+  textOut: 0, // landing text rolls away (0.9s)
+  fade: 0.45, // landing imagery out / detail bg in (0.5s)
+  flight: 0.85, // clone flight (1.15s → docks at 2.0)
+  content: 1.85, // title + body roll in as the image settles
+  carousel: 2.5, // right column fades up
+  label: 2.6, // overlay label rolls in (line-reveal vocabulary)
+  return: 2.9, // Return CTA arrives last
+};
+const CLOSE_BEATS = {
+  return: 0, // Return CTA leaves first
+  carousel: 0.15, // right column + label out
+  textOut: 0.3, // title + body roll away
+  flight: 1.05, // clone flies home (docks at 2.2)
+  fade: 1.75, // bg out / landing imagery back, completing with the flight
+  landingIn: 2.1, // landing text rolls back in
+};
 /** Line roll timings — entry mirrors the landing reveal (1.2s / 0.12
  * stagger); exits are snappier (Codrops' 0.8) with a tight stagger. */
 const LINE_IN_DURATION = 1.2;
@@ -60,12 +76,14 @@ const RETURN_HIDDEN_XPERCENT = 20;
 const LABEL_SWAP_BLUR_PX = 4;
 const LABEL_SWAP_DURATION = 0.25;
 /** Carousel motion — lerp smoothing ≈ the home carousel's scrub 0.45
- * feel; snap mirrors its snap tween; wheel wrap-lock mirrors its
- * 320ms edge guard. */
+ * feel; snap mirrors its snap tween. The wrap lock is LONGER than
+ * home's 320ms: the detail carousel is raw-wheel-driven (no Lenis
+ * smoothing in front of it), so a trackpad's momentum tail keeps
+ * delivering deltas well past the wrap moment. */
 const CAROUSEL_LERP = 0.14;
 const SNAP_DURATION = 0.45;
 const SNAP_DELAY_MS = 140;
-const WRAP_LOCK_MS = 320;
+const WRAP_LOCK_MS = 600;
 
 /** Home-carousel focus falloff (home-carousel.js, verbatim maths). */
 function focusFromDistance(distance, range) {
@@ -106,15 +124,17 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
   let activeIndex = -1;
   let wrapLock = false;
   let snapTimer = 0;
-  let rafId = 0;
   let disposed = false;
   const snapState = { value: 0 };
 
   const setLabel = (index, immediate) => {
     const label = slides[index]?.dataset.detailLabel ?? '';
     if (immediate) {
+      // Text only — the wrapper's visibility (and the inner's roll)
+      // belong to the OPEN timeline's label beat, so the label enters
+      // with the same text vocabulary as everything else instead of
+      // popping in at carousel creation (the reported flash).
       labelTextEl.textContent = label;
-      gsap.set(labelWrapper, { opacity: 1, filter: 'blur(0px)' });
       return;
     }
     gsap
@@ -190,10 +210,17 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
     if (disposed) return;
     gsap.killTweensOf(snapState);
 
-    // Edge wrap — home's tryWrapAtEdge semantics: a further push past a
-    // settled first/last slide jumps to the other end.
+    // Edge wrap — home's tryWrapAtEdge semantics, PROPERLY gated on a
+    // SETTLED edge: the rendered position (current) must already sit at
+    // the boundary AND a fresh push must arrive. The original gate
+    // fired the moment the accumulated wheel target merely REACHED the
+    // end mid-momentum — scrolling down 3–4 images snapped the track
+    // back to the top (the reported glitch). Momentum tails after a
+    // wrap are swallowed by the lock window.
     if (!wrapLock) {
-      if (target >= span - 1 && event.deltaY > 0) {
+      const settledAtEnd = Math.abs(current - span) < 2 && target >= span - 1;
+      const settledAtStart = Math.abs(current) < 2 && target <= 1;
+      if (settledAtEnd && event.deltaY > 0) {
         wrapLock = true;
         target = 0;
         current = 0;
@@ -202,7 +229,7 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
         }, WRAP_LOCK_MS);
         return;
       }
-      if (target <= 1 && event.deltaY < 0) {
+      if (settledAtStart && event.deltaY < 0) {
         wrapLock = true;
         target = span;
         current = span;
@@ -218,9 +245,12 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
     snapTimer = window.setTimeout(snapToNearest, SNAP_DELAY_MS);
   };
 
+  // Runs on gsap.ticker (not a raw rAF): the same clock every tween in
+  // this module already uses, with GSAP's own sleep fallback when rAF
+  // stalls — and the snap/label tweens can never advance out of step
+  // with the track render.
   const tick = () => {
     if (disposed) return;
-    rafId = requestAnimationFrame(tick);
     current += (target - current) * CAROUSEL_LERP;
     gsap.set(track, { y: offsets[0] - current });
     updateFocus();
@@ -244,7 +274,7 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
   gsap.set(track, { y: offsets[0] });
   updateFocus();
   syncActive();
-  rafId = requestAnimationFrame(tick);
+  gsap.ticker.add(tick);
 
   return {
     resize() {
@@ -257,13 +287,17 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
     },
     destroy() {
       disposed = true;
-      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(tick);
       window.clearTimeout(snapTimer);
       viewport.removeEventListener('wheel', onWheel);
       gsap.killTweensOf(snapState);
+      gsap.killTweensOf(labelWrapper);
       curve?.destroy();
       gsap.set(track, { y: offsets[0] ?? 0 });
-      gsap.set(labelWrapper, { opacity: 0 });
+      // Park the label for the next open: wrapper invisible, inner
+      // rolled back to the hidden side (y-bake guard as everywhere).
+      gsap.set(labelWrapper, { opacity: 0, filter: 'blur(0px)' });
+      gsap.set(labelTextEl, { yPercent: 110, y: 0 });
     },
   };
 }
@@ -402,6 +436,12 @@ export function initDetailView() {
 
   /** @type {'idle' | 'opening' | 'open' | 'closing'} */
   let state = 'idle';
+  /** Scroll position captured at open, hard-restored at close — the
+   * "back to where they were" contract should hold by construction
+   * (scroll is locked throughout), but this belt makes it hold even if
+   * anything (Lenis internals, browser restoration quirks) nudges the
+   * native position while the lock is on. */
+  let savedScrollY = 0;
   let activeIndex = -1;
   /** @type {HTMLElement | null} */
   let activeFrame = null;
@@ -460,6 +500,7 @@ export function initDetailView() {
     if (!(img instanceof HTMLImageElement)) return;
 
     state = 'opening';
+    savedScrollY = window.scrollY;
     activeIndex = entryIndexForFrame(frame);
     activeFrame = frame;
     activeSourceImg = img;
@@ -487,6 +528,15 @@ export function initDetailView() {
     setRect(clone, sourceRect);
     cloneLayer.appendChild(clone);
     img.style.visibility = 'hidden';
+
+    // Preset + pre-decode the in-layout left img NOW (it stays hidden):
+    // by the time the flight docks and swaps clone → img, the pixels
+    // are already decoded — a same-tick swap onto an undecoded img
+    // paints a blank frame (part of the reported open/close flashing).
+    if (part.leftImg instanceof HTMLImageElement) {
+      part.leftImg.src = clone.src;
+      part.leftImg.decode?.().catch(() => {});
+    }
 
     const outInners = collectVisibleLandingInners();
 
@@ -530,10 +580,15 @@ export function initDetailView() {
         },
         'start',
       )
-      // Landing imagery out (approved: fade), detail bg in over it.
-      .to(landingImagery, { opacity: 0, duration: FADE_DURATION, ease: 'none' }, 'start')
-      .to(bg, { opacity: 1, duration: FADE_DURATION, ease: 'none' }, `start+=0.15`)
-      // The flight.
+      // Landing imagery out (approved: fade), detail bg in over it —
+      // beginning as the text roll resolves, not on top of it.
+      .to(
+        landingImagery,
+        { opacity: 0, duration: FADE_DURATION, ease: 'none' },
+        `start+=${OPEN_BEATS.fade}`,
+      )
+      .to(bg, { opacity: 1, duration: FADE_DURATION, ease: 'none' }, `start+=${OPEN_BEATS.fade}`)
+      // The flight — once the old scene has yielded.
       .to(
         clone,
         {
@@ -543,17 +598,16 @@ export function initDetailView() {
           height: targetRect.height,
           duration: FLIP_DURATION,
         },
-        `start+=${FLIP_DELAY}`,
+        `start+=${OPEN_BEATS.flight}`,
       )
       .add(() => {
         if (part.leftImg instanceof HTMLImageElement) {
-          part.leftImg.src = clone.src;
           part.leftImg.style.visibility = 'visible';
         }
         clone.remove();
-      }, `start+=${FLIP_DELAY + FLIP_DURATION}`)
-      // Entry content in.
-      .addLabel('content', `start+=${CONTENT_DELAY}`)
+      }, `start+=${OPEN_BEATS.flight + FLIP_DURATION}`)
+      // Entry text in as the image settles — title first, body lines
+      // following on the shared line stagger.
       .to(
         part.inners,
         {
@@ -564,15 +618,37 @@ export function initDetailView() {
           stagger: LINE_IN_STAGGER,
           overwrite: 'auto',
         },
-        'content',
+        `start+=${OPEN_BEATS.content}`,
       )
+      // Right column next…
       .to(
         part.viewport instanceof HTMLElement ? part.viewport : [],
-        { opacity: 1, duration: 1, ease: 'power2.out' },
-        'content',
+        { opacity: 1, duration: 0.9, ease: 'power2.out' },
+        `start+=${OPEN_BEATS.carousel}`,
+      )
+      // …its overlay label entering with the SAME line-reveal roll as
+      // every other text (the reported pop-in was setLabel forcing the
+      // wrapper visible at carousel creation, t=0).
+      .set(labelWrapper, { opacity: 1, filter: 'blur(0px)' }, `start+=${OPEN_BEATS.label}`)
+      .fromTo(
+        labelTextEl,
+        { yPercent: 110, y: 0 },
+        {
+          yPercent: 0,
+          y: 0,
+          duration: LINE_IN_DURATION,
+          ease: LINE_REVEAL_EASE,
+          immediateRender: false,
+          overwrite: 'auto',
+        },
+        `start+=${OPEN_BEATS.label}`,
       );
     if (part.returnBtn) {
-      tl.to(part.returnBtn, { xPercent: 0, opacity: 1, duration: 1, ease: 'expo' }, 'content');
+      tl.to(
+        part.returnBtn,
+        { xPercent: 0, opacity: 1, duration: 0.9, ease: 'expo' },
+        `start+=${OPEN_BEATS.return}`,
+      );
     }
   };
 
@@ -598,7 +674,19 @@ export function initDetailView() {
     clone.alt = '';
     setRect(clone, slotRect);
     cloneLayer.appendChild(clone);
-    if (part.leftImg instanceof HTMLImageElement) part.leftImg.style.visibility = 'hidden';
+    // Hide the in-layout img only once the clone's pixels are ready —
+    // a same-tick swap onto an undecoded clone paints a blank frame
+    // (the close-side half of the reported flashing). The src is the
+    // one currently displayed, so decode resolves from cache instantly
+    // in practice; the catch covers decode() rejection quirks.
+    const hideLeftImg = () => {
+      if (part.leftImg instanceof HTMLImageElement) part.leftImg.style.visibility = 'hidden';
+    };
+    if (clone.decode) {
+      clone.decode().then(hideLeftImg, hideLeftImg);
+    } else {
+      hideLeftImg();
+    }
 
     tl = gsap.timeline({
       defaults: { ease: FLIP_EASE },
@@ -609,6 +697,7 @@ export function initDetailView() {
         stage.style.visibility = 'hidden';
         carousel?.destroy();
         carousel = null;
+        if (window.scrollY !== savedScrollY) window.scrollTo(0, savedScrollY);
         document.dispatchEvent(new CustomEvent('about-landing:unfreeze'));
         document.dispatchEvent(new CustomEvent('about-3:scroll-unlock'));
         removeGuards();
@@ -618,8 +707,28 @@ export function initDetailView() {
         activeSourceImg = null;
       },
     });
-    tl.addLabel('start', 0)
-      // Detail content out (reverse vocabulary).
+    tl.addLabel('start', 0);
+    // Return CTA leaves first (the mirror of it arriving last).
+    if (part.returnBtn) {
+      tl.to(
+        part.returnBtn,
+        { xPercent: RETURN_HIDDEN_XPERCENT, opacity: 0, duration: 0.5 },
+        `start+=${CLOSE_BEATS.return}`,
+      );
+    }
+    tl
+      // Right column + its label out together…
+      .to(
+        part.viewport instanceof HTMLElement ? part.viewport : [],
+        { opacity: 0, duration: 0.55, ease: 'power2.in' },
+        `start+=${CLOSE_BEATS.carousel}`,
+      )
+      .to(
+        labelWrapper,
+        { opacity: 0, duration: 0.45, ease: 'none' },
+        `start+=${CLOSE_BEATS.carousel}`,
+      )
+      // …then the text rolls away…
       .to(
         part.inners,
         {
@@ -630,23 +739,9 @@ export function initDetailView() {
           stagger: LINE_OUT_STAGGER,
           overwrite: 'auto',
         },
-        'start',
+        `start+=${CLOSE_BEATS.textOut}`,
       )
-      .to(
-        part.viewport instanceof HTMLElement ? part.viewport : [],
-        { opacity: 0, duration: 0.6, ease: 'power2.in' },
-        'start',
-      )
-      .to(labelWrapper, { opacity: 0, duration: 0.4, ease: 'none' }, 'start');
-    if (part.returnBtn) {
-      tl.to(
-        part.returnBtn,
-        { xPercent: RETURN_HIDDEN_XPERCENT, opacity: 0, duration: 0.8 },
-        'start',
-      );
-    }
-    tl
-      // Flight home.
+      // …then the image flies home alone…
       .to(
         clone,
         {
@@ -656,11 +751,16 @@ export function initDetailView() {
           height: frameRect.height,
           duration: FLIP_DURATION,
         },
-        'start+=0.2',
+        `start+=${CLOSE_BEATS.flight}`,
       )
-      // Landing comes back beneath.
-      .to(bg, { opacity: 0, duration: FADE_DURATION, ease: 'none' }, 'start+=0.7')
-      .to(landingImagery, { opacity: 1, duration: FADE_DURATION, ease: 'none' }, 'start+=0.7')
+      // …and the landing scene returns beneath it, completing as the
+      // image docks.
+      .to(bg, { opacity: 0, duration: FADE_DURATION, ease: 'none' }, `start+=${CLOSE_BEATS.fade}`)
+      .to(
+        landingImagery,
+        { opacity: 1, duration: FADE_DURATION, ease: 'none' },
+        `start+=${CLOSE_BEATS.fade}`,
+      )
       .add(() => {
         // Fresh collection — a resize rebuild while open replaces the
         // clip elements, so open-time references may be stale. The
@@ -675,7 +775,7 @@ export function initDetailView() {
           ease: LINE_REVEAL_EASE,
           stagger: LINE_OUT_STAGGER,
         });
-      }, 'start+=0.75');
+      }, `start+=${CLOSE_BEATS.landingIn}`);
   };
 
   // Click wiring — delegated; every landing image frame (gallery + all

@@ -119,9 +119,14 @@
 }
 
 .about-page-3 .about-detail__return-arrow {
-	font-family: 'Serrif', serif;
-	font-size: 22px;
-	line-height: 1;
+	display: block;
+	line-height: 0;
+}
+
+.about-page-3 .about-detail__return-arrow svg {
+	display: block;
+	width: 56px;
+	height: 10px;
 }
 
 .about-page-3 .about-detail__return-label {
@@ -212,6 +217,22 @@
 	font-size: inherit;
 	line-height: 1.05;
 	text-align: center;
+}
+
+/* Line-reveal clip/inner for the label's ENTRY roll (detail-view.js
+   rolls the inner on open, same vocabulary as every other text; the
+   CSS default parks it on the hidden side — the lr-inner idiom). A
+   touch of bottom padding inside the clip keeps serif descenders from
+   shearing at the clip edge at this display size. */
+.about-page-3 .about-detail__label-clip {
+	display: block;
+	overflow: hidden;
+	padding-bottom: 0.08em;
+}
+
+.about-page-3 .about-detail__label-inner {
+	display: block;
+	transform: translateY(110%);
 }
 
 /* ── FLIP clone layer ────────────────────────────────────────────────

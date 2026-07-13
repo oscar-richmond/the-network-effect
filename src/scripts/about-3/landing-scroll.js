@@ -293,13 +293,23 @@ export function initLandingScroll() {
   // frozen landing, and its overlays must not strand mid-hover text.
   const onLandingFreeze = () => {
     detailFrozen = true;
+    // calm() BEFORE pause: the paused canvas keeps showing its last
+    // render — calming first means it shows resting SHARP planes, so
+    // the detail view's departing clone reveals identical pixels, not
+    // a frozen mid-hover blur (measured as a visible pop).
+    hoverBlur?.calm();
     hoverBlur?.setPaused(true);
+    // Frames stay hit-testable through the detail stage's pointer-
+    // events:none regions otherwise — hover churn under the open detail
+    // view would snap visible on unfreeze (about-page.css rule).
+    if (stage instanceof HTMLElement) stage.classList.add('is-frozen');
     landing.querySelectorAll('[data-about-landing-gallery-overlay]').forEach((overlay) => {
       if (overlay instanceof HTMLElement) overlay.style.opacity = '0';
     });
   };
   const onLandingUnfreeze = () => {
     detailFrozen = false;
+    if (stage instanceof HTMLElement) stage.classList.remove('is-frozen');
     hoverBlur?.setPaused(false);
     hoverBlur?.resize();
   };

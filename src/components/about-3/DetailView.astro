@@ -97,7 +97,14 @@ const detailEntries = [
             </h2>
             <p class="about-detail__body" data-about-detail-line>{entry.body}</p>
             <button class="about-detail__return" data-about-detail-return type="button">
-              <span class="about-detail__return-arrow" aria-hidden="true">&#8592;</span>
+              <!-- Long-tail left arrow per the supplied reference mark
+                   (chevron head + extended shaft), stroke-drawn so it
+                   inherits currentColor. -->
+              <span class="about-detail__return-arrow" aria-hidden="true">
+                <svg viewBox="0 0 56 10" fill="none">
+                  <path d="M56 5H1.5M8.5 1 1.5 5l7 4" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+              </span>
               <span class="about-detail__return-label">Return</span>
             </button>
           </div>
@@ -136,10 +143,17 @@ const detailEntries = [
          element, text swapped per focused slide (menu blur-dissolve
          vocabulary, detail-view.js). Difference blend on THIS wrapper
          (position + z-index 2: above the entry's canvas, which is z 1)
-         with a plain-white child — the landing gallery-overlay pattern,
-         proven live over a WebGL canvas sibling. -->
+         with plain-white children — the landing gallery-overlay
+         pattern, proven live over a WebGL canvas sibling. The
+         clip/inner pair gives the label the SAME line-reveal roll
+         entry as every other text (the open timeline rolls the inner;
+         swaps during use ride the wrapper's blur-dissolve). -->
     <div class="about-detail__label" data-about-detail-label aria-hidden="true">
-      <p class="about-detail__label-text" data-about-detail-label-text></p>
+      <p class="about-detail__label-text">
+        <span class="about-detail__label-clip"
+          ><span class="about-detail__label-inner" data-about-detail-label-text></span></span
+        >
+      </p>
     </div>
 
     <!-- FLIP clone layer — the flying image travels here (z 3, above

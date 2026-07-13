@@ -524,6 +524,26 @@ export function createGalleryHoverBlur(galleryEl) {
 
   return {
     resize,
+    /** Snap every hover state to rest and repaint once — called by the
+     * detail-view freeze (landing-scroll.js) BEFORE setPaused(true):
+     * a paused canvas keeps displaying its last render, and if that
+     * render was mid-hover the clicked image's frozen plane would sit
+     * BLURRED beneath the detail view's departing sharp clone (a
+     * visible pop as the clone flies away). Kills the progress tweens
+     * too, so nothing snaps to a stale value on resume. */
+    calm() {
+      if (disposed) return;
+      itemStates.forEach((state) => {
+        gsap.killTweensOf(state.progress);
+        state.progress.value = 0;
+        if (state.plane) {
+          state.plane.setProgress(0);
+          state.plane.update(state.frameEl.getBoundingClientRect(), screen, viewport);
+        }
+        if (state.overlayEl) state.overlayEl.style.opacity = '0';
+      });
+      renderer.render({ scene, camera });
+    },
     /** Idle/resume the rAF loop — called from landing-scroll.js's
      * setStageVisible, so this pauses exactly when the stage (and
      * therefore the whole gallery) is hidden. Mounted planes are left
