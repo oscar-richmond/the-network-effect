@@ -10,16 +10,18 @@ import '../../styles/about-3/partners.css';
 // partners-scroll.js.
 const CULL_WINDOW = 10;
 
-// Background video — AdobeStock PREVIEW STAND-IN, exactly the founders
-// section's licensed-swap obligation (see founders.js's media comment):
-// reusing founders' own stand-in file until the section's intended clips
-// (Figma names AdobeStock_1891763427 / _326295558 / _227749395 previews)
-// are supplied. LICENSED-SWAP CHECKLIST when the final clip lands: drop
-// the file in public/assets/partners/, update these two paths, re-verify
-// the blur treatment tone live, and re-bake nothing (no derived assets
-// depend on this file, unlike founders' bg-fade.jpg).
-const videoSrc = asset('/assets/about-hero/about-3/founders-bg-robbo.mp4');
-const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg');
+// Background video — AdobeStock_492438053 HD PREVIEW, supplied by Oscar
+// at the Stage-1 re-pass (superseding both the founders-clip stand-in
+// and the Figma-named AdobeStock_1891763427 / _326295558 / _227749395
+// candidates). Remuxed .mov -> .mp4 stream-copy (H.264 1920x1080, no
+// re-encode); poster is its own first frame. STILL A PREVIEW: the
+// founders-style licensed-swap obligation stands for the final licensed
+// render. LICENSED-SWAP CHECKLIST when it lands: drop the file over
+// partners-bg.mp4 (or update these two paths), re-bake the poster frame,
+// re-verify the blur treatment tone live — no other derived assets and
+// NO code changes (the two-layer treatment reads whatever file is here).
+const videoSrc = asset('/assets/partners/partners-bg.mp4');
+const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
 ---
 
 <section class="about-partners" data-about-partners aria-label="Partners">
@@ -110,15 +112,22 @@ const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-po
             class:list={['about-partners__sat', { 'is-active': i === 0 }]}
             data-about-partners-sat={i}
           >
+            {/* EAGER, deliberately (Stage-1 amendment, fix 4a): native
+                loading="lazy" NEVER fires inside a hidden fixed stage —
+                the exact landing-gallery-preload finding, reproduced
+                here live (the Wilderness logo sat at naturalWidth 0
+                until forced). The whole satellite asset pool is a
+                handful of small files; eager + async decode is cheaper
+                than wiring a preload trigger for it. */}
             {partner.logo && (
               <div class="about-partners__sat-logo">
-                <img src={asset(partner.logo)} alt="" loading="lazy" decoding="async" />
+                <img src={asset(partner.logo)} alt="" loading="eager" decoding="async" />
               </div>
             )}
             <p class="about-partners__sat-desc">{partner.description ?? GENERIC_DESCRIPTION}</p>
             {partner.image && (
               <div class="about-partners__sat-image">
-                <img src={asset(partner.image)} alt="" loading="lazy" decoding="async" />
+                <img src={asset(partner.image)} alt="" loading="eager" decoding="async" />
               </div>
             )}
           </div>
@@ -126,14 +135,12 @@ const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-po
       }
     </div>
 
-    <!-- Entry veil — the #F9F9F9 -> dark transition INTO this section
-         (approved plan item 5, flagged for Oscar's judgment pass): the
-         stage enters wearing the landing's own background colour and
-         melts it away over the first PARTNERS_ENTRY_FADE_PX of runway
-         (partners-scroll.js scrub) — founders' veil vocabulary,
-         reversed. Sits above all section content (last positioned
-         child), below nothing it shouldn't: nav/indicator are fixed at
-         z 270/200, far above this stage's z-carrier (145). -->
-    <div class="about-partners__veil" data-about-partners-veil aria-hidden="true"></div>
+    <!-- The #F9F9F9 -> dark entry transition has NO element here any
+         more (Stage-1 amendment, fix 1): it's a crossfade of this whole
+         STAGE over the still-running landing beneath it, scrubbed by
+         partners-scroll.js from a landing-derived anchor (the final
+         wave's last image crossing the viewport's vertical centre). The
+         old opaque #F9F9F9 veil would have blanked exactly the image
+         the melt is anchored to. -->
   </div>
 </section>

@@ -32,9 +32,13 @@ gsap.registerPlugin(ScrollTrigger);
  * would push an 8.5k+ runway (feel constant, Oscar's tuning pass). The
  * full Stage-2 scrub window is STEP_PX * (N-1). */
 export const PARTNERS_STEP_PX = 165;
-/** The #F9F9F9->dark entry melt — the veil scrubs out over this many px
- * at the head of the runway (approved plan item 5; flagged for Oscar's
- * judgment pass vs a hard cut). */
+/** The #F9F9F9->dark entry melt LENGTH (Stage-1 amendment, fix 1: the
+ * melt is now a crossfade of the whole stage OVER the still-running
+ * landing beneath, and it STARTS at a landing-derived anchor — the
+ * final wave's last image crossing the viewport's vertical centre —
+ * read from landing's dataset in build(), not at the runway head). The
+ * runway keeps a same-sized head segment as a rest beat before the
+ * Stage-2 scrub window, so page totals are unchanged. */
 export const PARTNERS_ENTRY_FADE_PX = 400;
 /** Rest on the final name before teardown. */
 export const PARTNERS_TAIL_HOLD_PX = 300;
@@ -62,7 +66,6 @@ export function initPartnersScroll() {
 
   const stage = section.querySelector('[data-about-partners-stage]');
   const arc = section.querySelector('[data-about-partners-arc]');
-  const veil = section.querySelector('[data-about-partners-veil]');
   const video = section.querySelector('[data-about-partners-video]');
   const names = Array.from(section.querySelectorAll('[data-about-partners-name]')).filter(
     (el) => el instanceof HTMLElement,
@@ -70,7 +73,6 @@ export function initPartnersScroll() {
   if (
     !(stage instanceof HTMLElement) ||
     !(arc instanceof HTMLElement) ||
-    !(veil instanceof HTMLElement) ||
     names.length !== PARTNERS.length
   ) {
     return () => {};
@@ -105,7 +107,7 @@ export function initPartnersScroll() {
   };
 
   /** @type {gsap.core.Tween | undefined} */
-  let veilTween;
+  let meltTween;
 
   const build = () => {
     ScrollTrigger.getAll().forEach((trigger) => {
@@ -113,37 +115,62 @@ export function initPartnersScroll() {
         trigger.kill();
       }
     });
-    veilTween?.kill();
+    meltTween?.kill();
 
-    // Entry gate — fires exactly where landing's exit-end fires (the
-    // handoff contract; see landing-scroll.js's height comment).
+    // Melt lead (fix 1) — how many scroll px BEFORE this section's own
+    // top-vs-viewport-bottom crossing the entry crossfade starts:
+    // landing-derived (the final wave's last image's centre crossing the
+    // viewport's vertical centre — see the dataset publish in
+    // landing-scroll.js's wave chain), re-read every build so resize
+    // re-derivations flow through. Landing always builds first (its
+    // settle-gate listener and resize handler are both registered before
+    // ours — AboutScroll.astro init order). Fallback 0 = the old
+    // at-the-boundary behaviour, defensive only (no landing/waves on the
+    // page).
+    const landing = document.querySelector('body.about-page-3 [data-about-landing]');
+    const meltLead =
+      landing instanceof HTMLElement
+        ? Math.max(0, parseFloat(landing.dataset.partnersMeltLeadPx || '0') || 0)
+        : 0;
+    /** Trigger anchor at a signed px offset from `section top bottom`. */
+    const anchorAt = (relPx) =>
+      relPx >= 0 ? `top+=${relPx} bottom` : `top-=${-relPx} bottom`;
+
+    // Entry gate — moves WITH the melt (the stage must exist on screen,
+    // at scrubbed opacity, for the crossfade to show). Both stages are
+    // deliberately live between here and landing's own exit-end: landing
+    // (z 140) keeps playing its final wave beneath this stage (z 145)
+    // while the crossfade darkens over it.
     const entry = ScrollTrigger.create({
       trigger: section,
-      start: 'top bottom',
-      end: 'top bottom',
+      start: anchorAt(-meltLead),
+      end: anchorAt(-meltLead),
       id: 'about-partners-entry',
       onEnter: () => setStageVisible(true),
       onLeaveBack: () => setStageVisible(false),
     });
 
-    // Entry veil melt — #F9F9F9 (the landing's ground) -> transparent
-    // over the runway's first PARTNERS_ENTRY_FADE_PX. Pure scrub,
-    // ease:none, reversal-symmetric: scrolling back re-wears the light
-    // ground before the gate swaps stages, so the boundary reads as one
-    // continuous surface in both directions.
-    veilTween = gsap.fromTo(
-      veil,
-      { opacity: 1 },
+    // Entry melt — the #F9F9F9->dark transition as a whole-stage
+    // crossfade over the running landing (CSS defaults the stage to
+    // opacity 0 — see partners.css). Starts exactly at the derived
+    // anchor, runs PARTNERS_ENTRY_FADE_PX. Pure scrub, ease:none,
+    // reversal-symmetric: scrolling back re-melts to reveal the landing
+    // beneath before the entry gate hides the stage. opacity:1 at rest
+    // creates no stacking context, so the settled stage composites
+    // exactly as before (Stage-3 blend planning unaffected).
+    meltTween = gsap.fromTo(
+      stage,
+      { opacity: 0 },
       {
-        opacity: 0,
+        opacity: 1,
         ease: 'none',
         immediateRender: false,
         scrollTrigger: {
           trigger: section,
-          start: 'top bottom',
-          end: `top+=${PARTNERS_ENTRY_FADE_PX} bottom`,
+          start: anchorAt(-meltLead),
+          end: anchorAt(-meltLead + PARTNERS_ENTRY_FADE_PX),
           scrub: true,
-          id: 'about-partners-veil',
+          id: 'about-partners-melt',
         },
       },
     );
@@ -163,8 +190,10 @@ export function initPartnersScroll() {
     });
 
     // Rebuild restoration — stage visibility derived from live scrollY
-    // against the fresh triggers (the landing build() idiom); the veil
-    // scrub self-syncs via ScrollTrigger.refresh().
+    // against the fresh triggers (the landing build() idiom); the melt
+    // scrub self-syncs via ScrollTrigger.refresh() (scrub jump on
+    // update), landing the stage's inline opacity wherever the live
+    // scroll position sits in the crossfade window.
     assertRestState();
     setStageVisible(window.scrollY >= entry.start && window.scrollY < exitEnd.start);
 
@@ -205,8 +234,8 @@ export function initPartnersScroll() {
         trigger.kill();
       }
     });
-    veilTween?.kill();
-    gsap.killTweensOf(veil);
+    meltTween?.kill();
+    gsap.killTweensOf(stage);
     if (video instanceof HTMLVideoElement) video.pause();
     setStageVisible(false);
   };

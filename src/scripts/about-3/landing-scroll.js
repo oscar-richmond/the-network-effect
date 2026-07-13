@@ -764,6 +764,15 @@ export function initLandingScroll() {
         // lead margin) is already gone.
         let waveStartPx = liftEndPx + PILLAR_HOLD_PX;
         let chainEndPx = liftEndPx;
+        // Partners melt anchor (Stage-1 amendment, fix 1): the scroll px
+        // at which the FINAL wave's LAST image's centre crosses the
+        // viewport's vertical centre — the point Oscar anchored the
+        // partners #F9F9F9->dark crossfade to. Derived per wave inside
+        // the loop (same pxAtLastTop inversion the row swaps use, aimed
+        // at centre-line y instead of a row edge) and overwritten each
+        // cycle, so the last wave's value survives; published as a
+        // dataset lead below, after runwayPx is final.
+        let partnersMeltAnchorPx = 0;
         waves.forEach((wave, i) => {
           const row = pillarRows[i];
           if (!(row instanceof HTMLElement)) return;
@@ -786,12 +795,14 @@ export function initLandingScroll() {
           let waveTravel = 0;
           let lastTopLocal = 0;
           let lastSpeed = 1;
+          let lastHeight = 0;
           items.forEach((item) => {
             const speed = itemSpeed(item);
             waveTravel = Math.max(waveTravel, (item.offsetTop + item.offsetHeight) / speed);
             if (item.offsetTop > lastTopLocal) {
               lastTopLocal = item.offsetTop;
               lastSpeed = speed;
+              lastHeight = item.offsetHeight;
             }
           });
 
@@ -843,6 +854,10 @@ export function initLandingScroll() {
           const waveStart = waveStartPx;
           const pxAtLastTop = (y) =>
             waveStart + ((lastTopLocal - y) / (waveTravel * lastSpeed)) * WAVE_SCROLL_PX;
+
+          // Last image's CENTRE at the stage's vertical centre — the
+          // melt anchor (see the declaration comment above the loop).
+          partnersMeltAnchorPx = pxAtLastTop(stageH / 2 - lastHeight / 2);
 
           // Row swap — the SAME behaviour as the intro → row 0 swap
           // (confirmed correct live): the last image's pass is only the
@@ -899,6 +914,22 @@ export function initLandingScroll() {
         // end when (as at any current viewport) the last wave resolves
         // after the horizontal scrub does.
         runwayPx = Math.max(runwayPx, chainEndPx + LANDING_TAIL_HOLD);
+
+        // Melt-anchor handoff to partners-scroll.js: the LEAD — how many
+        // scroll px BEFORE landing's runway end (= the partners section's
+        // own top-vs-viewport-bottom crossing, by the height contract
+        // below) the melt anchor sits. Expressed as a lead so partners
+        // can consume it as a plain negative offset on its own trigger
+        // anchor with no knowledge of landing's internals. Written on
+        // every build (resize re-derives); partners' build reads it live
+        // — ordering holds because this module both registers its
+        // settle-gate listener and its resize handler BEFORE partners
+        // does (AboutScroll.astro init order), and partners' build ends
+        // in the ScrollTrigger.refresh() that re-anchors everything
+        // regardless.
+        landing.dataset.partnersMeltLeadPx = String(
+          Math.max(0, Math.round(runwayPx - partnersMeltAnchorPx)),
+        );
       }
 
       // Ahead-of-phase preload — one-shot, anchored upstream of the

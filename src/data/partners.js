@@ -32,24 +32,32 @@ export const GENERIC_DESCRIPTION =
 
 /** @type {Partner[]} */
 export const PARTNERS = [
+  // Wilderness Reserve leads DELIBERATELY (Stage-1 amendment, Oscar's
+  // re-pass): index 0 is the rest-active brand, and it's the only brand
+  // with a real supplied logo — leading with it makes the rest state
+  // demonstrate the full satellite row (logo + real copy), and matches
+  // the Figma composition itself, where WILDERNESS RESERVE is the active
+  // name with the queued names arcing below it. Empty-logo brands showing
+  // an empty slot is the approved empty-state, not a rendering bug.
+  {
+    name: 'Wilderness Reserve',
+    slug: 'wilderness-reserve',
+    logo: '/assets/partners/wilderness-reserve-logo.png', // REAL (Figma-supplied)
+    image: '/assets/landing-gallery/kitchen-smoke.jpg', // STAND-IN
+    description:
+      'Nearly 20 years building global relationships meets 30 years at the heart of music, film and television.', // REAL (Figma copy)
+  },
   {
     name: 'Pavilion',
     slug: 'pavilion',
-    image: '/assets/landing-gallery/kitchen-smoke.jpg', // STAND-IN
+    image: '/assets/pillar-waves/film-set-monitor.jpg', // STAND-IN
     description: 'A valued partner in shaping culture through experiences, media and lasting collaboration.', // PLACEHOLDER
   },
   {
     name: 'Netflix',
     slug: 'netflix',
-    image: '/assets/pillar-waves/film-set-monitor.jpg', // STAND-IN
+    image: '/assets/pillar-waves/theatre-seats.jpg', // STAND-IN
     description: 'Working together at the intersection of culture, commerce and community.', // PLACEHOLDER
-  },
-  {
-    name: 'Wilderness Reserve',
-    slug: 'wilderness-reserve',
-    logo: '/assets/partners/wilderness-reserve-logo.png', // REAL (Figma-supplied)
-    description:
-      'Nearly 20 years building global relationships meets 30 years at the heart of music, film and television.', // REAL (Figma copy)
   },
   {
     name: 'Thunder Aviation',

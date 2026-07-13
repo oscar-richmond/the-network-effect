@@ -44,8 +44,7 @@
 
 .about-page-3 .about-partners__media-group,
 .about-page-3 .about-partners__overlay,
-.about-page-3 .about-partners__divider,
-.about-page-3 .about-partners__veil {
+.about-page-3 .about-partners__divider {
 	display: none;
 }
 
@@ -122,6 +121,17 @@
 		visibility: hidden; /* CSS-default hidden — revealed ONLY by
 		                       partners-scroll.js's own entry gate (the
 		                       FUTURE SECTIONS contract). */
+		/* Entry crossfade default (Stage-1 amendment, fix 1): the
+		   #F9F9F9->dark transition is now the whole STAGE fading in OVER
+		   the still-running landing beneath it (z 145 over 140) — the old
+		   opaque #F9F9F9 veil would have blanked the very gallery image
+		   the melt is anchored to. partners-scroll.js scrubs inline
+		   opacity 0->1; defaulting 0 here means any gate/scrub frame gap
+		   shows nothing rather than popping the dark stage in whole.
+		   opacity:1 creates no stacking context, so the settled state
+		   stays exactly as before (Stage-3 blend leaves scope to this
+		   stage's isolation either way). */
+		opacity: 0;
 		pointer-events: none;
 	}
 
@@ -164,7 +174,14 @@
 	.about-page-3 .about-partners__name {
 		position: absolute;
 		left: 20.3vw; /* Figma: active-name anchor 350/1728 */
-		top: 62%; /* Figma: active-name centre-y 600/966 */
+		/* Stage-1 amendment (fix 3): the active row — name, logo,
+		   description — runs across the VERTICAL CENTRE of the viewport
+		   (was the Figma's literal 62%, which read too low live). The
+		   transform's -50% y already centres the name's own box on this
+		   line; the whole arc shifts up with it, queued names composing
+		   below unchanged (pure translation — rel-index geometry is
+		   anchor-independent). */
+		top: 50%;
 		/* THE MECHANISM (see file header): pose fully derived from
 		   --index (li) + --progress/--total (ul). */
 		--rel-index: calc(var(--index, 0) - var(--progress, 0) * (var(--total, 45) - 1));
@@ -181,7 +198,16 @@
 		font-size: 50px;
 		line-height: 1;
 		text-transform: uppercase;
-		color: #161616;
+		/* Queued names (Stage-1 amendment, fix 4b): LOW-OPACITY WHITE —
+		   the cheap translucent read Oscar picked for now. The Figma's
+		   measured #161616 @ 0.40 was authored against its lighter
+		   comp background; over the real (darker) blurred video it read
+		   as solid dark paint, not see-through. White at the Figma's own
+		   0.40 alpha lets the video read through the letterforms while
+		   the active name stays clearly separated at full strength.
+		   Alpha is a feel-tunable; the FULL knockout question remains
+		   Stage 3's, and for the ACTIVE name only. */
+		color: #f9f9f9;
 		opacity: 0.4;
 	}
 
@@ -237,7 +263,10 @@
 		display: block;
 		position: absolute;
 		left: 67vw; /* 1158/1728 */
-		top: 56%; /* centre of 542..660 in 966 */
+		/* Fix 3: centred on the active row's line — the viewport's
+		   vertical centre, shared with the name anchor and description. */
+		top: 50%;
+		transform: translateY(-50%);
 		width: 8.1vw; /* 140/1728 */
 		aspect-ratio: 140 / 118;
 	}
@@ -257,7 +286,9 @@
 	.about-page-3 .about-partners__sat-desc {
 		position: absolute;
 		left: 83.5vw; /* 1443/1728 */
-		top: 60%; /* 581/966 */
+		/* Fix 3: block centred on the active row's centre line. */
+		top: 50%;
+		transform: translateY(-50%);
 		width: 14.2vw; /* 245/1728 */
 		font-size: 12px;
 		line-height: 1.65; /* Figma 12/20 */
@@ -281,11 +312,4 @@
 		object-fit: cover;
 	}
 
-	/* ── Entry veil (#F9F9F9 -> dark melt, partners-scroll.js scrub) ── */
-	.about-page-3 .about-partners__veil {
-		display: block;
-		position: absolute;
-		inset: 0;
-		background-color: #f9f9f9;
-	}
 }
