@@ -10,16 +10,16 @@ import '../../styles/about-3/partners.css';
 // partners-scroll.js.
 const CULL_WINDOW = 10;
 
-// Background video — AdobeStock_492438053 HD PREVIEW, supplied by Oscar
-// at the Stage-1 re-pass (superseding both the founders-clip stand-in
-// and the Figma-named AdobeStock_1891763427 / _326295558 / _227749395
-// candidates). Remuxed .mov -> .mp4 stream-copy (H.264 1920x1080, no
-// re-encode); poster is its own first frame. STILL A PREVIEW: the
-// founders-style licensed-swap obligation stands for the final licensed
-// render. LICENSED-SWAP CHECKLIST when it lands: drop the file over
-// partners-bg.mp4 (or update these two paths), re-bake the poster frame,
-// re-verify the blur treatment tone live — no other derived assets and
-// NO code changes (the two-layer treatment reads whatever file is here).
+// Background video — AdobeStock_1891763427 HD PREVIEW, supplied by
+// Oscar after the Stage-2 pass (one of the Figma-named clips; supersedes
+// the interim AdobeStock_492438053). Remuxed .mov -> .mp4 stream-copy
+// (H.264 1920x1080, ~5s loop, no re-encode); poster is its own first
+// frame. STILL A PREVIEW: the founders-style licensed-swap obligation
+// stands for the final licensed render. LICENSED-SWAP CHECKLIST when it
+// lands: drop the file over partners-bg.mp4 (or update these two
+// paths), re-bake the poster frame, re-verify the blur treatment tone
+// live — no other derived assets and NO code changes (the two-layer
+// treatment reads whatever file is here).
 const videoSrc = asset('/assets/partners/partners-bg.mp4');
 const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
 ---
