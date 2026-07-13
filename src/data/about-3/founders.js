@@ -53,20 +53,20 @@ export const founders = [
       { label: 'Design', index: '/07' },
     ],
     photo: '/assets/about-scroll/robbo-team.png',
+    // Background rearchitected (Oscar, 2026-07-14): the video-with-live-
+    // treatment era is over — BOTH slides now share the flat paper
+    // texture Oscar supplied (untreated: --founders-blur-px is 0 and the
+    // overlay darken is gone, founders.css), with the animated grain
+    // layer above it. The slide 1<->2 media crossfade still runs but is
+    // an invisible no-op while both slides point at the same file — kept
+    // so per-founder backgrounds can return by editing only this data.
+    // IMPORTANT: public/assets/about-hero/about-3/bg-fade.jpg (the
+    // hero->founders handoff backdrop) is baked FROM this same image —
+    // regenerate it if this file changes (recipe comment above bgFadeSrc
+    // in AboutScroll.astro; the treatment step is now IDENTITY).
     media: {
-      type: 'video',
-      // Stock preview stand-in — spec-for-purpose only. Swap this file
-      // (same path) for the licensed clip; no code changes needed.
-      // IMPORTANT: also regenerate public/assets/about-hero/about-3/bg-fade.jpg
-      // from the new clip's first frame at swap time — see the recipe
-      // comment above bgFadeSrc in AboutScroll.astro. bg-fade is a static
-      // frame used as the hero→founders handoff backdrop; left pointing at
-      // the old clip's frame it goes visually stale the moment this file
-      // changes (this exact staleness — bg-fade baked from the ORIGINAL
-      // pre-rearchitecture Robbo photo, not this video — was diagnosed and
-      // fixed once already).
-      src: '/assets/about-hero/about-3/founders-bg-robbo.mp4',
-      poster: '/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg',
+      type: 'image',
+      src: '/assets/about-hero/about-3/founders-bg-paper.jpg',
     },
     alt: 'Portrait of Robbo McCallum',
   },
@@ -87,7 +87,7 @@ export const founders = [
     photo: '/assets/about-scroll/ashley-team.png',
     media: {
       type: 'image',
-      src: '/assets/about-scroll/ashley-team.png',
+      src: '/assets/about-hero/about-3/founders-bg-paper.jpg', // shared paper — see slide 1's media comment
     },
     alt: 'Portrait of Ashley Walters',
   },
