@@ -117,21 +117,31 @@ export function initPartnersScroll() {
     });
     meltTween?.kill();
 
-    // Melt lead (fix 1) — how many scroll px BEFORE this section's own
-    // top-vs-viewport-bottom crossing the entry crossfade starts:
-    // landing-derived (the final wave's last image's centre crossing the
-    // viewport's vertical centre — see the dataset publish in
-    // landing-scroll.js's wave chain), re-read every build so resize
-    // re-derivations flow through. Landing always builds first (its
-    // settle-gate listener and resize handler are both registered before
-    // ours — AboutScroll.astro init order). Fallback 0 = the old
-    // at-the-boundary behaviour, defensive only (no landing/waves on the
-    // page).
+    // Melt lead (fix 1, re-tuned at Oscar's re-pass) — how many scroll px
+    // BEFORE this section's own top-vs-viewport-bottom crossing the entry
+    // crossfade starts. The landing publishes the FULL derived lead (the
+    // final wave's last image's centre crossing the viewport's vertical
+    // centre — see the dataset publish in landing-scroll.js's wave
+    // chain); Oscar's split-the-difference call halves it here as
+    // composition POLICY on the consumer side, keeping the published
+    // value a pure mechanical fact of the gallery maths. The clamp keeps
+    // the confirmed completes-at-or-before-the-boundary behaviour at any
+    // viewport (lead never shorter than the melt itself). Re-read every
+    // build so resize re-derivations flow through; landing always builds
+    // first (its settle-gate listener and resize handler are both
+    // registered before ours — AboutScroll.astro init order). Missing
+    // dataset (no landing/waves on the page, defensive only) degrades to
+    // a boundary-completing melt.
+    const PARTNERS_MELT_LEAD_RATIO = 0.5;
     const landing = document.querySelector('body.about-page-3 [data-about-landing]');
-    const meltLead =
+    const fullMeltLead =
       landing instanceof HTMLElement
         ? Math.max(0, parseFloat(landing.dataset.partnersMeltLeadPx || '0') || 0)
         : 0;
+    const meltLead = Math.max(
+      PARTNERS_ENTRY_FADE_PX,
+      Math.round(fullMeltLead * PARTNERS_MELT_LEAD_RATIO),
+    );
     /** Trigger anchor at a signed px offset from `section top bottom`. */
     const anchorAt = (relPx) =>
       relPx >= 0 ? `top+=${relPx} bottom` : `top-=${-relPx} bottom`;
