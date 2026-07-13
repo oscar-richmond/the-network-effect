@@ -38,10 +38,11 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
        anonymous-box strut in the previous attempt (measured, documented
        in its history) — do not move it out.
 
-       STAGE 1 (approved staged split): stage + two-layer video background
-       (founders pattern) + STATIC arc layout (reference formula at
-       progress 0) + satellite slots. The scrubbed rotation, scroll-settle
-       snap, and knockout treatment are Stages 2-3. -->
+       STAGE 2 (approved staged split): the Stage-1 shell plus the live
+       wheel — partners-scroll.js scrubs the UL's --progress, derives
+       active/cull classes per write, and settle-snaps the display to
+       the nearest name. The knockout treatment for the active name is
+       Stage 3. -->
   <div class="about-partners__stage" data-about-partners-stage>
     <!-- Two-layer background — founders' EXACT architecture (see
          founders.css's --founders-blur-px comment): blur lives as
@@ -99,9 +100,9 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
 
     <!-- Per-brand satellites — logo / description / image for the ACTIVE
          brand (Figma 8:459 / 8:463 / 8:426 slots). One entry per brand,
-         server-rendered, visibility by `.is-active` (Stage 1 static:
-         entry 0; Stage 2-3 swap them with the hero rotating-word
-         blur-dissolve). EMPTY-STATE (approved): no logo/image = slot
+         server-rendered, visibility by `.is-active` (toggled per wheel
+         write from Stage 2 on; the swap dissolve is a CSS transition —
+         partners.css). EMPTY-STATE (approved): no logo/image = slot
          simply absent for that brand (dissolves to empty on swap); no
          per-brand description = the shared generic line. Logo renders
          white via CSS filter regardless of supplied mark colour. -->

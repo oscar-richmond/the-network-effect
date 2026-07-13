@@ -209,9 +209,17 @@
 		   Stage 3's, and for the ACTIVE name only. */
 		color: #f9f9f9;
 		opacity: 0.4;
+		/* Stage 2: the active handoff eases rather than hard-toggles —
+		   the reference's own .4s colour transition on its active class.
+		   Transform is NOT transitioned (poses are per-frame scrub
+		   writes via --progress; a transition there would lag the
+		   scroll). Culling stays instant (visibility, far from focus). */
+		transition:
+			color 0.4s ease,
+			opacity 0.4s ease;
 	}
 
-	/* Active — Stage 1 / approved-fallback treatment: solid light text.
+	/* Active — Stage 2 / approved-fallback treatment: solid light text.
 	   The Stage-3 knockout (sharp-video letterforms + glow + difference)
 	   replaces this, gated on Oscar's cost call there. */
 	.about-page-3 .about-partners__name.is-active {
@@ -252,11 +260,26 @@
 		position: absolute;
 		inset: 0;
 		display: block;
+		/* Stage 2: the satellite swap rides the house dissolve
+		   vocabulary (the hero rotating-word blur melt — the treatment
+		   Oscar named for these swaps): opacity + blur transitioning on
+		   the whole per-brand group, driven purely by the .is-active
+		   toggle from partners-scroll.js's wheel writes. CSS transitions
+		   rather than GSAP deliberately — interruption-safe under fast
+		   scrubbing by nature (the panel crossfade DOM-state race from
+		   the abandoned clients-wheel attempt can't exist here), and the
+		   sat subtree hosts no blend leaves, so a filter on this wrapper
+		   is safe. Timing is a feel-tunable (Oscar's pass). */
 		opacity: 0;
+		filter: blur(10px);
+		transition:
+			opacity 0.45s ease,
+			filter 0.45s ease;
 	}
 
 	.about-page-3 .about-partners__sat.is-active {
 		opacity: 1;
+		filter: blur(0px);
 	}
 
 	.about-page-3 .about-partners__sat-logo {

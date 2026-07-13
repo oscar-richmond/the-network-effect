@@ -7,16 +7,18 @@ gsap.registerPlugin(ScrollTrigger);
 /**
  * /about-3 "Partners / They trust us" — scroll module.
  *
- * STAGE 1 (approved staged split — see PartnersSection.astro): the
- * section shell only. Owns the entry/exit gates, the runway (sized for
- * the FULL Stage-2 wheel scrub already, so page totals don't move
- * between stages), the #F9F9F9->dark entry-veil scrub, and video
- * play/pause discipline. The wheel itself is STATIC at progress 0 —
- * Stage 2 adds the scrubbed `--progress` write + per-tick active/cull
- * derivation + the approved scroll-settle snap (founders snap
- * precedent); Stage 3 adds the knockout treatment + satellite dissolve
- * swaps. The active/cull/satellite state is server-rendered for rest
- * and only re-asserted here for rebuild safety.
+ * STAGE 2 (approved staged split — see PartnersSection.astro): the
+ * shell (entry/exit gates, runway, entry crossfade, video play/pause
+ * discipline) plus the LIVE WHEEL — one scrub window drives the UL's
+ * `--progress` through all 45 names (all poses derive in CSS from that
+ * single value), with per-write active/cull class derivation, the
+ * active-satellite toggle (its dissolve is CSS — partners.css), and
+ * the approved scroll-settle snap: when input goes quiet the display
+ * progress eases to the nearest exact index in a TIMED content tween
+ * (founders precedent — never a scrollTo, which would fight Lenis), so
+ * a name is always flat/active at rest. Stage 3 adds the knockout
+ * treatment for the active name. Server markup carries the progress-0
+ * rest state for correct pre-JS paint.
  *
  * ARCHITECTURE: the FUTURE SECTIONS contract, third application
  * (founders -> landing -> here): own fixed stage, CSS-default hidden,
@@ -47,6 +49,17 @@ export const PARTNERS_TAIL_HOLD_PX = 300;
  * back on-screen without it. 10 ≈ 110°, the reference's own visible
  * span. Mirrors CULL_WINDOW in PartnersSection.astro's server render. */
 export const PARTNERS_CULL_WINDOW = 10;
+/** Scroll-settle snap (Stage 2, approved decision 1): quiet time after
+ * the last wheel update before the snap fires. */
+const PARTNERS_SNAP_DELAY_S = 0.15;
+/** Snap transition — a timed CONTENT tween easing the wheel's display
+ * progress to the nearest exact index. NEVER a scrollTo: founders'
+ * own snap note applies verbatim (animating the scroll position fights
+ * Lenis). Retarget-safe by construction: any new scroll update kills
+ * both the pending settle call and a mid-flight snap, and raw scrub
+ * takes back over. Duration/ease are feel-tunables (Oscar's pass). */
+const PARTNERS_SNAP_DURATION_S = 0.5;
+const PARTNERS_SNAP_EASE = 'power2.out';
 
 const PARTNERS_SCRUB_PX = PARTNERS_STEP_PX * (PARTNERS.length - 1);
 const PARTNERS_RUNWAY_PX = PARTNERS_ENTRY_FADE_PX + PARTNERS_SCRUB_PX + PARTNERS_TAIL_HOLD_PX;
@@ -95,15 +108,52 @@ export function initPartnersScroll() {
     }
   };
 
-  /** Stage-1 static wheel assert (rebuild safety — server markup already
-   * carries this state): progress 0, name 0 active, cull window from
-   * rest. Stage 2 replaces this with the per-tick derivation. */
-  const assertRestState = () => {
-    arc.style.setProperty('--progress', '0');
+  // ── Stage 2: wheel state ─────────────────────────────────────────────
+  // ONE display value drives everything: `wheel.p` is written to the
+  // UL's --progress (all 45 poses derive in CSS from it), and the same
+  // write derives the active/cull classes and the active satellite (its
+  // dissolve is a CSS transition on .is-active — partners.css). applyWheel
+  // paints RAW scrub progress while scrolling and the snap tween's eased
+  // values while settling, so the active handoff and satellite dissolve
+  // follow the snap too. Active = NEAREST name (Math.round), the
+  // reference's own behaviour: the handoff fires at the half-step point
+  // as a name approaches flat.
+  const sats = Array.from(section.querySelectorAll('[data-about-partners-sat]')).filter(
+    (el) => el instanceof HTMLElement,
+  );
+  const wheel = { p: 0 };
+  const applyWheel = () => {
+    const exact = wheel.p * (PARTNERS.length - 1);
+    const idx = Math.round(exact);
+    arc.style.setProperty('--progress', String(wheel.p));
     names.forEach((el, i) => {
-      el.classList.toggle('is-active', i === 0);
-      el.classList.toggle('is-culled', i > PARTNERS_CULL_WINDOW);
+      el.classList.toggle('is-active', i === idx);
+      el.classList.toggle('is-culled', Math.abs(i - exact) > PARTNERS_CULL_WINDOW);
     });
+    sats.forEach((el, i) => el.classList.toggle('is-active', i === idx));
+  };
+
+  /** @type {gsap.core.Tween | undefined} */
+  let snapTween;
+  /** @type {gsap.core.Tween | undefined} */
+  let settleCall;
+  const settleSnap = () => {
+    const target = Math.round(wheel.p * (PARTNERS.length - 1)) / (PARTNERS.length - 1);
+    if (Math.abs(target - wheel.p) < 1e-4) return;
+    snapTween = gsap.to(wheel, {
+      p: target,
+      duration: PARTNERS_SNAP_DURATION_S,
+      ease: PARTNERS_SNAP_EASE,
+      onUpdate: applyWheel,
+    });
+  };
+  /** Re-arm the settle timer, killing any pending/mid-flight snap — the
+   * retarget-safety choke point: called on EVERY wheel update before the
+   * raw write, so live input always wins instantly. */
+  const armSettle = () => {
+    snapTween?.kill();
+    settleCall?.kill();
+    settleCall = gsap.delayedCall(PARTNERS_SNAP_DELAY_S, settleSnap);
   };
 
   /** @type {gsap.core.Tween | undefined} */
@@ -116,6 +166,8 @@ export function initPartnersScroll() {
       }
     });
     meltTween?.kill();
+    snapTween?.kill();
+    settleCall?.kill();
 
     // Melt lead (fix 1, re-tuned at Oscar's re-pass) — how many scroll px
     // BEFORE this section's own top-vs-viewport-bottom crossing the entry
@@ -185,6 +237,29 @@ export function initPartnersScroll() {
       },
     );
 
+    // ── Stage 2: the wheel scrub ─────────────────────────────────────
+    // One trigger owns the whole 44-step window, sitting after the
+    // runway's head rest beat. Raw progress paints straight through
+    // applyWheel (linear by construction — scrub semantics without a
+    // tween middleman), and every update re-arms the settle timer;
+    // when input goes quiet the snap eases the display to the nearest
+    // exact index. Fling-safe with no extra guards: progress clamps to
+    // [0,1] in the same update pass the gates fire, and 0/1 are
+    // themselves exact indices (names 0 and 44), so window-edge rests
+    // are already flat. Reversal-symmetric: nothing here is direction-
+    // aware.
+    const wheelTrig = ScrollTrigger.create({
+      trigger: section,
+      start: `top+=${PARTNERS_ENTRY_FADE_PX} bottom`,
+      end: `top+=${PARTNERS_ENTRY_FADE_PX + PARTNERS_SCRUB_PX} bottom`,
+      id: 'about-partners-wheel',
+      onUpdate: (self) => {
+        armSettle();
+        wheel.p = self.progress;
+        applyWheel();
+      },
+    });
+
     // Runway — this is now the page's LAST section: it carries the
     // +1-viewport headroom pad (the exit-end-at-native-max-scroll
     // rounding hazard, same as landing carried before it).
@@ -204,10 +279,18 @@ export function initPartnersScroll() {
     // scrub self-syncs via ScrollTrigger.refresh() (scrub jump on
     // update), landing the stage's inline opacity wherever the live
     // scroll position sits in the crossfade window.
-    assertRestState();
     setStageVisible(window.scrollY >= entry.start && window.scrollY < exitEnd.start);
 
     ScrollTrigger.refresh();
+
+    // Wheel restoration AFTER the refresh (trigger progress is only
+    // meaningful once every anchor above is final): paint the raw value
+    // at the live position, then arm the settle — a rebuild that lands
+    // mid-step (resize while resting between names) squares itself to
+    // the nearest index the same way a scroll-stop does.
+    wheel.p = wheelTrig.progress;
+    applyWheel();
+    armSettle();
   };
 
   let cancelled = false;
@@ -245,7 +328,10 @@ export function initPartnersScroll() {
       }
     });
     meltTween?.kill();
+    snapTween?.kill();
+    settleCall?.kill();
     gsap.killTweensOf(stage);
+    gsap.killTweensOf(wheel);
     if (video instanceof HTMLVideoElement) video.pause();
     setStageVisible(false);
   };
