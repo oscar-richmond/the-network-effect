@@ -1,6 +1,7 @@
 ---
 import AboutHero from './AboutHero.astro';
 import FoundersSection from './FoundersSection.astro';
+import DetailView from './DetailView.astro';
 import { asset } from '../../utils/asset.js';
 import 'lenis/dist/lenis.css';
 
@@ -236,7 +237,10 @@ const pillarRows = [
               <span class="about-landing__gallery-caption-dot" aria-hidden="true"></span>
               {item.label}
             </figcaption>
-            <div class="about-landing__gallery-frame">
+            <!-- data-hover: the canvas cursor's grow affordance — these
+                 frames are CLICKABLE (detail-view.js) and the native
+                 cursor is hidden site-wide under the custom cursor. -->
+            <div class="about-landing__gallery-frame" data-hover>
               <img
                 src={item.src}
                 alt=""
@@ -310,7 +314,7 @@ const pillarRows = [
               style={`left:${item.x}%; margin-top:${item.y}px`}
               data-wave-speed={item.speed}
             >
-              <div class="about-landing__gallery-frame">
+              <div class="about-landing__gallery-frame" data-hover>
                 <img src={item.src} alt="" loading="lazy" decoding="async" data-about-landing-wave-img />
               </div>
             </figure>
@@ -423,17 +427,23 @@ const pillarRows = [
   </div>
 </section>
 
+<DetailView />
+
 <script>
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
   import { initLandingScroll } from '../../scripts/about-3/landing-scroll.js';
+  import { initDetailView } from '../../scripts/about-3/detail-view.js';
 
   let cleanupAbout3Scroll = initAbout3Scroll();
   let cleanupLandingScroll = initLandingScroll();
+  let cleanupDetailView = initDetailView();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupAbout3Scroll?.();
     cleanupAbout3Scroll = undefined;
     cleanupLandingScroll?.();
     cleanupLandingScroll = undefined;
+    cleanupDetailView?.();
+    cleanupDetailView = undefined;
   }, { once: true });
 </script>

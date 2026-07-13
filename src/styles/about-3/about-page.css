@@ -512,6 +512,9 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	   Lenis unaffected. */
 	.about-page-3 .about-landing__gallery-frame {
 		pointer-events: auto;
+		/* Clickable since the detail view (detail-view.js): every landing
+		   image opens its pillar's detail entry. */
+		cursor: pointer;
 	}
 
 	.about-page-3 .about-landing__gallery-track {

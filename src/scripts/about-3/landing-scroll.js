@@ -276,10 +276,35 @@ export function initLandingScroll() {
   // — and therefore every served image — is invisible.
   const hoverBlur = stage instanceof HTMLElement ? createGalleryHoverBlur(stage) : null;
 
+  // Detail-view freeze flag (see the coupling below) — declared before
+  // setStageVisible, which reads it.
+  let detailFrozen = false;
+
   const setStageVisible = (visible) => {
     if (stage instanceof HTMLElement) stage.style.visibility = visible ? 'visible' : 'hidden';
-    hoverBlur?.setPaused(!visible);
+    // While the detail view is open the hover module stays paused
+    // regardless of stage visibility (frozen beneath the detail layer).
+    hoverBlur?.setPaused(detailFrozen || !visible);
   };
+
+  // Detail-view freeze coupling (detail-view.js dispatches these while
+  // it owns the screen): the hover module's tick must not keep
+  // re-showing planes/overlays over — or hiding imgs under — the
+  // frozen landing, and its overlays must not strand mid-hover text.
+  const onLandingFreeze = () => {
+    detailFrozen = true;
+    hoverBlur?.setPaused(true);
+    landing.querySelectorAll('[data-about-landing-gallery-overlay]').forEach((overlay) => {
+      if (overlay instanceof HTMLElement) overlay.style.opacity = '0';
+    });
+  };
+  const onLandingUnfreeze = () => {
+    detailFrozen = false;
+    hoverBlur?.setPaused(false);
+    hoverBlur?.resize();
+  };
+  document.addEventListener('about-landing:freeze', onLandingFreeze);
+  document.addEventListener('about-landing:unfreeze', onLandingUnfreeze);
 
   // Primary handoff signal — founders-scroll.js's applyExitState
   // dispatches this on the SAME state transition that hides its own
@@ -970,6 +995,8 @@ export function initLandingScroll() {
     cancelled = true;
     window.removeEventListener('resize', onResize);
     document.removeEventListener('about-founders:exit-state', onFoundersExitState);
+    document.removeEventListener('about-landing:freeze', onLandingFreeze);
+    document.removeEventListener('about-landing:unfreeze', onLandingUnfreeze);
     ScrollTrigger.getAll().forEach((trigger) => {
       if (typeof trigger.vars.id === 'string' && trigger.vars.id.startsWith('about-landing-')) {
         trigger.kill();
