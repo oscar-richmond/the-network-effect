@@ -79,7 +79,9 @@
 	top: 0;
 	bottom: 0;
 	width: 16vw;
-	padding-top: 29vh;
+	/* Title top sits 24px below the LEFT IMAGE's top edge (the image's
+	   top is 24vh — see .about-detail__left), per direction. */
+	padding-top: calc(24vh + 24px);
 }
 
 .about-page-3 .about-detail__title {
@@ -118,21 +120,37 @@
 	color: #161616;
 }
 
+/* Hover — the luxury micro-gesture: the arrow glides left on the house
+   line-reveal curve with the label trailing a beat behind (two
+   durations, one curve — the stagger IS the softness). Transforms are
+   fine here: no blend text inside this subtree. */
 .about-page-3 .about-detail__return-arrow {
 	display: block;
 	line-height: 0;
-}
-
-.about-page-3 .about-detail__return-arrow svg {
-	display: block;
-	width: 56px;
-	height: 10px;
+	transition: transform 0.55s cubic-bezier(0.42, 0, 0.24, 1);
 }
 
 .about-page-3 .about-detail__return-label {
 	font-family: 'Serrif', serif;
 	font-size: 16px;
 	line-height: 1.3;
+	transition: transform 0.7s cubic-bezier(0.42, 0, 0.24, 1);
+}
+
+.about-page-3 .about-detail__return:hover .about-detail__return-arrow,
+.about-page-3 .about-detail__return:focus-visible .about-detail__return-arrow {
+	transform: translateX(-8px);
+}
+
+.about-page-3 .about-detail__return:hover .about-detail__return-label,
+.about-page-3 .about-detail__return:focus-visible .about-detail__return-label {
+	transform: translateX(-4px);
+}
+
+.about-page-3 .about-detail__return-arrow svg {
+	display: block;
+	width: 32px;
+	height: 16px;
 }
 
 /* ── Right mini-carousel (home-carousel parity, wheel-driven) ────────── */
@@ -190,6 +208,24 @@
 	max-width: none;
 	object-fit: cover;
 	opacity: calc(0.5 + 0.5 * var(--slide-focus, 0));
+}
+
+/* Unfocused-slide veil (detail-view.js creates/syncs these) — white at
+   10% over a 20px BACKDROP blur (the Figma spec), fading with
+   (1 − focus) per tick. Lives directly under the viewport, ABOVE the
+   curve-media canvas (z 2 vs the canvas's 1): nothing inside the
+   transformed track can ever paint over the canvas, hence the
+   rect-synced sibling — the hover-overlay idiom. The backdrop-filter
+   value is written inline by JS (the one source for the px constant);
+   element opacity fades the whole filtered composite smoothly. */
+.about-page-3 .about-detail__slide-veil {
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	top: 0;
+	background: rgba(255, 255, 255, 0.1);
+	opacity: 0;
+	pointer-events: none;
 }
 
 /* ── Difference overlay label ("Talent Partnerships" …) ──────────────

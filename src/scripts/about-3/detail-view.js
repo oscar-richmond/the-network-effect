@@ -76,14 +76,21 @@ const RETURN_HIDDEN_XPERCENT = 20;
 const LABEL_SWAP_BLUR_PX = 4;
 const LABEL_SWAP_DURATION = 0.25;
 /** Carousel motion — lerp smoothing ≈ the home carousel's scrub 0.45
- * feel; snap mirrors its snap tween. The wrap lock is LONGER than
- * home's 320ms: the detail carousel is raw-wheel-driven (no Lenis
- * smoothing in front of it), so a trackpad's momentum tail keeps
- * delivering deltas well past the wrap moment. */
+ * feel; snap mirrors its snap tween. NO edge wrap (per direction):
+ * the ends clamp and stop. */
 const CAROUSEL_LERP = 0.14;
 const SNAP_DURATION = 0.45;
 const SNAP_DELAY_MS = 140;
-const WRAP_LOCK_MS = 600;
+/** Right-column entrance — slower than the first cut, materialising
+ * from blur: the hero rolling word's own transition vocabulary
+ * (about-hero.css's .is-entering/.is-exiting 10px blur), entry side
+ * only, per direction. */
+const CAROUSEL_IN_DURATION = 1.6;
+const CAROUSEL_IN_BLUR_PX = 10;
+/** Unfocused-slide veil — white at 10% over a 20px backdrop blur (the
+ * Figma spec), opacity riding (1 − focus) per tick so slide-to-slide
+ * transitions inherit the same continuous falloff as the focus dim. */
+const VEIL_BACKDROP_BLUR_PX = 20;
 
 /** Home-carousel focus falloff (home-carousel.js, verbatim maths). */
 function focusFromDistance(distance, range) {
@@ -122,10 +129,25 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
   let target = 0;
   let current = 0;
   let activeIndex = -1;
-  let wrapLock = false;
   let snapTimer = 0;
   let disposed = false;
   const snapState = { value: 0 };
+
+  // Unfocused-slide veils — white 10% + 20px BACKDROP blur over each
+  // slide, opacity (1 − focus). They must live OUTSIDE the transformed
+  // track and ABOVE the curve-media canvas (z 1): the track's transform
+  // makes it a stacking context, so nothing inside it can ever paint
+  // over the canvas — the same reason the hover overlays sit outside
+  // the gallery track. Rect-synced to their slides each tick (width/
+  // left are stable; top moves with the track).
+  const veils = slides.map(() => {
+    const veil = document.createElement('div');
+    veil.className = 'about-detail__slide-veil';
+    veil.style.backdropFilter = `blur(${VEIL_BACKDROP_BLUR_PX}px)`;
+    veil.style.webkitBackdropFilter = `blur(${VEIL_BACKDROP_BLUR_PX}px)`;
+    viewport.appendChild(veil);
+    return veil;
+  });
 
   const setLabel = (index, immediate) => {
     const label = slides[index]?.dataset.detailLabel ?? '';
@@ -171,15 +193,25 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
   const updateFocus = () => {
     const viewportRect = viewport.getBoundingClientRect();
     const viewportCenterY = viewportRect.top + viewportRect.height / 2;
-    slides.forEach((slide) => {
+    slides.forEach((slide, i) => {
       const rect = slide.getBoundingClientRect();
+      const veil = veils[i];
       if (rect.height < 1) {
         slide.style.setProperty('--slide-focus', '0');
+        if (veil) veil.style.opacity = '0';
         return;
       }
       const distance = Math.abs(rect.top + rect.height / 2 - viewportCenterY);
       const range = Math.max(rect.height * 0.85, viewportRect.height * 0.28);
-      slide.style.setProperty('--slide-focus', focusFromDistance(distance, range).toFixed(4));
+      const focus = focusFromDistance(distance, range);
+      slide.style.setProperty('--slide-focus', focus.toFixed(4));
+      if (veil) {
+        veil.style.left = `${rect.left - viewportRect.left}px`;
+        veil.style.top = `${rect.top - viewportRect.top}px`;
+        veil.style.width = `${rect.width}px`;
+        veil.style.height = `${rect.height}px`;
+        veil.style.opacity = (1 - focus).toFixed(4);
+      }
     });
   };
 
@@ -209,37 +241,9 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
     event.preventDefault();
     if (disposed) return;
     gsap.killTweensOf(snapState);
-
-    // Edge wrap — home's tryWrapAtEdge semantics, PROPERLY gated on a
-    // SETTLED edge: the rendered position (current) must already sit at
-    // the boundary AND a fresh push must arrive. The original gate
-    // fired the moment the accumulated wheel target merely REACHED the
-    // end mid-momentum — scrolling down 3–4 images snapped the track
-    // back to the top (the reported glitch). Momentum tails after a
-    // wrap are swallowed by the lock window.
-    if (!wrapLock) {
-      const settledAtEnd = Math.abs(current - span) < 2 && target >= span - 1;
-      const settledAtStart = Math.abs(current) < 2 && target <= 1;
-      if (settledAtEnd && event.deltaY > 0) {
-        wrapLock = true;
-        target = 0;
-        current = 0;
-        window.setTimeout(() => {
-          wrapLock = false;
-        }, WRAP_LOCK_MS);
-        return;
-      }
-      if (settledAtStart && event.deltaY < 0) {
-        wrapLock = true;
-        target = span;
-        current = span;
-        window.setTimeout(() => {
-          wrapLock = false;
-        }, WRAP_LOCK_MS);
-        return;
-      }
-    }
-
+    // Clamped, NO wrap (per explicit direction — an earlier edge-wrap
+    // read as a glitch): reaching the last image simply stops there;
+    // further pushes are absorbed by the clamp.
     target = Math.max(0, Math.min(span, target + event.deltaY));
     window.clearTimeout(snapTimer);
     snapTimer = window.setTimeout(snapToNearest, SNAP_DELAY_MS);
@@ -292,6 +296,7 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
       viewport.removeEventListener('wheel', onWheel);
       gsap.killTweensOf(snapState);
       gsap.killTweensOf(labelWrapper);
+      veils.forEach((veil) => veil.remove());
       curve?.destroy();
       gsap.set(track, { y: offsets[0] ?? 0 });
       // Park the label for the next open: wrapper invisible, inner
@@ -620,10 +625,21 @@ export function initDetailView() {
         },
         `start+=${OPEN_BEATS.content}`,
       )
-      // Right column next…
-      .to(
+      // Right column next — slower, materialising from blur (the hero
+      // rolling word's transition vocabulary, entry side only). The
+      // filter is cleared on completion so no resting stacking noise
+      // lingers on the viewport.
+      .fromTo(
         part.viewport instanceof HTMLElement ? part.viewport : [],
-        { opacity: 1, duration: 0.9, ease: 'power2.out' },
+        { opacity: 0, filter: `blur(${CAROUSEL_IN_BLUR_PX}px)` },
+        {
+          opacity: 1,
+          filter: 'blur(0px)',
+          duration: CAROUSEL_IN_DURATION,
+          ease: 'power2.out',
+          immediateRender: false,
+          clearProps: 'filter',
+        },
         `start+=${OPEN_BEATS.carousel}`,
       )
       // …its overlay label entering with the SAME line-reveal roll as
@@ -717,10 +733,17 @@ export function initDetailView() {
       );
     }
     tl
-      // Right column + its label out together…
+      // Right column + its label out together (blur mirror of the
+      // entrance)…
       .to(
         part.viewport instanceof HTMLElement ? part.viewport : [],
-        { opacity: 0, duration: 0.55, ease: 'power2.in' },
+        {
+          opacity: 0,
+          filter: `blur(${CAROUSEL_IN_BLUR_PX}px)`,
+          duration: 0.55,
+          ease: 'power2.in',
+          clearProps: 'filter',
+        },
         `start+=${CLOSE_BEATS.carousel}`,
       )
       .to(
