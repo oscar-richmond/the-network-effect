@@ -55,8 +55,11 @@ export const founders = [
     photo: '/assets/about-scroll/robbo-team.png',
     media: {
       type: 'video',
-      // Stock preview stand-in — spec-for-purpose only. Swap this file
-      // (same path) for the licensed clip; no code changes needed.
+      // Stock preview stand-in (AdobeStock_2068472100 HD preview, Oscar-
+      // supplied, replacing the original stand-in clip; audio stripped,
+      // stream-copied) — STILL a preview, spec-for-purpose only. Swap
+      // this file (same path) for the licensed clip; no code changes
+      // needed.
       // IMPORTANT: also regenerate public/assets/about-hero/about-3/bg-fade.jpg
       // from the new clip's first frame at swap time — see the recipe
       // comment above bgFadeSrc in AboutScroll.astro. bg-fade is a static
