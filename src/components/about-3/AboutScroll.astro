@@ -277,31 +277,70 @@ const pillarRows = [
 
     <!-- Pillar image waves — one per pillar row, parked fully below the
          stage (items are absolute at top:100% + their composed y offset)
-         until landing-scroll.js scrubs the container's y straight up.
-         PAINT ORDER: positioned siblings with no z-index paint in source
-         order — these sit AFTER the gallery (above it; it has lifted out
-         by the time a wave runs) and BEFORE the text rows, so the rows'
-         difference text paints above passing wave imagery and inverts
-         against it, exactly like the gallery phase. BLEND SAFETY: no
-         blend text inside, so the scrubbed transform is safe here (it
-         is a sibling of the blend rows, same as the gallery track), and
-         like the track these must never gain will-change (Chromium
-         excludes promoted siblings from the blend backdrop). display:
+         until landing-scroll.js scrubs each wave's TRACK straight up.
+         STRUCTURE mirrors the gallery exactly, for the same reason: the
+         WRAPPER stays untransformed (it hosts the rect-synced hover
+         overlays, which write viewport-space left/top and would be
+         double-offset inside a transformed ancestor — and a transform
+         here would also isolate their difference blend), while the
+         inner TRACK carries the container scrub and the items their
+         per-speed drifts. PAINT ORDER: positioned siblings with no
+         z-index paint in source order — these sit AFTER the gallery
+         (above it; it has lifted out by the time a wave runs) and
+         BEFORE the hover-canvas slot + text rows, so the shared WebGL
+         canvas paints above the wave imagery and the rows' difference
+         text paints above both, inverting exactly like the gallery
+         phase. BLEND SAFETY: transforms stay on the track/items, and
+         nothing here may gain will-change (Chromium excludes promoted
+         siblings from the blend backdrop). Frames reuse the gallery's
+         .about-landing__gallery-frame class: it is the hover module's
+         plane/hit-test unit (pointer-events: auto opt-in under the
+         pointer-events:none subtree) — see gallery-hover-blur.js.
+         Overlay indices are STAGE-GLOBAL, continuing after the
+         gallery's 0..11 in DOM order — the module maps its i-th image
+         (queried across the whole stage) to overlay index i. display:
          none under reduced motion (about-page.css base state) — purely
          decorative, aria-hidden. -->
     {pillarWaves.map((wave, waveIndex) => (
       <div class="about-landing__wave" data-about-landing-wave={waveIndex} aria-hidden="true">
-        {wave.map((item) => (
-          <figure
-            class={`about-landing__wave-item about-landing__wave-item--${item.size}`}
-            style={`left:${item.x}%; margin-top:${item.y}px`}
-            data-wave-speed={item.speed}
+        <div class="about-landing__wave-track" data-about-landing-wave-track>
+          {wave.map((item) => (
+            <figure
+              class={`about-landing__wave-item about-landing__wave-item--${item.size}`}
+              style={`left:${item.x}%; margin-top:${item.y}px`}
+              data-wave-speed={item.speed}
+            >
+              <div class="about-landing__gallery-frame">
+                <img src={item.src} alt="" loading="lazy" decoding="async" data-about-landing-wave-img />
+              </div>
+            </figure>
+          ))}
+        </div>
+        {wave.map((_, j) => (
+          <div
+            class="about-landing__gallery-overlay"
+            data-about-landing-gallery-overlay={galleryItems.length + waveIndex * wave.length + j}
+            aria-hidden="true"
           >
-            <img src={item.src} alt="" loading="lazy" decoding="async" data-about-landing-wave-img />
-          </figure>
+            <p class="about-landing__gallery-overlay-text">Take a moment to explore our services</p>
+          </div>
         ))}
       </div>
     ))}
+
+    <!-- Shared hover-blur canvas slot — gallery-hover-blur.js appends
+         its single WebGL canvas here (one renderer for all 30 images:
+         gallery + waves) instead of inside the gallery. Positioned at
+         THIS source position so the canvas paints above every image
+         track yet below the difference-text rows; the overlays' own
+         z-index:1 lifts them above the canvas from anywhere in the
+         stage's isolation context. Empty and inert (pointer-events:
+         none) when the module never runs. -->
+    <div
+      class="about-landing__hover-canvas-slot"
+      data-about-landing-hover-canvas-slot
+      aria-hidden="true"
+    ></div>
 
     <div class="about-landing__row" data-about-landing-row-intro>
       <p class="about-landing__text about-landing__text--body" data-about-landing-col>

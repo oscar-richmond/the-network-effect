@@ -264,14 +264,17 @@ export function initLandingScroll() {
    * @param {boolean} visible
    */
   // Created ONCE (module-instance scope, like founders-scroll.js's
-  // dissolve/videoController) — the gallery markup is static (server-
+  // dissolve/videoController) — the served markup is static (server-
   // rendered, never recreated by JS), so it doesn't need rebuilding on
-  // resize, only re-pointing via resize()/setPaused(). Paused in lockstep
-  // with the stage itself: gallery-hover-blur.js's tick loop (and its
-  // per-frame mount/unmount reconciliation) has no reason to run while
-  // the stage — and therefore the whole gallery — is invisible.
-  const galleryEl = document.querySelector('body.about-page-3 [data-about-landing-gallery]');
-  const hoverBlur = galleryEl instanceof HTMLElement ? createGalleryHoverBlur(galleryEl) : null;
+  // resize, only re-pointing via resize()/setPaused(). Passed the whole
+  // STAGE (not just the gallery) since the pillar waves joined the
+  // hover-blur roster: one renderer/canvas serves all 30 images —
+  // gallery + the three waves — with the module's mount window keeping
+  // concurrent planes to the visible few. Paused in lockstep with the
+  // stage itself: gallery-hover-blur.js's tick loop (and its per-frame
+  // mount/unmount reconciliation) has no reason to run while the stage
+  // — and therefore every served image — is invisible.
+  const hoverBlur = stage instanceof HTMLElement ? createGalleryHoverBlur(stage) : null;
 
   const setStageVisible = (visible) => {
     if (stage instanceof HTMLElement) stage.style.visibility = visible ? 'visible' : 'hidden';
@@ -729,7 +732,12 @@ export function initLandingScroll() {
         waves.forEach((wave, i) => {
           const row = pillarRows[i];
           if (!(row instanceof HTMLElement)) return;
-          const items = Array.from(wave.children).filter((el) => el instanceof HTMLElement);
+          // The TRACK is the scrub target — the wave wrapper itself must
+          // stay untransformed (it hosts the hover module's rect-synced
+          // overlays; same wrapper/track split as the gallery).
+          const track = wave.querySelector('[data-about-landing-wave-track]');
+          if (!(track instanceof HTMLElement)) return;
+          const items = Array.from(track.children).filter((el) => el instanceof HTMLElement);
           if (!items.length) return;
 
           // offsetTop is layout-only (transform-independent) and
@@ -754,7 +762,7 @@ export function initLandingScroll() {
 
           const waveEndPx = waveStartPx + WAVE_SCROLL_PX;
           gsap.fromTo(
-            wave,
+            track,
             { y: 0 },
             {
               y: -waveTravel,
@@ -970,7 +978,7 @@ export function initLandingScroll() {
     revealTl?.kill();
     gsap.killTweensOf(
       landing.querySelectorAll(
-        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], .about-landing__wave-item, [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], [data-about-landing-wave-track], .about-landing__wave-item, [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));

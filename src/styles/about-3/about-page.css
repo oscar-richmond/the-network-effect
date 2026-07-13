@@ -586,10 +586,23 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		pointer-events: none;
 	}
 
+	/* Wave track — the transformed layer (landing-scroll.js scrubs its
+	   y; items add per-speed drifts), nested inside the untransformed
+	   wave wrapper exactly like the gallery's track/gallery split: the
+	   wrapper hosts the rect-synced hover overlays, which must never
+	   sit under a transformed ancestor. Absolute inset:0 so the items'
+	   top:100% still resolves against the stage box. No z-index, no
+	   will-change — the blend-backdrop rules that bind the gallery
+	   track bind this identically. */
+	.about-page-3 .about-landing__wave-track {
+		position: absolute;
+		inset: 0;
+	}
+
 	/* Wave items — parked below the stage bottom (top:100%), pushed
 	   further down per item by the composition's inline margin-top, and
 	   placed across the stage by its inline left %. Motion is the
-	   container's base y scrub plus a per-item drift at the composed
+	   track's base y scrub plus a per-item drift at the composed
 	   data-wave-speed multiplier (landing-scroll.js) — arrival order
 	   and rhythm come from these composed offsets and speeds. */
 	.about-page-3 .about-landing__wave-item {
@@ -598,7 +611,18 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		margin: 0;
 	}
 
-	.about-page-3 .about-landing__wave-item img {
+	/* The frame inside each item is the hover module's plane/hit-test
+	   unit (shared .about-landing__gallery-frame class — that class's
+	   pointer-events:auto opt-in and overflow clip apply here too). It
+	   fills the size-classed figure; the img cover-fills the frame at
+	   100% width — NOT the gallery's 115% parallax over-width (waves
+	   have no x parallax), hence the higher-specificity override. */
+	.about-page-3 .about-landing__wave-item .about-landing__gallery-frame {
+		width: 100%;
+		height: 100%;
+	}
+
+	.about-page-3 .about-landing__wave-item .about-landing__gallery-frame img {
 		display: block;
 		width: 100%;
 		height: 100%;
@@ -606,6 +630,16 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		   imgs (harmless at width:100%, load-bearing consistency). */
 		max-width: none;
 		object-fit: cover;
+	}
+
+	/* Shared hover-canvas slot — full-stage positioning context for the
+	   single WebGL canvas gallery-hover-blur.js appends (see
+	   AboutScroll.astro for the paint-order rationale). Inert without
+	   the module. */
+	.about-page-3 .about-landing__hover-canvas-slot {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
 	}
 
 	/* Wave size vocabulary — square/rectangle hand-set scale steps (the
