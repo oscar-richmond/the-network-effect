@@ -264,19 +264,57 @@ export function initLandingScroll() {
    * @param {boolean} visible
    */
   // Created ONCE (module-instance scope, like founders-scroll.js's
-  // dissolve/videoController) — the gallery markup is static (server-
+  // dissolve/videoController) — the served markup is static (server-
   // rendered, never recreated by JS), so it doesn't need rebuilding on
-  // resize, only re-pointing via resize()/setPaused(). Paused in lockstep
-  // with the stage itself: gallery-hover-blur.js's tick loop (and its
-  // per-frame mount/unmount reconciliation) has no reason to run while
-  // the stage — and therefore the whole gallery — is invisible.
-  const galleryEl = document.querySelector('body.about-page-3 [data-about-landing-gallery]');
-  const hoverBlur = galleryEl instanceof HTMLElement ? createGalleryHoverBlur(galleryEl) : null;
+  // resize, only re-pointing via resize()/setPaused(). Passed the whole
+  // STAGE (not just the gallery) since the pillar waves joined the
+  // hover-blur roster: one renderer/canvas serves all 30 images —
+  // gallery + the three waves — with the module's mount window keeping
+  // concurrent planes to the visible few. Paused in lockstep with the
+  // stage itself: gallery-hover-blur.js's tick loop (and its per-frame
+  // mount/unmount reconciliation) has no reason to run while the stage
+  // — and therefore every served image — is invisible.
+  const hoverBlur = stage instanceof HTMLElement ? createGalleryHoverBlur(stage) : null;
+
+  // Detail-view freeze flag (see the coupling below) — declared before
+  // setStageVisible, which reads it.
+  let detailFrozen = false;
 
   const setStageVisible = (visible) => {
     if (stage instanceof HTMLElement) stage.style.visibility = visible ? 'visible' : 'hidden';
-    hoverBlur?.setPaused(!visible);
+    // While the detail view is open the hover module stays paused
+    // regardless of stage visibility (frozen beneath the detail layer).
+    hoverBlur?.setPaused(detailFrozen || !visible);
   };
+
+  // Detail-view freeze coupling (detail-view.js dispatches these while
+  // it owns the screen): the hover module's tick must not keep
+  // re-showing planes/overlays over — or hiding imgs under — the
+  // frozen landing, and its overlays must not strand mid-hover text.
+  const onLandingFreeze = () => {
+    detailFrozen = true;
+    // calm() BEFORE pause: the paused canvas keeps showing its last
+    // render — calming first means it shows resting SHARP planes, so
+    // the detail view's departing clone reveals identical pixels, not
+    // a frozen mid-hover blur (measured as a visible pop).
+    hoverBlur?.calm();
+    hoverBlur?.setPaused(true);
+    // Frames stay hit-testable through the detail stage's pointer-
+    // events:none regions otherwise — hover churn under the open detail
+    // view would snap visible on unfreeze (about-page.css rule).
+    if (stage instanceof HTMLElement) stage.classList.add('is-frozen');
+    landing.querySelectorAll('[data-about-landing-gallery-overlay]').forEach((overlay) => {
+      if (overlay instanceof HTMLElement) overlay.style.opacity = '0';
+    });
+  };
+  const onLandingUnfreeze = () => {
+    detailFrozen = false;
+    if (stage instanceof HTMLElement) stage.classList.remove('is-frozen');
+    hoverBlur?.setPaused(false);
+    hoverBlur?.resize();
+  };
+  document.addEventListener('about-landing:freeze', onLandingFreeze);
+  document.addEventListener('about-landing:unfreeze', onLandingUnfreeze);
 
   // Primary handoff signal — founders-scroll.js's applyExitState
   // dispatches this on the SAME state transition that hides its own
@@ -729,7 +767,12 @@ export function initLandingScroll() {
         waves.forEach((wave, i) => {
           const row = pillarRows[i];
           if (!(row instanceof HTMLElement)) return;
-          const items = Array.from(wave.children).filter((el) => el instanceof HTMLElement);
+          // The TRACK is the scrub target — the wave wrapper itself must
+          // stay untransformed (it hosts the hover module's rect-synced
+          // overlays; same wrapper/track split as the gallery).
+          const track = wave.querySelector('[data-about-landing-wave-track]');
+          if (!(track instanceof HTMLElement)) return;
+          const items = Array.from(track.children).filter((el) => el instanceof HTMLElement);
           if (!items.length) return;
 
           // offsetTop is layout-only (transform-independent) and
@@ -754,7 +797,7 @@ export function initLandingScroll() {
 
           const waveEndPx = waveStartPx + WAVE_SCROLL_PX;
           gsap.fromTo(
-            wave,
+            track,
             { y: 0 },
             {
               y: -waveTravel,
@@ -962,6 +1005,8 @@ export function initLandingScroll() {
     cancelled = true;
     window.removeEventListener('resize', onResize);
     document.removeEventListener('about-founders:exit-state', onFoundersExitState);
+    document.removeEventListener('about-landing:freeze', onLandingFreeze);
+    document.removeEventListener('about-landing:unfreeze', onLandingUnfreeze);
     ScrollTrigger.getAll().forEach((trigger) => {
       if (typeof trigger.vars.id === 'string' && trigger.vars.id.startsWith('about-landing-')) {
         trigger.kill();
@@ -970,7 +1015,7 @@ export function initLandingScroll() {
     revealTl?.kill();
     gsap.killTweensOf(
       landing.querySelectorAll(
-        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], .about-landing__wave-item, [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
+        '[data-about-landing-gallery-track], [data-about-landing-gallery-img], [data-about-landing-col], [data-about-landing-row-intro], [data-about-landing-pillar-row], [data-about-landing-wave], [data-about-landing-wave-track], .about-landing__wave-item, [data-about-landing-col] .lr-clip, [data-about-landing-row-intro] .lr-clip, [data-about-landing-pillar-row] .lr-clip',
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));

@@ -230,7 +230,13 @@ class CurveMediaPlane {
  * @param {HTMLElement} viewport
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLImageElement[]} images
- * @param {{ segments?: number, amplitude?: number, aberration?: number, smoothing?: number }} [options]
+ * @param {{ segments?: number, amplitude?: number, aberration?: number, smoothing?: number, getScrollPosition?: () => number }} [options]
+ *   `getScrollPosition` overrides the velocity source (default:
+ *   window.scrollY — the homepage carousel's page-scroll case). The
+ *   about-3 detail view's mini-carousel moves its track by transform
+ *   while page scroll is LOCKED, so it feeds its own virtual scroll
+ *   value here; everything downstream (damping, bend, aberration) is
+ *   identical.
  */
 export function initCurveMedia(viewport, canvas, images, options = {}) {
   const config = {
@@ -238,6 +244,7 @@ export function initCurveMedia(viewport, canvas, images, options = {}) {
     amplitude: options.amplitude ?? 0.03,
     aberration: options.aberration ?? 0.003,
     smoothing: options.smoothing ?? 6,
+    getScrollPosition: options.getScrollPosition ?? (() => window.scrollY),
   };
 
   let renderer;
@@ -262,7 +269,7 @@ export function initCurveMedia(viewport, canvas, images, options = {}) {
   const planes = images.map((img) => new CurveMediaPlane(img, scene, config));
 
   let velocity = 0;
-  let lastScrollY = window.scrollY;
+  let lastScrollY = config.getScrollPosition();
   let lastTime = performance.now();
   let rafId = 0;
   let disposed = false;
@@ -285,7 +292,7 @@ export function initCurveMedia(viewport, canvas, images, options = {}) {
     const delta = Math.max((time - lastTime) / 1000, 0.0001);
     lastTime = time;
 
-    const current = window.scrollY;
+    const current = config.getScrollPosition();
     const instantDelta = current - lastScrollY;
     lastScrollY = current;
 

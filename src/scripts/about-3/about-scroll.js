@@ -405,6 +405,18 @@ export function initAbout3Scroll() {
 
   initSmoothScrolling();
 
+  // Scroll-lock event coupling — the detail view (detail-view.js) freezes
+  // the page while it is open, and this module owns the Lenis instance,
+  // so the lock is expressed as document events rather than a cross-
+  // module import (the about-founders:exit-state precedent). lenis.stop()
+  // parks Lenis's own rAF-driven scrolling (wheel + touch, since Lenis is
+  // the scroll driver); the detail view adds its own input guards for
+  // anything Lenis doesn't intercept (keyboard paging).
+  const onScrollLock = () => lenis?.stop();
+  const onScrollUnlock = () => lenis?.start();
+  document.addEventListener('about-3:scroll-lock', onScrollLock);
+  document.addEventListener('about-3:scroll-unlock', onScrollUnlock);
+
   // initHeroImageScroll's own cleanup doesn't kill the ScrollTriggers it
   // creates, so a re-run (settle, then a resize shortly after) would
   // otherwise stack duplicate/orphaned triggers on top of each other.
@@ -475,6 +487,8 @@ export function initAbout3Scroll() {
   return () => {
     cancelled = true;
     if (onResize) window.removeEventListener('resize', onResize);
+    document.removeEventListener('about-3:scroll-lock', onScrollLock);
+    document.removeEventListener('about-3:scroll-unlock', onScrollUnlock);
     cleanupHero();
     destroySmoothScrolling();
     ScrollTrigger.getAll().forEach((trigger) => trigger.kill());

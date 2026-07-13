@@ -1,0 +1,290 @@
+/* ── /about-3 landing detail view ──────────────────────────────────────
+   The layout a clicked landing image expands into (Figma node 0-91;
+   LinesToLayout open/close mechanism — see detail-view.js). Architecture
+   notes live on the component (DetailView.astro); the load-bearing rules
+   here:
+
+   - Z-CARRIER SPLIT (founders/landing precedent): z-index 200 on the
+     in-flow wrapper below, fixed + isolation ONLY on the stage. Never
+     move the z onto the stage — the difference label inside would read
+     a backdrop that excludes compositor-promoted siblings (the three-
+     regression Chromium finding).
+   - The stage is CSS-default visibility:hidden and TRANSPARENT — the
+     dedicated __bg child fades in over the landing's own exit, so the
+     two stages cross-fade rather than hard-cut.
+   - pointer-events: none on the stage; ONLY the return button and the
+     carousel viewport opt back in (the landing-frame idiom).
+   - All positioning is CSS-responsive (vw/vh) — nothing here is a
+     JS-derived px, so resize-while-open needs no rect re-derivation
+     outside the carousel's own offsets. */
+
+.about-page-3 .about-detail {
+	position: relative;
+	z-index: 200;
+	height: 0;
+}
+
+.about-page-3 .about-detail__stage {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	isolation: isolate;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.about-page-3 .about-detail__bg {
+	position: absolute;
+	inset: 0;
+	background-color: #f9f9f9;
+	opacity: 0;
+}
+
+/* ── Entry layout (Figma node 0-91 proportions at 1728×1084) ─────────── */
+
+.about-page-3 .about-detail__entry {
+	display: none;
+	position: absolute;
+	inset: 0;
+}
+
+.about-page-3 .about-detail__entry.is-active {
+	display: block;
+}
+
+.about-page-3 .about-detail__left {
+	position: absolute;
+	left: 40px;
+	top: 24vh;
+	width: 34vw;
+	height: 52vh;
+}
+
+.about-page-3 .about-detail__left-img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	/* Hidden until the FLIP clone docks and swaps for this in-layout img
+	   (from then on resize is pure CSS). detail-view.js toggles it. */
+	visibility: hidden;
+}
+
+.about-page-3 .about-detail__text {
+	position: absolute;
+	left: 38vw;
+	top: 0;
+	bottom: 0;
+	width: 16vw;
+	/* Title top sits 24px below the LEFT IMAGE's top edge (the image's
+	   top is 24vh — see .about-detail__left), per direction. */
+	padding-top: calc(24vh + 24px);
+}
+
+.about-page-3 .about-detail__title {
+	margin: 0 0 20px;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-size: 22px;
+	line-height: 1.15;
+	text-transform: uppercase;
+	letter-spacing: -0.01em;
+	color: #161616;
+}
+
+.about-page-3 .about-detail__body {
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 400;
+	font-size: 13px;
+	line-height: 1.45;
+	color: #161616;
+}
+
+.about-page-3 .about-detail__return {
+	position: absolute;
+	left: 0;
+	top: 71vh;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	pointer-events: auto;
+	color: #161616;
+}
+
+/* Hover — the luxury micro-gesture: the arrow glides left on the house
+   line-reveal curve with the label trailing a beat behind (two
+   durations, one curve — the stagger IS the softness). Transforms are
+   fine here: no blend text inside this subtree. */
+.about-page-3 .about-detail__return-arrow {
+	display: block;
+	line-height: 0;
+	transition: transform 0.55s cubic-bezier(0.42, 0, 0.24, 1);
+}
+
+.about-page-3 .about-detail__return-label {
+	font-family: 'Serrif', serif;
+	font-size: 16px;
+	line-height: 1.3;
+	transition: transform 0.7s cubic-bezier(0.42, 0, 0.24, 1);
+}
+
+.about-page-3 .about-detail__return:hover .about-detail__return-arrow,
+.about-page-3 .about-detail__return:focus-visible .about-detail__return-arrow {
+	transform: translateX(-8px);
+}
+
+.about-page-3 .about-detail__return:hover .about-detail__return-label,
+.about-page-3 .about-detail__return:focus-visible .about-detail__return-label {
+	transform: translateX(-4px);
+}
+
+.about-page-3 .about-detail__return-arrow svg {
+	display: block;
+	width: 32px;
+	height: 16px;
+}
+
+/* ── Right mini-carousel (home-carousel parity, wheel-driven) ────────── */
+
+.about-page-3 .about-detail__carousel {
+	position: absolute;
+	left: 60vw;
+	top: 0;
+	bottom: 0;
+	width: 19vw;
+	overflow: hidden;
+	pointer-events: auto;
+}
+
+.about-page-3 .about-detail__gl {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Track — flex column of slides, y-transformed by detail-view.js's
+   wheel/snap loop. NO will-change (blend-backdrop rule: the difference
+   label blends against this region). */
+.about-page-3 .about-detail__track {
+	position: absolute;
+	inset-inline: 0;
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 28px;
+}
+
+.about-page-3 .about-detail__slide {
+	position: relative;
+	flex: none;
+	width: 100%;
+	aspect-ratio: var(--slide-aspect-ratio, 3 / 4);
+	margin: 0;
+	overflow: hidden;
+	--slide-focus: 0;
+}
+
+/* DOM img — the no-WebGL fallback rendering (curve-media inline-zeroes
+   its opacity once a texture-backed plane replaces it, exactly as on the
+   homepage). Focus falloff mirrors the plane shader's mix(0.5, 1, focus)
+   alpha so both paths read the same. */
+.about-page-3 .about-detail__slide-img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	opacity: calc(0.5 + 0.5 * var(--slide-focus, 0));
+}
+
+/* Unfocused-slide veil (detail-view.js creates/syncs these) — white at
+   10% over a 20px BACKDROP blur (the Figma spec), fading with
+   (1 − focus) per tick. Lives directly under the viewport, ABOVE the
+   curve-media canvas (z 2 vs the canvas's 1): nothing inside the
+   transformed track can ever paint over the canvas, hence the
+   rect-synced sibling — the hover-overlay idiom. The backdrop-filter
+   value is written inline by JS (the one source for the px constant);
+   element opacity fades the whole filtered composite smoothly. */
+.about-page-3 .about-detail__slide-veil {
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	top: 0;
+	background: rgba(255, 255, 255, 0.1);
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* ── Difference overlay label ("Talent Partnerships" …) ──────────────
+   Blend on THIS wrapper, plain-white child — the landing gallery-overlay
+   pattern, proven live over a WebGL-canvas sibling. z 2: above the
+   carousel canvas (z 1) it blends against. Layout positioning only —
+   never transform here. */
+.about-page-3 .about-detail__label {
+	position: absolute;
+	left: 44vw;
+	right: 4vw;
+	top: calc(50% - 0.62em);
+	z-index: 2;
+	font-size: clamp(40px, 4.4vw, 78px);
+	color: #ffffff;
+	mix-blend-mode: difference;
+	pointer-events: none;
+	opacity: 0;
+}
+
+.about-page-3 .about-detail__label-text {
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-size: inherit;
+	line-height: 1.05;
+	text-align: center;
+}
+
+/* Line-reveal clip/inner for the label's ENTRY roll (detail-view.js
+   rolls the inner on open, same vocabulary as every other text; the
+   CSS default parks it on the hidden side — the lr-inner idiom). A
+   touch of bottom padding inside the clip keeps serif descenders from
+   shearing at the clip edge at this display size. */
+.about-page-3 .about-detail__label-clip {
+	display: block;
+	overflow: hidden;
+	padding-bottom: 0.08em;
+}
+
+.about-page-3 .about-detail__label-inner {
+	display: block;
+	transform: translateY(110%);
+}
+
+/* ── FLIP clone layer ────────────────────────────────────────────────
+   The flying image (z 3 — above the label and canvas while in motion).
+   Empty except mid-transition; detail-view.js writes the clone's rect
+   as inline left/top/width/height. */
+.about-page-3 .about-detail__clone-layer {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	pointer-events: none;
+}
+
+.about-page-3 .about-detail__clone-layer img {
+	position: absolute;
+	display: block;
+	max-width: none;
+	object-fit: cover;
+}

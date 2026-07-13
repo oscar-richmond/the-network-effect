@@ -320,17 +320,23 @@ class HoverBlurPlane {
 }
 
 /**
- * @param {HTMLElement} galleryEl the `.about-landing__gallery` element
+ * @param {HTMLElement} galleryEl the container to serve — originally the
+ *   `.about-landing__gallery` element alone; now the whole landing STAGE,
+ *   so one renderer/canvas serves the horizontal gallery AND the three
+ *   pillar-wave sections (30 images total; the mount window below keeps
+ *   concurrent planes to the visible few). Every served image sits in a
+ *   `.about-landing__gallery-frame` (the plane/hit-test unit) and maps by
+ *   stage-global index to a `[data-about-landing-gallery-overlay]`.
  * @returns {{ resize: () => void, setPaused: (v: boolean) => void, destroy: () => void } | null}
  *   null when touch/coarse-pointer, WebGL is unavailable, or there are no
- *   gallery images — caller keeps plain DOM images, no regression.
+ *   served images — caller keeps plain DOM images, no regression.
  */
 export function createGalleryHoverBlur(galleryEl) {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return null;
 
-  const items = Array.from(galleryEl.querySelectorAll('[data-about-landing-gallery-img]')).filter(
-    (el) => el instanceof HTMLImageElement,
-  );
+  const items = Array.from(
+    galleryEl.querySelectorAll('[data-about-landing-gallery-img], [data-about-landing-wave-img]'),
+  ).filter((el) => el instanceof HTMLImageElement);
   if (!items.length) return null;
 
   const canvas = document.createElement('canvas');
@@ -412,8 +418,17 @@ export function createGalleryHoverBlur(galleryEl) {
     if (state.overlayEl) state.overlayEl.style.opacity = '0';
   };
 
-  const isNear = (rect, screenWidth) =>
-    rect.right > -MOUNT_MARGIN_PX && rect.left < screenWidth + MOUNT_MARGIN_PX;
+  /* Both axes since the pillar waves joined: gallery items approach
+   * horizontally, wave items VERTICALLY (parked far below the stage
+   * until their scrub window) — a horizontal-only window would mount
+   * all 18 wave planes (and decode all their textures) at init. The
+   * vertical bound also unmounts gallery planes once the lift-out
+   * carries the track above the viewport — strictly cheaper. */
+  const isNear = (rect, screenWidth, screenHeight) =>
+    rect.right > -MOUNT_MARGIN_PX &&
+    rect.left < screenWidth + MOUNT_MARGIN_PX &&
+    rect.bottom > -MOUNT_MARGIN_PX &&
+    rect.top < screenHeight + MOUNT_MARGIN_PX;
 
   // Pointer handlers — attached to the FRAME element (static across
   // mount/unmount), driving a persistent per-item `progress` target via
@@ -466,7 +481,7 @@ export function createGalleryHoverBlur(galleryEl) {
 
     itemStates.forEach((state) => {
       const rect = state.frameEl.getBoundingClientRect();
-      const near = isNear(rect, screen.width);
+      const near = isNear(rect, screen.width, screen.height);
       if (near) mount(state);
       else unmount(state);
 
@@ -496,7 +511,12 @@ export function createGalleryHoverBlur(galleryEl) {
   };
 
   resize();
-  galleryEl.appendChild(canvas);
+  // Canvas placement: into the dedicated slot when the container has
+  // one (the stage-wide case — the slot sits between the image tracks
+  // and the difference-text rows, see AboutScroll.astro), else appended
+  // to the container itself (the original gallery-only behaviour).
+  const canvasSlot = galleryEl.querySelector('[data-about-landing-hover-canvas-slot]');
+  (canvasSlot instanceof HTMLElement ? canvasSlot : galleryEl).appendChild(canvas);
   rafId = requestAnimationFrame(tick);
 
   const onResize = () => resize();
@@ -504,6 +524,26 @@ export function createGalleryHoverBlur(galleryEl) {
 
   return {
     resize,
+    /** Snap every hover state to rest and repaint once — called by the
+     * detail-view freeze (landing-scroll.js) BEFORE setPaused(true):
+     * a paused canvas keeps displaying its last render, and if that
+     * render was mid-hover the clicked image's frozen plane would sit
+     * BLURRED beneath the detail view's departing sharp clone (a
+     * visible pop as the clone flies away). Kills the progress tweens
+     * too, so nothing snaps to a stale value on resume. */
+    calm() {
+      if (disposed) return;
+      itemStates.forEach((state) => {
+        gsap.killTweensOf(state.progress);
+        state.progress.value = 0;
+        if (state.plane) {
+          state.plane.setProgress(0);
+          state.plane.update(state.frameEl.getBoundingClientRect(), screen, viewport);
+        }
+        if (state.overlayEl) state.overlayEl.style.opacity = '0';
+      });
+      renderer.render({ scene, camera });
+    },
     /** Idle/resume the rAF loop — called from landing-scroll.js's
      * setStageVisible, so this pauses exactly when the stage (and
      * therefore the whole gallery) is hidden. Mounted planes are left

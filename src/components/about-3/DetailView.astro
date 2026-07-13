@@ -1,0 +1,172 @@
+---
+import { asset } from '../../utils/asset.js';
+import '../../styles/about-3/detail-view.css';
+
+// Per-pillar detail entries (approved granularity: one entry per pillar;
+// gallery-phase images map to pillars in thirds — see detail-view.js).
+// COPY STATUS: title/index mirror the pillar rows; bodies reuse the
+// pillar rows' PLACEHOLDER copy (rows 02/03 still pending approval) and
+// the mini-gallery labels are PLACEHOLDER service sub-categories — only
+// 'Talent Partnerships' comes from the approved Figma reference. Images
+// reuse the existing stand-in pools. Per gallery item: file (in
+// pillar-waves/), label (the difference-blend overlay headline shown
+// while that slide is focused) and w/h (natural dims — the slide's
+// aspect-ratio, like the home carousel's slide data).
+const detailEntries = [
+  {
+    key: 'immerse',
+    title: 'IMMERSE',
+    num: '01',
+    body: 'Designing immersive experiences, strategic partnerships and cultural moments that bring brands, talent and communities together.',
+    gallery: [
+      { file: 'theatre-seats', label: 'Immersive Experiences', w: 736, h: 1104 },
+      { file: 'projection-dinner', label: 'Cultural Moments', w: 960, h: 1200 },
+      { file: 'ommo-orange-panel', label: 'Brand Worlds', w: 736, h: 828 },
+      { file: 'queen-vinyl-blue', label: 'Live Activations', w: 736, h: 1104 },
+    ],
+  },
+  {
+    key: 'connect',
+    title: 'CONNECT',
+    num: '02',
+    body: 'Brokering strategic partnerships that align brands and talent around shared values, shared audiences and long-term cultural equity.',
+    gallery: [
+      { file: 'skims-taxi', label: 'Talent Partnerships', w: 736, h: 920 },
+      { file: 'rhode-corvette-plate', label: 'Brand Collaborations', w: 736, h: 920 },
+      { file: 'wax-seal-envelope', label: 'Cultural Equity', w: 735, h: 920 },
+      { file: 'alaia-table-setting', label: 'Lasting Relationships', w: 736, h: 919 },
+    ],
+  },
+  {
+    key: 'amplify',
+    title: 'AMPLIFY',
+    num: '03',
+    body: 'Amplifying every moment through media, content and storytelling that carry cultural impact far beyond the room it happened in.',
+    gallery: [
+      { file: 'film-set-monitor', label: 'Media & Content', w: 1080, h: 1350 },
+      { file: 'bstn-newspaper-car', label: 'Storytelling', w: 736, h: 920 },
+      { file: 'rotary-phone-story', label: 'Cultural Impact', w: 736, h: 1308 },
+      { file: 'red-socks-car', label: 'Distribution', w: 736, h: 920 },
+    ],
+  },
+].map((entry) => ({
+  ...entry,
+  gallery: entry.gallery.map((item) => ({
+    ...item,
+    src: asset(`/assets/pillar-waves/${item.file}.jpg`),
+  })),
+}));
+
+---
+
+<!-- Landing detail view — the layout the clicked landing image expands
+     into (LinesToLayout mechanism, Figma node 0-91 layout). Follows the
+     landing/founders fixed-stage split EXACTLY: this in-flow wrapper is
+     the Z-CARRIER (200 — above the landing's 140, below the nav's 270)
+     and holds no height (it is not a scroll section — the detail view
+     freezes page scroll while open); the inner stage is fixed +
+     isolation ONLY, CSS-default visibility:hidden, revealed exclusively
+     by detail-view.js's open sequence. The stage background is a
+     dedicated child layer faded in by JS — the stage itself stays
+     transparent so the landing's own exit (text roll-out, imagery fade)
+     remains visible beneath during the transition. BLEND: the one
+     difference element here (the carousel's overlay label) follows the
+     gallery-overlay pattern — blend on a positioned z-indexed WRAPPER
+     with plain children, a sibling of (and painting above) the WebGL
+     canvas it blends against, inside the stage's isolation root. -->
+<section class="about-detail" data-about-detail aria-label="Discipline detail">
+  <div class="about-detail__stage" data-about-detail-stage>
+    <div class="about-detail__bg" data-about-detail-bg aria-hidden="true"></div>
+
+    {
+      detailEntries.map((entry, entryIndex) => (
+        <article class="about-detail__entry" data-about-detail-entry={entryIndex}>
+          <div class="about-detail__left" data-about-detail-left>
+            <img
+              class="about-detail__left-img"
+              data-about-detail-left-img
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
+
+          <div class="about-detail__text">
+            <h2 class="about-detail__title" data-about-detail-line>
+              {entry.title}
+              <sup class="founders__tag-index">/{entry.num}</sup>
+            </h2>
+            <p class="about-detail__body" data-about-detail-line>{entry.body}</p>
+            <button class="about-detail__return" data-about-detail-return type="button">
+              <!-- The supplied Arrow Vector.svg, verbatim path (curved-
+                   wing head + long shaft); stroke swapped to
+                   currentColor so it rides the button's ink. -->
+              <span class="about-detail__return-arrow" aria-hidden="true">
+                <svg viewBox="0 0 32 16" fill="none">
+                  <path
+                    d="M10.5 15.0536C10.5 14.0643 9.68933 14.254 8.7 13.014C7.428 11.414 5.908 10.018 4.16533 8.95264C2.85867 8.15398 1.27467 7.38731 0 7.38731M0 7.38731C1.27467 7.38731 2.86 6.62064 4.16533 5.82198C5.908 4.75531 7.428 3.35931 8.7 1.76198C9.68933 0.520643 10 1.04032 10 0.0536499M0 7.38731L32 7.38731"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              </span>
+              <span class="about-detail__return-label">Return</span>
+            </button>
+          </div>
+
+          <div class="about-detail__carousel" data-about-detail-viewport>
+            <canvas
+              class="about-detail__gl"
+              data-about-detail-canvas
+              aria-hidden="true"
+            ></canvas>
+            <div class="about-detail__track" data-about-detail-track>
+              {entry.gallery.map((item) => (
+                <figure
+                  class="about-detail__slide"
+                  data-carousel-slide
+                  data-detail-label={item.label}
+                  style={`--slide-aspect-ratio: ${item.w} / ${item.h};`}
+                >
+                  <img
+                    class="about-detail__slide-img"
+                    data-about-detail-slide-img
+                    src={item.src}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </figure>
+              ))}
+            </div>
+          </div>
+        </article>
+      ))
+    }
+
+    <!-- Carousel overlay label ("Talent Partnerships" …) — ONE shared
+         element, text swapped per focused slide (menu blur-dissolve
+         vocabulary, detail-view.js). Difference blend on THIS wrapper
+         (position + z-index 2: above the entry's canvas, which is z 1)
+         with plain-white children — the landing gallery-overlay
+         pattern, proven live over a WebGL canvas sibling. The
+         clip/inner pair gives the label the SAME line-reveal roll
+         entry as every other text (the open timeline rolls the inner;
+         swaps during use ride the wrapper's blur-dissolve). -->
+    <div class="about-detail__label" data-about-detail-label aria-hidden="true">
+      <p class="about-detail__label-text">
+        <span class="about-detail__label-clip"
+          ><span class="about-detail__label-inner" data-about-detail-label-text></span></span
+        >
+      </p>
+    </div>
+
+    <!-- FLIP clone layer — the flying image travels here (z 3, above
+         label + canvas) between the landing frame rect and the entry's
+         left slot. Empty except mid-transition. -->
+    <div
+      class="about-detail__clone-layer"
+      data-about-detail-clone-layer
+      aria-hidden="true"
+    ></div>
+  </div>
+</section>
