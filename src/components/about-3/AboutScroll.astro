@@ -149,31 +149,27 @@ const pillarRows = [
      the pre-rearchitecture Robbo photo, stale the moment slide 1 became
      a video of an unrelated scene).
 
-     Since the paper rearchitecture (Oscar, 2026-07-14) the live section
-     is the UNTREATED founders-bg-paper.jpg (no blur, no darken —
-     --founders-blur-px is 0 and the overlay darken is gone), so the
-     treatment step here is IDENTITY: this file is simply the paper
-     image at the historical 1024×749 crop target. The grain layer above
-     it is NOT baked in — it's subtle, animated, and only revealed with
-     the founders stage itself.
+     Since the flat-dark revision (Oscar, 2026-07-14, superseding the
+     same-day paper revision) the live section background is a flat
+     #161616 (founders-bg-dark.jpg — untreated: --founders-blur-px is 0,
+     no overlay darken), so this file is simply flat #161616 at the
+     historical 1024×749 crop target. The grain layer above it is NOT
+     baked in — it's animated and only revealed with the founders stage
+     itself.
 
      REGENERATE THIS FILE whenever founders.js's `media.src` changes:
 
        python3 -c "
        from PIL import Image
-       src = Image.open('public/assets/about-hero/about-3/founders-bg-paper.jpg').convert('RGB')
-       sw, sh = src.size
-       target_aspect = 1024 / 749
-       crop_w = int(sh * target_aspect)
-       left = (sw - crop_w) // 2
-       cropped = src.crop((left, 0, left + crop_w, sh)).resize((1024, 749), Image.LANCZOS)
-       cropped.save('public/assets/about-hero/about-3/bg-fade.jpg', quality=85)
+       Image.new('RGB', (1024, 749), (22, 22, 22)).save(
+           'public/assets/about-hero/about-3/bg-fade.jpg', quality=95)
        "
 
      (The video-era recipe — ffmpeg frame grab + 86.5px Gaussian ≈ the
-     live 125px CSS blur + 20% #161616 darken — is in git history should
-     a treated background ever return.) Then re-verify the handoff live
-     before committing. -->
+     live 125px CSS blur + 20% #161616 darken — and the paper-era
+     identity crop are both in git history should either background
+     return; founders-bg-paper.jpg is likewise kept in public/assets.)
+     Then re-verify the handoff live before committing. -->
 <img
   class="about-hero__bg-fade"
   data-about-hero-bg-fade

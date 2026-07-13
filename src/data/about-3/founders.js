@@ -53,20 +53,23 @@ export const founders = [
       { label: 'Design', index: '/07' },
     ],
     photo: '/assets/about-scroll/robbo-team.png',
-    // Background rearchitected (Oscar, 2026-07-14): the video-with-live-
-    // treatment era is over — BOTH slides now share the flat paper
-    // texture Oscar supplied (untreated: --founders-blur-px is 0 and the
-    // overlay darken is gone, founders.css), with the animated grain
-    // layer above it. The slide 1<->2 media crossfade still runs but is
-    // an invisible no-op while both slides point at the same file — kept
-    // so per-founder backgrounds can return by editing only this data.
-    // IMPORTANT: public/assets/about-hero/about-3/bg-fade.jpg (the
-    // hero->founders handoff backdrop) is baked FROM this same image —
-    // regenerate it if this file changes (recipe comment above bgFadeSrc
-    // in AboutScroll.astro; the treatment step is now IDENTITY).
+    // Background rearchitected (Oscar, 2026-07-14, second revision same
+    // day): the video-with-live-treatment era is over — BOTH slides now
+    // share a flat #161616 dark (a baked 64px JPG so the media/crossfade/
+    // bg-fade machinery stays byte-for-byte identical) with the animated
+    // WHITE grain layer above it (founders.css). The paper-texture
+    // revision this replaced (founders-bg-paper.jpg) is kept in
+    // public/assets for a cheap flip-back. The slide 1<->2 media
+    // crossfade still runs but is an invisible no-op while both slides
+    // point at the same file — kept so per-founder backgrounds can
+    // return by editing only this data. IMPORTANT:
+    // public/assets/about-hero/about-3/bg-fade.jpg (the hero->founders
+    // handoff backdrop) is baked to MATCH this background — regenerate
+    // it if this changes (recipe comment above bgFadeSrc in
+    // AboutScroll.astro).
     media: {
       type: 'image',
-      src: '/assets/about-hero/about-3/founders-bg-paper.jpg',
+      src: '/assets/about-hero/about-3/founders-bg-dark.jpg',
     },
     alt: 'Portrait of Robbo McCallum',
   },
@@ -87,7 +90,7 @@ export const founders = [
     photo: '/assets/about-scroll/ashley-team.png',
     media: {
       type: 'image',
-      src: '/assets/about-hero/about-3/founders-bg-paper.jpg', // shared paper — see slide 1's media comment
+      src: '/assets/about-hero/about-3/founders-bg-dark.jpg', // shared flat dark — see slide 1's media comment
     },
     alt: 'Portrait of Ashley Walters',
   },
