@@ -1,0 +1,291 @@
+/* ── /about-3 "Partners / They trust us" ────────────────────────────────
+   Stage 1 of the approved staged build: stage + two-layer video
+   background + static arc layout + satellite slots. Geometry and visual
+   values come from the two-reference recon (Phase 1 plan):
+
+   - ARC MECHANISM: fromanother.love's own CSS, extracted verbatim — each
+     name's whole pose derives from `--index` (static, per name) and
+     `--progress` (0..1, ONE variable on the UL; Stage 2 scrubs it):
+       rel-index = index − progress × (total − 1)
+       θ = rel-index × 11°   (their spacing is EXACTLY 11°/step)
+       x = R(1−cosθ), y = R·sinθ;  translate(−x, −50%+y) rotate(θ)
+     Positive rel-index = queued BELOW on the arc; the name whose
+     rel-index reaches 0 sits flat at the anchor = active; past-active
+     names continue UP and around (negative rel-index → y negative).
+   - GEOMETRY VALUES: spacing 11° (reference-exact; the Figma's hand-
+     placed 9-13° approximates the same system). Radius: the reference's
+     58rem on a viewport-fluid 9px root = 522px at 1728w → 30.2vw,
+     labelled a FITTED STARTING VALUE (the Figma's baked rotations can't
+     be corner-fitted from the API output) — Oscar tunes against a Figma
+     overlay. Anchor: Figma-measured 20.3vw / 62% (theirs was 50vh; the
+     Figma sits the active name lower and wins on looks).
+   - TYPE/COLOUR (Figma-measured): Dazzed Bold 50px uppercase; queued =
+     #161616 at 0.40 opacity; active = solid #F9F9F9 as the STAGE-1/
+     fallback treatment (the Stage-3 knockout replaces it, Oscar's call).
+   - BACKGROUND: founders' exact two-layer pattern — see the media-group
+     comment in PartnersSection.astro and founders.css's
+     --founders-blur-px note (filter ON the media, never backdrop-filter
+     over <video>; overscan against edge halos). Figma: blur 125px +
+     rgba(0,0,0,0.2) darken — founders' own values.
+
+   BASE RULES = reduced-motion state: a static dark block, the names as a
+   plain wrapped list, generic description, poster-still background (no
+   video, no arc, no fixed stage). partners-scroll.js never boots under
+   reduced motion. */
+
+.about-page-3 .about-partners {
+	position: relative;
+	min-height: 100vh;
+	min-height: 100dvh;
+	background-color: #101010;
+	padding: 64px 40px;
+	color: #f9f9f9;
+}
+
+.about-page-3 .about-partners__media-group,
+.about-page-3 .about-partners__overlay,
+.about-page-3 .about-partners__divider,
+.about-page-3 .about-partners__veil {
+	display: none;
+}
+
+.about-page-3 .about-partners__arc {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 28px;
+	max-width: 760px;
+}
+
+.about-page-3 .about-partners__name {
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 400;
+	font-size: 15px;
+	line-height: 1.4;
+	color: #f2f0ea;
+}
+
+.about-page-3 .about-partners__satellites {
+	margin-top: 40px;
+	max-width: 420px;
+}
+
+.about-page-3 .about-partners__sat {
+	display: none;
+}
+
+.about-page-3 .about-partners__sat.is-active {
+	display: block;
+}
+
+.about-page-3 .about-partners__sat-logo,
+.about-page-3 .about-partners__sat-image {
+	display: none; /* imagery is presentational; RM keeps text only */
+}
+
+.about-page-3 .about-partners__sat-desc {
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 1.65;
+	color: #f9f9f9;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .about-partners {
+		/* Z-carrier split (founders/landing precedent): z-index HERE on
+		   the in-flow wrapper, never on the fixed stage below. 145: above
+		   landing (140), below founders (150) — never simultaneously
+		   visible with either (own entry/exit gates), so only
+		   non-conflict matters. */
+		z-index: 145;
+		padding: 0;
+	}
+
+	.about-page-3 .about-partners__stage {
+		position: fixed;
+		inset: 0;
+		width: 100%;
+		height: 100vh;
+		height: 100dvh;
+		background-color: #101010;
+		/* isolation now, ahead of Stage 3: the knockout treatment adds
+		   difference-blend leaves inside this stage — same reasoning as
+		   founders/landing (the blend subtree needs its own compositing
+		   root, and the z-index lives on the wrapper above, never here). */
+		isolation: isolate;
+		overflow: hidden;
+		visibility: hidden; /* CSS-default hidden — revealed ONLY by
+		                       partners-scroll.js's own entry gate (the
+		                       FUTURE SECTIONS contract). */
+		pointer-events: none;
+	}
+
+	/* ── Background: founders' two-layer pattern ──────────────────── */
+	.about-page-3 .about-partners__media-group {
+		display: block;
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+	}
+
+	.about-page-3 .about-partners__media {
+		--partners-blur-px: 125px; /* Figma 8:412 = founders' own value */
+		position: absolute;
+		/* Overscan beyond the stage so the heavy blur samples real video
+		   content at the edges instead of fading toward transparent — the
+		   founders edge-halo finding, same remedy. */
+		inset: calc(-1.2 * var(--partners-blur-px));
+		width: calc(100% + 2.4 * var(--partners-blur-px));
+		height: calc(100% + 2.4 * var(--partners-blur-px));
+		object-fit: cover;
+		filter: blur(var(--partners-blur-px));
+	}
+
+	.about-page-3 .about-partners__overlay {
+		display: block;
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.2); /* Figma 8:412 darken */
+	}
+
+	/* ── The arc ──────────────────────────────────────────────────── */
+	.about-page-3 .about-partners__arc {
+		display: block;
+		position: absolute;
+		inset: 0;
+		max-width: none;
+	}
+
+	.about-page-3 .about-partners__name {
+		position: absolute;
+		left: 20.3vw; /* Figma: active-name anchor 350/1728 */
+		top: 62%; /* Figma: active-name centre-y 600/966 */
+		/* THE MECHANISM (see file header): pose fully derived from
+		   --index (li) + --progress/--total (ul). */
+		--rel-index: calc(var(--index, 0) - var(--progress, 0) * (var(--total, 45) - 1));
+		--theta: calc(var(--rel-index) * 11deg);
+		--arc-radius: 30.2vw;
+		--arc-x: calc(var(--arc-radius) * (1 - cos(var(--theta))));
+		--arc-y: calc(var(--arc-radius) * sin(var(--theta)));
+		transform: translate(calc(-1 * var(--arc-x)), calc(-50% + var(--arc-y)))
+			rotate(var(--theta));
+		transform-origin: left center;
+		white-space: nowrap;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-size: 50px;
+		line-height: 1;
+		text-transform: uppercase;
+		color: #161616;
+		opacity: 0.4;
+	}
+
+	/* Active — Stage 1 / approved-fallback treatment: solid light text.
+	   The Stage-3 knockout (sharp-video letterforms + glow + difference)
+	   replaces this, gated on Oscar's cost call there. */
+	.about-page-3 .about-partners__name.is-active {
+		color: #f9f9f9;
+		opacity: 1;
+	}
+
+	/* Culled — outside the visible arc window (|rel-index| beyond the
+	   cull window). 45 names span 484°: without culling, far names wrap
+	   the full circle back on-screen at nonsense poses. Server-rendered
+	   for the rest state; partners-scroll.js re-derives per tick from
+	   Stage 2. */
+	.about-page-3 .about-partners__name.is-culled {
+		visibility: hidden;
+	}
+
+	/* ── Divider (Figma 8:464) ────────────────────────────────────── */
+	.about-page-3 .about-partners__divider {
+		display: block;
+		position: absolute;
+		left: 60.6vw; /* 1047/1728 */
+		top: 0;
+		bottom: 0;
+		width: 17.4vw; /* 300/1728 */
+		-webkit-backdrop-filter: blur(2px);
+		backdrop-filter: blur(2px);
+	}
+
+	/* ── Satellites (Figma 8:459 / 8:463 / 8:426) ─────────────────── */
+	.about-page-3 .about-partners__satellites {
+		position: absolute;
+		inset: 0;
+		margin: 0;
+		max-width: none;
+	}
+
+	.about-page-3 .about-partners__sat {
+		position: absolute;
+		inset: 0;
+		display: block;
+		opacity: 0;
+	}
+
+	.about-page-3 .about-partners__sat.is-active {
+		opacity: 1;
+	}
+
+	.about-page-3 .about-partners__sat-logo {
+		display: block;
+		position: absolute;
+		left: 67vw; /* 1158/1728 */
+		top: 56%; /* centre of 542..660 in 966 */
+		width: 8.1vw; /* 140/1728 */
+		aspect-ratio: 140 / 118;
+	}
+
+	.about-page-3 .about-partners__sat-logo img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		object-fit: contain;
+		/* Any supplied mark renders WHITE over the dark video (the Figma
+		   logo asset is the black RGB version) — brightness(0) zeroes it,
+		   invert(1) lifts it to white. */
+		filter: brightness(0) invert(1);
+	}
+
+	.about-page-3 .about-partners__sat-desc {
+		position: absolute;
+		left: 83.5vw; /* 1443/1728 */
+		top: 60%; /* 581/966 */
+		width: 14.2vw; /* 245/1728 */
+		font-size: 12px;
+		line-height: 1.65; /* Figma 12/20 */
+	}
+
+	.about-page-3 .about-partners__sat-image {
+		display: block;
+		position: absolute;
+		right: 40px;
+		bottom: 60px; /* Figma: 245x160 slot, 40px/60px off the corner */
+		width: 14.2vw; /* 245/1728 */
+		aspect-ratio: 245 / 160;
+		overflow: clip;
+	}
+
+	.about-page-3 .about-partners__sat-image img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		object-fit: cover;
+	}
+
+	/* ── Entry veil (#F9F9F9 -> dark melt, partners-scroll.js scrub) ── */
+	.about-page-3 .about-partners__veil {
+		display: block;
+		position: absolute;
+		inset: 0;
+		background-color: #f9f9f9;
+	}
+}

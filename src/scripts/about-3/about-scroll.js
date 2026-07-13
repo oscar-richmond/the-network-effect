@@ -425,7 +425,19 @@ export function initAbout3Scroll() {
   // id-prefixed 'section-progress-') share this page and manage their own
   // lifecycles — spare them, kill everything else (it all belongs to this
   // hero sequence).
-  const SPARED_TRIGGER_PREFIXES = ['founders-', 'section-progress-', 'about-landing-'];
+  // 'about-partners-' added with the partners section: without it, ANY
+  // resize event re-running this hero rebuild kills the partners
+  // triggers, and partners' own resize handler early-returns when the
+  // dimensions haven't actually changed (e.g. repeated resize events at
+  // the same size) — leaving that section permanently dead (measured
+  // live; the same latent hole also explains the abandoned
+  // clients-wheel attempt's "triggers vanished after resize" mystery).
+  const SPARED_TRIGGER_PREFIXES = [
+    'founders-',
+    'section-progress-',
+    'about-landing-',
+    'about-partners-',
+  ];
   const killHeroTriggers = () => {
     ScrollTrigger.getAll().forEach((trigger) => {
       if (

@@ -1,6 +1,7 @@
 ---
 import AboutHero from './AboutHero.astro';
 import FoundersSection from './FoundersSection.astro';
+import PartnersSection from './PartnersSection.astro';
 import DetailView from './DetailView.astro';
 import { asset } from '../../utils/asset.js';
 import 'lenis/dist/lenis.css';
@@ -427,15 +428,19 @@ const pillarRows = [
   </div>
 </section>
 
+<PartnersSection />
+
 <DetailView />
 
 <script>
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
   import { initLandingScroll } from '../../scripts/about-3/landing-scroll.js';
+  import { initPartnersScroll } from '../../scripts/about-3/partners-scroll.js';
   import { initDetailView } from '../../scripts/about-3/detail-view.js';
 
   let cleanupAbout3Scroll = initAbout3Scroll();
   let cleanupLandingScroll = initLandingScroll();
+  let cleanupPartnersScroll = initPartnersScroll();
   let cleanupDetailView = initDetailView();
 
   document.addEventListener('astro:before-swap', () => {
@@ -443,6 +448,8 @@ const pillarRows = [
     cleanupAbout3Scroll = undefined;
     cleanupLandingScroll?.();
     cleanupLandingScroll = undefined;
+    cleanupPartnersScroll?.();
+    cleanupPartnersScroll = undefined;
     cleanupDetailView?.();
     cleanupDetailView = undefined;
   }, { once: true });

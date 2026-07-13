@@ -1,0 +1,139 @@
+---
+import { asset } from '../../utils/asset.js';
+import { PARTNERS, GENERIC_DESCRIPTION } from '../../data/partners.js';
+import '../../styles/about-3/partners.css';
+
+// Names visible on the arc at rest (progress 0): rel-index 0..CULL window
+// — server-rendered `is-culled` on the rest so the initial paint is
+// correct before (and without) JS. partners-scroll.js re-derives per
+// scrub tick from Stage 2 onward. Mirrors PARTNERS_CULL_WINDOW in
+// partners-scroll.js.
+const CULL_WINDOW = 10;
+
+// Background video — AdobeStock PREVIEW STAND-IN, exactly the founders
+// section's licensed-swap obligation (see founders.js's media comment):
+// reusing founders' own stand-in file until the section's intended clips
+// (Figma names AdobeStock_1891763427 / _326295558 / _227749395 previews)
+// are supplied. LICENSED-SWAP CHECKLIST when the final clip lands: drop
+// the file in public/assets/partners/, update these two paths, re-verify
+// the blur treatment tone live, and re-bake nothing (no derived assets
+// depend on this file, unlike founders' bg-fade.jpg).
+const videoSrc = asset('/assets/about-hero/about-3/founders-bg-robbo.mp4');
+const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg');
+---
+
+<section class="about-partners" data-about-partners aria-label="Partners">
+  <!-- "Partners / They trust us" — own fixed stage, own entry/exit gates,
+       own runway (partners-scroll.js), the FUTURE SECTIONS contract from
+       AboutScroll.astro's landing-stage comment: CSS-default
+       visibility:hidden, revealed only by this section's own
+       top-vs-viewport-bottom ScrollTrigger. Zero source gap after
+       `.about-landing`, whose height drops its last-section pad in
+       lockstep (landing-scroll.js) — the same pixel-exact handoff as
+       founders->landing, one section further down. THIS COMMENT LIVES
+       INSIDE THE SECTION deliberately: a body-level comment between a
+       zero-height sibling and this section produced a real ~12px
+       anonymous-box strut in the previous attempt (measured, documented
+       in its history) — do not move it out.
+
+       STAGE 1 (approved staged split): stage + two-layer video background
+       (founders pattern) + STATIC arc layout (reference formula at
+       progress 0) + satellite slots. The scrubbed rotation, scroll-settle
+       snap, and knockout treatment are Stages 2-3. -->
+  <div class="about-partners__stage" data-about-partners-stage>
+    <!-- Two-layer background — founders' EXACT architecture (see
+         founders.css's --founders-blur-px comment): blur lives as
+         filter: blur() ON the media element (backdrop-filter over a
+         <video> is a no-op in Chromium's hardware-overlay fast path,
+         confirmed live there), media overscanned so the heavy radius
+         samples real content at the edges, plus a plain darken overlay
+         above. Same muted/playsinline/loop/preload discipline;
+         partners-scroll.js gates play/pause to stage visibility. -->
+    <div class="about-partners__media-group" aria-hidden="true">
+      <video
+        class="about-partners__media"
+        data-about-partners-video
+        muted
+        playsinline
+        loop
+        preload="none"
+        poster={videoPoster}
+        aria-hidden="true"
+      >
+        <source src={videoSrc} type="video/mp4" />
+      </video>
+    </div>
+    <div class="about-partners__overlay" aria-hidden="true"></div>
+
+    <!-- The arc — all 45 names, placed ENTIRELY by CSS from two custom
+         properties (the fromanother.love mechanism, extracted verbatim
+         in the Phase 1 recon): each name carries a static --index; the
+         UL carries --progress (0 at rest; Stage 2 scrubs it) and
+         --total; partners.css derives rel-index -> theta (11°/step) ->
+         arc x/y -> transform. A real semantic list, reading order =
+         wheel order. -->
+    <ul class="about-partners__arc" data-about-partners-arc style={`--total: ${PARTNERS.length};`}>
+      {
+        PARTNERS.map((partner, i) => (
+          <li
+            class:list={[
+              'about-partners__name',
+              { 'is-active': i === 0, 'is-culled': i > CULL_WINDOW },
+            ]}
+            data-about-partners-name
+            style={`--index: ${i};`}
+          >
+            {partner.name}
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- Vertical soft divider between the arc and the satellites —
+         Figma 8:464 (backdrop-blur 2px strip). Flagged: backdrop-filter
+         behaviour over the (filter-blurred) video is a live-verify item;
+         the effect is subtle by design. -->
+    <div class="about-partners__divider" aria-hidden="true"></div>
+
+    <!-- Per-brand satellites — logo / description / image for the ACTIVE
+         brand (Figma 8:459 / 8:463 / 8:426 slots). One entry per brand,
+         server-rendered, visibility by `.is-active` (Stage 1 static:
+         entry 0; Stage 2-3 swap them with the hero rotating-word
+         blur-dissolve). EMPTY-STATE (approved): no logo/image = slot
+         simply absent for that brand (dissolves to empty on swap); no
+         per-brand description = the shared generic line. Logo renders
+         white via CSS filter regardless of supplied mark colour. -->
+    <div class="about-partners__satellites" aria-hidden="true">
+      {
+        PARTNERS.map((partner, i) => (
+          <div
+            class:list={['about-partners__sat', { 'is-active': i === 0 }]}
+            data-about-partners-sat={i}
+          >
+            {partner.logo && (
+              <div class="about-partners__sat-logo">
+                <img src={asset(partner.logo)} alt="" loading="lazy" decoding="async" />
+              </div>
+            )}
+            <p class="about-partners__sat-desc">{partner.description ?? GENERIC_DESCRIPTION}</p>
+            {partner.image && (
+              <div class="about-partners__sat-image">
+                <img src={asset(partner.image)} alt="" loading="lazy" decoding="async" />
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+
+    <!-- Entry veil — the #F9F9F9 -> dark transition INTO this section
+         (approved plan item 5, flagged for Oscar's judgment pass): the
+         stage enters wearing the landing's own background colour and
+         melts it away over the first PARTNERS_ENTRY_FADE_PX of runway
+         (partners-scroll.js scrub) — founders' veil vocabulary,
+         reversed. Sits above all section content (last positioned
+         child), below nothing it shouldn't: nav/indicator are fixed at
+         z 270/200, far above this stage's z-carrier (145). -->
+    <div class="about-partners__veil" data-about-partners-veil aria-hidden="true"></div>
+  </div>
+</section>

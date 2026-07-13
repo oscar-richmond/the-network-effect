@@ -928,17 +928,25 @@ export function initLandingScroll() {
       });
     }
 
-    // Runway height, padded by one extra vh — mirrors about-scroll.js's
-    // hero `requiredHeight` idiom. Landing is currently the page's last
-    // section, so without this the exit-end trigger below would sit
-    // exactly at native max scroll (document.scrollHeight - vh), a
-    // rounding hazard rather than real headroom. Self-contained: holds
-    // regardless of what (if anything) follows. Set HERE — after the
-    // gallery block has derived the pillar chain's end into runwayPx —
-    // and before the final ScrollTrigger.refresh(), which recomputes
-    // every trigger (including the earlier entry/reveal ones) against
-    // the final document height.
-    landing.style.height = `${runwayPx + window.innerHeight}px`;
+    // Runway height — EXACTLY runwayPx, no extra headroom. Landing is
+    // NO LONGER the page's last section (the partners section follows —
+    // partners-scroll.js), so the "+1 viewport of headroom, avoids the
+    // exit-end trigger landing exactly at native max scroll" pad has
+    // MOVED to whichever section IS last, mirroring founders' own
+    // un-padded height line (`section.style.height = TOTAL_RUNWAY`).
+    // This is load-bearing for the landing->partners handoff: the
+    // partners entry gate is anchored to its OWN `top bottom` crossing,
+    // which by plain document flow lands exactly at (landing's document
+    // top + landing's height) — for that to coincide with THIS module's
+    // own exit-end (`top+=runwayPx bottom` on `landing`), landing's
+    // rendered height must be exactly runwayPx, not runwayPx +
+    // innerHeight (see partners-scroll.js's entry-gate comment for the
+    // matching half of the contract). Set HERE — after the gallery block
+    // has derived the pillar chain's end into runwayPx — and before the
+    // final ScrollTrigger.refresh(), which recomputes every trigger
+    // (including the earlier entry/reveal ones) against the final
+    // document height.
+    landing.style.height = `${runwayPx}px`;
 
     // Teardown — hides the stage once the landing's own runway is
     // spent, handing off to whatever (currently nothing) follows next.
