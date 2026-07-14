@@ -109,17 +109,19 @@ const pillarWaves = [
   // Oscar-supplied images laid out per the same Figma frame's CONNECT
   // moment (the mirrored composition: big slot left, small slots on the
   // edges). Same `w`/`ar` native-ratio mechanism as wave 0 above. The
-  // skater slot extends 17px past the frame's LEFT edge in the Figma —
-  // only 166px is ever visible, so the item sits flush at x 0 with the
-  // visible crop's own ratio (renders identically to the design, no
-  // offscreen sliver). INVARIANTS: the only x-overlapping pair is
+  // skater slot extends 17px past the frame's LEFT edge in the Figma;
+  // the item sits flush at x 0 showing the FULL image at its own ratio
+  // (Oscar's fix round: the first cut cropped past the frame-clipped
+  // Figma export's right edge, which PIL filled with a black band —
+  // the file is now the complete original). INVARIANTS: the only
+  // x-overlapping pair is
   // surfboard/pharrell — the lower (pharrell 1.0) is no faster than the
   // upper (surfboard 1.12), so the gap only opens; nobody is slower
   // than the last item. LAST-ITEM CONTRACT: pharrell has max y, sits
   // last, speed 1.0. CONTENT STATUS: stand-ins pending licensed finals
   // (person- and brand-identifiable subjects Oscar supplied himself).
   [
-    { file: 'skater-wine-field', w: 9.61, ar: '332 / 402', x: 0, y: 71, speed: 1.18 },
+    { file: 'skater-wine-field', w: 10.59, ar: '366 / 402', x: 0, y: 71, speed: 1.18 },
     { file: 'burberry-surfboard', w: 15.05, ar: '520 / 644', x: 73.26, y: 91, speed: 1.12 },
     { file: 'osaka-clay-court', w: 36.46, ar: '1260 / 1144', x: 17.94, y: 323, speed: 1.0 },
     { file: 'lagerfeld-pharrell-bw', w: 16.55, ar: '572 / 576', x: 60.59, y: 546, speed: 1.0 },
