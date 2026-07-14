@@ -120,24 +120,25 @@ const MARQUEE_TERMS = SELECTED_WORK.map((work) => work.term);
     }
   </div>
 
-  <!-- Viewport edge blurs — the PARTNERS section's exact treatment
-       (same doubled config: strength 3 -> 12/48px exponential layers,
-       12rem coverage, opacity 0.8), on both edges. The partners bands
-       live inside its fixed stage; this section is IN-FLOW, so these
-       are viewport-FIXED (the style prop overrides the component's
-       parent-absolute positioning) and JS-gated to the section window
-       (inline visibility hidden here; rotating-scroll.js's
+  <!-- Viewport edge blurs — the partners treatment HALVED for this
+       section (Oscar's reduction round: strength 3 -> 1.5, coverage
+       12rem -> 6rem; opacity 0.8 kept) — this section's bands now
+       deliberately DIVERGE from partners' doubled config. The partners
+       bands live inside its fixed stage; this section is IN-FLOW, so
+       these are viewport-FIXED (the style prop overrides the
+       component's parent-absolute positioning) and JS-gated to the
+       section window (inline visibility hidden here; rotating-scroll.js's
        setWindowVisible toggles them with the marquee/label/canvas —
        they can never paint over other sections, and they close at the
        content-clear point with everything else). STACKING: z 3 —
        above the fold canvas (1) and marquee (2), below the footer
-       label (4, kept crisp like partners keeps its nav above) and the
-       grain (9000). -->
+       label + notes (4, kept crisp like partners keeps its nav above)
+       and the grain (9000). -->
   <GradualBlur
     target="parent"
     position="top"
-    strength={3}
-    height="12rem"
+    strength={1.5}
+    height="6rem"
     divCount={2}
     exponential={true}
     opacity={0.8}
@@ -148,8 +149,8 @@ const MARQUEE_TERMS = SELECTED_WORK.map((work) => work.term);
   <GradualBlur
     target="parent"
     position="bottom"
-    strength={3}
-    height="12rem"
+    strength={1.5}
+    height="6rem"
     divCount={2}
     exponential={true}
     opacity={0.8}
