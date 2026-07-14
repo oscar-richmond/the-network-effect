@@ -35,13 +35,18 @@ gsap.registerPlugin(ScrollTrigger);
  * would push an 8.5k+ runway (feel constant, Oscar's tuning pass). The
  * full Stage-2 scrub window is STEP_PX * (N-1). */
 export const PARTNERS_STEP_PX = 165;
-/** The #F9F9F9->dark entry melt LENGTH (Stage-1 amendment, fix 1: the
- * melt is now a crossfade of the whole stage OVER the still-running
- * landing beneath, and it STARTS at a landing-derived anchor — the
- * final wave's last image crossing the viewport's vertical centre —
- * read from landing's dataset in build(), not at the runway head). The
- * runway keeps a same-sized head segment as a rest beat before the
- * Stage-2 scrub window, so page totals are unchanged. */
+/** Entry melt LENGTH. HISTORY: born as the page's #F9F9F9->dark chapter
+ * change (Stage-1 fix 1: a whole-stage crossfade over the running
+ * predecessor, anchored to a predecessor-derived lead). Since the
+ * rotating-gallery amendments the ROTATING section already darkens the
+ * page to #161616 at ITS entry — so this melt is now a DARK->DARK
+ * event: the flat #161616 ground gaining the blurred moving video, a
+ * texture emergence rather than a tonal jump. ASSESSED at the
+ * amendment (Oscar's judgment item, flagged): the crossfade mechanism
+ * survives unchanged — the two darks differentiate through the video's
+ * own tone and motion, no extra treatment added. The runway keeps a
+ * same-sized head segment as a rest beat before the Stage-2 scrub
+ * window, so page totals are unchanged. */
 export const PARTNERS_ENTRY_FADE_PX = 400;
 /** Rest on the final name before teardown. */
 export const PARTNERS_TAIL_HOLD_PX = 300;
@@ -279,14 +284,16 @@ export function initPartnersScroll() {
       onLeaveBack: () => setStageVisible(false),
     });
 
-    // Entry melt — the #F9F9F9->dark transition as a whole-stage
-    // crossfade over the running landing (CSS defaults the stage to
-    // opacity 0 — see partners.css). Starts exactly at the derived
-    // anchor, runs PARTNERS_ENTRY_FADE_PX. Pure scrub, ease:none,
-    // reversal-symmetric: scrolling back re-melts to reveal the landing
-    // beneath before the entry gate hides the stage. opacity:1 at rest
-    // creates no stacking context, so the settled stage composites
-    // exactly as before (Stage-3 blend planning unaffected).
+    // Entry melt — now a DARK->DARK video emergence (see
+    // PARTNERS_ENTRY_FADE_PX's history note): the whole stage
+    // crossfades over the rotating section's #161616 ground (CSS
+    // defaults the stage to opacity 0 — see partners.css). Starts
+    // exactly at the derived anchor, runs PARTNERS_ENTRY_FADE_PX. Pure
+    // scrub, ease:none, reversal-symmetric: scrolling back re-melts to
+    // reveal the in-flow content beneath before the entry gate hides
+    // the stage. opacity:1 at rest creates no stacking context, so the
+    // settled stage composites exactly as before (Stage-3 blend
+    // planning unaffected).
     meltTween = gsap.fromTo(
       stage,
       { opacity: 0 },

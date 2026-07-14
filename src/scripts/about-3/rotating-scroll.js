@@ -71,6 +71,17 @@ const ROTATING_VELOCITY_LERP = 0.45;
 /** Ahead-of-section eager-fetch lead (the landing gallery preload
  * convention — lazy imgs are unreliable below the fold on this page). */
 const ROTATING_PRELOAD_LEAD_PX = 1500;
+/** Entry ground fade (amendment 3a) — the page's light-to-dark chapter
+ * change now lives HERE: the section's background scrubs from the page
+ * ground (--about3-ground, read live so the two can never drift) to
+ * ROTATING_BG_TO over this many px, anchored at 'top top' — i.e. only
+ * once the section fully owns the viewport, so the colour never changes
+ * while the light boundary seam is on screen (seam-free by
+ * construction). 600px ≈ a deliberate chapter-turn beat, a touch longer
+ * than the house 300-400px veils — the page's single biggest tonal
+ * event. Scrubbed, ease:none, reversal-symmetric. */
+const ROTATING_BG_FADE_PX = 600;
+const ROTATING_BG_TO = '#161616';
 
 /**
  * Boot the rotating gallery on /about-3 only.
@@ -134,6 +145,8 @@ export function initRotatingScroll() {
 
   /** @type {gsap.core.Timeline | undefined} */
   let markTl;
+  /** @type {gsap.core.Tween | undefined} */
+  let bgTween;
 
   const build = () => {
     ScrollTrigger.getAll().forEach((trigger) => {
@@ -142,6 +155,31 @@ export function initRotatingScroll() {
       }
     });
     markTl?.kill();
+    bgTween?.kill();
+
+    // Entry ground fade — see ROTATING_BG_FADE_PX. The from-value is
+    // read from the live custom property so a future ground retune
+    // flows through automatically (background-color on this ancestor
+    // never isolates the marquee's blend — colour is not a stacking
+    // property).
+    const groundFrom =
+      getComputedStyle(document.body).getPropertyValue('--about3-ground').trim() || '#eeeef0';
+    bgTween = gsap.fromTo(
+      section,
+      { backgroundColor: groundFrom },
+      {
+        backgroundColor: ROTATING_BG_TO,
+        ease: 'none',
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: `top+=${ROTATING_BG_FADE_PX} top`,
+          scrub: true,
+          id: 'about-rotating-bg',
+        },
+      },
+    );
 
     // Sine distribution on the WRAPS (demo 4: sin(i) · innerWidth·0.2).
     const amplitude = window.innerWidth * ROTATING_SINE_AMP;
@@ -273,7 +311,8 @@ export function initRotatingScroll() {
       }
     });
     markTl?.kill();
-    gsap.killTweensOf([...items, ...wraps]);
+    bgTween?.kill();
+    gsap.killTweensOf([...items, ...wraps, section]);
     if (markInner instanceof HTMLElement) gsap.killTweensOf(markInner);
     setMarkVisible(false);
   };

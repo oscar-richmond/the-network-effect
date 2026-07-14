@@ -32,7 +32,16 @@
 
 .about-page-3 .about-rotating {
 	position: relative;
-	background-color: var(--about3-ground, #eeeef0);
+	/* Amendment 3: the section ground is #161616 — this is now the
+	   page's light-to-dark chapter change, arriving one section earlier
+	   than the partners melt (which becomes a dark->dark video
+	   emergence; see partners-scroll.js). BASE (reduced motion) rests
+	   on the final dark tone; under no-preference below, the CSS
+	   default is the page ground and rotating-scroll.js scrubs the
+	   #EEEEF0 -> #161616 fade once the section fully owns the viewport
+	   ('top top' + ROTATING_BG_FADE_PX — seam-free by construction:
+	   the colour never changes while the boundary edge is on screen). */
+	background-color: #161616;
 	/* Reference .gallery margins (25vh top / 35vh bottom) carried as
 	   section padding so the in-flow height owns the whole breathing. */
 	padding: 25vh 0 35vh;
@@ -45,18 +54,28 @@
 
 .about-page-3 .about-rotating__mark-inner {
 	display: flex;
-	gap: 33px; /* reference 3rem @ 11px root */
+	/* Amendment 1: type lives on the INNER (spans inherit) so the gap's
+	   em resolves against the marquee's own 48px — the "three spaces
+	   around each /" spacing, rendered as flex gap rather than literal
+	   spaces (whitespace between inline spans collapses and renders
+	   inconsistently; a gap is deterministic): 0.75em = 36px per side
+	   of each separator span ≈ three Dazzed spaces. 48px FIXED at every
+	   viewport per the spec. */
+	gap: 0.75em;
 	width: max-content;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 1;
 }
 
 .about-page-3 .about-rotating__mark-inner span {
 	white-space: nowrap;
 	text-transform: uppercase;
-	color: rgb(233, 48, 29); /* demo-4 --color-marquee */
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
-	font-size: clamp(22px, 16vw, 154px); /* demo-4 clamp @ 11px root */
-	line-height: 1;
+	/* Amendment 1: plain white leaves under the wrapper's difference
+	   blend (the nav/founders-name/landing-columns pattern) —
+	   supersedes the demo's red + clamp sizing entirely. */
+	color: #ffffff;
 }
 
 .about-page-3 .about-rotating__gallery {
@@ -67,14 +86,18 @@
 
 .about-page-3 .about-rotating__item-wrap {
 	width: 100%;
-	max-width: 300px; /* demo-4 --item-width (root default) */
+	/* Amendment 2: 700px fixed width (was demo-4's 300px), each image
+	   at its OWN native ratio — the uniform 4/5 aspect is gone and the
+	   column is mixed-ratio at fixed width. Image swaps are DATA-ONLY
+	   from here (RotatingSection.astro's array): the item takes
+	   whatever ratio the file has. */
+	max-width: 700px;
 	perspective: 900px;
 	margin-bottom: 55px; /* demo-4 wrap spacing: +5rem @ 11px root */
 }
 
 .about-page-3 .about-rotating__item {
 	width: 100%;
-	aspect-ratio: 4 / 5; /* demo-4 --item-ar (root default) */
 	border-radius: 7px; /* demo-4 --item-br */
 	overflow: clip;
 	transform-style: preserve-3d;
@@ -83,20 +106,41 @@
 .about-page-3 .about-rotating__item img {
 	display: block;
 	width: 100%;
-	height: 100%;
+	height: auto; /* native ratio — see the item-wrap note */
 	max-width: none;
-	object-fit: cover;
 }
 
 @media (prefers-reduced-motion: no-preference) {
+	/* Entry-fade default (amendment 3a): the CSS ground here is the
+	   page base; rotating-scroll.js scrubs it to #161616 over
+	   ROTATING_BG_FADE_PX once the section fully owns the viewport.
+	   Base (above) rests on the final dark for reduced motion. */
+	.about-page-3 .about-rotating {
+		background-color: var(--about3-ground, #eeeef0);
+	}
+
 	/* Marquee — fixed at the viewport's vertical centre (the reference's
 	   .mark), difference-blended over the items scrolling beneath.
 	   visibility is CSS-default hidden and toggled ONLY by
 	   rotating-scroll.js's section-window trigger, so it can never paint
 	   over other sections. z 2 lifts it above the transformed items;
 	   the partners stage carrier (145) and nav (270) stay far above.
-	   BLEND SAFETY: ancestors are the section (position:relative only)
-	   and body — no transform/opacity/filter/will-change in the chain. */
+	   BLEND SAFETY (heightened, amendment 1 — the marquee is now the
+	   house white-leaves-under-difference pattern): the blend lives on
+	   THIS wrapper; ancestors are the section (position:relative +
+	   animated background-color only — background never isolates) and
+	   body. No transform/opacity/filter/will-change/isolation/
+	   position+z-index anywhere in that chain. The wrapper's OWN fixed
+	   position, translateY, z-index and visibility are self-properties
+	   — self never isolates its own blend (the nav/email-hover rule).
+	   The inner's scrubbed x transform is a CHILD of the blend element
+	   (content, not ancestor). The BACKDROP is the 3D-transformed,
+	   velocity-filtered items — which is exactly why the items carry NO
+	   will-change (rotating-scroll.js header): that deviation is now
+	   LOAD-BEARING for this blend. Expected read at rest: near-white
+	   over #161616, inverting across image content — the rendering
+	   itself is Oscar's real-browser verification per the standing
+	   split. */
 	.about-page-3 .about-rotating__mark {
 		position: fixed;
 		top: 50%;

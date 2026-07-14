@@ -6,9 +6,11 @@ import '../../styles/about-3/rotating.css';
 // set: these left the pillar waves in the morning's relayouts, so they
 // are fresh to the page's visible flow again; several also serve as
 // partner-satellite photos — repetition accepted for now, per Oscar).
-// CONTENT STATUS: PLACEHOLDERS pending real content, same standing as
-// the rest of the pool. Order is a hand-curated tonal alternation
-// (dark/graphic/warm), not randomness.
+// CONTENT STATUS: PLACEHOLDERS — Oscar's real files replace these as a
+// DATA-ONLY swap (amendment 2): items render 700px wide at each file's
+// OWN native ratio (no uniform aspect — rotating.css), so new files
+// slot into this array with no CSS or JS changes. Order is a
+// hand-curated tonal alternation (dark/graphic/warm), not randomness.
 const ROTATING_IMAGES = [
   'theatre-seats',
   'ommo-orange-panel',
@@ -22,22 +24,19 @@ const ROTATING_IMAGES = [
   'bstn-newspaper-car',
 ].map((file) => asset(`/assets/pillar-waves/${file}.jpg`));
 
-// Marquee copy — PLACEHOLDER PENDING FOUNDER SIGN-OFF (Oscar's copy
-// decision): the pillar verbs + the deck's discipline terms (the
-// founders section's own tag list). Noted alternate: the client names
-// (the partners wheel's list) — reference-faithful but duplicates the
-// section that immediately follows.
+// Marquee copy — REAL project/client copy, PENDING FOUNDER SIGN-OFF
+// (amendment 1; same standing as the partners client list: Yoxman and
+// the Pavilion events are named engagements — do not launch without
+// confirmation). Rendered as term/separator spans with the "three
+// spaces around each /" spacing expressed as flex gap 0.75em (36px at
+// the fixed 48px) — see rotating.css. Noted alternate from the
+// original brief: the full client-names list.
 const MARQUEE_TERMS = [
-  'Immerse',
-  'Connect',
-  'Amplify',
-  'Talent',
-  'Hospitality',
-  'Food & Beverage',
-  'Brands',
-  'Events',
-  'Production',
-  'Design',
+  'Wilderness Reserve',
+  'Pavilion Club',
+  'Pavilion Summit',
+  'Yoxman Food Festival',
+  'Thunder Aviation',
 ];
 ---
 
