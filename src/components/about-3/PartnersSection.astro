@@ -154,10 +154,14 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
          context can't be lifted past a stage-level sibling) — accepted
          degradation on the fallback path only. Static variant: no JS
          init needed (CSS shows non-animated instances). -->
+    {/* 2x the /about baseline on both axes (Oscar's tune): strength
+        1.5 -> 3 (layers resolve 6/24px -> 12/48px) and coverage
+        6rem -> 12rem per edge. */}
     <GradualBlur
       target="parent"
       position="top"
-      strength={1.5}
+      strength={3}
+      height="12rem"
       divCount={2}
       exponential={true}
       opacity={0.8}
@@ -166,7 +170,8 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
     <GradualBlur
       target="parent"
       position="bottom"
-      strength={1.5}
+      strength={3}
+      height="12rem"
       divCount={2}
       exponential={true}
       opacity={0.8}
