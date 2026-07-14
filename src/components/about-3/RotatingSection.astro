@@ -119,7 +119,7 @@ const MARQUEE_TERMS = SELECTED_WORK.map((work) => work.term);
         MARQUEE_TERMS.map((term, i) => (
           <>
             {i > 0 && <span>/</span>}
-            <span>{term}</span>
+            <span class={i % 2 === 1 ? 'about-rotating__mark-term--alt' : undefined}>{term}</span>
           </>
         ))
       }

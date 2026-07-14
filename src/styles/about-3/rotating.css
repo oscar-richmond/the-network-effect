@@ -89,6 +89,16 @@
 	color: #ffffff;
 }
 
+/* Alternating name treatment (Oscar's spec) — every other TERM span
+   (never the '/' separators), starting at the second name (index 1,
+   "Pavilion Club"): Serrif Medium in place of the marquee's own
+   Dazzed Bold. Same 48px — font-size is left to inherit from
+   .about-rotating__mark-inner rather than redeclared. */
+.about-page-3 .about-rotating__mark-term--alt {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+}
+
 .about-page-3 .about-rotating__gallery {
 	display: flex;
 	flex-direction: column;
