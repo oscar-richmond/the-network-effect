@@ -102,9 +102,18 @@ const SNAP_DELAY_MS = 140;
 const CAROUSEL_IN_DURATION = 1.6;
 const CAROUSEL_IN_BLUR_PX = 10;
 /** Unfocused-slide veil — white at 10% over a 20px backdrop blur (the
- * Figma spec), opacity riding (1 − focus) per tick so slide-to-slide
- * transitions inherit the same continuous falloff as the focus dim. */
+ * Figma spec). BOTH channels ride (1 − focus) per tick: element
+ * opacity fades the white tint, and the BLUR RADIUS itself scales
+ * (1 − focus) · this. The radius must be driven directly — the
+ * root-cause of the reported "fades slightly then snaps" open: in
+ * Chromium the backdrop-filter effect is NOT modulated by the
+ * element's own opacity, so a constant blur(20px) appears at full
+ * strength the moment the veil paints at all, while only the tint
+ * faded. Radius interpolation is continuous; below VEIL_BLUR_EPSILON
+ * the filter is dropped to 'none' entirely so the focused slide never
+ * pays a zero-radius backdrop pass. */
 const VEIL_BACKDROP_BLUR_PX = 20;
+const VEIL_BLUR_EPSILON = 0.01;
 
 /** Home-carousel focus falloff (home-carousel.js, verbatim maths). */
 function focusFromDistance(distance, range) {
@@ -148,17 +157,20 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
   const snapState = { value: 0 };
 
   // Unfocused-slide veils — white 10% + 20px BACKDROP blur over each
-  // slide, opacity (1 − focus). They must live OUTSIDE the transformed
-  // track and ABOVE the curve-media canvas (z 1): the track's transform
-  // makes it a stacking context, so nothing inside it can ever paint
-  // over the canvas — the same reason the hover overlays sit outside
-  // the gallery track. Rect-synced to their slides each tick (width/
-  // left are stable; top moves with the track).
+  // slide, BOTH riding (1 − focus) per tick (opacity for the tint,
+  // radius for the blur — see VEIL_BACKDROP_BLUR_PX's root-cause note:
+  // a constant radius snaps in with the first painted frame because
+  // Chromium doesn't scale the backdrop effect by element opacity).
+  // They must live OUTSIDE the transformed track and ABOVE the
+  // curve-media canvas (z 1): the track's transform makes it a stacking
+  // context, so nothing inside it can ever paint over the canvas — the
+  // same reason the hover overlays sit outside the gallery track.
+  // Rect-synced to their slides each tick (width/left are stable; top
+  // moves with the track). Filter starts at 'none' (the CSS default) —
+  // the tick below owns it entirely.
   const veils = slides.map(() => {
     const veil = document.createElement('div');
     veil.className = 'about-detail__slide-veil';
-    veil.style.backdropFilter = `blur(${VEIL_BACKDROP_BLUR_PX}px)`;
-    veil.style.webkitBackdropFilter = `blur(${VEIL_BACKDROP_BLUR_PX}px)`;
     viewport.appendChild(veil);
     return veil;
   });
@@ -212,7 +224,12 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
       const veil = veils[i];
       if (rect.height < 1) {
         slide.style.setProperty('--slide-focus', '0');
-        if (veil) veil.style.opacity = '0';
+        if (veil) {
+          veil.style.opacity = '0';
+          // Clear any stale radius too — the tick owns both channels.
+          veil.style.backdropFilter = 'none';
+          veil.style.webkitBackdropFilter = 'none';
+        }
         return;
       }
       const distance = Math.abs(rect.top + rect.height / 2 - viewportCenterY);
@@ -224,7 +241,15 @@ function createDetailCarousel(viewport, canvas, track, labelWrapper, labelTextEl
         veil.style.top = `${rect.top - viewportRect.top}px`;
         veil.style.width = `${rect.width}px`;
         veil.style.height = `${rect.height}px`;
-        veil.style.opacity = (1 - focus).toFixed(4);
+        const dim = 1 - focus;
+        veil.style.opacity = dim.toFixed(4);
+        // Radius rides the same falloff — see VEIL_BACKDROP_BLUR_PX.
+        const blurFilter =
+          dim > VEIL_BLUR_EPSILON
+            ? `blur(${(dim * VEIL_BACKDROP_BLUR_PX).toFixed(2)}px)`
+            : 'none';
+        veil.style.backdropFilter = blurFilter;
+        veil.style.webkitBackdropFilter = blurFilter;
       }
     });
   };

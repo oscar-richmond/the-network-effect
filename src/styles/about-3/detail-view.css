@@ -217,9 +217,12 @@
    (1 − focus) per tick. Lives directly under the viewport, ABOVE the
    curve-media canvas (z 2 vs the canvas's 1): nothing inside the
    transformed track can ever paint over the canvas, hence the
-   rect-synced sibling — the hover-overlay idiom. The backdrop-filter
-   value is written inline by JS (the one source for the px constant);
-   element opacity fades the whole filtered composite smoothly. */
+   rect-synced sibling — the hover-overlay idiom. BOTH fade channels
+   are written inline by JS per tick: opacity (the tint) AND the
+   backdrop-filter radius — a constant radius under an opacity fade
+   SNAPS in Chromium, which does not modulate the backdrop effect by
+   element opacity (the originally-reported "fades slightly then
+   snaps" pop-up bug; detail-view.js VEIL_BACKDROP_BLUR_PX). */
 .about-page-3 .about-detail__slide-veil {
 	position: absolute;
 	z-index: 2;
