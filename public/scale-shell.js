@@ -104,6 +104,10 @@
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', size);
   }
+  // Slow safety net: if a stale read outlives the post-trigger rechecks
+  // and no further viewport signal ever fires, converge anyway. One rect
+  // read + two viewport reads every 2s — negligible.
+  setInterval(verifySize, 2000);
   if (window.ResizeObserver) {
     // documentElement is viewport-sized (height:100%, absolute frame
     // doesn't feed back into it), so this fires exactly when the real
