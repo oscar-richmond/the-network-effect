@@ -26,8 +26,6 @@ import '../styles/fonts.css';
       </button>
     </nav>
     <h1 class="home__logo">THE NETWORK EFFECT</h1>
-    <span class="home__topbar-dot home__topbar-dot--before" aria-hidden="true"></span>
-    <span class="home__topbar-dot home__topbar-dot--after" aria-hidden="true"></span>
     <a class="home__topbar-email" href="mailto:hello@thenetworkeffect.com">
       hello@thenetworkeffect.com
     </a>
@@ -38,13 +36,3 @@ import '../styles/fonts.css';
   <Menu />
 </BaseLayout>
 
-<script>
-  import { initAbout3NavDots } from '../scripts/about-3/nav-dots.js';
-
-  let cleanupNavDots = initAbout3NavDots();
-
-  document.addEventListener('astro:before-swap', () => {
-    cleanupNavDots?.();
-    cleanupNavDots = undefined;
-  }, { once: true });
-</script>

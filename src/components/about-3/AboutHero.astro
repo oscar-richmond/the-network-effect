@@ -384,14 +384,15 @@ const taglineCulturalVideo = asset('/assets/videos/louis-vuitton.mp4');
   function getChromeItems(topbar) {
     if (!(topbar instanceof HTMLElement)) return [];
     return Array.from(
-      topbar.querySelectorAll(
-        '.home__menu-cta, .home__topbar-dot--before, .home__logo, .home__topbar-dot--after, .home__topbar-email',
-      ),
+      // The topbar dots were removed by explicit request — every
+      // remaining chrome item is a motion item (isChromeMotionItem
+      // existed purely to exempt the dots from the y-rise).
+      topbar.querySelectorAll('.home__menu-cta, .home__logo, .home__topbar-email'),
     );
   }
 
   function isChromeMotionItem(el) {
-    return el instanceof HTMLElement && !el.classList.contains('home__topbar-dot');
+    return el instanceof HTMLElement;
   }
 
   function setChromeHidden(chromeEls) {
@@ -409,12 +410,9 @@ const taglineCulturalVideo = asset('/assets/videos/louis-vuitton.mp4');
   }
 
   function revealChrome(chromeEls) {
-    document.dispatchEvent(new CustomEvent('about-3:position-nav-dots'));
-
     const tl = gsap.timeline({
       onComplete: () => {
         gsap.set(chromeEls, { clearProps: 'opacity,transform' });
-        document.dispatchEvent(new CustomEvent('about-3:position-nav-dots'));
       },
     });
 

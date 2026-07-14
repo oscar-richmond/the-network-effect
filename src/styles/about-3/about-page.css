@@ -105,18 +105,6 @@ body.about-page-3 .home__topbar--about .home__logo {
 	white-space: nowrap;
 }
 
-body.about-page-3 .home__topbar--about .home__topbar-dot {
-	position: absolute;
-	width: 6px;
-	height: 6px;
-	margin: 0;
-	padding: 0;
-	transform: translate(-50%, -50%);
-	background-color: #ffffff;
-	mix-blend-mode: difference;
-	pointer-events: none;
-}
-
 body.about-page-3 .home__topbar--about .home__topbar-email {
 	grid-column: 3;
 	justify-self: end;
