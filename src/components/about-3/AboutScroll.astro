@@ -124,13 +124,23 @@ const pillarWaves = [
     { file: 'osaka-clay-court', w: 36.46, ar: '1260 / 1144', x: 17.94, y: 323, speed: 1.0 },
     { file: 'lagerfeld-pharrell-bw', w: 16.55, ar: '572 / 576', x: 60.59, y: 546, speed: 1.0 },
   ],
+  // WAVE 2 (03 — AMPLIFY) — REPLACED per explicit request: WAVE 0's
+  // layout verbatim (same x/y/w/speeds, post-100px-left tune) with the
+  // four Oscar-supplied round-3 images, per his slot mapping: furthest
+  // left = veiled portrait; 2nd left = the B&W stage shot (Desktop
+  // 2.3.jpg — the chat attachment for this slot was a mis-pasted
+  // duplicate of the CONNECT skater; the named file matches his written
+  // description and the slot's exact dimensions); largest = yellow
+  // inflatable suit; right = tennis-ball car. Identical geometry to
+  // wave 0, so its invariants and LAST-ITEM CONTRACT carry over
+  // unchanged (stage-bw: max y, last, speed 1.0 — also the final
+  // coverer for the 03 row wipe). CONTENT STATUS: stand-ins pending
+  // licensed finals.
   [
-    { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0, speed: 1.25 },
-    { file: 'film-set-monitor', size: 'rect-l', x: 56, y: 220, speed: 0.85 },
-    { file: 'portre-flatlay', size: 'sq-s', x: 6, y: 560, speed: 1.22 },
-    { file: 'bstn-newspaper-car', size: 'rect-pl', x: 66, y: 740, speed: 0.88 },
-    { file: 'red-socks-car', size: 'sq-m', x: 32, y: 1290, speed: 1.05 },
-    { file: 'red-leather-tie', size: 'sq-l', x: 30, y: 1700, speed: 1.0 },
+    { file: 'tennis-ball-car', w: 10.59, ar: '366 / 402', x: 82.12, y: 64, speed: 1.18 },
+    { file: 'veiled-portrait', w: 15.05, ar: '520 / 644', x: 8.39, y: 91, speed: 1.12 },
+    { file: 'yellow-inflatable-suit', w: 36.46, ar: '1260 / 1144', x: 48.61, y: 323, speed: 1.0 },
+    { file: 'stage-performance-bw', w: 16.55, ar: '572 / 577', x: 22.22, y: 546, speed: 1.0 },
   ],
 ].map((wave) =>
   wave.map((item) => ({ ...item, src: asset(`/assets/pillar-waves/${item.file}.jpg`) })),
