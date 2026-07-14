@@ -96,6 +96,23 @@ const FRAGMENT_VELOCITY_CLAMP = Infinity;
  * concurrent planes across a wave crossing). */
 const MOUNT_MARGIN_PX = 400;
 
+/** Bow entry ramp (Oscar's warp report, second round) — the bow's
+ * amplitude is scaled per plane by how far its box has actually
+ * entered the viewport vertically: 0 while fully outside, full
+ * strength once overlap reaches this fraction of the plane's own
+ * height (applied POST-clamp in the vertex via uVelocityRamp — see
+ * the shader comment). The vertex bow overhangs the box by up to 5%
+ * of plane height, so on the largest wave images a fast scroll paints
+ * a ~30px detached arch at the viewport edge while the box itself is
+ * still (or almost still) offscreen. A binary offscreen cull did NOT
+ * read as fixed — the arch simply popped in the frame the first 1px
+ * of box arrived. Ramping the amplitude with entry means the arch can
+ * only grow once the image is genuinely on screen, attached to
+ * visible image content, and it symmetrically damps the same artifact
+ * at the bottom edge on scroll-down. 0.25 = full bow at 25% visible;
+ * raise for softer entries, lower toward 0 to approach the old pop. */
+const VELOCITY_EDGE_RAMP = 0.25;
+
 /** Plane subdivision — the reference's PlaneGeometry(1, 1, 100, 100):
  * the vertex bow displaces per-vertex, so the plane must tessellate.
  * Cost is trivial at the mount window's concurrent-plane budget. */
@@ -112,7 +129,11 @@ const GEOMETRY_SEGMENTS = 100;
  *   the reference's own variant.
  * The reference's declared-but-unused uniforms (uCursor, uTime,
  * uResolution, uBorderRadius) are dropped; its baseVertex/baseFragment
- * pair is never bound by the reference either and is not ported. */
+ * pair is never bound by the reference either and is not ported.
+ * ONE functional deviation: uVelocityRamp, a per-plane post-clamp
+ * factor on the vertex bow (the viewport-entry warp fix — see
+ * VELOCITY_EDGE_RAMP and the vertex comment). The fragment is
+ * untouched by it. */
 
 const VERTEX_SHADER = /* glsl */ `
   precision highp float;
@@ -123,6 +144,7 @@ const VERTEX_SHADER = /* glsl */ `
   uniform mat4 modelViewMatrix;
   uniform mat4 projectionMatrix;
   uniform float uScrollVelocity;
+  uniform float uVelocityRamp;
   uniform vec2 uTextureSize;
   uniform vec2 uQuadSize;
 
@@ -144,13 +166,20 @@ const VERTEX_SHADER = /* glsl */ `
     );
   }
 
-  // Velocity bow (reference deformationCurve, verbatim): a sine arc
-  // across the plane's width, amplitude min(|v|, 5) * 1% of plane
+  // Velocity bow (reference deformationCurve + ONE deviation): a sine
+  // arc across the plane's width, amplitude min(|v|, 5) * 1% of plane
   // height — scale-invariant (positions are pre-scale unit-plane
-  // coords). The 5.0 here is the vertex's OWN clamp; see
+  // coords). The 5.0 is the vertex's OWN clamp; see
   // FRAGMENT_VELOCITY_CLAMP's note about the shared uniform.
+  // DEVIATION (the warp fix): uVelocityRamp (0..1, per-plane viewport
+  // entry — VELOCITY_EDGE_RAMP in tick()) multiplies AFTER the clamp.
+  // It must be a separate post-clamp factor: scaling the velocity
+  // uniform itself instead lets any fast scroll saturate min(|v|,5)
+  // right back to the full bow at a sliver of entry (v=30 * ramp 0.2
+  // = 6 -> clamped to 5 = full arch again), and it would also leak
+  // the ramp into the fragment's grain term, which stays verbatim.
   vec3 deformationCurve(vec3 position, vec2 uv) {
-    position.y = position.y - (sin(uv.x * PI) * min(abs(uScrollVelocity), 5.0) * sign(uScrollVelocity) * -0.01);
+    position.y = position.y - (sin(uv.x * PI) * min(abs(uScrollVelocity), 5.0) * uVelocityRamp * sign(uScrollVelocity) * -0.01);
 
     return position;
   }
@@ -290,6 +319,7 @@ class WavePlane {
         uMouseEnter: { value: 0 },
         uMouseOverPos: { value: [0.5, 0.5] },
         uScrollVelocity: { value: 0 },
+        uVelocityRamp: { value: 0 },
       },
       cullFace: false,
     });
@@ -319,16 +349,14 @@ class WavePlane {
       this.mesh.visible = false;
       return;
     }
-    // Viewport cull on the UNDEFORMED box (Oscar's warp report): the
-    // vertex bow can overhang the box by up to 5% of plane height, so
-    // a large wave image parked just above the viewport leaked its
-    // bowed bottom edge into view on scroll-up, before the image
-    // itself should arrive. Hiding the mesh until its box actually
-    // intersects the viewport means the bow can never paint ahead of
-    // the image (symmetric for all four edges — the same leak exists
-    // below on scroll-down). No pop on entry: at the boundary frame
-    // the box's visible sliver is 0px, and DOM order/culling in the
-    // old blur module painted nothing there either.
+    // Viewport cull on the UNDEFORMED box — the BACKSTOP half of the
+    // warp fix (Oscar's report): nothing paints while the box is fully
+    // outside the viewport. On its own this did NOT read as fixed —
+    // the bow's detached arch simply popped in the frame the box's
+    // first pixel arrived — so the actual suppression is the
+    // VELOCITY_EDGE_RAMP in tick(), which scales the bow's amplitude
+    // with the box's real viewport overlap. The cull stays as free
+    // fragment savings and a guarantee for the fully-offscreen case.
     const onScreen =
       rect.bottom > 0 &&
       rect.top < screen.height &&
@@ -437,6 +465,10 @@ export function createWaveShader(galleryEl) {
           current: { x: 0.5, y: 0.5 },
           target: { x: 0.5, y: 0.5 },
         },
+        // Last entry-ramp factor written to this plane's velocity
+        // uniform (tick(); see VELOCITY_EDGE_RAMP) — kept on the state
+        // for the debug surface.
+        edgeFactor: 0,
         renderOrder: i,
       };
     })
@@ -575,7 +607,20 @@ export function createWaveShader(galleryEl) {
           state.mouseOverPos.current.x,
           state.mouseOverPos.current.y,
         ];
+        // Per-plane entry ramp (see VELOCITY_EDGE_RAMP): the bow's
+        // amplitude follows the box's vertical viewport overlap so it
+        // can never paint a detached arch ahead of a barely-entered
+        // image. Written as its OWN uniform, applied in the vertex
+        // AFTER the min(|v|,5) clamp — see the shader comment for why
+        // pre-clamp scaling doesn't work. The velocity uniform itself
+        // stays raw/shared (the fragment's grain term reads it,
+        // verbatim); the hover term is deliberately NOT ramped —
+        // hovering requires the image well inside the viewport.
+        const overlap = Math.min(rect.bottom, screen.height) - Math.max(rect.top, 0);
+        const ramp = rect.height * VELOCITY_EDGE_RAMP;
+        state.edgeFactor = ramp > 0 ? Math.min(Math.max(overlap / ramp, 0), 1) : 1;
         state.plane.program.uniforms.uScrollVelocity.value = lastVelocity;
+        state.plane.program.uniforms.uVelocityRamp.value = state.edgeFactor;
         state.plane.update(rect, screen, viewport);
 
         // Overlay text: rect-synced via LAYOUT properties (the blend
@@ -671,6 +716,7 @@ export function createWaveShader(galleryEl) {
           mounted: Boolean(state.plane),
           ready: Boolean(state.plane?.ready),
           meshVisible: Boolean(state.plane?.mesh.visible),
+          edgeFactor: state.edgeFactor,
           mouseEnter: state.mouseEnter.value,
           cursor: { ...state.mouseOverPos.current },
           imgHidden: state.imgEl.style.visibility === 'hidden',
