@@ -34,7 +34,20 @@
 	   same backdrop-filter overlay blurred the plain <img> correctly but
 	   left the <video> perfectly sharp). filter: blur() applied directly to
 	   the media element forces normal compositing and works for both. */
-	--founders-blur-px: 125px;
+	/* ZEROED at the founders-grain ring hunt: the media sources have
+	   been FLAT #161616 images since the flat-ground round, so the
+	   125px treatment blur was an interior no-op that only
+	   MANUFACTURED an edge-falloff gradient (the -8% overscan is
+	   ~87px vertically at 1728x1084 — less than the 125px radius, so
+	   the blur reached the clip's transparency), which quantized into
+	   the faint concentric banding rings Oscar reported on the dark
+	   ground — shimmering as Chromium re-rasters the big-blur surface
+	   beside the animating portrait canvas. blur(0px) keeps the
+	   filter property (and this layer's compositing/layerization)
+	   in place. RESTORE a real radius here (and EXIT_MEDIA_BLUR_PX in
+	   founders-scroll.js) if non-flat media (video/photo) ever
+	   returns. */
+	--founders-blur-px: 0px;
 }
 
 .about-page-3 .founders__stage {

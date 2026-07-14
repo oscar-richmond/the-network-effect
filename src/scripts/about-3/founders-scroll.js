@@ -175,13 +175,15 @@ const EXIT_BG = [EXIT_START + EXIT_BEAT1_PX, TOTAL_RUNWAY];
  * hero's phase-C exit wipe uses (about-scroll.js's EXIT_BLUR_PX, itself
  * sampled from the rolling word's .is-exiting treatment). */
 const EXIT_TEXT_BLUR_PX = 10;
-/** Beat-2 target radius for the last slide's media — deepens from the
- * resting --founders-blur-px (125, read live from the CSS custom
- * property) so the image melts into the veil rather than being covered
- * by it. SAFETY VALVE: set equal to the resting value (125) to make the
- * radius animation a no-op (veil-only melt) if beat-2 frame timing ever
- * measures poorly — the visual delta is small at this baseline blur. */
-const EXIT_MEDIA_BLUR_PX = 250;
+/** Beat-2 target radius for the last slide's media. AT THE SAFETY-VALVE
+ * POSITION (equal to the resting --founders-blur-px, now 0) since the
+ * founders-grain ring hunt: the media are FLAT #161616 images, so a
+ * deepening radius was an interior no-op that only re-manufactured the
+ * edge-falloff halo (the banding-rings root cause — see the var's
+ * comment in founders.css) during the exit; the melt is veil-only now.
+ * Restore ~2x the resting radius alongside the var if non-flat media
+ * ever returns. */
+const EXIT_MEDIA_BLUR_PX = 0;
 /** Per-line stagger for the beat-1 meta wipe, in timeline-seconds (scrub
  * normalizes the total to the trigger window; only the ratio to the 1s
  * line duration matters — 0.5 = overlapping bottom-up sweep, same as the
@@ -994,8 +996,13 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
   );
   const veil = section.querySelector('[data-founders-exit-veil]');
   if (lastMedia.length && veil) {
-    const restingBlurPx =
-      parseFloat(getComputedStyle(section).getPropertyValue('--founders-blur-px')) || 125;
+    // Number.isFinite (not ||): the var is legitimately 0px since the
+    // ring hunt — a falsy-coalesce would silently resurrect the old
+    // 125 and snap the media's blur at the exit boundary.
+    const parsedBlurPx = parseFloat(
+      getComputedStyle(section).getPropertyValue('--founders-blur-px'),
+    );
+    const restingBlurPx = Number.isFinite(parsedBlurPx) ? parsedBlurPx : 125;
     const exitBgTl = gsap.timeline({
       scrollTrigger: exitScrub(...EXIT_BG, 'exit-bg'),
     });
