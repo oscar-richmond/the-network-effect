@@ -33,36 +33,24 @@ const DUR = 0.4;
 const EASE = 'power2.out';
 
 /**
- * Real section anchors, by row index. Rows without an entry here (03/05
+ * Real section anchors, by row index. Rows without an entry here (03/04
  * placeholders) simply never receive focus — no trigger is faked for them.
  * `prevIndex` is who becomes active when this section is left backwards
  * (scrolling up out of it). Optional `start`/`end` override the default
  * viewport-centre window when a section's composition needs a different
  * activation point.
  *
- * Row 3 ("04 — our partners") — AUTHORIZED SectionProgress exception
- * (Oscar, Stage-2 amendments): activates at the partners section's own
- * top-vs-viewport-bottom crossing (the landing->partners handoff
- * boundary), NOT the default 'top center' — the indicator re-shows over
- * the dark partners stage during the runway's head rest beat
- * (partners-scroll.js's progress-show scrub, starting AT this same
- * boundary), so by the time it has any opacity the row swap to 04 has
- * already happened: no stale "02 — the founders" label is ever legible
- * over the dark section, forward or reverse. prevIndex 1 matches the
- * standing behaviour that founders' row keeps focus through the landing
- * (row 2 "three pillars" has no anchor — see the remaining-discrepancy
- * note in SectionProgress.astro).
+ * The partners anchor (old row 3, "04 — our partners" — the first
+ * AUTHORIZED exception) left with the wheel's relocation to /services
+ * (the second AUTHORIZED exception, Oscar, services-page split).
+ * Founders' row keeps focus from its own section to the end of the
+ * page — same standing behaviour it always had through the landing —
+ * though the indicator itself stays hidden past landing-scroll.js's
+ * authorized hide (no re-show exists downstream any more).
  */
 const REAL_ANCHORS = [
   { index: 0, prevIndex: 0, selector: 'body.about-page-3 [data-about-hero-spacer]' },
   { index: 1, prevIndex: 0, selector: 'body.about-page-3 [data-founders-section]' },
-  {
-    index: 3,
-    prevIndex: 1,
-    selector: 'body.about-page-3 [data-about-partners]',
-    start: 'top bottom',
-    end: 'bottom top',
-  },
 ];
 
 /**

@@ -2,7 +2,6 @@
 import AboutHero from './AboutHero.astro';
 import FoundersSection from './FoundersSection.astro';
 import RotatingSection from './RotatingSection.astro';
-import PartnersSection from './PartnersSection.astro';
 import DetailView from './DetailView.astro';
 import { asset } from '../../utils/asset.js';
 import 'lenis/dist/lenis.css';
@@ -472,7 +471,10 @@ const pillarRows = [
 
 <RotatingSection />
 
-<PartnersSection />
+<!-- The partners wheel RELOCATED to /services (services-page split):
+     rotating is now this page's last section — its own CSS tail
+     (100vh + 500px, kept as end-of-page breathing room) already covers
+     the last-section headroom contract, so no pad handoff was needed. -->
 
 <DetailView />
 
@@ -480,16 +482,11 @@ const pillarRows = [
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
   import { initLandingScroll } from '../../scripts/about-3/landing-scroll.js';
   import { initRotatingScroll } from '../../scripts/about-3/rotating-scroll.js';
-  import { initPartnersScroll } from '../../scripts/about-3/partners-scroll.js';
   import { initDetailView } from '../../scripts/about-3/detail-view.js';
 
   let cleanupAbout3Scroll = initAbout3Scroll();
   let cleanupLandingScroll = initLandingScroll();
-  // Rotating inits BEFORE partners — its settle-gate listener (and
-  // resize handler) must run first so its build publishes the melt
-  // lead before partners' build reads it (rotating-scroll.js header).
   let cleanupRotatingScroll = initRotatingScroll();
-  let cleanupPartnersScroll = initPartnersScroll();
   let cleanupDetailView = initDetailView();
 
   document.addEventListener('astro:before-swap', () => {
@@ -499,8 +496,6 @@ const pillarRows = [
     cleanupLandingScroll = undefined;
     cleanupRotatingScroll?.();
     cleanupRotatingScroll = undefined;
-    cleanupPartnersScroll?.();
-    cleanupPartnersScroll = undefined;
     cleanupDetailView?.();
     cleanupDetailView = undefined;
   }, { once: true });

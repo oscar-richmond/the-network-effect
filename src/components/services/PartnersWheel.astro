@@ -2,7 +2,7 @@
 import GradualBlur from '../GradualBlur.astro';
 import { asset } from '../../utils/asset.js';
 import { PARTNERS, GENERIC_DESCRIPTION } from '../../data/partners.js';
-import '../../styles/about-3/partners.css';
+import '../../styles/services/partners.css';
 
 // Names visible on the arc at rest (progress 0): rel-index 0..CULL window
 // — server-rendered `is-culled` on the rest so the initial paint is
@@ -26,18 +26,16 @@ const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-po
 ---
 
 <section class="about-partners" data-about-partners aria-label="Partners">
-  <!-- "Partners / They trust us" — own fixed stage, own entry/exit gates,
-       own runway (partners-scroll.js), the FUTURE SECTIONS contract from
-       AboutScroll.astro's landing-stage comment: CSS-default
-       visibility:hidden, revealed only by this section's own
-       top-vs-viewport-bottom ScrollTrigger. Zero source gap after
-       `.about-landing`, whose height drops its last-section pad in
-       lockstep (landing-scroll.js) — the same pixel-exact handoff as
-       founders->landing, one section further down. THIS COMMENT LIVES
-       INSIDE THE SECTION deliberately: a body-level comment between a
-       zero-height sibling and this section produced a real ~12px
-       anonymous-box strut in the previous attempt (measured, documented
-       in its history) — do not move it out.
+  <!-- "Partners / They trust us" — the /services page's first and only
+       section (relocated from /about-3, where it closed the scroll
+       chain). Own fixed stage and runway (partners-scroll.js); entry is
+       an ON-LOAD REVEAL — the old FUTURE SECTIONS gates and the
+       predecessor-anchored melt died with the relocation (no upstream
+       publishers exist here). THIS COMMENT LIVES INSIDE THE SECTION
+       deliberately: a body-level comment between a zero-height sibling
+       and a section produced a real ~12px anonymous-box strut in a
+       previous attempt (measured, documented in its history) — do not
+       move it out.
 
        STAGE 2 (approved staged split): the Stage-1 shell plus the live
        wheel — partners-scroll.js scrubs the UL's --progress, derives
@@ -187,12 +185,10 @@ const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-po
          boot. -->
     <div class="about-partners__image-gl" data-about-partners-image-gl aria-hidden="true"></div>
 
-    <!-- The #F9F9F9 -> dark entry transition has NO element here any
-         more (Stage-1 amendment, fix 1): it's a crossfade of this whole
-         STAGE over the still-running landing beneath it, scrubbed by
-         partners-scroll.js from a landing-derived anchor (the final
-         wave's last image crossing the viewport's vertical centre). The
-         old opaque #F9F9F9 veil would have blanked exactly the image
-         the melt is anchored to. -->
+    <!-- Entry has NO element here: on /services the whole stage is
+         revealed by a timed fade/blur-in on load (partners-scroll.js's
+         on-load reveal — the page-cover transition provides the
+         navigation sweep above it). The /about-3-era scroll-scrubbed
+         crossfade over a running predecessor died with the relocation. -->
   </div>
 </section>
