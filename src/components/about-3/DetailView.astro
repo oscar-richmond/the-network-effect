@@ -55,7 +55,20 @@ const detailEntries = [
     ...item,
     src: asset(`/assets/pillar-waves/${item.file}.jpg`),
   })),
-}));
+})).map((entry, i, arr) => {
+  // Cross-navigation CTA (Oscar's spec) — the circular next-pillar
+  // cycle, DERIVED from the entries' own order/titles so label and
+  // target can never drift from the data (immerse -> connect ->
+  // amplify -> immerse): "view {next title, lowercase} services".
+  // ctaTarget is the entry index detail-view.js's switchTo() animates
+  // to.
+  const nextIndex = (i + 1) % arr.length;
+  return {
+    ...entry,
+    ctaLabel: `view ${arr[nextIndex].title.toLowerCase()} services`,
+    ctaTarget: nextIndex,
+  };
+});
 
 ---
 
@@ -96,6 +109,26 @@ const detailEntries = [
               <sup class="founders__tag-index">/{entry.num}</sup>
             </h2>
             <p class="about-detail__body" data-about-detail-line>{entry.body}</p>
+            <!-- Cross-navigation CTA (Oscar's spec) — 32px under the body
+                 via plain document flow (margin-top: the body's line count
+                 never matters), left-aligned with it by inheritance.
+                 Folded into the SAME data-about-detail-line group as the
+                 title/body: detail-view.js wraps every such element
+                 generically, so the CTA gets the identical line-reveal
+                 roll on open/close for free, and switchTo() rolls it with
+                 the rest of the outgoing/incoming text — "the CTA text
+                 itself updates as part of the content swap" is then true
+                 by construction (each entry renders its own next-pillar
+                 label). -->
+            <button
+              class="about-detail__cta"
+              data-about-detail-line
+              data-about-detail-cta
+              data-about-detail-target={entry.ctaTarget}
+              type="button"
+            >
+              {entry.ctaLabel}
+            </button>
             <button class="about-detail__return" data-about-detail-return type="button">
               <!-- The supplied Arrow Vector.svg, verbatim path (curved-
                    wing head + long shaft); stroke swapped to

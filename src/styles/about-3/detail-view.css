@@ -106,6 +106,43 @@
 	color: #161616;
 }
 
+/* Cross-navigation CTA (Oscar's spec, exact values: Serrif lowercase
+   14px underlined #161616, left-aligned, 32px under the body — the
+   32px is plain flow margin so the body's own line count never
+   matters). A <button>, natively keyboard-focusable. pointer-events:
+   auto is LOAD-BEARING: the stage is pointer-events:none by design
+   (the architecture note at the top of this file) and only opted-in
+   controls receive clicks — its omission is exactly how the first
+   build of this CTA shipped unclickable. HOVER (proposed, per spec:
+   the site's link vocabulary, no invented flourish): the nav/footer
+   underlined-text-link dim — opacity ease, no layout shift; the same
+   treatment doubles for :focus-visible alongside the default
+   focus outline. */
+.about-page-3 .about-detail__cta {
+	display: block;
+	margin: 32px 0 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	pointer-events: auto;
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 1.3;
+	text-align: left;
+	text-transform: lowercase;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	color: #161616;
+	transition: opacity 0.3s ease;
+}
+
+.about-page-3 .about-detail__cta:hover,
+.about-page-3 .about-detail__cta:focus-visible {
+	opacity: 0.6;
+}
+
 .about-page-3 .about-detail__return {
 	position: absolute;
 	left: 0;

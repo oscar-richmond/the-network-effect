@@ -115,6 +115,27 @@ const CAROUSEL_IN_BLUR_PX = 10;
 const VEIL_BACKDROP_BLUR_PX = 20;
 const VEIL_BLUR_EPSILON = 0.01;
 
+/** Cross-navigation (the CTA round) — an IN-PLACE content swap between
+ * two already-open entries: the LEFT IMAGE never moves (the incoming
+ * entry's img ADOPTS the original clicked image's src into the
+ * identical rect — same pixels, zero motion; see switchTo()), while
+ * title/body/CTA roll out/in on the house line-reveal and the right
+ * column blur-fades (the open beat's own vocabulary — no new style).
+ * Beats are authored at 1x like OPEN/CLOSE_BEATS and compressed by
+ * DETAIL_TIMESCALE (2), so EFFECTIVE on-screen timing is half these:
+ * out 0–0.45s, incoming text lands ~0.75s, carousel settles ~0.9s —
+ * inside the spec's 0.5–0.8s reading window for the text itself.
+ * TUNE HERE (Oscar's feel pass): later `in` values = more silence
+ * between out and in; smaller = more overlap/urgency. */
+const SWITCH_BEATS = {
+  contentIn: 0.35, // incoming title/body/CTA start (outgoing resolves ~0.9+staggers)
+  carouselIn: 0.5, // incoming right column starts materialising
+  labelIn: 0.6, // incoming carousel's overlay label rolls in
+};
+/** Outgoing right-column exit — mirrors the close beat's own values. */
+const SWITCH_CAROUSEL_OUT_DURATION = 0.55;
+const SWITCH_LABEL_OUT_DURATION = 0.45;
+
 /** Home-carousel focus falloff (home-carousel.js, verbatim maths). */
 function focusFromDistance(distance, range) {
   const t = Math.min(1, Math.max(0, distance / range));
@@ -413,10 +434,13 @@ export function initDetailView() {
       gsap.set(returnBtn, { xPercent: RETURN_HIDDEN_XPERCENT, opacity: 0 });
     }
 
+    const cta = entry.querySelector('[data-about-detail-cta]');
+
     return {
       entry,
       inners,
       returnBtn: returnBtn instanceof HTMLElement ? returnBtn : null,
+      cta: cta instanceof HTMLElement ? cta : null,
       leftSlot: entry.querySelector('[data-about-detail-left]'),
       leftImg: entry.querySelector('[data-about-detail-left-img]'),
       viewport: entry.querySelector('[data-about-detail-viewport]'),
@@ -495,6 +519,13 @@ export function initDetailView() {
   let carousel = null;
   /** @type {gsap.core.Timeline | null} */
   let tl = null;
+  /** The cross-navigation timeline — ONE persistent slot (the
+   * single-persistent-mechanism pattern): every switchTo() kills the
+   * in-flight instance and rebuilds from the CURRENT rendered state
+   * (overwrite:'auto' on the content tweens makes mid-roll text
+   * retarget from wherever it is), so rapid CTA clicks never stack or
+   * spawn. @type {gsap.core.Timeline | null} */
+  let switchTl = null;
 
   // ── Input guards while open — Lenis is stopped (scroll-lock event),
   // these cover what it doesn't drive: rubber-band wheel on the page,
@@ -708,9 +739,202 @@ export function initDetailView() {
     }
   };
 
+  /**
+   * Cross-navigation (the CTA) — swap which pillar's CONTENT is showing,
+   * in place. THE STATE RULE, by construction: activeFrame /
+   * activeSourceImg / savedScrollY (the opener's identity) are never
+   * touched here, so close() — from whichever pillar the user ends on —
+   * flies the image back to the ORIGINAL landing frame and restores the
+   * original scroll, identical to closing without ever navigating. The
+   * LEFT IMAGE never moves: every entry's left slot occupies the
+   * identical CSS rect, and the incoming entry's img ADOPTS the
+   * original image's src — same pixels in the same box, painted over
+   * themselves (z-ordered incoming-on-top for the frame of overlap).
+   * RETARGET-SAFE: callable mid-flight; the previous switch timeline is
+   * killed and every non-target entry still active (including a
+   * half-arrived one) is rolled out from its current position.
+   * @param {number} targetIndex
+   */
+  const switchTo = (targetIndex) => {
+    if (state !== 'open') return;
+    if (targetIndex === activeIndex) return;
+    const toPart = entryParts[targetIndex];
+    if (!toPart) return;
+
+    switchTl?.kill();
+    switchTl = null;
+
+    // Everything currently on stage that isn't the target exits —
+    // under rapid clicks this can be TWO entries (one mid-arrival).
+    const exitParts = entryParts.filter(
+      (p, i) => i !== targetIndex && p.entry.classList.contains('is-active'),
+    );
+
+    const freshlyActivated = !toPart.entry.classList.contains('is-active');
+
+    // The in-flight carousel instance (whichever entry it belonged to)
+    // dies NOW — its viewport's visual exit is the opacity tween below;
+    // the instance itself must stop ticking/listening immediately so
+    // instances never stack. The target gets a fresh boot (re-entering
+    // a previously-visited pillar re-measures cleanly).
+    carousel?.destroy();
+    carousel = null;
+
+    // Left image adoption — before anything paints: the incoming img
+    // carries the ORIGINAL clicked image (decoded since open()), in the
+    // identical rect. Incoming entry z-orders on top so the one
+    // overlapping frame paints identical pixels over identical pixels.
+    const originalSrc = activeSourceImg?.currentSrc || activeSourceImg?.src || '';
+    if (toPart.leftImg instanceof HTMLImageElement) {
+      if (toPart.leftImg.src !== originalSrc) toPart.leftImg.src = originalSrc;
+      toPart.leftImg.style.visibility = 'visible';
+    }
+    entryParts.forEach((p, i) => {
+      p.entry.style.zIndex = i === targetIndex ? '1' : '0';
+    });
+    toPart.entry.classList.add('is-active');
+    exitParts.forEach((p) => {
+      if (p.leftImg instanceof HTMLImageElement) p.leftImg.style.visibility = '';
+    });
+
+    // Return control: functionally the SAME control on every entry — it
+    // never blips. Incoming shown instantly, outgoing hidden instantly.
+    exitParts.forEach((p) => {
+      if (p.returnBtn) gsap.set(p.returnBtn, { xPercent: RETURN_HIDDEN_XPERCENT, opacity: 0 });
+    });
+    if (toPart.returnBtn) gsap.set(toPart.returnBtn, { xPercent: 0, opacity: 1 });
+
+    // Fresh viewport starts invisible (the open beat's own idiom); a
+    // retarget-back to a mid-exit viewport keeps its current opacity —
+    // the .to() below retargets from wherever it is.
+    if (freshlyActivated && toPart.viewport instanceof HTMLElement) {
+      gsap.set(toPart.viewport, { opacity: 0 });
+    }
+    if (
+      toPart.viewport instanceof HTMLElement &&
+      toPart.canvas instanceof HTMLCanvasElement &&
+      toPart.track instanceof HTMLElement
+    ) {
+      carousel = createDetailCarousel(
+        toPart.viewport,
+        toPart.canvas,
+        toPart.track,
+        labelWrapper,
+        labelTextEl,
+      );
+    }
+
+    // From here on, guards/close/wheel belong to the incoming pillar.
+    activeIndex = targetIndex;
+
+    const exitInners = exitParts.flatMap((p) => p.inners);
+    const exitViewports = exitParts
+      .map((p) => p.viewport)
+      .filter((v) => v instanceof HTMLElement);
+
+    switchTl = gsap.timeline({
+      defaults: { ease: FLIP_EASE },
+      onComplete: () => {
+        exitParts.forEach((p) => {
+          p.entry.classList.remove('is-active');
+        });
+        entryParts.forEach((p) => {
+          p.entry.style.zIndex = '';
+        });
+        switchTl = null;
+      },
+    });
+    switchTl.timeScale(DETAIL_TIMESCALE);
+    switchTl
+      .addLabel('start', 0)
+      // Outgoing text rolls away from its CURRENT position…
+      .to(
+        exitInners,
+        {
+          yPercent: 110,
+          y: 0,
+          duration: LINE_OUT_DURATION,
+          ease: LINE_REVEAL_EASE,
+          stagger: LINE_OUT_STAGGER,
+          overwrite: 'auto',
+        },
+        'start',
+      )
+      // …the outgoing right column + shared label with it…
+      .to(
+        exitViewports,
+        {
+          opacity: 0,
+          filter: `blur(${CAROUSEL_IN_BLUR_PX}px)`,
+          duration: SWITCH_CAROUSEL_OUT_DURATION,
+          ease: 'power2.in',
+          clearProps: 'filter',
+          overwrite: 'auto',
+        },
+        'start',
+      )
+      .to(
+        labelWrapper,
+        { opacity: 0, duration: SWITCH_LABEL_OUT_DURATION, ease: 'none', overwrite: 'auto' },
+        'start',
+      )
+      // …incoming title/body/CTA roll in (from 110 when fresh, from
+      // wherever they are on a rapid retarget-back)…
+      .to(
+        toPart.inners,
+        {
+          yPercent: 0,
+          y: 0,
+          duration: LINE_IN_DURATION,
+          ease: LINE_REVEAL_EASE,
+          stagger: LINE_IN_STAGGER,
+          overwrite: 'auto',
+        },
+        `start+=${SWITCH_BEATS.contentIn}`,
+      )
+      // …incoming right column materialises from blur (the open beat's
+      // vocabulary)…
+      .to(
+        toPart.viewport instanceof HTMLElement ? toPart.viewport : [],
+        {
+          opacity: 1,
+          filter: 'blur(0px)',
+          duration: CAROUSEL_IN_DURATION,
+          ease: 'power2.out',
+          clearProps: 'filter',
+          overwrite: 'auto',
+        },
+        `start+=${SWITCH_BEATS.carouselIn}`,
+      )
+      // …its overlay label re-entering with the line-reveal roll (the
+      // text has changed pillar, so it re-rolls rather than crossfades).
+      .set(labelWrapper, { opacity: 1, filter: 'blur(0px)' }, `start+=${SWITCH_BEATS.labelIn}`)
+      .fromTo(
+        labelTextEl,
+        { yPercent: 110, y: 0 },
+        {
+          yPercent: 0,
+          y: 0,
+          duration: LINE_IN_DURATION,
+          ease: LINE_REVEAL_EASE,
+          immediateRender: false,
+          overwrite: 'auto',
+        },
+        `start+=${SWITCH_BEATS.labelIn}`,
+      );
+  };
+
   const close = () => {
     if (state !== 'open') return;
     state = 'closing';
+    // A close mid-switch is legal (the state rule must hold from any
+    // moment): kill the in-flight swap and take EVERY still-active
+    // entry's content out below — activeIndex already points at the
+    // incoming pillar, whose leftImg carries the original image, so the
+    // clone + flight need no special casing.
+    switchTl?.kill();
+    switchTl = null;
+    const activeParts = entryParts.filter((p) => p.entry.classList.contains('is-active'));
     const part = entryParts[activeIndex];
     const frame = activeFrame;
     const sourceImg = activeSourceImg;
@@ -749,7 +973,15 @@ export function initDetailView() {
       onComplete: () => {
         clone.remove();
         if (sourceImg) sourceImg.style.visibility = '';
-        part.entry.classList.remove('is-active');
+        // ALL entries (a close mid-switch can have two active) — and
+        // every adopted left image goes back to its CSS-default hidden
+        // (the current one already went via hideLeftImg above; the
+        // rest unconditionally, belt for the mid-switch path).
+        entryParts.forEach((p) => {
+          p.entry.classList.remove('is-active');
+          p.entry.style.zIndex = '';
+          if (p.leftImg instanceof HTMLImageElement) p.leftImg.style.visibility = '';
+        });
         stage.style.visibility = 'hidden';
         carousel?.destroy();
         carousel = null;
@@ -775,26 +1007,28 @@ export function initDetailView() {
     }
     tl
       // Right column + its label out together (blur mirror of the
-      // entrance)…
+      // entrance) — every ACTIVE entry's viewport (two mid-switch)…
       .to(
-        part.viewport instanceof HTMLElement ? part.viewport : [],
+        activeParts.map((p) => p.viewport).filter((v) => v instanceof HTMLElement),
         {
           opacity: 0,
           filter: `blur(${CAROUSEL_IN_BLUR_PX}px)`,
           duration: 0.55,
           ease: 'power2.in',
           clearProps: 'filter',
+          overwrite: 'auto',
         },
         `start+=${CLOSE_BEATS.carousel}`,
       )
       .to(
         labelWrapper,
-        { opacity: 0, duration: 0.45, ease: 'none' },
+        { opacity: 0, duration: 0.45, ease: 'none', overwrite: 'auto' },
         `start+=${CLOSE_BEATS.carousel}`,
       )
-      // …then the text rolls away…
+      // …then the text rolls away (every active entry's — mid-switch
+      // rolls both sets out from wherever they are)…
       .to(
-        part.inners,
+        activeParts.flatMap((p) => p.inners),
         {
           yPercent: 110,
           y: 0,
@@ -865,6 +1099,16 @@ export function initDetailView() {
     part.returnBtn?.addEventListener('click', onReturnClick);
   });
 
+  const onCtaClick = (event) => {
+    const btn = event.currentTarget;
+    if (!(btn instanceof HTMLElement)) return;
+    const targetIndex = Number(btn.dataset.aboutDetailTarget);
+    if (Number.isInteger(targetIndex)) switchTo(targetIndex);
+  };
+  entryParts.forEach((part) => {
+    part.cta?.addEventListener('click', onCtaClick);
+  });
+
   const onResize = () => {
     if (state === 'idle') return;
     carousel?.resize();
@@ -874,8 +1118,10 @@ export function initDetailView() {
   return () => {
     landingStage.removeEventListener('click', onLandingClick);
     entryParts.forEach((part) => part.returnBtn?.removeEventListener('click', onReturnClick));
+    entryParts.forEach((part) => part.cta?.removeEventListener('click', onCtaClick));
     window.removeEventListener('resize', onResize);
     tl?.kill();
+    switchTl?.kill();
     carousel?.destroy();
     removeGuards();
     if (state !== 'idle') {
@@ -885,6 +1131,14 @@ export function initDetailView() {
     entryParts.forEach((part) => {
       gsap.killTweensOf(part.inners);
       if (part.returnBtn) gsap.killTweensOf(part.returnBtn);
+      if (part.viewport) gsap.killTweensOf(part.viewport);
+      // Belt for an unmount mid-switch (Astro page transition): a
+      // switch leaves two entries active + a z-index pair + an adopted
+      // left image for its duration — clear unconditionally rather
+      // than trust the timelines' own onComplete to have run.
+      part.entry.classList.remove('is-active');
+      part.entry.style.zIndex = '';
+      if (part.leftImg instanceof HTMLImageElement) part.leftImg.style.visibility = '';
     });
     cloneLayer.replaceChildren();
     stage.style.visibility = 'hidden';
