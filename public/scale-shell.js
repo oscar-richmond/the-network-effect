@@ -51,15 +51,65 @@
   // (realW/s × realH/s) and scaled back down, so it fills the real
   // viewport edge-to-edge; the #161616 shell ground shows only in
   // resize transients.
-  function size() {
-    var s = Math.min(1, window.innerWidth / DESIGN_WIDTH);
-    frame.style.width = window.innerWidth / s + 'px';
-    frame.style.height = window.innerHeight / s + 'px';
+  //
+  // Sizing is SELF-HEALING: DevTools device-toolbar toggles can deliver
+  // a resize event whose innerWidth/innerHeight mix new and stale values
+  // (observed in the field: stale innerHeight 1124 at a 1470×956
+  // viewport → frame height 1124/0.850694 = 1321.27px, i.e. realH/s²,
+  // and no later event to correct it). applySize is idempotent from
+  // fresh reads, so after every trigger we re-verify the rendered frame
+  // against the live viewport — after paint and on short timers — and
+  // reapply until they agree.
+  var lastLogged = '';
+  function applySize() {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var s = Math.min(1, vw / DESIGN_WIDTH);
+    frame.style.width = vw / s + 'px';
+    frame.style.height = vh / s + 'px';
     frame.style.transform = 'scale(' + s + ')';
+    var line =
+      'SHELL ACTIVE @ scale ' + s.toFixed(6) +
+      ' / interior ' + Math.round(vw / s) + 'x' + Math.round(vh / s);
+    if (line !== lastLogged) {
+      lastLogged = line;
+      console.info(line);
+    }
+  }
+
+  function frameFillsViewport() {
+    var r = frame.getBoundingClientRect();
+    return (
+      Math.abs(r.width - window.innerWidth) < 0.5 &&
+      Math.abs(r.height - window.innerHeight) < 0.5
+    );
+  }
+
+  var recheckTimers = [];
+  function verifySize() {
+    if (!frameFillsViewport()) applySize();
+  }
+  function size() {
+    applySize();
+    recheckTimers.forEach(clearTimeout);
+    recheckTimers = [
+      setTimeout(verifySize, 250),
+      setTimeout(verifySize, 1000),
+    ];
+    requestAnimationFrame(verifySize); // no-op in hidden tabs; timers cover
   }
 
   size();
   window.addEventListener('resize', size);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', size);
+  }
+  if (window.ResizeObserver) {
+    // documentElement is viewport-sized (height:100%, absolute frame
+    // doesn't feed back into it), so this fires exactly when the real
+    // viewport changes — independent of resize-event timing.
+    new ResizeObserver(verifySize).observe(document.documentElement);
+  }
 
   // Focus the framed document immediately so keyboard scrolling and the
   // page's key guards work without a first click.

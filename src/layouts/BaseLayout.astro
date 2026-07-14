@@ -97,17 +97,35 @@ const base = import.meta.env.BASE_URL;
           } catch (e) {}
         }
         if (noscale || params.get('framed') === '1') return;
-        if (window.innerWidth >= DESIGN_WIDTH) return;
 
-        params.set('framed', '1');
-        var target =
-          window.location.pathname +
-          '?' +
-          params.toString() +
-          window.location.hash;
-        window.location.replace(
-          base + 'scale-shell.html#' + encodeURIComponent(target)
-        );
+        function enterShell() {
+          var p = new URLSearchParams(window.location.search);
+          p.set('framed', '1');
+          var target =
+            window.location.pathname +
+            '?' +
+            p.toString() +
+            window.location.hash;
+          window.location.replace(
+            base + 'scale-shell.html#' + encodeURIComponent(target)
+          );
+        }
+
+        if (window.innerWidth >= DESIGN_WIDTH) {
+          // Loaded bare on a wide viewport. If the window later shrinks
+          // below the design width (e.g. dragged from an external monitor
+          // to the laptop), re-enter the shell once the resize settles.
+          var t;
+          window.addEventListener('resize', function () {
+            clearTimeout(t);
+            t = setTimeout(function () {
+              if (window.innerWidth < DESIGN_WIDTH) enterShell();
+            }, 300);
+          });
+          return;
+        }
+
+        enterShell();
       })();
     </script>
   </head>
