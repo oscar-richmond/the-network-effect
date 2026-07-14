@@ -2,27 +2,28 @@
 import { asset } from '../../utils/asset.js';
 import '../../styles/about-3/rotating.css';
 
-// Rotating gallery images — 10 from the RETIRED wave pool (approved
-// set: these left the pillar waves in the morning's relayouts, so they
-// are fresh to the page's visible flow again; several also serve as
-// partner-satellite photos — repetition accepted for now, per Oscar).
-// CONTENT STATUS: PLACEHOLDERS — Oscar's real files replace these as a
-// DATA-ONLY swap (amendment 2): items render 700px wide at each file's
-// OWN native ratio (no uniform aspect — rotating.css), so new files
-// slot into this array with no CSS or JS changes. Order is a
-// hand-curated tonal alternation (dark/graphic/warm), not randomness.
+// Rotating gallery images — Oscar's real five (supplied at the image-
+// spec round), each rendered at its OWN supplied ratio (all five are
+// 1500x970 as delivered) at 700px width. Every entry carries its
+// file's ratio EXPLICITLY (the pillar-wave relayout convention): the
+// item box gets an inline aspect-ratio, so the section's layout —
+// and therefore every downstream trigger anchor and the melt lead —
+// never depends on image bytes arriving (intrinsic height-auto sizing
+// collapsed to 0 for lazy images and would have reflowed the page
+// underfoot as they loaded; caught at verification). Image swaps stay
+// data-only: file + ratio per entry. They pair with the marquee names
+// in order: Wilderness Reserve bedroom / talent portrait / club
+// restaurant / chef at work / the Thunder Aviation helicopter.
+// CONTENT STATUS: PENDING FOUNDER SIGN-OFF like all named-engagement
+// material (one image is an identifiable public figure —
+// Oscar-supplied directly).
 const ROTATING_IMAGES = [
-  'theatre-seats',
-  'ommo-orange-panel',
-  'hotel-balzac-door',
-  'projection-dinner',
-  'queen-vinyl-blue',
-  'alaia-table-setting',
-  'collectors-key',
-  'rotary-phone-story',
-  'film-set-monitor',
-  'bstn-newspaper-car',
-].map((file) => asset(`/assets/pillar-waves/${file}.jpg`));
+  { file: 'wilderness-bedroom', ar: '1500 / 970' },
+  { file: 'talent-portrait', ar: '1500 / 970' },
+  { file: 'club-restaurant', ar: '1500 / 970' },
+  { file: 'chef-kitchen-bw', ar: '1500 / 970' },
+  { file: 'thunder-helicopter', ar: '1500 / 970' },
+].map((item) => ({ ...item, src: asset(`/assets/rotating/${item.file}.jpg`) }));
 
 // Marquee copy — REAL project/client copy, PENDING FOUNDER SIGN-OFF
 // (amendment 1; same standing as the partners client list: Yoxman and
@@ -45,8 +46,9 @@ const MARQUEE_TERMS = [
        rotating.css + rotating-scroll.js headers). IN-FLOW section: this
        is ordinary scrolling content between two fixed-stage sections —
        landing's exit-end fires exactly as this section's top crosses
-       the viewport bottom (a ground-to-ground swap onto the same
-       --about3-ground surface), and partners' entry/melt anchors ride
+       the viewport bottom (a dark-to-dark swap: landing's exit ground
+       fade has already completed by then — landing-scroll.js), and
+       partners' entry/melt anchors ride
        this section's bottom edge by plain document flow. The melt-lead
        publisher moved HERE from landing-scroll.js (rotating-scroll.js
        derives it from the last item's centre). THIS COMMENT LIVES
@@ -81,10 +83,14 @@ const MARQUEE_TERMS = [
        each item's rotation as it crosses the viewport. -->
   <div class="about-rotating__gallery" data-about-rotating-gallery>
     {
-      ROTATING_IMAGES.map((src) => (
+      ROTATING_IMAGES.map((item) => (
         <div class="about-rotating__item-wrap" data-about-rotating-wrap>
-          <div class="about-rotating__item" data-about-rotating-item>
-            <img src={src} alt="" loading="lazy" decoding="async" data-about-rotating-img />
+          <div
+            class="about-rotating__item"
+            data-about-rotating-item
+            style={`aspect-ratio: ${item.ar};`}
+          >
+            <img src={item.src} alt="" loading="lazy" decoding="async" data-about-rotating-img />
           </div>
         </div>
       ))

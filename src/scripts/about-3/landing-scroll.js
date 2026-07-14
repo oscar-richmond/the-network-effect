@@ -765,6 +765,13 @@ export function initLandingScroll() {
         // lead margin) is already gone.
         let waveStartPx = liftEndPx + PILLAR_HOLD_PX;
         let chainEndPx = liftEndPx;
+        // Exit ground-fade anchor (the rotating-gallery handoff): the
+        // scroll px at which the FINAL wave's LAST image fully LEAVES
+        // the viewport (its bottom crosses the stage top) — the same
+        // pxAtLastTop inversion the row swaps use, aimed at y =
+        // -itemHeight. Overwritten per wave; the final wave's value
+        // survives and drives the fade below.
+        let bgFadeStartPx = 0;
         waves.forEach((wave, i) => {
           const row = pillarRows[i];
           if (!(row instanceof HTMLElement)) return;
@@ -787,12 +794,14 @@ export function initLandingScroll() {
           let waveTravel = 0;
           let lastTopLocal = 0;
           let lastSpeed = 1;
+          let lastHeight = 0;
           items.forEach((item) => {
             const speed = itemSpeed(item);
             waveTravel = Math.max(waveTravel, (item.offsetTop + item.offsetHeight) / speed);
             if (item.offsetTop > lastTopLocal) {
               lastTopLocal = item.offsetTop;
               lastSpeed = speed;
+              lastHeight = item.offsetHeight;
             }
           });
 
@@ -844,6 +853,10 @@ export function initLandingScroll() {
           const waveStart = waveStartPx;
           const pxAtLastTop = (y) =>
             waveStart + ((lastTopLocal - y) / (waveTravel * lastSpeed)) * WAVE_SCROLL_PX;
+
+          // Last image fully above the stage — the exit ground-fade
+          // anchor (see the declaration above the loop).
+          bgFadeStartPx = pxAtLastTop(-lastHeight);
 
           // Row swap — the SAME behaviour as the intro → row 0 swap
           // (confirmed correct live): the last image's pass is only the
@@ -905,6 +918,44 @@ export function initLandingScroll() {
         // rotating-scroll.js — the in-flow rotating section now sits
         // between this section and partners, so the melt anchors to ITS
         // last image instead (see the BOUNDARY MAP in its header).
+
+        // ── Exit ground fade — the page's light-to-dark chapter change
+        // (the rotating-gallery image round re-anchored it here from the
+        // rotating section's own entry): the stage panel AND the in-flow
+        // wrapper scrub together from the live page ground to the
+        // rotating section's static #161616, starting the moment the
+        // AMPLIFY wave's last image leaves the viewport (bgFadeStartPx,
+        // derived above) and completing exactly at the runway's end —
+        // so the exit-end stage swap and the rotating handoff are
+        // dark-to-dark by construction, window length derived, nothing
+        // hand-tuned. Both targets must fade in sync: the stage is what
+        // the viewer sees; the wrapper is what the exit-end swap
+        // reveals. backgroundColor on these ancestors never isolates
+        // the landing text's difference blends (colour is not a
+        // stacking property — the blends simply re-read over the
+        // darkening ground). Scrubbed, ease:none, reversal-symmetric.
+        if (bgFadeStartPx > 0) {
+          const groundFrom =
+            getComputedStyle(document.body).getPropertyValue('--about3-ground').trim() ||
+            '#eeeef0';
+          const fadeTargets = [stage, landing].filter((el) => el instanceof HTMLElement);
+          gsap.fromTo(
+            fadeTargets,
+            { backgroundColor: groundFrom },
+            {
+              backgroundColor: '#161616',
+              ease: 'none',
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: landing,
+                start: `top+=${bgFadeStartPx} bottom`,
+                end: `top+=${runwayPx} bottom`,
+                scrub: true,
+                id: 'about-landing-bg-fade',
+              },
+            },
+          );
+        }
       }
 
       // Ahead-of-phase preload — one-shot, anchored upstream of the
@@ -1034,6 +1085,8 @@ export function initLandingScroll() {
       ),
     );
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));
+    // Exit ground-fade targets (backgroundColor scrub).
+    gsap.killTweensOf([landing, stage].filter((el) => el instanceof HTMLElement));
     hoverBlur?.destroy();
     setStageVisible(false);
   };

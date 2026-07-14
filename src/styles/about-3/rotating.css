@@ -32,15 +32,16 @@
 
 .about-page-3 .about-rotating {
 	position: relative;
-	/* Amendment 3: the section ground is #161616 — this is now the
-	   page's light-to-dark chapter change, arriving one section earlier
-	   than the partners melt (which becomes a dark->dark video
-	   emergence; see partners-scroll.js). BASE (reduced motion) rests
-	   on the final dark tone; under no-preference below, the CSS
-	   default is the page ground and rotating-scroll.js scrubs the
-	   #EEEEF0 -> #161616 fade once the section fully owns the viewport
-	   ('top top' + ROTATING_BG_FADE_PX — seam-free by construction:
-	   the colour never changes while the boundary edge is on screen). */
+	/* The section ground is #161616, STATICALLY (amendment 3 as
+	   re-anchored at the image round): the page's light-to-dark chapter
+	   change now happens UPSTREAM, inside the landing's own exit phase
+	   — landing-scroll.js scrubs its stage + wrapper grounds from
+	   --about3-ground to this value starting the moment the AMPLIFY
+	   wave's last image leaves the viewport, completing at the
+	   boundary. By the time this section scrolls in, everything is
+	   already dark: the handoff is dark-to-dark and this rule never
+	   changes at runtime. The partners melt stays the dark->dark video
+	   emergence (partners-scroll.js). */
 	background-color: #161616;
 	/* Reference .gallery margins (25vh top / 35vh bottom) carried as
 	   section padding so the in-flow height owns the whole breathing. */
@@ -98,6 +99,10 @@
 
 .about-page-3 .about-rotating__item {
 	width: 100%;
+	/* Each item's aspect-ratio is INLINE from the data (its file's own
+	   ratio — RotatingSection.astro): the box reserves its exact height
+	   before the lazy image loads, so layout (and every downstream
+	   trigger anchor) never reflows on image arrival. */
 	border-radius: 7px; /* demo-4 --item-br */
 	overflow: clip;
 	transform-style: preserve-3d;
@@ -106,19 +111,15 @@
 .about-page-3 .about-rotating__item img {
 	display: block;
 	width: 100%;
-	height: auto; /* native ratio — see the item-wrap note */
+	height: 100%;
 	max-width: none;
+	/* Ratios match by construction (the box IS the file's ratio), so
+	   cover never crops — it only guards against a stray mismatched
+	   file. */
+	object-fit: cover;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	/* Entry-fade default (amendment 3a): the CSS ground here is the
-	   page base; rotating-scroll.js scrubs it to #161616 over
-	   ROTATING_BG_FADE_PX once the section fully owns the viewport.
-	   Base (above) rests on the final dark for reduced motion. */
-	.about-page-3 .about-rotating {
-		background-color: var(--about3-ground, #eeeef0);
-	}
-
 	/* Marquee — fixed at the viewport's vertical centre (the reference's
 	   .mark), difference-blended over the items scrolling beneath.
 	   visibility is CSS-default hidden and toggled ONLY by
