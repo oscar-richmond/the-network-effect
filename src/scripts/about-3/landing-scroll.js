@@ -267,13 +267,14 @@ export function initLandingScroll() {
   // dissolve/videoController) — the served markup is static (server-
   // rendered, never recreated by JS), so it doesn't need rebuilding on
   // resize, only re-pointing via resize()/setPaused(). Passed the whole
-  // STAGE (not just the gallery) since the pillar waves joined the
-  // hover-blur roster: one renderer/canvas serves all 30 images —
-  // gallery + the three waves — with the module's mount window keeping
-  // concurrent planes to the visible few. Paused in lockstep with the
-  // stage itself: gallery-hover-blur.js's tick loop (and its per-frame
-  // mount/unmount reconciliation) has no reason to run while the stage
-  // — and therefore every served image — is invisible.
+  // STAGE; the module itself now selects ONLY the pillar-wave images
+  // (18 — the horizontal gallery's hover treatment was removed by
+  // explicit request; see gallery-hover-blur.js's header), with its
+  // mount window keeping concurrent planes to the visible few. Paused
+  // in lockstep with the stage itself: gallery-hover-blur.js's tick
+  // loop (and its per-frame mount/unmount reconciliation) has no
+  // reason to run while the stage — and therefore every served image —
+  // is invisible.
   const hoverBlur = stage instanceof HTMLElement ? createGalleryHoverBlur(stage) : null;
 
   // Detail-view freeze flag (see the coupling below) — declared before

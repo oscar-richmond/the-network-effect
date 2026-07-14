@@ -320,13 +320,16 @@ class HoverBlurPlane {
 }
 
 /**
- * @param {HTMLElement} galleryEl the container to serve — originally the
- *   `.about-landing__gallery` element alone; now the whole landing STAGE,
- *   so one renderer/canvas serves the horizontal gallery AND the three
- *   pillar-wave sections (30 images total; the mount window below keeps
- *   concurrent planes to the visible few). Every served image sits in a
+ * @param {HTMLElement} galleryEl the container to serve — the whole
+ *   landing STAGE. SERVED SET (explicit request): ONLY the three
+ *   pillar-wave sections' images (18) — the horizontal gallery's images
+ *   lost their hover treatment and overlay CTA and are deliberately NOT
+ *   selected below (the module keeps its historical name). One
+ *   renderer/canvas serves all waves; the mount window below keeps
+ *   concurrent planes to the visible few. Every served image sits in a
  *   `.about-landing__gallery-frame` (the plane/hit-test unit) and maps by
- *   stage-global index to a `[data-about-landing-gallery-overlay]`.
+ *   stage-global index to a `[data-about-landing-gallery-overlay]`
+ *   (wave-only numbering, 0..17 — see AboutScroll.astro).
  * @returns {{ resize: () => void, setPaused: (v: boolean) => void, destroy: () => void } | null}
  *   null when touch/coarse-pointer, WebGL is unavailable, or there are no
  *   served images — caller keeps plain DOM images, no regression.
@@ -335,7 +338,7 @@ export function createGalleryHoverBlur(galleryEl) {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return null;
 
   const items = Array.from(
-    galleryEl.querySelectorAll('[data-about-landing-gallery-img], [data-about-landing-wave-img]'),
+    galleryEl.querySelectorAll('[data-about-landing-wave-img]'),
   ).filter((el) => el instanceof HTMLImageElement);
   if (!items.length) return null;
 

@@ -819,14 +819,18 @@ export function initDetailView() {
       }, `start+=${CLOSE_BEATS.landingIn}`);
   };
 
-  // Click wiring — delegated; every landing image frame (gallery + all
-  // three waves) opens its pillar's entry.
+  // Click wiring — delegated; WAVE frames only (explicit request: the
+  // horizontal gallery's images lost their hover treatment and overlay
+  // CTA, and an invisible click affordance with no hover signal would
+  // be a trap — so clickability is scoped to the three pillar waves
+  // along with it).
   const onLandingClick = (event) => {
     if (state !== 'idle') return;
     const target = event.target;
     if (!(target instanceof Element)) return;
     const frame = target.closest('.about-landing__gallery-frame');
     if (!(frame instanceof HTMLElement) || !landingStage.contains(frame)) return;
+    if (!frame.closest('[data-about-landing-wave]')) return;
     open(frame);
   };
   landingStage.addEventListener('click', onLandingClick);
