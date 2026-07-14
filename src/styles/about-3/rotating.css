@@ -1,0 +1,110 @@
+/* ── /about-3 rotating gallery (Codrops "Rotating On-Scroll Animations",
+   demo 4 — src/_reference/rotating-on-scroll/, MIT) ──────────────────────
+   An IN-FLOW section between two fixed stages (landing before it,
+   partners after): ordinary scrolling content, no fixed stage, no
+   gates — the FUTURE SECTIONS contract governs fixed stages only, and
+   both boundaries here are plain document-flow crossings (see
+   rotating-scroll.js's header for the boundary map).
+
+   VALUES are demo 4's, extracted from the reference source, converted
+   from its 11px-root rems to px: item 300px max-width, aspect 4/5,
+   radius 7px, wrap spacing +55px (5rem), perspective 900px, gallery
+   breathing 25vh/35vh, marquee 33px gaps (3rem) at
+   clamp(22px, 16vw, 154px) in rgb(233,48,29) with difference blend.
+   The marquee FONT is house-adapted (the reference's licensed
+   scale-variable isn't portable) — Dazzed Bold uppercase.
+
+   DELIBERATE DEVIATIONS from the reference CSS (documented):
+   - NO will-change on items: the reference hints transform+filter, but
+     Chromium promotes will-changed siblings OUT of a blend backdrop
+     (the house blend-map finding) — the difference-blend marquee must
+     composite the items beneath it, and the items are per-frame
+     scrubbed inline transforms (active layers) anyway.
+   - The marquee is FIXED but JS-gated to the section window
+     (rotating-scroll.js) instead of the reference's always-fixed .mark
+     — a page-level fixed blend element would sit over other sections.
+   - The reference's page-level body::after vignette is skipped (same
+     page-scope reason; flagged in the plan).
+
+   BASE RULES = reduced-motion state: a plain static centred column on
+   the page ground, marquee as one static (non-blended, clipped) line.
+   rotating-scroll.js never boots under reduced motion. */
+
+.about-page-3 .about-rotating {
+	position: relative;
+	background-color: var(--about3-ground, #eeeef0);
+	/* Reference .gallery margins (25vh top / 35vh bottom) carried as
+	   section padding so the in-flow height owns the whole breathing. */
+	padding: 25vh 0 35vh;
+}
+
+.about-page-3 .about-rotating__mark {
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.about-page-3 .about-rotating__mark-inner {
+	display: flex;
+	gap: 33px; /* reference 3rem @ 11px root */
+	width: max-content;
+}
+
+.about-page-3 .about-rotating__mark-inner span {
+	white-space: nowrap;
+	text-transform: uppercase;
+	color: rgb(233, 48, 29); /* demo-4 --color-marquee */
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: clamp(22px, 16vw, 154px); /* demo-4 clamp @ 11px root */
+	line-height: 1;
+}
+
+.about-page-3 .about-rotating__gallery {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.about-page-3 .about-rotating__item-wrap {
+	width: 100%;
+	max-width: 300px; /* demo-4 --item-width (root default) */
+	perspective: 900px;
+	margin-bottom: 55px; /* demo-4 wrap spacing: +5rem @ 11px root */
+}
+
+.about-page-3 .about-rotating__item {
+	width: 100%;
+	aspect-ratio: 4 / 5; /* demo-4 --item-ar (root default) */
+	border-radius: 7px; /* demo-4 --item-br */
+	overflow: clip;
+	transform-style: preserve-3d;
+}
+
+.about-page-3 .about-rotating__item img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* Marquee — fixed at the viewport's vertical centre (the reference's
+	   .mark), difference-blended over the items scrolling beneath.
+	   visibility is CSS-default hidden and toggled ONLY by
+	   rotating-scroll.js's section-window trigger, so it can never paint
+	   over other sections. z 2 lifts it above the transformed items;
+	   the partners stage carrier (145) and nav (270) stay far above.
+	   BLEND SAFETY: ancestors are the section (position:relative only)
+	   and body — no transform/opacity/filter/will-change in the chain. */
+	.about-page-3 .about-rotating__mark {
+		position: fixed;
+		top: 50%;
+		transform: translateY(-50%);
+		left: 0;
+		width: 100vw;
+		z-index: 2;
+		mix-blend-mode: difference;
+		visibility: hidden;
+	}
+}

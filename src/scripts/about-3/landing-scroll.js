@@ -765,15 +765,6 @@ export function initLandingScroll() {
         // lead margin) is already gone.
         let waveStartPx = liftEndPx + PILLAR_HOLD_PX;
         let chainEndPx = liftEndPx;
-        // Partners melt anchor (Stage-1 amendment, fix 1): the scroll px
-        // at which the FINAL wave's LAST image's centre crosses the
-        // viewport's vertical centre — the point Oscar anchored the
-        // partners #F9F9F9->dark crossfade to. Derived per wave inside
-        // the loop (same pxAtLastTop inversion the row swaps use, aimed
-        // at centre-line y instead of a row edge) and overwritten each
-        // cycle, so the last wave's value survives; published as a
-        // dataset lead below, after runwayPx is final.
-        let partnersMeltAnchorPx = 0;
         waves.forEach((wave, i) => {
           const row = pillarRows[i];
           if (!(row instanceof HTMLElement)) return;
@@ -796,14 +787,12 @@ export function initLandingScroll() {
           let waveTravel = 0;
           let lastTopLocal = 0;
           let lastSpeed = 1;
-          let lastHeight = 0;
           items.forEach((item) => {
             const speed = itemSpeed(item);
             waveTravel = Math.max(waveTravel, (item.offsetTop + item.offsetHeight) / speed);
             if (item.offsetTop > lastTopLocal) {
               lastTopLocal = item.offsetTop;
               lastSpeed = speed;
-              lastHeight = item.offsetHeight;
             }
           });
 
@@ -855,10 +844,6 @@ export function initLandingScroll() {
           const waveStart = waveStartPx;
           const pxAtLastTop = (y) =>
             waveStart + ((lastTopLocal - y) / (waveTravel * lastSpeed)) * WAVE_SCROLL_PX;
-
-          // Last image's CENTRE at the stage's vertical centre — the
-          // melt anchor (see the declaration comment above the loop).
-          partnersMeltAnchorPx = pxAtLastTop(stageH / 2 - lastHeight / 2);
 
           // Row swap — the SAME behaviour as the intro → row 0 swap
           // (confirmed correct live): the last image's pass is only the
@@ -915,22 +900,11 @@ export function initLandingScroll() {
         // end when (as at any current viewport) the last wave resolves
         // after the horizontal scrub does.
         runwayPx = Math.max(runwayPx, chainEndPx + LANDING_TAIL_HOLD);
-
-        // Melt-anchor handoff to partners-scroll.js: the LEAD — how many
-        // scroll px BEFORE landing's runway end (= the partners section's
-        // own top-vs-viewport-bottom crossing, by the height contract
-        // below) the melt anchor sits. Expressed as a lead so partners
-        // can consume it as a plain negative offset on its own trigger
-        // anchor with no knowledge of landing's internals. Written on
-        // every build (resize re-derives); partners' build reads it live
-        // — ordering holds because this module both registers its
-        // settle-gate listener and its resize handler BEFORE partners
-        // does (AboutScroll.astro init order), and partners' build ends
-        // in the ScrollTrigger.refresh() that re-anchors everything
-        // regardless.
-        landing.dataset.partnersMeltLeadPx = String(
-          Math.max(0, Math.round(runwayPx - partnersMeltAnchorPx)),
-        );
+        // NOTE: the partners melt-lead publisher that used to live here
+        // (derived from the final wave's last image) MOVED to
+        // rotating-scroll.js — the in-flow rotating section now sits
+        // between this section and partners, so the melt anchors to ITS
+        // last image instead (see the BOUNDARY MAP in its header).
       }
 
       // Ahead-of-phase preload — one-shot, anchored upstream of the
@@ -961,19 +935,20 @@ export function initLandingScroll() {
     }
 
     // Runway height — EXACTLY runwayPx, no extra headroom. Landing is
-    // NO LONGER the page's last section (the partners section follows —
-    // partners-scroll.js), so the "+1 viewport of headroom, avoids the
-    // exit-end trigger landing exactly at native max scroll" pad has
-    // MOVED to whichever section IS last, mirroring founders' own
-    // un-padded height line (`section.style.height = TOTAL_RUNWAY`).
-    // This is load-bearing for the landing->partners handoff: the
-    // partners entry gate is anchored to its OWN `top bottom` crossing,
-    // which by plain document flow lands exactly at (landing's document
-    // top + landing's height) — for that to coincide with THIS module's
-    // own exit-end (`top+=runwayPx bottom` on `landing`), landing's
-    // rendered height must be exactly runwayPx, not runwayPx +
-    // innerHeight (see partners-scroll.js's entry-gate comment for the
-    // matching half of the contract). Set HERE — after the gallery block
+    // NOT the page's last section (the IN-FLOW rotating gallery follows,
+    // then partners — rotating-scroll.js / partners-scroll.js), so the
+    // "+1 viewport of headroom, avoids the exit-end trigger landing
+    // exactly at native max scroll" pad lives on whichever section IS
+    // last (partners), mirroring founders' own un-padded height line
+    // (`section.style.height = TOTAL_RUNWAY`). This is load-bearing for
+    // the landing->rotating handoff: the next content's top edge lands,
+    // by plain document flow, exactly at (landing's document top +
+    // landing's height) — for THIS module's own exit-end
+    // (`top+=runwayPx bottom` on `landing`) to coincide with that edge
+    // crossing the viewport bottom, landing's rendered height must be
+    // exactly runwayPx, not runwayPx + innerHeight. (An in-flow
+    // successor needs no entry gate at all — the ground-to-ground swap
+    // note in RotatingSection.astro.) Set HERE — after the gallery block
     // has derived the pillar chain's end into runwayPx — and before the
     // final ScrollTrigger.refresh(), which recomputes every trigger
     // (including the earlier entry/reveal ones) against the final

@@ -436,6 +436,7 @@ export function initAbout3Scroll() {
     'founders-',
     'section-progress-',
     'about-landing-',
+    'about-rotating-',
     'about-partners-',
   ];
   const killHeroTriggers = () => {

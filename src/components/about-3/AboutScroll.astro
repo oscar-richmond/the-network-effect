@@ -1,6 +1,7 @@
 ---
 import AboutHero from './AboutHero.astro';
 import FoundersSection from './FoundersSection.astro';
+import RotatingSection from './RotatingSection.astro';
 import PartnersSection from './PartnersSection.astro';
 import DetailView from './DetailView.astro';
 import { asset } from '../../utils/asset.js';
@@ -467,6 +468,8 @@ const pillarRows = [
   </div>
 </section>
 
+<RotatingSection />
+
 <PartnersSection />
 
 <DetailView />
@@ -474,11 +477,16 @@ const pillarRows = [
 <script>
   import { initAbout3Scroll } from '../../scripts/about-3/about-scroll.js';
   import { initLandingScroll } from '../../scripts/about-3/landing-scroll.js';
+  import { initRotatingScroll } from '../../scripts/about-3/rotating-scroll.js';
   import { initPartnersScroll } from '../../scripts/about-3/partners-scroll.js';
   import { initDetailView } from '../../scripts/about-3/detail-view.js';
 
   let cleanupAbout3Scroll = initAbout3Scroll();
   let cleanupLandingScroll = initLandingScroll();
+  // Rotating inits BEFORE partners — its settle-gate listener (and
+  // resize handler) must run first so its build publishes the melt
+  // lead before partners' build reads it (rotating-scroll.js header).
+  let cleanupRotatingScroll = initRotatingScroll();
   let cleanupPartnersScroll = initPartnersScroll();
   let cleanupDetailView = initDetailView();
 
@@ -487,6 +495,8 @@ const pillarRows = [
     cleanupAbout3Scroll = undefined;
     cleanupLandingScroll?.();
     cleanupLandingScroll = undefined;
+    cleanupRotatingScroll?.();
+    cleanupRotatingScroll = undefined;
     cleanupPartnersScroll?.();
     cleanupPartnersScroll = undefined;
     cleanupDetailView?.();

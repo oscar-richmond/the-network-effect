@@ -234,24 +234,28 @@ export function initPartnersScroll() {
 
     // Melt lead (fix 1, re-tuned at Oscar's re-pass) — how many scroll px
     // BEFORE this section's own top-vs-viewport-bottom crossing the entry
-    // crossfade starts. The landing publishes the FULL derived lead (the
-    // final wave's last image's centre crossing the viewport's vertical
-    // centre — see the dataset publish in landing-scroll.js's wave
-    // chain); Oscar's split-the-difference call halves it here as
-    // composition POLICY on the consumer side, keeping the published
-    // value a pure mechanical fact of the gallery maths. The clamp keeps
-    // the confirmed completes-at-or-before-the-boundary behaviour at any
-    // viewport (lead never shorter than the melt itself). Re-read every
-    // build so resize re-derivations flow through; landing always builds
-    // first (its settle-gate listener and resize handler are both
+    // crossfade starts. The PREDECESSOR publishes the FULL derived lead
+    // (its last image's centre crossing the viewport's vertical centre)
+    // — since the rotating-gallery build that predecessor is the IN-FLOW
+    // rotating section (rotating-scroll.js's BOUNDARY MAP; it took the
+    // publisher over from landing's wave chain), and the crossfade now
+    // melts over that ordinary scrolling content instead of the frozen
+    // last wave. Oscar's split-the-difference call halves the lead here
+    // as composition POLICY on the consumer side (FLAGGED at the
+    // rotating handoff: the 0.5 was tuned against the wave geometry —
+    // expect a feel re-tune). The clamp keeps the confirmed
+    // completes-at-or-before-the-boundary behaviour at any viewport
+    // (lead never shorter than the melt itself). Re-read every build so
+    // resize re-derivations flow through; the rotating module always
+    // builds first (its settle-gate listener and resize handler are both
     // registered before ours — AboutScroll.astro init order). Missing
-    // dataset (no landing/waves on the page, defensive only) degrades to
-    // a boundary-completing melt.
+    // dataset (no rotating section on the page, defensive only)
+    // degrades to a boundary-completing melt.
     const PARTNERS_MELT_LEAD_RATIO = 0.5;
-    const landing = document.querySelector('body.about-page-3 [data-about-landing]');
+    const predecessor = document.querySelector('body.about-page-3 [data-about-rotating]');
     const fullMeltLead =
-      landing instanceof HTMLElement
-        ? Math.max(0, parseFloat(landing.dataset.partnersMeltLeadPx || '0') || 0)
+      predecessor instanceof HTMLElement
+        ? Math.max(0, parseFloat(predecessor.dataset.partnersMeltLeadPx || '0') || 0)
         : 0;
     const meltLead = Math.max(
       PARTNERS_ENTRY_FADE_PX,
@@ -262,10 +266,10 @@ export function initPartnersScroll() {
       relPx >= 0 ? `top+=${relPx} bottom` : `top-=${-relPx} bottom`;
 
     // Entry gate — moves WITH the melt (the stage must exist on screen,
-    // at scrubbed opacity, for the crossfade to show). Both stages are
-    // deliberately live between here and landing's own exit-end: landing
-    // (z 140) keeps playing its final wave beneath this stage (z 145)
-    // while the crossfade darkens over it.
+    // at scrubbed opacity, for the crossfade to show). The predecessor
+    // is now IN-FLOW content (the rotating gallery): it keeps scrolling
+    // beneath this fixed stage (carrier z 145) while the crossfade
+    // darkens over it — no second stage involved.
     const entry = ScrollTrigger.create({
       trigger: section,
       start: anchorAt(-meltLead),
