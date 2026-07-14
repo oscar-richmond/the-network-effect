@@ -32,6 +32,28 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
  *   the DOM portrait crossfade as the degradation path (same console.warn +
  *   fallback contract as createRotatingGallery). The background media
  *   crossfade is unconditional DOM either way (see founders-scroll.js).
+ *
+ * GRAIN DISPLACEMENT LAYER (the founders-grain round — approved plan):
+ * the Codrops cursor/velocity grain displacement (wave-shader.js, the
+ * pillars' hover effect) LAYERED onto — not replacing — the dissolve:
+ * the noise-threshold stagger stays verbatim as the transition's
+ * legibility, and a per-pixel screen-space grain shift rides on the
+ * sampling coords of BOTH textures as one shared distortion field
+ * (the mask lookup stays undisplaced, exactly as the warp already
+ * treats it). Since a scheduled snap has no cursor or scroll motion,
+ * the effect's "velocity" input is SYNTHETIC: the snap timeline's own
+ * progress derivative, computed per tick from successive setProgress
+ * values, smoothed and clamped (constants below) — a mid-peaked bell
+ * during a normal 0.7s play (the ease's own derivative shape), exactly
+ * 0 at both endpoints, sign-flipping on retarget, and a clamped burst
+ * on the fling guard's force-resolve. The pillars' cursor gate ports
+ * verbatim but FIXED AT CENTRE (no cursor concept here): a radially
+ * symmetric, edge-weighted field — the uniform-field alternative is
+ * the flagged one-line fallback if that reads oddly. The pillars'
+ * vertex bow is deliberately NOT ported (stationary portrait, timed
+ * snap — a bow would read as glitch; documented exclusion in the
+ * approved plan). founders-scroll.js is untouched by contract: the
+ * setProgress interface is the whole coupling.
  */
 
 /** Noise frequency in UV space — higher = smaller dissolve cells. */
@@ -45,6 +67,35 @@ const EDGE_SOFTNESS = 0.25;
 /** Portrait corner radius in CSS px — mirrors the DOM wrapper's
  * border-radius: 4px, which the canvas can't inherit (SDF alpha mask). */
 const PORTRAIT_RADIUS_PX = 4;
+
+/* ── Grain displacement constants (see the module doc's grain layer
+ * paragraph; all four are the tuning surface, in the pillars effect's
+ * own units so the two effects stay directly comparable) ──────────── */
+
+/** Maps the synthetic velocity (timeline progress derivative, in
+ * progress/second) into the pillars' velocity units (Lenis px/frame —
+ * wave-shader.js's uScrollVelocity, whose fragment factor is v·0.1).
+ * Derivation: a normal 0.7s power2.inOut play peaks at ~2.86
+ * progress/s mid-transition; ×3.5 ≈ 10 units ≈ factor 1.0 — i.e. the
+ * grain peaks at exactly one hover-strength (uMouseEnter 1.0
+ * equivalent) at the transition's midpoint. THE primary lever. */
+const GRAIN_VELOCITY_SCALE = 3.5;
+/** Symmetric bound on the scaled velocity — the fling guard's
+ * force-resolve jumps progress in one frame (raw derivative ~60/s,
+ * ~210 units unbounded); the clamp turns that into a strong-but-
+ * finite burst (20 units = factor 2.0, a hard scroll flick on the
+ * pillars) which the lerp below then decays. */
+const GRAIN_VELOCITY_CLAMP = 20;
+/** Per-tick smoothing toward the raw derivative — softens the
+ * force-resolve discontinuity into the designed burst-then-decay
+ * (~0.4s from clamp to epsilon at 60fps) while tracking the normal
+ * play's bell with only a few frames' lag. */
+const GRAIN_VELOCITY_LERP = 0.18;
+/** Below this (with a zero target) the smoothed velocity SNAPS to
+ * exactly 0 (the wheel-lerp epsilon idiom) — guaranteeing the resting
+ * shader term is identically zero, so resting frames stay pixel-exact
+ * against the pre-grain build by construction. */
+const GRAIN_VELOCITY_EPSILON = 0.01;
 
 const VERTEX_SHADER = /* glsl */ `
   precision highp float;
@@ -78,6 +129,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform float uEdgeSoftness;
   uniform float uRadiusPx;
   uniform float uBlurPx;
+  uniform float uGrainVelocity;
 
   varying vec2 vUv;
 
@@ -148,6 +200,31 @@ const FRAGMENT_SHADER = /* glsl */ `
 
     vec2 uvFrom = coverUv(vUv, uPlaneSizePx, uImageSizeFrom) + warp * m;
     vec2 uvTo = coverUv(vUv, uPlaneSizePx, uImageSizeTo) - warp * (1.0 - m);
+
+    // Grain displacement layer (wave-shader.js's effect fragment,
+    // ported verbatim with two documented substitutions): the cursor
+    // gate is FIXED AT CENTRE (0.5, 0.5) — no cursor concept in a
+    // scheduled snap — giving the circle's radially-symmetric,
+    // edge-weighted field; and the per-pixel grain reuses THIS
+    // module's existing snoise (+1.0 permute) rather than importing
+    // the reference's +10.0 variant — statistically identical at
+    // gl_FragCoord frequency, one snoise implementation per shader.
+    // uGrainVelocity is the SYNTHETIC velocity (timeline derivative,
+    // scaled/smoothed/clamped in JS) in the pillars' own units, so
+    // the ·0.1 factor is the reference's verbatim term. The SAME
+    // signed shift rides both textures (one shared distortion field
+    // over the mix — approved plan §3.1); the mask (n, m) upstream
+    // stays undisplaced, exactly as the warp treats it. Exact 0 at
+    // rest (epsilon snap in JS) — this line is then an identity.
+    float grainAspect = uPlaneSizePx.y / uPlaneSizePx.x;
+    float grainCircle = 1.0 - distance(
+      vec2(0.5, (1.0 - 0.5) * grainAspect),
+      vec2(vUv.x, vUv.y * grainAspect)
+    ) * 15.0;
+    float grainNoise = snoise(gl_FragCoord.xy);
+    float grainShift = grainCircle * grainNoise * 0.01 * (uGrainVelocity * 0.1);
+    uvFrom += vec2(grainShift);
+    uvTo += vec2(grainShift);
 
     vec3 colFrom = texture2D(uTextureFrom, uvFrom).rgb;
     vec3 colTo = texture2D(uTextureTo, uvTo).rgb;
@@ -245,6 +322,7 @@ class DissolvePlane {
         uEdgeSoftness: { value: EDGE_SOFTNESS },
         uRadiusPx: { value: radiusPx },
         uBlurPx: { value: 0 },
+        uGrainVelocity: { value: 0 },
       },
       cullFace: false,
     });
@@ -391,9 +469,38 @@ export function createFoundersDissolve(stage) {
   let disposed = false;
   let paused = false;
 
-  const tick = () => {
+  // Synthetic grain velocity (module doc's grain layer paragraph):
+  // derivative of the snap timeline's progress, observed here as the
+  // delta between successive setProgress values over real elapsed
+  // time — founders-scroll.js stays untouched by contract; the
+  // existing setProgress interface is the entire coupling.
+  let progressNow = 0;
+  let progressPrev = 0;
+  let grainVelocity = 0;
+  let lastTickAt = 0;
+
+  const updateGrainVelocity = (now) => {
+    const dtSec = lastTickAt > 0 ? (now - lastTickAt) / 1000 : 0;
+    lastTickAt = now;
+    let target = 0;
+    if (dtSec > 1e-4) {
+      const raw = ((progressNow - progressPrev) / dtSec) * GRAIN_VELOCITY_SCALE;
+      target = Math.max(-GRAIN_VELOCITY_CLAMP, Math.min(GRAIN_VELOCITY_CLAMP, raw));
+    }
+    progressPrev = progressNow;
+    grainVelocity += (target - grainVelocity) * GRAIN_VELOCITY_LERP;
+    // Epsilon snap (the wheel-lerp idiom): with a zero target, land on
+    // EXACTLY 0 so the resting shader term is an identity.
+    if (target === 0 && Math.abs(grainVelocity) < GRAIN_VELOCITY_EPSILON) grainVelocity = 0;
+    planes.forEach((plane) => {
+      plane.program.uniforms.uGrainVelocity.value = grainVelocity;
+    });
+  };
+
+  const tick = (now = performance.now()) => {
     if (disposed || paused) return;
     rafId = requestAnimationFrame(tick);
+    updateGrainVelocity(now);
     planes.forEach((plane) => plane.update(screen, viewport));
     renderer.render({ scene, camera });
   };
@@ -417,11 +524,37 @@ export function createFoundersDissolve(stage) {
     });
   });
 
-  return {
+  const api = {
     ready,
     resize,
     setProgress(value) {
+      progressNow = Math.max(0, Math.min(value, 1));
       planes.forEach((plane) => plane.setProgress(value));
+    },
+    /** Debug/verification surface (the rotating-fold precedent —
+     * additive; founders-scroll.js neither knows nor cares): one
+     * manual frame regardless of pause state for the occluded test
+     * pane, with an optional explicit timestamp so the derivative
+     * maths can be driven deterministically. */
+    tickOnce(now = performance.now()) {
+      if (disposed) return;
+      updateGrainVelocity(now);
+      planes.forEach((plane) => plane.update(screen, viewport));
+      renderer.render({ scene, camera });
+    },
+    debugState() {
+      return {
+        paused,
+        disposed,
+        progress: progressNow,
+        grainVelocity,
+        constants: {
+          scale: GRAIN_VELOCITY_SCALE,
+          clamp: GRAIN_VELOCITY_CLAMP,
+          lerp: GRAIN_VELOCITY_LERP,
+          epsilon: GRAIN_VELOCITY_EPSILON,
+        },
+      };
     },
     /** Idle/resume the rAF loop — used by the exhale-exit teardown once
      * the stage is visibility: hidden (nothing paints; per-frame proxy
@@ -447,4 +580,11 @@ export function createFoundersDissolve(stage) {
       canvas.remove();
     },
   };
+
+  // Expose the debug surface on the stage (the section.rotatingFold /
+  // stage.waveShader precedent) — done HERE so founders-scroll.js
+  // stays untouched; harmless expando in production.
+  stage.foundersDissolve = api;
+
+  return api;
 }
