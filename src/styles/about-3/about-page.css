@@ -1,9 +1,19 @@
 /* About-3 page shell */
 
 body.about-page-3 {
+	/* THE page ground — was #F9F9F9, retuned to #EEEEF0 (Oscar's call).
+	   Single source of truth: every surface that must read as "the page
+	   base" (loader, hero bg, landing in-flow + stage panel, founders
+	   exit veil, detail-view bg) consumes this variable, so the melt/
+	   handoff contracts ("pixel-identical ground-to-ground swap" — any
+	   comment naming #F9F9F9 in prose describes THIS colour now) can
+	   never drift apart on a future retune. Text/hairline uses of the
+	   old #f9f9f9 literal (names, ticks, copy) are NOT the ground and
+	   deliberately keep their own value. */
+	--about3-ground: #eeeef0;
 	margin: 0;
 	color: var(--color-ink-strong, #161616);
-	background-color: #F9F9F9;
+	background-color: var(--about3-ground);
 	font-family: var(--font-display, 'Dazzed', sans-serif);
 	font-weight: 400;
 	font-size: 0.75rem;
@@ -31,7 +41,7 @@ html.js body.about-page-3.loading::before {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: #F9F9F9;
+	background: var(--about3-ground, #eeeef0);
 }
 
 html.js body.about-page-3.loading::after {
@@ -129,7 +139,7 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 .about-page-3 .about-landing {
 	min-height: 100vh;
 	min-height: 100dvh;
-	background-color: #f9f9f9;
+	background-color: var(--about3-ground, #eeeef0);
 	display: flex;
 	align-items: center;
 	padding-block: 40px;
@@ -176,7 +186,7 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		width: 100%;
 		height: 100vh;
 		height: 100dvh;
-		background-color: #f9f9f9;
+		background-color: var(--about3-ground, #eeeef0);
 		isolation: isolate;
 		visibility: hidden;
 		pointer-events: none;

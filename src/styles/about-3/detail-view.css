@@ -38,7 +38,9 @@
 .about-page-3 .about-detail__bg {
 	position: absolute;
 	inset: 0;
-	background-color: #f9f9f9;
+	/* MUST equal the page ground (--about3-ground, about-page.css) — the
+	   detail stage reads as the same surface as the landing beneath. */
+	background-color: var(--about3-ground, #eeeef0);
 	opacity: 0;
 }
 

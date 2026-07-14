@@ -372,7 +372,9 @@
 	position: absolute;
 	inset: 0;
 	z-index: 45;
-	background: #f9f9f9;
+	/* MUST equal the page ground (--about3-ground, about-page.css) — the
+	   veil melts the section into the page base colour. */
+	background: var(--about3-ground, #eeeef0);
 	pointer-events: none;
 }
 
