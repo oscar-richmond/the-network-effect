@@ -89,8 +89,16 @@ export const founders = [
     ],
     photo: '/assets/about-scroll/ashley-team.png',
     media: {
-      type: 'image',
-      src: '/assets/about-scroll/ashley-team.png',
+      type: 'video',
+      // The SAME clip as Robbo's slide (Oscar's request): with identical
+      // footage behind both slides the media crossfade reads as one
+      // continuous background. Each slide keeps its own element (the
+      // crossfade + blend-safety architecture is per-slide);
+      // createFoundersVideoController gates each slide's decode to its
+      // own visible window, and the shared file makes the second load()
+      // a cache hit.
+      src: '/assets/about-hero/about-3/founders-bg-robbo.mp4',
+      poster: '/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg',
     },
     alt: 'Portrait of Ashley Walters',
   },

@@ -287,56 +287,95 @@ function forceSyncNameTravel(travel) {
 }
 
 /**
- * One-time video playback lifecycle controller for slide 1's raw video
- * media. Constructed once in initFoundersScroll (never under reduced
- * motion — see its early return) and reused across resize rebuilds: the
- * video element itself never changes, so its one-time setup (preload
+ * One-time video playback lifecycle controller for EVERY slide's raw
+ * video media (generalized from slide-1-only when Ashley's slide gained
+ * the same clip — Oscar's request; both share one file, see founders.js).
+ * Constructed once in initFoundersScroll (never under reduced motion —
+ * see its early return) and reused across resize rebuilds: the video
+ * elements themselves never change, so their one-time setup (preload
  * upgrade, error listener) must not repeat on every rebuild the way the
- * scrubbed triggers do. Per-build wiring (the section-active window, the
- * snap timeline reference) is supplied separately by buildFoundersTriggers
- * / initFoundersScroll's build() via setActive/setTimeline.
+ * scrubbed triggers do. Per-build wiring (the section-active window,
+ * the snap timeline reference) is supplied separately by
+ * buildFoundersTriggers / initFoundersScroll's build() via
+ * setActive/setTimeline.
  *
- * Fallback contract: any video load/play failure (network error, decode
- * error, or a rejected play() promise — e.g. an autoplay policy block)
- * permanently swaps to the raw poster image already sitting in the same
- * media-group (see FoundersSection.astro) via a CSS class — the poster
- * still sits UNDER the live overlay, so the treatment is unaffected.
+ * Decode windows are PER SLIDE: slide 1's video plays only until the
+ * snap timeline completes; later slides' only once it has begun — both
+ * run through the crossfade itself, neither decodes while fully hidden.
+ * (A third founder revisits this two-slide split, like the exit — see
+ * buildFoundersTriggers's lastSlide note.)
+ *
+ * Fallback contract (per video): any load/play failure (network error,
+ * decode error, or a rejected play() promise — e.g. an autoplay policy
+ * block) permanently swaps THAT slide to the raw poster image already
+ * sitting in the same media-group (see FoundersSection.astro) via a CSS
+ * class — the poster still sits UNDER the live overlay, so the
+ * treatment is unaffected.
  * @param {HTMLElement} section
  * @returns {{ setActive: (v: boolean) => void, setTimeline: (tl: gsap.core.Timeline | undefined) => void, destroy: () => void } | null}
  */
 function createFoundersVideoController(section) {
-  const video = section.querySelector('[data-founder-media][data-founder-media-type="video"]');
-  const mediaGroup = video?.closest('[data-founder-media-group]');
-  if (!(video instanceof HTMLVideoElement) || !(mediaGroup instanceof HTMLElement)) return null;
+  const entries = Array.from(
+    section.querySelectorAll('[data-founder-media][data-founder-media-type="video"]'),
+  )
+    .map((video) => {
+      const mediaGroup = video.closest('[data-founder-media-group]');
+      const slide = video.closest('[data-founder-slide]');
+      if (
+        !(video instanceof HTMLVideoElement) ||
+        !(mediaGroup instanceof HTMLElement) ||
+        !(slide instanceof HTMLElement)
+      ) {
+        return null;
+      }
+      return {
+        video,
+        mediaGroup,
+        slideIndex: Number(slide.dataset.founderIndex ?? '0') || 0,
+        failed: false,
+        /** @type {(() => void) | undefined} */
+        onError: undefined,
+      };
+    })
+    .filter((entry) => entry !== null);
+  if (!entries.length) return null;
 
-  let failed = false;
   let sectionActive = false;
   /** @type {gsap.core.Timeline | undefined} */
   let tl;
 
-  const updatePlayback = () => {
-    if (failed) return;
-    const shouldPlay = sectionActive && (!tl || tl.progress() < 1);
-    if (shouldPlay) {
-      if (video.paused) video.play().catch(handleFailure);
-    } else if (!video.paused) {
-      video.pause();
-    }
+  const handleFailure = (entry) => {
+    if (entry.failed) return;
+    entry.failed = true;
+    entry.mediaGroup.classList.add('is-video-fallback');
+    entry.video.pause();
   };
 
-  function handleFailure() {
-    if (failed) return;
-    failed = true;
-    mediaGroup.classList.add('is-video-fallback');
-    video.pause();
-  }
+  const updatePlayback = () => {
+    entries.forEach((entry) => {
+      if (entry.failed) return;
+      const inSlideWindow =
+        entry.slideIndex === 0 ? !tl || tl.progress() < 1 : !!tl && tl.progress() > 0;
+      const shouldPlay = sectionActive && inSlideWindow;
+      if (shouldPlay) {
+        if (entry.video.paused) entry.video.play().catch(() => handleFailure(entry));
+      } else if (!entry.video.paused) {
+        entry.video.pause();
+      }
+    });
+  };
 
-  video.addEventListener('error', handleFailure);
-  // Upgrade from the reduced-motion-safe `preload="none"` server default
-  // (FoundersSection.astro) — reaching this module at all already means
-  // reduced motion is off, so it's safe to start buffering now.
-  video.preload = 'auto';
-  video.load();
+  entries.forEach((entry) => {
+    entry.onError = () => handleFailure(entry);
+    entry.video.addEventListener('error', entry.onError);
+    // Upgrade from the reduced-motion-safe `preload="none"` server
+    // default (FoundersSection.astro) — reaching this module at all
+    // already means reduced motion is off, so it's safe to start
+    // buffering now. Both slides share one file, so the second load()
+    // is a cache hit, not a second download.
+    entry.video.preload = 'auto';
+    entry.video.load();
+  });
 
   return {
     setActive(value) {
@@ -352,8 +391,10 @@ function createFoundersVideoController(section) {
       updatePlayback();
     },
     destroy() {
-      video.removeEventListener('error', handleFailure);
-      video.pause();
+      entries.forEach((entry) => {
+        if (entry.onError) entry.video.removeEventListener('error', entry.onError);
+        entry.video.pause();
+      });
     },
   };
 }
@@ -363,7 +404,7 @@ function createFoundersVideoController(section) {
  * wrapping measures rendered text).
  * @param {HTMLElement} section
  * @param {ReturnType<typeof createFoundersDissolve>} dissolve WebGL module, or null (DOM fallback)
- * @param {ReturnType<typeof createFoundersVideoController>} videoController null when slide 1 has no video
+ * @param {ReturnType<typeof createFoundersVideoController>} videoController null when no slide has a video
  * @param {(done: boolean) => void} applyExitState exit-completion teardown/restore (owned by initFoundersScroll)
  * @returns {{ tl: gsap.core.Timeline | undefined, travel1: NameTravel | null, travel2: NameTravel | null } | undefined}
  *   tl: the snap transition timeline (kill on rebuild). travel1/travel2:
@@ -945,9 +986,14 @@ function buildFoundersTriggers(section, dissolve, videoController, applyExitStat
   // THIS media animates — slide 1's stays at its static (cached) blur,
   // paused video beneath, fully occluded. By beat 2 all content is gone
   // (beat 1), so the veil never covers or blend-isolates anything visible.
-  const lastMedia = qLast('[data-founder-media]');
+  // ALL media elements in the last slide's group — with a video slide
+  // that's the video AND its poster-fallback img, so the over-blur also
+  // covers the video-failure path.
+  const lastMedia = Array.from(
+    lastSlide.querySelectorAll('[data-founder-media], .founders__media-fallback'),
+  );
   const veil = section.querySelector('[data-founders-exit-veil]');
-  if (lastMedia && veil) {
+  if (lastMedia.length && veil) {
     const restingBlurPx =
       parseFloat(getComputedStyle(section).getPropertyValue('--founders-blur-px')) || 125;
     const exitBgTl = gsap.timeline({

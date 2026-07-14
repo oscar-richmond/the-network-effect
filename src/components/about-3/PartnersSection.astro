@@ -11,18 +11,18 @@ import '../../styles/about-3/partners.css';
 // partners-scroll.js.
 const CULL_WINDOW = 10;
 
-// Background video — AdobeStock_1891763427 HD PREVIEW, supplied by
-// Oscar after the Stage-2 pass (one of the Figma-named clips; supersedes
-// the interim AdobeStock_492438053). Remuxed .mov -> .mp4 stream-copy
-// (H.264 1920x1080, ~5s loop, no re-encode); poster is its own first
-// frame. STILL A PREVIEW: the founders-style licensed-swap obligation
-// stands for the final licensed render. LICENSED-SWAP CHECKLIST when it
-// lands: drop the file over partners-bg.mp4 (or update these two
-// paths), re-bake the poster frame, re-verify the blur treatment tone
-// live — no other derived assets and NO code changes (the two-layer
-// treatment reads whatever file is here).
-const videoSrc = asset('/assets/partners/partners-bg.mp4');
-const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
+// Background video — the SAME clip as the founders slides (Oscar's
+// request; currently the AdobeStock_2068472100 HD preview living at the
+// founders path): one shared file, so the browser fetches it once for
+// all three uses. This superseded the section's own AdobeStock_1891763427
+// (partners-bg.mp4, removed). STILL A PREVIEW: the licensed-swap
+// obligation stands. LICENSED-SWAP CHECKLIST when the final render
+// lands: it swaps at the FOUNDERS path (see founders.js's media
+// comment — including the bg-fade.jpg re-bake documented there), and
+// this section inherits it automatically; if partners ever needs its
+// OWN clip again, restore a partners-local file + these two paths.
+const videoSrc = asset('/assets/about-hero/about-3/founders-bg-robbo.mp4');
+const videoPoster = asset('/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg');
 ---
 
 <section class="about-partners" data-about-partners aria-label="Partners">
