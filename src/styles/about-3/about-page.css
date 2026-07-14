@@ -445,17 +445,14 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	/* BLEND ON THIS WRAPPER, plain-white children — the nav/section-
-	   progress pattern, and load-bearing here: the wrapper needs
-	   position + z-index (a self-created stacking context, safe for its
-	   OWN blend per the founders-name precedent), so a leaf blend on the
-	   children would see only the wrapper's transparent interior and
-	   flatten white (the section-progress.css finding). z-index 1: above
-	   the JS-appended hover canvas (z auto) it must blend against.
-	   left/top/width/height are written per-tick by wave-shader.js
-	   (layout properties — never transform, which would be fine on a
-	   blend SELF but is avoided for consistency with the name-clip
-	   idiom); opacity rides the hover progress, 0 at rest. */
+	/* PLAIN WHITE, no blend (explicit request at the update round —
+	   supersedes the original difference treatment and retires this
+	   overlay's blend-safety obligations; the wrapper's position +
+	   z-index and the per-tick layout writes are kept as-is, they were
+	   never blend-driven requirements alone). z-index 1: above the
+	   JS-appended shader canvas (z auto) it reads over.
+	   left/top/width/height are written per-tick by wave-shader.js;
+	   opacity rides the hover progress, 0 at rest. */
 	.about-page-3 .about-landing__gallery-overlay {
 		display: flex;
 		position: absolute;
@@ -471,7 +468,6 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		opacity: 0;
 		pointer-events: none;
 		color: #ffffff;
-		mix-blend-mode: difference;
 	}
 
 	.about-page-3 .about-landing__gallery-overlay-text {

@@ -267,10 +267,11 @@ export function initLandingScroll() {
   // dissolve/videoController) — the served markup is static (server-
   // rendered, never recreated by JS), so it doesn't need rebuilding on
   // resize, only re-pointing via resize()/setPaused(). Passed the whole
-  // STAGE; the module itself selects ONLY the pillar-wave images (the
-  // horizontal gallery's hover treatment was removed by explicit
-  // request; see wave-shader.js's header), with its mount window
-  // keeping concurrent planes to the visible few. Paused in lockstep
+  // STAGE; the module serves the pillar-wave images (full effect) and
+  // the horizontal gallery's images (scroll-velocity only — its hover
+  // treatment stays removed by explicit request; see wave-shader.js's
+  // header), with its mount window keeping concurrent planes to the
+  // visible few. Paused in lockstep
   // with the stage itself: wave-shader.js's tick (a gsap.ticker
   // callback, incl. its per-frame mount/unmount reconciliation) has no
   // reason to run while the stage — and therefore every served image —

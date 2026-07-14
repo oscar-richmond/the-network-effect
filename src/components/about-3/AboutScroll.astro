@@ -307,11 +307,13 @@ const pillarRows = [
         ))}
       </div>
 
-      <!-- NOTE (explicit request): the horizontal gallery's images carry
-           NO hover treatment and NO overlay CTA any more — the hover
-           module and the detail-view click both serve ONLY the pillar
-           wave images below (see the wave markup's overlay comment for
-           the overlay architecture that used to live here too). -->
+      <!-- NOTE (explicit requests, two rounds): the horizontal gallery's
+           images carry NO hover treatment, NO overlay CTA, and NO
+           detail-view click — but they DO carry wave-shader.js's
+           SCROLL-VELOCITY plane treatment (added at the update round;
+           the module serves them velocity-only, pointer handlers
+           unattached). The hover displacement + CTA + click serve ONLY
+           the pillar wave images below. -->
     </div>
 
     <!-- Pillar image waves — one per pillar row, parked fully below the
@@ -367,7 +369,7 @@ const pillarRows = [
             data-about-landing-gallery-overlay={waveOffsets[waveIndex] + j}
             aria-hidden="true"
           >
-            <p class="about-landing__gallery-overlay-text">Take a moment to explore our services</p>
+            <p class="about-landing__gallery-overlay-text">View our services</p>
           </div>
         ))}
       </div>
