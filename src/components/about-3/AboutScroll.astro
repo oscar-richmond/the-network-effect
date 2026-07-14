@@ -334,13 +334,13 @@ const pillarRows = [
          siblings from the blend backdrop). Frames reuse the gallery's
          .about-landing__gallery-frame class: it is the hover module's
          plane/hit-test unit (pointer-events: auto opt-in under the
-         pointer-events:none subtree) — see gallery-hover-blur.js.
+         pointer-events:none subtree) — see wave-shader.js.
          Overlay indices are STAGE-GLOBAL in DOM order across the three
          waves (0..17) — the module maps its i-th image (queried across
          the whole stage; the horizontal gallery's images are NO LONGER
          served, by explicit request) to overlay index i. The overlays
          sit OUTSIDE the transformed track (rect-synced siblings; see
-         gallery-hover-blur.js) because the track's per-frame transforms
+         wave-shader.js) because the track's per-frame transforms
          would blend-isolate and cover them. display: none under reduced
          motion (about-page.css base state) — purely decorative,
          aria-hidden. -->
@@ -373,7 +373,7 @@ const pillarRows = [
       </div>
     ))}
 
-    <!-- Shared hover-blur canvas slot — gallery-hover-blur.js appends
+    <!-- Shared hover-canvas slot — wave-shader.js appends
          its single WebGL canvas here (one renderer for all 30 images:
          gallery + waves) instead of inside the gallery. Positioned at
          THIS source position so the canvas paints above every image

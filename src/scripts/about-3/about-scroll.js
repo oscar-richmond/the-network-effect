@@ -365,6 +365,20 @@ function initHeroImageScroll() {
 /** @type {Lenis | null} */
 let lenis = null;
 
+/**
+ * Live scroll velocity (Lenis px-per-frame `velocity` — a public
+ * instance property the library itself resets to 0 shortly after
+ * scrolling settles) for consumers that need it per tick without
+ * owning a Lenis instance or a scroll listener — wave-shader.js's
+ * uScrollVelocity. Returns 0 whenever Lenis is absent (reduced motion,
+ * pre-boot, post-teardown), degrading consumers to their scroll-free
+ * behaviour. Import is one-way (this module imports nothing from the
+ * consumers' chain) — no cycle.
+ */
+export function getScrollVelocity() {
+  return lenis?.velocity ?? 0;
+}
+
 function initSmoothScrolling() {
   document.documentElement.classList.add('lenis');
 

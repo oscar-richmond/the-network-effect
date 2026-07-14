@@ -148,7 +148,7 @@ export function initPartnersScroll() {
   );
 
   // Satellite-image noise dissolve (amendment 5) — created ONCE,
-  // module-instance lifetime (the landing hoverBlur idiom): the GL
+  // module-instance lifetime (the landing waveShader idiom): the GL
   // module holds one plane + one tween slot for the whole section and
   // is only ever re-POINTED (setActive) / re-sized, never recreated.
   // URLs come from the server-rendered per-brand <img>s (every brand
@@ -234,7 +234,7 @@ export function initPartnersScroll() {
     settleCall?.kill();
 
     // Re-size the GL image slot (vw-derived geometry) — re-pointed, not
-    // recreated, the landing hoverBlur resize idiom.
+    // recreated, the landing waveShader resize idiom.
     imageDissolve?.resize();
 
     // Melt lead (fix 1, re-anchored at Oscar's melt-clearance round) —

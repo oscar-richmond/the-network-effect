@@ -141,7 +141,7 @@ export function initRotatingScroll() {
   }
 
   // The fold module — created ONCE, module-instance lifetime (the
-  // landing hoverBlur / partners imageDissolve idiom): one OGL context,
+  // landing waveShader / partners imageDissolve idiom): one OGL context,
   // planes proxying the static items, re-POINTED on resize, never
   // recreated. null (no WebGL) leaves the static DOM column as the
   // degradation path, same contract as the hero gallery.
@@ -192,7 +192,7 @@ export function initRotatingScroll() {
     });
 
     // Re-point the fold module at the fresh viewport (re-POINTED, not
-    // recreated — the hoverBlur/imageDissolve resize idiom). Per-image
+    // recreated — the waveShader/imageDissolve resize idiom). Per-image
     // rotation needs no triggers here: rotating-fold.js derives each
     // plane's travel from its proxy's live rect every frame (the hero
     // pattern).

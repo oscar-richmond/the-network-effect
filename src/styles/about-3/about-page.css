@@ -409,8 +409,10 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	object-fit: cover;
 }
 
-/* Hover-blur WebGL canvas (gallery-hover-blur.js, JS-appended, hover-
-   capable pointers only — see the module's own hover/pointer gate).
+/* Wave-shader WebGL canvas (wave-shader.js, JS-appended, hover-capable
+   pointers only — see the module's own hover/pointer gate). The class
+   name predates the mechanism swap (blur -> Codrops shader-on-scroll
+   displacement) and is kept: same slot, same stacking world.
    Same positioning idiom as founders__canvas/about-hero__gallery-canvas.
    No z-index: appended LAST (after the track), so it paints above the
    DOM images by plain DOM order alone — its own background is
@@ -426,7 +428,7 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 }
 
 /* Hover overlay text — hidden entirely as the base state: it only
-   exists for the hover-capable/WebGL path, where gallery-hover-blur.js
+   exists for the hover-capable/WebGL path, where wave-shader.js
    rect-syncs and fades it (under RM, on touch, or without WebGL the
    module never runs and these must never appear). */
 .about-page-3 .about-landing__gallery-overlay {
@@ -450,7 +452,7 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	   children would see only the wrapper's transparent interior and
 	   flatten white (the section-progress.css finding). z-index 1: above
 	   the JS-appended hover canvas (z auto) it must blend against.
-	   left/top/width/height are written per-tick by gallery-hover-blur.js
+	   left/top/width/height are written per-tick by wave-shader.js
 	   (layout properties — never transform, which would be fine on a
 	   blend SELF but is avoided for consistency with the name-clip
 	   idiom); opacity rides the hover progress, 0 at rest. */
@@ -648,9 +650,8 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 	}
 
 	/* Shared hover-canvas slot — full-stage positioning context for the
-	   single WebGL canvas gallery-hover-blur.js appends (see
-	   AboutScroll.astro for the paint-order rationale). Inert without
-	   the module. */
+	   single WebGL canvas wave-shader.js appends (see AboutScroll.astro
+	   for the paint-order rationale). Inert without the module. */
 	.about-page-3 .about-landing__hover-canvas-slot {
 		position: absolute;
 		inset: 0;

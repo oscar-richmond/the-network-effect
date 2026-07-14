@@ -3,7 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CustomEase } from 'gsap/CustomEase';
 import { wrapLineRevealElement } from '../line-reveal.js';
 import { EXIT_BEAT2_PX } from './founders-scroll.js';
-import { createGalleryHoverBlur } from './gallery-hover-blur.js';
+import { createWaveShader } from './wave-shader.js';
 
 gsap.registerPlugin(ScrollTrigger, CustomEase);
 
@@ -267,15 +267,19 @@ export function initLandingScroll() {
   // dissolve/videoController) — the served markup is static (server-
   // rendered, never recreated by JS), so it doesn't need rebuilding on
   // resize, only re-pointing via resize()/setPaused(). Passed the whole
-  // STAGE; the module itself now selects ONLY the pillar-wave images
-  // (18 — the horizontal gallery's hover treatment was removed by
-  // explicit request; see gallery-hover-blur.js's header), with its
-  // mount window keeping concurrent planes to the visible few. Paused
-  // in lockstep with the stage itself: gallery-hover-blur.js's tick
-  // loop (and its per-frame mount/unmount reconciliation) has no
+  // STAGE; the module itself selects ONLY the pillar-wave images (the
+  // horizontal gallery's hover treatment was removed by explicit
+  // request; see wave-shader.js's header), with its mount window
+  // keeping concurrent planes to the visible few. Paused in lockstep
+  // with the stage itself: wave-shader.js's tick (a gsap.ticker
+  // callback, incl. its per-frame mount/unmount reconciliation) has no
   // reason to run while the stage — and therefore every served image —
   // is invisible.
-  const hoverBlur = stage instanceof HTMLElement ? createGalleryHoverBlur(stage) : null;
+  const waveShader = stage instanceof HTMLElement ? createWaveShader(stage) : null;
+  // Debug/verification hook (the rotating-fold `section.rotatingFold`
+  // precedent) — exposes tickOnce()/debugState() for occluded-pane
+  // verification, where no ticker frame ever fires.
+  if (waveShader && stage instanceof HTMLElement) stage.waveShader = waveShader;
 
   // Detail-view freeze flag (see the coupling below) — declared before
   // setStageVisible, which reads it.
@@ -283,9 +287,9 @@ export function initLandingScroll() {
 
   const setStageVisible = (visible) => {
     if (stage instanceof HTMLElement) stage.style.visibility = visible ? 'visible' : 'hidden';
-    // While the detail view is open the hover module stays paused
+    // While the detail view is open the shader module stays paused
     // regardless of stage visibility (frozen beneath the detail layer).
-    hoverBlur?.setPaused(detailFrozen || !visible);
+    waveShader?.setPaused(detailFrozen || !visible);
   };
 
   // Detail-view freeze coupling (detail-view.js dispatches these while
@@ -295,11 +299,13 @@ export function initLandingScroll() {
   const onLandingFreeze = () => {
     detailFrozen = true;
     // calm() BEFORE pause: the paused canvas keeps showing its last
-    // render — calming first means it shows resting SHARP planes, so
-    // the detail view's departing clone reveals identical pixels, not
-    // a frozen mid-hover blur (measured as a visible pop).
-    hoverBlur?.calm();
-    hoverBlur?.setPaused(true);
+    // render — calming first means it shows resting UNDISTORTED planes
+    // (hover zeroed, velocity bow flattened, cursor recentred), so the
+    // detail view's departing clone reveals identical pixels, not a
+    // frozen mid-hover/mid-scroll displacement (the old blur module
+    // measured this as a visible pop).
+    waveShader?.calm();
+    waveShader?.setPaused(true);
     // Frames stay hit-testable through the detail stage's pointer-
     // events:none regions otherwise — hover churn under the open detail
     // view would snap visible on unfreeze (about-page.css rule).
@@ -311,8 +317,8 @@ export function initLandingScroll() {
   const onLandingUnfreeze = () => {
     detailFrozen = false;
     if (stage instanceof HTMLElement) stage.classList.remove('is-frozen');
-    hoverBlur?.setPaused(false);
-    hoverBlur?.resize();
+    waveShader?.setPaused(false);
+    waveShader?.resize();
   };
   document.addEventListener('about-landing:freeze', onLandingFreeze);
   document.addEventListener('about-landing:unfreeze', onLandingUnfreeze);
@@ -511,11 +517,11 @@ export function initLandingScroll() {
       landing.querySelectorAll('[data-about-landing-gallery-img]'),
     ).filter((el) => el instanceof HTMLImageElement);
     if (gallery instanceof HTMLElement && track instanceof HTMLElement) {
-      // Re-sync screen/viewport dims + each item's frame-width-derived
-      // blur radius — the module itself is NOT recreated (no texture
-      // reload), only re-pointed, same as founders-scroll.js's
-      // dissolve/videoController on their own resize path.
-      hoverBlur?.resize();
+      // Re-sync screen/viewport dims — the module itself is NOT
+      // recreated (no texture reload), only re-pointed, same as
+      // founders-scroll.js's dissolve/videoController on their own
+      // resize path.
+      waveShader?.resize();
 
       // Travel distance is MEASURED (track overflow beyond its clip
       // window); GALLERY_SCROLL_PX fixes the scroll length — viewport
@@ -1087,7 +1093,7 @@ export function initLandingScroll() {
     gsap.killTweensOf(document.querySelectorAll('body.about-page-3 [data-section-progress]'));
     // Exit ground-fade targets (backgroundColor scrub).
     gsap.killTweensOf([landing, stage].filter((el) => el instanceof HTMLElement));
-    hoverBlur?.destroy();
+    waveShader?.destroy();
     setStageVisible(false);
   };
 }
