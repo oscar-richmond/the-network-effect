@@ -307,13 +307,13 @@ const pillarRows = [
         ))}
       </div>
 
-      <!-- NOTE (explicit requests, two rounds): the horizontal gallery's
-           images carry NO hover treatment, NO overlay CTA, and NO
-           detail-view click — but they DO carry wave-shader.js's
-           SCROLL-VELOCITY plane treatment (added at the update round;
-           the module serves them velocity-only, pointer handlers
-           unattached). The hover displacement + CTA + click serve ONLY
-           the pillar wave images below. -->
+      <!-- NOTE (explicit requests, repeatedly confirmed): the horizontal
+           gallery's images carry NO shader/hover treatment of any kind —
+           no planes, no overlay CTA, no detail-view click. The original
+           hover treatment was removed by explicit request; a velocity-
+           only plane treatment briefly added at the update round was
+           REVERSED by explicit request immediately after. wave-shader.js
+           serves ONLY the pillar wave images below. -->
     </div>
 
     <!-- Pillar image waves — one per pillar row, parked fully below the

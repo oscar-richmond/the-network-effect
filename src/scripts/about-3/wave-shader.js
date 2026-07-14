@@ -18,16 +18,13 @@ gsap.registerPlugin(CustomEase);
  * same chassis — everything structural is carried over from that module
  * unchanged, because it already solved this page's hard problems:
  *
- * - Served set: the pillar-wave images ([data-about-landing-wave-img])
- *   with the FULL effect, plus — by explicit request at the update
- *   round — the horizontal gallery's images
- *   ([data-about-landing-gallery-img], the FROM ACCESS TO IMPACT
- *   composition) with the SCROLL-VELOCITY effect only: no pointer
- *   handlers, no hover displacement, no overlay CTA, no detail-view
- *   click (their hover treatment and CTA were removed by explicit
- *   request before this module existed, and the pillars are named as
- *   "the images with hover effect" in the same update — flip an item's
- *   `hover` flag if that ever changes).
+ * - Served set: ONLY the pillar-wave images
+ *   ([data-about-landing-wave-img]). The horizontal gallery's images
+ *   (FROM ACCESS TO IMPACT) are NOT served: their hover treatment was
+ *   removed by explicit request before this module existed, and a
+ *   velocity-only plane treatment briefly added at the update round
+ *   was REVERSED by explicit request immediately after — the gallery
+ *   images are plain DOM imgs, full stop.
  * - STAGE-SCOPED canvas in [data-about-landing-hover-canvas-slot] —
  *   NOT the reference's fullscreen fixed body-level canvas, which would
  *   sit either above the difference-text rows' backdrop or beneath the
@@ -374,22 +371,9 @@ class WavePlane {
 export function createWaveShader(galleryEl) {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return null;
 
-  // Two served sets, one plane treatment: waves carry the full effect
-  // (hover displacement + overlay CTA + velocity), gallery images the
-  // velocity effect only (see the module header). WAVES FIRST — the
-  // overlay markup indexes wave images 0..N in DOM order
-  // (AboutScroll.astro), so the wave-relative index i below must stay
-  // the overlay lookup key regardless of the gallery set's size.
-  const waveImgs = Array.from(
+  const items = Array.from(
     galleryEl.querySelectorAll('[data-about-landing-wave-img]'),
   ).filter((el) => el instanceof HTMLImageElement);
-  const galleryImgs = Array.from(
-    galleryEl.querySelectorAll('[data-about-landing-gallery-img]'),
-  ).filter((el) => el instanceof HTMLImageElement);
-  const items = [
-    ...waveImgs.map((imgEl, i) => ({ imgEl, hover: true, overlayIndex: i })),
-    ...galleryImgs.map((imgEl) => ({ imgEl, hover: false, overlayIndex: null })),
-  ];
   if (!items.length) return null;
 
   // Class kept from the old module deliberately — the CSS rule
@@ -427,25 +411,22 @@ export function createWaveShader(galleryEl) {
   // (explicit-removal requirement of this task's lifecycle contract).
   const listenerAbort = new AbortController();
 
-  /** @typedef {{ imgEl: HTMLImageElement, frameEl: HTMLElement, hover: boolean, overlayEl: HTMLElement | null, plane: WavePlane | null, mouseEnter: { value: number }, mouseOverPos: { current: {x:number,y:number}, target: {x:number,y:number} }, renderOrder: number }} ItemState */
+  /** @typedef {{ imgEl: HTMLImageElement, frameEl: HTMLElement, overlayEl: HTMLElement | null, plane: WavePlane | null, mouseEnter: { value: number }, mouseOverPos: { current: {x:number,y:number}, target: {x:number,y:number} }, renderOrder: number }} ItemState */
   /** @type {ItemState[]} */
   const itemStates = items
-    .map(({ imgEl, hover, overlayIndex }, i) => {
+    .map((imgEl, i) => {
       const frameEl = imgEl.closest('.about-landing__gallery-frame');
       if (!(frameEl instanceof HTMLElement)) return null;
-      // Hover overlay text (wave items only) — a SIBLING outside the
-      // transformed track (see AboutScroll.astro's comment for why it
-      // can't live in the frame), rect-synced + opacity-synced in
-      // tick() below, keyed by the WAVE-relative index.
-      const overlayEl = overlayIndex === null
-        ? null
-        : galleryEl.querySelector(
-            `[data-about-landing-gallery-overlay="${overlayIndex}"]`,
-          );
+      // Hover overlay text — a SIBLING outside the transformed track
+      // (see AboutScroll.astro's comment for why it can't live in the
+      // frame), rect-synced + opacity-synced in tick() below, keyed by
+      // the wave image's DOM-order index.
+      const overlayEl = galleryEl.querySelector(
+        `[data-about-landing-gallery-overlay="${i}"]`,
+      );
       return {
         imgEl,
         frameEl,
-        hover,
         overlayEl: overlayEl instanceof HTMLElement ? overlayEl : null,
         plane: null,
         // Persistent per-item animation state (survives mount/unmount,
@@ -496,17 +477,13 @@ export function createWaveShader(galleryEl) {
     rect.bottom > -MOUNT_MARGIN_PX &&
     rect.top < screenHeight + MOUNT_MARGIN_PX;
 
-  // Pointer handlers — WAVE items only (gallery items are velocity-only
-  // by explicit request: their mouseEnter/mouseOverPos stay at rest
-  // forever, so their planes displace purely with scroll). Attached to
-  // the FRAME element (static across mount/unmount). Hover progress and
-  // cursor-recentre tweens use overwrite:'auto' (retargets cleanly from
-  // the current value on a rapid enter/leave flip, never stacks — the
-  // section-progress idiom; the reference tweens the same values
-  // without this guard). Force-mounts on pointerenter as a defensive
-  // backstop, as before.
+  // Pointer handlers — attached to the FRAME element (static across
+  // mount/unmount). Hover progress and cursor-recentre tweens use
+  // overwrite:'auto' (retargets cleanly from the current value on a
+  // rapid enter/leave flip, never stacks — the section-progress idiom;
+  // the reference tweens the same values without this guard).
+  // Force-mounts on pointerenter as a defensive backstop, as before.
   itemStates.forEach((state) => {
-    if (!state.hover) return;
     state.frameEl.addEventListener(
       'pointerenter',
       () => {
@@ -691,7 +668,6 @@ export function createWaveShader(galleryEl) {
         lastVelocity,
         clamp: FRAGMENT_VELOCITY_CLAMP,
         items: itemStates.map((state) => ({
-          hover: state.hover,
           mounted: Boolean(state.plane),
           ready: Boolean(state.plane?.ready),
           meshVisible: Boolean(state.plane?.mesh.visible),
