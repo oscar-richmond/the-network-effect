@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="robots" content="noindex" />
+    <title>The Network Effect</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #161616; /* deliberate dark frame around the scaled page */
+      }
+      #ne-scale-frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 0;
+        display: block;
+        transform-origin: 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Scale shell — the page renders inside this same-origin iframe at the
+      1728px design width and is transform-scaled to the real viewport.
+      Reached only via the BaseLayout boot script (viewport < 1728,
+      no ?noscale); the target page path travels URL-encoded in the hash.
+    -->
+    <iframe id="ne-scale-frame" title="The Network Effect"></iframe>
+    <script src="scale-shell.js"></script>
+  </body>
+</html>
