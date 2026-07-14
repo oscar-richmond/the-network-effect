@@ -3,27 +3,35 @@ import GradualBlur from '../GradualBlur.astro';
 import { asset } from '../../utils/asset.js';
 import '../../styles/about-3/rotating.css';
 
-// Rotating gallery images — Oscar's real five (supplied at the image-
-// spec round), each rendered at its OWN supplied ratio (all five are
-// 1500x970 as delivered) at 700px width. Every entry carries its
-// file's ratio EXPLICITLY (the pillar-wave relayout convention): the
-// item box gets an inline aspect-ratio, so the section's layout —
-// and therefore every downstream trigger anchor and the melt lead —
-// never depends on image bytes arriving (intrinsic height-auto sizing
-// collapsed to 0 for lazy images and would have reflowed the page
-// underfoot as they loaded; caught at verification). Image swaps stay
-// data-only: file + ratio per entry. They pair with the marquee names
-// in order: Wilderness Reserve bedroom / talent portrait / club
-// restaurant / chef at work / the Thunder Aviation helicopter.
+// Rotating gallery images — Oscar's real ten (five at the image-spec
+// round + five at the additions round), each rendered at its OWN
+// supplied ratio (all ten are 1500x970 as delivered) at 700px width.
+// Every entry carries its file's ratio EXPLICITLY (the pillar-wave
+// relayout convention): the item box gets an inline aspect-ratio, so
+// the section's layout — and therefore every downstream trigger
+// anchor and the melt lead — never depends on image bytes arriving
+// (intrinsic height-auto sizing collapsed to 0 for lazy images and
+// would have reflowed the page underfoot as they loaded; caught at
+// verification). Image swaps stay data-only: file + ratio per entry.
+// They pair with the marquee names IN ORDER (SELECTED_WORK below).
 // CONTENT STATUS: PENDING FOUNDER SIGN-OFF like all named-engagement
-// material (one image is an identifiable public figure —
-// Oscar-supplied directly).
+// material — several images are identifiable public figures
+// (Oscar-supplied directly), and the additions include third-party
+// key art / campaign imagery carrying trademarks (Netflix,
+// Channel 4/Film4, Berlinale, adidas): usage rights are the founders'
+// to confirm before launch, same standing as the AdobeStock previews
+// and partner logos.
 const ROTATING_IMAGES = [
   { file: 'wilderness-bedroom', ar: '1500 / 970' },
   { file: 'talent-portrait', ar: '1500 / 970' },
   { file: 'club-restaurant', ar: '1500 / 970' },
   { file: 'chef-kitchen-bw', ar: '1500 / 970' },
   { file: 'thunder-helicopter', ar: '1500 / 970' },
+  { file: 'top-boy', ar: '1500 / 970' },
+  { file: 'adidas-talent', ar: '1500 / 970' },
+  { file: 'adolescence', ar: '1500 / 970' },
+  { file: 'animol', ar: '1500 / 970' },
+  { file: 'ashley-portrait', ar: '1500 / 970' },
 ].map((item) => ({ ...item, src: asset(`/assets/rotating/${item.file}.jpg`) }));
 
 // Marquee copy + per-name notes — REAL project/client copy, PENDING
@@ -59,6 +67,26 @@ const SELECTED_WORK = [
   {
     term: 'Thunder Aviation',
     note: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
+  },
+  {
+    term: 'Top Boy',
+    note: 'A defining British screen project with global cultural reach, rooted in storytelling, music, fashion and culture.',
+  },
+  {
+    term: 'Adidas',
+    note: 'Brand partnership work connecting global sportswear with authentic cultural influence and talent-led storytelling.',
+  },
+  {
+    term: 'Adolescence',
+    note: 'Contemporary screen work reinforcing Ashley’s position as one of the UK’s most recognisable voices.',
+  },
+  {
+    term: 'Animol',
+    note: 'Directorial feature debut, marking Ashley’s evolution from actor and producer to filmmaker and creative lead.',
+  },
+  {
+    term: 'Music & Culture',
+    note: 'A long-standing presence across British music, entertainment and youth culture.',
   },
 ];
 const MARQUEE_TERMS = SELECTED_WORK.map((work) => work.term);
