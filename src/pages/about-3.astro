@@ -34,5 +34,12 @@ import '../styles/fonts.css';
   <AboutScroll />
   <SectionProgress />
   <Menu />
+
+  <!-- Film-grain overlay — a childless, pointer-events:none SIBLING at
+       the very top of the paint order (z 9000: above every stage/nav/
+       loader, below only the canvas cursor at 9999 so the cursor stays
+       crisp). It wraps nothing and blends nothing — see the stacking/
+       blend-safety notes on .about-grain in about-page.css. -->
+  <div class="about-grain" aria-hidden="true"></div>
 </BaseLayout>
 

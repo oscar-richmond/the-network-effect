@@ -698,3 +698,79 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		aspect-ratio: var(--wave-ar, 1);
 	}
 }
+
+/* ── Film-grain overlay ──────────────────────────────────────────────────
+   The standard pattern: a fixed, oversized (200%, inset −50% so jitter
+   never exposes an edge), pointer-events:none layer tiling a small
+   owned noise texture (public/assets/grain.png — 256px, generated
+   programmatically: deterministic seed 3, ~12%-coverage fine MONO
+   specks on transparency, half white / half black at alpha 60-150.
+   Regenerate with the PIL one-liner in the film-grain commit).
+
+   BLEND CHOICE (reported per the brief): NORMAL compositing, no
+   mix-blend-mode — shipped deliberately over overlay/soft-light. The
+   dual-polarity texture already reads on BOTH grounds (white specks
+   over #161616, black specks over #EEEEF0) with deterministic
+   behaviour, and a blended top layer would composite against — and
+   subtly re-tint — the results of every difference element beneath it
+   (nav, founders names, landing columns, rotating marquee/label): the
+   exact interaction class the brief's fallback clause exists for, and
+   one this page's isolation structure has regressed on six times.
+   Soft-light remains the one-line alternative if Oscar wants grain
+   that modulates rather than sits over.
+
+   STACKING/BLEND SAFETY: a childless last-in-body SIBLING — never an
+   ancestor of anything. z 9000: above every fixed stage carrier
+   (partners 145), nav (270), loader (1000) — below only the canvas
+   cursor (9999), which stays crisp above the grain. Because it paints
+   ABOVE all difference elements and blends nothing, no blend
+   element's backdrop (the content painted BELOW it) changes at all.
+
+   PERFORMANCE: zero JS — one CSS transform animation with
+   steps(1, end) per segment (hold-then-jump: grain DANCES, never
+   slides), 10 jumps per 1s cycle = 10 steps/second. Transform-only on
+   its own composited layer (the running animation promotes it; no
+   will-change, per the house blend-map caution). One 18KB texture.
+
+   TUNABLES for Oscar: --about3-grain-opacity below (brief's starting
+   band 0.04-0.06 → 0.05) and the 1s cycle duration.
+
+   REDUCED MOTION (proposed: STATIC, not absent — matching the page's
+   RM philosophy of keeping states and removing motion): the base
+   layer renders grain with no animation; the jitter lives in the
+   no-preference block only. */
+
+.about-page-3 .about-grain {
+	--about3-grain-opacity: 0.05;
+	position: fixed;
+	inset: -50%;
+	width: 200%;
+	height: 200%;
+	background: url('/assets/grain.png') repeat;
+	opacity: var(--about3-grain-opacity);
+	pointer-events: none;
+	z-index: 9000;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.about-page-3 .about-grain {
+		animation: about3-grain-jitter 1s infinite;
+		animation-timing-function: steps(1, end);
+	}
+}
+
+/* Ten hand-scattered translate stops (percentages of the 200% layer —
+   max ±10% keeps the −50% overscan safely covering the viewport). */
+@keyframes about3-grain-jitter {
+	0% { transform: translate(0, 0); }
+	10% { transform: translate(-5%, -7%); }
+	20% { transform: translate(3%, -4%); }
+	30% { transform: translate(-7%, 5%); }
+	40% { transform: translate(6%, 8%); }
+	50% { transform: translate(-3%, 9%); }
+	60% { transform: translate(8%, -2%); }
+	70% { transform: translate(-9%, -5%); }
+	80% { transform: translate(2%, 6%); }
+	90% { transform: translate(-6%, -9%); }
+	100% { transform: translate(0, 0); }
+}
