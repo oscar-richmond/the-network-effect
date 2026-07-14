@@ -53,13 +53,15 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
  * below) — a mid-peaked bell during a normal 0.7s play (the ease's
  * own derivative shape), exactly 0 at both endpoints, sign-flipping
  * on retarget, and a clamped burst on the fling guard's
- * force-resolve. The pillars' cursor gate ports verbatim but FIXED AT
- * CENTRE (no cursor concept here): a radially symmetric,
- * edge-weighted field — the uniform-field alternative is the flagged
- * one-line fallback if that reads oddly. The pillars' vertex bow is
- * deliberately NOT ported (stationary portrait, timed snap — a bow
- * would read as glitch). founders-scroll.js is untouched by contract:
- * the setProgress interface is the whole coupling.
+ * force-resolve. The pillars' cursor gate was first ported verbatim
+ * fixed at centre; at Oscar's too-loud pass the flagged UNIFORM-FIELD
+ * fallback was exercised (the circle's edge-amplified field read as
+ * screen shake) plus a containment envelope (GRAIN_EDGE_FADE) zeroing
+ * the shift at the portrait's bounds — the effect lives strictly
+ * inside the picture. The pillars' vertex bow is deliberately NOT
+ * ported (stationary portrait, timed snap — a bow would read as
+ * glitch). founders-scroll.js is untouched by contract: the
+ * setProgress interface is the whole coupling.
  */
 
 /** Portrait corner radius in CSS px — mirrors the DOM wrapper's
@@ -74,10 +76,18 @@ const PORTRAIT_RADIUS_PX = 4;
  * progress/second) into the pillars' velocity units (Lenis px/frame —
  * wave-shader.js's uScrollVelocity, whose fragment factor is v·0.1).
  * Derivation: a normal 0.7s power2.inOut play peaks at ~2.86
- * progress/s mid-transition; ×3.5 ≈ 10 units ≈ factor 1.0 — i.e. the
- * grain peaks at exactly one hover-strength (uMouseEnter 1.0
- * equivalent) at the transition's midpoint. THE primary lever. */
-const GRAIN_VELOCITY_SCALE = 3.5;
+ * progress/s mid-transition; ×3.5 ≈ 10 units ≈ factor 1.0 = one
+ * hover-strength. Trimmed to 2.5 at Oscar's too-loud pass (~0.6
+ * hover-strengths, ≈3px peak shimmer on the 445px portrait, now that
+ * the uniform field removed the old circle gate's edge
+ * amplification). THE primary lever. */
+const GRAIN_VELOCITY_SCALE = 2.5;
+/** Containment envelope width, in UV — the grain shift fades to
+ * EXACTLY zero across this band inside each portrait edge (Oscar's
+ * containment pass: the effect must stay inside the picture; the
+ * portrait's silhouette stays pixel-stable so nothing can read as
+ * background/screen motion). 0.08 ≈ 36px on the 445px portrait. */
+const GRAIN_EDGE_FADE = 0.08;
 /** Symmetric bound on the scaled velocity — the fling guard's
  * force-resolve jumps progress in one frame (raw derivative ~60/s,
  * ~210 units unbounded); the clamp turns that into a strong-but-
@@ -179,31 +189,37 @@ const FRAGMENT_SHADER = /* glsl */ `
     vec2 uvFrom = coverUv(vUv, uPlaneSizePx, uImageSizeFrom);
     vec2 uvTo = coverUv(vUv, uPlaneSizePx, uImageSizeTo);
 
-    // Grain displacement (wave-shader.js's effect fragment, ported
-    // verbatim with two documented substitutions) — since the removal
-    // round this is THE transition's whole visual character, over a
-    // plain uProgress crossfade (the noise-threshold dissolve + UV
-    // warp were removed at Oscar's live pass — "remove the old effect
-    // completely"; see the module doc). Substitutions: the cursor
-    // gate is FIXED AT CENTRE (0.5, 0.5) — no cursor concept in a
-    // scheduled snap — giving the circle's radially-symmetric,
-    // edge-weighted field; and the per-pixel grain reuses THIS
-    // module's snoise (+1.0 permute; kept for exactly this) rather
-    // than importing the reference's +10.0 variant — statistically
-    // identical at gl_FragCoord frequency. uGrainVelocity is the
-    // SYNTHETIC velocity (timeline derivative, scaled/smoothed/
-    // clamped in JS) in the pillars' own units, so the ·0.1 factor is
-    // the reference's verbatim term. The SAME signed shift rides both
-    // textures (one shared distortion field over the crossfade).
-    // Exact 0 at rest (epsilon snap in JS) — the shift is then an
-    // identity and resting slides are pixel-crisp.
-    float grainAspect = uPlaneSizePx.y / uPlaneSizePx.x;
-    float grainCircle = 1.0 - distance(
-      vec2(0.5, (1.0 - 0.5) * grainAspect),
-      vec2(vUv.x, vUv.y * grainAspect)
-    ) * 15.0;
+    // Grain displacement (wave-shader.js's effect fragment) — since
+    // the removal round this is THE transition's whole visual
+    // character, over a plain uProgress crossfade (the noise-threshold
+    // dissolve + UV warp were removed at Oscar's live pass; see the
+    // module doc). Documented substitutions from the reference:
+    // - UNIFORM FIELD in place of the cursor circle — the flagged
+    //   fallback, exercised at Oscar's too-loud pass: the centre-fixed
+    //   circle's field grows NEGATIVE with distance (≈8x multiplier at
+    //   the portrait's corners), which screamed at the frame's edges
+    //   and read as the whole screen shaking. A scheduled snap has no
+    //   cursor for the circle to mean anything anyway.
+    // - CONTAINMENT ENVELOPE (same pass): the shift fades to exactly
+    //   zero across GRAIN_EDGE_FADE inside each portrait edge, so the
+    //   silhouette stays pixel-stable — the effect lives strictly
+    //   inside the picture and can never read as background motion.
+    // - The per-pixel grain reuses THIS module's snoise (+1.0 permute)
+    //   rather than the reference's +10.0 variant — statistically
+    //   identical at gl_FragCoord frequency.
+    // uGrainVelocity is the SYNTHETIC velocity (timeline derivative,
+    // scaled/smoothed/clamped in JS) in the pillars' own units, so the
+    // ·0.1 factor is the reference's verbatim term. The SAME signed
+    // shift rides both textures (one shared distortion field over the
+    // crossfade). Exact 0 at rest (epsilon snap in JS) — the shift is
+    // then an identity and resting slides are pixel-crisp.
+    float grainContain =
+      smoothstep(0.0, ${GRAIN_EDGE_FADE.toFixed(3)}, vUv.x) *
+      smoothstep(0.0, ${GRAIN_EDGE_FADE.toFixed(3)}, 1.0 - vUv.x) *
+      smoothstep(0.0, ${GRAIN_EDGE_FADE.toFixed(3)}, vUv.y) *
+      smoothstep(0.0, ${GRAIN_EDGE_FADE.toFixed(3)}, 1.0 - vUv.y);
     float grainNoise = snoise(gl_FragCoord.xy);
-    float grainShift = grainCircle * grainNoise * 0.01 * (uGrainVelocity * 0.1);
+    float grainShift = grainNoise * 0.01 * (uGrainVelocity * 0.1) * grainContain;
     uvFrom += vec2(grainShift);
     uvTo += vec2(grainShift);
 
