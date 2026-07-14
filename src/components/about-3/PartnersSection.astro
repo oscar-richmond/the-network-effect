@@ -121,7 +121,10 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
                 handful of small files; eager + async decode is cheaper
                 than wiring a preload trigger for it. */}
             {partner.logo && (
-              <div class="about-partners__sat-logo">
+              <div
+                class="about-partners__sat-logo"
+                style={`--logo-w: ${partner.logoWidthPct ?? 100};`}
+              >
                 <img src={asset(partner.logo)} alt="" loading="eager" decoding="async" />
               </div>
             )}
