@@ -50,6 +50,17 @@
 	display: none;
 	position: absolute;
 	inset: 0;
+	/* SINGLE SOURCE for the left image's vertical box (the derivation
+	   round: text-top and Return-bottom key off the IMAGE's edges, so
+	   they must derive, not duplicate). The original box (top 24vh,
+	   height 52vh) was centred exactly at 50vh; +80px height with
+	   -40px top keeps that same centreline. The text column below
+	   ADOPTS this exact extent, so its 24px padding-top IS "24px below
+	   the image top" and the Return's bottom: 24px IS "24px above the
+	   image bottom" — a future image-size change here re-anchors both
+	   automatically. */
+	--detail-img-top: calc(24vh - 40px);
+	--detail-img-height: calc(52vh + 80px);
 }
 
 .about-page-3 .about-detail__entry.is-active {
@@ -59,9 +70,9 @@
 .about-page-3 .about-detail__left {
 	position: absolute;
 	left: 40px;
-	top: 24vh;
+	top: var(--detail-img-top);
 	width: 34vw;
-	height: 52vh;
+	height: var(--detail-img-height);
 }
 
 .about-page-3 .about-detail__left-img {
@@ -78,12 +89,19 @@
 .about-page-3 .about-detail__text {
 	position: absolute;
 	left: 38vw;
-	top: 0;
-	bottom: 0;
+	/* The SHARED ALIGNMENT CONTAINER (see --detail-img-top's note):
+	   this column occupies the left image's exact vertical extent, so
+	   both spec offsets are literal 24px values AGAINST THE IMAGE'S
+	   EDGES — padding-top: 24px = title 24px below the image top
+	   (border-box: padding lives inside the height), and the Return's
+	   bottom: 24px = 24px above the image bottom. Replaces the old
+	   duplicated constants (top: 0/bottom: 0 column with
+	   padding-top: calc(24vh + 24px) and a hand-tuned top: 71vh
+	   Return). */
+	top: var(--detail-img-top);
+	height: var(--detail-img-height);
 	width: 16vw;
-	/* Title top sits 24px below the LEFT IMAGE's top edge (the image's
-	   top is 24vh — see .about-detail__left), per direction. */
-	padding-top: calc(24vh + 24px);
+	padding-top: 24px;
 }
 
 .about-page-3 .about-detail__title {
@@ -146,7 +164,10 @@
 .about-page-3 .about-detail__return {
 	position: absolute;
 	left: 0;
-	top: 71vh;
+	/* 24px above the LEFT IMAGE's bottom edge — literal because the
+	   containing column IS the image's vertical box (see
+	   .about-detail__text). Supersedes the hand-tuned top: 71vh. */
+	bottom: 24px;
 	display: flex;
 	align-items: center;
 	gap: 14px;
