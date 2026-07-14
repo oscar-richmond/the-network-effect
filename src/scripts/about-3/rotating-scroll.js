@@ -151,14 +151,23 @@ export function initRotatingScroll() {
   // debugState() through this expando; harmless in production).
   if (fold) section.rotatingFold = fold;
 
-  // One gate for everything section-scoped: marquee + footer-label
-  // visibility and the fold module's rAF ride the same window trigger —
-  // which ENDS at the content-clear point (see build), so every piece
-  // of text is gone before the partners melt can begin, and the GL loop
-  // costs nothing while the section is off screen.
+  // One gate for everything section-scoped: marquee + footer-label +
+  // edge-blur visibility and the fold module's rAF ride the same window
+  // trigger — which ENDS at the content-clear point (see build), so
+  // every piece of text is gone before the partners melt can begin, and
+  // the GL loop costs nothing while the section is off screen. The edge
+  // bands are viewport-FIXED (this section is in-flow, unlike partners'
+  // stage-scoped bands), so this gate is what keeps them from painting
+  // over other sections.
+  const edges = Array.from(section.querySelectorAll('.about-rotating__edge')).filter(
+    (el) => el instanceof HTMLElement,
+  );
   const setWindowVisible = (visible) => {
     if (mark instanceof HTMLElement) mark.style.visibility = visible ? 'visible' : 'hidden';
     if (label instanceof HTMLElement) label.style.visibility = visible ? 'visible' : 'hidden';
+    edges.forEach((edge) => {
+      edge.style.visibility = visible ? 'visible' : 'hidden';
+    });
     fold?.setPaused(!visible);
   };
 

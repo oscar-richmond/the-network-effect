@@ -212,7 +212,10 @@
 		right: 0;
 		bottom: 40px;
 		margin: 0;
-		z-index: 2;
+		/* z 4: above the edge-blur bands (3) — the label stays crisp
+		   inside the bottom band's region, the partners nav-above-bands
+		   precedent. */
+		z-index: 4;
 		visibility: hidden;
 	}
 }

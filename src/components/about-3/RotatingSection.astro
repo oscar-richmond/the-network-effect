@@ -1,4 +1,5 @@
 ---
+import GradualBlur from '../GradualBlur.astro';
 import { asset } from '../../utils/asset.js';
 import '../../styles/about-3/rotating.css';
 
@@ -96,6 +97,44 @@ const MARQUEE_TERMS = [
       ))
     }
   </div>
+
+  <!-- Viewport edge blurs — the PARTNERS section's exact treatment
+       (same doubled config: strength 3 -> 12/48px exponential layers,
+       12rem coverage, opacity 0.8), on both edges. The partners bands
+       live inside its fixed stage; this section is IN-FLOW, so these
+       are viewport-FIXED (the style prop overrides the component's
+       parent-absolute positioning) and JS-gated to the section window
+       (inline visibility hidden here; rotating-scroll.js's
+       setWindowVisible toggles them with the marquee/label/canvas —
+       they can never paint over other sections, and they close at the
+       content-clear point with everything else). STACKING: z 3 —
+       above the fold canvas (1) and marquee (2), below the footer
+       label (4, kept crisp like partners keeps its nav above) and the
+       grain (9000). -->
+  <GradualBlur
+    target="parent"
+    position="top"
+    strength={3}
+    height="12rem"
+    divCount={2}
+    exponential={true}
+    opacity={0.8}
+    zIndex={3}
+    className="about-rotating__edge"
+    style={{ position: 'fixed', visibility: 'hidden' }}
+  />
+  <GradualBlur
+    target="parent"
+    position="bottom"
+    strength={3}
+    height="12rem"
+    divCount={2}
+    exponential={true}
+    opacity={0.8}
+    zIndex={3}
+    className="about-rotating__edge"
+    style={{ position: 'fixed', visibility: 'hidden' }}
+  />
 
   <!-- Footer label — the landing's "our services — three pillars"
        treatment, one section along (explicit request): same slot (40px
