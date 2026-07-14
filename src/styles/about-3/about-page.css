@@ -685,4 +685,16 @@ body.about-page-3 .home__topbar--about .home__topbar-email:hover {
 		width: 380px;
 		height: 510px;
 	}
+
+	/* Figma-proportioned wave items (the IMMERSE relayout, Figma node
+	   17-1065): width tracks the viewport exactly as the Figma slot
+	   tracked its 1728 frame (--wave-w = slot width as % of 1728, in
+	   vw), and the height follows the image FILE's native ratio
+	   (--wave-ar) — explicit request, unlike the fixed-px size classes
+	   above. Both custom props are inlined per item by
+	   AboutScroll.astro. */
+	.about-page-3 .about-landing__wave-item--figma {
+		width: calc(var(--wave-w, 20) * 1vw);
+		aspect-ratio: var(--wave-ar, 1);
+	}
 }

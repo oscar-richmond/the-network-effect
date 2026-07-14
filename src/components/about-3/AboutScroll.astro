@@ -78,13 +78,27 @@ const galleryItems = [
 // EDITING RULE: changing any x, size, y or speed re-opens the pair
 // maths — re-run the dense overlap sweep before shipping.
 const pillarWaves = [
+  // WAVE 0 (01 — IMMERSE) — REPLACED per explicit request with the four
+  // Oscar-supplied images laid out per Figma node 17-1065 (frame "TNE V3
+  // - Landing Page", the IMMERSE moment): x = the Figma left edge as % of
+  // 1728; y = the Figma stage-relative top (px below the content area's
+  // top), so with near-uniform speeds the sheet carries the Figma
+  // arrangement through the viewport. These items use `w` (vw width, the
+  // Figma slot as % of 1728) + `ar` (the image file's NATIVE ratio —
+  // explicit request) instead of a fixed `size` class — see
+  // .about-landing__wave-item--figma in about-page.css. INVARIANTS
+  // re-checked for this composition: the only x-overlapping pairs are
+  // chef/dinner (~1.2%) and jacket/bubble — in both the LOWER item
+  // (dinner 1.0, jacket 1.0) is no faster than the upper (chef 1.12,
+  // bubble 1.18), so gaps only open; no item is slower than the last, so
+  // the row-pass metric holds trivially. LAST-ITEM CONTRACT: dinner has
+  // max y, sits last, speed 1.0. CONTENT STATUS: same stand-in standing
+  // as the rest of the pool (Figma-sourced, pending licensed finals).
   [
-    { file: 'ommo-orange-panel', size: 'rect-p', x: 8, y: 0, speed: 1.25 },
-    { file: 'theatre-seats', size: 'rect-l', x: 58, y: 180, speed: 0.85 },
-    { file: 'projection-dinner', size: 'sq-m', x: 28, y: 480, speed: 1.22 },
-    { file: 'public-kitchen-cards', size: 'sq-s', x: 74, y: 700, speed: 0.88 },
-    { file: 'queen-vinyl-blue', size: 'rect-pl', x: 12, y: 890, speed: 1.18 },
-    { file: 'hotel-balzac-door', size: 'sq-l', x: 52, y: 1560, speed: 1.0 },
+    { file: 'bubble-gum-glass', w: 10.59, ar: '366 / 402', x: 82.12, y: 64, speed: 1.18 },
+    { file: 'chef-window', w: 15.05, ar: '520 / 644', x: 14.18, y: 91, speed: 1.12 },
+    { file: 'red-hooded-jacket', w: 36.46, ar: '1260 / 1144', x: 54.4, y: 323, speed: 1.0 },
+    { file: 'red-room-dinner', w: 16.55, ar: '572 / 577', x: 28.01, y: 546, speed: 1.0 },
   ],
   [
     { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0, speed: 1.25 },
@@ -104,6 +118,16 @@ const pillarWaves = [
   ],
 ].map((wave) =>
   wave.map((item) => ({ ...item, src: asset(`/assets/pillar-waves/${item.file}.jpg`) })),
+);
+
+// Stage-global overlay index base per wave — CUMULATIVE, because wave
+// lengths differ now (4/6/6 since the IMMERSE relayout): the hover
+// module maps its i-th served image (all waves, DOM order) to overlay
+// index i, so each wave's overlays start where the previous wave's
+// images ended (the old `waveIndex * wave.length` assumed uniform
+// lengths and would desync every wave after the first).
+const waveOffsets = pillarWaves.map((_, i) =>
+  pillarWaves.slice(0, i).reduce((sum, w) => sum + w.length, 0),
 );
 
 // Pillar rows — one per discipline, each replacing the previous via the
@@ -296,8 +320,10 @@ const pillarRows = [
         <div class="about-landing__wave-track" data-about-landing-wave-track>
           {wave.map((item) => (
             <figure
-              class={`about-landing__wave-item about-landing__wave-item--${item.size}`}
-              style={`left:${item.x}%; margin-top:${item.y}px`}
+              class={`about-landing__wave-item about-landing__wave-item--${item.size ?? 'figma'}`}
+              style={`left:${item.x}%; margin-top:${item.y}px;${
+                item.w ? ` --wave-w:${item.w}; --wave-ar:${item.ar};` : ''
+              }`}
               data-wave-speed={item.speed}
             >
               <div class="about-landing__gallery-frame" data-hover>
@@ -309,7 +335,7 @@ const pillarRows = [
         {wave.map((_, j) => (
           <div
             class="about-landing__gallery-overlay"
-            data-about-landing-gallery-overlay={waveIndex * wave.length + j}
+            data-about-landing-gallery-overlay={waveOffsets[waveIndex] + j}
             aria-hidden="true"
           >
             <p class="about-landing__gallery-overlay-text">Take a moment to explore our services</p>
