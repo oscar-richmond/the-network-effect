@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomePage from '../components/HomePage.astro';
+import SplashScreen from '../components/SplashScreen.astro';
+import { splashImage } from '../data/splash.js';
+---
+
+<BaseLayout title="The Network Effect">
+  <SplashScreen />
+  <div data-splash-gate>
+    <HomePage />
+  </div>
+</BaseLayout>
+
+<script>
+  import { initSplashScreen, completeSplash } from '../scripts/splash-screen.js';
+  import { initLineReveal } from '../scripts/line-reveal.js';
+  import { splashImage } from '../data/splash.js';
+
+  document.documentElement.classList.add('splash-active');
+
+  const splash = document.querySelector('[data-splash]');
+  const gate = document.querySelector('[data-splash-gate]');
+  const cleanupLineReveal = initLineReveal({ readyEvent: 'splash:finished' });
+
+  const revealHome = () => {
+    completeSplash(() => {
+      document.dispatchEvent(new CustomEvent('splash:complete'));
+    });
+  };
+
+  if (splash) {
+    gate?.setAttribute('inert', '');
+    initSplashScreen(splash, {
+      ...splashImage,
+      onComplete: revealHome,
+      onFinish: () => {
+        splash.remove();
+        gate?.removeAttribute('inert');
+        document.dispatchEvent(new CustomEvent('splash:finished'));
+      },
+    });
+  } else {
+    revealHome();
+    gate?.removeAttribute('inert');
+    document.dispatchEvent(new CustomEvent('splash:finished'));
+  }
+
+  document.addEventListener('astro:before-swap', () => {
+    document.documentElement.classList.remove('splash-active');
+    cleanupLineReveal();
+  });
+</script>

@@ -2,11 +2,13 @@
 
 /** @type {MenuLink[]} */
 export const menuLinks = [
-  // About points at the live about page (/about-3) — the old /about and
-  // /about-2 routes are hidden (underscore-prefixed page files, kept
-  // intact for component reuse). Services goes to the standalone
-  // partners-wheel page. Founders still 404s (pre-existing, unbuilt).
-  { href: 'about-3', label: 'About', image: 'about.png' },
+  // About points at the root landing page (the former /about-3, now
+  // served at "/" — root-landing move; /about-3 redirects there). The
+  // old home, /about, and /about-2 are hidden (underscore-prefixed page
+  // files, kept intact for component reuse). Services goes to the
+  // standalone partners-wheel page. Founders still 404s (pre-existing,
+  // unbuilt).
+  { href: '', label: 'About', image: 'about.png' },
   { href: 'founders', label: 'Founders', image: 'team.png' },
   { href: 'services', label: 'Services', image: 'services.jpg' },
 ];

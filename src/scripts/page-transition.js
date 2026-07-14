@@ -242,14 +242,27 @@ export function initPageTransition() {
   const shouldReveal =
     hasPendingTransition || (isAboutPage && !prefersReduced);
 
+  // Splash-aware reveal signal (root-landing move): when the page
+  // carries a splash screen, the cover-reveal SIGNAL defers to the
+  // splash's completion — consumers like the landing hero
+  // (whenCoverRevealed -> bootAboutHero) must not start beneath the
+  // opaque splash. The cover ROWS still animate normally (a pending
+  // transition sweep opens onto the splash). The old home also carried
+  // a splash but never consumed the signal, so this path is
+  // behaviour-compatible with it.
+  const splashPresent = !!document.querySelector('[data-splash]');
+  if (splashPresent) {
+    document.addEventListener('splash:complete', () => finishCoverReveal(), { once: true });
+  }
+
   if (shouldReveal) {
     // Snap overlay to "covering" state, then animate open (window reveal)
     gsap.set(rows, { scaleY: 1 });
-    revealPage(finishCoverReveal);
+    revealPage(splashPresent ? undefined : finishCoverReveal);
   } else {
     // First page load — ensure overlay is hidden
     gsap.set(rows, { scaleY: 0 });
-    finishCoverReveal();
+    if (!splashPresent) finishCoverReveal();
   }
 
   // Attach click interceptor (only once — use a flag on the document)

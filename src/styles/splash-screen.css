@@ -50,6 +50,15 @@ html.splash-active {
   overflow: hidden;
 }
 
+/* Landing page (root-landing move): the about-3 chrome stacks far above
+   the splash's home-era z 100 (topbar 270, hero stage 250, progress 200,
+   grain 9000) — on this page the splash must cover everything except
+   the canvas cursor (9999). The old home's own chrome sat below 100, so
+   its base z stands unchanged for it. */
+body.about-page-3 .splash {
+  z-index: 9500;
+}
+
 html.splash-active [data-splash-gate] {
   visibility: hidden;
   pointer-events: none;
