@@ -1,4 +1,5 @@
 ---
+import GradualBlur from '../GradualBlur.astro';
 import { asset } from '../../utils/asset.js';
 import { PARTNERS, GENERIC_DESCRIPTION } from '../../data/partners.js';
 import '../../styles/about-3/partners.css';
@@ -138,6 +139,39 @@ const videoPoster = asset('/assets/partners/partners-bg-poster.jpg');
         ))
       }
     </div>
+
+    <!-- Viewport edge blurs — the /about page's GradualBlur treatment
+         (same config: strength 1.5, two exponential mask-gradient
+         backdrop-filter layers, opacity 0.8), on BOTH edges, scoped to
+         THIS SECTION ONLY by construction: they live inside the gate-
+         hidden fixed stage, so they exist exactly while the section
+         does. STACKING (explicit request): the arc names and the
+         logo/description satellites sit BELOW the bands (DOM order,
+         auto z vs the bands' z 3); the bottom-right image (the GL slot,
+         z 4 in partners.css) and the global nav (fixed, z 270, above
+         the whole stage carrier at 145) sit ABOVE them. The no-WebGL
+         DOM image fallback stays below the band (its per-sat stacking
+         context can't be lifted past a stage-level sibling) — accepted
+         degradation on the fallback path only. Static variant: no JS
+         init needed (CSS shows non-animated instances). -->
+    <GradualBlur
+      target="parent"
+      position="top"
+      strength={1.5}
+      divCount={2}
+      exponential={true}
+      opacity={0.8}
+      zIndex={3}
+    />
+    <GradualBlur
+      target="parent"
+      position="bottom"
+      strength={1.5}
+      divCount={2}
+      exponential={true}
+      opacity={0.8}
+      zIndex={3}
+    />
 
     <!-- WebGL mount for the satellite image slot (Stage-2 amendment 5):
          partners-image-dissolve.js draws the per-brand photo here with

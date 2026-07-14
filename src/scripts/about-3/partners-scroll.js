@@ -168,6 +168,9 @@ export function initPartnersScroll() {
     arc.style.setProperty('--progress', String(wheel.display));
     names.forEach((el, i) => {
       el.classList.toggle('is-active', i === idx);
+      // Passed the spotlight: above the middle (rel-index < 0) a name
+      // stays solid white — see .is-passed in partners.css.
+      el.classList.toggle('is-passed', i < exact);
       el.classList.toggle('is-culled', Math.abs(i - exact) > PARTNERS_CULL_WINDOW);
     });
     sats.forEach((el, i) => el.classList.toggle('is-active', i === idx));

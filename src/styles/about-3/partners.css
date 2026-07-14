@@ -45,7 +45,8 @@
 .about-page-3 .about-partners__media-group,
 .about-page-3 .about-partners__overlay,
 .about-page-3 .about-partners__divider,
-.about-page-3 .about-partners__image-gl {
+.about-page-3 .about-partners__image-gl,
+.about-page-3 .about-partners__stage > .gradual-blur {
 	display: none;
 }
 
@@ -228,6 +229,19 @@
 		opacity: 1;
 	}
 
+	/* Passed the spotlight (explicit request): every name ABOVE the
+	   middle — rel-index < 0, i.e. it has crossed the flat/active
+	   position — holds solid white at full opacity instead of dropping
+	   back to the queued 0.4. Derived per wheel write in
+	   partners-scroll.js (is-passed); the shared .4s colour/opacity
+	   transition makes the crossing read as a soft ignite, and the
+	   scrubbed derivation keeps it reversal-symmetric (scrolling back
+	   below the middle returns a name to queued). */
+	.about-page-3 .about-partners__name.is-passed {
+		color: #f9f9f9;
+		opacity: 1;
+	}
+
 	/* Culled — outside the visible arc window (|rel-index| beyond the
 	   cull window). 45 names span 484°: without culling, far names wrap
 	   the full circle back on-screen at nonsense poses. Server-rendered
@@ -349,13 +363,24 @@
 		object-fit: cover;
 	}
 
+	/* ── Viewport edge blurs (the /about GradualBlur treatment) ───────
+	   Shown only here (base hides them — no RM strips). z 3: above the
+	   arc names and the logo/description satellites (auto z, DOM
+	   order), below the GL image slot (z 4 below) and the global nav
+	   (fixed z 270, above the whole stage carrier). */
+	.about-page-3 .about-partners__stage > .gradual-blur {
+		display: block;
+	}
+
 	/* ── WebGL image slot (amendment 5) ───────────────────────────────
 	   Same geometry as .about-partners__sat-image; partners-image-
 	   dissolve.js's canvas fills it. When the GL module boots, the DOM
 	   per-brand image slots hide (visibility, not display — their <img>
 	   elements remain the loading/fallback source of truth) and the
 	   canvas owns the slot; without WebGL the class never lands and the
-	   CSS blur-dissolve path below stands untouched. */
+	   CSS blur-dissolve path below stands untouched. z 4: above the
+	   edge-blur bands (explicit request — the bottom-right image rides
+	   OVER the bottom band). */
 	.about-page-3 .about-partners__image-gl {
 		display: block;
 		position: absolute;
@@ -364,6 +389,7 @@
 		width: 14.2vw;
 		aspect-ratio: 245 / 160;
 		overflow: clip;
+		z-index: 4;
 	}
 
 	.about-page-3 .about-partners__image-gl canvas {
