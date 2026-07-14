@@ -1,7 +1,13 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { CustomEase } from 'gsap/CustomEase';
+import { wrapLineRevealElement } from '../line-reveal.js';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, CustomEase);
+
+/** The site-wide line-reveal curve (line-reveal.js's CSS ease) — the
+ * footer label's roll must match the landing label's exactly. */
+const LABEL_REVEAL_EASE = CustomEase.create('rotatingLabelReveal', 'M0,0 C0.42,0 0.24,1 1,1');
 
 /**
  * /about-3 rotating gallery — scroll module. Port of the Codrops
@@ -73,6 +79,14 @@ const ROTATING_VELOCITY_LERP = 0.45;
 /** Ahead-of-section eager-fetch lead (the landing gallery preload
  * convention — lazy imgs are unreliable below the fold on this page). */
 const ROTATING_PRELOAD_LEAD_PX = 1500;
+/** Footer label reveal — the landing footer label's exact vocabulary
+ * (landing-scroll.js's LANDING_SETTLE_BEAT / LANDING_LINE_DURATION /
+ * FOOTER_LABEL_DISSOLVE_BLUR_PX): a settle beat past the section's
+ * arrival, then a 1.2s roll-up with a concurrent 4px blur dissolve,
+ * reversed symmetrically on scroll-back. */
+const ROTATING_LABEL_SETTLE_PX = 150;
+const ROTATING_LABEL_DURATION_S = 1.2;
+const ROTATING_LABEL_DISSOLVE_BLUR_PX = 4;
 // NOTE: the light-to-dark ground fade that briefly lived here (an
 // entry scrub at 'top top') MOVED UPSTREAM at the image round: it now
 // runs inside landing-scroll.js, anchored to the AMPLIFY wave's last
@@ -101,7 +115,48 @@ export function initRotatingScroll() {
   );
   const mark = section.querySelector('[data-about-rotating-mark]');
   const markInner = section.querySelector('[data-about-rotating-mark-inner]');
+  const label = section.querySelector('[data-about-rotating-label]');
   if (!wraps.length || wraps.length !== items.length) return () => {};
+
+  // Footer label reveal timeline — wrapped ONCE at init (the landing
+  // wrapLandingColumns idiom, single static line): the roll-up drives
+  // the .lr-inner transform, the dissolve rides the .lr-clip — the same
+  // disjoint-target split the landing label documents.
+  /** @type {gsap.core.Timeline | undefined} */
+  let labelTl;
+  if (label instanceof HTMLElement) {
+    wrapLineRevealElement(label);
+    const labelInner = label.querySelector('.lr-inner');
+    const labelClip = label.querySelector('.lr-clip');
+    if (labelInner instanceof HTMLElement && labelClip instanceof HTMLElement) {
+      labelInner.style.transition = 'none';
+      labelTl = gsap.timeline({ paused: true });
+      labelTl.fromTo(
+        labelInner,
+        { yPercent: 110, y: 0 },
+        {
+          yPercent: 0,
+          y: 0,
+          duration: ROTATING_LABEL_DURATION_S,
+          ease: LABEL_REVEAL_EASE,
+          immediateRender: true,
+        },
+        0,
+      );
+      labelTl.fromTo(
+        labelClip,
+        { opacity: 0, filter: `blur(${ROTATING_LABEL_DISSOLVE_BLUR_PX}px)` },
+        {
+          opacity: 1,
+          filter: 'blur(0px)',
+          duration: ROTATING_LABEL_DURATION_S,
+          ease: LABEL_REVEAL_EASE,
+          immediateRender: true,
+        },
+        0,
+      );
+    }
+  }
 
   // Once-per-init orientations + setters (see header note on randoms).
   const rigs = items.map((item) => ({
@@ -135,8 +190,13 @@ export function initRotatingScroll() {
   };
   gsap.ticker.add(tickVelocity);
 
-  const setMarkVisible = (visible) => {
+  // One gate for everything fixed in this section: marquee, footer
+  // label, and the velocity layer's perf flag ride the same window
+  // trigger — which now ENDS at the content-clear point (see build), so
+  // every piece of text is gone before the partners melt can begin.
+  const setWindowVisible = (visible) => {
     if (mark instanceof HTMLElement) mark.style.visibility = visible ? 'visible' : 'hidden';
+    if (label instanceof HTMLElement) label.style.visibility = visible ? 'visible' : 'hidden';
     sectionActive = visible;
   };
 
@@ -180,19 +240,31 @@ export function initRotatingScroll() {
       });
     });
 
-    // Marquee — one trigger doubles as the scrub (x: 100vw -> -100%
-    // across the section's full range, the reference window) and the
-    // section-window gate (marquee visibility + the velocity layer's
-    // perf gate).
+    // Content-clear point — the scroll offset (within the section's own
+    // travel) at which the LAST image's bottom passes the viewport top.
+    // Everything text-shaped ends with it: the marquee window (below)
+    // and the label/mark visibility gate both close here, so by the
+    // time the partners melt can begin (see the publisher) the viewport
+    // holds nothing but the empty #161616 tail. Sine x offsets don't
+    // affect vertical layout, so offsetTop is authoritative.
+    const lastWrap = wraps[wraps.length - 1];
+    const lastBottom = lastWrap.offsetTop + lastWrap.offsetHeight;
+
+    // Marquee — one trigger doubles as the scrub (x: 100vw -> -100%)
+    // and the section-window gate (marquee + footer-label visibility +
+    // the velocity layer's perf gate). The window's END is the
+    // content-clear point (was the reference's 'bottom top'): the strip
+    // completes its full run exactly as the last image exits, per
+    // Oscar's melt-clearance spec.
     if (mark instanceof HTMLElement && markInner instanceof HTMLElement) {
       markTl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: 'top bottom',
-          end: 'bottom top',
+          end: `top+=${lastBottom} top`,
           scrub: true,
           id: 'about-rotating-mark',
-          onToggle: (self) => setMarkVisible(self.isActive),
+          onToggle: (self) => setWindowVisible(self.isActive),
         },
       });
       markTl.fromTo(
@@ -202,14 +274,31 @@ export function initRotatingScroll() {
       );
     }
 
+    // Footer label play/reverse trigger — the landing reveal idiom: a
+    // settle beat past the section's arrival plays the timed roll-up;
+    // scrolling back above it reverses symmetrically. The far-end hide
+    // is the window gate above (instant, the landing stage-swap
+    // precedent).
+    if (labelTl) {
+      ScrollTrigger.create({
+        trigger: section,
+        start: `top+=${ROTATING_LABEL_SETTLE_PX} bottom`,
+        end: `top+=${lastBottom} top`,
+        id: 'about-rotating-label',
+        onEnter: () => labelTl.play(),
+        onLeaveBack: () => labelTl.reverse(),
+      });
+    }
+
     // Melt-lead publisher (see BOUNDARY MAP in the header): the melt
-    // should begin when the LAST image's centre crosses the viewport's
-    // vertical middle. Sine x offsets don't affect vertical layout, so
-    // offsetTop is authoritative here.
-    const lastWrap = wraps[wraps.length - 1];
-    const lastCentre = lastWrap.offsetTop + lastWrap.offsetHeight / 2;
+    // may only begin once ALL content — images, marquee text, footer
+    // label — has fully left the viewport (Oscar's spec). The published
+    // lead is the boundary-to-clear gap: sectionHeight − lastBottom −
+    // vh. The CSS tail (100vh + 500px, rotating.css) makes this 555px
+    // at any viewport height, so the consumer's 400px clamp always
+    // lands the melt strictly inside the cleared, empty tail.
     section.dataset.partnersMeltLeadPx = String(
-      Math.max(0, Math.round(section.offsetHeight - lastCentre - window.innerHeight / 2)),
+      Math.max(0, Math.round(section.offsetHeight - lastBottom - window.innerHeight)),
     );
 
     // One-shot eager fetch ahead of the section (landing preload idiom —
@@ -235,11 +324,20 @@ export function initRotatingScroll() {
 
     ScrollTrigger.refresh();
 
-    // Rebuild restoration — marquee gate derived from the fresh trigger
-    // (onToggle only fires on change; a rebuild mid-section needs the
-    // state read explicitly).
+    // Rebuild restoration — window gate + label playhead derived from
+    // the fresh triggers (callbacks only fire on change; a rebuild
+    // mid-section needs the state read explicitly — the landing
+    // revealTl restoration idiom).
     const markTrigger = markTl?.scrollTrigger;
-    if (markTrigger) setMarkVisible(markTrigger.isActive);
+    if (markTrigger) setWindowVisible(markTrigger.isActive);
+    if (labelTl) {
+      const labelTrigger = ScrollTrigger.getById('about-rotating-label');
+      if (labelTrigger && window.scrollY >= labelTrigger.start) {
+        labelTl.progress(1).pause();
+      } else {
+        labelTl.progress(0).pause();
+      }
+    }
   };
 
   let cancelled = false;
@@ -281,8 +379,10 @@ export function initRotatingScroll() {
       }
     });
     markTl?.kill();
+    labelTl?.kill();
     gsap.killTweensOf([...items, ...wraps]);
     if (markInner instanceof HTMLElement) gsap.killTweensOf(markInner);
-    setMarkVisible(false);
+    if (label instanceof HTMLElement) gsap.killTweensOf(label.querySelectorAll('.lr-inner, .lr-clip'));
+    setWindowVisible(false);
   };
 }

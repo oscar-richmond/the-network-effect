@@ -43,9 +43,19 @@
 	   changes at runtime. The partners melt stays the dark->dark video
 	   emergence (partners-scroll.js). */
 	background-color: #161616;
-	/* Reference .gallery margins (25vh top / 35vh bottom) carried as
-	   section padding so the in-flow height owns the whole breathing. */
-	padding: 25vh 0 35vh;
+	/* Reference top margin (25vh) kept; the BOTTOM tail is ours (Oscar's
+	   melt-clearance spec): the partners melt may only begin once ALL of
+	   this section's content — images, marquee text, footer label — has
+	   fully left the viewport. Content clears when the last image's
+	   bottom passes the viewport top; from there the tail must supply
+	   one full viewport (to carry the boundary past the cleared content)
+	   plus the melt's 400px window plus breathing — hence
+	   100vh + 500px: the published clear-gap lead becomes
+	   (55px last-wrap margin + 500px) = 555px at ANY viewport height
+	   (the vh terms cancel), so the melt's 400px always fits after the
+	   clear point with ~155px of empty dark first. Derived, not
+	   hand-tuned — see rotating-scroll.js's publisher. */
+	padding: 25vh 0 calc(100vh + 500px);
 }
 
 .about-page-3 .about-rotating__mark {
@@ -85,6 +95,26 @@
 	align-items: center;
 }
 
+/* ── Footer label ("04 — selected work") — the landing footer label's
+   exact treatment, one section along: Dazzed 400 12px, centred, white
+   difference-blend leaf, 40px off the viewport bottom (the landing's
+   is absolute inside its fixed stage; ours is FIXED because this
+   section is in-flow), JS-gated to the section window and revealed
+   with the same roll-up + dissolve (rotating-scroll.js). BASE = the
+   reduced-motion state: a plain in-flow line under the column, same
+   as the landing label's own RM fallback. */
+.about-page-3 .about-rotating__footer-label {
+	margin: 48px 0 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 1;
+	text-align: center;
+	color: #ffffff;
+	mix-blend-mode: difference;
+	pointer-events: none;
+}
+
 .about-page-3 .about-rotating__item-wrap {
 	width: 100%;
 	/* Amendment 2: 700px fixed width (was demo-4's 300px), each image
@@ -102,8 +132,8 @@
 	/* Each item's aspect-ratio is INLINE from the data (its file's own
 	   ratio — RotatingSection.astro): the box reserves its exact height
 	   before the lazy image loads, so layout (and every downstream
-	   trigger anchor) never reflows on image arrival. */
-	border-radius: 7px; /* demo-4 --item-br */
+	   trigger anchor) never reflows on image arrival. NO border-radius
+	   (Oscar's spec — supersedes demo-4's 7px). */
 	overflow: clip;
 	transform-style: preserve-3d;
 }
@@ -150,6 +180,21 @@
 		width: 100vw;
 		z-index: 2;
 		mix-blend-mode: difference;
+		visibility: hidden;
+	}
+
+	/* Footer label — fixed at the landing label's slot (40px off the
+	   viewport bottom), CSS-default hidden, gated + revealed by
+	   rotating-scroll.js. Blend leaf on the <p> itself (base rule);
+	   same ancestor walk as the marquee: section + body, nothing
+	   isolating. */
+	.about-page-3 .about-rotating__footer-label {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 40px;
+		margin: 0;
+		z-index: 2;
 		visibility: hidden;
 	}
 }

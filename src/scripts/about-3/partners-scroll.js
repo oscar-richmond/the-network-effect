@@ -237,25 +237,22 @@ export function initPartnersScroll() {
     // recreated, the landing hoverBlur resize idiom.
     imageDissolve?.resize();
 
-    // Melt lead (fix 1, re-tuned at Oscar's re-pass) — how many scroll px
-    // BEFORE this section's own top-vs-viewport-bottom crossing the entry
-    // crossfade starts. The PREDECESSOR publishes the FULL derived lead
-    // (its last image's centre crossing the viewport's vertical centre)
-    // — since the rotating-gallery build that predecessor is the IN-FLOW
-    // rotating section (rotating-scroll.js's BOUNDARY MAP; it took the
-    // publisher over from landing's wave chain), and the crossfade now
-    // melts over that ordinary scrolling content instead of the frozen
-    // last wave. Oscar's split-the-difference call halves the lead here
-    // as composition POLICY on the consumer side (FLAGGED at the
-    // rotating handoff: the 0.5 was tuned against the wave geometry —
-    // expect a feel re-tune). The clamp keeps the confirmed
-    // completes-at-or-before-the-boundary behaviour at any viewport
-    // (lead never shorter than the melt itself). Re-read every build so
-    // resize re-derivations flow through; the rotating module always
-    // builds first (its settle-gate listener and resize handler are both
-    // registered before ours — AboutScroll.astro init order). Missing
-    // dataset (no rotating section on the page, defensive only)
-    // degrades to a boundary-completing melt.
+    // Melt lead (fix 1, re-anchored at Oscar's melt-clearance round) —
+    // how many scroll px BEFORE this section's own top-vs-viewport-
+    // bottom crossing the entry crossfade starts. The PREDECESSOR (the
+    // in-flow rotating section — rotating-scroll.js's BOUNDARY MAP)
+    // publishes the FULL clear-gap lead: the distance from "ALL of its
+    // content — images, marquee, footer label — has fully left the
+    // viewport" to the boundary (its CSS tail makes that 555px at any
+    // viewport height). The clamp below (lead never shorter than the
+    // melt itself) therefore lands the melt strictly inside the
+    // cleared, empty #161616 tail — nothing is ever visible under the
+    // crossfade. Re-read every build so resize re-derivations flow
+    // through; the rotating module always builds first (its settle-gate
+    // listener and resize handler are both registered before ours —
+    // AboutScroll.astro init order). Missing dataset (no rotating
+    // section on the page, defensive only) degrades to a
+    // boundary-completing melt.
     const PARTNERS_MELT_LEAD_RATIO = 0.5;
     const predecessor = document.querySelector('body.about-page-3 [data-about-rotating]');
     const fullMeltLead =
