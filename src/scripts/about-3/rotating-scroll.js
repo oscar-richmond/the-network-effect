@@ -69,6 +69,16 @@ const ROTATING_PRELOAD_LEAD_PX = 1500;
 const ROTATING_LABEL_SETTLE_PX = 150;
 const ROTATING_LABEL_DURATION_S = 1.2;
 const ROTATING_LABEL_DISSOLVE_BLUR_PX = 4;
+/** Per-name notes (Oscar's spec) — a note shows while its marquee
+ * term's CENTRE sits in the middle third of the viewport (the chosen
+ * reading of "in the middle 3rd": centre-in-band gives each name a
+ * clear dwell and a clean beat of silence while a separator crosses
+ * centre; with several candidates the one nearest centre wins). The
+ * crossfade is a short TIMED dissolve per swap (a micro-tween on a
+ * scrub-driven state change — the hover-tween class of exception, not
+ * a scrubbed animation; overwrite:'auto' makes rapid scrub reversals
+ * retarget cleanly). */
+const ROTATING_NOTE_FADE_S = 0.35;
 // NOTE: the light-to-dark ground fade that briefly lived here (an
 // entry scrub at 'top top') MOVED UPSTREAM at the image round: it now
 // runs inside landing-scroll.js, anchored to the AMPLIFY wave's last
@@ -99,6 +109,59 @@ export function initRotatingScroll() {
   const markInner = section.querySelector('[data-about-rotating-mark-inner]');
   const label = section.querySelector('[data-about-rotating-label]');
   if (!wraps.length || wraps.length !== items.length) return () => {};
+
+  // Per-name notes + their marquee term spans, paired by index (the
+  // component renders both from ONE array — RotatingSection.astro).
+  // Term spans are the inner's children minus the '/' separators; the
+  // note list is truncated to the pairing so a copy edit that changes
+  // one count can never mis-map the rest.
+  const notes = Array.from(section.querySelectorAll('[data-about-rotating-note]')).filter(
+    (el) => el instanceof HTMLElement,
+  );
+  const termSpans =
+    markInner instanceof HTMLElement
+      ? Array.from(markInner.children).filter(
+          (el) => el instanceof HTMLElement && el.textContent.trim() !== '/',
+        )
+      : [];
+  const noteCount = Math.min(notes.length, termSpans.length);
+
+  /** Active note index, -1 = none (no term centre in the middle third). */
+  let activeNote = -1;
+
+  const setActiveNote = (index) => {
+    if (index === activeNote) return;
+    activeNote = index;
+    notes.forEach((note, i) => {
+      gsap.to(note, {
+        opacity: i === index ? 1 : 0,
+        duration: ROTATING_NOTE_FADE_S,
+        ease: 'power2.out',
+        overwrite: 'auto',
+      });
+    });
+  };
+
+  // Live-rect read of the scrubbed marquee (the house rect-sync
+  // precedent) — called from the marquee trigger's onUpdate, so it runs
+  // exactly when the strip can have moved.
+  const updateActiveNote = () => {
+    if (!noteCount) return;
+    const width = window.innerWidth;
+    let best = -1;
+    let bestDist = Infinity;
+    for (let i = 0; i < noteCount; i++) {
+      const rect = termSpans[i].getBoundingClientRect();
+      const centre = (rect.left + rect.right) / 2;
+      if (centre < width / 3 || centre > (2 * width) / 3) continue;
+      const dist = Math.abs(centre - width / 2);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    }
+    setActiveNote(best);
+  };
 
   // Footer label reveal timeline — wrapped ONCE at init (the landing
   // wrapLandingColumns idiom, single static line): the roll-up drives
@@ -168,6 +231,19 @@ export function initRotatingScroll() {
     edges.forEach((edge) => {
       edge.style.visibility = visible ? 'visible' : 'hidden';
     });
+    // Notes ride the same gate. On close, the crossfade state RESETS
+    // instantly (kill + snap, no tween) — visibility already blanks
+    // them, and a re-entry from either end must start from silence
+    // rather than resume a stale fade.
+    notes.forEach((note) => {
+      note.style.visibility = visible ? 'visible' : 'hidden';
+      if (!visible) {
+        gsap.killTweensOf(note);
+        note.style.opacity = '0';
+      }
+    });
+    if (!visible) activeNote = -1;
+    else updateActiveNote();
     fold?.setPaused(!visible);
   };
 
@@ -224,6 +300,14 @@ export function initRotatingScroll() {
           id: 'about-rotating-mark',
           onToggle: (self) => setWindowVisible(self.isActive),
         },
+        // Per-name notes — re-derive the active note on the TIMELINE's
+        // onUpdate, not the trigger's: the strip's x moves exactly when
+        // this timeline renders, so this fires precisely when a term
+        // rect can have changed (and, measured, the trigger-level
+        // onUpdate does not dispatch under manual ST.update()+tick
+        // driving, where the timeline callback does — the gate handles
+        // enter/exit either way).
+        onUpdate: updateActiveNote,
       });
       markTl.fromTo(
         markInner,
@@ -337,7 +421,7 @@ export function initRotatingScroll() {
     });
     markTl?.kill();
     labelTl?.kill();
-    gsap.killTweensOf([...items, ...wraps]);
+    gsap.killTweensOf([...items, ...wraps, ...notes]);
     if (markInner instanceof HTMLElement) gsap.killTweensOf(markInner);
     if (label instanceof HTMLElement) gsap.killTweensOf(label.querySelectorAll('.lr-inner, .lr-clip'));
     setWindowVisible(false);

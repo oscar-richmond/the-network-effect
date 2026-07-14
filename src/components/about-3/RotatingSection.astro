@@ -26,20 +26,42 @@ const ROTATING_IMAGES = [
   { file: 'thunder-helicopter', ar: '1500 / 970' },
 ].map((item) => ({ ...item, src: asset(`/assets/rotating/${item.file}.jpg`) }));
 
-// Marquee copy — REAL project/client copy, PENDING FOUNDER SIGN-OFF
-// (amendment 1; same standing as the partners client list: Yoxman and
-// the Pavilion events are named engagements — do not launch without
-// confirmation). Rendered as term/separator spans with the "three
-// spaces around each /" spacing expressed as flex gap 0.75em (36px at
-// the fixed 48px) — see rotating.css. Noted alternate from the
-// original brief: the full client-names list.
-const MARQUEE_TERMS = [
-  'Wilderness Reserve',
-  'Pavilion Club',
-  'Pavilion Summit',
-  'Yoxman Food Festival',
-  'Thunder Aviation',
+// Marquee copy + per-name notes — REAL project/client copy, PENDING
+// FOUNDER SIGN-OFF (amendment 1 + the notes round; same standing as
+// the partners client list: Yoxman and the Pavilion events are named
+// engagements, and the notes carry factual claims — Michelin star,
+// "one of the UK's leading" — do not launch without confirmation).
+// ONE array so the marquee term order and the note order can never
+// drift: rotating-scroll.js maps the i-th marquee term span to the
+// i-th note paragraph by construction. Terms render as term/separator
+// spans with the "three spaces around each /" spacing expressed as
+// flex gap 0.75em (36px at the fixed 48px) — see rotating.css. Notes
+// render as the fixed bottom-left paragraphs (Oscar's spec: Serrif 12,
+// difference, 40px/40px), shown while their name crosses the middle
+// third of the viewport (rotating-scroll.js).
+const SELECTED_WORK = [
+  {
+    term: 'Wilderness Reserve',
+    note: 'Developed one of the UK’s leading luxury destinations, spanning hospitality, events, guest experiences and talent partnerships.',
+  },
+  {
+    term: 'Pavilion Club',
+    note: 'Created and scaled a private membership programme across four clubs, connecting founders, CEOs and high-profile talent through cultural and business led experiences.',
+  },
+  {
+    term: 'Pavilion Summit',
+    note: 'A 24-hour immersive leadership experience, delivered from ideation to execution, bringing CEOs, founders and cultural voices together.',
+  },
+  {
+    term: 'Yoxman Food Festival',
+    note: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, guest journey, creative direction and luxury hospitality experience.',
+  },
+  {
+    term: 'Thunder Aviation',
+    note: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
+  },
 ];
+const MARQUEE_TERMS = SELECTED_WORK.map((work) => work.term);
 ---
 
 <section class="about-rotating" data-about-rotating aria-label="Gallery">
@@ -146,4 +168,27 @@ const MARQUEE_TERMS = [
   <p class="about-rotating__footer-label" data-about-rotating-label aria-hidden="true">
     04 — selected work
   </p>
+
+  <!-- Per-name notes (Oscar's spec) — five fixed bottom-left paragraphs,
+       one per marquee term, index-paired with SELECTED_WORK by
+       construction. Each <p> is ITSELF the fixed + difference-blend
+       element (the footer-label pattern: blend on the fixed leaf, never
+       a child of a fixed wrapper — a fixed ancestor's forced stacking
+       context would isolate a child's blend from the page backdrop).
+       All five stack in the same 40px/40px slot; rotating-scroll.js
+       crossfades opacity so only the note whose name is crossing the
+       middle third of the viewport reads, and gates visibility to the
+       section window with the marquee/label/edges (CSS-default hidden —
+       they can never paint over other sections). aria-hidden like the
+       marquee they annotate (decorative scroll choreography; the same
+       copy should reach assistive tech through whatever static
+       treatment ships for reduced motion — flagged with the RM note in
+       rotating.css). -->
+  {
+    SELECTED_WORK.map((work, i) => (
+      <p class="about-rotating__note" data-about-rotating-note={i} aria-hidden="true">
+        {work.note}
+      </p>
+    ))
+  }
 </section>

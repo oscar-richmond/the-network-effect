@@ -115,6 +115,16 @@
 	pointer-events: none;
 }
 
+/* Per-name notes — BASE = the reduced-motion state: not rendered.
+   Under RM the marquee is a static line (no name ever "crosses the
+   middle third"), rotating-scroll.js never boots, and nothing could
+   drive the crossfade — so the notes simply don't exist, like the
+   pillar waves' own RM treatment. (If a static RM presentation of this
+   copy is ever wanted, it's a design call — flagged.) */
+.about-page-3 .about-rotating__note {
+	display: none;
+}
+
 .about-page-3 .about-rotating__item-wrap {
 	width: 100%;
 	/* Amendment 2: 700px fixed width (was demo-4's 300px), each image
@@ -198,6 +208,43 @@
 		width: 100%;
 		height: 100%;
 		z-index: 1;
+		pointer-events: none;
+	}
+
+	/* Per-name notes (Oscar's spec: Serrif-TRIAL 12px, difference,
+	   left-aligned, 40px from the left and bottom viewport edges) —
+	   five fixed leaves stacked in one slot, opacity-crossfaded by
+	   rotating-scroll.js as their marquee name crosses the viewport's
+	   middle third. BLEND SAFETY: fixed + difference ON THE <p> ITSELF
+	   (the footer-label pattern — a fixed WRAPPER would force a
+	   stacking context and isolate a child's blend); the ancestor walk
+	   is the marquee's own (section + body, nothing isolating), and
+	   the crossfade animates opacity on the blend element ITSELF
+	   (self-opacity never isolates its own blend — the nav/label
+	   precedent). visibility is CSS-default hidden, toggled ONLY by the
+	   section-window gate; opacity 0 at rest, owned by the crossfade.
+	   z 4 = the footer label's own choice: crisp above the bottom
+	   edge-blur band (3). max-width keeps the paragraph clear of the
+	   viewport-centred footer label sharing this bottom line.
+	   'Serrif' IS the Serrif-TRIAL file set (fonts.css) — same
+	   trial-licence standing as Dazzed site-wide. */
+	.about-page-3 .about-rotating__note {
+		display: block;
+		position: fixed;
+		left: 40px;
+		bottom: 40px;
+		max-width: 340px;
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 12px;
+		line-height: 1.45;
+		text-align: left;
+		color: #ffffff;
+		mix-blend-mode: difference;
+		opacity: 0;
+		visibility: hidden;
+		z-index: 4;
 		pointer-events: none;
 	}
 
