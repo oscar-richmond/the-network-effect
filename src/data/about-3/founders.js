@@ -54,22 +54,20 @@ export const founders = [
     ],
     photo: '/assets/about-scroll/robbo-team.png',
     media: {
-      type: 'video',
-      // Stock preview stand-in (AdobeStock_2068472100 HD preview, Oscar-
-      // supplied, replacing the original stand-in clip; audio stripped,
-      // stream-copied) — STILL a preview, spec-for-purpose only. Swap
-      // this file (same path) for the licensed clip; no code changes
-      // needed.
-      // IMPORTANT: also regenerate public/assets/about-hero/about-3/bg-fade.jpg
-      // from the new clip's first frame at swap time — see the recipe
-      // comment above bgFadeSrc in AboutScroll.astro. bg-fade is a static
-      // frame used as the hero→founders handoff backdrop; left pointing at
-      // the old clip's frame it goes visually stale the moment this file
-      // changes (this exact staleness — bg-fade baked from the ORIGINAL
-      // pre-rearchitecture Robbo photo, not this video — was diagnosed and
-      // fixed once already).
-      src: '/assets/about-hero/about-3/founders-bg-robbo.mp4',
-      poster: '/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg',
+      type: 'image',
+      // FLAT #161616 (Oscar's call — both slides; the page-wide grain
+      // overlay supplies the texture above it). This retires the video
+      // background era for the FOUNDERS only: the shared clip file
+      // (founders-bg-robbo.mp4, AdobeStock_2068472100 preview) REMAINS
+      // in the repo because the partners wheel still plays it — its
+      // licensed-swap note lives in PartnersSection.astro now. The
+      // rgba(22,22,22,0.2) darken overlay resolves to exactly #161616
+      // over this flat media, so the two-layer treatment needs no CSS
+      // change. bg-fade.jpg (the hero->founders handoff backdrop) is
+      // baked flat #161616 to match — if a video background ever
+      // returns, the frame-bake recipe above bgFadeSrc in
+      // AboutScroll.astro applies again.
+      src: '/assets/about-hero/about-3/founders-bg-dark.jpg',
     },
     alt: 'Portrait of Robbo McCallum',
   },
@@ -89,16 +87,13 @@ export const founders = [
     ],
     photo: '/assets/about-scroll/ashley-team.png',
     media: {
-      type: 'video',
-      // The SAME clip as Robbo's slide (Oscar's request): with identical
-      // footage behind both slides the media crossfade reads as one
-      // continuous background. Each slide keeps its own element (the
-      // crossfade + blend-safety architecture is per-slide);
-      // createFoundersVideoController gates each slide's decode to its
-      // own visible window, and the shared file makes the second load()
-      // a cache hit.
-      src: '/assets/about-hero/about-3/founders-bg-robbo.mp4',
-      poster: '/assets/about-hero/about-3/founders-bg-robbo-video-poster.jpg',
+      type: 'image',
+      // FLAT #161616 — the same media as Robbo's slide (see its comment):
+      // the crossfade blends two identical flat fields, reading as one
+      // continuous ground. createFoundersVideoController finds no video
+      // elements and returns null (its callers handle that), so no
+      // decode work remains in this section.
+      src: '/assets/about-hero/about-3/founders-bg-dark.jpg',
     },
     alt: 'Portrait of Ashley Walters',
   },
