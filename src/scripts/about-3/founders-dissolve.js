@@ -1,10 +1,13 @@
 import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl';
 
 /**
- * /about-3 Founders section — WebGL noise-dissolve for the slide 1 → 2
- * PORTRAIT transition. OGL, following rotating-gallery.js's established
- * patterns: inline glsl template-string shaders, DOM-rect-synced plane
- * sizing, own rAF, resize/destroy lifecycle.
+ * /about-3 Founders section — WebGL grain-displacement crossfade for
+ * the slide 1 → 2 PORTRAIT transition. OGL, following
+ * rotating-gallery.js's established patterns: inline glsl
+ * template-string shaders, DOM-rect-synced plane sizing, own rAF,
+ * resize/destroy lifecycle. (Filename kept from the module's
+ * noise-dissolve era so founders-scroll.js's import stays untouched —
+ * the dissolve itself is gone, see the grain paragraph below.)
  *
  * Architecture:
  * - ONE plane, for the portrait pair only — backgrounds are now a DOM
@@ -33,37 +36,32 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
  *   fallback contract as createRotatingGallery). The background media
  *   crossfade is unconditional DOM either way (see founders-scroll.js).
  *
- * GRAIN DISPLACEMENT LAYER (the founders-grain round — approved plan):
- * the Codrops cursor/velocity grain displacement (wave-shader.js, the
- * pillars' hover effect) LAYERED onto — not replacing — the dissolve:
- * the noise-threshold stagger stays verbatim as the transition's
- * legibility, and a per-pixel screen-space grain shift rides on the
- * sampling coords of BOTH textures as one shared distortion field
- * (the mask lookup stays undisplaced, exactly as the warp already
- * treats it). Since a scheduled snap has no cursor or scroll motion,
- * the effect's "velocity" input is SYNTHETIC: the snap timeline's own
- * progress derivative, computed per tick from successive setProgress
- * values, smoothed and clamped (constants below) — a mid-peaked bell
- * during a normal 0.7s play (the ease's own derivative shape), exactly
- * 0 at both endpoints, sign-flipping on retarget, and a clamped burst
- * on the fling guard's force-resolve. The pillars' cursor gate ports
- * verbatim but FIXED AT CENTRE (no cursor concept here): a radially
- * symmetric, edge-weighted field — the uniform-field alternative is
- * the flagged one-line fallback if that reads oddly. The pillars'
- * vertex bow is deliberately NOT ported (stationary portrait, timed
- * snap — a bow would read as glitch; documented exclusion in the
- * approved plan). founders-scroll.js is untouched by contract: the
- * setProgress interface is the whole coupling.
+ * GRAIN DISPLACEMENT (the founders-grain round): the Codrops cursor/
+ * velocity grain displacement (wave-shader.js, the pillars' hover
+ * effect) is THE transition's visual character, over a plain
+ * uProgress crossfade. It was first LAYERED onto the old
+ * noise-threshold dissolve + UV warp per the approved plan; at
+ * Oscar's live pass the old effect was removed COMPLETELY (explicit
+ * request — the two read as competing animations), taking with it
+ * NOISE_SCALE/MAX_DISTORT/EDGE_SOFTNESS, the threshold mask and the
+ * warp; snoise stays for the grain itself. A per-pixel screen-space
+ * grain shift rides the sampling coords of BOTH textures as one
+ * shared distortion field. Since a scheduled snap has no cursor or
+ * scroll motion, the effect's "velocity" input is SYNTHETIC: the snap
+ * timeline's own progress derivative, computed per tick from
+ * successive setProgress values, smoothed and clamped (constants
+ * below) — a mid-peaked bell during a normal 0.7s play (the ease's
+ * own derivative shape), exactly 0 at both endpoints, sign-flipping
+ * on retarget, and a clamped burst on the fling guard's
+ * force-resolve. The pillars' cursor gate ports verbatim but FIXED AT
+ * CENTRE (no cursor concept here): a radially symmetric,
+ * edge-weighted field — the uniform-field alternative is the flagged
+ * one-line fallback if that reads oddly. The pillars' vertex bow is
+ * deliberately NOT ported (stationary portrait, timed snap — a bow
+ * would read as glitch). founders-scroll.js is untouched by contract:
+ * the setProgress interface is the whole coupling.
  */
 
-/** Noise frequency in UV space — higher = smaller dissolve cells. */
-const NOISE_SCALE = 5.0;
-/** Peak UV distortion at mid-transition (sin(uProgress·π) envelope —
- * exactly zero at both endpoints, so resting slides are pixel-crisp). */
-const MAX_DISTORT = 0.12;
-/** Half-width of the smoothstep band around the per-pixel dissolve
- * threshold — larger = softer, more overlapped region edges. */
-const EDGE_SOFTNESS = 0.25;
 /** Portrait corner radius in CSS px — mirrors the DOM wrapper's
  * border-radius: 4px, which the canvas can't inherit (SDF alpha mask). */
 const PORTRAIT_RADIUS_PX = 4;
@@ -124,9 +122,6 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform vec2 uPlaneSizePx;
   uniform float uProgress;
   uniform float uAlpha;
-  uniform float uNoiseScale;
-  uniform float uMaxDistort;
-  uniform float uEdgeSoftness;
   uniform float uRadiusPx;
   uniform float uBlurPx;
   uniform float uGrainVelocity;
@@ -181,41 +176,27 @@ const FRAGMENT_SHADER = /* glsl */ `
   }
 
   void main() {
-    // Per-pixel dissolve threshold: noise in [0, 1]; uProgress's range is
-    // extended by the softness band so BOTH endpoints fully resolve
-    // (m ≡ 0 at uProgress 0, m ≡ 1 at uProgress 1 — no residual ghost).
-    float n = snoise(vUv * uNoiseScale) * 0.5 + 0.5;
-    float pr = uProgress * (1.0 + 2.0 * uEdgeSoftness) - uEdgeSoftness;
-    float m = 1.0 - smoothstep(pr - uEdgeSoftness, pr + uEdgeSoftness, n);
+    vec2 uvFrom = coverUv(vUv, uPlaneSizePx, uImageSizeFrom);
+    vec2 uvTo = coverUv(vUv, uPlaneSizePx, uImageSizeTo);
 
-    // UV warp — zero at rest and completion, peaking mid-transition. The
-    // outgoing image warps where it has already dissolved (m), the incoming
-    // one where it hasn't arrived yet (1 - m): the melt tracks the dissolve
-    // front rather than sliding the whole frame.
-    float strength = sin(uProgress * 3.141592653589793) * uMaxDistort;
-    vec2 warp = vec2(
-      snoise(vUv * uNoiseScale + 3.7),
-      snoise(vUv * uNoiseScale - 2.3)
-    ) * strength;
-
-    vec2 uvFrom = coverUv(vUv, uPlaneSizePx, uImageSizeFrom) + warp * m;
-    vec2 uvTo = coverUv(vUv, uPlaneSizePx, uImageSizeTo) - warp * (1.0 - m);
-
-    // Grain displacement layer (wave-shader.js's effect fragment,
-    // ported verbatim with two documented substitutions): the cursor
+    // Grain displacement (wave-shader.js's effect fragment, ported
+    // verbatim with two documented substitutions) — since the removal
+    // round this is THE transition's whole visual character, over a
+    // plain uProgress crossfade (the noise-threshold dissolve + UV
+    // warp were removed at Oscar's live pass — "remove the old effect
+    // completely"; see the module doc). Substitutions: the cursor
     // gate is FIXED AT CENTRE (0.5, 0.5) — no cursor concept in a
     // scheduled snap — giving the circle's radially-symmetric,
     // edge-weighted field; and the per-pixel grain reuses THIS
-    // module's existing snoise (+1.0 permute) rather than importing
-    // the reference's +10.0 variant — statistically identical at
-    // gl_FragCoord frequency, one snoise implementation per shader.
-    // uGrainVelocity is the SYNTHETIC velocity (timeline derivative,
-    // scaled/smoothed/clamped in JS) in the pillars' own units, so
-    // the ·0.1 factor is the reference's verbatim term. The SAME
-    // signed shift rides both textures (one shared distortion field
-    // over the mix — approved plan §3.1); the mask (n, m) upstream
-    // stays undisplaced, exactly as the warp treats it. Exact 0 at
-    // rest (epsilon snap in JS) — this line is then an identity.
+    // module's snoise (+1.0 permute; kept for exactly this) rather
+    // than importing the reference's +10.0 variant — statistically
+    // identical at gl_FragCoord frequency. uGrainVelocity is the
+    // SYNTHETIC velocity (timeline derivative, scaled/smoothed/
+    // clamped in JS) in the pillars' own units, so the ·0.1 factor is
+    // the reference's verbatim term. The SAME signed shift rides both
+    // textures (one shared distortion field over the crossfade).
+    // Exact 0 at rest (epsilon snap in JS) — the shift is then an
+    // identity and resting slides are pixel-crisp.
     float grainAspect = uPlaneSizePx.y / uPlaneSizePx.x;
     float grainCircle = 1.0 - distance(
       vec2(0.5, (1.0 - 0.5) * grainAspect),
@@ -274,7 +255,9 @@ const FRAGMENT_SHADER = /* glsl */ `
       }
     }
 
-    vec3 col = mix(colFrom, colTo, m);
+    // Plain crossfade — the endpoints resolve exactly (colFrom at 0,
+    // colTo at 1); the grain shift above is the transition's texture.
+    vec3 col = mix(colFrom, colTo, uProgress);
 
     // Rounded-corner mask (portrait plane only; uRadiusPx 0 on the bg
     // plane skips it) — ~1px smoothed SDF edge against aliasing.
@@ -317,9 +300,6 @@ class DissolvePlane {
         uPlaneSizePx: { value: [1, 1] },
         uProgress: { value: 0 },
         uAlpha: { value: 1 },
-        uNoiseScale: { value: NOISE_SCALE },
-        uMaxDistort: { value: MAX_DISTORT },
-        uEdgeSoftness: { value: EDGE_SOFTNESS },
         uRadiusPx: { value: radiusPx },
         uBlurPx: { value: 0 },
         uGrainVelocity: { value: 0 },
