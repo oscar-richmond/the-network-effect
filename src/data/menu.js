@@ -3,7 +3,10 @@
 /** @type {MenuLink[]} */
 export const menuLinks = [
   { href: 'about', label: 'About', image: 'about.png' },
-  { href: 'team', label: 'Team', image: 'team.png' },
+  { href: 'founders', label: 'Founders', image: 'team.png' },
+  // No dedicated "services" menu hover-image exists yet — about.png
+  // reused as a neutral placeholder pending real artwork.
+  { href: 'services', label: 'Services', image: 'about.png' },
   { href: 'contact', label: 'Contact', image: 'contact.png' },
 ];
 
