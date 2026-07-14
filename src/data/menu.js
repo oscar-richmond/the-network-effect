@@ -7,7 +7,6 @@ export const menuLinks = [
   // No dedicated "services" menu hover-image exists yet — about.png
   // reused as a neutral placeholder pending real artwork.
   { href: 'services', label: 'Services', image: 'about.png' },
-  { href: 'contact', label: 'Contact', image: 'contact.png' },
 ];
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */
