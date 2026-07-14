@@ -105,13 +105,24 @@ const pillarWaves = [
     { file: 'red-hooded-jacket', w: 36.46, ar: '1260 / 1144', x: 48.61, y: 323, speed: 1.0 },
     { file: 'red-room-dinner', w: 16.55, ar: '572 / 577', x: 22.22, y: 546, speed: 1.0 },
   ],
+  // WAVE 1 (02 — CONNECT) — REPLACED per explicit request with the four
+  // Oscar-supplied images laid out per the same Figma frame's CONNECT
+  // moment (the mirrored composition: big slot left, small slots on the
+  // edges). Same `w`/`ar` native-ratio mechanism as wave 0 above. The
+  // skater slot extends 17px past the frame's LEFT edge in the Figma —
+  // only 166px is ever visible, so the item sits flush at x 0 with the
+  // visible crop's own ratio (renders identically to the design, no
+  // offscreen sliver). INVARIANTS: the only x-overlapping pair is
+  // surfboard/pharrell — the lower (pharrell 1.0) is no faster than the
+  // upper (surfboard 1.12), so the gap only opens; nobody is slower
+  // than the last item. LAST-ITEM CONTRACT: pharrell has max y, sits
+  // last, speed 1.0. CONTENT STATUS: stand-ins pending licensed finals
+  // (person- and brand-identifiable subjects Oscar supplied himself).
   [
-    { file: 'wax-seal-envelope', size: 'sq-s', x: 62, y: 0, speed: 1.25 },
-    { file: 'alaia-table-setting', size: 'rect-l', x: 10, y: 200, speed: 0.85 },
-    { file: 'skims-taxi', size: 'rect-p', x: 66, y: 400, speed: 1.2 },
-    { file: 'comme-des-garcons-walk', size: 'rect-pl', x: 58, y: 880, speed: 0.88 },
-    { file: 'collectors-key', size: 'sq-m', x: 28, y: 1290, speed: 1.05 },
-    { file: 'rhode-corvette-plate', size: 'sq-l', x: 14, y: 1720, speed: 1.0 },
+    { file: 'skater-wine-field', w: 9.61, ar: '332 / 402', x: 0, y: 71, speed: 1.18 },
+    { file: 'burberry-surfboard', w: 15.05, ar: '520 / 644', x: 73.26, y: 91, speed: 1.12 },
+    { file: 'osaka-clay-court', w: 36.46, ar: '1260 / 1144', x: 17.94, y: 323, speed: 1.0 },
+    { file: 'lagerfeld-pharrell-bw', w: 16.55, ar: '572 / 576', x: 60.59, y: 546, speed: 1.0 },
   ],
   [
     { file: 'rotary-phone-story', size: 'rect-p', x: 12, y: 0, speed: 1.25 },
