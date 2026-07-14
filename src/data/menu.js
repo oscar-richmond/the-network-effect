@@ -4,9 +4,7 @@
 export const menuLinks = [
   { href: 'about', label: 'About', image: 'about.png' },
   { href: 'founders', label: 'Founders', image: 'team.png' },
-  // No dedicated "services" menu hover-image exists yet — about.png
-  // reused as a neutral placeholder pending real artwork.
-  { href: 'services', label: 'Services', image: 'about.png' },
+  { href: 'services', label: 'Services', image: 'services.jpg' },
 ];
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */
