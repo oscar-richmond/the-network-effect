@@ -2,6 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CustomEase } from 'gsap/CustomEase';
 import { wrapLineRevealElement } from '../line-reveal.js';
+import { createRotatingFold } from './rotating-fold.js';
 
 gsap.registerPlugin(ScrollTrigger, CustomEase);
 
@@ -10,32 +11,29 @@ gsap.registerPlugin(ScrollTrigger, CustomEase);
 const LABEL_REVEAL_EASE = CustomEase.create('rotatingLabelReveal', 'M0,0 C0.42,0 0.24,1 1,1');
 
 /**
- * /about-3 rotating gallery — scroll module. Port of the Codrops
- * "Rotating On-Scroll Animations" DEMO 4 mechanism
- * (src/_reference/rotating-on-scroll/js/index4.js, MIT), integrated
- * into the house architecture rather than transplanted:
+ * /about-3 rotating gallery ("04 — selected work") — scroll module.
  *
- * - NO Lenis/ticker re-init: the reference's initSmoothScrolling is not
- *   ported — our page already runs Lenis + the ScrollTrigger bridge
- *   (about-scroll.js). The demo-4 velocity layer reads scroll velocity
- *   as a per-gsap-tick scrollY delta (the same px-per-frame units
- *   Lenis's own velocity reports), so it needs no handle on the Lenis
- *   instance at all.
- * - Wrapper divs are server-rendered (RotatingSection.astro), not
- *   insertBefore'd at runtime.
- * - Triggers carry the `about-rotating-` prefix: killed on rebuild and
- *   cleanup here, and SPARED by the hero's resize rebuild
- *   (about-scroll.js SPARED_TRIGGER_PREFIXES — the kill-on-resize bug
- *   class found and fixed during partners Stage 1).
- * - Per-item triggers anchor on the untransformed WRAP, not the item
- *   (deliberate deviation, documented: the reference triggers on the
- *   rotating item itself, whose getBoundingClientRect drifts with its
- *   own rotation at refresh time; the wrap has identical vertical
- *   geometry and is deterministic at any refresh moment — our
- *   both-viewport anchor verification depends on that).
- * - Per-item random orientations are generated ONCE at init and reused
- *   across resize rebuilds (the reference only re-randomizes on full
- *   page load; a resize must not reshuffle the wall).
+ * MECHANISM (approved swap): the per-image motion is the HERO
+ * GALLERY'S turn/fold effect — rotating-fold.js, one OGL context whose
+ * planes mirror the static DOM items as invisible proxies and fold
+ * them through the viewport with the hero's exact vertex shader,
+ * flat-at-centre (see that module's header for the mapping). This
+ * REPLACED the original Codrops demo-4 CSS-3D tumble (perspective
+ * wraps + rotationX/Y/Z scrubs + z dip); the demo-4 VELOCITY-BLUR
+ * layer was REMOVED with it (approved: the fold owns the motion now —
+ * no gsap.ticker work remains in this module). The zigzag COMPOSITION
+ * is untouched: sine x-offsets on the wraps, 700px native-ratio items,
+ * spacing, image set.
+ *
+ * This module still owns everything scroll-shaped: the sine layout,
+ * the marquee scrub + section-window gate (which now also pauses the
+ * fold module's rAF), the footer-label reveal, the preload trigger,
+ * and the melt-lead publisher. Remaining triggers carry the
+ * `about-rotating-` prefix: killed on rebuild and cleanup here, and
+ * SPARED by the hero's resize rebuild (about-scroll.js
+ * SPARED_TRIGGER_PREFIXES — the kill-on-resize bug class found and
+ * fixed during partners Stage 1). The fold module needs NO triggers of
+ * its own (per-frame rect geometry, the hero pattern).
  *
  * BOUNDARY MAP (this is the page's first IN-FLOW section between fixed
  * stages — no stage, no gates, ordinary scrolling content):
@@ -56,26 +54,10 @@ const LABEL_REVEAL_EASE = CustomEase.create('rotatingLabelReveal', 'M0,0 C0.42,0
  *   over this scrolling content instead of the frozen last wave.
  */
 
-/** Sine distribution (demo 4): x = sin(i · STEP) · innerWidth · AMP.
- * Demo 4 uses sin(i) directly — step 1.0 (demo 1's is 0.45). */
+/** Sine distribution (kept from the demo-4 composition):
+ * x = sin(i · STEP) · innerWidth · AMP. */
 const ROTATING_SINE_AMP = 0.2;
 const ROTATING_SINE_STEP = 1;
-/** Per-item start orientations (demo 4): the big flip lives on Y;
- * X/Z are gentle tilts. Each scrubs to its own negative. */
-const ROTATING_ROT_X_RANGE = [-10, 10];
-const ROTATING_ROT_Y_RANGE = [200, 290];
-const ROTATING_ROT_Z_RANGE = [-10, 10];
-/** Mid-crossing z dip: z = sin(progress · π) · this (demo 4). */
-const ROTATING_Z_DIP_PX = -150;
-/** Per-item scrub window (all demos). */
-const ROTATING_ITEM_START = 'top bottom+=20%';
-const ROTATING_ITEM_END = 'bottom top-=20%';
-/** Velocity->blur layer (demo 4): norm = min(|v|/NORM, 1) with v in px
- * per gsap tick; blur eases toward norm·MAX by LERP each tick;
- * saturate = 1 − norm (instantaneous, as the reference). */
-const ROTATING_VELOCITY_NORM = 40;
-const ROTATING_VELOCITY_BLUR_MAX_PX = 15;
-const ROTATING_VELOCITY_LERP = 0.45;
 /** Ahead-of-section eager-fetch lead (the landing gallery preload
  * convention — lazy imgs are unreliable below the fold on this page). */
 const ROTATING_PRELOAD_LEAD_PX = 1500;
@@ -158,46 +140,26 @@ export function initRotatingScroll() {
     }
   }
 
-  // Once-per-init orientations + setters (see header note on randoms).
-  const rigs = items.map((item) => ({
-    rotationX: gsap.utils.random(ROTATING_ROT_X_RANGE[0], ROTATING_ROT_X_RANGE[1]),
-    rotationY: gsap.utils.random(ROTATING_ROT_Y_RANGE[0], ROTATING_ROT_Y_RANGE[1]),
-    rotationZ: gsap.utils.random(ROTATING_ROT_Z_RANGE[0], ROTATING_ROT_Z_RANGE[1]),
-    setTransform: gsap.quickSetter(item, 'css'),
-    setFilter: gsap.quickSetter(item, 'filter'),
-  }));
+  // The fold module — created ONCE, module-instance lifetime (the
+  // landing hoverBlur / partners imageDissolve idiom): one OGL context,
+  // planes proxying the static items, re-POINTED on resize, never
+  // recreated. null (no WebGL) leaves the static DOM column as the
+  // degradation path, same contract as the hero gallery.
+  const fold = createRotatingFold(section, items);
+  // Verification/tuning hook (structural-verification protocol: the
+  // occluded test pane has no rAF, so probes drive fold.tickOnce()/
+  // debugState() through this expando; harmless in production).
+  if (fold) section.rotatingFold = fold;
 
-  // ── Demo-4 velocity layer — module-lifetime gsap.ticker fn ──────────
-  // Perf-gated to the section window (sectionActive, toggled by the
-  // marquee trigger below): outside it, writes stop once the blur has
-  // decayed to nothing, so the rest of the page never pays for it.
-  let sectionActive = false;
-  let lastScrollY = window.scrollY;
-  let blurAmount = 0;
-  const tickVelocity = () => {
-    const y = window.scrollY;
-    const velocity = Math.abs(y - lastScrollY);
-    lastScrollY = y;
-    if (!sectionActive && blurAmount < 0.01) return;
-    const norm = sectionActive ? Math.min(velocity / ROTATING_VELOCITY_NORM, 1) : 0;
-    blurAmount = gsap.utils.interpolate(
-      blurAmount,
-      norm * ROTATING_VELOCITY_BLUR_MAX_PX,
-      ROTATING_VELOCITY_LERP,
-    );
-    const filter = `blur(${blurAmount}px) saturate(${1 - norm})`;
-    rigs.forEach((rig) => rig.setFilter(filter));
-  };
-  gsap.ticker.add(tickVelocity);
-
-  // One gate for everything fixed in this section: marquee, footer
-  // label, and the velocity layer's perf flag ride the same window
-  // trigger — which now ENDS at the content-clear point (see build), so
-  // every piece of text is gone before the partners melt can begin.
+  // One gate for everything section-scoped: marquee + footer-label
+  // visibility and the fold module's rAF ride the same window trigger —
+  // which ENDS at the content-clear point (see build), so every piece
+  // of text is gone before the partners melt can begin, and the GL loop
+  // costs nothing while the section is off screen.
   const setWindowVisible = (visible) => {
     if (mark instanceof HTMLElement) mark.style.visibility = visible ? 'visible' : 'hidden';
     if (label instanceof HTMLElement) label.style.visibility = visible ? 'visible' : 'hidden';
-    sectionActive = visible;
+    fold?.setPaused(!visible);
   };
 
   /** @type {gsap.core.Timeline | undefined} */
@@ -211,34 +173,21 @@ export function initRotatingScroll() {
     });
     markTl?.kill();
 
-    // Sine distribution on the WRAPS (demo 4: sin(i) · innerWidth·0.2).
+    // Sine distribution on the WRAPS (the kept demo-4 composition:
+    // sin(i) · innerWidth·0.2). The wraps are the only transformed
+    // layer now — the items themselves are static rect proxies for the
+    // fold module's planes.
     const amplitude = window.innerWidth * ROTATING_SINE_AMP;
     wraps.forEach((wrap, i) => {
       gsap.set(wrap, { x: Math.sin(i * ROTATING_SINE_STEP) * amplitude });
     });
 
-    // Per-item rotation scrub — demo 4's manual onUpdate interpolation
-    // (each item flips from its orientation to the exact negative, with
-    // the sin(pπ) z dip written through the same quickSetter).
-    items.forEach((item, i) => {
-      const rig = rigs[i];
-      ScrollTrigger.create({
-        trigger: wraps[i],
-        start: ROTATING_ITEM_START,
-        end: ROTATING_ITEM_END,
-        scrub: true,
-        id: `about-rotating-item-${i}`,
-        onUpdate(self) {
-          const p = self.progress;
-          rig.setTransform({
-            rotationX: gsap.utils.interpolate(rig.rotationX, -rig.rotationX, p),
-            rotationY: gsap.utils.interpolate(rig.rotationY, -rig.rotationY, p),
-            rotationZ: gsap.utils.interpolate(rig.rotationZ, -rig.rotationZ, p),
-            z: Math.sin(p * Math.PI) * ROTATING_Z_DIP_PX,
-          });
-        },
-      });
-    });
+    // Re-point the fold module at the fresh viewport (re-POINTED, not
+    // recreated — the hoverBlur/imageDissolve resize idiom). Per-image
+    // rotation needs no triggers here: rotating-fold.js derives each
+    // plane's travel from its proxy's live rect every frame (the hero
+    // pattern).
+    fold?.resize();
 
     // Content-clear point — the scroll offset (within the section's own
     // travel) at which the LAST image's bottom passes the viewport top.
@@ -372,7 +321,6 @@ export function initRotatingScroll() {
   return () => {
     cancelled = true;
     window.removeEventListener('resize', onResize);
-    gsap.ticker.remove(tickVelocity);
     ScrollTrigger.getAll().forEach((trigger) => {
       if (typeof trigger.vars.id === 'string' && trigger.vars.id.startsWith('about-rotating-')) {
         trigger.kill();
@@ -384,5 +332,6 @@ export function initRotatingScroll() {
     if (markInner instanceof HTMLElement) gsap.killTweensOf(markInner);
     if (label instanceof HTMLElement) gsap.killTweensOf(label.querySelectorAll('.lr-inner, .lr-clip'));
     setWindowVisible(false);
+    fold?.destroy();
   };
 }

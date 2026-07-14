@@ -121,9 +121,9 @@
 	   at its OWN native ratio — the uniform 4/5 aspect is gone and the
 	   column is mixed-ratio at fixed width. Image swaps are DATA-ONLY
 	   from here (RotatingSection.astro's array): the item takes
-	   whatever ratio the file has. */
+	   whatever ratio the file has. (The demo-4 perspective is gone with
+	   the CSS-3D mechanism — the fold is WebGL now, rotating-fold.js.) */
 	max-width: 700px;
-	perspective: 900px;
 	margin-bottom: 55px; /* demo-4 wrap spacing: +5rem @ 11px root */
 }
 
@@ -133,9 +133,10 @@
 	   ratio — RotatingSection.astro): the box reserves its exact height
 	   before the lazy image loads, so layout (and every downstream
 	   trigger anchor) never reflows on image arrival. NO border-radius
-	   (Oscar's spec — supersedes demo-4's 7px). */
+	   (Oscar's spec — supersedes demo-4's 7px). The item is a STATIC
+	   RECT PROXY for its WebGL plane (rotating-fold.js hides the img
+	   once its texture takes over); no CSS 3D remains here. */
 	overflow: clip;
-	transform-style: preserve-3d;
 }
 
 .about-page-3 .about-rotating__item img {
@@ -181,6 +182,23 @@
 		z-index: 2;
 		mix-blend-mode: difference;
 		visibility: hidden;
+	}
+
+	/* Fold canvas (rotating-fold.js appends it) — fixed full-viewport,
+	   z 1: ABOVE the section ground and the (hidden-once-taken-over)
+	   proxy imgs, BELOW the difference-blend marquee and label at z 2 —
+	   which therefore composite over this canvas exactly as the nav's
+	   difference items composite over the hero's WebGL canvas (the
+	   documented precedent in about-page.css's chrome comment). No
+	   will-change (the blend-backdrop promotion trap): the canvas is
+	   ordinary backdrop content for the marquee's blend. */
+	.about-page-3 .about-rotating__canvas {
+		position: fixed;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+		pointer-events: none;
 	}
 
 	/* Footer label — fixed at the landing label's slot (40px off the
