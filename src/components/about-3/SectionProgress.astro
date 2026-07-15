@@ -2,20 +2,22 @@
 /**
  * Left-side section-progress indicator — /about-3 only.
  *
- * Rows 01/02/04 map to real sections (hero runway, founders, partners —
- * the last per the AUTHORIZED exception in section-progress.js); 03/05
- * are placeholders — they render and take part in the
- * distance-opacity/window logic but never activate (no ScrollTrigger
- * anchor). When those sections are built, add their anchor to
- * REAL_ANCHORS in section-progress.js and the row comes alive.
+ * Rows 01/02 map to real sections (hero runway, founders); 03/04 are
+ * placeholders — they render and take part in the distance-opacity/
+ * window logic but never activate (no ScrollTrigger anchor). When those
+ * sections are built, add their anchor to REAL_ANCHORS in
+ * section-progress.js and the row comes alive.
+ *
+ * The "04 — our partners" row (and its REAL_ANCHORS entry + the
+ * partners-side re-show scrub) LEFT with the wheel's relocation to
+ * /services — the second AUTHORIZED SectionProgress exception (Oscar,
+ * services-page split). With no re-show downstream, the indicator now
+ * stays hidden from landing-scroll.js's authorized hide to the end of
+ * the page (flagged in the split plan; rotating never had a row).
  *
  * REMAINING FIGMA DISCREPANCY (logged, deliberately NOT resolved here —
  * out of the authorized scope): the Figma nav (node 8:399 recon) shows
- * SIX rows and numbers the partners row "03 — partners"; this component
- * has FIVE rows with partners at "04 — our partners" (Oscar's requested
- * label), row 03 = "three pillars" (real section, still un-anchored: the
- * founders row keeps focus through it), and row 05 a placeholder.
- * Reconciling count/numbering/labels wholesale needs its own
+ * SIX rows; reconciling count/numbering/labels wholesale needs its own
  * authorization + label copy from Oscar.
  *
  * Labels are cased by `text-transform: lowercase` in CSS, not by how the
@@ -27,8 +29,7 @@ const sections = [
   { numeral: '01', label: 'About' },
   { numeral: '02', label: 'The Founders' },
   { numeral: '03', label: 'Three Pillars' },
-  { numeral: '04', label: 'Our Partners' },
-  { numeral: '05', label: 'Placeholder' },
+  { numeral: '04', label: 'Placeholder' },
 ];
 ---
 

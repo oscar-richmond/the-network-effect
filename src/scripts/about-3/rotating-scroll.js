@@ -44,14 +44,12 @@ const LABEL_REVEAL_EASE = CustomEase.create('rotatingLabelReveal', 'M0,0 C0.42,0
  *   AMPLIFY wave's last image leaving the viewport and completing at
  *   this boundary) — a DARK-to-dark pixel swap onto this section's
  *   static #161616, then normal scrolling.
- * - OUT (here -> partners): partners' entry/melt anchors ride this
- *   section's bottom by document flow. The MELT-LEAD PUBLISHER moved
- *   here from landing-scroll.js: the melt should begin when this
- *   section's LAST image's centre crosses the viewport's vertical
- *   middle — lead = sectionHeight − lastItemCentreOffset − vh/2,
- *   published on this section's dataset (same attribute contract;
- *   partners-scroll.js reads its predecessor). The crossfade now melts
- *   over this scrolling content instead of the frozen last wave.
+ * - OUT: none — this is now the page's LAST section (the partners
+ *   wheel RELOCATED to /services in the services-page split; its
+ *   melt-lead publisher, which used to live in this build, left as
+ *   dead code with it). The CSS tail (100vh + 500px, rotating.css) is
+ *   kept as end-of-page breathing room and covers the last-section
+ *   headroom contract.
  */
 
 /** Sine distribution (kept from the demo-4 composition):
@@ -216,12 +214,12 @@ export function initRotatingScroll() {
 
   // One gate for everything section-scoped: marquee + footer-label +
   // edge-blur visibility and the fold module's rAF ride the same window
-  // trigger — which ENDS at the content-clear point (see build), so
-  // every piece of text is gone before the partners melt can begin, and
-  // the GL loop costs nothing while the section is off screen. The edge
-  // bands are viewport-FIXED (this section is in-flow, unlike partners'
-  // stage-scoped bands), so this gate is what keeps them from painting
-  // over other sections.
+  // trigger — which ENDS at the content-clear point (see build; the
+  // clear point predates the relocated partners melt and stands on its
+  // own: no text paints into the empty tail), and the GL loop costs
+  // nothing while the section is off screen. The edge bands are
+  // viewport-FIXED (this section is in-flow), so this gate is what
+  // keeps them from painting over other sections.
   const edges = Array.from(section.querySelectorAll('.about-rotating__edge')).filter(
     (el) => el instanceof HTMLElement,
   );
@@ -277,10 +275,12 @@ export function initRotatingScroll() {
     // Content-clear point — the scroll offset (within the section's own
     // travel) at which the LAST image's bottom passes the viewport top.
     // Everything text-shaped ends with it: the marquee window (below)
-    // and the label/mark visibility gate both close here, so by the
-    // time the partners melt can begin (see the publisher) the viewport
-    // holds nothing but the empty #161616 tail. Sine x offsets don't
-    // affect vertical layout, so offsetTop is authoritative.
+    // and the label/mark visibility gate both close here, leaving the
+    // viewport nothing but the empty #161616 tail (born as the partners
+    // melt-clearance spec; the tail keeps that shape as the page's
+    // end-of-scroll rest now that this is the last section). Sine x
+    // offsets don't affect vertical layout, so offsetTop is
+    // authoritative.
     const lastWrap = wraps[wraps.length - 1];
     const lastBottom = lastWrap.offsetTop + lastWrap.offsetHeight;
 
@@ -332,17 +332,6 @@ export function initRotatingScroll() {
       });
     }
 
-    // Melt-lead publisher (see BOUNDARY MAP in the header): the melt
-    // may only begin once ALL content — images, marquee text, footer
-    // label — has fully left the viewport (Oscar's spec). The published
-    // lead is the boundary-to-clear gap: sectionHeight − lastBottom −
-    // vh. The CSS tail (100vh + 500px, rotating.css) makes this 555px
-    // at any viewport height, so the consumer's 400px clamp always
-    // lands the melt strictly inside the cleared, empty tail.
-    section.dataset.partnersMeltLeadPx = String(
-      Math.max(0, Math.round(section.offsetHeight - lastBottom - window.innerHeight)),
-    );
-
     // One-shot eager fetch ahead of the section (landing preload idiom —
     // these pool files are usually cached from the waves already; belt).
     // Lives INSIDE build(): it carries the killed prefix, so a resize
@@ -385,10 +374,9 @@ export function initRotatingScroll() {
   let cancelled = false;
   // Same hero-settle gate as the neighbouring modules (see
   // landing-scroll.js): anchors depend on every runway above being
-  // final. Registered BEFORE partners-scroll.js's listener (AboutScroll
-  // init order), so this build publishes the melt lead before partners'
-  // build reads it — and partners' trailing refresh re-anchors
-  // everything regardless.
+  // final. This build's own trailing refresh re-anchors everything —
+  // as the page's last module it no longer publishes anything
+  // downstream (the partners melt-lead consumer left for /services).
   const whenHeroScrollReady = () =>
     new Promise((resolve) => {
       if (document.querySelector('body.about-page-3 [data-about-hero-spacer]')?.style.height) {

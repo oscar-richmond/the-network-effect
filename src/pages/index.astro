@@ -1,53 +1,50 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HomePage from '../components/HomePage.astro';
-import SplashScreen from '../components/SplashScreen.astro';
-import { splashImage } from '../data/splash.js';
+import AboutScroll from '../components/about-3/AboutScroll.astro';
+import SectionProgress from '../components/about-3/SectionProgress.astro';
+import Menu from '../components/Menu.astro';
+import '../styles/home.css';
+import '../styles/about-3/about-page.css';
+import '../styles/fonts.css';
 ---
 
-<BaseLayout title="The Network Effect">
-  <SplashScreen />
-  <div data-splash-gate>
-    <HomePage />
-  </div>
+<!-- THE LANDING PAGE (root-landing move): the former /about-3 page,
+     verbatim — body class, modules, and all scoping unchanged, no
+     splash component. Its own "loading" treatment stands as it always
+     did: the CSS spinner/veil (about-page.css's .loading rule) until
+     AboutHero.astro clears the class and runs its own image-stack
+     entrance timeline. -->
+<BaseLayout title="The Network Effect" bodyClass="about-page-3 loading" htmlClass="js">
+  <header class="home__topbar home__topbar--about">
+    <nav class="home__menu-cta" aria-label="Site">
+      <button
+        type="button"
+        class="home__menu-toggle"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-controls="site-menu"
+      >
+        <span data-menu-label-menu>menu</span>
+        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
+          <span class="home__menu-toggle-close-text">close</span>
+          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
+        </span>
+      </button>
+    </nav>
+    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    <a class="home__topbar-email" href="mailto:hello@thenetworkeffect.com">
+      hello@thenetworkeffect.com
+    </a>
+  </header>
+
+  <AboutScroll />
+  <SectionProgress />
+  <Menu />
+
+  <!-- Film-grain overlay — a childless, pointer-events:none SIBLING at
+       the very top of the paint order (z 9000: above every stage/nav/
+       loader, below only the canvas cursor at 9999 so the cursor stays
+       crisp). It wraps nothing and blends nothing — see the stacking/
+       blend-safety notes on .about-grain in about-page.css. -->
+  <div class="about-grain" aria-hidden="true"></div>
 </BaseLayout>
-
-<script>
-  import { initSplashScreen, completeSplash } from '../scripts/splash-screen.js';
-  import { initLineReveal } from '../scripts/line-reveal.js';
-  import { splashImage } from '../data/splash.js';
-
-  document.documentElement.classList.add('splash-active');
-
-  const splash = document.querySelector('[data-splash]');
-  const gate = document.querySelector('[data-splash-gate]');
-  const cleanupLineReveal = initLineReveal({ readyEvent: 'splash:finished' });
-
-  const revealHome = () => {
-    completeSplash(() => {
-      document.dispatchEvent(new CustomEvent('splash:complete'));
-    });
-  };
-
-  if (splash) {
-    gate?.setAttribute('inert', '');
-    initSplashScreen(splash, {
-      ...splashImage,
-      onComplete: revealHome,
-      onFinish: () => {
-        splash.remove();
-        gate?.removeAttribute('inert');
-        document.dispatchEvent(new CustomEvent('splash:finished'));
-      },
-    });
-  } else {
-    revealHome();
-    gate?.removeAttribute('inert');
-    document.dispatchEvent(new CustomEvent('splash:finished'));
-  }
-
-  document.addEventListener('astro:before-swap', () => {
-    document.documentElement.classList.remove('splash-active');
-    cleanupLineReveal();
-  });
-</script>

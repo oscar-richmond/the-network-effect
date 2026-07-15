@@ -60,7 +60,7 @@ export const founders = [
       // background era for the FOUNDERS only: the shared clip file
       // (founders-bg-robbo.mp4, AdobeStock_2068472100 preview) REMAINS
       // in the repo because the partners wheel still plays it — its
-      // licensed-swap note lives in PartnersSection.astro now. The
+      // licensed-swap note lives in services/PartnersWheel.astro now. The
       // rgba(22,22,22,0.2) darken overlay resolves to exactly #161616
       // over this flat media, so the two-layer treatment needs no CSS
       // change. bg-fade.jpg (the hero->founders handoff backdrop) is

@@ -43,6 +43,15 @@
 	   changes at runtime. The partners melt stays the dark->dark video
 	   emergence (partners-scroll.js). */
 	background-color: #161616;
+	/* Seam guard for the landing joint under the sub-1728 scale shell:
+	   this section and the landing rasterise as separate compositor
+	   layers, and the non-integer shell scale resamples both layer edges
+	   to partial alpha at the shared boundary row — the light page
+	   ground bleeds through as a device-px hairline (measured: one row
+	   at ~75 luminance in a 22 field; absent unscaled). The self-colour
+	   shadow paints 1px past the top edge inside THIS layer, closing the
+	   crack with zero layout or trigger impact. */
+	box-shadow: 0 -1px 0 0 #161616;
 	/* Reference top margin (25vh) kept; the BOTTOM tail is ours (Oscar's
 	   melt-clearance spec): the partners melt may only begin once ALL of
 	   this section's content — images, marquee text, footer label — has

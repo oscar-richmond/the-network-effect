@@ -33,6 +33,101 @@ const base = import.meta.env.BASE_URL;
     <link rel="icon" href={`${base}favicon.ico`} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline define:vars={{ base }}>
+      /**
+       * Scale-shell boot — 15" (and any sub-1728) viewport support.
+       *
+       * The site is designed and px-tuned against a 1728px-wide viewport.
+       * Below that width, this script hands the load over to the static
+       * shell page (public/scale-shell.html) via location.replace — a
+       * genuinely fresh document, so nothing from this page's module
+       * graph leaks into the shell (document.open() is a no-op from a
+       * parser-inserted script, so an in-place rewrite cannot work).
+       * The shell mounts this SAME url (?framed=1) in a same-origin
+       * <iframe> laid out at design size and transform-scaled to fit.
+       * Inside the iframe every viewport unit, innerWidth read, and px
+       * constant resolves in design space — no section code changes.
+       *
+       * Escape hatches: ?noscale serves the page bare (persists for the
+       * tab session via sessionStorage); ?noscale=0 re-enables the shell.
+       */
+      (function () {
+        var DESIGN_WIDTH = 1728;
+        var params = new URLSearchParams(window.location.search);
+
+        var noscaleParam = params.get('noscale');
+        try {
+          if (noscaleParam !== null) {
+            if (noscaleParam === '0') sessionStorage.removeItem('ne-noscale');
+            else sessionStorage.setItem('ne-noscale', '1');
+          }
+        } catch (e) {
+          /* private browsing may block sessionStorage — param still applies */
+        }
+
+        // Inside the shell's iframe: never re-shell (top check makes
+        // double-nesting impossible even after in-frame navigation drops
+        // ?framed=1). Publish URL + title so the shell's address bar
+        // tracks navigation.
+        if (window.top !== window.self) {
+          document.addEventListener('DOMContentLoaded', function () {
+            try {
+              window.parent.postMessage(
+                {
+                  type: 'ne-scale-shell:navigated',
+                  href: window.location.href,
+                  title: document.title,
+                },
+                window.location.origin
+              );
+            } catch (e) {
+              /* shell missing or blocked — page still works standalone */
+            }
+          });
+          return;
+        }
+
+        var noscale;
+        if (noscaleParam !== null) {
+          noscale = noscaleParam !== '0';
+        } else {
+          noscale = false;
+          try {
+            noscale = sessionStorage.getItem('ne-noscale') === '1';
+          } catch (e) {}
+        }
+        if (noscale || params.get('framed') === '1') return;
+
+        function enterShell() {
+          var p = new URLSearchParams(window.location.search);
+          p.set('framed', '1');
+          var target =
+            window.location.pathname +
+            '?' +
+            p.toString() +
+            window.location.hash;
+          window.location.replace(
+            base + 'scale-shell.html#' + encodeURIComponent(target)
+          );
+        }
+
+        if (window.innerWidth >= DESIGN_WIDTH) {
+          // Loaded bare on a wide viewport. If the window later shrinks
+          // below the design width (e.g. dragged from an external monitor
+          // to the laptop), re-enter the shell once the resize settles.
+          var t;
+          window.addEventListener('resize', function () {
+            clearTimeout(t);
+            t = setTimeout(function () {
+              if (window.innerWidth < DESIGN_WIDTH) enterShell();
+            }, 300);
+          });
+          return;
+        }
+
+        enterShell();
+      })();
+    </script>
   </head>
   <body class:list={[bodyClass]}>
     <canvas class="canvas-cursor" data-canvas-cursor aria-hidden="true"></canvas>
