@@ -65,13 +65,14 @@ const DT_MAX_MS = 100;
  * pixels), gap as a fraction of card height. Cards also cap to
  * CARD_MAX_HEIGHT_FRACTION of the region so the tablet band / phone
  * strip (short, wide regions) keep whole cards visible rather than a
- * clipped peek-window. NOTE: the current exports are 480px wide against
- * a ~590px CSS card at desktop — renders soft on retina; flagged for
- * larger re-exports if it bothers on the real-tab pass. */
-const CARD_WIDTH_FRACTION = 0.82;
+ * clipped peek-window. Halved from the original 0.82/0.72 per Oscar
+ * (cards 2x smaller) — which also largely resolves the earlier softness
+ * flag: the ~295px CSS card at desktop is much closer to the 480px
+ * native exports. */
+const CARD_WIDTH_FRACTION = 0.41;
 const CARD_ASPECT = 480 / 550;
 const CARD_GAP_FRACTION = 0.14;
-const CARD_MAX_HEIGHT_FRACTION = 0.72;
+const CARD_MAX_HEIGHT_FRACTION = 0.36;
 
 /** Fold constants — rotating-fold.js's approved values, verbatim. */
 const FOLD_HALF_TURNS = 0.5;

@@ -54,10 +54,12 @@
    under reduced motion or failed WebGL. */
 .holding-gallery__poster {
 	display: block;
-	width: 82%;
-	max-height: 72%;
+	/* Mirrors holding-gallery.js's card fractions (halved per Oscar —
+	   cards 2x smaller) so the poster->canvas takeover is seamless. */
+	width: 41%;
+	max-height: 36%;
 	/* Locked to the HP Carousel set's portrait crops (480x550), matching
-	   holding-gallery.js's CARD_ASPECT so the takeover is seamless. */
+	   holding-gallery.js's CARD_ASPECT. */
 	aspect-ratio: 480 / 550;
 	object-fit: cover;
 }
