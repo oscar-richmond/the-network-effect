@@ -2,17 +2,19 @@
  * Holding-page entry choreography.
  *
  * Ported from the /about-3 hero tagline (src/components/about-3/AboutHero.astro)
- * with the scroll/video coupling removed:
+ * with the scroll coupling removed:
  *  - the hero's line-reveal + rolling-last-word mechanics are reused verbatim
  *    (word list, timings, easing) — see wrapTaglineLines/initTaglineRotate below;
  *  - there is no ScrollTrigger anywhere in the hero's tagline to begin with, so
  *    "decoupling from scroll" just means starting on load instead of after the
  *    hero's own image-burst timeline;
- *  - the hero's fixed <video> + rAF position-sync workaround is dropped
- *    entirely: it existed only so a <video> could avoid living inside a
- *    mix-blend-mode:difference subtree. This page uses a static <img> instead
- *    (per the Figma update), which opts out of the parent blend with a plain
- *    `mix-blend-mode: normal`, so no workaround is needed.
+ *  - the hero's fixed-overlay + position-sync workaround for the inline
+ *    "CULTURE & [image]" window IS still needed here, same as the hero: a
+ *    descendant's mix-blend-mode:normal does not opt it out of an ancestor's
+ *    mix-blend-mode:difference (confirmed — an inline <img> given
+ *    mix-blend-mode:normal still rendered differenced). The real image is a
+ *    fixed sibling of .holding-tagline, synced to an invisible in-flow slot's
+ *    on-screen rect — see syncCultureOverlay below.
  */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 
@@ -28,7 +30,7 @@ const TAGLINE_ROTATE_MS = 3000;
 const TAGLINE_ROTATE_EXIT_MS = 1000;
 
 const CULTURE_TEXT_SELECTOR =
-  '.holding-tagline__culture-word, .holding-tagline__culture-img-wrap, .holding-tagline__culture-amp';
+  '.holding-tagline__culture-word, .holding-tagline__culture-amp';
 
 function isCultureTaglineLine(line) {
   return line instanceof HTMLElement && line.querySelector('.holding-tagline__culture') != null;
@@ -64,7 +66,7 @@ function wrapTaglineLines(container) {
   return lines;
 }
 
-function playTaglineLineReveals(container) {
+function playTaglineLineReveals(container, cultureOverlay) {
   if (!(container instanceof HTMLElement)) return;
 
   container.querySelectorAll('.holding-tagline__line').forEach((line) => {
@@ -72,11 +74,34 @@ function playTaglineLineReveals(container) {
 
     if (isCultureTaglineLine(line)) {
       line.querySelectorAll(CULTURE_TEXT_SELECTOR).forEach(playLineRevealTarget);
+      cultureOverlay?.classList.add('is-visible');
       return;
     }
 
     playLineRevealTarget(line);
   });
+}
+
+/**
+ * Keeps the real, visible overlay image positioned exactly over the
+ * invisible in-flow slot inside the tagline text. Unlike the /about-3
+ * hero (continuously synced via rAF against scroll-driven movement), this
+ * page never scrolls and the slot only moves on resize/reflow, so a
+ * one-shot sync plus a debounced resize listener is enough.
+ */
+function syncCultureOverlay(taglineText, overlay) {
+  if (!(taglineText instanceof HTMLElement) || !(overlay instanceof HTMLElement)) return;
+
+  const slot = taglineText.querySelector('.holding-tagline__culture-img-wrap');
+  if (!(slot instanceof HTMLElement)) return;
+
+  const rect = slot.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return;
+
+  overlay.style.top = `${rect.top}px`;
+  overlay.style.left = `${rect.left}px`;
+  overlay.style.width = `${rect.width}px`;
+  overlay.style.height = `${rect.height}px`;
 }
 
 function initTaglineRotate(root) {
@@ -132,14 +157,15 @@ function revealWordmark(wordmark) {
   });
 }
 
-function revealTagline(tagline, taglineText) {
+function revealTagline(tagline, taglineText, cultureOverlay) {
   if (!(taglineText instanceof HTMLElement)) return () => {};
   taglineText.style.opacity = '1';
 
   const lines = wrapTaglineLines(taglineText);
+  syncCultureOverlay(taglineText, cultureOverlay);
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      playTaglineLineReveals(taglineText);
+      playTaglineLineReveals(taglineText, cultureOverlay);
     });
   });
 
@@ -170,9 +196,17 @@ export function initHoldingEntry() {
   const wordmark = document.querySelector('[data-holding-wordmark]');
   const tagline = document.querySelector('[data-holding-tagline]');
   const taglineText = document.querySelector('[data-holding-tagline-text]');
+  const cultureOverlay = document.querySelector('[data-holding-tagline-img-overlay]');
   const signoff = document.querySelector('[data-holding-signoff]');
   const buttons = Array.from(document.querySelectorAll('[data-holding-button]'));
   const photo = document.querySelector('[data-holding-image]');
+
+  let resizeTimer;
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => syncCultureOverlay(taglineText, cultureOverlay), 150);
+  };
+  window.addEventListener('resize', onResize);
 
   // Dev-only diagnostic: this page gates hover styles behind
   // `(hover: hover) and (pointer: fine)` and no-ops the whole entry
@@ -193,11 +227,17 @@ export function initHoldingEntry() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (reduced) {
-    // Nothing to do: the hidden starting states in holding-page.css only
-    // apply under prefers-reduced-motion:no-preference, so every element
-    // is already visible in its resting position, and the rotating word
-    // stays on its first, static value.
-    return () => {};
+    // Everything else is already visible in its resting position (the
+    // hidden starting states in holding-page.css only apply under
+    // no-preference) and the rotating word stays on its first, static
+    // value — but the culture overlay's position is set by JS, not CSS,
+    // so it still needs a one-shot sync + reveal even with no animation.
+    const fontsReady = document.fonts?.ready ?? Promise.resolve();
+    fontsReady.then(() => {
+      syncCultureOverlay(taglineText, cultureOverlay);
+      cultureOverlay?.classList.add('is-visible');
+    });
+    return () => window.removeEventListener('resize', onResize);
   }
 
   let cleanupRotate = () => {};
@@ -211,7 +251,7 @@ export function initHoldingEntry() {
     setTimeout(() => revealWordmark(wordmark), HOLDING_WORDMARK_AT);
 
     setTimeout(() => {
-      cleanupRotate = revealTagline(tagline, taglineText);
+      cleanupRotate = revealTagline(tagline, taglineText, cultureOverlay);
     }, HOLDING_TAGLINE_AT);
 
     buttons.forEach((btn, i) => {
@@ -229,5 +269,6 @@ export function initHoldingEntry() {
 
   return () => {
     cleanupRotate();
+    window.removeEventListener('resize', onResize);
   };
 }

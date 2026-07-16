@@ -44,15 +44,18 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
             <div class="holding-tagline__line holding-tagline__line--indent">
               <div class="holding-tagline__culture">
                 <span class="holding-tagline__culture-word">CULTURE</span>
-                <span class="holding-tagline__culture-img-wrap" aria-hidden="true">
-                  <!-- PENDING SIGN-OFF: placeholder inline image -->
-                  <img
-                    class="holding-tagline__culture-img"
-                    src={taglineImage}
-                    alt=""
-                    decoding="async"
-                  />
-                </span>
+                <!-- Invisible layout slot only — reserves the exact
+                     inline space the image needs so "CULTURE"/"&" wrap
+                     correctly, but never paints anything. A real <img>
+                     living inside .holding-tagline (the mix-blend-mode:
+                     difference root) gets differenced as part of that
+                     whole subtree regardless of its own blend-mode —
+                     mix-blend-mode:normal on a descendant does not
+                     opt it out (see the identical note on the /about-3
+                     hero's tagline, about-hero.css). The real, visible
+                     image is the fixed overlay below, a SIBLING of
+                     .holding-tagline entirely outside the blend subtree. -->
+                <span class="holding-tagline__culture-img-wrap" aria-hidden="true"></span>
                 <span class="holding-tagline__culture-amp">&amp;</span>
               </div>
             </div>
@@ -68,6 +71,16 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
             </p>
           </div>
         </div>
+        <!-- PENDING SIGN-OFF: placeholder inline image. Position-synced
+             to the invisible slot above by holding-entry.js. -->
+        <img
+          class="holding-tagline__culture-overlay"
+          data-holding-tagline-img-overlay
+          src={taglineImage}
+          alt=""
+          decoding="async"
+          aria-hidden="true"
+        />
         <p class="holding-visually-hidden">
           We are a culture &amp; partnerships consultancy.
         </p>

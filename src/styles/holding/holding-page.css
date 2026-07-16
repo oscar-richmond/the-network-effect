@@ -159,32 +159,53 @@
 	vertical-align: middle;
 }
 
+/* Always-invisible layout slot only — reserves the inline space the
+   image needs so "CULTURE"/"&" wrap correctly, paints nothing itself.
+   See the note in holding.astro: a descendant mix-blend-mode:normal does
+   not opt an element out of an ancestor's mix-blend-mode:difference, so
+   the real image can't live here — it's the fixed sibling overlay below,
+   position-synced to this slot's on-screen rect by holding-entry.js. */
 .holding-tagline__culture-img-wrap {
 	display: block;
 	flex-shrink: 0;
 	margin-inline: 0.2em;
 	width: 1.8em;
 	height: 0.82em;
-	overflow: hidden;
+	visibility: hidden;
 }
 
-.holding-tagline__culture-img {
-	display: block;
-	width: 100%;
-	height: 100%;
+/* The real, visible image — a SIBLING of .holding-tagline (not a
+   descendant), so it is never inside a mix-blend-mode:difference subtree
+   and always renders at true colour, exactly like the /about-3 hero's
+   video overlay (about-hero.css) for the identical reason. */
+.holding-tagline__culture-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
 	object-fit: cover;
+	display: block;
+	pointer-events: none;
+	z-index: 5;
 	mix-blend-mode: normal;
+	transition: opacity 1s ease;
 }
 
-/* The "CULTURE & [image]" line wraps the word/amp/image individually
-   (not the whole line) so all three reveal in sync — line-reveal.js's
-   generic wrap treats the <img> as a single "word", nesting it inside its
-   own lr-clip > lr-inner; these need an explicit 100% so the image's own
-   width/height:100% has something concrete to resolve against. */
-.holding-tagline__culture-img-wrap .lr-clip,
-.holding-tagline__culture-img-wrap .lr-inner {
-	width: 100%;
-	height: 100%;
+/* Hidden-until-revealed only applies under no-preference, same as every
+   other entry-choreography starting state (see the big note further
+   down) — under `reduce`, initHoldingEntry still runs a one-shot
+   position sync (no animation, no timeline) so the image is positioned
+   correctly and visible immediately rather than stuck at the CSS
+   default 0x0 box. */
+@media (prefers-reduced-motion: no-preference) {
+	.holding-tagline__culture-overlay {
+		opacity: 0;
+	}
+}
+
+.holding-tagline__culture-overlay.is-visible {
+	opacity: 1;
 }
 
 .holding-tagline__rotate {
