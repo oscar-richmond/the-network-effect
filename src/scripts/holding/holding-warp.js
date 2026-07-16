@@ -57,6 +57,10 @@ const COLUMN_WIDTH_FRACTION = 0.41;
 /** Inter-image gap, fixed px (Oscar's spec — was /holding's 0.14 x
  * height ~ 47px at desktop, then 32). */
 const GAP_PX = 24;
+/** Extra height on top of the native-ratio height (Oscar's spec).
+ * NOTE: departs from the pure-native ratio — the cover-crop trims
+ * ~10.6% of the source width (5.3% per side) at desktop as a result. */
+const HEIGHT_EXTRA_PX = 40;
 /** Strip-safety cap on item height (short wide regions). */
 const ITEM_MAX_HEIGHT_FRACTION = 0.5;
 /** Fallback ratio before natural dims are known — the HP Carousel set. */
@@ -385,7 +389,7 @@ export function createHoldingWarp(region, imageUrls) {
     let offset = 0;
     maxSlotPx = 1;
     states.forEach((state) => {
-      const h = Math.min(widthPx / state.aspect, maxH);
+      const h = Math.min(widthPx / state.aspect + HEIGHT_EXTRA_PX, maxH);
       state.heightPx = h;
       state.offsetPx = offset;
       const slot = h + GAP_PX;

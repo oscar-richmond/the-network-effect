@@ -109,7 +109,9 @@
 .holding-warp__slide {
 	flex: none;
 	width: 41%;
-	aspect-ratio: 480 / 550;
+	/* Static approximation of the module's native-height + 40px sizing
+	   at desktop scale (295x378 — see holding-warp.js HEIGHT_EXTRA_PX). */
+	aspect-ratio: 480 / 615;
 	overflow: hidden;
 }
 
