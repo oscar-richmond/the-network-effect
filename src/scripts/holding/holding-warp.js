@@ -53,16 +53,21 @@ gsap.registerPlugin(CustomEase);
  */
 
 /** Uniform column width — /holding's card fraction, for a fair A/B. */
-const COLUMN_WIDTH_FRACTION = 0.41;
+/* 1.5x scale-up per Oscar (was 0.41 / +40px / 0.5 cap — the whole image
+ * box scales uniformly: width fraction and the height-extra both x1.5,
+ * so the display ratio and its ~10.6% side crop are unchanged). The
+ * height cap rises to admit the new desktop height (567px at a 1000px
+ * region); the band/strip still cap by height as approved. */
+const COLUMN_WIDTH_FRACTION = 0.615;
 /** Inter-image gap, fixed px (Oscar's spec — was /holding's 0.14 x
  * height ~ 47px at desktop, then 32). */
 const GAP_PX = 24;
 /** Extra height on top of the native-ratio height (Oscar's spec).
  * NOTE: departs from the pure-native ratio — the cover-crop trims
  * ~10.6% of the source width (5.3% per side) at desktop as a result. */
-const HEIGHT_EXTRA_PX = 40;
+const HEIGHT_EXTRA_PX = 60;
 /** Strip-safety cap on item height (short wide regions). */
-const ITEM_MAX_HEIGHT_FRACTION = 0.5;
+const ITEM_MAX_HEIGHT_FRACTION = 0.62;
 /** Fallback ratio before natural dims are known — the HP Carousel set. */
 const DEFAULT_ASPECT = 480 / 550;
 
