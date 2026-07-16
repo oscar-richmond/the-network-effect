@@ -26,8 +26,6 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
 ---
 
 <HoldingLayout title="The Network Effect" bodyClass="holding-page">
-  <div class="holding-page__topbar" aria-hidden="true"></div>
-
   <div class="holding-page__stage">
     <div class="holding-page__column">
       <div class="holding-wordmark" data-holding-wordmark aria-hidden="true">
@@ -35,59 +33,65 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
       </div>
       <h1 class="holding-visually-hidden">The Network Effect</h1>
 
-      <div class="holding-tagline" data-holding-tagline aria-hidden="true">
-        <div class="holding-tagline__text" data-holding-tagline-text>
-          <p class="holding-tagline__line holding-tagline__line--left">WE ARE A</p>
-          <div class="holding-tagline__line holding-tagline__line--indent">
-            <div class="holding-tagline__culture">
-              <span class="holding-tagline__culture-word">CULTURE</span>
-              <span class="holding-tagline__culture-img-wrap" aria-hidden="true">
-                <!-- PENDING SIGN-OFF: placeholder inline image -->
-                <img
-                  class="holding-tagline__culture-img"
-                  src={taglineImage}
-                  alt=""
-                  decoding="async"
-                />
-              </span>
-              <span class="holding-tagline__culture-amp">&amp;</span>
+      <!-- Buttons are anchored to the tagline block's bottom edge (48px
+           gap, matching the Figma's tagline-ends-y633/buttons-y681 read)
+           via normal flow + margin, not page coordinates — the
+           relationship survives the tagline resizing. -->
+      <div class="holding-page__hero">
+        <div class="holding-tagline" data-holding-tagline aria-hidden="true">
+          <div class="holding-tagline__text" data-holding-tagline-text>
+            <p class="holding-tagline__line holding-tagline__line--left">WE ARE A</p>
+            <div class="holding-tagline__line holding-tagline__line--indent">
+              <div class="holding-tagline__culture">
+                <span class="holding-tagline__culture-word">CULTURE</span>
+                <span class="holding-tagline__culture-img-wrap" aria-hidden="true">
+                  <!-- PENDING SIGN-OFF: placeholder inline image -->
+                  <img
+                    class="holding-tagline__culture-img"
+                    src={taglineImage}
+                    alt=""
+                    decoding="async"
+                  />
+                </span>
+                <span class="holding-tagline__culture-amp">&amp;</span>
+              </div>
             </div>
+            <p class="holding-tagline__line holding-tagline__line--left">PARTNERSHIPS</p>
+            <p class="holding-tagline__line holding-tagline__line--indent">
+              <span
+                class="holding-tagline__rotate"
+                data-holding-tagline-rotate
+                aria-live="polite"
+              >
+                <span class="holding-tagline__rotate-inner">{TAGLINE_ROTATE_WORDS[0]}</span>
+              </span>
+            </p>
           </div>
-          <p class="holding-tagline__line holding-tagline__line--left">PARTNERSHIPS</p>
-          <p class="holding-tagline__line holding-tagline__line--indent">
-            <span
-              class="holding-tagline__rotate"
-              data-holding-tagline-rotate
-              aria-live="polite"
-            >
-              <span class="holding-tagline__rotate-inner">{TAGLINE_ROTATE_WORDS[0]}</span>
-            </span>
-          </p>
         </div>
-      </div>
-      <p class="holding-visually-hidden">
-        We are a culture &amp; partnerships consultancy.
-      </p>
+        <p class="holding-visually-hidden">
+          We are a culture &amp; partnerships consultancy.
+        </p>
 
-      <div class="holding-buttons">
-        <a
-          class="holding-btn holding-btn--solid"
-          data-holding-button
-          href={deckPdfHref}
-          target="_blank"
-          rel="noopener"
-        >
-          View company deck
-        </a>
-        <a
-          class="holding-btn holding-btn--outline"
-          data-holding-button
-          href={contactMailto}
-          target="_blank"
-          rel="noopener"
-        >
-          Contact
-        </a>
+        <div class="holding-buttons">
+          <a
+            class="holding-btn holding-btn--solid"
+            data-holding-button
+            href={deckPdfHref}
+            target="_blank"
+            rel="noopener"
+          >
+            View company deck
+          </a>
+          <a
+            class="holding-btn holding-btn--outline"
+            data-holding-button
+            href={contactMailto}
+            target="_blank"
+            rel="noopener"
+          >
+            Contact
+          </a>
+        </div>
       </div>
 
       <p class="holding-signoff" data-holding-signoff>

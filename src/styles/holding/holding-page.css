@@ -26,21 +26,10 @@
 	overflow: hidden;
 }
 
-.holding-page__topbar {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 40px;
-	background: #161616;
-	z-index: 10;
-}
-
 .holding-page__stage {
 	display: grid;
 	grid-template-columns: 1fr 41.6667%;
 	min-height: 100dvh;
-	padding-top: 40px;
 }
 
 .holding-page__photo {
@@ -63,7 +52,7 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: clamp(32px, 6vh, 64px) 24px;
-	min-height: calc(100dvh - 40px);
+	min-height: 100dvh;
 }
 
 .holding-wordmark {
@@ -74,7 +63,19 @@
 	letter-spacing: 0.42px;
 	color: #ffffff;
 	mix-blend-mode: difference;
-	align-self: flex-start;
+	/* Spec change from the Figma's left-aligned wordmark — centered in
+	   the column, deliberate (see Oscar's real-browser review notes). */
+	align-self: center;
+}
+
+/* Tagline + buttons anchored together: the button row's position is
+   derived from the tagline's own bottom edge (48px margin, matching the
+   Figma's tagline-ends-y633/buttons-y681 read) via normal flow, not
+   page coordinates — the relationship survives the tagline resizing. */
+.holding-page__hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .holding-visually-hidden {
@@ -113,7 +114,10 @@
 	align-items: flex-start;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-size: clamp(22px, 2.1vw, 36px);
+	/* Re-measured live against the Figma vector (433px-wide 4-line block
+	   at 1728): widest line ("PARTNERSHIPS") targeted to ~433px at 1728,
+	   not just "roughly 2x" the original undersized guess. */
+	font-size: clamp(34px, 3.3vw, 56px);
 	font-weight: 600;
 	line-height: 1;
 	letter-spacing: -0.02em;
@@ -224,6 +228,7 @@
 .holding-buttons {
 	display: flex;
 	gap: 12px;
+	margin-top: 48px;
 }
 
 .holding-btn {
@@ -419,11 +424,11 @@
 	}
 
 	.holding-tagline__text {
-		font-size: clamp(20px, 4vw, 30px);
+		font-size: clamp(28px, 6.2vw, 44px);
 	}
 
-	.holding-wordmark {
-		align-self: center;
+	.holding-buttons {
+		margin-top: 32px;
 	}
 }
 
@@ -438,13 +443,14 @@
 	}
 
 	.holding-tagline__text {
-		font-size: clamp(18px, 6vw, 26px);
+		font-size: clamp(22px, 7vw, 31px);
 	}
 
 	.holding-buttons {
 		flex-direction: column;
 		width: 100%;
 		gap: 10px;
+		margin-top: 28px;
 	}
 
 	.holding-btn--solid,

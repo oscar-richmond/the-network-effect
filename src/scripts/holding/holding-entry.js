@@ -174,6 +174,22 @@ export function initHoldingEntry() {
   const buttons = Array.from(document.querySelectorAll('[data-holding-button]'));
   const photo = document.querySelector('[data-holding-image]');
 
+  // Dev-only diagnostic: this page gates hover styles behind
+  // `(hover: hover) and (pointer: fine)` and no-ops the whole entry
+  // sequence under `prefers-reduced-motion: reduce` — both correct,
+  // intentional behavior (see holding-page.css). Some machines/browsers
+  // misreport these queries even on unrelated sites, which looks like a
+  // missing feature but isn't one. Logging the raw results lets a tester
+  // tell environment suppression apart from a real bug at a glance.
+  if (import.meta.env.DEV) {
+    console.info(
+      '[holding-entry] media queries — hover:hover=%s pointer:fine=%s prefers-reduced-motion:reduce=%s',
+      window.matchMedia('(hover: hover)').matches,
+      window.matchMedia('(pointer: fine)').matches,
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    );
+  }
+
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (reduced) {
@@ -188,6 +204,10 @@ export function initHoldingEntry() {
 
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
+    if (import.meta.env.DEV) {
+      console.info('[holding-entry] fonts ready — entry sequence starting');
+    }
+
     setTimeout(() => revealWordmark(wordmark), HOLDING_WORDMARK_AT);
 
     setTimeout(() => {
