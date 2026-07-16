@@ -305,10 +305,15 @@ export function initHoldingEntry() {
   const taglineImages = getTaglineImages(cultureOverlay);
   preloadTaglineImages(taglineImages);
 
-  let resizeTimer;
+  // SYNCHRONOUS on every resize tick — the old 150ms debounce left the
+  // fixed-position overlay at stale coordinates while the text reflowed
+  // instantly (the reported lag-then-snap desync). The remeasure is one
+  // getBoundingClientRect + four style writes: cheap enough to run per
+  // event, with a rAF follow-up to catch post-reflow adjustments
+  // (scrollbars, late font metrics).
   const onResize = () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => syncCultureOverlay(taglineText, cultureOverlay), 150);
+    syncCultureOverlay(taglineText, cultureOverlay);
+    requestAnimationFrame(() => syncCultureOverlay(taglineText, cultureOverlay));
   };
   window.addEventListener('resize', onResize);
 

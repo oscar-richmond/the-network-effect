@@ -412,22 +412,27 @@ export function createHoldingWarp(region, imageUrls) {
     loopPx = offset; // the full column height — the recycling modulo
   };
 
-  /** Mixed-height wrap: virtual y is region-centre-origin, positive up;
-   * per-item base = -prefix-sum offset; INTEGER wraps x the CURRENT
-   * loop (resize-safe, the fold gallery's invariant). Band margin from
-   * the largest slot. */
-  const placeSlides = (travelPx, dirSign) => {
-    const band = regionSize.height / 2 + maxSlotPx / 2;
+  /** Mixed-height wrap — STATELESS closed-form fold (the resize-bug
+   * fix): each frame, every slide's raw position (-prefix-sum offset +
+   * travel) folds into the canonical window (T - loop, T], where T sits
+   * one max-slot above the band top. No accumulated wrap counts: the
+   * old integer-wraps + direction-gated +/-1-per-frame correction went
+   * stale whenever resize re-derived the loop (a real drag re-derives
+   * it dozens of times a second), ratcheting slides out of coherence —
+   * below-band strands could only drift back in at 24px/s, the
+   * reported "gallery disappears, then comes up from the bottom
+   * seconds later". Derived-every-frame position has nothing to go
+   * stale: any loop change lands instantly on a coherent strip flowing
+   * through the band, both travel directions, no teardown, no texture
+   * churn. */
+  const placeSlides = (travelPx) => {
+    const windowTop = regionSize.height / 2 + maxSlotPx / 2;
     states.forEach((state) => {
       const half = state.heightPx / 2;
-      let y = -state.offsetPx + travelPx + state.wraps * loopPx;
-      if (dirSign > 0 && y - half > band) {
-        state.wraps -= 1;
-        y = -state.offsetPx + travelPx + state.wraps * loopPx;
-      } else if (dirSign < 0 && y + half < -band) {
-        state.wraps += 1;
-        y = -state.offsetPx + travelPx + state.wraps * loopPx;
-      }
+      const raw = -state.offsetPx + travelPx;
+      const k = Math.ceil((raw - windowTop) / loopPx);
+      const y = raw - k * loopPx;
+      state.wraps = -k; // kept for the debug surface
       state.y = y;
       const top = regionSize.height / 2 - y - half;
       state.slideEl.style.transform = `translate3d(-50%, ${top}px, 0)`;
@@ -488,8 +493,8 @@ export function createHoldingWarp(region, imageUrls) {
     });
   };
 
-  const onFrame = (travelPx, dirSign) => {
-    placeSlides(travelPx, dirSign);
+  const onFrame = (travelPx) => {
+    placeSlides(travelPx);
     const v = driver.state().velocity;
     const sign = v < 0 ? -1 : 1;
     const vPf = Math.abs(v) * PX_S_TO_PX_FRAME;
@@ -502,9 +507,13 @@ export function createHoldingWarp(region, imageUrls) {
 
   const driver = createDriftDriver(region, { onFrame });
 
+  // Resize re-derives geometry on the live instance and repaints
+  // synchronously — the stateless fold in placeSlides makes any new
+  // loop/slot land instantly on a coherent strip (derive-don't-rebuild;
+  // see placeSlides' note for the bug this replaced).
   const onResize = () => {
     layout();
-    placeSlides(driver.state().travelPx, 1);
+    placeSlides(driver.state().travelPx);
     syncPlanes();
   };
   window.addEventListener('resize', onResize);
@@ -513,7 +522,7 @@ export function createHoldingWarp(region, imageUrls) {
   region.appendChild(canvas);
   // Position immediately — the occluded-tab environment has no rAF, and
   // the static CSS stack must hand over without a first-frame jump.
-  placeSlides(0, 1);
+  placeSlides(0);
 
   return {
     ready: Promise.all(states.map((s) => s.readyPromise)).then(() => {}),

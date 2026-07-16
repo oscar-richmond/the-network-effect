@@ -252,10 +252,9 @@ class GalleryPlane {
 
   /**
    * @param {number} travelVp travel in viewport units (positive = strip moves up)
-   * @param {number} dirSign sign of this frame's travel delta
    * @param {number} viewportH region viewport height
    */
-  update(travelVp, dirSign, viewportH) {
+  update(travelVp, viewportH) {
     if (!this.ready || !this.layoutVp) {
       this.mesh.visible = false;
       return;
@@ -263,19 +262,17 @@ class GalleryPlane {
     const { slot, loop } = this.layoutVp;
     const half = this.mesh.scale.y / 2;
 
-    let y = this.baseY + travelVp + this.wraps * loop;
-
-    // Infinite wrap — the reference's modulo, gated by this frame's
-    // actual travel direction so a mid-frame reversal can't mis-wrap.
-    const above = y - half > viewportH / 2 + slot / 2;
-    const below = y + half < -viewportH / 2 - slot / 2;
-    if (dirSign > 0 && above) {
-      this.wraps -= 1;
-      y = this.baseY + travelVp + this.wraps * loop;
-    } else if (dirSign < 0 && below) {
-      this.wraps += 1;
-      y = this.baseY + travelVp + this.wraps * loop;
-    }
+    // Infinite wrap — STATELESS closed-form fold (the resize-bug fix,
+    // mirrored in holding-warp.js: see its placeSlides note): the raw
+    // strip position folds into the canonical window (T - loop, T]
+    // every frame, T one slot above the band top. No accumulated wrap
+    // counts to go stale when resize re-derives the loop; both travel
+    // directions handled with no direction gate.
+    const windowTop = viewportH / 2 + slot / 2;
+    const raw = this.baseY + travelVp;
+    const k = Math.ceil((raw - windowTop) / loop);
+    const y = raw - k * loop;
+    this.wraps = -k; // kept for the debug surface
 
     this.mesh.visible = true;
     this.mesh.position.y = y;
@@ -379,14 +376,22 @@ export function createHoldingGallery(region, imageUrls) {
   // — extracted verbatim-semantics so /holding-2's stack rides the same
   // approved motion). This module renders in the driver's onFrame.
   let disposed = false;
-  const render = (travelPx, dirSign) => {
+  const render = (travelPx) => {
     const travelVp = travelPx * pxToVp;
-    planes.forEach((plane) => plane.update(travelVp, dirSign, viewport.height));
+    planes.forEach((plane) => plane.update(travelVp, viewport.height));
     renderer.render({ scene, camera });
   };
   const driver = createDriftDriver(region, { onFrame: render });
 
-  const onResize = () => resize();
+  // Resize re-derives geometry on the live instance and repaints
+  // synchronously (renderer.setSize clears the canvas — the immediate
+  // render means a resize drag never shows a blank frame). The
+  // stateless fold in GalleryPlane.update makes any new loop land
+  // instantly on a coherent strip: derive-don't-rebuild.
+  const onResize = () => {
+    resize();
+    render(driver.state().travelPx);
+  };
   window.addEventListener('resize', onResize);
 
   resize();
@@ -408,7 +413,7 @@ export function createHoldingGallery(region, imageUrls) {
     // (transitionend, with an opacity-checking fallback poll) — a plain
     // timer would fire in a background tab while the frozen transition
     // holds the canvas transparent, leaving a blank region on tab-show.
-    render(driver.state().travelPx, 1);
+    render(driver.state().travelPx);
     canvas.style.visibility = '';
     canvas.classList.add('is-live');
     canvas.addEventListener('transitionend', hidePoster, { once: true });
