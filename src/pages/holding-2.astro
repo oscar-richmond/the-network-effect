@@ -13,16 +13,16 @@
  */
 import HoldingLayout from '../layouts/HoldingLayout.astro';
 import HoldingPage from '../components/holding/HoldingPage.astro';
-import { galleryImages } from '../data/holding/images.js';
+import { warpGalleryImages } from '../data/holding/images.js';
 ---
 
 <HoldingLayout title="The Network Effect" bodyClass="holding-page">
-  <HoldingPage>
+  <HoldingPage galleryImages={warpGalleryImages}>
     <!-- PENDING SIGN-OFF: placeholder gallery imagery (the shared HP
          Carousel set — same content as /holding, different treatment,
          per the A/B's design). -->
     <div class="holding-warp" slot="gallery" aria-hidden="true">
-      {galleryImages.map((src) => (
+      {warpGalleryImages.map((src) => (
         <div class="holding-warp__slide" data-holding-warp-slide>
           <img src={src} alt="" decoding="async" />
         </div>

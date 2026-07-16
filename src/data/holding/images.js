@@ -7,17 +7,32 @@ import { asset } from '../../utils/asset.js';
  * not imagery. PENDING SIGN-OFF as ever.
  */
 
-/** Oscar's "HP Carousel 1-5" originals (~/Desktop, 480x550 portrait
- * crops), recompressed at native size, mozjpeg q78, 173KB total.
- * galleryImages[0] doubles as /holding's static poster (first paint,
- * reduced motion, no-WebGL); on /holding-2 the server-rendered slide
- * stack itself is the static fallback. */
+/** /holding's fold-gallery set — Oscar's "HP Carousel 1-5" originals
+ * (~/Desktop, 480x550 portrait crops), recompressed at native size,
+ * mozjpeg q78, 173KB total. galleryImages[0] doubles as /holding's
+ * static poster (first paint, reduced motion, no-WebGL). */
 export const galleryImages = [
   asset('/assets/holding/gallery/01-armchairs-overhead.jpg'),
   asset('/assets/holding/gallery/02-glass-touch.jpg'),
   asset('/assets/holding/gallery/03-staircase.jpg'),
   asset('/assets/holding/gallery/04-portrait.jpg'),
   asset('/assets/holding/gallery/05-panelled-lounge.jpg'),
+];
+
+/** /holding-2's warp-column set — Oscar's "HPG Image 1-7" (~/Desktop
+ * 'HP Carousel' folder, refreshed 2026-07-16; the task's "HP Gallery"),
+ * all 800x534 landscape (uniform — no height variation in this set
+ * either), recompressed at native size (~2x the 405px display width),
+ * mozjpeg q78, 423KB total. The two sets deliberately FORK here: the
+ * fold set above stays referenced by /holding. */
+export const warpGalleryImages = [
+  asset('/assets/holding/warp/01-seated-portrait.jpg'),
+  asset('/assets/holding/warp/02-panelled-lounge.jpg'),
+  asset('/assets/holding/warp/03-portrait.jpg'),
+  asset('/assets/holding/warp/04-glass-touch.jpg'),
+  asset('/assets/holding/warp/05-armchairs.jpg'),
+  asset('/assets/holding/warp/06-close-portrait.jpg'),
+  asset('/assets/holding/warp/07-staircase.jpg'),
 ];
 
 /** The tagline's inline 5-image rotation, in display order (Oscar's

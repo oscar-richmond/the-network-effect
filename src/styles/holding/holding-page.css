@@ -114,12 +114,11 @@
 
 .holding-warp__slide {
 	flex: none;
-	/* Static approximation of the module's sizing at desktop scale
-	   (1.5x scale-up per Oscar: 443x567 — see holding-warp.js
-	   COLUMN_WIDTH_FRACTION/HEIGHT_EXTRA_PX). The display ratio is
-	   unchanged by the uniform scale, so the aspect stays 480/615. */
-	width: 61.5%;
-	aspect-ratio: 480 / 615;
+	/* Static mirror of the module's sizing: fixed 405px column at the
+	   HPG set's native landscape ratio (800x534), region-capped — see
+	   holding-warp.js COLUMN_WIDTH_PX. */
+	width: min(405px, 80%);
+	aspect-ratio: 800 / 534;
 	overflow: hidden;
 }
 

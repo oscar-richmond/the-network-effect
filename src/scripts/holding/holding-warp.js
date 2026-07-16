@@ -52,24 +52,20 @@ gsap.registerPlugin(CustomEase);
  * in with no code change (reported).
  */
 
-/** Uniform column width — /holding's card fraction, for a fair A/B. */
-/* 1.5x scale-up per Oscar (was 0.41 / +40px / 0.5 cap — the whole image
- * box scales uniformly: width fraction and the height-extra both x1.5,
- * so the display ratio and its ~10.6% side crop are unchanged). The
- * height cap rises to admit the new desktop height (567px at a 1000px
- * region); the band/strip still cap by height as approved. */
-const COLUMN_WIDTH_FRACTION = 0.615;
+/** Fixed column width, CSS px (Oscar's HPG-set spec — supersedes the
+ * region-fraction sizing AND the +height forced crop: every image
+ * renders at exactly this width at its NATIVE aspect ratio, no forced
+ * ratio, zero crop). Capped to a region fraction below so the tablet
+ * band / phone strip never overflow. */
+const COLUMN_WIDTH_PX = 405;
+const COLUMN_MAX_WIDTH_FRACTION = 0.8;
 /** Inter-image gap, fixed px (Oscar's spec — was /holding's 0.14 x
  * height ~ 47px at desktop, then 32). */
 const GAP_PX = 24;
-/** Extra height on top of the native-ratio height (Oscar's spec).
- * NOTE: departs from the pure-native ratio — the cover-crop trims
- * ~10.6% of the source width (5.3% per side) at desktop as a result. */
-const HEIGHT_EXTRA_PX = 60;
 /** Strip-safety cap on item height (short wide regions). */
 const ITEM_MAX_HEIGHT_FRACTION = 0.62;
-/** Fallback ratio before natural dims are known — the HP Carousel set. */
-const DEFAULT_ASPECT = 480 / 550;
+/** Fallback ratio before natural dims are known — the HPG set. */
+const DEFAULT_ASPECT = 800 / 534;
 
 /** Feed shaping (see module header). Full scale anchors to the vertex
  * shader's own clamp (5 px/frame). */
@@ -383,6 +379,7 @@ export function createHoldingWarp(region, imageUrls) {
   let viewport = { width: 1, height: 1 };
   let loopPx = 1;
   let maxSlotPx = 1;
+  let columnWidthPx = COLUMN_WIDTH_PX;
 
   const layout = () => {
     const rect = region.getBoundingClientRect();
@@ -393,12 +390,14 @@ export function createHoldingWarp(region, imageUrls) {
     const vh = 2 * Math.tan(fov / 2) * camera.position.z;
     viewport = { width: vh * camera.aspect, height: vh };
 
-    const widthPx = regionSize.width * COLUMN_WIDTH_FRACTION;
+    columnWidthPx = Math.min(COLUMN_WIDTH_PX, regionSize.width * COLUMN_MAX_WIDTH_FRACTION);
     const maxH = regionSize.height * ITEM_MAX_HEIGHT_FRACTION;
     let offset = 0;
     maxSlotPx = 1;
     states.forEach((state) => {
-      const h = Math.min(widthPx / state.aspect + HEIGHT_EXTRA_PX, maxH);
+      // Native ratio at the fixed column width — no forced ratio, zero
+      // crop (the strip-safety height cap only bites on short regions).
+      const h = Math.min(columnWidthPx / state.aspect, maxH);
       state.heightPx = h;
       state.offsetPx = offset;
       const slot = h + GAP_PX;
@@ -407,7 +406,7 @@ export function createHoldingWarp(region, imageUrls) {
       state.slideEl.style.position = 'absolute';
       state.slideEl.style.left = '50%';
       state.slideEl.style.top = '0';
-      state.slideEl.style.width = `${widthPx}px`;
+      state.slideEl.style.width = `${columnWidthPx}px`;
       state.slideEl.style.height = `${h}px`;
     });
     loopPx = offset; // the full column height — the recycling modulo
@@ -453,12 +452,11 @@ export function createHoldingWarp(region, imageUrls) {
       }
       state.mesh.visible = true;
 
-      const widthPx = regionSize.width * COLUMN_WIDTH_FRACTION;
       state.mesh.position.x = 0;
       state.mesh.position.y = (state.y / regionSize.height) * viewport.height;
-      state.mesh.scale.x = (widthPx / regionSize.width) * viewport.width;
+      state.mesh.scale.x = (columnWidthPx / regionSize.width) * viewport.width;
       state.mesh.scale.y = (state.heightPx / regionSize.height) * viewport.height;
-      state.program.uniforms.uQuadSize.value = [widthPx, state.heightPx];
+      state.program.uniforms.uQuadSize.value = [columnWidthPx, state.heightPx];
 
       // wave-shader's viewport-entry ramp, against the region: the bow
       // only grows once the image genuinely overlaps the region.

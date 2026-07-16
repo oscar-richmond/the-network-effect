@@ -16,8 +16,18 @@
  * as the Figma reads; flagging the wording difference for sign-off.
  */
 import { asset } from '../../utils/asset.js';
-import { galleryImages, taglineImages } from '../../data/holding/images.js';
+import { galleryImages as foldGalleryImages, taglineImages } from '../../data/holding/images.js';
 import '../../styles/holding/holding-page.css';
+
+interface Props {
+  /** The gallery region's image set (data attribute + default-slot
+   * poster). Defaults to /holding's fold set; /holding-2 passes its own
+   * warp set — the two pages' imagery forked when the warp column got
+   * the HPG set. */
+  galleryImages?: string[];
+}
+
+const { galleryImages = foldGalleryImages } = Astro.props;
 
 // TODO(oscar): drop the real company deck PDF at this path — the button
 // will 404 until it's added.
