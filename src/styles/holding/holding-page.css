@@ -79,6 +79,16 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: clamp(32px, 6vh, 64px) 24px;
+	/* Centre the column's content (wordmark, tagline, CTAs, sign-off)
+	   between the LEFT VIEWPORT EDGE and the LEFT EDGE OF THE GALLERY
+	   CARDS — not the column's own box (Oscar's spec). The extra left
+	   padding shifts the flex-centring span so its midpoint lands at
+	   cardLeft/2: 12.2917vw = gallery region (41.6667vw) x its card side
+	   gap fraction ((1 - 0.41) / 2). The symmetric 24px base paddings
+	   cancel out of the midpoint exactly. RETUNE if the grid split or
+	   holding-gallery.js's CARD_WIDTH_FRACTION changes. Desktop only —
+	   the <=1199px media query's padding shorthand resets this. */
+	padding-left: calc(24px + 12.2917vw);
 	min-height: 100dvh;
 }
 
