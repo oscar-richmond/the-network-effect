@@ -221,7 +221,9 @@
 /* Rolling cross-fade — the exact same treatment as the word roll
    (.holding-tagline__rotate-inner below: same durations, same easing,
    same class-toggle mechanics), toggled by the same cycle() in
-   holding-entry.js so image and word can never drift apart. */
+   holding-entry.js so image and word can never drift apart. The two are
+   mutually exclusive (holding-entry.js alternates whose turn it is) —
+   is-exiting is left on the parked one between turns, holding it here. */
 .holding-tagline__culture-overlay.is-exiting {
 	opacity: 0;
 	filter: blur(10px);

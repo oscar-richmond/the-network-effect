@@ -16,11 +16,18 @@
  *    fixed sibling of .holding-tagline, synced to an invisible in-flow slot's
  *    on-screen rect — see syncCultureOverlay below.
  *
- * The inline image is a rotating set of 5, cycling in lockstep with the
- * rolling word on the SAME cycle()/is-exiting/is-entering toggle in
+ * The inline image is a rotating set of 5, cycling on the SAME
+ * cycle()/is-exiting/is-entering timer as the rolling word in
  * initTaglineRotate — one shared timer, so the two can't drift apart. Word
  * list length (4) and image list length (5) are deliberately different, so
  * their pairing rotates cycle to cycle.
+ *
+ * Word and image are mutually exclusive, alternating turns: each roll,
+ * whichever was showing fades out and stays parked (hidden) at its exited
+ * state, while the OTHER one (already parked from its own last turn) fades
+ * in with its next value. The very first roll is a special case — both
+ * start visible from the (unchanged) entry reveal, so it exits both
+ * together before the alternation begins.
  */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 
@@ -134,11 +141,15 @@ function syncCultureOverlay(taglineText, overlay) {
 }
 
 /**
- * Drives both the rolling last word AND the inline image on one shared
- * cycle — a single is-exiting/is-entering toggle applied to each target,
- * same schedule, same durations, so they can never drift apart. The word
- * list (4) and image list (5) are different lengths on purpose: their
- * pairing rotates cycle to cycle rather than repeating a fixed 1:1 map.
+ * Drives the rolling last word AND the inline image on one shared timer —
+ * same is-exiting/is-entering toggle, same schedule, same durations — but
+ * mutually exclusive: only one of the two is ever visible. Each roll,
+ * whichever is currently showing exits and stays parked (is-exiting is
+ * simply left on, holding it at opacity:0/blur) until its next turn, while
+ * the other — already parked from ITS last turn — gets its next value and
+ * enters. The first roll is the one exception: both start visible from the
+ * (unchanged) entry reveal, so it exits both together before the
+ * word/image swap-off begins.
  */
 function initTaglineRotate(root, cultureOverlay, images) {
   const inner = root.querySelector('.holding-tagline__rotate-inner');
@@ -148,6 +159,8 @@ function initTaglineRotate(root, cultureOverlay, images) {
 
   let wordIndex = 0;
   let imageIndex = 0;
+  let imageTurn = false; // whose turn is CURRENTLY active — word goes first, matching the boot state
+  let firstRoll = true;
   let active = true;
   let timeoutId;
 
@@ -159,20 +172,28 @@ function initTaglineRotate(root, cultureOverlay, images) {
   };
 
   const cycle = () => {
-    inner.classList.add('is-exiting');
-    if (hasImages) cultureOverlay.classList.add('is-exiting');
+    if (firstRoll) {
+      inner.classList.add('is-exiting');
+      if (hasImages) cultureOverlay.classList.add('is-exiting');
+    } else {
+      const outgoing = imageTurn && hasImages ? cultureOverlay : inner;
+      outgoing.classList.add('is-exiting');
+    }
 
     schedule(() => {
-      inner.classList.remove('is-exiting');
-      wordIndex = (wordIndex + 1) % TAGLINE_ROTATE_WORDS.length;
-      inner.textContent = TAGLINE_ROTATE_WORDS[wordIndex];
-      inner.classList.add('is-entering');
+      firstRoll = false;
+      imageTurn = hasImages ? !imageTurn : false;
 
-      if (hasImages) {
-        cultureOverlay.classList.remove('is-exiting');
+      if (imageTurn) {
         imageIndex = (imageIndex + 1) % images.length;
         cultureOverlay.src = images[imageIndex];
+        cultureOverlay.classList.remove('is-exiting');
         cultureOverlay.classList.add('is-entering');
+      } else {
+        wordIndex = (wordIndex + 1) % TAGLINE_ROTATE_WORDS.length;
+        inner.textContent = TAGLINE_ROTATE_WORDS[wordIndex];
+        inner.classList.remove('is-exiting');
+        inner.classList.add('is-entering');
       }
 
       requestAnimationFrame(() => {
