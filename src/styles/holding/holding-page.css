@@ -317,12 +317,42 @@
 	margin-top: 48px;
 }
 
+/* ── CTAs — approved upgrade: entry (a) "staggered composition" + hover
+   (a) "fill sweep" (both recommended options).
+
+   ENTRY: the button's chrome (fill + border) wipes in from the left via
+   clip-path on the house curve, then the label line-rises inside its own
+   clip ~120ms behind — the button assembles rather than arrives. Same
+   choreography slots (HOLDING_BUTTONS_AT + stagger in holding-entry.js,
+   untouched — .is-visible still drives it). Hidden starting states are
+   gated to no-preference as ever: under reduced motion the buttons
+   render complete and static instantly.
+
+   HOVER: one shared material gesture, mirrored — a ::before fill sweeps
+   in from the left edge (0.5s, house curve): the outline button floods
+   with the accent as its text goes white; the solid button deepens to
+   the hover navy. Hover-out retracts the sweep back to the left edge
+   (symmetric, never snaps). :active presses one step deeper (works
+   ungated — the touch fallback); :focus-visible triggers the swept
+   state (ungated, keyboard) with the existing outline on top. Hover
+   itself stays behind the house (hover:hover)+(pointer:fine) gate.
+
+   BLEND SAFETY: the buttons live in the left column's plain flow —
+   never ancestors of the wordmark/tagline difference-blend roots. The
+   ::before/clip-path/z-index below are contained INSIDE each button
+   and create nothing new around the blend subtree.
+
+   NO LAYOUT SHIFT: the sweep is an inset overlay and the entry clip
+   doesn't affect geometry — the 47px box, colors, and type are
+   unchanged in every state. */
 .holding-btn {
+	position: relative;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	height: 47px;
 	padding: 0 24px;
+	overflow: hidden;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 600;
 	font-size: 12px;
@@ -332,12 +362,35 @@
 	text-decoration: none;
 	white-space: nowrap;
 	cursor: pointer;
+	/* Label colour trails the sweep front slightly (0.1s delay), both
+	   directions — coupled, not simultaneous. */
 	transition:
-		opacity 1s var(--holding-ease),
-		transform 1s var(--holding-ease),
-		background-color 0.4s var(--holding-ease),
-		border-color 0.4s var(--holding-ease),
-		color 0.4s var(--holding-ease);
+		color 0.4s var(--holding-ease) 0.1s,
+		border-color 0.5s var(--holding-ease);
+}
+
+/* The hover/press sweep layer. */
+.holding-btn::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition:
+		transform 0.5s var(--holding-ease),
+		background-color 0.2s var(--holding-ease);
+}
+
+/* Label above the sweep. */
+.holding-btn__clip {
+	position: relative;
+	z-index: 1;
+	display: block;
+	overflow: hidden;
+}
+
+.holding-btn__inner {
+	display: block;
 }
 
 .holding-btn--solid {
@@ -347,6 +400,10 @@
 	color: #ffffff;
 }
 
+.holding-btn--solid::before {
+	background: var(--color-holding-accent-hover);
+}
+
 .holding-btn--outline {
 	min-width: 109px;
 	background: #eeeef0;
@@ -354,26 +411,34 @@
 	color: var(--color-holding-accent);
 }
 
+.holding-btn--outline::before {
+	background: var(--color-holding-accent);
+}
+
 @media (hover: hover) and (pointer: fine) {
+	.holding-btn:hover::before {
+		transform: scaleX(1);
+	}
+
 	.holding-btn--solid:hover {
-		background: var(--color-holding-accent-hover);
 		border-color: var(--color-holding-accent-hover);
 	}
 
 	.holding-btn--outline:hover {
-		border-color: var(--color-holding-accent-hover);
-		color: var(--color-holding-accent-hover);
+		color: #ffffff;
 	}
 }
 
+.holding-btn:focus-visible::before {
+	transform: scaleX(1);
+}
+
 .holding-btn--solid:focus-visible {
-	background: var(--color-holding-accent-hover);
 	border-color: var(--color-holding-accent-hover);
 }
 
 .holding-btn--outline:focus-visible {
-	border-color: var(--color-holding-accent-hover);
-	color: var(--color-holding-accent-hover);
+	color: #ffffff;
 }
 
 .holding-btn:focus-visible {
@@ -381,14 +446,17 @@
 	outline-offset: 2px;
 }
 
-.holding-btn--solid:active {
+.holding-btn:active::before {
+	transform: scaleX(1);
 	background: var(--color-holding-accent-active);
+}
+
+.holding-btn--solid:active {
 	border-color: var(--color-holding-accent-active);
 }
 
 .holding-btn--outline:active {
-	border-color: var(--color-holding-accent-active);
-	color: var(--color-holding-accent-active);
+	color: #ffffff;
 }
 
 .holding-signoff {
@@ -409,26 +477,21 @@
 
 /* ── Entry choreography ─────────────────────────────────────────────────
    Text elements (wordmark, tagline, sign-off) hide/reveal via their own
-   lr-clip/lr-inner mask-rise (line-reveal.js) — a plain descendant
-   transform, safe under the blend roots (see the note at the top of this
-   file). Bounded/box elements (buttons, photo) fade+rise instead: masking
-   a solid rectangle behind another rectangular clip reads no differently
-   than a plain opacity+translate, and it avoids the button-background-
-   appears-before-its-label-text mismatch a text-style clip would cause.
+   lr-clip/lr-inner mask-rise (line-reveal.js). The photo/gallery region
+   fades+rises. The buttons assemble (entry option (a), approved): chrome
+   wipes in from the left via clip-path, label line-rises ~120ms behind
+   inside its own clip — all still driven by the same .is-visible class
+   at the same choreography slots (holding-entry.js untouched).
 
-   The hidden starting state only applies under
+   Hidden starting states only apply under
    prefers-reduced-motion:no-preference — under `reduce` there is no
-   hidden state to begin with, so buttons/photo render visible
-   immediately with no transition ever firing, no JS branch required. */
+   hidden state to begin with, so everything renders complete and static
+   instantly, no JS branch required. */
 
-.holding-page__photo,
-.holding-btn {
+.holding-page__photo {
 	transition:
 		opacity 1.4s var(--holding-ease),
-		transform 1.4s var(--holding-ease),
-		background-color 0.4s var(--holding-ease),
-		border-color 0.4s var(--holding-ease),
-		color 0.4s var(--holding-ease);
+		transform 1.4s var(--holding-ease);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -438,13 +501,28 @@
 	}
 
 	.holding-btn {
-		opacity: 0;
-		transform: translateY(12px);
+		clip-path: inset(0 100% 0 0);
+		transition:
+			clip-path 0.6s var(--holding-ease),
+			color 0.4s var(--holding-ease) 0.1s,
+			border-color 0.5s var(--holding-ease);
+	}
+
+	.holding-btn .holding-btn__inner {
+		transform: translateY(110%);
+		transition: transform 0.5s var(--holding-ease) 0.12s;
+	}
+
+	.holding-btn.is-visible {
+		clip-path: inset(0 0 0 0);
+	}
+
+	.holding-btn.is-visible .holding-btn__inner {
+		transform: translateY(0);
 	}
 }
 
-.holding-page__photo.is-visible,
-.holding-btn.is-visible {
+.holding-page__photo.is-visible {
 	opacity: 1;
 	transform: translateY(0);
 }
