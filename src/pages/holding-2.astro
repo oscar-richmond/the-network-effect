@@ -1,0 +1,38 @@
+---
+/**
+ * Pre-launch holding page, variant B — the services pop-up's stacked
+ * warp column (holding-stack.js: curve-media arc-bend + aberration on
+ * the shared drift driver). Compare against /holding (the curl-fold
+ * gallery); one gets picked later.
+ *
+ * The page body is the shared HoldingPage component — identical to
+ * /holding in everything except the gallery region's children (the
+ * server-rendered slide stack below, which doubles as the reduced-
+ * motion / no-WebGL static frame) and the gallery module booted here.
+ */
+import HoldingLayout from '../layouts/HoldingLayout.astro';
+import HoldingPage from '../components/holding/HoldingPage.astro';
+import { galleryImages } from '../data/holding/images.js';
+---
+
+<HoldingLayout title="The Network Effect" bodyClass="holding-page">
+  <HoldingPage>
+    <!-- PENDING SIGN-OFF: placeholder gallery imagery (the shared HP
+         Carousel set — same content as /holding, different treatment,
+         per the A/B's design). -->
+    <div class="holding-stack" slot="gallery" aria-hidden="true">
+      {galleryImages.map((src) => (
+        <div class="holding-stack__slide" data-holding-stack-slide>
+          <img src={src} alt="" decoding="async" />
+        </div>
+      ))}
+    </div>
+  </HoldingPage>
+</HoldingLayout>
+
+<script>
+  import { bootHoldingPage } from '../scripts/holding/holding-shared.js';
+  import { createHoldingStack } from '../scripts/holding/holding-stack.js';
+
+  bootHoldingPage({ createGallery: createHoldingStack, devHandle: '__holdingStack' });
+</script>

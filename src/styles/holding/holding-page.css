@@ -84,6 +84,50 @@
 	opacity: 1;
 }
 
+/* ── /holding-2's stacked warp column (holding-stack.js) ─────────────────
+   The wrapper's CSS below is the STATIC state — the server-rendered
+   first frame for reduced motion / no-JS / failed WebGL: a centered
+   flex column of aspect-locked slides, clipped by the region. Once the
+   module boots it takes over each slide with inline absolute
+   positioning + per-tick transforms (the drift/wrap), and curve-media's
+   canvas paints the warped planes above (z 1), zeroing each slide img's
+   opacity as its texture loads — curve-media's own takeover contract.
+   Blend safety: all contained inside the gallery region, a sibling
+   column to the difference-blend roots; grain (z 9000) stays above. */
+.holding-stack {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 28px;
+	overflow: hidden;
+}
+
+.holding-stack__slide {
+	flex: none;
+	width: 44%;
+	aspect-ratio: 480 / 550;
+	overflow: hidden;
+}
+
+.holding-stack__slide img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.holding-stack__gl {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
 .holding-page__column {
 	display: flex;
 	flex-direction: column;

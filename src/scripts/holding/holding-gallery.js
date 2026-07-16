@@ -1,4 +1,5 @@
 import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl';
+import { createDriftDriver } from './holding-shared.js';
 
 /**
  * Holding-page auto-rolling curl gallery — the Codrops RotatingSlideshow
@@ -43,23 +44,6 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
  * poster <img> stays. WebGL init failure degrades the same way (returns
  * null, poster stays), rotating-fold's degradation contract.
  */
-
-/** Auto-drift pace, CSS px/sec, upward. ~one card every ~20s at desktop
- * card sizes — the Codrops wheel-coast made permanent. Oscar's first
- * feel-pass tunable. */
-const AUTO_DRIFT_PX_PER_SEC = 24;
-/** Velocity impulse per normalized wheel px. */
-const WHEEL_GAIN = 12;
-/** Per-frame lerp factor pulling velocity back to the auto-drift home
- * value once input stops — a released fling rejoins the drift in ~1.5s
- * at 60fps. */
-const VELOCITY_RECOVERY = 0.04;
-/** Velocity clamp, CSS px/sec, both signs — a violent trackpad fling
- * coasts fast but can never teleport the strip. */
-const MAX_VELOCITY = 3000;
-/** Integration step cap — after a hidden-tab stall the first resumed
- * frame advances at most this much, instead of jumping the whole gap. */
-const DT_MAX_MS = 100;
 
 /** Card layout: width as a fraction of the region, aspect locked to the
  * HP Carousel set (480x550 portrait crops — cover-crop cuts zero
@@ -192,10 +176,6 @@ const FRAGMENT_SHADER = /* glsl */ `
     gl_FragColor.a = 1.0;
   }
 `;
-
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(n, max));
-}
 
 class GalleryPlane {
   /**
@@ -395,63 +375,16 @@ export function createHoldingGallery(region, imageUrls) {
     planes.forEach((plane) => plane.layout(layout));
   };
 
-  // ── The driver: one velocity value (see module header). ──────────────
-  let velocity = AUTO_DRIFT_PX_PER_SEC;
-  let travelPx = 0;
-  let lastTravelPx = 0;
-
-  const integrate = (dtMs) => {
-    const dt = Math.min(dtMs, DT_MAX_MS) / 1000;
-    velocity = clamp(
-      velocity + (AUTO_DRIFT_PX_PER_SEC - velocity) * VELOCITY_RECOVERY,
-      -MAX_VELOCITY,
-      MAX_VELOCITY,
-    );
-    travelPx += velocity * dt;
-  };
-
-  const step = () => {
-    const dirSign = Math.sign(travelPx - lastTravelPx) || 1;
-    lastTravelPx = travelPx;
+  // ── The driver: one velocity value, shared plumbing (holding-shared.js
+  // — extracted verbatim-semantics so /holding-2's stack rides the same
+  // approved motion). This module renders in the driver's onFrame.
+  let disposed = false;
+  const render = (travelPx, dirSign) => {
     const travelVp = travelPx * pxToVp;
     planes.forEach((plane) => plane.update(travelVp, dirSign, viewport.height));
     renderer.render({ scene, camera });
   };
-
-  /**
-   * Wheel — scoped to the region element only. deltaMode normalization
-   * done here (0 px / 1 lines / 2 pages) instead of adding the
-   * reference's normalize-wheel dependency.
-   */
-  const onWheel = (event) => {
-    event.preventDefault();
-    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? regionSize.height : 1;
-    velocity = clamp(velocity + event.deltaY * unit * WHEEL_GAIN, -MAX_VELOCITY, MAX_VELOCITY);
-  };
-  region.addEventListener('wheel', onWheel, { passive: false });
-
-  let rafId = 0;
-  let lastTs = 0;
-  let disposed = false;
-  const tick = (ts) => {
-    if (disposed) return;
-    rafId = requestAnimationFrame(tick);
-    const dtMs = lastTs ? ts - lastTs : 16.7;
-    lastTs = ts;
-    integrate(dtMs);
-    step();
-  };
-
-  // Hidden-tab hygiene: stop the loop entirely; on return, restart with a
-  // fresh timestamp so the stall never integrates as one giant step.
-  const onVisibility = () => {
-    cancelAnimationFrame(rafId);
-    if (!document.hidden && !disposed) {
-      lastTs = 0;
-      rafId = requestAnimationFrame(tick);
-    }
-  };
-  document.addEventListener('visibilitychange', onVisibility);
+  const driver = createDriftDriver(region, { onFrame: render });
 
   const onResize = () => resize();
   window.addEventListener('resize', onResize);
@@ -459,7 +392,6 @@ export function createHoldingGallery(region, imageUrls) {
   resize();
   canvas.style.visibility = 'hidden'; // until every texture is decoded
   region.appendChild(canvas);
-  rafId = requestAnimationFrame(tick);
 
   const poster = region.querySelector('[data-holding-gallery-poster]');
   let takeoverTimeout = 0;
@@ -476,7 +408,7 @@ export function createHoldingGallery(region, imageUrls) {
     // (transitionend, with an opacity-checking fallback poll) — a plain
     // timer would fire in a background tab while the frozen transition
     // holds the canvas transparent, leaving a blank region on tab-show.
-    step();
+    render(driver.state().travelPx, 1);
     canvas.style.visibility = '';
     canvas.classList.add('is-live');
     canvas.addEventListener('transitionend', hidePoster, { once: true });
@@ -496,25 +428,21 @@ export function createHoldingGallery(region, imageUrls) {
      * production). */
     tickOnce(dtMs = 16.7) {
       if (disposed) return;
-      integrate(dtMs);
-      step();
+      driver.tickOnce(dtMs);
     },
     debugState() {
       return {
-        velocity,
-        travelPx,
+        ...driver.state(),
         regionSize: { ...regionSize },
         planes: planes.map((p) => ({ ...p.lastState, ready: p.ready })),
       };
     },
     destroy() {
       disposed = true;
-      cancelAnimationFrame(rafId);
+      driver.destroy();
       clearTimeout(takeoverTimeout);
       canvas.removeEventListener('transitionend', hidePoster);
-      document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('resize', onResize);
-      region.removeEventListener('wheel', onWheel);
       planes.forEach((plane) => plane.destroy());
       geometry.remove();
       canvas.remove();
