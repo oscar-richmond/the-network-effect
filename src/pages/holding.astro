@@ -4,8 +4,11 @@
  * "/" is a later, separate, explicitly-triggered deploy step (a one-commit
  * git mv of index.astro <-> holding.astro), not performed here.
  *
- * PENDING SIGN-OFF: the right-side photo and the inline tagline image are
- * placeholder-until-approved, per the site's standing content policy.
+ * PENDING SIGN-OFF: the right-side photo and the 5 inline tagline images
+ * are placeholder-until-approved. Images 2-5 are currently literal
+ * duplicates of image 1's file, standing in only so the rotation
+ * mechanism has 5 real, servable files to verify against with no 404s —
+ * see the TODO below.
  * COPY NOTE for founder review: the tagline reads "CULTURE" here, per the
  * Figma file — the /about-3 hero's equivalent line reads "CULTURAL". Built
  * as the Figma reads; flagging the wording difference for sign-off.
@@ -15,7 +18,23 @@ import { asset } from '../utils/asset.js';
 import '../styles/holding/holding-page.css';
 
 const photo = asset('/assets/holding/photo.jpg');
-const taglineImage = asset('/assets/holding/tagline-image.jpg');
+
+// TODO(oscar): the 5 new originals referenced in chat never landed as
+// files on disk (no tool available here can extract image bytes out of a
+// chat attachment) — image 1 is still the OLD single placeholder, and
+// images 2-5 are literal file copies of it, standing in only so this
+// array has 5 real, distinct-URL files to verify the rotation mechanism
+// against. Drop the 5 real processed originals at these exact paths
+// (each will need its own compression pass, same spec as image 1 — see
+// the resize script this was built with) and nothing else needs to
+// change.
+const taglineImages = [
+  asset('/assets/holding/tagline-image.jpg'), // 1 — replaces the current placeholder
+  asset('/assets/holding/tagline-image-2.jpg'), // placeholder duplicate of 1, pending real asset
+  asset('/assets/holding/tagline-image-3.jpg'), // placeholder duplicate of 1, pending real asset
+  asset('/assets/holding/tagline-image-4.jpg'), // placeholder duplicate of 1, pending real asset
+  asset('/assets/holding/tagline-image-5.jpg'), // placeholder duplicate of 1, pending real asset
+];
 
 // TODO(oscar): drop the real company deck PDF at this path — the button
 // will 404 until it's added.
@@ -71,12 +90,15 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
             </p>
           </div>
         </div>
-        <!-- PENDING SIGN-OFF: placeholder inline image. Position-synced
-             to the invisible slot above by holding-entry.js. -->
+        <!-- PENDING SIGN-OFF: placeholder inline images. Position-synced
+             to the invisible slot above by holding-entry.js, which also
+             cycles the src through data-tagline-images in lockstep with
+             the rolling last word — see initTaglineRotate. -->
         <img
           class="holding-tagline__culture-overlay"
           data-holding-tagline-img-overlay
-          src={taglineImage}
+          data-tagline-images={JSON.stringify(taglineImages)}
+          src={taglineImages[0]}
           alt=""
           decoding="async"
           aria-hidden="true"

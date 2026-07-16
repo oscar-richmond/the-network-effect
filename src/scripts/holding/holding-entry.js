@@ -15,6 +15,12 @@
  *    mix-blend-mode:normal still rendered differenced). The real image is a
  *    fixed sibling of .holding-tagline, synced to an invisible in-flow slot's
  *    on-screen rect — see syncCultureOverlay below.
+ *
+ * The inline image is a rotating set of 5, cycling in lockstep with the
+ * rolling word on the SAME cycle()/is-exiting/is-entering toggle in
+ * initTaglineRotate — one shared timer, so the two can't drift apart. Word
+ * list length (4) and image list length (5) are deliberately different, so
+ * their pairing rotates cycle to cycle.
  */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 
@@ -31,6 +37,29 @@ const TAGLINE_ROTATE_EXIT_MS = 1000;
 
 const CULTURE_TEXT_SELECTOR =
   '.holding-tagline__culture-word, .holding-tagline__culture-amp';
+
+function getTaglineImages(overlay) {
+  if (!(overlay instanceof HTMLElement)) return [];
+  try {
+    const parsed = JSON.parse(overlay.dataset.taglineImages ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((src) => typeof src === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Warms the browser's image cache for every frame in the rotation (image 1
+ * is already loading as the overlay's initial src) so no later roll swap
+ * ever shows a decode flash. Small enough files that a plain Image()
+ * prewarm at init is sufficient — no need for <link rel="preload">.
+ */
+function preloadTaglineImages(images) {
+  images.slice(1).forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+}
 
 function isCultureTaglineLine(line) {
   return line instanceof HTMLElement && line.querySelector('.holding-tagline__culture') != null;
@@ -104,11 +133,21 @@ function syncCultureOverlay(taglineText, overlay) {
   overlay.style.height = `${rect.height}px`;
 }
 
-function initTaglineRotate(root) {
+/**
+ * Drives both the rolling last word AND the inline image on one shared
+ * cycle — a single is-exiting/is-entering toggle applied to each target,
+ * same schedule, same durations, so they can never drift apart. The word
+ * list (4) and image list (5) are different lengths on purpose: their
+ * pairing rotates cycle to cycle rather than repeating a fixed 1:1 map.
+ */
+function initTaglineRotate(root, cultureOverlay, images) {
   const inner = root.querySelector('.holding-tagline__rotate-inner');
   if (!(inner instanceof HTMLElement)) return () => {};
 
-  let index = 0;
+  const hasImages = cultureOverlay instanceof HTMLElement && images.length > 0;
+
+  let wordIndex = 0;
+  let imageIndex = 0;
   let active = true;
   let timeoutId;
 
@@ -121,16 +160,25 @@ function initTaglineRotate(root) {
 
   const cycle = () => {
     inner.classList.add('is-exiting');
+    if (hasImages) cultureOverlay.classList.add('is-exiting');
 
     schedule(() => {
       inner.classList.remove('is-exiting');
-      index = (index + 1) % TAGLINE_ROTATE_WORDS.length;
-      inner.textContent = TAGLINE_ROTATE_WORDS[index];
+      wordIndex = (wordIndex + 1) % TAGLINE_ROTATE_WORDS.length;
+      inner.textContent = TAGLINE_ROTATE_WORDS[wordIndex];
       inner.classList.add('is-entering');
+
+      if (hasImages) {
+        cultureOverlay.classList.remove('is-exiting');
+        imageIndex = (imageIndex + 1) % images.length;
+        cultureOverlay.src = images[imageIndex];
+        cultureOverlay.classList.add('is-entering');
+      }
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           inner.classList.remove('is-entering');
+          if (hasImages) cultureOverlay.classList.remove('is-entering');
         });
       });
 
@@ -157,7 +205,7 @@ function revealWordmark(wordmark) {
   });
 }
 
-function revealTagline(tagline, taglineText, cultureOverlay) {
+function revealTagline(tagline, taglineText, cultureOverlay, images) {
   if (!(taglineText instanceof HTMLElement)) return () => {};
   taglineText.style.opacity = '1';
 
@@ -174,7 +222,7 @@ function revealTagline(tagline, taglineText, cultureOverlay) {
   const rotateRoot = taglineText.querySelector('[data-holding-tagline-rotate]');
   if (rotateRoot instanceof HTMLElement) {
     const timeoutId = setTimeout(() => {
-      cleanup = initTaglineRotate(rotateRoot);
+      cleanup = initTaglineRotate(rotateRoot, cultureOverlay, images);
     }, revealCompleteMs + TAGLINE_ROTATE_MS);
     cleanup = () => clearTimeout(timeoutId);
   }
@@ -200,6 +248,9 @@ export function initHoldingEntry() {
   const signoff = document.querySelector('[data-holding-signoff]');
   const buttons = Array.from(document.querySelectorAll('[data-holding-button]'));
   const photo = document.querySelector('[data-holding-image]');
+
+  const taglineImages = getTaglineImages(cultureOverlay);
+  preloadTaglineImages(taglineImages);
 
   let resizeTimer;
   const onResize = () => {
@@ -251,7 +302,7 @@ export function initHoldingEntry() {
     setTimeout(() => revealWordmark(wordmark), HOLDING_WORDMARK_AT);
 
     setTimeout(() => {
-      cleanupRotate = revealTagline(tagline, taglineText, cultureOverlay);
+      cleanupRotate = revealTagline(tagline, taglineText, cultureOverlay, taglineImages);
     }, HOLDING_TAGLINE_AT);
 
     buttons.forEach((btn, i) => {

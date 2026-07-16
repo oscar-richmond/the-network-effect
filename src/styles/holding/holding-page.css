@@ -177,7 +177,16 @@
 /* The real, visible image — a SIBLING of .holding-tagline (not a
    descendant), so it is never inside a mix-blend-mode:difference subtree
    and always renders at true colour, exactly like the /about-3 hero's
-   video overlay (about-hero.css) for the identical reason. */
+   video overlay (about-hero.css) for the identical reason.
+
+   Structured to mirror .holding-tagline__rotate-inner exactly (below):
+   this bare class carries the permanent rest-state values AND the
+   transition that governs BOTH the one-time entry reveal and the
+   rolling cross-fade's "enter" phase — one shared definition, not two
+   that could drift apart. .is-exiting overrides to a faster 1s for the
+   exit half of the roll; .is-entering sets the same hidden values with
+   no transition override of its own, so removing it falls back to
+   THIS rule's 2s and animates back in — same mechanism the word uses. */
 .holding-tagline__culture-overlay {
 	position: fixed;
 	top: 0;
@@ -189,23 +198,41 @@
 	pointer-events: none;
 	z-index: 5;
 	mix-blend-mode: normal;
-	transition: opacity 1s ease;
+	opacity: 1;
+	filter: none;
+	transition:
+		opacity 2s ease,
+		filter 2s ease;
 }
 
-/* Hidden-until-revealed only applies under no-preference, same as every
-   other entry-choreography starting state (see the big note further
-   down) — under `reduce`, initHoldingEntry still runs a one-shot
-   position sync (no animation, no timeline) so the image is positioned
-   correctly and visible immediately rather than stuck at the CSS
-   default 0x0 box. */
+/* Pre-reveal hidden state — no-preference only, same as every other
+   entry-choreography starting state on this page. Stops matching the
+   moment .is-visible is added (entry reveal, or immediately under
+   reduced motion), at which point the bare rule above takes over. Note
+   this makes the one-time entry fade 2s where it was briefly 1s during
+   development — deliberate, so entry and roll share one transition
+   instead of two that could go out of sync. */
 @media (prefers-reduced-motion: no-preference) {
-	.holding-tagline__culture-overlay {
+	.holding-tagline__culture-overlay:not(.is-visible) {
 		opacity: 0;
 	}
 }
 
-.holding-tagline__culture-overlay.is-visible {
-	opacity: 1;
+/* Rolling cross-fade — the exact same treatment as the word roll
+   (.holding-tagline__rotate-inner below: same durations, same easing,
+   same class-toggle mechanics), toggled by the same cycle() in
+   holding-entry.js so image and word can never drift apart. */
+.holding-tagline__culture-overlay.is-exiting {
+	opacity: 0;
+	filter: blur(10px);
+	transition:
+		opacity 1s ease,
+		filter 1s ease;
+}
+
+.holding-tagline__culture-overlay.is-entering {
+	opacity: 0;
+	filter: blur(10px);
 }
 
 .holding-tagline__rotate {
