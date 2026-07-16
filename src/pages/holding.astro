@@ -16,10 +16,12 @@ import { asset } from '../utils/asset.js';
 import '../styles/holding/holding-page.css';
 
 // Right-side auto-rolling fold gallery (holding-gallery.js), in display
-// order — Oscar's "HP Carousel 1-5" originals from ~/Desktop, processed
-// to 1080x720 (~2x the ~590px card at 1728), mozjpeg q78, 445KB total.
-// PENDING SIGN-OFF as ever. galleryImages[0] doubles as the static
-// poster: first paint, reduced motion, and the no-WebGL fallback.
+// order — Oscar's "HP Carousel 1-5" originals from ~/Desktop (the
+// 480x550 portrait re-crops), recompressed at native size, mozjpeg q78,
+// 173KB total. Native 480px vs the ~590px desktop card renders soft on
+// retina — flagged; larger re-exports slot straight in. PENDING
+// SIGN-OFF as ever. galleryImages[0] doubles as the static poster:
+// first paint, reduced motion, and the no-WebGL fallback.
 const galleryImages = [
   asset('/assets/holding/gallery/01-armchairs-overhead.jpg'),
   asset('/assets/holding/gallery/02-glass-touch.jpg'),

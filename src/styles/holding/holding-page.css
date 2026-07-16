@@ -56,7 +56,9 @@
 	display: block;
 	width: 82%;
 	max-height: 72%;
-	aspect-ratio: 3 / 2;
+	/* Locked to the HP Carousel set's portrait crops (480x550), matching
+	   holding-gallery.js's CARD_ASPECT so the takeover is seamless. */
+	aspect-ratio: 480 / 550;
 	object-fit: cover;
 }
 

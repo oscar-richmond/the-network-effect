@@ -61,12 +61,15 @@ const MAX_VELOCITY = 3000;
 const DT_MAX_MS = 100;
 
 /** Card layout: width as a fraction of the region, aspect locked to the
- * HP Carousel set (1200x800 = 3:2 — cover-crop cuts zero pixels), gap as
- * a fraction of card height. Cards also cap to CARD_MAX_HEIGHT_FRACTION
- * of the region so the tablet band / phone strip (short, wide regions)
- * keep whole cards visible rather than a clipped peek-window. */
+ * HP Carousel set (480x550 portrait crops — cover-crop cuts zero
+ * pixels), gap as a fraction of card height. Cards also cap to
+ * CARD_MAX_HEIGHT_FRACTION of the region so the tablet band / phone
+ * strip (short, wide regions) keep whole cards visible rather than a
+ * clipped peek-window. NOTE: the current exports are 480px wide against
+ * a ~590px CSS card at desktop — renders soft on retina; flagged for
+ * larger re-exports if it bothers on the real-tab pass. */
 const CARD_WIDTH_FRACTION = 0.82;
-const CARD_ASPECT = 1200 / 800;
+const CARD_ASPECT = 480 / 550;
 const CARD_GAP_FRACTION = 0.14;
 const CARD_MAX_HEIGHT_FRACTION = 0.72;
 
