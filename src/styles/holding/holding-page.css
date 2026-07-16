@@ -179,14 +179,11 @@
    and always renders at true colour, exactly like the /about-3 hero's
    video overlay (about-hero.css) for the identical reason.
 
-   Structured to mirror .holding-tagline__rotate-inner exactly (below):
-   this bare class carries the permanent rest-state values AND the
-   transition that governs BOTH the one-time entry reveal and the
-   rolling cross-fade's "enter" phase — one shared definition, not two
-   that could drift apart. .is-exiting overrides to a faster 1s for the
-   exit half of the roll; .is-entering sets the same hidden values with
-   no transition override of its own, so removing it falls back to
-   THIS rule's 2s and animates back in — same mechanism the word uses. */
+   The 1s opacity transition here governs the ONE-TIME entry reveal only.
+   Once the image rotation starts, holding-entry.js supersedes it with an
+   inline 0.3s transition — the rotation's plain fade (no blur; the blur
+   cross-fade is the word's treatment only, .holding-tagline__rotate-inner
+   below) runs on its own 2s timer, independent of the word roll. */
 .holding-tagline__culture-overlay {
 	position: fixed;
 	top: 0;
@@ -199,42 +196,23 @@
 	z-index: 5;
 	mix-blend-mode: normal;
 	opacity: 1;
-	filter: none;
-	transition:
-		opacity 2s ease,
-		filter 2s ease;
+	transition: opacity 1s ease;
 }
 
 /* Pre-reveal hidden state — no-preference only, same as every other
    entry-choreography starting state on this page. Stops matching the
    moment .is-visible is added (entry reveal, or immediately under
-   reduced motion), at which point the bare rule above takes over. Note
-   this makes the one-time entry fade 2s where it was briefly 1s during
-   development — deliberate, so entry and roll share one transition
-   instead of two that could go out of sync. */
+   reduced motion), at which point the bare rule above takes over. */
 @media (prefers-reduced-motion: no-preference) {
 	.holding-tagline__culture-overlay:not(.is-visible) {
 		opacity: 0;
 	}
 }
 
-/* Rolling cross-fade — the exact same treatment as the word roll
-   (.holding-tagline__rotate-inner below: same durations, same easing,
-   same class-toggle mechanics), toggled by the same cycle() in
-   holding-entry.js so image and word can never drift apart. The two are
-   mutually exclusive (holding-entry.js alternates whose turn it is) —
-   is-exiting is left on the parked one between turns, holding it here. */
-.holding-tagline__culture-overlay.is-exiting {
+/* Rotation fade-out leg — the fade duration itself comes from the inline
+   0.3s transition holding-entry.js sets when the rotation starts. */
+.holding-tagline__culture-overlay.is-fading {
 	opacity: 0;
-	filter: blur(10px);
-	transition:
-		opacity 1s ease,
-		filter 1s ease;
-}
-
-.holding-tagline__culture-overlay.is-entering {
-	opacity: 0;
-	filter: blur(10px);
 }
 
 .holding-tagline__rotate {

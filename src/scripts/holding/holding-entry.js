@@ -16,18 +16,12 @@
  *    fixed sibling of .holding-tagline, synced to an invisible in-flow slot's
  *    on-screen rect — see syncCultureOverlay below.
  *
- * The inline image is a rotating set of 5, cycling on the SAME
- * cycle()/is-exiting/is-entering timer as the rolling word in
- * initTaglineRotate — one shared timer, so the two can't drift apart. Word
- * list length (4) and image list length (5) are deliberately different, so
- * their pairing rotates cycle to cycle.
- *
- * Word and image are mutually exclusive, alternating turns: each roll,
- * whichever was showing fades out and stays parked (hidden) at its exited
- * state, while the OTHER one (already parked from its own last turn) fades
- * in with its next value. The very first roll is a special case — both
- * start visible from the (unchanged) entry reveal, so it exits both
- * together before the alternation begins.
+ * The word roll and the image rotation are INDEPENDENT (Oscar's revert of
+ * the earlier alternating experiment): the word keeps its original
+ * 3s-hold/1s-blur-cross-fade cycle untouched (initTaglineRotate), while
+ * the inline image cycles through its 5 frames on its own 2s timer with a
+ * plain 300ms opacity fade — no blur, no coupling (initImageRotate). Both
+ * are always present; neither ever parks hidden.
  */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 
@@ -41,6 +35,9 @@ const HOLDING_IMAGE_AT = 1040;
 const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
 const TAGLINE_ROTATE_MS = 3000;
 const TAGLINE_ROTATE_EXIT_MS = 1000;
+
+const IMAGE_ROTATE_MS = 2000;
+const IMAGE_FADE_MS = 300;
 
 const CULTURE_TEXT_SELECTOR =
   '.holding-tagline__culture-word, .holding-tagline__culture-amp';
@@ -140,27 +137,11 @@ function syncCultureOverlay(taglineText, overlay) {
   overlay.style.height = `${rect.height}px`;
 }
 
-/**
- * Drives the rolling last word AND the inline image on one shared timer —
- * same is-exiting/is-entering toggle, same schedule, same durations — but
- * mutually exclusive: only one of the two is ever visible. Each roll,
- * whichever is currently showing exits and stays parked (is-exiting is
- * simply left on, holding it at opacity:0/blur) until its next turn, while
- * the other — already parked from ITS last turn — gets its next value and
- * enters. The first roll is the one exception: both start visible from the
- * (unchanged) entry reveal, so it exits both together before the
- * word/image swap-off begins.
- */
-function initTaglineRotate(root, cultureOverlay, images) {
+function initTaglineRotate(root) {
   const inner = root.querySelector('.holding-tagline__rotate-inner');
   if (!(inner instanceof HTMLElement)) return () => {};
 
-  const hasImages = cultureOverlay instanceof HTMLElement && images.length > 0;
-
-  let wordIndex = 0;
-  let imageIndex = 0;
-  let imageTurn = false; // whose turn is CURRENTLY active — word goes first, matching the boot state
-  let firstRoll = true;
+  let index = 0;
   let active = true;
   let timeoutId;
 
@@ -172,34 +153,17 @@ function initTaglineRotate(root, cultureOverlay, images) {
   };
 
   const cycle = () => {
-    if (firstRoll) {
-      inner.classList.add('is-exiting');
-      if (hasImages) cultureOverlay.classList.add('is-exiting');
-    } else {
-      const outgoing = imageTurn && hasImages ? cultureOverlay : inner;
-      outgoing.classList.add('is-exiting');
-    }
+    inner.classList.add('is-exiting');
 
     schedule(() => {
-      firstRoll = false;
-      imageTurn = hasImages ? !imageTurn : false;
-
-      if (imageTurn) {
-        imageIndex = (imageIndex + 1) % images.length;
-        cultureOverlay.src = images[imageIndex];
-        cultureOverlay.classList.remove('is-exiting');
-        cultureOverlay.classList.add('is-entering');
-      } else {
-        wordIndex = (wordIndex + 1) % TAGLINE_ROTATE_WORDS.length;
-        inner.textContent = TAGLINE_ROTATE_WORDS[wordIndex];
-        inner.classList.remove('is-exiting');
-        inner.classList.add('is-entering');
-      }
+      inner.classList.remove('is-exiting');
+      index = (index + 1) % TAGLINE_ROTATE_WORDS.length;
+      inner.textContent = TAGLINE_ROTATE_WORDS[index];
+      inner.classList.add('is-entering');
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           inner.classList.remove('is-entering');
-          if (hasImages) cultureOverlay.classList.remove('is-entering');
         });
       });
 
@@ -208,6 +172,52 @@ function initTaglineRotate(root, cultureOverlay, images) {
   };
 
   schedule(cycle, TAGLINE_ROTATE_MS);
+
+  return () => {
+    active = false;
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+}
+
+/**
+ * Independent inline-image rotation: fade out over IMAGE_FADE_MS, swap
+ * src, fade back in, one change every IMAGE_ROTATE_MS. A plain opacity
+ * fade — deliberately NOT the word's blur cross-fade, and deliberately
+ * not coupled to the word's timer (Oscar's spec). The 0.3s fade duration
+ * is set inline here, superseding the CSS's 1s entry-reveal transition
+ * the moment rotation begins.
+ */
+function initImageRotate(overlay, images) {
+  if (!(overlay instanceof HTMLElement) || images.length < 2) return () => {};
+
+  overlay.style.transition = `opacity ${IMAGE_FADE_MS}ms ease`;
+
+  let index = 0;
+  let active = true;
+  let timeoutId;
+
+  const schedule = (fn, delay) => {
+    timeoutId = setTimeout(() => {
+      if (!active) return;
+      fn();
+    }, delay);
+  };
+
+  const cycle = () => {
+    overlay.classList.add('is-fading');
+
+    schedule(() => {
+      index = (index + 1) % images.length;
+      overlay.src = images[index];
+      overlay.classList.remove('is-fading');
+
+      // Next fade-out starts IMAGE_ROTATE_MS after the previous one did,
+      // so swaps land exactly IMAGE_ROTATE_MS apart.
+      schedule(cycle, IMAGE_ROTATE_MS - IMAGE_FADE_MS);
+    }, IMAGE_FADE_MS);
+  };
+
+  schedule(cycle, IMAGE_ROTATE_MS);
 
   return () => {
     active = false;
@@ -239,15 +249,24 @@ function revealTagline(tagline, taglineText, cultureOverlay, images) {
   });
 
   const revealCompleteMs = (lines.length - 1) * 120 + 1200;
-  let cleanup = () => {};
+  const cleanups = [];
+
   const rotateRoot = taglineText.querySelector('[data-holding-tagline-rotate]');
   if (rotateRoot instanceof HTMLElement) {
-    const timeoutId = setTimeout(() => {
-      cleanup = initTaglineRotate(rotateRoot, cultureOverlay, images);
+    const wordTimeout = setTimeout(() => {
+      cleanups.push(initTaglineRotate(rotateRoot));
     }, revealCompleteMs + TAGLINE_ROTATE_MS);
-    cleanup = () => clearTimeout(timeoutId);
+    cleanups.push(() => clearTimeout(wordTimeout));
   }
-  return () => cleanup();
+
+  if (cultureOverlay instanceof HTMLElement && images.length > 1) {
+    const imageTimeout = setTimeout(() => {
+      cleanups.push(initImageRotate(cultureOverlay, images));
+    }, revealCompleteMs + IMAGE_ROTATE_MS);
+    cleanups.push(() => clearTimeout(imageTimeout));
+  }
+
+  return () => cleanups.forEach((fn) => fn());
 }
 
 function revealSignoff(signoff) {
