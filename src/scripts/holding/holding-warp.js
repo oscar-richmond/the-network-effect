@@ -54,8 +54,9 @@ gsap.registerPlugin(CustomEase);
 
 /** Uniform column width — /holding's card fraction, for a fair A/B. */
 const COLUMN_WIDTH_FRACTION = 0.41;
-/** /holding's gap value: CARD_GAP_FRACTION x item height. */
-const GAP_HEIGHT_FRACTION = 0.14;
+/** Inter-image gap, fixed px (Oscar's spec — was /holding's 0.14 x
+ * height ~ 47px at desktop). */
+const GAP_PX = 32;
 /** Strip-safety cap on item height (short wide regions). */
 const ITEM_MAX_HEIGHT_FRACTION = 0.5;
 /** Fallback ratio before natural dims are known — the HP Carousel set. */
@@ -385,10 +386,9 @@ export function createHoldingWarp(region, imageUrls) {
     maxSlotPx = 1;
     states.forEach((state) => {
       const h = Math.min(widthPx / state.aspect, maxH);
-      const gap = h * GAP_HEIGHT_FRACTION;
       state.heightPx = h;
       state.offsetPx = offset;
-      const slot = h + gap;
+      const slot = h + GAP_PX;
       offset += slot;
       if (slot > maxSlotPx) maxSlotPx = slot;
       state.slideEl.style.position = 'absolute';
