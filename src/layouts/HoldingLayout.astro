@@ -1,0 +1,57 @@
+---
+/**
+ * Standalone holding-page layout — deliberately NOT BaseLayout.
+ *
+ * This page ships to production independently of the main site and must
+ * stay natively responsive, never shell-scaled. BaseLayout's inline boot
+ * script unconditionally hands sub-1728 viewports off to the transform-
+ * scaled iframe shell (public/scale-shell.html) with no per-page opt-out —
+ * so the only reliable exclusion is to never render that script at all.
+ * This layout also skips the canvas cursor and page-transition cover
+ * overlay, neither of which this single static page needs.
+ */
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  bodyClass?: string;
+}
+
+const {
+  title = 'The Network Effect',
+  description = 'The Network Effect is a relationship-led culture & partnerships consultancy. Launching soon.',
+  bodyClass = '',
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="icon" href={`${base}favicon.ico`} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+  </head>
+  <body class:list={[bodyClass]}>
+    <slot />
+  </body>
+</html>

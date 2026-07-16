@@ -1,0 +1,113 @@
+---
+/**
+ * Pre-launch holding page. Lives at /holding for review; swapping it onto
+ * "/" is a later, separate, explicitly-triggered deploy step (a one-commit
+ * git mv of index.astro <-> holding.astro), not performed here.
+ *
+ * PENDING SIGN-OFF: the right-side photo and the inline tagline image are
+ * placeholder-until-approved, per the site's standing content policy.
+ * COPY NOTE for founder review: the tagline reads "CULTURE" here, per the
+ * Figma file — the /about-3 hero's equivalent line reads "CULTURAL". Built
+ * as the Figma reads; flagging the wording difference for sign-off.
+ */
+import HoldingLayout from '../layouts/HoldingLayout.astro';
+import { asset } from '../utils/asset.js';
+import '../styles/holding/holding-page.css';
+
+const photo = asset('/assets/holding/photo.jpg');
+const taglineImage = asset('/assets/holding/tagline-image.jpg');
+
+// TODO(oscar): drop the real company deck PDF at this path — the button
+// will 404 until it's added.
+const deckPdfHref = asset('/assets/holding/company-deck.pdf');
+const contactMailto = 'mailto:hello@thenetworkeffect.com';
+
+const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
+---
+
+<HoldingLayout title="The Network Effect" bodyClass="holding-page">
+  <div class="holding-page__topbar" aria-hidden="true"></div>
+
+  <div class="holding-page__stage">
+    <div class="holding-page__column">
+      <div class="holding-wordmark" data-holding-wordmark aria-hidden="true">
+        THE NETWORK EFFECT
+      </div>
+      <h1 class="holding-visually-hidden">The Network Effect</h1>
+
+      <div class="holding-tagline" data-holding-tagline aria-hidden="true">
+        <div class="holding-tagline__text" data-holding-tagline-text>
+          <p class="holding-tagline__line holding-tagline__line--left">WE ARE A</p>
+          <div class="holding-tagline__line holding-tagline__line--indent">
+            <div class="holding-tagline__culture">
+              <span class="holding-tagline__culture-word">CULTURE</span>
+              <span class="holding-tagline__culture-img-wrap" aria-hidden="true">
+                <!-- PENDING SIGN-OFF: placeholder inline image -->
+                <img
+                  class="holding-tagline__culture-img"
+                  src={taglineImage}
+                  alt=""
+                  decoding="async"
+                />
+              </span>
+              <span class="holding-tagline__culture-amp">&amp;</span>
+            </div>
+          </div>
+          <p class="holding-tagline__line holding-tagline__line--left">PARTNERSHIPS</p>
+          <p class="holding-tagline__line holding-tagline__line--indent">
+            <span
+              class="holding-tagline__rotate"
+              data-holding-tagline-rotate
+              aria-live="polite"
+            >
+              <span class="holding-tagline__rotate-inner">{TAGLINE_ROTATE_WORDS[0]}</span>
+            </span>
+          </p>
+        </div>
+      </div>
+      <p class="holding-visually-hidden">
+        We are a culture &amp; partnerships consultancy.
+      </p>
+
+      <div class="holding-buttons">
+        <a
+          class="holding-btn holding-btn--solid"
+          data-holding-button
+          href={deckPdfHref}
+          target="_blank"
+          rel="noopener"
+        >
+          View company deck
+        </a>
+        <a
+          class="holding-btn holding-btn--outline"
+          data-holding-button
+          href={contactMailto}
+          target="_blank"
+          rel="noopener"
+        >
+          Contact
+        </a>
+      </div>
+
+      <p class="holding-signoff" data-holding-signoff>
+        Some of the most important things<br />
+        happen in rooms you never see...<br />
+        This is one of them. Launching soon.
+      </p>
+    </div>
+
+    <div class="holding-page__photo" data-holding-image>
+      <!-- PENDING SIGN-OFF: placeholder photo -->
+      <img src={photo} alt="" decoding="async" />
+    </div>
+  </div>
+
+  <div class="holding-page__grain" aria-hidden="true"></div>
+</HoldingLayout>
+
+<script>
+  import { initHoldingEntry } from '../scripts/holding/holding-entry.js';
+
+  initHoldingEntry();
+</script>
