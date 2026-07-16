@@ -1,39 +1,98 @@
 ---
 /**
- * Pre-launch holding page, variant B — the Selected Works pillar
- * images' grain-displacement effect (holding-warp.js: the wave-shader
- * bow + cursor grain, verbatim shaders) on the shared drift driver,
- * flat-travelling mixed-height column. Compare against /holding (the
- * curl-fold gallery); one gets picked later.
+ * THE holding page (the A/B concluded for desktop; /holding is dormant).
+ * Desktop (>=1025): the Selected Works grain-displacement column
+ * (holding-warp.js) on the shared drift driver. Mobile/tablet (<=1024,
+ * Figma 9135ovd3e9n2xa6iEqXTTC node 0:3): one image travelling behind
+ * the difference-blend text, scroll/touch-driven with the poke-at-rest
+ * affordance (holding-travel.js). The two modules swap on breakpoint
+ * crossings via the facade in the script below — geometry-only within a
+ * mode, full boot/teardown across modes.
  *
- * The page body is the shared HoldingPage component — identical to
- * /holding in everything except the gallery region's children (the
- * server-rendered slide stack below, which doubles as the reduced-
- * motion / no-WebGL static frame) and the gallery module booted here.
+ * The page body is the shared HoldingPage component; the
+ * holding-page-2 body class scopes this page's mobile layout and its
+ * 1025-1199 desktop extension so /holding's band/strip stay untouched.
  */
 import HoldingLayout from '../layouts/HoldingLayout.astro';
 import HoldingPage from '../components/holding/HoldingPage.astro';
 import { warpGalleryImages } from '../data/holding/images.js';
 ---
 
-<HoldingLayout title="The Network Effect" bodyClass="holding-page">
+<HoldingLayout title="The Network Effect" bodyClass="holding-page holding-page-2">
   <HoldingPage galleryImages={warpGalleryImages}>
-    <!-- PENDING SIGN-OFF: placeholder gallery imagery (the shared HP
-         Carousel set — same content as /holding, different treatment,
-         per the A/B's design). -->
-    <div class="holding-warp" slot="gallery" aria-hidden="true">
-      {warpGalleryImages.map((src) => (
-        <div class="holding-warp__slide" data-holding-warp-slide>
-          <img src={src} alt="" decoding="async" />
-        </div>
-      ))}
-    </div>
+    <!-- PENDING SIGN-OFF: placeholder gallery imagery. Desktop: the
+         warp slide stack (also its static fallback). Mobile: the poked
+         poster below is the static frame (RM / no-WebGL / pre-decode) —
+         each display-mode's element hides via CSS in the other mode. -->
+    <Fragment slot="gallery">
+      <div class="holding-warp" aria-hidden="true">
+        {warpGalleryImages.map((src) => (
+          <div class="holding-warp__slide" data-holding-warp-slide>
+            <img src={src} alt="" decoding="async" />
+          </div>
+        ))}
+      </div>
+      <img
+        class="holding-travel__poster"
+        data-holding-travel-poster
+        src={warpGalleryImages[0]}
+        alt=""
+        decoding="async"
+        aria-hidden="true"
+      />
+    </Fragment>
   </HoldingPage>
 </HoldingLayout>
 
 <script>
   import { bootHoldingPage } from '../scripts/holding/holding-shared.js';
   import { createHoldingWarp } from '../scripts/holding/holding-warp.js';
+  import { createHoldingTravel } from '../scripts/holding/holding-travel.js';
 
-  bootHoldingPage({ createGallery: createHoldingWarp, devHandle: '__holdingWarp' });
+  /** Desktop hands over to the mobile travel layout at and below this
+   * width (approved: iPad landscape 1024 gets mobile, larger gets
+   * desktop — a one-constant revisit if real-device testing disagrees).
+   * Must match holding-page.css's holding-page-2 media queries. */
+  const MOBILE_MAX_WIDTH = 1024;
+
+  /** Breakpoint facade: ONE gallery handle whose inner module swaps on
+   * crossings. Within a mode, resize stays geometry-only on the live
+   * instance (each module's own contract); only crossing the boundary
+   * tears down and boots the other module. */
+  function createBreakpointGallery(region, urls) {
+    let inner = null;
+    let mode = null;
+    const pick = () => (window.innerWidth <= MOBILE_MAX_WIDTH ? 'travel' : 'warp');
+    const apply = () => {
+      const next = pick();
+      if (next === mode) return;
+      inner?.destroy();
+      mode = next;
+      inner = (next === 'travel' ? createHoldingTravel : createHoldingWarp)(region, urls);
+    };
+    const onResize = () => apply();
+    window.addEventListener('resize', onResize);
+    apply();
+    return {
+      get ready() {
+        return inner?.ready ?? Promise.resolve();
+      },
+      resize() {
+        inner?.resize?.();
+      },
+      tickOnce(dtMs) {
+        inner?.tickOnce?.(dtMs);
+      },
+      debugState() {
+        return { mode, ...(inner?.debugState?.() ?? {}) };
+      },
+      destroy() {
+        window.removeEventListener('resize', onResize);
+        inner?.destroy();
+        inner = null;
+      },
+    };
+  }
+
+  bootHoldingPage({ createGallery: createBreakpointGallery, devHandle: '__holdingGallery2' });
 </script>

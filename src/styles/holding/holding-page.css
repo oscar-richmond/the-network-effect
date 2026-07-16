@@ -692,6 +692,183 @@
 	}
 }
 
+/* ── /holding-2 ONLY (.holding-page-2): mobile/tablet travel layout ──────
+   Figma 9135ovd3e9n2xa6iEqXTTC node 0:3. At <=1024 the page becomes the
+   travelling-image composition: one image drifts bottom->top on a FIXED
+   z:-1 full-viewport layer BEHIND the text, and the wordmark / tagline /
+   bottom copy are all white + mix-blend-difference so they invert over
+   the image as it passes (they read near-black over the bare ground).
+   BLEND SAFETY: the blend roots' ancestors (stage/column) gain NO
+   z-index/opacity/transform here — the column's position:relative alone
+   creates no stacking context; the travel layer's z:-1 keeps it inside
+   the root context's backdrop. /holding keeps its own band/strip tiers:
+   everything below is scoped to the page-2 body class. */
+
+/* Poster hidden outside the mobile mode. */
+.holding-travel__poster {
+	display: none;
+}
+
+/* Desktop extension: 1025-1199 was the shared band tier — /holding-2's
+   desktop now reaches down to 1025 (approved <=1024 handover), so this
+   block restores the base desktop values the shared band block above
+   overrides. /holding (no page-2 class) keeps the band. */
+@media (min-width: 1025px) and (max-width: 1199px) {
+	.holding-page-2 .holding-page__stage {
+		grid-template-columns: 1fr 41.6667%;
+		grid-template-rows: none;
+	}
+
+	.holding-page-2 .holding-page__column {
+		order: 0;
+		min-height: 100dvh;
+		padding: clamp(32px, 6vh, 64px) 24px;
+		padding-left: calc(24px + 12.2917vw);
+		gap: 0;
+	}
+
+	.holding-page-2 .holding-page__photo {
+		order: 0;
+		height: auto;
+		min-height: 0;
+	}
+
+	.holding-page-2 .holding-tagline__text {
+		font-size: clamp(34px, 3.3vw, 56px);
+	}
+
+	.holding-page-2 .holding-buttons {
+		margin-top: 48px;
+	}
+}
+
+@media (max-width: 1024px) {
+	.holding-page-2 .holding-page__stage {
+		display: block;
+		min-height: 100dvh;
+	}
+
+	.holding-page-2 .holding-page__column {
+		position: relative;
+		order: 0;
+		min-height: 100dvh;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0 24px;
+		gap: 0;
+	}
+
+	/* Wordmark: Dazzed Heavy 12px / 0.36 tracking, ~6dvh from the top
+	   (design y46 of the 772 content area). Already white+difference. */
+	.holding-page-2 .holding-wordmark {
+		margin-top: 6dvh;
+		font-size: 12px;
+		letter-spacing: 0.36px;
+	}
+
+	/* Tagline block: 310/402 = ~77vw wide at the design width (capped by
+	   the clamp), top at ~36% of the viewport. */
+	.holding-page-2 .holding-page__hero {
+		margin-top: 24dvh;
+	}
+
+	.holding-page-2 .holding-tagline__text {
+		font-size: clamp(24px, 8.7vw, 44px);
+	}
+
+	/* Buttons: 147/83 x 38, 10px type, 10px gap, side-by-side. */
+	.holding-page-2 .holding-buttons {
+		flex-direction: row;
+		width: auto;
+		gap: 10px;
+		margin-top: 40px;
+	}
+
+	.holding-page-2 .holding-btn {
+		height: 38px;
+		font-size: 10px;
+	}
+
+	.holding-page-2 .holding-btn--solid {
+		min-width: 147px;
+		width: auto;
+		padding: 0 16px;
+	}
+
+	.holding-page-2 .holding-btn--outline {
+		min-width: 83px;
+		width: auto;
+		padding: 0 16px;
+	}
+
+	/* Bottom copy: Serrif Regular 14/18, centered near the bottom —
+	   WHITE + DIFFERENCE on mobile (the design's treatment; desktop
+	   stays #161616 normal). */
+	.holding-page-2 .holding-signoff {
+		margin-top: auto;
+		margin-bottom: 7dvh;
+		font-size: 14px;
+		line-height: 18px;
+		max-width: 340px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	/* The travel host: the gallery region becomes the full-viewport
+	   behind-layer. z:-1 keeps it under the in-flow column content (so
+	   the blend roots composite against it) while its own #eeeef0 ground
+	   (inherited from the base region rule) keeps the flash-window
+	   guarantee. The desktop warp stack never renders here. */
+	.holding-page-2 .holding-page__photo {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		order: 0;
+		height: auto;
+		min-height: 0;
+		display: block;
+	}
+
+	.holding-page-2 .holding-warp {
+		display: none;
+	}
+
+	/* Poked poster — the static frame (RM / no-WebGL / pre-decode): top
+	   POKE_PX visible above the bottom edge, mirroring holding-travel.js. */
+	.holding-page-2 .holding-travel__poster {
+		display: block;
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		width: min(88%, 620px);
+		aspect-ratio: 800 / 534;
+		object-fit: cover;
+		transform: translateX(-50%) translateY(calc(100% - 18px));
+	}
+
+	.holding-page-2 .holding-travel__gl {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+		transition: opacity 0.4s ease;
+	}
+
+	.holding-page-2 .holding-travel__gl.is-live {
+		opacity: 1;
+	}
+
+	/* Scroll input belongs to the travel driver — never the page. */
+	.holding-page-2 {
+		touch-action: none;
+		overscroll-behavior: none;
+	}
+}
+
 /* Very short viewports: let the document grow instead of clipping content
    (a CSS safety net only — this page has no scroll-driven behaviour). */
 @media (max-height: 480px) {

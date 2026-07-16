@@ -39,20 +39,32 @@ export function clamp(n, min, max) {
  * visibilitychange with a fresh timestamp on resume.
  *
  * @param {HTMLElement} region wheel scope + deltaMode-2 unit source
- * @param {{ onFrame: (travelPx: number, dirSign: number, dtSec: number) => void }} opts
+ * @param {{ onFrame: (travelPx: number, dirSign: number, dtSec: number) => void,
+ *   autoDrift?: number, touch?: boolean }} opts
  *   onFrame runs once per frame after integration — the gallery variant
  *   updates its visuals (and any secondary integrations) here.
+ *   autoDrift overrides velocity's home value (default: the approved
+ *   24px/s upward drift; /holding-2's mobile travel passes 0 — the
+ *   scroll-driven-only design supersedes drift there). touch adds
+ *   position-coupled touch capture with flick momentum: while the
+ *   finger is down, travel tracks it 1:1 and momentum is sampled from
+ *   the finger; on release the sampled velocity decays home through the
+ *   same lerp — one architecture, the drift term zeroed. touchmove is
+ *   registered passive:false explicitly (iOS defaults document-level
+ *   touch listeners to passive) and preventDefault'd so the page never
+ *   rubber-bands; taps (touchstart) are not prevented, so buttons stay
+ *   tappable.
  * @returns {{ tickOnce: (dtMs?: number) => void, state: () => {velocity: number, travelPx: number}, destroy: () => void }}
  */
-export function createDriftDriver(region, { onFrame }) {
-  let velocity = AUTO_DRIFT_PX_PER_SEC;
+export function createDriftDriver(region, { onFrame, autoDrift = AUTO_DRIFT_PX_PER_SEC, touch = false }) {
+  let velocity = autoDrift;
   let travelPx = 0;
   let lastTravelPx = 0;
 
   const integrate = (dtMs) => {
     const dt = Math.min(dtMs, DT_MAX_MS) / 1000;
     velocity = clamp(
-      velocity + (AUTO_DRIFT_PX_PER_SEC - velocity) * VELOCITY_RECOVERY,
+      velocity + (autoDrift - velocity) * VELOCITY_RECOVERY,
       -MAX_VELOCITY,
       MAX_VELOCITY,
     );
@@ -73,6 +85,42 @@ export function createDriftDriver(region, { onFrame }) {
     velocity = clamp(velocity + event.deltaY * unit * WHEEL_GAIN, -MAX_VELOCITY, MAX_VELOCITY);
   };
   region.addEventListener('wheel', onWheel, { passive: false });
+
+  // Touch capture (see the opts doc above). Finger-up = positive travel
+  // (content follows the finger, page-scroll convention).
+  let touchY = 0;
+  let touchT = 0;
+  let touchVel = 0;
+  const onTouchStart = (event) => {
+    if (!event.touches.length) return;
+    touchY = event.touches[0].clientY;
+    touchT = performance.now();
+    touchVel = 0;
+    velocity = 0; // grab: momentum stops under the finger
+  };
+  const onTouchMove = (event) => {
+    if (!event.touches.length) return;
+    event.preventDefault();
+    const y = event.touches[0].clientY;
+    const now = performance.now();
+    const dy = touchY - y;
+    const dt = Math.max((now - touchT) / 1000, 0.001);
+    travelPx += dy; // 1:1 position coupling while down
+    // Sampled instantaneous velocity, lightly smoothed for release.
+    touchVel = touchVel * 0.6 + (dy / dt) * 0.4;
+    touchY = y;
+    touchT = now;
+  };
+  const onTouchEnd = () => {
+    velocity = clamp(touchVel, -MAX_VELOCITY, MAX_VELOCITY); // flick momentum
+    touchVel = 0;
+  };
+  if (touch) {
+    region.addEventListener('touchstart', onTouchStart, { passive: true });
+    region.addEventListener('touchmove', onTouchMove, { passive: false });
+    region.addEventListener('touchend', onTouchEnd, { passive: true });
+    region.addEventListener('touchcancel', onTouchEnd, { passive: true });
+  }
 
   let rafId = 0;
   let lastTs = 0;
@@ -111,6 +159,12 @@ export function createDriftDriver(region, { onFrame }) {
       cancelAnimationFrame(rafId);
       document.removeEventListener('visibilitychange', onVisibility);
       region.removeEventListener('wheel', onWheel);
+      if (touch) {
+        region.removeEventListener('touchstart', onTouchStart);
+        region.removeEventListener('touchmove', onTouchMove);
+        region.removeEventListener('touchend', onTouchEnd);
+        region.removeEventListener('touchcancel', onTouchEnd);
+      }
     },
   };
 }
