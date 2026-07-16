@@ -1,0 +1,468 @@
+import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl';
+
+/**
+ * Holding-page auto-rolling fold gallery — the site's turn/fold effect
+ * (rotating-gallery.js -> rotating-fold.js lineage) driven by a NEW,
+ * fully self-contained time/wheel driver, per the approved Phase 1 plan.
+ *
+ * LINEAGE (reused verbatim where they apply): rotating-fold.js's vertex
+ * shader (uPosition-driven per-vertex Y-axis fold), the cover-crop
+ * fragment shader, the OGL renderer/camera/dpr conventions, the
+ * destroy lifecycle, and the tickOnce()/debugState() verification hooks.
+ * The fold mapping is rotating-fold's approved centre-flat grammar:
+ * signed progress d = 0 exactly at the region's midline (epsilon-snapped,
+ * uDistortion ramp-held), folding as cards enter/exit.
+ *
+ * DEPARTURES from both site ancestors, per plan:
+ * - No DOM proxies: planes live in a virtual vertical strip
+ *   (y = slot x index, offset by one travel scalar) — the Codrops
+ *   reference's own model, which is what makes infinite wrap clean.
+ * - Region-local renderer: the canvas and ALL derived math (viewport,
+ *   wrap thresholds, fold progress) are sized to the gallery region,
+ *   not the window — the module cannot touch the left column.
+ * - Infinite wrap: the reference's extra/heightTotal modulo, with
+ *   direction taken from the sign of the per-frame travel delta rather
+ *   than the reference's global up/down flag (handles mid-frame wheel
+ *   reversals without a mis-wrap).
+ *
+ * THE DRIVER (approved design): one velocity value. Auto-drift is its
+ * home value; wheel deltas write impulses into it; every frame it lerps
+ * back home and travel integrates it. Travel is an integral, so the
+ * auto<->wheel handoff is continuous by construction — input only ever
+ * changes acceleration, never position. Images travel UPWARD at rest
+ * (Oscar's judgment call 2); wheel drives both directions.
+ *
+ * Wheel capture is scoped to the region element only (judgment call 1):
+ * listener on the region, passive:false + preventDefault — the rest of
+ * the page never sees gallery scroll intent, and the gallery never sees
+ * the page's. Touch devices: auto-drift only, no drag (approved) — the
+ * wheel listener simply never fires.
+ *
+ * REDUCED MOTION: the caller never constructs this module — the static
+ * poster <img> stays. WebGL init failure degrades the same way (returns
+ * null, poster stays), rotating-fold's degradation contract.
+ */
+
+/** Auto-drift pace, CSS px/sec, upward. ~one card every ~20s at desktop
+ * card sizes — the Codrops wheel-coast made permanent. Oscar's first
+ * feel-pass tunable. */
+const AUTO_DRIFT_PX_PER_SEC = 24;
+/** Velocity impulse per normalized wheel px. */
+const WHEEL_GAIN = 12;
+/** Per-frame lerp factor pulling velocity back to the auto-drift home
+ * value once input stops — a released fling rejoins the drift in ~1.5s
+ * at 60fps. */
+const VELOCITY_RECOVERY = 0.04;
+/** Velocity clamp, CSS px/sec, both signs — a violent trackpad fling
+ * coasts fast but can never teleport the strip. */
+const MAX_VELOCITY = 3000;
+/** Integration step cap — after a hidden-tab stall the first resumed
+ * frame advances at most this much, instead of jumping the whole gap. */
+const DT_MAX_MS = 100;
+
+/** Card layout: width as a fraction of the region, aspect locked to the
+ * HP Carousel set (1200x800 = 3:2 — cover-crop cuts zero pixels), gap as
+ * a fraction of card height. Cards also cap to CARD_MAX_HEIGHT_FRACTION
+ * of the region so the tablet band / phone strip (short, wide regions)
+ * keep whole cards visible rather than a clipped peek-window. */
+const CARD_WIDTH_FRACTION = 0.82;
+const CARD_ASPECT = 1200 / 800;
+const CARD_GAP_FRACTION = 0.14;
+const CARD_MAX_HEIGHT_FRACTION = 0.72;
+
+/** Fold constants — rotating-fold.js's approved values, verbatim. */
+const FOLD_HALF_TURNS = 0.5;
+const FOLD_EASE_EXPONENT = 1.4;
+const FOLD_DISTORTION_PHASE = 0.15;
+const FOLD_DISTORTION_RAMP = 0.05;
+const FOLD_CENTER_EPSILON = 0.001;
+const FOLD_ROTATION_AXIS = [0, 1, 0];
+const FOLD_DISTORTION_AXIS = [1, 1, 0];
+
+// rotating-fold.js's vertex shader, verbatim (see its comments for the
+// angle-domain history).
+const VERTEX_SHADER = /* glsl */ `
+  precision highp float;
+
+  attribute vec3 position;
+  attribute vec2 uv;
+  attribute vec3 normal;
+
+  uniform mat4 modelViewMatrix;
+  uniform mat4 projectionMatrix;
+  uniform mat3 normalMatrix;
+
+  uniform float uPosition;
+  uniform vec3 distortionAxis;
+  uniform vec3 rotationAxis;
+  uniform float uDistortion;
+
+  varying vec2 vUv;
+
+  mat4 rotationMatrix(vec3 axis, float angle) {
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+  }
+
+  vec3 rotate(vec3 v, vec3 axis, float angle) {
+    mat4 m = rotationMatrix(axis, angle);
+    return (m * vec4(v, 1.0)).xyz;
+  }
+
+  void main() {
+    vUv = uv;
+
+    float norm = 0.5;
+    float offset = ( dot(distortionAxis,position) +norm/2.)/norm;
+    float localAngle = uPosition + uDistortion * offset;
+
+    vec3 newpos = rotate(position, rotationAxis, localAngle);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newpos, 1.0);
+  }
+`;
+
+// The lineage's cover-crop fragment shader, verbatim.
+const FRAGMENT_SHADER = /* glsl */ `
+  precision highp float;
+
+  uniform vec2 uImageSize;
+  uniform vec2 uPlaneSize;
+  uniform sampler2D tMap;
+
+  varying vec2 vUv;
+
+  void main() {
+    vec2 ratio = vec2(
+      min((uPlaneSize.x / uPlaneSize.y) / (uImageSize.x / uImageSize.y), 1.0),
+      min((uPlaneSize.y / uPlaneSize.x) / (uImageSize.y / uImageSize.x), 1.0)
+    );
+
+    vec2 uv = vec2(
+      vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
+      vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
+    );
+
+    gl_FragColor.rgb = texture2D(tMap, uv).rgb;
+    gl_FragColor.a = 1.0;
+  }
+`;
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(n, max));
+}
+
+function clamp01(n) {
+  return clamp(n, 0, 1);
+}
+
+class GalleryPlane {
+  /**
+   * @param {WebGLRenderingContext} gl
+   * @param {InstanceType<typeof Plane>} geometry
+   * @param {InstanceType<typeof Transform>} scene
+   * @param {string} url
+   * @param {number} index
+   * @param {number} count
+   */
+  constructor(gl, geometry, scene, url, index, count) {
+    this.index = index;
+    this.count = count;
+    /** Wrap accumulator — an INTEGER count of loop circumferences, not
+     * the reference's pre-multiplied `extra` offset. Multiplied by the
+     * CURRENT loop length each frame, so accumulated wraps stay valid
+     * across a resize (a stored offset in old-layout units would leave a
+     * permanent seam after the slot metric changes — caught live in
+     * verification). */
+    this.wraps = 0;
+    this.ready = false;
+    this.lastState = { y: 0, uPosition: 0, uDistortion: 0, wraps: 0 };
+
+    const texture = new Texture(gl, { generateMipmaps: false });
+    this.program = new Program(gl, {
+      depthTest: false,
+      depthWrite: false,
+      vertex: VERTEX_SHADER,
+      fragment: FRAGMENT_SHADER,
+      uniforms: {
+        tMap: { value: texture },
+        uPosition: { value: 0 },
+        uPlaneSize: { value: [0, 0] },
+        uImageSize: { value: [0, 0] },
+        rotationAxis: { value: FOLD_ROTATION_AXIS },
+        distortionAxis: { value: FOLD_DISTORTION_AXIS },
+        uDistortion: { value: 0 },
+      },
+      cullFace: false,
+    });
+
+    this.mesh = new Mesh(gl, { geometry, program: this.program });
+    this.mesh.setParent(scene);
+    this.mesh.visible = false;
+
+    this.readyPromise = new Promise((resolve) => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => {
+        texture.image = image;
+        this.program.uniforms.uImageSize.value = [image.naturalWidth, image.naturalHeight];
+        this.ready = true;
+        resolve();
+      };
+      image.onerror = () => resolve(); // a failed image mustn't hold the gallery hostage
+      image.src = url;
+    });
+  }
+
+  /**
+   * @param {{cardW: number, cardH: number, slot: number, loop: number}} layout viewport units
+   */
+  layout(layout) {
+    this.layoutVp = layout;
+    this.mesh.scale.x = layout.cardW;
+    this.mesh.scale.y = layout.cardH;
+    this.program.uniforms.uPlaneSize.value = [layout.cardW, layout.cardH];
+    this.mesh.position.x = 0;
+    // Stack downward from the region centre: index 0 at 0, 1 below, ...
+    this.baseY = -layout.slot * this.index;
+  }
+
+  /**
+   * @param {number} travelVp travel in viewport units (positive = strip moves up)
+   * @param {number} dirSign sign of this frame's travel delta
+   * @param {number} viewportH region viewport height
+   */
+  update(travelVp, dirSign, viewportH) {
+    if (!this.ready || !this.layoutVp) {
+      this.mesh.visible = false;
+      return;
+    }
+    const { slot, loop } = this.layoutVp;
+    const half = this.mesh.scale.y / 2;
+
+    let y = this.baseY + travelVp + this.wraps * loop;
+
+    // Infinite wrap — the reference's modulo, gated by this frame's
+    // actual travel direction so a mid-frame reversal can't mis-wrap.
+    const above = y - half > viewportH / 2 + slot / 2;
+    const below = y + half < -viewportH / 2 - slot / 2;
+    if (dirSign > 0 && above) {
+      this.wraps -= 1;
+      y = this.baseY + travelVp + this.wraps * loop;
+    } else if (dirSign < 0 && below) {
+      this.wraps += 1;
+      y = this.baseY + travelVp + this.wraps * loop;
+    }
+
+    this.mesh.visible = true;
+    this.mesh.position.y = y;
+
+    // Fold: signed progress over the region — 0 exactly at the midline
+    // (rotating-fold's centre-flat grammar, constants verbatim).
+    let d = clamp(y / (viewportH / 2 + half), -1, 1);
+    if (Math.abs(d) < FOLD_CENTER_EPSILON) d = 0;
+    const eased = 1 - Math.pow(1 - Math.abs(d), FOLD_EASE_EXPONENT);
+    const uPosition = Math.sign(d) * eased * FOLD_HALF_TURNS * Math.PI * 2;
+    const uDistortion = FOLD_DISTORTION_PHASE * clamp01(eased / FOLD_DISTORTION_RAMP);
+    this.program.uniforms.uPosition.value = uPosition;
+    this.program.uniforms.uDistortion.value = uDistortion;
+    this.lastState = { y, uPosition, uDistortion, wraps: this.wraps };
+  }
+
+  destroy() {
+    this.mesh.setParent(null);
+    this.program.remove();
+  }
+}
+
+/**
+ * @param {HTMLElement} region the gallery region (canvas host, wheel scope,
+ *   size source). The poster <img> inside it hides once all textures are
+ *   decoded — the founders-dissolve takeover, so no blank frame can show.
+ * @param {string[]} imageUrls display order
+ * @returns {{ ready: Promise<void>, resize: () => void,
+ *   tickOnce: (dtMs?: number) => void, debugState: () => object,
+ *   destroy: () => void } | null} null when WebGL is unavailable — the
+ *   poster stays (degradation contract).
+ */
+export function createHoldingGallery(region, imageUrls) {
+  if (!(region instanceof HTMLElement) || imageUrls.length < 2) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'holding-gallery__canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+
+  let renderer;
+  try {
+    renderer = new Renderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      dpr: Math.min(window.devicePixelRatio, 2),
+    });
+  } catch (error) {
+    console.warn('[holding-gallery] WebGL renderer failed — poster image stays.', error);
+    return null;
+  }
+
+  const gl = renderer.gl;
+  const camera = new Camera(gl);
+  camera.fov = 45;
+  camera.position.z = 20;
+  const scene = new Transform();
+  // The lineage's segment density — the fold needs the vertices.
+  const geometry = new Plane(gl, { heightSegments: 1, widthSegments: 100 });
+
+  const planes = imageUrls.map(
+    (url, i) => new GalleryPlane(gl, geometry, scene, url, i, imageUrls.length),
+  );
+
+  let regionSize = { width: 1, height: 1 };
+  let viewport = { width: 1, height: 1 };
+  /** CSS px -> viewport units, vertical. */
+  let pxToVp = 1;
+
+  const resize = () => {
+    const rect = region.getBoundingClientRect();
+    regionSize = { width: Math.max(rect.width, 1), height: Math.max(rect.height, 1) };
+    renderer.setSize(regionSize.width, regionSize.height);
+    camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
+    const fov = camera.fov * (Math.PI / 180);
+    const height = 2 * Math.tan(fov / 2) * camera.position.z;
+    const width = height * camera.aspect;
+    viewport = { width, height };
+    pxToVp = viewport.height / regionSize.height;
+
+    // Card sizing in CSS px (width-led, height-capped for the tablet
+    // band / phone strip), then converted to viewport units.
+    let cardWPx = regionSize.width * CARD_WIDTH_FRACTION;
+    let cardHPx = cardWPx / CARD_ASPECT;
+    const maxHPx = regionSize.height * CARD_MAX_HEIGHT_FRACTION;
+    if (cardHPx > maxHPx) {
+      cardHPx = maxHPx;
+      cardWPx = cardHPx * CARD_ASPECT;
+    }
+    const slotPx = cardHPx * (1 + CARD_GAP_FRACTION);
+    const layout = {
+      cardW: cardWPx * (viewport.width / regionSize.width),
+      cardH: cardHPx * pxToVp,
+      slot: slotPx * pxToVp,
+      loop: slotPx * pxToVp * planes.length,
+    };
+    planes.forEach((plane) => plane.layout(layout));
+  };
+
+  // ── The driver: one velocity value (see module header). ──────────────
+  let velocity = AUTO_DRIFT_PX_PER_SEC;
+  let travelPx = 0;
+  let lastTravelPx = 0;
+
+  const integrate = (dtMs) => {
+    const dt = Math.min(dtMs, DT_MAX_MS) / 1000;
+    velocity = clamp(
+      velocity + (AUTO_DRIFT_PX_PER_SEC - velocity) * VELOCITY_RECOVERY,
+      -MAX_VELOCITY,
+      MAX_VELOCITY,
+    );
+    travelPx += velocity * dt;
+  };
+
+  const step = () => {
+    const dirSign = Math.sign(travelPx - lastTravelPx) || 1;
+    lastTravelPx = travelPx;
+    const travelVp = travelPx * pxToVp;
+    planes.forEach((plane) => plane.update(travelVp, dirSign, viewport.height));
+    renderer.render({ scene, camera });
+  };
+
+  /**
+   * Wheel — scoped to the region element only. deltaMode normalization
+   * done here (0 px / 1 lines / 2 pages) instead of adding the
+   * reference's normalize-wheel dependency.
+   */
+  const onWheel = (event) => {
+    event.preventDefault();
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? regionSize.height : 1;
+    velocity = clamp(velocity + event.deltaY * unit * WHEEL_GAIN, -MAX_VELOCITY, MAX_VELOCITY);
+  };
+  region.addEventListener('wheel', onWheel, { passive: false });
+
+  let rafId = 0;
+  let lastTs = 0;
+  let disposed = false;
+  const tick = (ts) => {
+    if (disposed) return;
+    rafId = requestAnimationFrame(tick);
+    const dtMs = lastTs ? ts - lastTs : 16.7;
+    lastTs = ts;
+    integrate(dtMs);
+    step();
+  };
+
+  // Hidden-tab hygiene: stop the loop entirely; on return, restart with a
+  // fresh timestamp so the stall never integrates as one giant step.
+  const onVisibility = () => {
+    cancelAnimationFrame(rafId);
+    if (!document.hidden && !disposed) {
+      lastTs = 0;
+      rafId = requestAnimationFrame(tick);
+    }
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+
+  const onResize = () => resize();
+  window.addEventListener('resize', onResize);
+
+  resize();
+  canvas.style.visibility = 'hidden'; // until every texture is decoded
+  region.appendChild(canvas);
+  rafId = requestAnimationFrame(tick);
+
+  const poster = region.querySelector('[data-holding-gallery-poster]');
+  const ready = Promise.all(planes.map((p) => p.readyPromise)).then(() => {
+    if (disposed) return;
+    // Takeover: canvas on, poster off — never a blank frame between.
+    step();
+    canvas.style.visibility = '';
+    if (poster instanceof HTMLElement) poster.style.visibility = 'hidden';
+  });
+
+  return {
+    ready,
+    resize,
+    /** One synchronous integrate+render — the lineage's verification
+     * hook (the occluded-tab environment has no rAF; harmless in
+     * production). */
+    tickOnce(dtMs = 16.7) {
+      if (disposed) return;
+      integrate(dtMs);
+      step();
+    },
+    debugState() {
+      return {
+        velocity,
+        travelPx,
+        regionSize: { ...regionSize },
+        planes: planes.map((p) => ({ ...p.lastState, ready: p.ready })),
+      };
+    },
+    destroy() {
+      disposed = true;
+      cancelAnimationFrame(rafId);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('resize', onResize);
+      region.removeEventListener('wheel', onWheel);
+      planes.forEach((plane) => plane.destroy());
+      geometry.remove();
+      canvas.remove();
+      if (poster instanceof HTMLElement) poster.style.visibility = '';
+    },
+  };
+}

@@ -4,8 +4,9 @@
  * "/" is a later, separate, explicitly-triggered deploy step (a one-commit
  * git mv of index.astro <-> holding.astro), not performed here.
  *
- * PENDING SIGN-OFF: the right-side photo and the 5 inline tagline images
- * are placeholder-until-approved, per the site's standing content policy.
+ * PENDING SIGN-OFF: the right-side gallery images and the 5 inline
+ * tagline images are placeholder-until-approved, per the site's standing
+ * content policy.
  * COPY NOTE for founder review: the tagline reads "CULTURE" here, per the
  * Figma file — the /about-3 hero's equivalent line reads "CULTURAL". Built
  * as the Figma reads; flagging the wording difference for sign-off.
@@ -14,7 +15,18 @@ import HoldingLayout from '../layouts/HoldingLayout.astro';
 import { asset } from '../utils/asset.js';
 import '../styles/holding/holding-page.css';
 
-const photo = asset('/assets/holding/photo.jpg');
+// Right-side auto-rolling fold gallery (holding-gallery.js), in display
+// order — Oscar's "HP Carousel 1-5" originals from ~/Desktop, processed
+// to 1080x720 (~2x the ~590px card at 1728), mozjpeg q78, 445KB total.
+// PENDING SIGN-OFF as ever. galleryImages[0] doubles as the static
+// poster: first paint, reduced motion, and the no-WebGL fallback.
+const galleryImages = [
+  asset('/assets/holding/gallery/01-armchairs-overhead.jpg'),
+  asset('/assets/holding/gallery/02-glass-touch.jpg'),
+  asset('/assets/holding/gallery/03-staircase.jpg'),
+  asset('/assets/holding/gallery/04-portrait.jpg'),
+  asset('/assets/holding/gallery/05-panelled-lounge.jpg'),
+];
 
 // The 5-image rotation, in display order (Oscar's "HP 1-5" originals,
 // resized to 220px wide / mozjpeg q80 — ~2x the slot's ~101px render at
@@ -140,9 +152,28 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
       </p>
     </div>
 
-    <div class="holding-page__photo" data-holding-image>
-      <!-- PENDING SIGN-OFF: placeholder photo -->
-      <img src={photo} alt="" decoding="async" />
+    <!-- The auto-rolling fold gallery region. Keeps the photo's entry
+         slot and treatment untouched: holding-entry.js still reveals
+         [data-holding-image] (fade+rise at HOLDING_IMAGE_AT). The poster
+         is the resting first card — the canvas takes over via the
+         founders-dissolve technique once every texture is decoded, so no
+         blank or half-loaded frame can show. Under reduced motion or
+         failed WebGL the poster simply stays: static first frame, no
+         drift, no fold. -->
+    <div
+      class="holding-page__photo"
+      data-holding-image
+      data-holding-gallery
+      data-gallery-images={JSON.stringify(galleryImages)}
+    >
+      <!-- PENDING SIGN-OFF: placeholder gallery imagery -->
+      <img
+        class="holding-gallery__poster"
+        data-holding-gallery-poster
+        src={galleryImages[0]}
+        alt=""
+        decoding="async"
+      />
     </div>
   </div>
 
@@ -151,6 +182,36 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
 
 <script>
   import { initHoldingEntry } from '../scripts/holding/holding-entry.js';
+  import { createHoldingGallery } from '../scripts/holding/holding-gallery.js';
 
   initHoldingEntry();
+
+  const galleryRegion = document.querySelector('[data-holding-gallery]');
+  let gallery = null;
+  if (
+    galleryRegion instanceof HTMLElement &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    let urls = [];
+    try {
+      urls = JSON.parse(galleryRegion.dataset.galleryImages ?? '[]');
+    } catch {
+      urls = [];
+    }
+    gallery = createHoldingGallery(galleryRegion, urls);
+    if (gallery && import.meta.env.DEV) {
+      // Verification handle for the occluded-tab environment (no rAF) —
+      // dev only, stripped from production builds.
+      window.__holdingGallery = gallery;
+    }
+  }
+
+  document.addEventListener(
+    'astro:before-swap',
+    () => {
+      gallery?.destroy();
+      gallery = null;
+    },
+    { once: true },
+  );
 </script>

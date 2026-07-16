@@ -32,18 +32,41 @@
 	min-height: 100dvh;
 }
 
+/* The gallery region (formerly the static photo). Hosts the poster and
+   the fold-gallery canvas (holding-gallery.js). STACKING/BLEND SAFETY:
+   this region is a SIBLING column to the text column — the canvas is
+   never an ancestor of the wordmark/tagline difference-blend roots, and
+   the grain (fixed, z 9000, normal compositing) paints above it, per the
+   approved stacking map. The entry transform/opacity on this region
+   creates a stacking context, which safely CONTAINS the absolutely-
+   positioned canvas rather than affecting anything outside it. */
 .holding-page__photo {
 	position: relative;
 	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.holding-page__photo img {
+/* Poster — the resting first card, styled to match the canvas's card
+   layout (width-led, height-capped; the JS mirrors these fractions), so
+   the texture takeover is visually seamless. Stays as the static frame
+   under reduced motion or failed WebGL. */
+.holding-gallery__poster {
+	display: block;
+	width: 82%;
+	max-height: 72%;
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+}
+
+.holding-gallery__canvas {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
-	object-position: 53% 50%;
+	z-index: 1;
+	pointer-events: none;
 }
 
 .holding-page__column {
