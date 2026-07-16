@@ -289,7 +289,17 @@ export function createHoldingTravel(region, imageUrls) {
   };
 
   let lastPlace = { k: 0, s: 0, span: 1, topPx: 0, imgH: 1 };
-  const driver = createDriftDriver(region, {
+  // INPUT SURFACE: NOT the region — on mobile the region is the fixed
+  // z:-1 layer BEHIND the column, and hit-testing routes every real
+  // wheel/touch to the column's content, whose bubble path (column ->
+  // stage -> body) never includes a behind-layer sibling. Capturing on
+  // the stage (the full-viewport in-flow ancestor everything bubbles
+  // through) is what makes real input work; the region keeps canvas +
+  // layout duties only. (The original region-scoped capture passed
+  // verification because synthetic dispatchEvent ON the region bypasses
+  // hit-testing — real input exposed it.)
+  const inputSurface = region.closest('.holding-page__stage') ?? document.body;
+  const driver = createDriftDriver(inputSurface, {
     onFrame: (travelPx) => {
       lastPlace = place(travelPx);
     },
