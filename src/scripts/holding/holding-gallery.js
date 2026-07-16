@@ -1,17 +1,18 @@
 import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl';
 
 /**
- * Holding-page auto-rolling fold gallery — the site's turn/fold effect
- * (rotating-gallery.js -> rotating-fold.js lineage) driven by a NEW,
- * fully self-contained time/wheel driver, per the approved Phase 1 plan.
+ * Holding-page auto-rolling curl gallery — the Codrops RotatingSlideshow
+ * reference's deformation VERBATIM (see the curl-constants block below
+ * for why the house rotating-fold adaptation was reverted here), driven
+ * by a NEW, fully self-contained time/wheel driver, per the approved
+ * Phase 1 plan.
  *
- * LINEAGE (reused verbatim where they apply): rotating-fold.js's vertex
- * shader (uPosition-driven per-vertex Y-axis fold), the cover-crop
- * fragment shader, the OGL renderer/camera/dpr conventions, the
- * destroy lifecycle, and the tickOnce()/debugState() verification hooks.
- * The fold mapping is rotating-fold's approved centre-flat grammar:
- * signed progress d = 0 exactly at the region's midline (epsilon-snapped,
- * uDistortion ramp-held), folding as cards enter/exit.
+ * LINEAGE: the reference's vertex shader and uPosition/uDistortion
+ * conventions verbatim (src/_reference/rotating-slideshow, MIT); the
+ * cover-crop fragment shader (identical in the reference and every
+ * house adaptation); rotating-fold.js's OGL renderer/camera/dpr
+ * conventions, destroy lifecycle, and tickOnce()/debugState()
+ * verification hooks.
  *
  * DEPARTURES from both site ancestors, per plan:
  * - No DOM proxies: planes live in a virtual vertical strip
@@ -74,17 +75,37 @@ const CARD_ASPECT = 480 / 550;
 const CARD_GAP_FRACTION = 0.14;
 const CARD_MAX_HEIGHT_FRACTION = 0.36;
 
-/** Fold constants — rotating-fold.js's approved values, verbatim. */
-const FOLD_HALF_TURNS = 0.5;
-const FOLD_EASE_EXPONENT = 1.4;
-const FOLD_DISTORTION_PHASE = 0.15;
-const FOLD_DISTORTION_RAMP = 0.05;
-const FOLD_CENTER_EPSILON = 0.001;
-const FOLD_ROTATION_AXIS = [0, 1, 0];
-const FOLD_DISTORTION_AXIS = [1, 1, 0];
+/** Curl constants — the REFERENCE'S OWN deformation values, extracted
+ * from src/_reference/rotating-slideshow (Media.js + vertex.glsl), not
+ * the house rotating-fold adaptation. The reference's swirl/curl
+ * character comes from running qinticInOut PER-VERTEX in the shader:
+ * each vertex's progress lags by up to 0.01*CURL_DISTORTION*offset
+ * (offset spans [-1.5, 2.5] along the plane diagonal), and qintic's
+ * slope — steep mid-travel, ~zero at the ends — amplifies that constant
+ * lag into a large angular twist exactly while the card is turning
+ * (~108 deg of wind-up across the plane at mid-turn with the stock
+ * value 3), collapsing back to flat as the turn settles. Curl amplitude
+ * is intrinsically coupled to turn rate; there is no separate amplitude
+ * ramp. The earlier house shader (rotating-gallery/rotating-fold)
+ * deliberately REMOVED the in-shader qintic to support unbounded
+ * scroll-driven rotation — that removal is what flattened the curl into
+ * the rigid-card "bowtie pinch" on this page; the reference's bounded
+ * travel model fits the holding gallery, so its original math returns
+ * verbatim. */
+/** The reference's uDistortion (Media.js: `uDistortion: { value: 3 }`,
+ * constant) — Oscar's curl-strength tunable. */
+const CURL_DISTORTION = 3;
+/** The reference's uPosition convention (Media.js: map(plane.y, -vpH,
+ * +vpH, 5, 15)); the shader rescales by 0.05, so travel spans effective
+ * progress 0.25..0.75 — flat-ish on entry, edge-on mid-region, flat
+ * (backside) on exit. */
+const UPOSITION_MIN = 5;
+const UPOSITION_MAX = 15;
+const CURL_ROTATION_AXIS = [0, 1, 0];
+const CURL_DISTORTION_AXIS = [1, 1, 0];
 
-// rotating-fold.js's vertex shader, verbatim (see its comments for the
-// angle-domain history).
+// The reference's vertex shader, verbatim
+// (src/_reference/rotating-slideshow/src/shaders/vertex.glsl).
 const VERTEX_SHADER = /* glsl */ `
   precision highp float;
 
@@ -103,6 +124,8 @@ const VERTEX_SHADER = /* glsl */ `
 
   varying vec2 vUv;
 
+  float PI = 3.141592653589793238;
+
   mat4 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
     float s = sin(angle);
@@ -120,14 +143,25 @@ const VERTEX_SHADER = /* glsl */ `
     return (m * vec4(v, 1.0)).xyz;
   }
 
+  float qinticInOut(float t) {
+    return t < 0.5
+      ? +16.0 * pow(t, 5.0)
+      : -0.5 * abs(pow(2.0 * t - 2.0, 5.0)) + 1.0;
+  }
+
   void main() {
     vUv = uv;
 
     float norm = 0.5;
-    float offset = ( dot(distortionAxis,position) +norm/2.)/norm;
-    float localAngle = uPosition + uDistortion * offset;
 
-    vec3 newpos = rotate(position, rotationAxis, localAngle);
+    vec3 newpos = position;
+    float offset = ( dot(distortionAxis,position) +norm/2.)/norm;
+
+    float localprogress = clamp( (fract(uPosition * 5.0 * 0.01) - 0.01*uDistortion*offset)/(1. - 0.01*uDistortion),0.,2.);
+
+    localprogress = qinticInOut(localprogress)*PI;
+
+    newpos = rotate(newpos,rotationAxis,localprogress);
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(newpos, 1.0);
   }
@@ -163,10 +197,6 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(n, max));
 }
 
-function clamp01(n) {
-  return clamp(n, 0, 1);
-}
-
 class GalleryPlane {
   /**
    * @param {WebGLRenderingContext} gl
@@ -200,9 +230,11 @@ class GalleryPlane {
         uPosition: { value: 0 },
         uPlaneSize: { value: [0, 0] },
         uImageSize: { value: [0, 0] },
-        rotationAxis: { value: FOLD_ROTATION_AXIS },
-        distortionAxis: { value: FOLD_DISTORTION_AXIS },
-        uDistortion: { value: 0 },
+        rotationAxis: { value: CURL_ROTATION_AXIS },
+        distortionAxis: { value: CURL_DISTORTION_AXIS },
+        // Constant, the reference's own convention — the curl breathes
+        // with qintic's slope, not with an amplitude ramp.
+        uDistortion: { value: CURL_DISTORTION },
       },
       cullFace: false,
     });
@@ -268,16 +300,16 @@ class GalleryPlane {
     this.mesh.visible = true;
     this.mesh.position.y = y;
 
-    // Fold: signed progress over the region — 0 exactly at the midline
-    // (rotating-fold's centre-flat grammar, constants verbatim).
-    let d = clamp(y / (viewportH / 2 + half), -1, 1);
-    if (Math.abs(d) < FOLD_CENTER_EPSILON) d = 0;
-    const eased = 1 - Math.pow(1 - Math.abs(d), FOLD_EASE_EXPONENT);
-    const uPosition = Math.sign(d) * eased * FOLD_HALF_TURNS * Math.PI * 2;
-    const uDistortion = FOLD_DISTORTION_PHASE * clamp01(eased / FOLD_DISTORTION_RAMP);
+    // Curl: the reference's exact uPosition driver (Media.js:
+    // map(plane.y, -vpH, +vpH, 5, 15)) — the per-vertex qintic in the
+    // shader does everything else. Continuous progressive roll: flat-ish
+    // entering from below, edge-on mid-curl at the centre, flat
+    // (backside) exiting above.
+    const uPosition =
+      UPOSITION_MIN +
+      ((y + viewportH) / (2 * viewportH)) * (UPOSITION_MAX - UPOSITION_MIN);
     this.program.uniforms.uPosition.value = uPosition;
-    this.program.uniforms.uDistortion.value = uDistortion;
-    this.lastState = { y, uPosition, uDistortion, wraps: this.wraps };
+    this.lastState = { y, uPosition, wraps: this.wraps };
   }
 
   destroy() {
@@ -430,12 +462,30 @@ export function createHoldingGallery(region, imageUrls) {
   rafId = requestAnimationFrame(tick);
 
   const poster = region.querySelector('[data-holding-gallery-poster]');
+  let takeoverTimeout = 0;
+  const hidePoster = () => {
+    if (poster instanceof HTMLElement) poster.style.visibility = 'hidden';
+  };
   const ready = Promise.all(planes.map((p) => p.readyPromise)).then(() => {
     if (disposed) return;
-    // Takeover: canvas on, poster off — never a blank frame between.
+    // Takeover: with the reference's continuous-roll grammar the
+    // region-centre card is mid-curl (edge-on), so the flat poster and
+    // the first canvas frame no longer match geometrically — the canvas
+    // fades in over the poster (is-live, 0.4s CSS) instead of a hard
+    // swap. The poster hides only once the fade has ACTUALLY covered it
+    // (transitionend, with an opacity-checking fallback poll) — a plain
+    // timer would fire in a background tab while the frozen transition
+    // holds the canvas transparent, leaving a blank region on tab-show.
     step();
     canvas.style.visibility = '';
-    if (poster instanceof HTMLElement) poster.style.visibility = 'hidden';
+    canvas.classList.add('is-live');
+    canvas.addEventListener('transitionend', hidePoster, { once: true });
+    const checkCovered = () => {
+      if (disposed) return;
+      if (parseFloat(getComputedStyle(canvas).opacity) >= 0.99) hidePoster();
+      else takeoverTimeout = window.setTimeout(checkCovered, 500);
+    };
+    takeoverTimeout = window.setTimeout(checkCovered, 600);
   });
 
   return {
@@ -460,6 +510,8 @@ export function createHoldingGallery(region, imageUrls) {
     destroy() {
       disposed = true;
       cancelAnimationFrame(rafId);
+      clearTimeout(takeoverTimeout);
+      canvas.removeEventListener('transitionend', hidePoster);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('resize', onResize);
       region.removeEventListener('wheel', onWheel);

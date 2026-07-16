@@ -71,6 +71,17 @@
 	height: 100%;
 	z-index: 1;
 	pointer-events: none;
+	/* Texture takeover is a fade, not a hard swap: with the reference's
+	   continuous-roll curl the region-centre card is mid-curl (edge-on),
+	   so the flat poster and the first canvas frame no longer match
+	   geometrically — holding-gallery.js adds is-live once every texture
+	   is decoded and hides the poster after this fade covers it. */
+	opacity: 0;
+	transition: opacity 0.4s ease;
+}
+
+.holding-gallery__canvas.is-live {
+	opacity: 1;
 }
 
 .holding-page__column {
