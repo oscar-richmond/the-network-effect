@@ -55,8 +55,8 @@ gsap.registerPlugin(CustomEase);
 /** Uniform column width — /holding's card fraction, for a fair A/B. */
 const COLUMN_WIDTH_FRACTION = 0.41;
 /** Inter-image gap, fixed px (Oscar's spec — was /holding's 0.14 x
- * height ~ 47px at desktop). */
-const GAP_PX = 32;
+ * height ~ 47px at desktop, then 32). */
+const GAP_PX = 24;
 /** Strip-safety cap on item height (short wide regions). */
 const ITEM_MAX_HEIGHT_FRACTION = 0.5;
 /** Fallback ratio before natural dims are known — the HP Carousel set. */
