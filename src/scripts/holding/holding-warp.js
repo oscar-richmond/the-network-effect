@@ -298,6 +298,13 @@ export function createHoldingWarp(region, imageUrls) {
       y: 0,
       heightPx: 1,
       offsetPx: 0,
+      /** Flash-window pattern: the DOM img hides only AFTER its plane
+       * has actually been RENDERED visible once (set post-render in
+       * syncPlanes) — hiding at texture decode raced the next canvas
+       * frame (unbounded in a stalled-rAF background-tab load) and
+       * could expose a blank slide. JS only ever reveals; the hide is
+       * strictly cover-then-hide. */
+      imgHidden: false,
     };
 
     state.readyPromise = new Promise((resolve) => {
@@ -308,9 +315,6 @@ export function createHoldingWarp(region, imageUrls) {
         program.uniforms.uTextureSize.value = [image.naturalWidth, image.naturalHeight];
         state.aspect = image.naturalWidth / Math.max(image.naturalHeight, 1);
         state.ready = true;
-        // founders-dissolve takeover: DOM img paints until the texture
-        // is decoded, then hides (slide div stays as the hover target).
-        if (imgEl instanceof HTMLElement) imgEl.style.visibility = 'hidden';
         resolve();
       };
       image.onerror = () => resolve();
@@ -470,6 +474,15 @@ export function createHoldingWarp(region, imageUrls) {
       state.program.uniforms.uMouseEnter.value = state.mouseEnter.value;
     });
     renderer.render({ scene, camera });
+
+    // Cover-then-hide (see imgHidden's note): only after this frame has
+    // actually painted a plane does its DOM img hand over.
+    states.forEach((state) => {
+      if (!state.imgHidden && state.mesh.visible) {
+        state.imgHidden = true;
+        if (state.imgEl instanceof HTMLElement) state.imgEl.style.visibility = 'hidden';
+      }
+    });
   };
 
   const onFrame = (travelPx, dirSign) => {

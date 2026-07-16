@@ -46,6 +46,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	/* Flash-window pattern: the region matches the page ground BY CSS
+	   DEFAULT, present from first paint before any JS runs — no load
+	   ordering (style-module timing in dev, slow poster/texture decode)
+	   can ever expose a browser-default white box here. JS only ever
+	   reveals content over this; nothing depends on JS to paint it. */
+	background: #eeeef0;
 }
 
 /* Poster — the resting first card, styled to match the canvas's card
