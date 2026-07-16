@@ -1,9 +1,10 @@
 ---
 /**
- * Pre-launch holding page, variant B — the services pop-up's stacked
- * warp column (holding-stack.js: curve-media arc-bend + aberration on
- * the shared drift driver). Compare against /holding (the curl-fold
- * gallery); one gets picked later.
+ * Pre-launch holding page, variant B — the Selected Works pillar
+ * images' grain-displacement effect (holding-warp.js: the wave-shader
+ * bow + cursor grain, verbatim shaders) on the shared drift driver,
+ * flat-travelling mixed-height column. Compare against /holding (the
+ * curl-fold gallery); one gets picked later.
  *
  * The page body is the shared HoldingPage component — identical to
  * /holding in everything except the gallery region's children (the
@@ -20,9 +21,9 @@ import { galleryImages } from '../data/holding/images.js';
     <!-- PENDING SIGN-OFF: placeholder gallery imagery (the shared HP
          Carousel set — same content as /holding, different treatment,
          per the A/B's design). -->
-    <div class="holding-stack" slot="gallery" aria-hidden="true">
+    <div class="holding-warp" slot="gallery" aria-hidden="true">
       {galleryImages.map((src) => (
-        <div class="holding-stack__slide" data-holding-stack-slide>
+        <div class="holding-warp__slide" data-holding-warp-slide>
           <img src={src} alt="" decoding="async" />
         </div>
       ))}
@@ -32,7 +33,7 @@ import { galleryImages } from '../data/holding/images.js';
 
 <script>
   import { bootHoldingPage } from '../scripts/holding/holding-shared.js';
-  import { createHoldingStack } from '../scripts/holding/holding-stack.js';
+  import { createHoldingWarp } from '../scripts/holding/holding-warp.js';
 
-  bootHoldingPage({ createGallery: createHoldingStack, devHandle: '__holdingStack' });
+  bootHoldingPage({ createGallery: createHoldingWarp, devHandle: '__holdingWarp' });
 </script>

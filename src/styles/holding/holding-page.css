@@ -84,42 +84,43 @@
 	opacity: 1;
 }
 
-/* ── /holding-2's stacked warp column (holding-stack.js) ─────────────────
+/* ── /holding-2's grain-warp column (holding-warp.js) ────────────────────
    The wrapper's CSS below is the STATIC state — the server-rendered
    first frame for reduced motion / no-JS / failed WebGL: a centered
    flex column of aspect-locked slides, clipped by the region. Once the
    module boots it takes over each slide with inline absolute
-   positioning + per-tick transforms (the drift/wrap), and curve-media's
-   canvas paints the warped planes above (z 1), zeroing each slide img's
-   opacity as its texture loads — curve-media's own takeover contract.
+   positioning + per-tick transforms (the drift/wrap); the wave-shader
+   planes paint on the canvas above (z 1), each slide's img hiding as
+   its texture decodes (founders-dissolve takeover). The slide divs stay
+   as the hover hit-targets under the pointer-events-none canvas.
    Blend safety: all contained inside the gallery region, a sibling
    column to the difference-blend roots; grain (z 9000) stays above. */
-.holding-stack {
+.holding-warp {
 	position: absolute;
 	inset: 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 28px;
+	gap: 48px;
 	overflow: hidden;
 }
 
-.holding-stack__slide {
+.holding-warp__slide {
 	flex: none;
-	width: 44%;
+	width: 41%;
 	aspect-ratio: 480 / 550;
 	overflow: hidden;
 }
 
-.holding-stack__slide img {
+.holding-warp__slide img {
 	display: block;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
 
-.holding-stack__gl {
+.holding-warp__gl {
 	position: absolute;
 	inset: 0;
 	z-index: 1;
