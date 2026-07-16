@@ -648,7 +648,11 @@
 	}
 
 	.holding-tagline__text {
-		font-size: clamp(28px, 6.2vw, 44px);
+		/* 4vw/42px (was 6.2vw/44px, which sat pinned at its cap across
+		   the whole band AND jumped 44->39.6px crossing 1199->1200):
+		   now near-continuous with the desktop clamp at the boundary
+		   (42 vs 39.6) and actually fluid within the band. */
+		font-size: clamp(28px, 4vw, 42px);
 	}
 
 	.holding-buttons {
