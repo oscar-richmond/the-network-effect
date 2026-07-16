@@ -174,24 +174,24 @@
 	visibility: hidden;
 }
 
-/* The real, visible image — a SIBLING of .holding-tagline (not a
+/* The real, visible image window — a SIBLING of .holding-tagline (not a
    descendant), so it is never inside a mix-blend-mode:difference subtree
    and always renders at true colour, exactly like the /about-3 hero's
    video overlay (about-hero.css) for the identical reason.
 
-   The 1s opacity transition here governs the ONE-TIME entry reveal only.
-   Once the image rotation starts, holding-entry.js supersedes it with an
-   inline 0.3s transition — the rotation's plain fade (no blur; the blur
-   cross-fade is the word's treatment only, .holding-tagline__rotate-inner
-   below) runs on its own 2s timer, independent of the word roll. */
+   The container carries the position sync + one-time entry reveal (this
+   1s opacity transition). Inside it, TWO stacked image layers make the
+   rotation a true cross-fade: the base layer always holds a fully-opaque
+   image while the top layer fades in/out over it (0.3s inline transition
+   set by holding-entry.js's initImageRotate, on its own 2s timer — no
+   blur, independent of the word roll), so the ground behind never shows
+   through mid-swap. */
 .holding-tagline__culture-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 0;
 	height: 0;
-	object-fit: cover;
-	display: block;
 	pointer-events: none;
 	z-index: 5;
 	mix-blend-mode: normal;
@@ -209,9 +209,19 @@
 	}
 }
 
-/* Rotation fade-out leg — the fade duration itself comes from the inline
-   0.3s transition holding-entry.js sets when the rotation starts. */
-.holding-tagline__culture-overlay.is-fading {
+.holding-tagline__culture-overlay-img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Top cross-fade layer — starts transparent; initImageRotate drives its
+   opacity (and swaps whichever layer is currently hidden behind an
+   opaque one). */
+.holding-tagline__culture-overlay-img--top {
 	opacity: 0;
 }
 

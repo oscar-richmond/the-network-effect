@@ -82,18 +82,31 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
           </div>
         </div>
         <!-- PENDING SIGN-OFF: placeholder inline images. Position-synced
-             to the invisible slot above by holding-entry.js, which also
-             cycles the src through data-tagline-images in lockstep with
-             the rolling last word — see initTaglineRotate. -->
-        <img
+             to the invisible slot above by holding-entry.js. Two stacked
+             layers so rotation is a true cross-fade: the base layer always
+             holds a fully-opaque image while the top layer fades in/out
+             over it (initImageRotate) — the ground never shows through.
+             First paint renders images[0] on the base layer, static. -->
+        <div
           class="holding-tagline__culture-overlay"
           data-holding-tagline-img-overlay
           data-tagline-images={JSON.stringify(taglineImages)}
-          src={taglineImages[0]}
-          alt=""
-          decoding="async"
           aria-hidden="true"
-        />
+        >
+          <img
+            class="holding-tagline__culture-overlay-img"
+            data-holding-tagline-img-base
+            src={taglineImages[0]}
+            alt=""
+            decoding="async"
+          />
+          <img
+            class="holding-tagline__culture-overlay-img holding-tagline__culture-overlay-img--top"
+            data-holding-tagline-img-top
+            alt=""
+            decoding="async"
+          />
+        </div>
         <p class="holding-visually-hidden">
           We are a culture &amp; partnerships consultancy.
         </p>

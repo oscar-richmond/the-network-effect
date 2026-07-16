@@ -19,9 +19,9 @@
  * The word roll and the image rotation are INDEPENDENT (Oscar's revert of
  * the earlier alternating experiment): the word keeps its original
  * 3s-hold/1s-blur-cross-fade cycle untouched (initTaglineRotate), while
- * the inline image cycles through its 5 frames on its own 2s timer with a
- * plain 300ms opacity fade — no blur, no coupling (initImageRotate). Both
- * are always present; neither ever parks hidden.
+ * the inline image cross-fades through its 5 frames on its own 2s timer —
+ * a 300ms two-layer dissolve, no blur, no coupling, and no moment where
+ * the ground shows through (initImageRotate). Both are always present.
  */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 
@@ -180,19 +180,27 @@ function initTaglineRotate(root) {
 }
 
 /**
- * Independent inline-image rotation: fade out over IMAGE_FADE_MS, swap
- * src, fade back in, one change every IMAGE_ROTATE_MS. A plain opacity
- * fade — deliberately NOT the word's blur cross-fade, and deliberately
- * not coupled to the word's timer (Oscar's spec). The 0.3s fade duration
- * is set inline here, superseding the CSS's 1s entry-reveal transition
- * the moment rotation begins.
+ * Independent inline-image rotation as a true CROSS-FADE, one change every
+ * IMAGE_ROTATE_MS. Two stacked layers inside the overlay container: the
+ * base layer always holds a fully-opaque image while the top layer fades
+ * in/out over it (IMAGE_FADE_MS, plain opacity — no blur, not coupled to
+ * the word's timer, per Oscar's spec), so the ground behind never shows
+ * through mid-swap. Each cycle alternates direction: fade the top layer IN
+ * over the base (top now shows current image), then next cycle swap the
+ * base's src underneath the opaque top (invisible) and fade the top OUT,
+ * revealing it — every instant has at least one opaque layer covering.
  */
 function initImageRotate(overlay, images) {
   if (!(overlay instanceof HTMLElement) || images.length < 2) return () => {};
 
-  overlay.style.transition = `opacity ${IMAGE_FADE_MS}ms ease`;
+  const base = overlay.querySelector('[data-holding-tagline-img-base]');
+  const top = overlay.querySelector('[data-holding-tagline-img-top]');
+  if (!(base instanceof HTMLElement) || !(top instanceof HTMLElement)) return () => {};
+
+  top.style.transition = `opacity ${IMAGE_FADE_MS}ms ease`;
 
   let index = 0;
+  let topShowing = false;
   let active = true;
   let timeoutId;
 
@@ -204,17 +212,22 @@ function initImageRotate(overlay, images) {
   };
 
   const cycle = () => {
-    overlay.classList.add('is-fading');
+    index = (index + 1) % images.length;
 
-    schedule(() => {
-      index = (index + 1) % images.length;
-      overlay.src = images[index];
-      overlay.classList.remove('is-fading');
+    if (!topShowing) {
+      // Load the next image into the transparent top layer, then dissolve
+      // it in over the still-opaque base.
+      top.src = images[index];
+      top.style.opacity = '1';
+    } else {
+      // Swap the base underneath the opaque top (invisible change), then
+      // dissolve the top away to reveal it.
+      base.src = images[index];
+      top.style.opacity = '0';
+    }
+    topShowing = !topShowing;
 
-      // Next fade-out starts IMAGE_ROTATE_MS after the previous one did,
-      // so swaps land exactly IMAGE_ROTATE_MS apart.
-      schedule(cycle, IMAGE_ROTATE_MS - IMAGE_FADE_MS);
-    }, IMAGE_FADE_MS);
+    schedule(cycle, IMAGE_ROTATE_MS);
   };
 
   schedule(cycle, IMAGE_ROTATE_MS);
