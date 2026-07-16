@@ -388,6 +388,12 @@
 	line-height: 1.25;
 	text-align: center;
 	color: #161616;
+	/* The relationship-led copy is one flowing sentence (no hand-set
+	   <br>s like the launch copy it replaced) — constrain it so it still
+	   reads as the original narrow, ~3-line centered sign-off block
+	   rather than a page-wide two-liner. */
+	max-width: 340px;
+	text-wrap: balance;
 }
 
 /* ── Entry choreography ─────────────────────────────────────────────────
