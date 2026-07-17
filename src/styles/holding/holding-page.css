@@ -710,16 +710,41 @@
 }
 
 /* The STATIC desktop variant (/holding-3): the original full-bleed
-   photo, exactly the very first build's treatment — no WebGL, no
-   gallery mechanics. Hidden below the breakpoint (the shared travel
-   mechanic takes over there, identical across all routes). */
+   photo — no WebGL, no gallery mechanics. Hidden below the breakpoint
+   (the shared travel mechanic takes over there, identical across all
+   routes). The photo content is shifted 48px LEFT inside the region
+   (Oscar's spec): the img offsets left and widens by the same 48px so
+   the region's right edge stays covered — the container itself never
+   moves, and its overflow clips the overhang. */
 .holding-static__photo {
 	position: absolute;
-	inset: 0;
-	width: 100%;
+	top: 0;
+	bottom: 0;
+	left: -48px;
+	right: auto;
+	width: calc(100% + 48px);
+	/* The global img { max-width: 100% } reset would clamp the widened
+	   box back to the region's width, reopening a 48px gap at the right
+	   edge — lift it here. */
+	max-width: none;
 	height: 100%;
 	object-fit: cover;
 	object-position: 53% 50%;
+}
+
+/* Static-variant centering (Oscar's spec): the column content centres
+   between the LEFT VIEWPORT EDGE and the IMAGE'S LEFT EDGE. The photo
+   is full-bleed, so its left edge IS the region edge — plain column
+   centering is exactly that midpoint, so the shared card-derived
+   padding offset (tuned for the gallery variants' floating cards) is
+   removed here. Desktop only; the shared <=1024 layout is untouched. */
+@media (min-width: 1025px) {
+	/* Triple-class specificity beats the 1025-1199 desktop-extension
+	   block's re-assertion of the card-derived padding, regardless of
+	   source order. */
+	.holding-shell.holding-static .holding-page__column {
+		padding-left: 24px;
+	}
 }
 
 /* Desktop extension: 1025-1199 was the shared band tier — /holding-2's
