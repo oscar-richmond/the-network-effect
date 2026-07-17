@@ -168,9 +168,11 @@ const { contactMailto } = Astro.props;
     role="alert"
     hidden
   >
-    <p class="holding-final__note-title">Something went wrong — nothing was sent.</p>
+    {/* One continuous sentence, both clauses in the SAME style (Oscar's
+        revision) — a single flowing line, not a title+sub pairing. */}
     <p class="holding-final__note-sub">
-      Email us directly at <a href={contactMailto}>hello@thenetworkeffect.com</a>.
+      Something went wrong — nothing was sent. Email us directly at <a
+        href={contactMailto}>hello@thenetworkeffect.com</a>.
     </p>
   </div>
 </div>

@@ -1397,8 +1397,12 @@
 		top: 0;
 	}
 
+	/* 32px below the Back/Request row (Oscar's revision, from 12px) —
+	   the zone's height is exactly the form's in-flow content, which
+	   ends at that row (fields/honeypot/notes are all out of flow or
+	   precede it), so top:100% of the zone IS the row's bottom edge. */
 	.holding-final__note--error {
-		top: calc(100% + 12px);
+		top: calc(100% + 32px);
 	}
 
 	.holding-final__note-title {
@@ -1416,6 +1420,13 @@
 		font-weight: 400;
 		font-size: 12px;
 		color: #161616;
+	}
+
+	/* Error note: ONE continuous sentence in a single style (Oscar's
+	   revision) — no title/sub pairing, so no 6px stacking gap above
+	   it; the 32px above is the note's only offset from the row. */
+	.holding-final__note--error .holding-final__note-sub {
+		margin-top: 0;
 	}
 
 	.holding-final__note-sub a {
