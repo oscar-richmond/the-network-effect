@@ -308,14 +308,19 @@ function revealSignoff(signoff) {
 }
 
 /**
- * FINAL sign-off alignment (Oscar's spec): line 1 ("Built on Trust.")
- * offsets right by the measured advance of "P" in line 2's font
- * (Dazzed SemiBold 12px), so line 1's "B" starts exactly where line 2's
- * second glyph does. Measured with canvas at the line's own computed
- * font (letter-spacing is 0 on these lines, so glyph advance is the
- * whole story); runs after fonts.ready in BOTH motion branches — this
+ * FINAL sign-off alignment (Oscar's spec, ALL-CAPS revision): line 1's
+ * "B" (BUILT) starts exactly where the "R" glyph of "POWERED" renders
+ * on line 2 — the fifth glyph, so the offset is the full rendered
+ * advance of "POWE" including every kerning pair. Rather than
+ * approximating with canvas, the offset is read from the live glyph
+ * geometry itself: a Range around line 2's source "r" (the CSS
+ * uppercase transform doesn't change source indices) gives the exact
+ * rendered x of the R, and line 1's margin is set to that distance.
+ * Opacity-hidden elements still have geometry, so this works before
+ * the entry reveal; display:none (mobile) yields zero rects and the
+ * guard skips. Runs after fonts.ready in BOTH motion branches — this
  * is layout, not choreography. The derived value is stamped on the
- * block (data-derived-offset-px) for verification. The px offset is
+ * block (data-derived-offset-px) for verification. The offset is
  * font-size-fixed, so resize never changes it; the block's own
  * centring is pure CSS (auto margins) and re-derives on its own.
  */
@@ -326,18 +331,26 @@ function alignFinalSignoff() {
   const dazzedLine = block.querySelector('[data-holding-final-signoff-dazzed]');
   if (!(serrifLine instanceof HTMLElement) || !(dazzedLine instanceof HTMLElement)) return;
 
-  const cs = getComputedStyle(dazzedLine);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  // KERN-AWARE advance: the isolated width of "P" overshoots the second
-  // glyph's rendered start by the P->o kerning pair (~2.9px in Dazzed
-  // SemiBold 12px — measured live). width("Po") - width("o") is the
-  // advance P actually contributes in "Powered", i.e. exactly where the
-  // second glyph starts — the spec's alignment target.
-  const offset = ctx.measureText('Po').width - ctx.measureText('o').width;
-  if (!(offset > 0)) return;
+  // Must run before the line-reveal wrap (it does — reveals start at
+  // FINAL_SIGNOFF_AT, well after this synchronous call), while line 2
+  // is still a single text node.
+  const walker = document.createTreeWalker(dazzedLine, NodeFilter.SHOW_TEXT);
+  let textNode = null;
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.textContent && node.textContent.trim()) textNode = node;
+  }
+  if (!textNode) return;
+  const rIndex = textNode.textContent.indexOf('r');
+  if (rIndex < 0) return;
+
+  const range = document.createRange();
+  range.setStart(textNode, rIndex);
+  range.setEnd(textNode, rIndex + 1);
+  const rRect = range.getBoundingClientRect();
+  const lineRect = dazzedLine.getBoundingClientRect();
+  const offset = rRect.left - lineRect.left;
+  if (!(offset > 0) || rRect.width === 0) return;
 
   serrifLine.style.marginLeft = `${offset}px`;
   block.dataset.derivedOffsetPx = offset.toFixed(2);
@@ -410,6 +423,11 @@ export function initHoldingEntry() {
   const onResize = () => {
     syncCultureOverlay(taglineText, cultureOverlay);
     requestAnimationFrame(() => syncCultureOverlay(taglineText, cultureOverlay));
+    // Idempotent re-derive (the measurement reads line 2 only, which
+    // line 1's margin never moves) — self-heals the degenerate case of
+    // a zero-size viewport at load, where every rect measures 0 and
+    // the first pass has to bail.
+    alignFinalSignoff();
   };
   window.addEventListener('resize', onResize);
 

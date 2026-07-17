@@ -1158,11 +1158,13 @@
 	/* The new content block sits where the old hero sat: horizontally
 	   centred as a unit by the column's align-items:center (between
 	   viewport-left and image-left via the .holding-static padding),
-	   vertically centred by auto margins in the freed column space. */
+	   vertically centred by auto margins in the freed column space.
+	   Every item INSIDE centres on that same axis too (title, each
+	   paragraph line, the CTA row — Oscar's centring pass). */
 	.holding-final__content {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 		margin: auto 0;
 	}
 
@@ -1179,9 +1181,13 @@
 	.holding-final__para {
 		margin: 20px 0 0;
 		font-family: 'Serrif', serif;
-		font-weight: 400;
+		/* One weight down from the spec's Regular 400 (Oscar's revision) —
+		   Light 300 is a loaded face, no synthesis. */
+		font-weight: 300;
 		font-size: 22px;
 		line-height: 1.3;
+		/* Each literal line centres on the block's axis. */
+		text-align: center;
 		color: #161616;
 	}
 
@@ -1216,6 +1222,9 @@
 		margin: 0;
 		font-size: 12px;
 		line-height: 1.5;
+		/* ALL CAPS per Oscar's revision — transform, not markup, so the
+		   source copy keeps its sentence-case reading. */
+		text-transform: uppercase;
 		color: #161616;
 	}
 
@@ -1228,9 +1237,9 @@
 		font-family: 'Serrif', serif;
 		font-weight: 500;
 		font-synthesis: none;
-		/* margin-left is set by holding-entry.js: the measured advance
-		   of "P" in the Dazzed line below, so this line's "B" aligns
-		   with that line's second glyph. */
+		/* margin-left is set by holding-entry.js: the rendered x-offset
+		   of the "R" glyph in "POWERED" below, so this line's "B" starts
+		   exactly where that "R" does (Oscar's spec). */
 	}
 
 	.holding-final__signoff-line--dazzed {
