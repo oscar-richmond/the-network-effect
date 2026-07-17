@@ -32,16 +32,20 @@ const HOLDING_BUTTONS_STAGGER = 120;
 const HOLDING_SIGNOFF_AT = 920;
 const HOLDING_IMAGE_AT = 1040;
 
-/* FINAL variant (/holding-3 desktop, .holding-final) — the new content
- * re-occupies the old sequence's slots one-for-one: title where the
- * wordmark was, paragraph in the tagline's slot (line-reveals, 120ms
- * per line), CTAs and sign-off unchanged, accent bar with the photo.
- * The OLD sequence still runs too (its elements are the deferred
- * mobile layout, display:none'd at >=1025 on this variant) — the two
- * sets never share elements, so both are harmless no-ops for whichever
+/* FINAL variant (/holding-3 desktop, .holding-final) — the deck-form
+ * content re-occupies the old sequence's slots: heading at the top
+ * slot, subheading in the tagline's slot, the three form fields
+ * staggered in behind it (opacity fades on the label/input leaves —
+ * boxes aren't text, so no line-reveal), Contact + Request links at
+ * the buttons slot, sign-off and accent bar unchanged. The OLD
+ * sequence still runs too (its elements are the deferred mobile
+ * layout, display:none'd at >=1025 on this variant) — the two sets
+ * never share elements, so both are harmless no-ops for whichever
  * breakpoint hides them. */
 const FINAL_TITLE_AT = HOLDING_WORDMARK_AT;
-const FINAL_PARA_AT = HOLDING_TAGLINE_AT;
+const FINAL_SUB_AT = HOLDING_TAGLINE_AT;
+const FINAL_FIELDS_AT = 320;
+const FINAL_FIELD_STAGGER = 120;
 const FINAL_CTAS_AT = HOLDING_BUTTONS_AT;
 const FINAL_SIGNOFF_AT = HOLDING_SIGNOFF_AT;
 const FINAL_LINE_STAGGER_S = 0.12;
@@ -358,14 +362,15 @@ function alignFinalSignoff() {
 
 /**
  * FINAL entry choreography — the established vocabulary on the new
- * elements: line-reveals for title/paragraph/sign-off (paragraph and
- * sign-off lines staggered 120ms like the tagline's), .is-visible for
- * the CTA links (the ported .holding-spin draw-in) and the accent bar
- * (opacity fade alongside the photo's own reveal).
+ * elements: line-reveals for heading/subheading/sign-off, staggered
+ * leaf-opacity fades for the form fields (see the CSS's blend note),
+ * .is-visible for the Contact/Request links (the ported .holding-spin
+ * draw-in) and the accent bar (fade alongside the photo's reveal).
  */
 function revealFinal(root) {
   const title = root.querySelector('[data-holding-final-title]');
-  const para = root.querySelector('[data-holding-final-para]');
+  const sub = root.querySelector('[data-holding-final-sub]');
+  const fields = Array.from(root.querySelectorAll('[data-holding-final-field]'));
   const signoff = root.querySelector('[data-holding-final-signoff]');
   const bar = root.querySelector('[data-holding-final-bar]');
   const links = Array.from(root.querySelectorAll('[data-holding-final-button]'));
@@ -390,7 +395,12 @@ function revealFinal(root) {
   };
 
   setTimeout(() => playLines(title, ':scope > *'), FINAL_TITLE_AT);
-  setTimeout(() => playLines(para, '.holding-final__para-line'), FINAL_PARA_AT);
+  setTimeout(() => playLines(sub, ':scope > *'), FINAL_SUB_AT);
+  fields.forEach((field, i) => {
+    setTimeout(() => {
+      field.classList.add('is-visible');
+    }, FINAL_FIELDS_AT + i * FINAL_FIELD_STAGGER);
+  });
   links.forEach((link, i) => {
     setTimeout(() => {
       link.classList.add('is-visible');

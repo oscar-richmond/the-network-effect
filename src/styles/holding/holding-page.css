@@ -1155,66 +1155,212 @@
 		z-index: 1;
 	}
 
-	/* The new content block sits where the old hero sat: horizontally
-	   centred as a unit by the column's align-items:center (between
-	   viewport-left and image-left via the .holding-static padding),
-	   vertically centred by auto margins in the freed column space.
-	   Every item INSIDE centres on that same axis too (title, each
-	   paragraph line, the CTA row — Oscar's centring pass). */
+	/* The content block (now the deck-request form, Figma Group 89):
+	   horizontally centred AS A UNIT by the column's align-items:center
+	   (between viewport-left and image-left via the .holding-static
+	   padding), vertically centred by auto margins. INTERNALLY it is
+	   LEFT-ALIGNED, matching the Figma file exactly (Oscar-confirmed —
+	   supersedes the earlier per-item centring of the old
+	   title/paragraph block this form replaces). */
 	.holding-final__content {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		margin: auto 0;
 	}
 
+	/* "Request THE deck" — Dazzed Bold (700, a loaded face), 32px,
+	   uppercase, plain #161616. NOT blended — per the file, only the
+	   subheading/labels below carry the difference blend (a faithful
+	   build of the design's own inconsistency; on this ground both
+	   render dark either way). Line-height 44px = the file's title box. */
 	.holding-final__title {
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		/* Dazzed Heavy = the loaded 800 face (same as the old wordmark). */
-		font-weight: 800;
+		font-weight: 700;
 		font-size: 32px;
-		line-height: 1.2;
+		line-height: 44px;
+		text-transform: uppercase;
 		color: #161616;
 	}
 
-	.holding-final__para {
-		margin: 20px 0 0;
-		font-family: 'Serrif', serif;
-		/* One weight down from the spec's Regular 400 (Oscar's revision) —
-		   Light 300 is a loaded face, no synthesis. */
-		font-weight: 300;
-		/* Dropped 2px from the spec's 22px (Oscar's revision). */
-		font-size: 20px;
-		line-height: 1.3;
-		/* Each literal line centres on the block's axis. */
-		text-align: center;
-		color: #161616;
+	/* Subheading — Dazzed Regular 12px, WHITE + DIFFERENCE per the
+	   file. Blend safety: this element is a blend root; every ancestor
+	   up the chain stays free of opacity/transform/filter/z-index
+	   stacking contexts, and entry fades target this leaf only.
+	   6px under the title, 32px line box per the file's rhythm. */
+	.holding-final__sub {
+		margin: 6px 0 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 400;
+		font-size: 12px;
+		line-height: 32px;
+		color: #ffffff;
+		mix-blend-mode: difference;
 	}
 
-	/* Literal line breaks: each line is its own block and never wraps,
-	   regardless of container width (Oscar's spec). */
-	.holding-final__para-line {
-		display: block;
-		white-space: nowrap;
+	/* ── The form (360px fixed, per the file's input width) ──────────── */
+	.holding-final__form-zone {
+		/* Anchor for the success overlay + below-form error note. No
+		   z-index: position alone creates no stacking context (the
+		   blend-safe pattern established on the column). */
+		position: relative;
+		margin-top: 24px;
+		width: 360px;
 	}
 
-	.holding-final__ctas {
+	/* Flex column so the field/row margins DON'T collapse — in block
+	   layout the last field's 24px and the row's 16px collapsed to 24,
+	   breaking the file's 40px input->submit rhythm (measured live). */
+	.holding-final__form {
 		display: flex;
-		/* The visual target is 32px of clear whitespace between the two
-		   buttons. The gap itself is measured between the anchors' own
-		   in-flow boxes (text only — the arrow is absolutely positioned,
-		   out of flow), but the first button's arrow sits INSIDE that
-		   gap (8px margin + 9px width = 17px), eating into it — a bare
-		   32px gap left only 15px of actual clear space after the
-		   arrow (measured live). 32 + 17 = 49px restores a true 32px
-		   of whitespace between the arrow and the next button's text. */
-		gap: 49px;
-		margin-top: 48px;
-		/* No explicit centring math needed: this row is a single flex
-		   child of .holding-final__content, which centres it (and every
-		   other child) as a block via align-items:center — widening the
-		   gap or the row's total width (the arrows) re-centres for free. */
+		flex-direction: column;
+	}
+
+	.holding-final__field {
+		/* Anchor for the absolutely-positioned error text (layout never
+		   shifts when an error appears). Position only, no z-index —
+		   this wraps a difference-blend label. */
+		position: relative;
+		margin-bottom: 24px;
+	}
+
+	.holding-final__label {
+		display: block;
+		margin: 0 0 8px;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 12px;
+		line-height: 17px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final__input {
+		display: block;
+		width: 100%;
+		height: 32px;
+		padding: 0 10px;
+		background: rgba(255, 255, 255, 0.7);
+		border: 1px solid #c6c6c6;
+		border-radius: 3px;
+		/* Input text: unspecified in the file — Serrif Regular 12px
+		   #161616 to match the labels' family (judgment call, flagged). */
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 12px;
+		color: #161616;
+		outline: none;
+		transition: border-color 0.3s var(--holding-ease);
+	}
+
+	.holding-final__input:focus-visible {
+		border-color: #161616;
+	}
+
+	.holding-final__input.is-invalid {
+		border-color: var(--color-holding-red);
+	}
+
+	/* Inline error — absolutely positioned into the 24px inter-field
+	   gap (3px under the input; 13px of text still clears the next
+	   label), so appearing/disappearing never shifts layout. */
+	.holding-final__field-error {
+		position: absolute;
+		top: calc(100% + 3px);
+		left: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 11px;
+		line-height: 1.2;
+		color: var(--color-holding-red);
+	}
+
+	/* Honeypot: off-canvas (bots that skip display:none still see
+	   this), unfocusable, invisible to AT via aria-hidden. */
+	.holding-final__hp {
+		position: absolute;
+		left: -9999px;
+		top: 0;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+
+	/* Submit row: Contact (secondary, left — Oscar's call; absent from
+	   the Figma frame) and Request (right, per the file's right-edge
+	   submit). 40px under the last input = the fields' own 24px
+	   margin + 16 here. */
+	.holding-final__form-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		margin-top: 16px;
+	}
+
+	/* Submit is the CTA text-link treatment at the file's 14px (the
+	   base .holding-btn's 12px is overridden here; everything else —
+	   red underline, arrow, draw-in, retract hover — comes from the
+	   shared .holding-spin + .holding-final rules via the same data
+	   attribute). */
+	.holding-final__submit {
+		font-size: 14px;
+	}
+
+	/* Loading: label swaps to "Sending…" (JS), the arrow fades, the
+	   control goes inert. No spinner — flat editorial register. */
+	.holding-final__submit.is-sending {
+		pointer-events: none;
+	}
+
+	.holding-final__submit.is-sending .holding-final__cta-arrow {
+		opacity: 0;
+	}
+
+	/* Post-submit notes. Success OVERLAYS the visibility-hidden form
+	   in place (no layout jump); error sits BELOW the intact form.
+	   The form is hidden via visibility, never opacity — an ancestor
+	   fade would isolate the labels' difference blend mid-fade. */
+	.holding-final__form.is-sent {
+		visibility: hidden;
+	}
+
+	.holding-final__note {
+		position: absolute;
+		left: 0;
+	}
+
+	.holding-final__note--success {
+		top: 0;
+	}
+
+	.holding-final__note--error {
+		top: calc(100% + 12px);
+	}
+
+	.holding-final__note-title {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: 14px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.holding-final__note-sub {
+		margin: 6px 0 0;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 12px;
+		color: #161616;
+	}
+
+	.holding-final__note-sub a {
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: var(--color-holding-red);
+		text-underline-offset: 3px;
 	}
 
 	/* Arrow needs to escape the shared .holding-btn's overflow:hidden
@@ -1323,9 +1469,35 @@
    links' hidden/draw states come from the ported .holding-spin block. */
 @media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
 	.holding-final .holding-final__title,
-	.holding-final .holding-final__para,
+	.holding-final .holding-final__sub,
 	.holding-final .holding-final__signoff {
 		opacity: 0;
+	}
+
+	/* Field reveals fade the LEAF elements individually — never the
+	   .holding-final__field wrapper, which is an ancestor of the
+	   difference-blend labels (an ancestor fade would isolate the
+	   blend). The row's is-visible class drives both children. */
+	.holding-final .holding-final__label,
+	.holding-final .holding-final__input {
+		opacity: 0;
+		transition: opacity 0.6s var(--holding-ease);
+	}
+
+	.holding-final .holding-final__field.is-visible .holding-final__label,
+	.holding-final .holding-final__field.is-visible .holding-final__input {
+		opacity: 1;
+	}
+
+	/* Post-submit notes fade in (they're plain-colour — safe to fade);
+	   under reduced motion they simply appear. */
+	.holding-final .holding-final__note {
+		opacity: 0;
+		transition: opacity 0.4s var(--holding-ease);
+	}
+
+	.holding-final .holding-final__note.is-in {
+		opacity: 1;
 	}
 
 	.holding-final .holding-final__bar {

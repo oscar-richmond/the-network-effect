@@ -2,12 +2,13 @@
 /**
  * Holding page, variant FINAL — the approved holding design, rebuilt in
  * place from the STATIC variant per Oscar's spec: on desktop >=1025 the
- * old wordmark/tagline column is replaced by the .holding-final content
- * (32px Dazzed Heavy title, three-line Serrif paragraph, /holding's
- * text-link CTAs verbatim, bottom-anchored two-line sign-off) plus the
- * 16px #C1250E accent bar flush right, photo column narrowed to touch
- * it. /holding and /holding-2 stay DORMANT (files intact, unlinked —
- * the /about + /about-2 convention).
+ * left column is the DECK-REQUEST FORM (Figma SB1V2GBQ0aBsSIdcXPr7dl
+ * Group 89 — heading, blended subheading, three labelled fields,
+ * Request submit + Contact link; POSTs to /api/deck-request, a Vercel
+ * function sending via Resend), with the bottom-anchored two-line
+ * sign-off and the 16px #C1250E accent bar flush right, photo column
+ * narrowed to touch it. /holding and /holding-2 stay DORMANT (files
+ * intact, unlinked — the /about + /about-2 convention).
  *
  * Mobile/tablet <=1024 is DEFERRED: the shared travel mechanic with the
  * rolling-tagline hero renders exactly as before on all three routes
@@ -41,6 +42,8 @@ import { holdingStaticPhoto } from '../data/holding/images.js';
 
 <script>
   import { bootHoldingVariant } from '../scripts/holding/holding-shared.js';
+  import { initHoldingDeckForm } from '../scripts/holding/holding-deck-form.js';
 
   bootHoldingVariant({ createDesktopGallery: null, devHandle: '__holdingGallery3' });
+  initHoldingDeckForm();
 </script>

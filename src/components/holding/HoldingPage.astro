@@ -20,6 +20,7 @@ import {
   taglineImages,
   travelGalleryImages,
 } from '../../data/holding/images.js';
+import HoldingDeckForm from './HoldingDeckForm.astro';
 import '../../styles/holding/holding-page.css';
 
 interface Props {
@@ -167,67 +168,24 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
       final && (
         <>
           {/* FINAL desktop content (>=1025 only; see holding-page.css's
-              .holding-final section). The visible title is aria-hidden —
-              the visually-hidden <h1> above stays the accessible name,
-              same pattern as the old wordmark. The CTAs are /holding's
-              text-link treatment verbatim via .holding-spin class reuse;
-              their own data attribute keeps entry stagger per-set. */}
+              .holding-final section): the deck-request form (Figma
+              SB1V2GBQ0aBsSIdcXPr7dl Group 89), replacing the previous
+              title/paragraph/CTA-row block. Left-aligned internally per
+              the file; the block still centres as a unit on the page's
+              outer axis. The heading is a real <h2> (unique visible
+              content, unlike the old duplicate-of-h1 title). The
+              subheading is white + mix-blend-difference per the file
+              (the heading is plain — faithful to the design's own
+              inconsistency, flagged; on this ground both read dark).
+              Submit + Contact live inside the form component. */}
           <div class="holding-final__content" data-holding-final-content>
-            <div class="holding-final__title" data-holding-final-title aria-hidden="true">
-              THE NETWORK EFFECT
-            </div>
-            <p class="holding-final__para" data-holding-final-para>
-              <span class="holding-final__para-line">
-                We are a relationship-led consultancy connecting
-              </span>
-              <span class="holding-final__para-line">
-                Talent, Brands and Audiences through Experiences,
-              </span>
-              <span class="holding-final__para-line">Strategic Partnerships and Media.</span>
+            <h2 class="holding-final__title" data-holding-final-title>
+              Request THE deck
+            </h2>
+            <p class="holding-final__sub" data-holding-final-sub>
+              Tell us who you are and we’ll send it over.
             </p>
-            <div class="holding-final__ctas">
-              {/* Arrow: Oscar's attached asset, inlined per-button (fill
-                  swapped to currentColor so it rides the same hover/focus/
-                  active colour transition as the text — the source SVG's
-                  hardcoded #161616 would otherwise read as disconnected
-                  the moment the label fades on hover). Absolutely
-                  positioned outside the anchor's own box (see the CSS:
-                  .holding-final__cta-arrow) so the underline's ::after,
-                  which spans exactly that box, never reaches it. */}
-              <a
-                class="holding-btn"
-                data-holding-final-button
-                href={deckHref}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span class="holding-btn__clip"
-                  ><span class="holding-btn__inner">Request company deck</span></span
-                >
-                <span class="holding-final__cta-arrow" aria-hidden="true">
-                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M1.33108 9L0.688252 8.31631L0.0454274 7.67349L6.25 1.61364L1.62559e-07 1.61364L0 0H9V9L7.38636 9L7.38636 2.75L1.33108 9Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </span>
-              </a>
-              {/* No target on the mailto — same rationale as the old row. */}
-              <a class="holding-btn" data-holding-final-button href={contactMailto}>
-                <span class="holding-btn__clip"
-                  ><span class="holding-btn__inner">Contact</span></span
-                >
-                <span class="holding-final__cta-arrow" aria-hidden="true">
-                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M1.33108 9L0.688252 8.31631L0.0454274 7.67349L6.25 1.61364L1.62559e-07 1.61364L0 0H9V9L7.38636 9L7.38636 2.75L1.33108 9Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </span>
-              </a>
-            </div>
+            <HoldingDeckForm contactMailto={contactMailto} />
           </div>
           <p class="holding-final__signoff" data-holding-final-signoff>
             <span
