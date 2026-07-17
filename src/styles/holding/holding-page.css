@@ -1155,18 +1155,80 @@
 		z-index: 1;
 	}
 
-	/* The content block (now the deck-request form, Figma Group 89):
-	   horizontally centred AS A UNIT by the column's align-items:center
-	   (between viewport-left and image-left via the .holding-static
-	   padding), vertically centred by auto margins. INTERNALLY it is
-	   LEFT-ALIGNED, matching the Figma file exactly (Oscar-confirmed —
-	   supersedes the earlier per-item centring of the old
-	   title/paragraph block this form replaces). */
+	/* The content block: ONE slot, TWO states (holding-deck-form.js
+	   swaps them). Horizontally centred AS A UNIT by the column's
+	   align-items:center (between viewport-left and image-left via the
+	   .holding-static padding), vertically centred by auto margins.
+	   The INTRO state centres its items on the block axis (the restored
+	   pre-form block); the FORM state is left-aligned internally per
+	   the Figma file — each state carries its own internal alignment. */
 	.holding-final__content {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 		margin: auto 0;
+	}
+
+	/* ── INTRO state (default) — the restored title/paragraph/CTA
+	   block, exactly as it stood before the form landed (git f01f9fb).
+	   Everything in here is plain #161616 — NO blend roots — which is
+	   what makes the swap's group fade on this container legal. */
+	.holding-final__intro {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.holding-final__intro[hidden] {
+		display: none;
+	}
+
+	.holding-final__intro-title {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		/* Dazzed Heavy = the loaded 800 face (same as the old wordmark). */
+		font-weight: 800;
+		font-size: 32px;
+		line-height: 1.2;
+		color: #161616;
+	}
+
+	.holding-final__para {
+		margin: 20px 0 0;
+		font-family: 'Serrif', serif;
+		/* One weight down from Regular (Oscar's earlier revision). */
+		font-weight: 300;
+		/* And 2px down from the original 22px (ditto). */
+		font-size: 20px;
+		line-height: 1.3;
+		text-align: center;
+		color: #161616;
+	}
+
+	/* Literal line breaks: each line its own block, never wraps. */
+	.holding-final__para-line {
+		display: block;
+		white-space: nowrap;
+	}
+
+	.holding-final__ctas {
+		display: flex;
+		/* 49px declared = 32px of true visible whitespace after the
+		   first button's out-of-flow arrow (8px margin + 9px width) —
+		   the measured correction from the earlier gap pass. */
+		gap: 49px;
+		margin-top: 48px;
+	}
+
+	/* ── FORM state (hidden until the deck CTA opens it) ────────────── */
+	.holding-final__form-block {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.holding-final__form-block[hidden] {
+		display: none;
 	}
 
 	/* "Request THE deck" — Dazzed Bold (700, a loaded face), 32px,
@@ -1468,10 +1530,40 @@
    motion everything renders complete and static instantly. The CTA
    links' hidden/draw states come from the ported .holding-spin block. */
 @media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
-	.holding-final .holding-final__title,
-	.holding-final .holding-final__sub,
+	/* Load-entry hidden states: the INTRO's title/paragraph (revealed
+	   by holding-entry.js line-reveals) and the sign-off. The form's
+	   own elements are state-swapped, not load-revealed — see below. */
+	.holding-final .holding-final__intro-title,
+	.holding-final .holding-final__para,
 	.holding-final .holding-final__signoff {
 		opacity: 0;
+	}
+
+	/* State swap, intro side: a single group fade (legal — no blend
+	   roots inside; see the markup note). Exit adds .is-out (fade to
+	   0, then [hidden]); re-entry unhides with .is-out still on, then
+	   removes it a frame later (fade back to 1). */
+	.holding-final .holding-final__intro {
+		transition: opacity 0.3s var(--holding-ease);
+	}
+
+	.holding-final .holding-final__intro.is-out {
+		opacity: 0;
+	}
+
+	/* State swap, form side: the heading and blended subheading fade
+	   as LEAVES (never a group — the sub is a difference root), driven
+	   by .is-in from the swap sequencer. Fields/buttons reuse their
+	   existing is-visible mechanics, re-armed per open. */
+	.holding-final .holding-final__form-block .holding-final__title,
+	.holding-final .holding-final__form-block .holding-final__sub {
+		opacity: 0;
+		transition: opacity 0.4s var(--holding-ease);
+	}
+
+	.holding-final .holding-final__form-block .holding-final__title.is-in,
+	.holding-final .holding-final__form-block .holding-final__sub.is-in {
+		opacity: 1;
 	}
 
 	/* Field reveals fade the LEAF elements individually — never the

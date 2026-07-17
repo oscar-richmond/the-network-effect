@@ -171,10 +171,134 @@ export function initHoldingDeckForm() {
   form.addEventListener('submit', onSubmit);
   form.addEventListener('input', onInput);
 
+  /* ── Intro <-> form state swap (Oscar's click-trigger conversion) ──
+   * One slot, two states. The intro exits as a GROUP fade (legal —
+   * no blend roots inside it); the form enters/leaves via its LEAF
+   * elements only (heading/sub .is-in, fields/buttons .is-visible —
+   * the blended sub and labels must never sit under an animating
+   * ancestor). Sequencing uses timers + a forced reflow rather than
+   * rAF so the swap also completes in throttled/background tabs.
+   * Reduced motion: both directions swap instantly, no fades. */
+  const intro = document.querySelector('[data-deck-intro]');
+  const formBlock = document.querySelector('[data-deck-form-block]');
+  const openBtn = document.querySelector('[data-deck-open]');
+  const backBtn = form.querySelector('[data-deck-back]');
+  const formHeading = formBlock?.querySelector('.holding-final__title');
+  const formSub = formBlock?.querySelector('.holding-final__sub');
+  const fieldRows = Array.from(form.querySelectorAll('[data-holding-final-field]'));
+
+  const INTRO_EXIT_MS = 320;
+  const FORM_EXIT_MS = 420;
+  // Compressed in-page timings — the page-load 680ms slots would feel
+  // sluggish mid-session; same primitives, roughly halved.
+  const FORM_IN = { heading: 0, sub: 100, fieldsAt: 160, fieldStep: 80, back: 380, submit: 460 };
+
+  let state = 'intro';
+  let animating = false;
+  const timers = [];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const later = (fn, ms) => {
+    if (reduced) fn();
+    else timers.push(setTimeout(fn, ms));
+  };
+  const clearTimers = () => {
+    timers.forEach(clearTimeout);
+    timers.length = 0;
+  };
+
+  const stripFormReveals = () => {
+    formHeading?.classList.remove('is-in');
+    formSub?.classList.remove('is-in');
+    fieldRows.forEach((row) => row.classList.remove('is-visible'));
+    backBtn?.classList.remove('is-visible');
+    submitBtn?.classList.remove('is-visible');
+  };
+
+  const openForm = () => {
+    if (!intro || !formBlock || state !== 'intro' || animating || sent) return;
+    animating = true;
+    clearTimers();
+
+    const proceed = () => {
+      intro.hidden = true;
+      stripFormReveals();
+      formBlock.hidden = false;
+      // Forced reflow: the unhidden elements commit their hidden
+      // opacity-0 state before any reveal class lands, so the fades
+      // actually run (and none of this depends on rAF).
+      void formBlock.offsetWidth;
+      later(() => formHeading?.classList.add('is-in'), FORM_IN.heading);
+      later(() => formSub?.classList.add('is-in'), FORM_IN.sub);
+      fieldRows.forEach((row, i) => {
+        later(() => row.classList.add('is-visible'), FORM_IN.fieldsAt + i * FORM_IN.fieldStep);
+      });
+      later(() => backBtn?.classList.add('is-visible'), FORM_IN.back);
+      later(() => submitBtn?.classList.add('is-visible'), FORM_IN.submit);
+      state = 'form';
+      animating = false;
+      input('name')?.focus();
+    };
+
+    if (reduced) {
+      proceed();
+    } else {
+      intro.classList.add('is-out');
+      timers.push(setTimeout(proceed, INTRO_EXIT_MS));
+    }
+  };
+
+  const closeForm = () => {
+    if (!intro || !formBlock || state !== 'form' || animating || sending || sent) return;
+    animating = true;
+    clearTimers();
+
+    // Reopening starts clean: errors clear (typed values are kept).
+    fields.forEach((key) => setFieldError(key, undefined));
+    if (errorNote instanceof HTMLElement) {
+      errorNote.hidden = true;
+      errorNote.classList.remove('is-in');
+    }
+
+    const finish = () => {
+      formBlock.hidden = true;
+      intro.hidden = false;
+      if (reduced) {
+        intro.classList.remove('is-out');
+      } else {
+        void intro.offsetWidth;
+        timers.push(setTimeout(() => intro.classList.remove('is-out'), 20));
+      }
+      state = 'intro';
+      animating = false;
+      openBtn?.focus();
+    };
+
+    if (reduced) {
+      finish();
+    } else {
+      stripFormReveals();
+      timers.push(setTimeout(finish, FORM_EXIT_MS));
+    }
+  };
+
+  const onOpenClick = () => openForm();
+  const onBackClick = () => closeForm();
+  const onKeydown = (event) => {
+    if (event.key === 'Escape') closeForm();
+  };
+
+  openBtn?.addEventListener('click', onOpenClick);
+  backBtn?.addEventListener('click', onBackClick);
+  document.addEventListener('keydown', onKeydown);
+
   if (import.meta.env.DEV) {
     window.__holdingDeckForm = {
       validate,
+      openForm,
+      closeForm,
       debugState: () => ({
+        state,
+        animating,
         sending,
         sent,
         successShown: successNote instanceof HTMLElement && !successNote.hidden,
@@ -187,7 +311,11 @@ export function initHoldingDeckForm() {
   }
 
   return () => {
+    clearTimers();
     form.removeEventListener('submit', onSubmit);
     form.removeEventListener('input', onInput);
+    openBtn?.removeEventListener('click', onOpenClick);
+    backBtn?.removeEventListener('click', onBackClick);
+    document.removeEventListener('keydown', onKeydown);
   };
 }

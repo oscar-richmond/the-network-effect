@@ -11,8 +11,8 @@
  * column. Field labels sit ABOVE inputs (not placeholders). The submit
  * is the CTAs' text-link treatment at 14px (its own data attribute
  * keeps it inside the ported .holding-spin styles + the variant's red
- * underline); "Contact" stays as the secondary link on the same row —
- * absent from the Figma frame, kept per Oscar's call (option a).
+ * underline); "Back" (ink underline, no arrow) returns to the intro
+ * state — Contact lives there now (the click-trigger conversion).
  *
  * BLEND SAFETY: the subheading's siblings here — the LABELS — are
  * white + mix-blend-difference roots (per the file). Their ancestors
@@ -116,19 +116,17 @@ const { contactMailto } = Astro.props;
     </div>
 
     <div class="holding-final__form-row">
-      <a class="holding-btn" data-holding-final-button href={contactMailto}>
+      {/* Back (Oscar-approved: replaces Contact inside the form state —
+          Contact stays one click away via the intro). Plain .holding-btn
+          text-link treatment: INK underline (deliberately NOT the red
+          data-holding-final-button variant), no arrow. Esc mirrors it
+          (holding-deck-form.js); gone after success along with the
+          whole form (the success note is terminal). */}
+      <button class="holding-btn" data-deck-back type="button">
         <span class="holding-btn__clip"
-          ><span class="holding-btn__inner">Contact</span></span
+          ><span class="holding-btn__inner">Back</span></span
         >
-        <span class="holding-final__cta-arrow" aria-hidden="true">
-          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M1.33108 9L0.688252 8.31631L0.0454274 7.67349L6.25 1.61364L1.62559e-07 1.61364L0 0H9V9L7.38636 9L7.38636 2.75L1.33108 9Z"
-              fill="currentColor"
-            />
-          </svg>
-        </span>
-      </a>
+      </button>
       <button
         class="holding-btn holding-final__submit"
         data-holding-final-button

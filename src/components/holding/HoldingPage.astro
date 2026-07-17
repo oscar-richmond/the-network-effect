@@ -168,24 +168,79 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
       final && (
         <>
           {/* FINAL desktop content (>=1025 only; see holding-page.css's
-              .holding-final section): the deck-request form (Figma
-              SB1V2GBQ0aBsSIdcXPr7dl Group 89), replacing the previous
-              title/paragraph/CTA-row block. Left-aligned internally per
-              the file; the block still centres as a unit on the page's
-              outer axis. The heading is a real <h2> (unique visible
-              content, unlike the old duplicate-of-h1 title). The
-              subheading is white + mix-blend-difference per the file
-              (the heading is plain — faithful to the design's own
-              inconsistency, flagged; on this ground both read dark).
-              Submit + Contact live inside the form component. */}
+              .holding-final section): TWO STATES in one slot, swapped
+              by holding-deck-form.js.
+
+              INTRO (default, restored pre-form block): title +
+              three-line paragraph + CTA row, per-item centred. The
+              deck CTA is now a BUTTON that opens the form — the Drive
+              link is retired on this route (Oscar-confirmed; the form
+              IS the deck path here; /holding's dormant variant keeps
+              the link). All intro content is plain #161616 — no blend
+              roots — which is what makes the swap's GROUP fade on this
+              container legal (the form side never gets one: its
+              subheading/labels are difference roots and only ever fade
+              as leaves).
+
+              FORM (hidden until triggered): the deck-request form
+              (Figma Group 89), left-aligned internally. The heading is
+              a real <h2>; the blended subheading is faithful to the
+              file's own inconsistency (reads dark on this ground
+              either way). Submit + Back live inside the component. */}
           <div class="holding-final__content" data-holding-final-content>
-            <h2 class="holding-final__title" data-holding-final-title>
-              Request THE deck
-            </h2>
-            <p class="holding-final__sub" data-holding-final-sub>
-              Tell us who you are and we’ll send it over.
-            </p>
-            <HoldingDeckForm contactMailto={contactMailto} />
+            <div class="holding-final__intro" data-deck-intro>
+              <div
+                class="holding-final__intro-title"
+                data-holding-final-title
+                aria-hidden="true"
+              >
+                THE NETWORK EFFECT
+              </div>
+              <p class="holding-final__para" data-holding-final-para>
+                <span class="holding-final__para-line">
+                  We are a relationship-led consultancy connecting
+                </span>
+                <span class="holding-final__para-line">
+                  Talent, Brands and Audiences through Experiences,
+                </span>
+                <span class="holding-final__para-line">Strategic Partnerships and Media.</span>
+              </p>
+              <div class="holding-final__ctas">
+                <button class="holding-btn" data-holding-final-button data-deck-open type="button">
+                  <span class="holding-btn__clip"
+                    ><span class="holding-btn__inner">Request company deck</span></span
+                  >
+                  <span class="holding-final__cta-arrow" aria-hidden="true">
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M1.33108 9L0.688252 8.31631L0.0454274 7.67349L6.25 1.61364L1.62559e-07 1.61364L0 0H9V9L7.38636 9L7.38636 2.75L1.33108 9Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </span>
+                </button>
+                {/* No target on the mailto — the established rationale. */}
+                <a class="holding-btn" data-holding-final-button href={contactMailto}>
+                  <span class="holding-btn__clip"
+                    ><span class="holding-btn__inner">Contact</span></span
+                  >
+                  <span class="holding-final__cta-arrow" aria-hidden="true">
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M1.33108 9L0.688252 8.31631L0.0454274 7.67349L6.25 1.61364L1.62559e-07 1.61364L0 0H9V9L7.38636 9L7.38636 2.75L1.33108 9Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            <div class="holding-final__form-block" data-deck-form-block hidden>
+              <h2 class="holding-final__title">Request THE deck</h2>
+              <p class="holding-final__sub">Tell us who you are and we’ll send it over.</p>
+              <HoldingDeckForm contactMailto={contactMailto} />
+            </div>
           </div>
           <p class="holding-final__signoff" data-holding-final-signoff>
             <span
