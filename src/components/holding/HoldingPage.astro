@@ -43,13 +43,14 @@ const { galleryImages = foldGalleryImages, final = false } = Astro.props;
 // placed local-PDF TODO; nothing existed on disk to remove).
 const deckHref =
   'https://drive.google.com/file/d/17njeND6nxOpfHg85g73hopZFS3o37uUu/view?usp=sharing';
-// CONTACT: .com per the codebase's unanimous evidence (13 references,
-// zero .co.uk) — if .co.uk is genuinely a new inbox, this is a
-// one-string change here, and the main site's other contact points
-// will mismatch until addressed separately. Subject is Oscar-approvable
+// CONTACT: .co.uk — Oscar's FINAL, explicitly confirmed address,
+// overriding every prior domain instruction in this build (the old
+// .com evidence below is now superseded; the site's OTHER contact
+// points outside the holding pages still say .com and are unaddressed
+// — out of this scope, flagged separately). Subject is Oscar-approvable
 // in one look: "The Network Effect — Enquiry" (em dash, the site's
 // typographic register), URL-encoded at build time.
-const contactMailto = `mailto:hello@thenetworkeffect.com?subject=${encodeURIComponent(
+const contactMailto = `mailto:hello@thenetworkeffect.co.uk?subject=${encodeURIComponent(
   'The Network Effect — Enquiry',
 )}`;
 
