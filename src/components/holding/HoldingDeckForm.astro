@@ -31,12 +31,26 @@
  * mirrors the server and silently "succeeds" without sending.
  */
 interface Props {
-  /** The studio mailto (built in HoldingPage) — the Contact link and
-   * the error fallback both reuse it. */
+  /** The studio mailto (built in HoldingPage, .com) — used by the
+   * Contact link elsewhere on the page. Received but intentionally
+   * unread here: the error fallback below uses its own .co.uk
+   * address instead, scoped to this one instance per Oscar's
+   * explicit request (see errorMailto). */
   contactMailto: string;
 }
 
-const { contactMailto } = Astro.props;
+// eslint-disable-next-line no-unused-vars -- kept for the Props
+// contract; HoldingPage still passes it down for the Contact link.
+const { contactMailto: _contactMailto } = Astro.props;
+
+// SCOPED to the error-state fallback only (Oscar's explicit ask) —
+// .co.uk, not the shared contactMailto (.com) used by the Contact
+// link and the deck-request recipient elsewhere. Oscar noted .co.uk
+// is "the correct email going forward"; flagged as a real
+// inconsistency worth a broader decision, not applied site-wide here.
+const errorMailto = `mailto:hello@thenetworkeffect.co.uk?subject=${encodeURIComponent(
+  'The Network Effect — Enquiry',
+)}`;
 ---
 
 <div class="holding-final__form-zone">
@@ -169,10 +183,11 @@ const { contactMailto } = Astro.props;
     hidden
   >
     {/* One continuous sentence, both clauses in the SAME style (Oscar's
-        revision) — a single flowing line, not a title+sub pairing. */}
+        revision) — a single flowing line, not a title+sub pairing.
+        .co.uk here only — see errorMailto's note above. */}
     <p class="holding-final__note-sub">
       Something went wrong — nothing was sent. Email us directly at <a
-        href={contactMailto}>hello@thenetworkeffect.com</a>.
+        href={errorMailto}>hello@thenetworkeffect.co.uk</a>.
     </p>
   </div>
 </div>
