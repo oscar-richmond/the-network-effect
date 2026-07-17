@@ -1,4 +1,6 @@
 import { initHoldingEntry } from './holding-entry.js';
+import { createHoldingTravel } from './holding-travel.js';
+import { travelGalleryImages } from '../../data/holding/images.js';
 
 /**
  * Shared holding-page plumbing for /holding and /holding-2 — the
@@ -179,6 +181,66 @@ export function createDriftDriver(region, { onFrame, autoDrift = AUTO_DRIFT_PX_P
  * @param {{ createGallery: (region: HTMLElement, urls: string[]) => object | null,
  *   devHandle: string }} opts
  */
+/** Desktop hands over to the shared mobile travel layout at and below
+ * this width (approved; a one-constant revisit if real-device testing
+ * disagrees). Must match holding-page.css's .holding-shell queries. */
+export const MOBILE_MAX_WIDTH = 1024;
+
+/**
+ * Variant boot — the shared shell's gallery lifecycle for ALL holding
+ * routes: BELOW the breakpoint every route runs the identical mobile
+ * travel mechanic (holding-travel.js, the approved 3-image cycle),
+ * unconditionally; ABOVE it the route's own desktop treatment boots —
+ * or nothing at all (createDesktopGallery: null, the static variant:
+ * plain markup, zero WebGL). Crossings tear down one side and boot the
+ * other; within a mode, resize stays geometry-only on the live
+ * instance.
+ *
+ * @param {{ createDesktopGallery?: ((region: HTMLElement, urls: string[]) => object | null) | null,
+ *   devHandle: string }} opts
+ */
+export function bootHoldingVariant({ createDesktopGallery = null, devHandle }) {
+  const createGallery = (region, urls) => {
+    let inner = null;
+    let mode = null;
+    const pick = () => (window.innerWidth <= MOBILE_MAX_WIDTH ? 'travel' : 'desktop');
+    const apply = () => {
+      const next = pick();
+      if (next === mode) return;
+      inner?.destroy();
+      inner = null;
+      mode = next;
+      inner =
+        next === 'travel'
+          ? createHoldingTravel(region, travelGalleryImages)
+          : createDesktopGallery?.(region, urls) ?? null;
+    };
+    const onResize = () => apply();
+    window.addEventListener('resize', onResize);
+    apply();
+    return {
+      get ready() {
+        return inner?.ready ?? Promise.resolve();
+      },
+      resize() {
+        inner?.resize?.();
+      },
+      tickOnce(dtMs) {
+        inner?.tickOnce?.(dtMs);
+      },
+      debugState() {
+        return { mode, ...(inner?.debugState?.() ?? {}) };
+      },
+      destroy() {
+        window.removeEventListener('resize', onResize);
+        inner?.destroy();
+        inner = null;
+      },
+    };
+  };
+  bootHoldingPage({ createGallery, devHandle });
+}
+
 export function bootHoldingPage({ createGallery, devHandle }) {
   initHoldingEntry();
 

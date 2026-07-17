@@ -1,25 +1,24 @@
 ---
 /**
- * Pre-launch holding page, variant A — the auto-rolling curl-fold
- * gallery (holding-gallery.js). Compare against /holding-2 (the stacked
- * warp column); one gets picked later. Swapping the winner onto "/" is a
- * later, separate, explicitly-triggered deploy step, not performed here.
- *
- * The entire page body is the shared HoldingPage component — fixes to
- * the tagline/buttons/sign-off/choreography land there ONCE for both
- * variants. This file only picks the gallery module.
+ * Holding page, variant SPINNING — the fold-turn gallery
+ * (holding-gallery.js, the original turning effect) on desktop >=1025.
+ * Mobile/tablet <=1024 is the shared travel mechanic, identical across
+ * /holding, /holding-2 and /holding-3 (see holding-shared.js's
+ * bootHoldingVariant). The page body is the shared HoldingPage shell —
+ * left-column fixes land there once for all three routes. The default
+ * gallery slot (the fold poster) is this variant's desktop static frame.
  */
 import HoldingLayout from '../layouts/HoldingLayout.astro';
 import HoldingPage from '../components/holding/HoldingPage.astro';
 ---
 
-<HoldingLayout title="The Network Effect" bodyClass="holding-page">
+<HoldingLayout title="The Network Effect" bodyClass="holding-page holding-shell">
   <HoldingPage />
 </HoldingLayout>
 
 <script>
-  import { bootHoldingPage } from '../scripts/holding/holding-shared.js';
+  import { bootHoldingVariant } from '../scripts/holding/holding-shared.js';
   import { createHoldingGallery } from '../scripts/holding/holding-gallery.js';
 
-  bootHoldingPage({ createGallery: createHoldingGallery, devHandle: '__holdingGallery' });
+  bootHoldingVariant({ createDesktopGallery: createHoldingGallery, devHandle: '__holdingGallery' });
 </script>

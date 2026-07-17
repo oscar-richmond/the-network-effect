@@ -15,7 +15,11 @@
  * Figma file — the /about-3 hero's equivalent line reads "CULTURAL". Built
  * as the Figma reads; flagging the wording difference for sign-off.
  */
-import { galleryImages as foldGalleryImages, taglineImages } from '../../data/holding/images.js';
+import {
+  galleryImages as foldGalleryImages,
+  taglineImages,
+  travelGalleryImages,
+} from '../../data/holding/images.js';
 import '../../styles/holding/holding-page.css';
 
 interface Props {
@@ -177,6 +181,18 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
         decoding="async"
       />
     </slot>
+    <!-- The SHARED mobile travel mechanic's poked poster (<=1024, all
+         routes identical regardless of desktop variant): the static
+         frame for RM / no-WebGL / pre-decode. Hidden above the
+         breakpoint; the slot content above is hidden below it. -->
+    <img
+      class="holding-travel__poster"
+      data-holding-travel-poster
+      src={travelGalleryImages[0]}
+      alt=""
+      decoding="async"
+      aria-hidden="true"
+    />
   </div>
 </div>
 

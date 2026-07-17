@@ -44,6 +44,11 @@ export const travelGalleryImages = [
   warpGalleryImages[4], // HPG Image 5 — armchairs
 ];
 
+/** The STATIC desktop variant (/holding-3): the very first holding-page
+ * build's full-bleed photo, recovered from git history (deleted when
+ * the fold gallery replaced it). PENDING SIGN-OFF as ever. */
+export const holdingStaticPhoto = asset('/assets/holding/photo.jpg');
+
 /** The tagline's inline 5-image rotation, in display order (Oscar's
  * "HP 1-5" originals, 220px wide / mozjpeg q80 — ~2x the slot's ~101px
  * render at 1728). */

@@ -1,0 +1,34 @@
+---
+/**
+ * Holding page, variant STATIC — the very first holding-page build's
+ * full-bleed photo on desktop >=1025: no WebGL, no gallery mechanics
+ * (the original implementation, recovered from git history along with
+ * its asset). Mobile/tablet <=1024 is the shared travel mechanic,
+ * identical across /holding, /holding-2 and /holding-3 (see
+ * holding-shared.js's bootHoldingVariant — this route passes NO desktop
+ * factory). The page body is the shared HoldingPage shell — left-column
+ * fixes land there once for all three routes.
+ */
+import HoldingLayout from '../layouts/HoldingLayout.astro';
+import HoldingPage from '../components/holding/HoldingPage.astro';
+import { holdingStaticPhoto } from '../data/holding/images.js';
+---
+
+<HoldingLayout title="The Network Effect" bodyClass="holding-page holding-shell">
+  <HoldingPage>
+    <!-- PENDING SIGN-OFF: placeholder photo (the original build's). -->
+    <img
+      class="holding-static__photo"
+      slot="gallery"
+      src={holdingStaticPhoto}
+      alt=""
+      decoding="async"
+    />
+  </HoldingPage>
+</HoldingLayout>
+
+<script>
+  import { bootHoldingVariant } from '../scripts/holding/holding-shared.js';
+
+  bootHoldingVariant({ createDesktopGallery: null, devHandle: '__holdingGallery3' });
+</script>
