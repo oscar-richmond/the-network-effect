@@ -32,6 +32,20 @@ const HOLDING_BUTTONS_STAGGER = 120;
 const HOLDING_SIGNOFF_AT = 920;
 const HOLDING_IMAGE_AT = 1040;
 
+/* FINAL variant (/holding-3 desktop, .holding-final) — the new content
+ * re-occupies the old sequence's slots one-for-one: title where the
+ * wordmark was, paragraph in the tagline's slot (line-reveals, 120ms
+ * per line), CTAs and sign-off unchanged, accent bar with the photo.
+ * The OLD sequence still runs too (its elements are the deferred
+ * mobile layout, display:none'd at >=1025 on this variant) — the two
+ * sets never share elements, so both are harmless no-ops for whichever
+ * breakpoint hides them. */
+const FINAL_TITLE_AT = HOLDING_WORDMARK_AT;
+const FINAL_PARA_AT = HOLDING_TAGLINE_AT;
+const FINAL_CTAS_AT = HOLDING_BUTTONS_AT;
+const FINAL_SIGNOFF_AT = HOLDING_SIGNOFF_AT;
+const FINAL_LINE_STAGGER_S = 0.12;
+
 const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
 const TAGLINE_ROTATE_MS = 3000;
 const TAGLINE_ROTATE_EXIT_MS = 1000;
@@ -293,6 +307,88 @@ function revealSignoff(signoff) {
   });
 }
 
+/**
+ * FINAL sign-off alignment (Oscar's spec): line 1 ("Built on Trust.")
+ * offsets right by the measured advance of "P" in line 2's font
+ * (Dazzed SemiBold 12px), so line 1's "B" starts exactly where line 2's
+ * second glyph does. Measured with canvas at the line's own computed
+ * font (letter-spacing is 0 on these lines, so glyph advance is the
+ * whole story); runs after fonts.ready in BOTH motion branches — this
+ * is layout, not choreography. The derived value is stamped on the
+ * block (data-derived-offset-px) for verification. The px offset is
+ * font-size-fixed, so resize never changes it; the block's own
+ * centring is pure CSS (auto margins) and re-derives on its own.
+ */
+function alignFinalSignoff() {
+  const block = document.querySelector('[data-holding-final-signoff]');
+  if (!(block instanceof HTMLElement)) return;
+  const serrifLine = block.querySelector('[data-holding-final-signoff-serrif]');
+  const dazzedLine = block.querySelector('[data-holding-final-signoff-dazzed]');
+  if (!(serrifLine instanceof HTMLElement) || !(dazzedLine instanceof HTMLElement)) return;
+
+  const cs = getComputedStyle(dazzedLine);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  // KERN-AWARE advance: the isolated width of "P" overshoots the second
+  // glyph's rendered start by the P->o kerning pair (~2.9px in Dazzed
+  // SemiBold 12px — measured live). width("Po") - width("o") is the
+  // advance P actually contributes in "Powered", i.e. exactly where the
+  // second glyph starts — the spec's alignment target.
+  const offset = ctx.measureText('Po').width - ctx.measureText('o').width;
+  if (!(offset > 0)) return;
+
+  serrifLine.style.marginLeft = `${offset}px`;
+  block.dataset.derivedOffsetPx = offset.toFixed(2);
+}
+
+/**
+ * FINAL entry choreography — the established vocabulary on the new
+ * elements: line-reveals for title/paragraph/sign-off (paragraph and
+ * sign-off lines staggered 120ms like the tagline's), .is-visible for
+ * the CTA links (the ported .holding-spin draw-in) and the accent bar
+ * (opacity fade alongside the photo's own reveal).
+ */
+function revealFinal(root) {
+  const title = root.querySelector('[data-holding-final-title]');
+  const para = root.querySelector('[data-holding-final-para]');
+  const signoff = root.querySelector('[data-holding-final-signoff]');
+  const bar = root.querySelector('[data-holding-final-bar]');
+  const links = Array.from(root.querySelectorAll('[data-holding-final-button]'));
+
+  const playLines = (container, lineSelector) => {
+    if (!(container instanceof HTMLElement)) return;
+    container.style.opacity = '1';
+    const lines = Array.from(container.querySelectorAll(lineSelector));
+    const targets = lines.length ? lines : [container];
+    targets.forEach((line, i) => {
+      if (!(line instanceof HTMLElement)) return;
+      line.dataset.revealDelay = String(i * FINAL_LINE_STAGGER_S);
+      wrapLineRevealElement(line);
+    });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        targets.forEach((line) => {
+          if (line instanceof HTMLElement) playLineRevealElement(line);
+        });
+      });
+    });
+  };
+
+  setTimeout(() => playLines(title, ':scope > *'), FINAL_TITLE_AT);
+  setTimeout(() => playLines(para, '.holding-final__para-line'), FINAL_PARA_AT);
+  links.forEach((link, i) => {
+    setTimeout(() => {
+      link.classList.add('is-visible');
+    }, FINAL_CTAS_AT + i * HOLDING_BUTTONS_STAGGER);
+  });
+  setTimeout(() => playLines(signoff, '.holding-final__signoff-line'), FINAL_SIGNOFF_AT);
+  setTimeout(() => {
+    bar?.classList.add('is-visible');
+  }, HOLDING_IMAGE_AT);
+}
+
 export function initHoldingEntry() {
   const wordmark = document.querySelector('[data-holding-wordmark]');
   const tagline = document.querySelector('[data-holding-tagline]');
@@ -341,10 +437,13 @@ export function initHoldingEntry() {
     // no-preference) and the rotating word stays on its first, static
     // value — but the culture overlay's position is set by JS, not CSS,
     // so it still needs a one-shot sync + reveal even with no animation.
+    // The final sign-off's "P"-advance offset is layout, not motion —
+    // it runs here too.
     const fontsReady = document.fonts?.ready ?? Promise.resolve();
     fontsReady.then(() => {
       syncCultureOverlay(taglineText, cultureOverlay);
       cultureOverlay?.classList.add('is-visible');
+      alignFinalSignoff();
     });
     return () => window.removeEventListener('resize', onResize);
   }
@@ -356,6 +455,11 @@ export function initHoldingEntry() {
     if (import.meta.env.DEV) {
       console.info('[holding-entry] fonts ready — entry sequence starting');
     }
+
+    // FINAL variant: layout alignment first (fonts are ready — the
+    // measure is exact), then its sequence runs alongside the old one.
+    alignFinalSignoff();
+    revealFinal(document);
 
     setTimeout(() => revealWordmark(wordmark), HOLDING_WORDMARK_AT);
 

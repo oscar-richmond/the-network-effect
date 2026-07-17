@@ -28,9 +28,15 @@ interface Props {
    * warp set — the two pages' imagery forked when the warp column got
    * the HPG set. */
   galleryImages?: string[];
+  /** /holding-3's FINAL desktop design (.holding-final): renders the
+   * new left-column content + accent bar ADDITIVELY alongside the old
+   * elements. CSS gates the two sets by breakpoint — old column shows
+   * <=1024 (the deferred shared mobile layout), new content >=1025.
+   * Off for /holding and /holding-2: their output is unchanged. */
+  final?: boolean;
 }
 
-const { galleryImages = foldGalleryImages } = Astro.props;
+const { galleryImages = foldGalleryImages, final = false } = Astro.props;
 
 // The company deck — Google Drive share link (supersedes the never-
 // placed local-PDF TODO; nothing existed on disk to remove).
@@ -156,6 +162,62 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
       We are a relationship-led consultancy connecting Talent, Brands and
       Audiences through Experiences, Strategic Partnerships and Media.
     </p>
+
+    {
+      final && (
+        <>
+          {/* FINAL desktop content (>=1025 only; see holding-page.css's
+              .holding-final section). The visible title is aria-hidden —
+              the visually-hidden <h1> above stays the accessible name,
+              same pattern as the old wordmark. The CTAs are /holding's
+              text-link treatment verbatim via .holding-spin class reuse;
+              their own data attribute keeps entry stagger per-set. */}
+          <div class="holding-final__content" data-holding-final-content>
+            <div class="holding-final__title" data-holding-final-title aria-hidden="true">
+              THE NETWORK EFFECT
+            </div>
+            <p class="holding-final__para" data-holding-final-para>
+              <span class="holding-final__para-line">
+                We are a relationship-led consultancy connecting
+              </span>
+              <span class="holding-final__para-line">
+                Talent, Brands and Audiences through Experiences,
+              </span>
+              <span class="holding-final__para-line">Strategic Partnerships and Media.</span>
+            </p>
+            <div class="holding-final__ctas">
+              <a
+                class="holding-btn"
+                data-holding-final-button
+                href={deckHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="holding-btn__clip"
+                  ><span class="holding-btn__inner">View company deck</span></span
+                >
+              </a>
+              {/* No target on the mailto — same rationale as the old row. */}
+              <a class="holding-btn" data-holding-final-button href={contactMailto}>
+                <span class="holding-btn__clip"
+                  ><span class="holding-btn__inner">Contact</span></span
+                >
+              </a>
+            </div>
+          </div>
+          <p class="holding-final__signoff" data-holding-final-signoff>
+            <span
+              class="holding-final__signoff-line holding-final__signoff-line--serrif"
+              data-holding-final-signoff-serrif>Built on Trust.</span
+            >
+            <span
+              class="holding-final__signoff-line holding-final__signoff-line--dazzed"
+              data-holding-final-signoff-dazzed>Powered by access.</span
+            >
+          </p>
+        </>
+      )
+    }
   </div>
 
   <!-- The gallery region. Keeps the photo's entry slot and treatment:
@@ -194,6 +256,18 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
       aria-hidden="true"
     />
   </div>
+
+  {
+    final && (
+      <>
+        {/* FINAL accent bar: fixed, flush right, full height — the photo
+            region's 16px right margin makes their edges touch exactly.
+            A sibling of both columns (blend safety: ancestor of nothing),
+            z 1 over the photo, under the grain (z 9000). */}
+        <div class="holding-final__bar" data-holding-final-bar aria-hidden="true" />
+      </>
+    )
+  }
 </div>
 
 <div class="holding-page__grain" aria-hidden="true"></div>

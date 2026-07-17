@@ -1,21 +1,33 @@
 ---
 /**
- * Holding page, variant STATIC — the very first holding-page build's
- * full-bleed photo on desktop >=1025: no WebGL, no gallery mechanics
- * (the original implementation, recovered from git history along with
- * its asset). Mobile/tablet <=1024 is the shared travel mechanic,
- * identical across /holding, /holding-2 and /holding-3 (see
- * holding-shared.js's bootHoldingVariant — this route passes NO desktop
- * factory). The page body is the shared HoldingPage shell — left-column
- * fixes land there once for all three routes.
+ * Holding page, variant FINAL — the approved holding design, rebuilt in
+ * place from the STATIC variant per Oscar's spec: on desktop >=1025 the
+ * old wordmark/tagline column is replaced by the .holding-final content
+ * (32px Dazzed Heavy title, three-line Serrif paragraph, /holding's
+ * text-link CTAs verbatim, bottom-anchored two-line sign-off) plus the
+ * 16px #C1250E accent bar flush right, photo column narrowed to touch
+ * it. /holding and /holding-2 stay DORMANT (files intact, unlinked —
+ * the /about + /about-2 convention).
+ *
+ * Mobile/tablet <=1024 is DEFERRED: the shared travel mechanic with the
+ * rolling-tagline hero renders exactly as before on all three routes
+ * (bootHoldingVariant — this route passes NO desktop factory). The old
+ * column elements therefore stay in the shell's DOM, breakpoint-gated.
+ *
+ * Body classes: .holding-static (photo shift + column centering),
+ * .holding-final (the new design), .holding-spin (CTA text-link styles
+ * by class reuse — that block is >=1025-gated, so mobile is untouched).
  */
 import HoldingLayout from '../layouts/HoldingLayout.astro';
 import HoldingPage from '../components/holding/HoldingPage.astro';
 import { holdingStaticPhoto } from '../data/holding/images.js';
 ---
 
-<HoldingLayout title="The Network Effect" bodyClass="holding-page holding-shell holding-static">
-  <HoldingPage>
+<HoldingLayout
+  title="The Network Effect"
+  bodyClass="holding-page holding-shell holding-static holding-final holding-spin"
+>
+  <HoldingPage final>
     <!-- PENDING SIGN-OFF: placeholder photo (the original build's). -->
     <img
       class="holding-static__photo"
