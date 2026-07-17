@@ -927,3 +927,134 @@
 		min-height: auto;
 	}
 }
+
+/* ── /holding ONLY (.holding-spin): CTAs as plain text links ─────────────
+   Oscar's variant split, following the .holding-static precedent: the
+   SPINNING fold-gallery route swaps the button chrome for editorial text
+   links; /holding-2 and /holding-3 keep the shared buttons untouched.
+   Desktop >=1025 only — below the breakpoint every route runs the
+   IDENTICAL shared mobile layout (where the spinning gallery doesn't
+   exist), and that invariant holds.
+
+   STYLE: Dazzed SemiBold 12px UPPERCASE #161616, underlined. The
+   underline is a 1px ::after ink line rather than text-decoration so it
+   can draw in and be swept; the shared fill-sweep ::before is rebuilt as
+   a 1px accent line at the same position.
+
+   ENTRY (same HOLDING_BUTTONS_AT slot + stagger — holding-entry.js
+   untouched, .is-visible still drives it): the label line-rises inside
+   its existing clip, and the ink underline draws in left-to-right just
+   as the text settles. The line is the link's only visual weight, so the
+   line IS the arrival gesture. Hidden states gated to no-preference as
+   ever: under reduced motion the links render complete and static.
+
+   HOVER — the buttons' mirrored fill-sweep translated to the line: the
+   accent line sweeps in from the left OVER the ink line while the text
+   eases to the accent; hover-out retracts it back to the left edge
+   (symmetric, never snaps). :focus-visible triggers the swept state
+   (ungated, keyboard) with the house outline on top; :active presses to
+   the deeper navy (ungated — the touch feedback). Hover itself stays
+   behind the house (hover:hover)+(pointer:fine) gate.
+
+   NO LAYOUT SHIFT between states: entry/hover/active only transform
+   absolutely-positioned pseudo-lines and the label inside its clip — the
+   link's box never changes. (The resting row is shorter than the 47px
+   buttons; that geometry change is the redesign itself, not a state.)
+
+   BLEND SAFETY: still plain flow inside the left column, both
+   pseudo-lines contained inside each link — nothing new is created
+   around the wordmark/tagline difference roots. */
+@media (min-width: 1025px) {
+	.holding-spin .holding-btn,
+	.holding-spin .holding-btn--solid,
+	.holding-spin .holding-btn--outline {
+		height: auto;
+		min-width: 0;
+		padding: 0 0 4px;
+		background: none;
+		border: none;
+		color: #161616;
+		transition: color 0.3s var(--holding-ease);
+	}
+
+	/* Ink underline — the entry's draw target. Complete by default (the
+	   reduced-motion resting state); the hidden/drawing states live in
+	   the no-preference block below. Hover never touches ::after. */
+	.holding-spin .holding-btn::after {
+		content: '';
+		position: absolute;
+		inset: auto 0 0 0;
+		height: 1px;
+		background: currentColor;
+		transform-origin: left center;
+	}
+
+	/* The shared fill-sweep ::before rebuilt as the hover's accent line:
+	   same position as the ink line, driven by the same mirrored
+	   left-in/left-out gesture the buttons use for their fill. */
+	.holding-spin .holding-btn::before,
+	.holding-spin .holding-btn--solid::before,
+	.holding-spin .holding-btn--outline::before {
+		inset: auto 0 0 0;
+		height: 1px;
+		background: var(--color-holding-accent);
+		transform: scaleX(0);
+		transform-origin: left center;
+		transition: transform 0.4s var(--holding-ease);
+	}
+}
+
+@media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
+	.holding-spin .holding-btn:hover {
+		color: var(--color-holding-accent);
+	}
+
+	.holding-spin .holding-btn:hover::before {
+		transform: scaleX(1);
+	}
+}
+
+@media (min-width: 1025px) {
+	.holding-spin .holding-btn:focus-visible {
+		color: var(--color-holding-accent);
+	}
+
+	.holding-spin .holding-btn:focus-visible::before {
+		transform: scaleX(1);
+	}
+
+	.holding-spin .holding-btn:active {
+		color: var(--color-holding-accent-active);
+	}
+
+	.holding-spin .holding-btn:active::before {
+		transform: scaleX(1);
+		background: var(--color-holding-accent-active);
+	}
+}
+
+@media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
+	/* No chrome, so no chrome-wipe: neutralize the buttons' clip-path
+	   entry. The label keeps its line-rise but becomes the FIRST gesture
+	   (the shared 0.12s follow delay is dropped). */
+	.holding-spin .holding-btn {
+		clip-path: none;
+	}
+
+	.holding-spin .holding-btn .holding-btn__inner {
+		transition: transform 0.5s var(--holding-ease);
+	}
+
+	.holding-spin .holding-btn::after {
+		transform: scaleX(0);
+	}
+
+	.holding-spin .holding-btn.is-visible::after {
+		transform: scaleX(1);
+		/* Declared on the target state so it drives ONLY the entry draw
+		   (0.3s behind the label's rise). Hover animates ::before, never
+		   ::after, so this delayed curve can't leak into the hover
+		   gesture. */
+		transition: transform 0.6s var(--holding-ease) 0.3s;
+	}
+}
