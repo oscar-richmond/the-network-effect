@@ -237,7 +237,14 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
             </div>
 
             <div class="holding-final__form-block" data-deck-form-block hidden>
-              <h2 class="holding-final__title">Request THE deck</h2>
+              {/* Two literal lines (Oscar's revision — the Figma file's
+                  single-line "Request THE deck" is superseded here),
+                  same nowrap-line pattern as the intro paragraph so
+                  the break holds regardless of container width. */}
+              <h2 class="holding-final__title">
+                <span class="holding-final__title-line">Request our</span>
+                <span class="holding-final__title-line">Company deck</span>
+              </h2>
               <p class="holding-final__sub">Tell us who you are and we’ll send it over.</p>
               <HoldingDeckForm contactMailto={contactMailto} />
             </div>

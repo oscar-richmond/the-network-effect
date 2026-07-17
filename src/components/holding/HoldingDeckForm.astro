@@ -132,11 +132,13 @@ const errorMailto = `mailto:hello@thenetworkeffect.co.uk?subject=${encodeURIComp
     <div class="holding-final__form-row">
       {/* Back (Oscar-approved: replaces Contact inside the form state —
           Contact stays one click away via the intro). Plain .holding-btn
-          text-link treatment: INK underline (deliberately NOT the red
-          data-holding-final-button variant), no arrow. Esc mirrors it
-          (holding-deck-form.js); gone after success along with the
-          whole form (the success note is terminal). */}
-      <button class="holding-btn" data-deck-back type="button">
+          text-link treatment, sized to match Request (14px) but with NO
+          underline at all — .holding-final__back strips the ported
+          ::after entirely, including its entry draw/hover states. No
+          arrow either. Esc mirrors it (holding-deck-form.js); gone
+          after success along with the whole form (the success note is
+          terminal). */}
+      <button class="holding-btn holding-final__back" data-deck-back type="button">
         <span class="holding-btn__clip"
           ><span class="holding-btn__inner">Back</span></span
         >

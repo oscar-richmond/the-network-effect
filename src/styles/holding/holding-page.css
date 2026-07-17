@@ -1231,19 +1231,31 @@
 		display: none;
 	}
 
-	/* "Request THE deck" — Dazzed Bold (700, a loaded face), 32px,
-	   uppercase, plain #161616. NOT blended — per the file, only the
-	   subheading/labels below carry the difference blend (a faithful
-	   build of the design's own inconsistency; on this ground both
-	   render dark either way). Line-height 44px = the file's title box. */
+	/* "Request our / Company deck" — two literal lines (Oscar's
+	   revision of the file's single-line "Request THE deck"), Dazzed
+	   SemiBold (600 — one loaded weight down from the file's Bold 700,
+	   ditto revision), 32px, uppercase, plain #161616. NOT blended —
+	   per the file, only the subheading/labels below carry the
+	   difference blend (a faithful build of the design's own
+	   inconsistency; on this ground both render dark either way).
+	   line-height 1.2 (display-heading leading, matching the intro
+	   title's own multi-line treatment) replaces the file's single-line
+	   44px box, which doesn't apply to a 2-line heading. */
 	.holding-final__title {
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 32px;
-		line-height: 44px;
+		line-height: 1.2;
 		text-transform: uppercase;
 		color: #161616;
+	}
+
+	/* Literal line break: each line its own block, never wraps —
+	   same nowrap-line pattern as .holding-final__para-line. */
+	.holding-final__title-line {
+		display: block;
+		white-space: nowrap;
 	}
 
 	/* Subheading — Dazzed Regular 12px, WHITE + DIFFERENCE per the
@@ -1368,6 +1380,23 @@
 	   attribute). */
 	.holding-final__submit {
 		font-size: 14px;
+	}
+
+	/* Back: same 14px as Request (Oscar's revision — was the base
+	   .holding-btn's 12px), but with NO underline at all — content:none
+	   removes the ported ::after entirely, so the entry draw-in and the
+	   hover-retract both have nothing left to animate; there's no
+	   accent-line hover here as a result (a deliberate quieter
+	   affordance than the other two links get). */
+	.holding-final__back {
+		font-size: 14px;
+	}
+
+	/* Two classes to match (and, by source order, beat) the ported
+	   .holding-spin .holding-btn::after's own two-class specificity —
+	   a single-class .holding-final__back::after was losing to it. */
+	.holding-final .holding-final__back::after {
+		content: none;
 	}
 
 	/* Loading: label swaps to "Sending…" (JS), the arrow fades, the
