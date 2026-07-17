@@ -15,7 +15,6 @@
  * Figma file — the /about-3 hero's equivalent line reads "CULTURAL". Built
  * as the Figma reads; flagging the wording difference for sign-off.
  */
-import { asset } from '../../utils/asset.js';
 import { galleryImages as foldGalleryImages, taglineImages } from '../../data/holding/images.js';
 import '../../styles/holding/holding-page.css';
 
@@ -29,10 +28,19 @@ interface Props {
 
 const { galleryImages = foldGalleryImages } = Astro.props;
 
-// TODO(oscar): drop the real company deck PDF at this path — the button
-// will 404 until it's added.
-const deckPdfHref = asset('/assets/holding/company-deck.pdf');
-const contactMailto = 'mailto:hello@thenetworkeffect.com';
+// The company deck — Google Drive share link (supersedes the never-
+// placed local-PDF TODO; nothing existed on disk to remove).
+const deckHref =
+  'https://drive.google.com/file/d/17njeND6nxOpfHg85g73hopZFS3o37uUu/view?usp=sharing';
+// CONTACT: .com per the codebase's unanimous evidence (13 references,
+// zero .co.uk) — if .co.uk is genuinely a new inbox, this is a
+// one-string change here, and the main site's other contact points
+// will mismatch until addressed separately. Subject is Oscar-approvable
+// in one look: "The Network Effect — Enquiry" (em dash, the site's
+// typographic register), URL-encoded at build time.
+const contactMailto = `mailto:hello@thenetworkeffect.com?subject=${encodeURIComponent(
+  'The Network Effect — Enquiry',
+)}`;
 
 const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
 ---
@@ -116,20 +124,22 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
         <a
           class="holding-btn holding-btn--solid"
           data-holding-button
-          href={deckPdfHref}
+          href={deckHref}
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
         >
           <span class="holding-btn__clip"
             ><span class="holding-btn__inner">View company deck</span></span
           >
         </a>
+        <!-- mailto deliberately has NO target="_blank": a plain mailto
+             invokes the mail client without navigating this page, while
+             _blank+mailto is exactly what produces the flash-open blank
+             tab (the iOS Safari artifact flagged in the task). -->
         <a
           class="holding-btn holding-btn--outline"
           data-holding-button
           href={contactMailto}
-          target="_blank"
-          rel="noopener"
         >
           <span class="holding-btn__clip"
             ><span class="holding-btn__inner">Contact</span></span
