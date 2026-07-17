@@ -81,6 +81,17 @@ export default async function handler(req, res) {
   });
 
   if (!send.ok) {
+    // Diagnostic only — the client still just gets a plain 502; this
+    // goes to the Vercel function's own runtime logs so a rejection
+    // reason (unverified domain, malformed sender, etc.) is visible
+    // without changing anything the user-facing side sees.
+    const body = await send.text().catch(() => '<unreadable>');
+    console.error('[deck-request] Resend rejected the send', {
+      status: send.status,
+      body,
+      from,
+      to,
+    });
     return res.status(502).json({ ok: false, error: 'send' });
   }
 
