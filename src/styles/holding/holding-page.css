@@ -1200,8 +1200,53 @@
 
 	.holding-final__ctas {
 		display: flex;
-		gap: 12px;
+		gap: 32px;
 		margin-top: 48px;
+		/* No explicit centring math needed: this row is a single flex
+		   child of .holding-final__content, which centres it (and every
+		   other child) as a block via align-items:center — widening the
+		   gap or the row's total width (the arrows) re-centres for free. */
+	}
+
+	/* Arrow needs to escape the shared .holding-btn's overflow:hidden
+	   (used elsewhere for the chrome buttons' fill-sweep clip) — safe to
+	   lift here since these links carry no sweep layer (.holding-spin
+	   sets their ::before to content:none). */
+	.holding-final [data-holding-final-button] {
+		overflow: visible;
+	}
+
+	/* 9x9, 8px right of the text, vertically centred on the TEXT alone
+	   (excluding the underline's reserved 4px bottom padding). The
+	   anchor is position:relative with padding 0 0 4px (from the ported
+	   .holding-spin rule) and no left/right padding, so its padding box
+	   is exactly text-width x (text-height + 4px) — left:100% lands at
+	   the text's right edge, and top:0/bottom:4px + auto margins centres
+	   the icon within the text-height span precisely. Absolutely
+	   positioned, so it never enters flex flow: it doesn't widen
+	   .holding-btn's own box, which is what the underline's ::after
+	   (inset 0 0 0 0, i.e. matches that box exactly) spans — the arrow
+	   is structurally outside the underline's reach, not just visually.
+	   Still a DOM descendant of the anchor, so hover/focus/click on the
+	   arrow itself reaches the link via normal bubbling — full hit
+	   target preserved despite sitting outside the layout box. No
+	   explicit `color` here: inheriting the anchor's `color` means the
+	   arrow's currentColor fill tracks every hover/focus/active
+	   transition automatically, with no separate transition needed. */
+	.holding-final__cta-arrow {
+		position: absolute;
+		top: 0;
+		bottom: 4px;
+		left: 100%;
+		margin: auto 0 auto 8px;
+		width: 9px;
+		height: 9px;
+	}
+
+	.holding-final__cta-arrow svg {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 
 	/* Two-line sign-off, 48px off the viewport bottom. left/right 0 +
@@ -1244,7 +1289,10 @@
 
 	.holding-final__signoff-line--dazzed {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 600;
+		/* Dropped from 600 — Oscar asked for -50, but Dazzed has no 550
+		   face loaded (100/400/500/600/700/800 only), so this steps down
+		   to the nearest loaded weight, -100, per the spec's fallback. */
+		font-weight: 500;
 	}
 }
 
@@ -1261,6 +1309,19 @@
 	.holding-final .holding-final__bar {
 		opacity: 0;
 		transition: opacity 1.4s var(--holding-ease);
+	}
+
+	/* Arrow fades in on the same 0.6s/0.3s-delay timing as the ported
+	   underline draw, so both finish together as one gesture — it has
+	   no line-reveal box of its own (it isn't text), so a plain fade is
+	   the closest match to the label's rise. */
+	.holding-final .holding-final__cta-arrow {
+		opacity: 0;
+		transition: opacity 0.6s var(--holding-ease) 0.3s;
+	}
+
+	.holding-final [data-holding-final-button].is-visible .holding-final__cta-arrow {
+		opacity: 1;
 	}
 
 	.holding-final .holding-final__bar.is-visible {
