@@ -15,7 +15,7 @@
  */
 import HoldingLayout from '../layouts/HoldingLayout.astro';
 import HoldingPage from '../components/holding/HoldingPage.astro';
-import { warpGalleryImages } from '../data/holding/images.js';
+import { warpGalleryImages, travelGalleryImages } from '../data/holding/images.js';
 ---
 
 <HoldingLayout title="The Network Effect" bodyClass="holding-page holding-page-2">
@@ -35,7 +35,7 @@ import { warpGalleryImages } from '../data/holding/images.js';
       <img
         class="holding-travel__poster"
         data-holding-travel-poster
-        src={warpGalleryImages[0]}
+        src={travelGalleryImages[0]}
         alt=""
         decoding="async"
         aria-hidden="true"
@@ -48,6 +48,7 @@ import { warpGalleryImages } from '../data/holding/images.js';
   import { bootHoldingPage } from '../scripts/holding/holding-shared.js';
   import { createHoldingWarp } from '../scripts/holding/holding-warp.js';
   import { createHoldingTravel } from '../scripts/holding/holding-travel.js';
+  import { travelGalleryImages } from '../data/holding/images.js';
 
   /** Desktop hands over to the mobile travel layout at and below this
    * width (approved: iPad landscape 1024 gets mobile, larger gets
@@ -68,7 +69,13 @@ import { warpGalleryImages } from '../data/holding/images.js';
       if (next === mode) return;
       inner?.destroy();
       mode = next;
-      inner = (next === 'travel' ? createHoldingTravel : createHoldingWarp)(region, urls);
+      // Per-mode image sets: the desktop warp column cycles the full
+      // seven (the region's data attribute); the mobile travel loop is
+      // the approved three-image subset (HPG 2 -> 4 -> 5).
+      inner =
+        next === 'travel'
+          ? createHoldingTravel(region, travelGalleryImages)
+          : createHoldingWarp(region, urls);
     };
     const onResize = () => apply();
     window.addEventListener('resize', onResize);

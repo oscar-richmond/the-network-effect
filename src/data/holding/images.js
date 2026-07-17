@@ -35,6 +35,15 @@ export const warpGalleryImages = [
   asset('/assets/holding/warp/07-staircase.jpg'),
 ];
 
+/** The mobile travelling-image cycle (Oscar's spec): exactly HPG Image
+ * 2 -> 4 -> 5, looping — a subset of the warp set above (same processed
+ * assets, no new exports). The desktop warp column keeps all seven. */
+export const travelGalleryImages = [
+  warpGalleryImages[1], // HPG Image 2 — panelled lounge
+  warpGalleryImages[3], // HPG Image 4 — glass touch
+  warpGalleryImages[4], // HPG Image 5 — armchairs
+];
+
 /** The tagline's inline 5-image rotation, in display order (Oscar's
  * "HP 1-5" originals, 220px wide / mozjpeg q80 — ~2x the slot's ~101px
  * render at 1728). */

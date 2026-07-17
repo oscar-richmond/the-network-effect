@@ -345,11 +345,14 @@ export function createHoldingTravel(region, imageUrls) {
       driver.tickOnce(dtMs);
     },
     debugState() {
+      const idx = mod(currentIndex, images.length);
       return {
         ...driver.state(),
         ...lastPlace,
         pokePx: POKE_PX,
-        imageIndex: mod(currentIndex, images.length),
+        imageIndex: idx,
+        imageCount: images.length,
+        currentSrc: images[idx]?.src?.split('/').pop() ?? null,
         regionSize: { ...regionSize },
         entryDone,
       };
