@@ -1249,6 +1249,19 @@
 		height: 100%;
 	}
 
+	/* Underline colour only — text keeps every existing colour state
+	   (resting #161616, hover-fade #A6A6A8, focus/active) exactly as
+	   is; none of those state rules touch `background`, only
+	   `transform`, so this single override recolours the line across
+	   rest/hover/focus/active alike without needing per-state repeats.
+	   Overrides the ported .holding-spin rule's `background:
+	   currentColor` for the final CTAs only (matched specificity, wins
+	   on source order) — /holding's own text links keep their
+	   currentColor underline untouched. */
+	.holding-final [data-holding-final-button]::after {
+		background: var(--color-holding-red);
+	}
+
 	/* Two-line sign-off, 48px off the viewport bottom. left/right 0 +
 	   auto margins centre the max-content block within the column's box
 	   (viewport-left .. image-column-left) — the centre point re-derives
