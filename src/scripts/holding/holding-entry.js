@@ -406,6 +406,53 @@ function revealFinal(root) {
   }, HOLDING_IMAGE_AT);
 }
 
+/**
+ * Replays the intro's title/paragraph/CTA entrance (Oscar's revision):
+ * called by holding-deck-form.js's auto-return-from-sent, so landing
+ * back on the intro after a successful send feels like the initial
+ * "land on the site" entrance rather than a flat re-appear. Assumes
+ * revealFinal has already run once (title/para are already wrapped
+ * into lr-clip/lr-inner — this never re-wraps, only resets+replays)
+ * and is a no-op under reduced motion (nothing was ever wrapped to
+ * begin with there). MUST be called while the intro container is
+ * still hidden (display:none) so the reset itself is invisible — the
+ * caller unhides it afterward; each clip's own baked-in transition-
+ * delay (set once at wrap time) reproduces the same stagger on every
+ * replay, so simply re-adding lr-visible is enough — no re-deriving
+ * per-line timing here. */
+export function replayHoldingIntroEntrance() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const title = document.querySelector('[data-holding-final-title]');
+  const para = document.querySelector('[data-holding-final-para]');
+  const links = Array.from(
+    document.querySelectorAll('[data-deck-intro] [data-holding-final-button]'),
+  );
+
+  const resetClips = (container) => {
+    if (!(container instanceof HTMLElement)) return;
+    container.querySelectorAll('.lr-clip').forEach((clip) => clip.classList.remove('lr-visible'));
+  };
+
+  const playClips = (container) => {
+    if (!(container instanceof HTMLElement)) return;
+    container.querySelectorAll('.lr-clip').forEach((clip) => clip.classList.add('lr-visible'));
+  };
+
+  resetClips(title);
+  resetClips(para);
+  links.forEach((link) => link.classList.remove('is-visible'));
+
+  // Same relative rhythm as the initial page-load entrance.
+  setTimeout(() => playClips(title), FINAL_TITLE_AT);
+  setTimeout(() => playClips(para), FINAL_PARA_AT);
+  links.forEach((link, i) => {
+    setTimeout(() => {
+      link.classList.add('is-visible');
+    }, FINAL_CTAS_AT + i * HOLDING_BUTTONS_STAGGER);
+  });
+}
+
 export function initHoldingEntry() {
   const wordmark = document.querySelector('[data-holding-wordmark]');
   const tagline = document.querySelector('[data-holding-tagline]');

@@ -14,11 +14,17 @@
  * flash) — then the SENT state ("Sent — we'll be in touch shortly.")
  * line-reveals centred in the slot, lingers SENT_LINGER_MS, and the
  * page returns itself to the landing (intro) state with the form
- * fully reset, so the deck CTA works again for a fresh request.
+ * fully reset, so the deck CTA works again for a fresh request. That
+ * return REPLAYS the intro's original land-on-the-site entrance
+ * (title line-rise, paragraph stagger, CTA draw-in — see
+ * replayHoldingIntroEntrance in holding-entry.js) rather than a flat
+ * container fade — the Back-button's quick return (closeForm) is
+ * untouched, it still uses the simple group fade.
  *
  * Boots from holding-3.astro; no-ops on pages without the form.
  */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { replayHoldingIntroEntrance } from './holding-entry.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SENDING_LABEL = 'Sending…';
@@ -200,13 +206,17 @@ export function initHoldingDeckForm() {
       setSending(false);
       sent = false;
       if (intro instanceof HTMLElement) {
+        // No container-level fade here (unlike closeForm's quick
+        // Back-button return) — the container itself is just present
+        // at rest, and replayHoldingIntroEntrance's title/paragraph/
+        // CTA reveal IS the entrance, matching the original
+        // land-on-the-site choreography (Oscar's revision). Reset
+        // happens while still hidden (its own contract) so nothing
+        // flashes; unhide immediately after so the first scheduled
+        // replay timer (title, +0ms) has a visible target.
+        intro.classList.remove('is-out');
+        replayHoldingIntroEntrance();
         intro.hidden = false;
-        if (reduced) {
-          intro.classList.remove('is-out');
-        } else {
-          void intro.offsetWidth;
-          timers.push(setTimeout(() => intro.classList.remove('is-out'), 20));
-        }
       }
       state = 'intro';
       animating = false;
