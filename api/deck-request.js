@@ -10,17 +10,16 @@
  *   RESEND_API_KEY      required for real sends; absent -> 500 and the
  *                       client shows its mailto fallback.
  *   DECK_REQUEST_TO     optional recipient override. Default is
- *                       hello@thenetworkeffect.co.uk — Oscar's FINAL,
- *                       confirmed address, superseding every earlier
- *                       domain used in this build (.com, and the
- *                       since-abandoned networkeffectagency.co.uk).
+ *                       hello@networkeffectagency.co.uk — Oscar's
+ *                       corrected FINAL address ("there's no 'the'"),
+ *                       closing the domain saga: this is the domain
+ *                       actually verified in Resend, the one the
+ *                       successful live end-to-end test delivered
+ *                       through.
  *   DECK_REQUEST_FROM   optional verified-domain sender. Defaults to
- *                       Resend's shared onboarding sender so the form
- *                       works before domain verification is done —
- *                       set to a thenetworkeffect.co.uk address once
- *                       that domain is verified in Resend (a SEPARATE
- *                       verification from whatever domain was used
- *                       for the last live test, if it differs).
+ *                       Resend's shared onboarding sender as a
+ *                       fallback-of-last-resort; the Vercel env sets
+ *                       a networkeffectagency.co.uk sender.
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,7 +54,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: 'unconfigured' });
   }
 
-  const to = process.env.DECK_REQUEST_TO || 'hello@thenetworkeffect.co.uk';
+  const to = process.env.DECK_REQUEST_TO || 'hello@networkeffectagency.co.uk';
   const from =
     process.env.DECK_REQUEST_FROM || 'The Network Effect <onboarding@resend.dev>';
 

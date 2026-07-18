@@ -1538,7 +1538,9 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		padding: 10px 16px;
+		/* Left padding 2px tighter than the right (Oscar's revision —
+		   the tick reads with more air than it optically needs). */
+		padding: 10px 16px 10px 14px;
 		background: #161616;
 		border-radius: 999px;
 		color: #ffffff;

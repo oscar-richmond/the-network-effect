@@ -32,11 +32,10 @@
  */
 interface Props {
   /** The studio mailto (built in HoldingPage) — shared by the Contact
-   * link and this component's error-state fallback. Both now resolve
-   * to the SAME address (hello@thenetworkeffect.co.uk, Oscar's final,
-   * confirmed domain) — the earlier scoped-.co.uk-exception plumbing
-   * (a separate local errorMailto constant) has been removed since
-   * there's no longer a real difference to scope around. */
+   * link and this component's error-state fallback. Both resolve to
+   * the SAME address (hello@networkeffectagency.co.uk — Oscar's
+   * corrected final domain, the one verified in Resend); the visible
+   * text below must stay in sync with HoldingPage's contactEmail. */
   contactMailto: string;
 }
 
@@ -178,7 +177,7 @@ const { contactMailto } = Astro.props;
         revision) — a single flowing line, not a title+sub pairing. */}
     <p class="holding-final__note-sub">
       Something went wrong — nothing was sent. Email us directly at <a
-        href={contactMailto}>hello@thenetworkeffect.co.uk</a>.
+        href={contactMailto}>hello@networkeffectagency.co.uk</a>.
     </p>
   </div>
 </div>

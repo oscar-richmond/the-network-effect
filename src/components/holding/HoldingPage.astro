@@ -43,17 +43,20 @@ const { galleryImages = foldGalleryImages, final = false } = Astro.props;
 // placed local-PDF TODO; nothing existed on disk to remove).
 const deckHref =
   'https://drive.google.com/file/d/17njeND6nxOpfHg85g73hopZFS3o37uUu/view?usp=sharing';
-// CONTACT: .co.uk — Oscar's FINAL, explicitly confirmed address,
-// overriding every prior domain instruction in this build (the old
-// .com evidence below is now superseded; the site's OTHER contact
-// points outside the holding pages still say .com and are unaddressed
-// — out of this scope, flagged separately). Subject is Oscar-approvable
-// in one look: "The Network Effect — Enquiry" (em dash, the site's
-// typographic register), URL-encoded at build time. contactEmail is
-// split out (rather than re-parsed from the mailto string at runtime)
-// so the /holding-3 desktop Contact link's click-to-copy behaviour has
-// a single source of truth for the literal address to copy.
-const contactEmail = 'hello@thenetworkeffect.co.uk';
+// CONTACT: hello@networkeffectagency.co.uk — Oscar's corrected FINAL
+// address ("there's no 'the'"), superseding the whole prior domain
+// saga (.com -> thenetworkeffect.co.uk -> here). This is also the
+// domain actually VERIFIED in Resend — the one address that has
+// demonstrably delivered in a live end-to-end test. The site's OTHER
+// contact points outside the holding pages still say .com and remain
+// unaddressed — out of this scope, flagged separately. Subject is
+// Oscar-approvable in one look: "The Network Effect — Enquiry" (em
+// dash, the site's typographic register), URL-encoded at build time.
+// contactEmail is split out (rather than re-parsed from the mailto
+// string at runtime) so the /holding-3 desktop Contact link's
+// click-to-copy behaviour has a single source of truth for the
+// literal address to copy.
+const contactEmail = 'hello@networkeffectagency.co.uk';
 const contactMailto = `mailto:${contactEmail}?subject=${encodeURIComponent(
   'The Network Effect — Enquiry',
 )}`;
