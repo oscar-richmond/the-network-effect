@@ -2239,4 +2239,23 @@
 			opacity: 1;
 		}
 	}
+
+	/* ── Form/sent state: the travelling image gallery is HIDDEN
+	   (Oscar's fix + request). This is also the root-cause fix for
+	   "black elements turning white": the form's text is difference-
+	   blended, and the touch-driven image passing behind it inverted
+	   it to white mid-interaction. With the gallery gone, the blended
+	   text sits over the constant #EEEEF0 ground and reads dark
+	   permanently. The body class rides the whole non-intro lifecycle
+	   (open -> form -> sent -> auto-return), toggled by
+	   holding-deck-form.js; three classes out-rank the photo's own
+	   .is-visible entry rule regardless of source order. The 0.4s
+	   hide fade is deliberate; the restore falls back to the photo's
+	   existing 1.4s entry transition — a gentle return. Desktop
+	   unaffected (no >=1025 rule binds to this class). */
+	.holding-final.is-deck-form-open .holding-page__photo {
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.4s var(--holding-ease);
+	}
 }

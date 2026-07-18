@@ -218,6 +218,7 @@ export function initHoldingDeckForm() {
         replayHoldingIntroEntrance();
         intro.hidden = false;
       }
+      document.body.classList.remove('is-deck-form-open');
       state = 'intro';
       animating = false;
       openBtn?.focus();
@@ -344,6 +345,12 @@ export function initHoldingDeckForm() {
     if (!intro || !formBlock || state !== 'intro' || animating || sent) return;
     animating = true;
     clearTimers();
+    // Mobile hides the travelling image while the form (and sent
+    // state) is up — see holding-page.css's is-deck-form-open rule.
+    // The class rides the whole non-intro lifecycle; harmless on
+    // desktop (no CSS binds to it there). Added at open so the fade
+    // coincides with the intro's exit.
+    document.body.classList.add('is-deck-form-open');
 
     const proceed = () => {
       intro.hidden = true;
@@ -387,6 +394,7 @@ export function initHoldingDeckForm() {
 
     const finish = () => {
       formBlock.hidden = true;
+      document.body.classList.remove('is-deck-form-open');
       intro.hidden = false;
       if (reduced) {
         intro.classList.remove('is-out');
@@ -438,6 +446,7 @@ export function initHoldingDeckForm() {
 
   return () => {
     clearTimers();
+    document.body.classList.remove('is-deck-form-open');
     form.removeEventListener('submit', onSubmit);
     form.removeEventListener('input', onInput);
     openBtn?.removeEventListener('click', onOpenClick);
