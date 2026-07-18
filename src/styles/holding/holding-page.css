@@ -1879,7 +1879,8 @@
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
-		font-size: clamp(22px, 7vw, 32px);
+		/* 2px below the original ramp at every width (Oscar's rev). */
+		font-size: calc(clamp(22px, 7vw, 32px) - 2px);
 		line-height: 1.2;
 		color: #161616;
 	}
@@ -1888,7 +1889,8 @@
 		margin: 14px 0 0;
 		font-family: 'Serrif', serif;
 		font-weight: 500;
-		font-size: clamp(11px, 3.6vw, 20px);
+		/* 2px below the original ramp at every width (Oscar's rev). */
+		font-size: calc(clamp(11px, 3.6vw, 20px) - 2px);
 		line-height: 1.4;
 		text-align: center;
 		color: #161616;
@@ -2380,26 +2382,45 @@
 	   small phones, mirroring the approved no-gallery-on-form rule. */
 	.holding-final .holding-final__mobile-photo {
 		display: block;
-		width: calc(100% + 32px);
+		/* Full-bleed: +48 spans the column's 24px side padding on both
+		   sides so the card touches the viewport edges. */
+		width: calc(100% + 48px);
 		/* The global img { max-width:100% } reset clamps the widened
 		   box back to the padded column width (the same trap the
 		   desktop photo's 48px widen hit) — lift it here. */
 		max-width: none;
-		/* 48px minimum above the image — SYMMETRIC with the sign-off's
-		   48 below, so the auto-centred content's midpoint is
-		   mathematically unchanged on phones (asymmetric margins skew
-		   it by half their value — measured the hard way earlier). */
-		margin: 48px -16px calc(8px + env(safe-area-inset-bottom, 0px));
-		aspect-ratio: 730 / 420;
+		/* Touches both sides and the BOTTOM of the viewport (Oscar's
+		   rev — the 8px insets and safe-area pad are gone). 48px min
+		   above stays: with the sign-off's 48 below it keeps the
+		   auto-centred content's midpoint honest in the tight
+		   tablet-snap range. */
+		margin: 48px -24px 0;
+		/* 40% of the viewport height, CAPPED by the crop budget: the
+		   3:2 photo at height h needs 1.5h of width, and Oscar's
+		   limit is <= 32px cropped off the right with NO top/bottom
+		   crop — so h can't exceed (100vw + 32px)/1.5. On a 375x812
+		   phone that's ~271px (~33vh — the two constraints conflict
+		   there and the crop limit wins); shorter/wider viewports
+		   reach the full 40dvh. Left-anchored so every cropped pixel
+		   comes off the RIGHT edge only. */
+		height: min(40vh, calc((100vw + 32px) / 1.5));
+		height: min(40dvh, calc((100vw + 32px) / 1.5));
 		object-fit: cover;
-		/* Height cap for the snap-to-mobile TABLET range (Oscar's
-		   bunching fix): at 1024px wide the uncapped card would be
-		   ~580px tall and cram everything. 38dvh only bites above
-		   phone widths — at 375x812 the card is ~207px (25dvh), so
-		   true mobile is untouched; when the cap engages, cover
-		   crops vertically and the full WIDTH stays visible. */
-		max-height: 38vh;
-		max-height: 38dvh;
+		object-position: left center;
+	}
+
+	/* Portrait guarantee: a 40dvh box on a portrait TABLET (768x1024)
+	   would be wider than 3:2 and shear ~50px off the top and bottom.
+	   The clamp floor (100vw / 1.5) keeps the box at or below the
+	   photo's own aspect, so the vertical crop is zero on every
+	   portrait device; phones resolve to the same value as above
+	   (the floor sits below 40dvh there). Landscape stays on the
+	   plain min() — squat windows are transitional. */
+	@media (orientation: portrait) {
+		.holding-final .holding-final__mobile-photo {
+			height: clamp(calc(100vw / 1.5), 40vh, calc((100vw + 32px) / 1.5));
+			height: clamp(calc(100vw / 1.5), 40dvh, calc((100vw + 32px) / 1.5));
+		}
 	}
 
 	.holding-final.is-deck-form-open .holding-final__mobile-photo {
