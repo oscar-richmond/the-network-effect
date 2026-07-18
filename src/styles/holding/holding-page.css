@@ -12,6 +12,12 @@
    outside the blend roots), never a shared ancestor — keep it that way. */
 
 :root {
+	/* The holding pages are a fixed light design — pin the UA colour
+	   scheme so OS dark mode can never restyle form controls (input
+	   backgrounds/carets/autofill) or scrollbars dark underneath the
+	   page's explicit colours. Applies only where this stylesheet
+	   loads (the holding routes). */
+	color-scheme: light;
 	/* New brand colour introduced by this page. May graduate to a
 	   site-wide token later — kept page-scoped here since nothing else
 	   uses it yet. */
@@ -1843,8 +1849,17 @@
 
 	.holding-final .holding-final__ctas {
 		display: flex;
-		gap: 33px;
+		/* 32px of VISIBLE space between the CTAs (Oscar's spec): the
+		   first button's out-of-flow arrow eats 17px of the declared
+		   gap, so 49 = 32 + 17 — the same measured correction the
+		   desktop row uses. */
+		gap: 49px;
 		margin-top: 32px;
+		/* True horizontal centring (Oscar's fix): the trailing arrow is
+		   absolutely positioned OUTSIDE the row's layout box, so flex
+		   centring was off by half its 17px footprint — reserving that
+		   footprint as padding folds it back into the centred box. */
+		padding-right: 17px;
 	}
 
 	/* ── Text-link CTA treatment (mobile port of the desktop .holding-spin
@@ -1905,6 +1920,9 @@
 		width: min(360px, 100%);
 	}
 
+	/* Form-state text is PLAIN INK, no blend (Oscar's fix — the
+	   gallery is hidden here, the ground is constant #EEEEF0, and
+	   blend only invites WebKit backdrop quirks). Desktop parity. */
 	.holding-final .holding-final__form-block .holding-final__title {
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -1912,8 +1930,8 @@
 		font-size: clamp(22px, 6.4vw, 32px);
 		line-height: 1.2;
 		text-transform: uppercase;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
+		mix-blend-mode: normal;
 	}
 
 	.holding-final .holding-final__title-line {
@@ -1927,8 +1945,7 @@
 		font-weight: 400;
 		font-size: 12px;
 		line-height: 24px;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	.holding-final .holding-final__form-zone {
@@ -1954,8 +1971,7 @@
 		font-weight: 400;
 		font-size: 12px;
 		line-height: 17px;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	/* 16px font: anything smaller triggers iOS's automatic page zoom on
@@ -2020,6 +2036,11 @@
 		font-size: 13px;
 	}
 
+	.holding-final .holding-final__form-block .holding-btn {
+		color: #161616;
+		mix-blend-mode: normal;
+	}
+
 	.holding-final .holding-final__submit.is-sending {
 		pointer-events: none;
 	}
@@ -2043,8 +2064,7 @@
 		font-family: 'Serrif', serif;
 		font-weight: 400;
 		font-size: 12px;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	.holding-final .holding-final__note-sub a {
@@ -2067,8 +2087,7 @@
 		font-weight: 600;
 		font-size: 13px;
 		text-transform: uppercase;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	/* ── Sign-off (desktop parity, mobile register) ── */
@@ -2252,10 +2271,22 @@
 	   .is-visible entry rule regardless of source order. The 0.4s
 	   hide fade is deliberate; the restore falls back to the photo's
 	   existing 1.4s entry transition — a gentle return. Desktop
-	   unaffected (no >=1025 rule binds to this class). */
+	   unaffected (no >=1025 rule binds to this class).
+
+	   WEBKIT CORRECTION (Oscar's second report — text still white on
+	   iOS): Safari does NOT blend mix-blend-mode elements against the
+	   body's background (it propagates to the canvas, which WebKit
+	   excludes from blending groups). The page's blend register only
+	   ever worked on iOS because this fixed region PAINTS ITS OWN
+	   full-viewport #EEEEF0 — a real element backdrop. So the region
+	   itself must stay visible; only its CHILDREN (poster, canvas, gl
+	   layer) hide. */
 	.holding-final.is-deck-form-open .holding-page__photo {
-		opacity: 0;
 		pointer-events: none;
+	}
+
+	.holding-final.is-deck-form-open .holding-page__photo > * {
+		opacity: 0;
 		transition: opacity 0.4s var(--holding-ease);
 	}
 }

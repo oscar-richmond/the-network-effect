@@ -527,17 +527,34 @@ export function initHoldingContactCopy() {
     }, TIP_FADE_OUT_MS);
   };
 
+  const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
+  const MOBILE_TIP_GAP = 24;
+
   const showTip = (x, y) => {
     if (!(tip instanceof HTMLElement)) return;
     if (hideTimer) clearTimeout(hideTimer);
     if (removeTimer) clearTimeout(removeTimer);
-    place(x, y);
     tip.hidden = false;
+    if (isMobile()) {
+      // MOBILE (Oscar's spec): the pill sits centred directly below
+      // the Contact link, 24px gap, static — no cursor to chase on
+      // touch. Measured after unhide (offsetWidth needs layout) and
+      // clamped so it can never bleed off-viewport.
+      const rect = link.getBoundingClientRect();
+      const tipW = tip.offsetWidth;
+      const cx = Math.min(
+        Math.max(rect.left + rect.width / 2 - tipW / 2, 8),
+        window.innerWidth - tipW - 8,
+      );
+      tip.style.transform = `translate3d(${cx}px, ${rect.bottom + MOBILE_TIP_GAP}px, 0)`;
+    } else {
+      place(x, y);
+    }
     // Commit the hidden opacity-0 state before .is-in so the entrance
     // fade actually runs (same forced-reflow idiom as the state swap).
     void tip.offsetWidth;
     tip.classList.add('is-in');
-    if (!tracking) {
+    if (!isMobile() && !tracking) {
       window.addEventListener('mousemove', onMove);
       tracking = true;
     }
@@ -549,7 +566,9 @@ export function initHoldingContactCopy() {
 
     // Keyboard activation (Enter) reports no useful coordinates —
     // anchor the pill just under the link instead and skip tracking
-    // until the mouse next moves (the listener re-anchors it).
+    // until the mouse next moves (the listener re-anchors it). On
+    // mobile these coordinates are ignored entirely — showTip anchors
+    // to the link.
     const rect = link.getBoundingClientRect();
     const hasPointer = event.clientX !== 0 || event.clientY !== 0;
     const x = hasPointer ? event.clientX : rect.left;
