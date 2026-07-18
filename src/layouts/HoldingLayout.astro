@@ -16,16 +16,23 @@ interface Props {
   title?: string;
   description?: string;
   bodyClass?: string;
+  /** Override the auto-computed canonical/OG URL. Needed by /holding-3:
+   * it's served at networkeffectagency.co.uk's clean root via a Vercel
+   * edge rewrite, but the static build only knows its own build-time
+   * path (/holding-3) and astro.config's site default (a stale .com
+   * placeholder, unrelated to this fix) — neither is the real public
+   * URL a visitor or a social-share crawler actually sees. */
+  canonicalUrl?: string;
 }
 
 const {
   title = 'The Network Effect',
   description = 'The Network Effect is a relationship-led culture & partnerships consultancy. Launching soon.',
   bodyClass = '',
+  canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString(),
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
 <!doctype html>

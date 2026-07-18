@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "networkeffectagency.co.uk" }],
+      "destination": "/holding-3"
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.networkeffectagency.co.uk" }],
+      "destination": "/holding-3"
+    }
+  ]
+}
