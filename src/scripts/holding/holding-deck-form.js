@@ -5,16 +5,25 @@
  * inline, layout-stable errors; honeypot short-circuit (mirrors the
  * server: a filled trap "succeeds" silently — never reveal the trap);
  * restrained loading state (label swap + arrow fade, no spinner);
- * success replaces the form in place (visibility swap — the form is
- * never opacity-faded because its labels are difference-blend roots
- * and an ancestor fade would isolate/flash them); error appears below
- * the intact form with the mailto fallback, typed data preserved.
+ * error appears below the intact form with the mailto fallback,
+ * typed data preserved.
+ *
+ * SUCCESS (Oscar's revision): the form state animates OUT — the
+ * reverse of its entry (heading/sub .is-in off, field/button leaves
+ * .is-visible off; never a group fade, the blended sub/labels would
+ * flash) — then the SENT state ("Sent — we'll be in touch shortly.")
+ * line-reveals centred in the slot, lingers SENT_LINGER_MS, and the
+ * page returns itself to the landing (intro) state with the form
+ * fully reset, so the deck CTA works again for a fresh request.
  *
  * Boots from holding-3.astro; no-ops on pages without the form.
  */
+import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SENDING_LABEL = 'Sending…';
+const SENT_LINGER_MS = 3000;
+const SENT_EXIT_MS = 320;
 
 const MESSAGES = {
   name: 'Please add your name.',
@@ -33,12 +42,14 @@ export function initHoldingDeckForm() {
   const submitBtn = form.querySelector('[data-deck-submit]');
   const submitLabel = form.querySelector('[data-deck-submit-label]');
   const submitArrow = form.querySelector('[data-deck-submit-arrow]');
-  const successNote = document.querySelector('[data-deck-success]');
+  const sentBlock = document.querySelector('[data-deck-sent]');
+  const sentLine = document.querySelector('[data-deck-sent-line]');
   const errorNote = document.querySelector('[data-deck-error-note]');
   const restingLabel = submitLabel?.textContent ?? 'Request';
 
   let sending = false;
   let sent = false;
+  let sentLineWrapped = false;
 
   const setFieldError = (key, message) => {
     const el = input(key);
@@ -93,17 +104,122 @@ export function initHoldingDeckForm() {
     });
   };
 
+  /* SUCCESS sequence (Oscar's revision): form state OUT (reverse of
+   * its entry — the same leaf mechanics the Back swap uses; never a
+   * group fade, see the blend note), then the sent line reveals
+   * centred in the slot via the house line-reveal, lingers
+   * SENT_LINGER_MS, then the slot returns itself to the landing
+   * (intro) state with a fully reset form. */
+  const armSentLine = () => {
+    if (!(sentLine instanceof HTMLElement)) return;
+    if (!sentLineWrapped) {
+      // Wrap once, AFTER the block is unhidden (wrapping measures
+      // line boxes; a display:none measure would mis-group). Same
+      // task as the unhide — no unwrapped-frame flash.
+      wrapLineRevealElement(sentLine);
+      sentLineWrapped = true;
+    } else {
+      // Re-arm for a repeat play: lr-visible off returns the inner
+      // to its below-clip resting state (done while hidden, unseen).
+      sentLine
+        .querySelectorAll(':scope > .lr-clip')
+        .forEach((clip) => clip.classList.remove('lr-visible'));
+    }
+  };
+
+  const revealSent = () => {
+    formBlock instanceof HTMLElement && (formBlock.hidden = true);
+    if (!(sentBlock instanceof HTMLElement)) return;
+    sentBlock.hidden = false;
+    if (reduced) {
+      // Static, instant — the line is never wrapped under RM.
+      sentBlock.focus({ preventScroll: true });
+      timers.push(setTimeout(returnToLanding, SENT_LINGER_MS));
+      return;
+    }
+    armSentLine();
+    // Commit the wrapped below-clip state before playing (forced
+    // reflow, not rAF — same idiom as the rest of the swaps).
+    void sentBlock.offsetWidth;
+    timers.push(
+      setTimeout(() => {
+        if (sentLine instanceof HTMLElement) playLineRevealElement(sentLine);
+      }, 20),
+    );
+    sentBlock.focus({ preventScroll: true });
+    // "3 seconds after it says Sent" — the linger starts at reveal.
+    timers.push(setTimeout(returnToLanding, SENT_LINGER_MS));
+  };
+
   const showSuccess = () => {
     sent = true;
+    animating = true;
+    clearTimers();
     if (errorNote instanceof HTMLElement) {
       errorNote.hidden = true;
       errorNote.classList.remove('is-in');
     }
-    // Visibility, not opacity: the labels inside are difference-blend
-    // roots — fading a shared ancestor would isolate the blend and
-    // flash them white mid-fade. Hard cut out, soft fade in.
-    form.classList.add('is-sent');
-    reveal(successNote);
+    if (reduced) {
+      animating = false;
+      revealSent();
+      return;
+    }
+    // Reverse of the form's entry: heading/sub fade back out, field
+    // and button leaves retract — identical mechanics to the Back
+    // exit, deliberately.
+    stripFormReveals();
+    timers.push(
+      setTimeout(() => {
+        animating = false;
+        revealSent();
+      }, FORM_EXIT_MS),
+    );
+  };
+
+  const returnToLanding = () => {
+    animating = true;
+
+    const finishReturn = () => {
+      if (sentBlock instanceof HTMLElement) {
+        sentBlock.hidden = true;
+        sentBlock.classList.remove('is-out');
+        // Re-arm the line while hidden so a future success replays.
+        if (sentLine instanceof HTMLElement) {
+          sentLine
+            .querySelectorAll(':scope > .lr-clip')
+            .forEach((clip) => clip.classList.remove('lr-visible'));
+        }
+      }
+      // Fully reset the form: the landing CTA is live again and a
+      // second request starts pristine.
+      [...fields, 'website'].forEach((key) => {
+        const el = input(key);
+        if (el instanceof HTMLInputElement) el.value = '';
+      });
+      fields.forEach((key) => setFieldError(key, undefined));
+      setSending(false);
+      sent = false;
+      if (intro instanceof HTMLElement) {
+        intro.hidden = false;
+        if (reduced) {
+          intro.classList.remove('is-out');
+        } else {
+          void intro.offsetWidth;
+          timers.push(setTimeout(() => intro.classList.remove('is-out'), 20));
+        }
+      }
+      state = 'intro';
+      animating = false;
+      openBtn?.focus();
+    };
+
+    if (reduced || !(sentBlock instanceof HTMLElement)) {
+      finishReturn();
+    } else {
+      // Group fade out — legal here, plain text only.
+      sentBlock.classList.add('is-out');
+      timers.push(setTimeout(finishReturn, SENT_EXIT_MS));
+    }
   };
 
   const showError = () => {
@@ -301,7 +417,7 @@ export function initHoldingDeckForm() {
         animating,
         sending,
         sent,
-        successShown: successNote instanceof HTMLElement && !successNote.hidden,
+        sentShown: sentBlock instanceof HTMLElement && !sentBlock.hidden,
         errorShown: errorNote instanceof HTMLElement && !errorNote.hidden,
         values: Object.fromEntries(
           [...fields, 'website'].map((k) => [k, input(k)?.value ?? null]),

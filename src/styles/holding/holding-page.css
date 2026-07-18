@@ -1409,21 +1409,12 @@
 		opacity: 0;
 	}
 
-	/* Post-submit notes. Success OVERLAYS the visibility-hidden form
-	   in place (no layout jump); error sits BELOW the intact form.
-	   The form is hidden via visibility, never opacity — an ancestor
-	   fade would isolate the labels' difference blend mid-fade. */
-	.holding-final__form.is-sent {
-		visibility: hidden;
-	}
-
+	/* Post-submit ERROR note — sits BELOW the intact form (typed data
+	   preserved). Success is no longer a note here: it's the slot's
+	   third state, .holding-final__sent below. */
 	.holding-final__note {
 		position: absolute;
 		left: 0;
-	}
-
-	.holding-final__note--success {
-		top: 0;
 	}
 
 	/* 32px below the Back/Request row (Oscar's revision, from 12px) —
@@ -1463,6 +1454,37 @@
 		text-decoration: underline;
 		text-decoration-color: var(--color-holding-red);
 		text-underline-offset: 3px;
+	}
+
+	/* ── SENT state (Oscar's revision) — the slot's third state: after
+	   a successful send the form state exits (reverse of its entry)
+	   and this line reveals in its place, centred both ways by the
+	   same content-block mechanics as the other two states (the
+	   column's align-items:center + the block's auto vertical
+	   margins — with only this line visible, the content block
+	   shrinks to it and re-centres). Plain #161616 text, no blend
+	   roots — the return-to-intro group fade on this container is
+	   legal. Same type treatment as the old success note. */
+	.holding-final__sent {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		/* Focus lands here on reveal (JS) purely for the AT
+		   announcement — no visible ring on a non-interactive box. */
+		outline: none;
+	}
+
+	.holding-final__sent[hidden] {
+		display: none;
+	}
+
+	.holding-final__sent-line {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: 14px;
+		text-transform: uppercase;
+		color: #161616;
 	}
 
 	/* Arrow needs to escape the shared .holding-btn's overflow:hidden
@@ -1645,6 +1667,18 @@
 	}
 
 	.holding-final .holding-final__intro.is-out {
+		opacity: 0;
+	}
+
+	/* SENT state exit (returning to the landing/intro state after the
+	   3s linger): a group fade — legal, plain text only. Its ENTRANCE
+	   is the line-reveal mechanics (lr-clip/lr-inner, injected by
+	   line-reveal.js), not opacity. */
+	.holding-final .holding-final__sent {
+		transition: opacity 0.3s var(--holding-ease);
+	}
+
+	.holding-final .holding-final__sent.is-out {
 		opacity: 0;
 	}
 

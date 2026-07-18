@@ -276,6 +276,20 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
               <p class="holding-final__sub">A few details, and it's on its way.</p>
               <HoldingDeckForm contactMailto={contactMailto} />
             </div>
+
+            {/* THIRD state (Oscar's revision): after a successful send the
+                form state animates out (reverse of its entry) and this
+                line reveals in its place, centred in the slot by the same
+                content-block mechanics as the other states. 3s later
+                holding-deck-form.js swaps back to the intro (landing)
+                state with a reset form. tabindex -1: JS moves focus here
+                on reveal so AT announces the confirmation (the swap is
+                otherwise invisible to a screen reader). */}
+            <div class="holding-final__sent" data-deck-sent tabindex="-1" hidden>
+              <p class="holding-final__sent-line" data-deck-sent-line>
+                Sent — we’ll be in touch shortly.
+              </p>
+            </div>
           </div>
           <p class="holding-final__signoff" data-holding-final-signoff>
             <span

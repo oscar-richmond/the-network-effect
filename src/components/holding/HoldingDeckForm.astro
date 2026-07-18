@@ -20,10 +20,10 @@
  * carry position:relative at most, never opacity/transform/filter or
  * position+z-index — no stacking context isolates them. Entry reveals
  * therefore fade the LEAF elements (label, input) individually, never
- * a shared wrapper. The success swap hides the form via visibility
- * (blend-safe, no isolation) and fades IN the plain-colour note — the
- * form itself is never opacity-faded, which would flash the blended
- * labels white mid-fade.
+ * a shared wrapper — and the success EXIT reverses those same leaf
+ * fades for the same reason (the form is never group-faded, which
+ * would flash the blended labels white mid-fade) before the slot
+ * swaps to the sent state.
  *
  * Submission: POST /api/deck-request (Vercel function + Resend).
  * Honeypot: the "website" field — off-canvas (not display:none, which
@@ -153,17 +153,10 @@ const { contactMailto } = Astro.props;
     </div>
   </form>
 
-  <!-- Success: overlays the (visibility-hidden) form in place — same
-       container, no layout jump. aria-live so the swap is announced. -->
-  <div
-    class="holding-final__note holding-final__note--success"
-    data-deck-success
-    role="status"
-    aria-live="polite"
-    hidden
-  >
-    <p class="holding-final__note-title">Sent — we’ll be in touch shortly.</p>
-  </div>
+  <!-- Success is no longer an overlay here: it's the third slot state
+       (.holding-final__sent in HoldingPage) — the form state animates
+       out and the sent line reveals centred in the slot (Oscar's
+       revision; sequencing in holding-deck-form.js). -->
 
   <!-- Error: appears BELOW the intact form (typed data preserved),
        with the direct-email fallback. -->
