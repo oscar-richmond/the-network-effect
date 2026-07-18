@@ -1330,7 +1330,8 @@
 		display: block;
 		margin: 0 0 8px;
 		font-family: 'Serrif', serif;
-		font-weight: 400;
+		/* Serrif Medium (Oscar's rev — was Regular 400). */
+		font-weight: 500;
 		font-size: 12px;
 		line-height: 17px;
 		color: #ffffff;
@@ -2031,7 +2032,8 @@
 		display: block;
 		margin: 0 0 8px;
 		font-family: 'Serrif', serif;
-		font-weight: 400;
+		/* Serrif Medium (Oscar's rev — was Regular 400). */
+		font-weight: 500;
 		font-size: 12px;
 		line-height: 17px;
 		color: #161616;
@@ -2427,5 +2429,15 @@
 
 	.holding-final.is-deck-form-open .holding-final__mobile-photo {
 		display: none;
+	}
+
+	/* With the photo hidden, the sign-off's 48px bottom margin no
+	   longer has the image's matching 48px top margin to balance it —
+	   left alone it skews the form/sent block 24px off true centre
+	   (measured 196 above vs 148 below). Zeroed for the whole
+	   form -> sent -> return lifecycle so the auto margins centre the
+	   block exactly between the sign-off and the viewport bottom. */
+	.holding-final.is-deck-form-open .holding-final__signoff {
+		margin-bottom: 0;
 	}
 }
