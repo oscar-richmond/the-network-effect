@@ -319,3 +319,71 @@ export function initHoldingDeckForm() {
     document.removeEventListener('keydown', onKeydown);
   };
 }
+
+/**
+ * Contact click-to-copy (/holding-3 desktop, .holding-final).
+ *
+ * Ported from Oscar's reference (ContactLink.tsx + .module.css) to
+ * this project's vanilla-JS pattern — no React/CSS-modules in this
+ * codebase. Behaviour matches the reference exactly: copy the email,
+ * flip a `data-copied` attribute the CSS crossfades on (label + icon,
+ * see holding-page.css), reset after COPY_RESET_MS, and STILL fire
+ * the mailto regardless of copy success — most visitors have no
+ * desktop mail client configured, so the copy is the affordance that
+ * actually helps them; the rare visitor who does have one still gets
+ * mailto triggered. mailto never unloads the page, so this is safe
+ * alongside the copy confirmation staying visible.
+ *
+ * The mailto itself is read back from the link's own `href` (server-
+ * rendered by Astro from the single contactMailto source of truth)
+ * rather than reconstructed here — one address, one place it's typed.
+ */
+const COPY_RESET_MS = 2600;
+
+export function initHoldingContactCopy() {
+  const link = document.querySelector('[data-holding-contact-copy]');
+  if (!(link instanceof HTMLAnchorElement)) return () => {};
+
+  const email = link.dataset.contactEmail;
+  const announcer = document.querySelector('[data-holding-contact-announcer]');
+  if (!email) return () => {};
+
+  let resetTimer = null;
+
+  const announce = (text) => {
+    if (announcer instanceof HTMLElement) announcer.textContent = text;
+  };
+
+  const onClick = (event) => {
+    event.preventDefault();
+
+    const copy = navigator.clipboard
+      ? navigator.clipboard
+          .writeText(email)
+          .then(() => {
+            link.setAttribute('data-copied', '');
+            announce('Copied — get in touch');
+            if (resetTimer) clearTimeout(resetTimer);
+            resetTimer = setTimeout(() => {
+              link.removeAttribute('data-copied');
+              announce('');
+            }, COPY_RESET_MS);
+          })
+          .catch(() => {
+            // Clipboard blocked (rare) — mailto below still fires as
+            // the fallback; no confirmation state to show.
+          })
+      : Promise.resolve();
+
+    copy.finally(() => {
+      window.location.href = link.href;
+    });
+  };
+
+  link.addEventListener('click', onClick);
+
+  return () => {
+    link.removeEventListener('click', onClick);
+    if (resetTimer) clearTimeout(resetTimer);
+  };
+}

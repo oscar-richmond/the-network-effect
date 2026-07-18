@@ -1519,6 +1519,118 @@
 		background: var(--color-holding-red);
 	}
 
+	/* ── Contact: click-to-copy (Oscar's reference — ContactLink.tsx +
+	   .module.css — ported to this project's vanilla-JS/CSS pattern;
+	   no React/CSS-modules precedent exists here, see holding-deck-
+	   form.js's initHoldingContactCopy for the behaviour). Typography/
+	   colour intentionally NOT ported from the reference's own
+	   placeholder tokens (--ink:#1a1a18, --accent:#b5451f — its own
+	   comment flags these as "tune to your exact brand values") —
+	   this reuses the link's EXISTING resting/hover treatment
+	   (#161616 -> #A6A6A8, red #C1250E underline) untouched; only the
+	   NEW copied state below is added. */
+
+	/* .holding-btn__clip normally clips both axes (it doubles as the
+	   entry-reveal's vertical mask). The copied label ("Copied — get
+	   in touch") is wider than "Contact" and is EXPECTED to overflow
+	   past the resting label's own box (see label-stack below) — kept
+	   clipped on Y (preserves the entry rise-mask) but opened on X so
+	   the wider string isn't truncated. Scoped to this link only. */
+	.holding-final__contact .holding-btn__clip {
+		overflow-x: visible;
+		overflow-y: hidden;
+	}
+
+	.holding-final__contact-label-stack {
+		position: relative;
+		display: inline-block;
+		white-space: nowrap;
+	}
+
+	/* Reference's crossfade pattern verbatim: the resting label stays
+	   in-flow (sizes the box to "Contact"'s own width — matching the
+	   reference, which accepts the copied label overflowing past it
+	   rather than reserving space, since reserving Copied-width would
+	   itself shift the CTA row's total centred width at rest). */
+	.holding-final__contact-label,
+	.holding-final__contact-label-copied {
+		display: inline-block;
+	}
+
+	.holding-final__contact-label-copied {
+		position: absolute;
+		left: 0;
+		top: 0;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.holding-final__contact[data-copied] .holding-final__contact-label {
+		opacity: 0;
+	}
+
+	.holding-final__contact[data-copied] .holding-final__contact-label-copied {
+		opacity: 1;
+		position: static;
+	}
+
+	/* Icon crossfade: arrow -> check, same fixed 9x9 box the arrow
+	   already occupies (see .holding-final__cta-arrow above) — both
+	   icons stack via inset:0, no sizing/overflow concerns. */
+	.holding-final__contact-icon-arrow,
+	.holding-final__contact-icon-check {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.holding-final__contact-icon-check {
+		opacity: 0;
+	}
+
+	.holding-final__contact[data-copied] .holding-final__contact-icon-arrow {
+		opacity: 0;
+	}
+
+	.holding-final__contact[data-copied] .holding-final__contact-icon-check {
+		opacity: 1;
+	}
+
+	/* Copied state reads as a distinct confirmation, not a hover: text
+	   goes to the accent red (not the hover-fade grey) and the
+	   underline PINS full-width — copied can coincide with a lingering
+	   :hover (mouse hasn't moved). The ported hover rules are
+	   `.holding-spin .holding-btn:hover`/`:hover::after` — two classes
+	   (+ pseudo), so a single-class `[data-copied]` selector LOSES
+	   that specificity fight outright regardless of source order. The
+	   extra `.holding-final` prefix here matches that two-class tier
+	   (ties on specificity, wins on being declared later), same
+	   technique as the file's own :focus-visible-over-:hover pin. */
+	.holding-final .holding-final__contact[data-copied] {
+		color: var(--color-holding-red);
+	}
+
+	.holding-final .holding-final__contact[data-copied]::after {
+		transform: scaleX(1);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.holding-final__contact-label,
+		.holding-final__contact-label-copied,
+		.holding-final__contact-icon-arrow,
+		.holding-final__contact-icon-check {
+			transition: opacity 0.25s var(--holding-ease);
+		}
+
+		/* No new transition needed on ::after: the copied state only
+		   pins `transform: scaleX(1)`, which already animates via the
+		   ported .holding-spin rule's existing 0.4s transform
+		   transition (higher specificity, same declared property —
+		   redeclaring it here would either be redundant or, worse,
+		   silently lose to that rule and go stale). */
+	}
+
 	/* Two-line sign-off, 48px off the viewport bottom. left/right 0 +
 	   auto margins centre the max-content block within the column's box
 	   (viewport-left .. image-column-left) — the centre point re-derives
