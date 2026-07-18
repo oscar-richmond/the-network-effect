@@ -370,6 +370,7 @@ function revealFinal(root) {
   const para = root.querySelector('[data-holding-final-para]');
   const signoff = root.querySelector('[data-holding-final-signoff]');
   const bar = root.querySelector('[data-holding-final-bar]');
+  const mobilePhoto = root.querySelector('[data-holding-final-mobile-photo]');
   const links = Array.from(
     root.querySelectorAll('[data-deck-intro] [data-holding-final-button]'),
   );
@@ -403,6 +404,8 @@ function revealFinal(root) {
   setTimeout(() => playLines(signoff, '.holding-final__signoff-line'), FINAL_SIGNOFF_AT);
   setTimeout(() => {
     bar?.classList.add('is-visible');
+    // Mobile's bottom photo card shares the photo slot's timing.
+    mobilePhoto?.classList.add('is-visible');
   }, HOLDING_IMAGE_AT);
 }
 

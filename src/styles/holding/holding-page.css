@@ -1752,6 +1752,12 @@
 	}
 }
 
+/* The mobile-only bottom photo (see the mobile block below) must never
+   render on desktop — base-hidden, enabled at <=1024 only. */
+.holding-final__mobile-photo {
+	display: none;
+}
+
 /* ── FINAL variant, MOBILE (<=1024) — the previously-deferred mobile
    pass (Oscar's go-ahead, post desktop launch): /holding-3's mobile now
    carries the NEW content — title, three-line paragraph, text-link
@@ -1780,11 +1786,19 @@
    - Old mobile hero (wordmark/tagline/chip buttons/old signoff) is
      hidden on this route — the new content replaces it one-for-one. */
 @media (max-width: 1024px) {
-	/* Old mobile layout off, on this route only. */
+	/* Old mobile layout off, on this route only — INCLUDING the shared
+	   travelling-image gallery (Oscar's mobile redesign: replaced by a
+	   static photo card at the page bottom, below). /holding and
+	   /holding-2's dormant mobile keeps the travel mechanic. With the
+	   gallery gone, NOTHING sits behind text on this route's mobile —
+	   so the whole difference-blend register is dropped here (all ink,
+	   desktop parity), which also permanently retires the WebKit
+	   canvas-backdrop problem on this route. */
 	.holding-final .holding-wordmark,
 	.holding-final .holding-page__hero,
 	.holding-final .holding-signoff,
 	.holding-final .holding-tagline__culture-overlay,
+	.holding-final .holding-page__photo,
 	.holding-final .holding-final__bar {
 		display: none;
 	}
@@ -1827,8 +1841,7 @@
 		font-weight: 800;
 		font-size: clamp(22px, 7vw, 32px);
 		line-height: 1.2;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	.holding-final .holding-final__para {
@@ -1838,8 +1851,7 @@
 		font-size: clamp(11px, 3.6vw, 20px);
 		line-height: 1.4;
 		text-align: center;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	.holding-final .holding-final__para-line {
@@ -1874,8 +1886,7 @@
 		background: none;
 		border: none;
 		font-size: 11px;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	.holding-final .holding-btn::before {
@@ -1889,6 +1900,13 @@
 		height: 1px;
 		background: currentColor;
 		transform-origin: left center;
+	}
+
+	/* Red underline on the CTAs — desktop parity, now legal on mobile
+	   (no blend register left to corrupt it). Back's content:none
+	   below still wins for that button. */
+	.holding-final [data-holding-final-button]::after {
+		background: var(--color-holding-red);
 	}
 
 	/* Back keeps no underline, mobile too. */
@@ -2090,15 +2108,17 @@
 		color: #161616;
 	}
 
-	/* ── Sign-off (desktop parity, mobile register) ── */
+	/* ── Sign-off: TOP of the viewport on mobile (Oscar's redesign) —
+	   static flex child pulled first via order:-1; 32px from the top
+	   plus the notch safe-area ("browser navs accounted for"). Ink,
+	   no blend. */
 	.holding-final .holding-final__signoff {
 		display: block;
-		position: absolute;
-		bottom: 32px;
-		left: 0;
-		right: 0;
+		position: static;
+		order: -1;
 		width: max-content;
-		margin: 0 auto;
+		align-self: center;
+		margin: calc(32px + env(safe-area-inset-top, 0px)) auto 0;
 	}
 
 	.holding-final .holding-final__signoff-line {
@@ -2107,8 +2127,7 @@
 		font-size: 11px;
 		line-height: 1.5;
 		text-transform: uppercase;
-		color: #ffffff;
-		mix-blend-mode: difference;
+		color: #161616;
 	}
 
 	.holding-final .holding-final__signoff-line--serrif {
@@ -2257,6 +2276,17 @@
 		.holding-final .holding-final__copy-tip.is-in {
 			opacity: 1;
 		}
+
+		/* Bottom photo entry — fades in on the photo slot's timing
+		   (revealFinal adds is-visible alongside the accent bar). */
+		.holding-final .holding-final__mobile-photo {
+			opacity: 0;
+			transition: opacity 0.8s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__mobile-photo.is-visible {
+			opacity: 1;
+		}
 	}
 
 	/* ── Form/sent state: the travelling image gallery is HIDDEN
@@ -2288,5 +2318,36 @@
 	.holding-final.is-deck-form-open .holding-page__photo > * {
 		opacity: 0;
 		transition: opacity 0.4s var(--holding-ease);
+	}
+
+	/* ── Bottom photo card (Oscar's mobile redesign): static image,
+	   8px from both sides and the viewport bottom. The column's 100dvh
+	   accounts for dynamic browser chrome; the safe-area inset covers
+	   the iOS home indicator. In-flow LAST flex child — the content
+	   block's auto vertical margins centre it exactly between the
+	   sign-off above and this image below, self-adjusting at any
+	   viewport height. Escapes the column's 24px side padding via
+	   negative margins to land at 8px from the viewport edges. Crop
+	   matches Oscar's attached reference (730x420 landscape of the
+	   same photograph as the desktop photo asset). Hidden while the
+	   form/sent state is up — the form needs the vertical room on
+	   small phones, mirroring the approved no-gallery-on-form rule. */
+	.holding-final .holding-final__mobile-photo {
+		display: block;
+		width: calc(100% + 32px);
+		/* The global img { max-width:100% } reset clamps the widened
+		   box back to the padded column width (the same trap the
+		   desktop photo's 48px widen hit) — lift it here. */
+		max-width: none;
+		/* No top margin: the content block's auto margins ARE the gap —
+		   a fixed margin here would skew the centre of the
+		   signoff-to-image zone by half its value (measured 12px). */
+		margin: 0 -16px calc(8px + env(safe-area-inset-bottom, 0px));
+		aspect-ratio: 730 / 420;
+		object-fit: cover;
+	}
+
+	.holding-final.is-deck-form-open .holding-final__mobile-photo {
+		display: none;
 	}
 }

@@ -17,6 +17,7 @@
  */
 import {
   galleryImages as foldGalleryImages,
+  holdingStaticPhoto,
   taglineImages,
   travelGalleryImages,
 } from '../../data/holding/images.js';
@@ -301,6 +302,21 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
               data-holding-final-signoff-dazzed>Powered by access.</span
             >
           </p>
+          {/* MOBILE-ONLY bottom photo card (Oscar's mobile redesign):
+              base-hidden, enabled <=1024 (holding-page.css). Same
+              photograph as the desktop asset, cropped 730x420 by CSS.
+              Last flex child — the content block's auto margins centre
+              it between the sign-off (top) and this image (bottom).
+              Revealed by revealFinal alongside the accent bar. */}
+          <img
+            class="holding-final__mobile-photo"
+            data-holding-final-mobile-photo
+            src={holdingStaticPhoto}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            aria-hidden="true"
+          />
         </>
       )
     }
