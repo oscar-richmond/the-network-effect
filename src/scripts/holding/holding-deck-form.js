@@ -323,55 +323,113 @@ export function initHoldingDeckForm() {
 /**
  * Contact click-to-copy (/holding-3 desktop, .holding-final).
  *
- * Ported from Oscar's reference (ContactLink.tsx + .module.css) to
- * this project's vanilla-JS pattern — no React/CSS-modules in this
- * codebase. Behaviour matches the reference exactly: copy the email,
- * flip a `data-copied` attribute the CSS crossfades on (label + icon,
- * see holding-page.css), reset after COPY_RESET_MS, and STILL fire
- * the mailto regardless of copy success — most visitors have no
- * desktop mail client configured, so the copy is the affordance that
- * actually helps them; the rare visitor who does have one still gets
- * mailto triggered. mailto never unloads the page, so this is safe
- * alongside the copy confirmation staying visible.
+ * Copies the email, confirms via the CURSOR-BOUND tooltip pill
+ * (Oscar's revision — the link itself shows no feedback; see
+ * .holding-final__copy-tip in holding-page.css): shown at the click
+ * point, then following the pointer on every mousemove while
+ * visible, auto-hiding after COPY_RESET_MS. Keyboard activation has
+ * no cursor — the pill anchors to the link's own box instead and
+ * simply doesn't track. The hidden announcer live-region mirrors the
+ * confirmation for AT (the visual pill is aria-hidden — a
+ * pointer-chasing element is useless to a screen reader).
  *
- * The mailto itself is read back from the link's own `href` (server-
- * rendered by Astro from the single contactMailto source of truth)
- * rather than reconstructed here — one address, one place it's typed.
+ * The mailto STILL fires regardless of copy success — most visitors
+ * have no desktop mail client configured (the copy is what actually
+ * helps them), but the rare visitor who does still gets it; mailto
+ * never unloads the page, so the tooltip survives it.
+ *
+ * The mailto itself is read from the link's own `href` (Astro-
+ * rendered from the single contactMailto source of truth) rather
+ * than reconstructed here — one address, one place it's typed.
  */
 const COPY_RESET_MS = 2600;
+const TIP_OFFSET_X = 14;
+const TIP_OFFSET_Y = 18;
+const TIP_FADE_OUT_MS = 220;
 
 export function initHoldingContactCopy() {
   const link = document.querySelector('[data-holding-contact-copy]');
   if (!(link instanceof HTMLAnchorElement)) return () => {};
 
   const email = link.dataset.contactEmail;
+  const tip = document.querySelector('[data-holding-copy-tip]');
   const announcer = document.querySelector('[data-holding-contact-announcer]');
   if (!email) return () => {};
 
-  let resetTimer = null;
+  let hideTimer = null;
+  let removeTimer = null;
+  let tracking = false;
 
   const announce = (text) => {
     if (announcer instanceof HTMLElement) announcer.textContent = text;
   };
 
+  const place = (x, y) => {
+    if (tip instanceof HTMLElement) {
+      tip.style.transform = `translate3d(${x + TIP_OFFSET_X}px, ${y + TIP_OFFSET_Y}px, 0)`;
+    }
+  };
+
+  const onMove = (event) => place(event.clientX, event.clientY);
+
+  const stopTracking = () => {
+    if (tracking) {
+      window.removeEventListener('mousemove', onMove);
+      tracking = false;
+    }
+  };
+
+  const hideTip = () => {
+    stopTracking();
+    announce('');
+    if (!(tip instanceof HTMLElement)) return;
+    tip.classList.remove('is-in');
+    // Let the no-preference fade-out play before display:none; under
+    // reduced motion opacity snaps instantly and the extra beat is
+    // invisible.
+    removeTimer = setTimeout(() => {
+      tip.hidden = true;
+    }, TIP_FADE_OUT_MS);
+  };
+
+  const showTip = (x, y) => {
+    if (!(tip instanceof HTMLElement)) return;
+    if (hideTimer) clearTimeout(hideTimer);
+    if (removeTimer) clearTimeout(removeTimer);
+    place(x, y);
+    tip.hidden = false;
+    // Commit the hidden opacity-0 state before .is-in so the entrance
+    // fade actually runs (same forced-reflow idiom as the state swap).
+    void tip.offsetWidth;
+    tip.classList.add('is-in');
+    if (!tracking) {
+      window.addEventListener('mousemove', onMove);
+      tracking = true;
+    }
+    hideTimer = setTimeout(hideTip, COPY_RESET_MS);
+  };
+
   const onClick = (event) => {
     event.preventDefault();
+
+    // Keyboard activation (Enter) reports no useful coordinates —
+    // anchor the pill just under the link instead and skip tracking
+    // until the mouse next moves (the listener re-anchors it).
+    const rect = link.getBoundingClientRect();
+    const hasPointer = event.clientX !== 0 || event.clientY !== 0;
+    const x = hasPointer ? event.clientX : rect.left;
+    const y = hasPointer ? event.clientY : rect.bottom;
 
     const copy = navigator.clipboard
       ? navigator.clipboard
           .writeText(email)
           .then(() => {
-            link.setAttribute('data-copied', '');
-            announce('Copied — get in touch');
-            if (resetTimer) clearTimeout(resetTimer);
-            resetTimer = setTimeout(() => {
-              link.removeAttribute('data-copied');
-              announce('');
-            }, COPY_RESET_MS);
+            showTip(x, y);
+            announce('Email copied');
           })
           .catch(() => {
             // Clipboard blocked (rare) — mailto below still fires as
-            // the fallback; no confirmation state to show.
+            // the fallback; no confirmation to show.
           })
       : Promise.resolve();
 
@@ -384,6 +442,8 @@ export function initHoldingContactCopy() {
 
   return () => {
     link.removeEventListener('click', onClick);
-    if (resetTimer) clearTimeout(resetTimer);
+    stopTracking();
+    if (hideTimer) clearTimeout(hideTimer);
+    if (removeTimer) clearTimeout(removeTimer);
   };
 }
