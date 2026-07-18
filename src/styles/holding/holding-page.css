@@ -1746,13 +1746,497 @@
 	}
 }
 
-/* Mobile/tablet: the final-design elements don't exist below the
-   breakpoint — the shared travel layout (rolling-tagline hero included)
-   renders exactly as before on all three routes. */
+/* ── FINAL variant, MOBILE (<=1024) — the previously-deferred mobile
+   pass (Oscar's go-ahead, post desktop launch): /holding-3's mobile now
+   carries the NEW content — title, three-line paragraph, text-link
+   CTAs, the deck-request form, sent state and sign-off — in mobile's
+   established register: WHITE + MIX-BLEND-DIFFERENCE over the shared
+   travelling image, which is UNTOUCHED ('keep the images as they are').
+   Scoped .holding-final throughout: /holding and /holding-2's dormant
+   mobile keeps the old rolling-tagline hero exactly as before.
+
+   Deliberately a SELF-CONTAINED duplicate of the desktop treatment
+   rather than a de-gating refactor of the >=1025 blocks — the desktop
+   site is LIVE; not touching its rules is worth ~150 duplicated lines.
+
+   Mobile-specific design calls (flagged in the task report):
+   - The red underline/accent stays desktop-only: inside a difference
+     root over photos, #C1250E would invert to arbitrary colours —
+     mobile underlines are currentColor white, inverting with the text.
+   - Inputs: 16px font (below 16 triggers iOS focus auto-zoom), 44px
+     tall (tap target), translucent white fill kept (legible on photos).
+   - BLEND SAFETY, the mobile twist: unlike desktop, the intro/sent
+     containers HOLD difference roots here — so the desktop's container
+     group-fades are illegal on mobile; every swap fade below targets
+     leaves (or the blend root itself, the tagline-established pattern)
+     and never a wrapper. Wrappers keep position-only (no z-index).
+   - The accent BAR stays hidden (desktop-only element).
+   - Old mobile hero (wordmark/tagline/chip buttons/old signoff) is
+     hidden on this route — the new content replaces it one-for-one. */
 @media (max-width: 1024px) {
-	.holding-final__content,
-	.holding-final__signoff,
-	.holding-final__bar {
+	/* Old mobile layout off, on this route only. */
+	.holding-final .holding-wordmark,
+	.holding-final .holding-page__hero,
+	.holding-final .holding-signoff,
+	.holding-final .holding-tagline__culture-overlay,
+	.holding-final .holding-final__bar {
 		display: none;
+	}
+
+	/* Anchor for the bottom sign-off (position only, no z-index — safe
+	   above the blend roots this column now contains). */
+	.holding-final .holding-page__column {
+		position: relative;
+	}
+
+	/* [hidden] must beat the display:flex below (UA rule loses). */
+	.holding-final .holding-final__intro[hidden],
+	.holding-final .holding-final__form-block[hidden],
+	.holding-final .holding-final__sent[hidden],
+	.holding-final .holding-final__copy-tip[hidden] {
+		display: none;
+	}
+
+	/* Content block: centred both ways in the column (the column is the
+	   100dvh flex the shared mobile layout already provides). */
+	.holding-final .holding-final__content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin: auto 0;
+		width: 100%;
+	}
+
+	/* ── INTRO state ── */
+	.holding-final .holding-final__intro {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+	}
+
+	.holding-final .holding-final__intro-title {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 800;
+		font-size: clamp(22px, 7vw, 32px);
+		line-height: 1.2;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-final__para {
+		margin: 14px 0 0;
+		font-family: 'Serrif', serif;
+		font-weight: 300;
+		font-size: clamp(11px, 3.6vw, 20px);
+		line-height: 1.4;
+		text-align: center;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-final__para-line {
+		display: block;
+		white-space: nowrap;
+	}
+
+	.holding-final .holding-final__ctas {
+		display: flex;
+		gap: 33px;
+		margin-top: 32px;
+	}
+
+	/* ── Text-link CTA treatment (mobile port of the desktop .holding-spin
+	   styles; whole link is a difference root — underline and arrow invert
+	   with the text via currentColor). Specificity/order beats the shared
+	   .holding-shell chip sizing (same two-class tier, later in source). */
+	.holding-final .holding-btn {
+		height: auto;
+		min-width: 0;
+		padding: 0 0 4px;
+		overflow: visible;
+		background: none;
+		border: none;
+		font-size: 11px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-btn::before {
+		content: none;
+	}
+
+	.holding-final .holding-btn::after {
+		content: '';
+		position: absolute;
+		inset: auto 0 0 0;
+		height: 1px;
+		background: currentColor;
+		transform-origin: left center;
+	}
+
+	/* Back keeps no underline, mobile too. */
+	.holding-final .holding-final__back::after {
+		content: none;
+	}
+
+	.holding-final .holding-final__cta-arrow {
+		position: absolute;
+		top: 0;
+		bottom: 4px;
+		left: 100%;
+		margin: auto 0 auto 8px;
+		width: 9px;
+		height: 9px;
+	}
+
+	.holding-final .holding-final__cta-arrow svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	/* ── FORM state ── */
+	.holding-final .holding-final__form-block {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		width: min(360px, 100%);
+	}
+
+	.holding-final .holding-final__form-block .holding-final__title {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: clamp(22px, 6.4vw, 32px);
+		line-height: 1.2;
+		text-transform: uppercase;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-final__title-line {
+		display: block;
+		white-space: nowrap;
+	}
+
+	.holding-final .holding-final__sub {
+		margin: 6px 0 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 400;
+		font-size: 12px;
+		line-height: 24px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-final__form-zone {
+		position: relative;
+		margin-top: 18px;
+		width: 100%;
+	}
+
+	.holding-final .holding-final__form {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.holding-final .holding-final__field {
+		position: relative;
+		margin-bottom: 20px;
+	}
+
+	.holding-final .holding-final__label {
+		display: block;
+		margin: 0 0 8px;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 12px;
+		line-height: 17px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	/* 16px font: anything smaller triggers iOS's automatic page zoom on
+	   focus; 44px height: minimum comfortable tap target. */
+	.holding-final .holding-final__input {
+		display: block;
+		width: 100%;
+		height: 44px;
+		padding: 0 12px;
+		background: rgba(255, 255, 255, 0.7);
+		border: 1px solid #c6c6c6;
+		border-radius: 3px;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 16px;
+		color: #161616;
+		outline: none;
+	}
+
+	.holding-final .holding-final__input:focus-visible {
+		border-color: #161616;
+	}
+
+	.holding-final .holding-final__input.is-invalid {
+		border-color: var(--color-holding-red);
+	}
+
+	/* Plain red, not blended — a differenced error colour over photos
+	   would stop reading as an error at all (flagged judgment call). */
+	.holding-final .holding-final__field-error {
+		position: absolute;
+		top: calc(100% + 3px);
+		left: 0;
+		font-family: 'Serrif', serif;
+		font-size: 11px;
+		line-height: 1.2;
+		color: var(--color-holding-red);
+	}
+
+	.holding-final .holding-final__hp {
+		position: absolute;
+		left: -9999px;
+		top: 0;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+
+	.holding-final .holding-final__form-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		margin-top: 10px;
+	}
+
+	.holding-final .holding-final__submit {
+		font-size: 13px;
+	}
+
+	.holding-final .holding-final__back {
+		font-size: 13px;
+	}
+
+	.holding-final .holding-final__submit.is-sending {
+		pointer-events: none;
+	}
+
+	.holding-final .holding-final__submit.is-sending .holding-final__cta-arrow {
+		opacity: 0;
+	}
+
+	/* Post-submit notes (error below the form; success is the sent state). */
+	.holding-final .holding-final__note {
+		position: absolute;
+		left: 0;
+	}
+
+	.holding-final .holding-final__note--error {
+		top: calc(100% + 24px);
+	}
+
+	.holding-final .holding-final__note-sub {
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-size: 12px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-final__note-sub a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* ── SENT state ── */
+	.holding-final .holding-final__sent {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		outline: none;
+	}
+
+	.holding-final .holding-final__sent-line {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: 13px;
+		text-transform: uppercase;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	/* ── Sign-off (desktop parity, mobile register) ── */
+	.holding-final .holding-final__signoff {
+		display: block;
+		position: absolute;
+		bottom: 32px;
+		left: 0;
+		right: 0;
+		width: max-content;
+		margin: 0 auto;
+	}
+
+	.holding-final .holding-final__signoff-line {
+		display: block;
+		margin: 0;
+		font-size: 11px;
+		line-height: 1.5;
+		text-transform: uppercase;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.holding-final .holding-final__signoff-line--serrif {
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+	}
+
+	.holding-final .holding-final__signoff-line--dazzed {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 500;
+	}
+
+	/* ── Copy tooltip (tap-anchored on touch; not blended — a solid
+	   overlay pill, same as desktop). ── */
+	.holding-final .holding-final__copy-tip {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 8000;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 16px 10px 14px;
+		background: #161616;
+		border-radius: 999px;
+		color: #ffffff;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 500;
+		font-size: 12px;
+		line-height: 1;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+
+	.holding-final .holding-final__copy-tip svg {
+		display: block;
+		width: 10px;
+		height: 10px;
+	}
+
+	/* ── Motion (no-preference only, as ever). All fades target leaves
+	   or blend roots THEMSELVES, never wrappers holding blend roots. ── */
+	@media (prefers-reduced-motion: no-preference) {
+		/* Load-entry hidden states (JS line-reveals set opacity 1). */
+		.holding-final .holding-final__intro-title,
+		.holding-final .holding-final__para,
+		.holding-final .holding-final__signoff {
+			opacity: 0;
+		}
+
+		/* No chrome-wipe on the text links (mirror of the spin override);
+		   label keeps the base line-rise, no follow delay. */
+		.holding-final .holding-btn {
+			clip-path: none;
+		}
+
+		.holding-final .holding-btn .holding-btn__inner {
+			transition: transform 0.5s var(--holding-ease);
+		}
+
+		/* Underline draw (transition-based — reverses cleanly on the swap
+		   re-arm, no keyframe needed at this breakpoint). */
+		.holding-final .holding-btn:not(.is-visible)::after {
+			transform: scaleX(0);
+			transition: none;
+		}
+
+		.holding-final .holding-btn.is-visible::after {
+			transform: scaleX(1);
+			transition: transform 0.6s var(--holding-ease) 0.3s;
+		}
+
+		.holding-final .holding-final__cta-arrow {
+			opacity: 0;
+			transition: opacity 0.6s var(--holding-ease) 0.3s;
+		}
+
+		.holding-final .holding-btn.is-visible .holding-final__cta-arrow {
+			opacity: 1;
+		}
+
+		/* Swap, intro side: LEAF fades (title/para are blend roots — their
+		   own opacity is fine; the .holding-btn links likewise). */
+		.holding-final .holding-final__intro-title,
+		.holding-final .holding-final__para,
+		.holding-final .holding-final__intro .holding-btn {
+			transition: opacity 0.3s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__intro.is-out .holding-final__intro-title,
+		.holding-final .holding-final__intro.is-out .holding-final__para,
+		.holding-final .holding-final__intro.is-out .holding-btn {
+			opacity: 0;
+		}
+
+		/* Swap, form side: heading/sub leaves. */
+		.holding-final .holding-final__form-block .holding-final__title,
+		.holding-final .holding-final__form-block .holding-final__sub {
+			opacity: 0;
+			transition: opacity 0.4s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__form-block .holding-final__title.is-in,
+		.holding-final .holding-final__form-block .holding-final__sub.is-in {
+			opacity: 1;
+		}
+
+		/* Field leaves. */
+		.holding-final .holding-final__label,
+		.holding-final .holding-final__input {
+			opacity: 0;
+			transition: opacity 0.6s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__field.is-visible .holding-final__label,
+		.holding-final .holding-final__field.is-visible .holding-final__input {
+			opacity: 1;
+		}
+
+		/* Notes fade (the note is itself the blend root — self-fade OK). */
+		.holding-final .holding-final__note {
+			opacity: 0;
+			transition: opacity 0.4s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__note.is-in {
+			opacity: 1;
+		}
+
+		/* Sent exit: fade the LINE (blend root), not the wrapper. */
+		.holding-final .holding-final__sent-line {
+			transition: opacity 0.3s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__sent.is-out .holding-final__sent-line {
+			opacity: 0;
+		}
+
+		/* Tooltip fade. */
+		.holding-final .holding-final__copy-tip {
+			opacity: 0;
+			transition: opacity 0.2s var(--holding-ease);
+		}
+
+		.holding-final .holding-final__copy-tip.is-in {
+			opacity: 1;
+		}
 	}
 }
