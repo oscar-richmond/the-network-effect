@@ -1142,6 +1142,17 @@
 		position: relative;
 	}
 
+	/* The photo column never shrinks below its 1470-viewport width
+	   (41.6667% of 1470 = 612px track incl. the bar's 16px): as the
+	   viewport narrows, the LEFT column absorbs the loss instead of
+	   the photo — so the cover-crop slice (the people) never narrows
+	   past the approved 1470 framing (Oscar's fix: "the image doesn't
+	   get cut... take space from the left column"). Scoped here; the
+	   shared stage grid is untouched for the dormant routes. */
+	.holding-final .holding-page__stage {
+		grid-template-columns: 1fr max(41.6667%, 612px);
+	}
+
 	/* The photo column narrows by the bar's width — its right edge and
 	   the bar's left edge touch exactly (both land at 100vw - 16px; the
 	   page never scrolls, so layout width == viewport width). */
@@ -1657,6 +1668,29 @@
 	}
 }
 
+/* ── Narrow-desktop type tier (Oscar's resize fix): once the pinned
+   photo column squeezes the left column to ~120px side padding
+   around the full-size content (measured live at 1342px viewport:
+   489.9px content + 2x120 + 612px track), the type steps down — title
+   24px, body 14px, submit/back CTAs 12px (the intro CTA pair is
+   already 12px; the 9px arrows were drawn for 12px text, so they
+   are already the matched size at this tier). Mobile takes over at
+   the normal 1024 breakpoint as before. */
+@media (min-width: 1025px) and (max-width: 1342px) {
+	.holding-final__intro-title {
+		font-size: 24px;
+	}
+
+	.holding-final__para {
+		font-size: 14px;
+	}
+
+	.holding-final__submit,
+	.holding-final__back {
+		font-size: 12px;
+	}
+}
+
 /* Entry hidden states — no-preference only, as ever: under reduced
    motion everything renders complete and static instantly. The CTA
    links' hidden/draw states come from the ported .holding-spin block. */
@@ -2125,7 +2159,12 @@
 		order: -1;
 		width: max-content;
 		align-self: center;
-		margin: calc(32px + env(safe-area-inset-top, 0px)) auto 0;
+		/* 48px minimum below the sign-off (Oscar's bunching fix): the
+		   content block's auto margins still centre it — symmetric
+		   48s here and on the image top cancel out of the midpoint,
+		   so PHONE layout is unchanged; the minimums only bite when
+		   the free space runs out (the tablet-width snap range). */
+		margin: calc(32px + env(safe-area-inset-top, 0px)) auto 48px;
 	}
 
 	.holding-final .holding-final__signoff-line {
@@ -2346,12 +2385,21 @@
 		   box back to the padded column width (the same trap the
 		   desktop photo's 48px widen hit) — lift it here. */
 		max-width: none;
-		/* No top margin: the content block's auto margins ARE the gap —
-		   a fixed margin here would skew the centre of the
-		   signoff-to-image zone by half its value (measured 12px). */
-		margin: 0 -16px calc(8px + env(safe-area-inset-bottom, 0px));
+		/* 48px minimum above the image — SYMMETRIC with the sign-off's
+		   48 below, so the auto-centred content's midpoint is
+		   mathematically unchanged on phones (asymmetric margins skew
+		   it by half their value — measured the hard way earlier). */
+		margin: 48px -16px calc(8px + env(safe-area-inset-bottom, 0px));
 		aspect-ratio: 730 / 420;
 		object-fit: cover;
+		/* Height cap for the snap-to-mobile TABLET range (Oscar's
+		   bunching fix): at 1024px wide the uncapped card would be
+		   ~580px tall and cram everything. 38dvh only bites above
+		   phone widths — at 375x812 the card is ~207px (25dvh), so
+		   true mobile is untouched; when the cap engages, cover
+		   crops vertically and the full WIDTH stays visible. */
+		max-height: 38vh;
+		max-height: 38dvh;
 	}
 
 	.holding-final.is-deck-form-open .holding-final__mobile-photo {
