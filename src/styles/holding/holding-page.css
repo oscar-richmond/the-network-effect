@@ -1291,8 +1291,9 @@
 	   6px under the title, 32px line box per the file's rhythm. */
 	.holding-final__sub {
 		margin: 6px 0 0;
-		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 400;
+		font-family: 'Serrif', serif;
+		/* Serrif Medium (Oscar's rev — was Dazzed 400). */
+		font-weight: 500;
 		font-size: 12px;
 		line-height: 32px;
 		color: #ffffff;
@@ -2002,8 +2003,9 @@
 
 	.holding-final .holding-final__sub {
 		margin: 6px 0 0;
-		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 400;
+		font-family: 'Serrif', serif;
+		/* Serrif Medium (Oscar's rev — was Dazzed 400). */
+		font-weight: 500;
 		font-size: 12px;
 		line-height: 24px;
 		color: #161616;
