@@ -1237,6 +1237,11 @@
 		white-space: nowrap;
 	}
 
+	/* Desktop shows its own 3-line set only (see the markup note). */
+	.holding-final__para-line--mobile {
+		display: none;
+	}
+
 	.holding-final__ctas {
 		display: flex;
 		/* 49px declared = 32px of true visible whitespace after the
@@ -1881,8 +1886,9 @@
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
-		/* 2px below the original ramp at every width (Oscar's rev). */
-		font-size: calc(clamp(22px, 7vw, 32px) - 2px);
+		/* Back to the original ramp (Oscar's +2px rev cancels the
+		   earlier -2px step). */
+		font-size: clamp(22px, 7vw, 32px);
 		line-height: 1.2;
 		color: #161616;
 	}
@@ -1891,8 +1897,9 @@
 		margin: 14px 0 0;
 		font-family: 'Serrif', serif;
 		font-weight: 500;
-		/* 2px below the original ramp at every width (Oscar's rev). */
-		font-size: calc(clamp(11px, 3.6vw, 20px) - 2px);
+		/* Back to the original ramp (Oscar's +2px rev cancels the
+		   earlier -2px step). */
+		font-size: clamp(11px, 3.6vw, 20px);
 		line-height: 1.4;
 		text-align: center;
 		color: #161616;
@@ -1903,19 +1910,22 @@
 		white-space: nowrap;
 	}
 
+	/* Mobile shows the 4-line set (Oscar's fixed break) only. */
+	.holding-final .holding-final__para-line--desktop {
+		display: none;
+	}
+
+	.holding-final .holding-final__para-line--mobile {
+		display: block;
+	}
+
 	.holding-final .holding-final__ctas {
 		display: flex;
-		/* 32px of VISIBLE space between the CTAs (Oscar's spec): the
-		   first button's out-of-flow arrow eats 17px of the declared
-		   gap, so 49 = 32 + 17 — the same measured correction the
-		   desktop row uses. */
-		gap: 49px;
+		/* Arrows are gone on mobile (Oscar's rev), so no out-of-flow
+		   footprint to compensate: the declared gap IS the visible
+		   32px and the row centres truly with no padding trim. */
+		gap: 32px;
 		margin-top: 32px;
-		/* True horizontal centring (Oscar's fix): the trailing arrow is
-		   absolutely positioned OUTSIDE the row's layout box, so flex
-		   centring was off by half its 17px footprint — reserving that
-		   footprint as padding folds it back into the centred box. */
-		padding-right: 17px;
 	}
 
 	/* ── Text-link CTA treatment (mobile port of the desktop .holding-spin
@@ -1959,20 +1969,11 @@
 		content: none;
 	}
 
+	/* No arrows on any mobile CTA (Oscar's rev) — intro pair and the
+	   form's Request alike (one shared class; leaving one on would
+	   read as an inconsistency, flagged in the report). */
 	.holding-final .holding-final__cta-arrow {
-		position: absolute;
-		top: 0;
-		bottom: 4px;
-		left: 100%;
-		margin: auto 0 auto 8px;
-		width: 9px;
-		height: 9px;
-	}
-
-	.holding-final .holding-final__cta-arrow svg {
-		display: block;
-		width: 100%;
-		height: 100%;
+		display: none;
 	}
 
 	/* ── FORM state ── */
@@ -2162,21 +2163,24 @@
 	.holding-final .holding-final__signoff {
 		display: block;
 		position: static;
-		order: -1;
 		width: max-content;
-		align-self: center;
-		/* 48px minimum below the sign-off (Oscar's bunching fix): the
-		   content block's auto margins still centre it — symmetric
-		   48s here and on the image top cancel out of the midpoint,
-		   so PHONE layout is unchanged; the minimums only bite when
-		   the free space runs out (the tablet-width snap range). */
-		margin: calc(32px + env(safe-area-inset-top, 0px)) auto 48px;
+		/* Bottom of the page now (Oscar's flip — straight switch with
+		   the photo): 64px off the viewport bottom, left-aligned with
+		   the text block above. The actual margin-left is derived at
+		   runtime (holding-entry.js alignFinalSignoffMobile) from the
+		   intro text's rendered left edge; flex-start is the anchor it
+		   offsets from. The 48px top margin is the min gap that pairs
+		   with the photo's 48 below it — symmetric around the
+		   auto-centred content, so the midpoint stays honest. */
+		align-self: flex-start;
+		margin: 48px 0 64px;
 	}
 
 	.holding-final .holding-final__signoff-line {
 		display: block;
 		margin: 0;
-		font-size: 11px;
+		/* 13px (Oscar's +2px rev). */
+		font-size: 13px;
 		line-height: 1.5;
 		text-transform: uppercase;
 		color: #161616;
@@ -2393,12 +2397,15 @@
 		   box back to the padded column width (the same trap the
 		   desktop photo's 48px widen hit) — lift it here. */
 		max-width: none;
-		/* Touches both sides and the BOTTOM of the viewport (Oscar's
-		   rev — the 8px insets and safe-area pad are gone). 48px min
-		   above stays: with the sign-off's 48 below it keeps the
-		   auto-centred content's midpoint honest in the tight
-		   tablet-snap range. */
-		margin: 48px -24px 0;
+		/* TOP of the page now (Oscar's flip): first flex item, bleeding
+		   to both sides and the viewport top; the 48px below is the
+		   min gap pairing with the sign-off's 48 above itself. */
+		order: -1;
+		margin: 0 -24px 48px;
+		/* The full-width 8px accent rule, directly below the image with
+		   no gap (Oscar's spec, #C1250E): a bottom border on the img
+		   box itself. */
+		border-bottom: 8px solid var(--color-holding-red, #c1250e);
 		/* 40% of the viewport height, CAPPED by the crop budget: the
 		   3:2 photo at height h needs 1.5h of width, and Oscar's
 		   limit is <= 32px cropped off the right with NO top/bottom
@@ -2407,8 +2414,10 @@
 		   there and the crop limit wins); shorter/wider viewports
 		   reach the full 40dvh. Left-anchored so every cropped pixel
 		   comes off the RIGHT edge only. */
-		height: min(40vh, calc((100vw + 32px) / 1.5));
-		height: min(40dvh, calc((100vw + 32px) / 1.5));
+		/* +8px carries the border inside the border-box height, so the
+		   IMAGE itself keeps the agreed 40dvh/crop-budget sizing. */
+		height: calc(min(40vh, calc((100vw + 32px) / 1.5)) + 8px);
+		height: calc(min(40dvh, calc((100vw + 32px) / 1.5)) + 8px);
 		object-fit: cover;
 		object-position: left center;
 	}
@@ -2422,8 +2431,8 @@
 	   plain min() — squat windows are transitional. */
 	@media (orientation: portrait) {
 		.holding-final .holding-final__mobile-photo {
-			height: clamp(calc(100vw / 1.5), 40vh, calc((100vw + 32px) / 1.5));
-			height: clamp(calc(100vw / 1.5), 40dvh, calc((100vw + 32px) / 1.5));
+			height: calc(clamp(calc(100vw / 1.5), 40vh, calc((100vw + 32px) / 1.5)) + 8px);
+			height: calc(clamp(calc(100vw / 1.5), 40dvh, calc((100vw + 32px) / 1.5)) + 8px);
 		}
 	}
 
@@ -2431,13 +2440,13 @@
 		display: none;
 	}
 
-	/* With the photo hidden, the sign-off's 48px bottom margin no
-	   longer has the image's matching 48px top margin to balance it —
-	   left alone it skews the form/sent block 24px off true centre
-	   (measured 196 above vs 148 below). Zeroed for the whole
-	   form -> sent -> return lifecycle so the auto margins centre the
-	   block exactly between the sign-off and the viewport bottom. */
+	/* With the photo hidden, the sign-off's 48px TOP margin no longer
+	   has the image's matching 48px below it to balance it — left
+	   alone it skews the form/sent block 24px off true centre (same
+	   mechanism as the pre-flip bottom-margin fix). Zeroed for the
+	   whole form -> sent -> return lifecycle; the 64px bottom stays —
+	   the sign-off holds its place at the foot of the page. */
 	.holding-final.is-deck-form-open .holding-final__signoff {
-		margin-bottom: 0;
+		margin-top: 0;
 	}
 }

@@ -358,6 +358,46 @@ function alignFinalSignoff() {
 }
 
 /**
+ * Mobile (<=1024) only: left-aligns the sign-off block with the intro
+ * text's rendered left edge (Oscar's flip — the sign-off sits 64px off
+ * the viewport bottom, left-aligned with the text above). The intro's
+ * title/paragraph are shrink-to-fit flex children, so their rects ARE
+ * the visual text block; the target is the leftmost of the two. The
+ * offset is written as an inline margin-left against the flex-start
+ * anchor; on desktop the inline margin is cleared so the absolute
+ * desktop placement is untouched. Layout, not choreography — runs in
+ * both motion branches and on resize. Skipped while the intro is
+ * hidden (form/sent state): rects would be zero; the last good offset
+ * holds and the next intro-visible resize or replay re-derives it.
+ */
+function alignFinalSignoffMobile() {
+  const signoff = document.querySelector('[data-holding-final-signoff]');
+  if (!(signoff instanceof HTMLElement)) return;
+
+  if (!window.matchMedia('(max-width: 1024px)').matches) {
+    signoff.style.marginLeft = '';
+    return;
+  }
+
+  const intro = document.querySelector('[data-deck-intro]');
+  if (!(intro instanceof HTMLElement) || intro.hidden) return;
+  const title = intro.querySelector('[data-holding-final-title]');
+  const para = intro.querySelector('[data-holding-final-para]');
+
+  const lefts = [title, para]
+    .filter((el) => el instanceof HTMLElement)
+    .map((el) => el.getBoundingClientRect())
+    .filter((rect) => rect.width > 0)
+    .map((rect) => rect.left);
+  if (!lefts.length) return;
+  const targetLeft = Math.min(...lefts);
+
+  signoff.style.marginLeft = '0px';
+  const baseLeft = signoff.getBoundingClientRect().left;
+  signoff.style.marginLeft = `${targetLeft - baseLeft}px`;
+}
+
+/**
  * FINAL entry choreography — the established vocabulary on the INTRO
  * state's elements: line-reveals for title/paragraph/sign-off (lines
  * staggered 120ms), .is-visible for the intro's CTA pair only (the
@@ -378,7 +418,14 @@ function revealFinal(root) {
   const playLines = (container, lineSelector) => {
     if (!(container instanceof HTMLElement)) return;
     container.style.opacity = '1';
-    const lines = Array.from(container.querySelectorAll(lineSelector));
+    // Visible lines only: the paragraph carries BOTH breakpoints'
+    // line-sets (desktop 3 / mobile 4, CSS shows one). Filtering keeps
+    // each set's stagger 0-based and identical to the pre-split timing;
+    // the hidden set stays unwrapped (plain static text if a later
+    // resize crosses the breakpoint — reveals never replay on resize).
+    const lines = Array.from(container.querySelectorAll(lineSelector)).filter(
+      (line) => line instanceof HTMLElement && line.offsetParent !== null,
+    );
     const targets = lines.length ? lines : [container];
     targets.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
@@ -424,6 +471,11 @@ function revealFinal(root) {
  * replay, so simply re-adding lr-visible is enough — no re-deriving
  * per-line timing here. */
 export function replayHoldingIntroEntrance() {
+  // The intro is visible again: re-derive the mobile sign-off offset in
+  // case a resize landed while the form was up (measures were skipped
+  // then). Layout, not motion — runs before the reduced-motion gate.
+  alignFinalSignoffMobile();
+
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const title = document.querySelector('[data-holding-final-title]');
@@ -482,6 +534,7 @@ export function initHoldingEntry() {
     // a zero-size viewport at load, where every rect measures 0 and
     // the first pass has to bail.
     alignFinalSignoff();
+    alignFinalSignoffMobile();
   };
   window.addEventListener('resize', onResize);
 
@@ -516,6 +569,10 @@ export function initHoldingEntry() {
       syncCultureOverlay(taglineText, cultureOverlay);
       cultureOverlay?.classList.add('is-visible');
       alignFinalSignoff();
+      alignFinalSignoffMobile();
+      // Second pass after the viewport settles (some embedded webviews
+      // size late without firing resize) — idempotent, cheap.
+      setTimeout(alignFinalSignoffMobile, 1000);
     });
     return () => window.removeEventListener('resize', onResize);
   }
@@ -531,6 +588,11 @@ export function initHoldingEntry() {
     // FINAL variant: layout alignment first (fonts are ready — the
     // measure is exact), then its sequence runs alongside the old one.
     alignFinalSignoff();
+    alignFinalSignoffMobile();
+    // Second pass once the entry has largely played out: catches
+    // viewports that settle late without firing resize (embedded
+    // webviews) — idempotent, cheap.
+    setTimeout(alignFinalSignoffMobile, 1000);
     revealFinal(document);
 
     setTimeout(() => revealWordmark(wordmark), HOLDING_WORDMARK_AT);

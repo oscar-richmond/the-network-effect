@@ -205,14 +205,33 @@ const TAGLINE_ROTATE_WORDS = ['CONSULTANCY', 'NETWORK', 'STUDIO', 'COLLECTIVE'];
               >
                 THE NETWORK EFFECT
               </div>
+              {/* TWO line-sets, one per breakpoint (Oscar's 4-line mobile
+                  break): the break points differ mid-line, so the sets
+                  can't share spans. CSS shows exactly one set; the
+                  reveal only wraps/plays visible lines, so desktop
+                  timing is untouched and mobile staggers 0-3. */}
               <p class="holding-final__para" data-holding-final-para>
-                <span class="holding-final__para-line">
+                <span class="holding-final__para-line holding-final__para-line--desktop">
                   We are a relationship-led consultancy connecting
                 </span>
-                <span class="holding-final__para-line">
+                <span class="holding-final__para-line holding-final__para-line--desktop">
                   Talent, Brands and Audiences through Experiences,
                 </span>
-                <span class="holding-final__para-line">Strategic Partnerships and Media.</span>
+                <span class="holding-final__para-line holding-final__para-line--desktop"
+                  >Strategic Partnerships and Media.</span
+                >
+                <span class="holding-final__para-line holding-final__para-line--mobile">
+                  We are a relationship-led consultancy
+                </span>
+                <span class="holding-final__para-line holding-final__para-line--mobile">
+                  connecting Talent, Brands and Audiences
+                </span>
+                <span class="holding-final__para-line holding-final__para-line--mobile">
+                  through Experiences, Strategic
+                </span>
+                <span class="holding-final__para-line holding-final__para-line--mobile"
+                  >Partnerships and Media.</span
+                >
               </p>
               <div class="holding-final__ctas">
                 <button class="holding-btn" data-holding-final-button data-deck-open type="button">
