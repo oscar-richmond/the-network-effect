@@ -1244,10 +1244,9 @@
 
 	.holding-final__ctas {
 		display: flex;
-		/* 49px declared = 32px of true visible whitespace after the
-		   first button's out-of-flow arrow (8px margin + 9px width) —
-		   the measured correction from the earlier gap pass. */
-		gap: 49px;
+		/* Arrows removed everywhere (Oscar's rev), so no out-of-flow
+		   footprint: the declared gap IS the visible 32px. */
+		gap: 32px;
 		margin-top: 48px;
 	}
 
@@ -1432,14 +1431,10 @@
 		content: none;
 	}
 
-	/* Loading: label swaps to "Sending…" (JS), the arrow fades, the
-	   control goes inert. No spinner — flat editorial register. */
+	/* Loading: label swaps to "Sending…" (JS), the control goes
+	   inert. No spinner — flat editorial register. */
 	.holding-final__submit.is-sending {
 		pointer-events: none;
-	}
-
-	.holding-final__submit.is-sending .holding-final__cta-arrow {
-		opacity: 0;
 	}
 
 	/* Post-submit ERROR note — sits BELOW the intact form (typed data
@@ -1526,39 +1521,6 @@
 	   sets their ::before to content:none). */
 	.holding-final [data-holding-final-button] {
 		overflow: visible;
-	}
-
-	/* 9x9, 8px right of the text, vertically centred on the TEXT alone
-	   (excluding the underline's reserved 4px bottom padding). The
-	   anchor is position:relative with padding 0 0 4px (from the ported
-	   .holding-spin rule) and no left/right padding, so its padding box
-	   is exactly text-width x (text-height + 4px) — left:100% lands at
-	   the text's right edge, and top:0/bottom:4px + auto margins centres
-	   the icon within the text-height span precisely. Absolutely
-	   positioned, so it never enters flex flow: it doesn't widen
-	   .holding-btn's own box, which is what the underline's ::after
-	   (inset 0 0 0 0, i.e. matches that box exactly) spans — the arrow
-	   is structurally outside the underline's reach, not just visually.
-	   Still a DOM descendant of the anchor, so hover/focus/click on the
-	   arrow itself reaches the link via normal bubbling — full hit
-	   target preserved despite sitting outside the layout box. No
-	   explicit `color` here: inheriting the anchor's `color` means the
-	   arrow's currentColor fill tracks every hover/focus/active
-	   transition automatically, with no separate transition needed. */
-	.holding-final__cta-arrow {
-		position: absolute;
-		top: 0;
-		bottom: 4px;
-		left: 100%;
-		margin: auto 0 auto 8px;
-		width: 9px;
-		height: 9px;
-	}
-
-	.holding-final__cta-arrow svg {
-		display: block;
-		width: 100%;
-		height: 100%;
 	}
 
 	/* Underline colour only — text keeps every existing colour state
@@ -1781,19 +1743,6 @@
 		transition: opacity 1.4s var(--holding-ease);
 	}
 
-	/* Arrow fades in on the same 0.6s/0.3s-delay timing as the ported
-	   underline draw, so both finish together as one gesture — it has
-	   no line-reveal box of its own (it isn't text), so a plain fade is
-	   the closest match to the label's rise. */
-	.holding-final .holding-final__cta-arrow {
-		opacity: 0;
-		transition: opacity 0.6s var(--holding-ease) 0.3s;
-	}
-
-	.holding-final [data-holding-final-button].is-visible .holding-final__cta-arrow {
-		opacity: 1;
-	}
-
 	.holding-final .holding-final__bar.is-visible {
 		opacity: 1;
 	}
@@ -1886,9 +1835,8 @@
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
-		/* Back to the original ramp (Oscar's +2px rev cancels the
-		   earlier -2px step). */
-		font-size: clamp(22px, 7vw, 32px);
+		/* 1px below the ramp (Oscar's rev). */
+		font-size: calc(clamp(22px, 7vw, 32px) - 1px);
 		line-height: 1.2;
 		color: #161616;
 	}
@@ -1921,10 +1869,10 @@
 
 	.holding-final .holding-final__ctas {
 		display: flex;
-		/* Arrows are gone on mobile (Oscar's rev), so no out-of-flow
-		   footprint to compensate: the declared gap IS the visible
-		   32px and the row centres truly with no padding trim. */
-		gap: 32px;
+		/* Arrows are gone, so no out-of-flow footprint to compensate:
+		   the declared values ARE the visible ones — 40px between the
+		   CTAs, 32px below the paragraph (Oscar's spec). */
+		gap: 40px;
 		margin-top: 32px;
 	}
 
@@ -1967,13 +1915,6 @@
 	/* Back keeps no underline, mobile too. */
 	.holding-final .holding-final__back::after {
 		content: none;
-	}
-
-	/* No arrows on any mobile CTA (Oscar's rev) — intro pair and the
-	   form's Request alike (one shared class; leaving one on would
-	   read as an inconsistency, flagged in the report). */
-	.holding-final .holding-final__cta-arrow {
-		display: none;
 	}
 
 	/* ── FORM state ── */
@@ -2109,10 +2050,6 @@
 
 	.holding-final .holding-final__submit.is-sending {
 		pointer-events: none;
-	}
-
-	.holding-final .holding-final__submit.is-sending .holding-final__cta-arrow {
-		opacity: 0;
 	}
 
 	/* Post-submit notes (error below the form; success is the sent state). */
@@ -2255,15 +2192,6 @@
 		.holding-final .holding-btn.is-visible::after {
 			transform: scaleX(1);
 			transition: transform 0.6s var(--holding-ease) 0.3s;
-		}
-
-		.holding-final .holding-final__cta-arrow {
-			opacity: 0;
-			transition: opacity 0.6s var(--holding-ease) 0.3s;
-		}
-
-		.holding-final .holding-btn.is-visible .holding-final__cta-arrow {
-			opacity: 1;
 		}
 
 		/* Swap, intro side: LEAF fades (title/para are blend roots — their

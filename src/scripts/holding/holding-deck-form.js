@@ -47,7 +47,6 @@ export function initHoldingDeckForm() {
 
   const submitBtn = form.querySelector('[data-deck-submit]');
   const submitLabel = form.querySelector('[data-deck-submit-label]');
-  const submitArrow = form.querySelector('[data-deck-submit-arrow]');
   const sentBlock = document.querySelector('[data-deck-sent]');
   const sentLine = document.querySelector('[data-deck-sent-line]');
   const errorNote = document.querySelector('[data-deck-error-note]');
