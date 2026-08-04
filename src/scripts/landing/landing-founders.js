@@ -60,9 +60,26 @@ const DRIFT_PHOTO_PX = 200;
  */
 const FOUNDERS_HOLD_PX = 250;
 const FOUNDERS_EXIT_PX = 900;
-const EXIT_CLEAR_MARGIN_PX = 16;
-const SECTION_ENTRY_PX_FALLBACK = 1000; // viewport height at build time
+const SECTION_ENTRY_PX_FALLBACK = 1049; // section height fallback
 const GROUND_LIGHT = '#eeeef0';
+
+/**
+ * Exit travels (Oscar's rev of the rev — the clearance-based exit was
+ * too strong, the bottom items overtook everything and overlapped).
+ * Fixed, gentler distances over the exit window, ordered so HIGHER
+ * items move FASTER — the only ordering that can never overlap while
+ * exiting upward: the headline leads, buttons follow, the two
+ * portraits at their own paces, the big photo slowest. Items no
+ * longer need to clear the screen inside the window: the sticky
+ * release carries the section (and whatever is still visible) off
+ * naturally, with the headline dissolving into the by-then matching
+ * ground. Tunables.
+ */
+const EXIT_HEADLINE_PX = 420;
+const EXIT_CTAS_PX = 300;
+const EXIT_ROBBO_PX = 220;
+const EXIT_ASHLEY_PX = 180;
+const EXIT_PHOTO_PX = 140;
 
 export function initLandingFounders() {
   const section = document.querySelector('[data-landing-founders]');
@@ -91,15 +108,23 @@ export function initLandingFounders() {
   const track = section.closest('[data-landing-founders-track]') ?? section.parentElement;
   const driftTweens = [];
   {
-    const entryPx = window.innerHeight || SECTION_ENTRY_PX_FALLBACK;
+    /* Entry runs until the sticky pin engages — which, with the
+       bottom-aligned pin (the section is taller than the viewport),
+       is one full SECTION height of scroll after the track's top
+       enters the viewport bottom (or one viewport height on screens
+       taller than the section — matching the CSS min()). This keeps
+       "items land" and "the catch begins" the same scroll instant. */
+    const entryPx = Math.max(
+      window.innerHeight || 0,
+      section.offsetHeight || SECTION_ENTRY_PX_FALLBACK,
+    );
     const holdEnd = entryPx + FOUNDERS_HOLD_PX;
-    const secTop = section.getBoundingClientRect().top;
     const driftSpec = [
-      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, mode: 'y' },
-      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, mode: 'y' },
-      { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, mode: 'y' },
-      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, mode: 'top' },
-      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, mode: 'top' },
+      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, exit: EXIT_CTAS_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, exit: EXIT_PHOTO_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, exit: EXIT_ROBBO_PX, mode: 'top' },
+      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, exit: EXIT_ASHLEY_PX, mode: 'top' },
     ];
 
     const tl = gsap.timeline({
@@ -111,13 +136,8 @@ export function initLandingFounders() {
       },
     });
 
-    driftSpec.forEach(({ el, px, mode }) => {
+    driftSpec.forEach(({ el, px, exit, mode }) => {
       if (!(el instanceof HTMLElement)) return;
-      /* Clearance measured from the resting layout (before any tween
-         renders): how far up this item must travel for its bottom to
-         clear the pinned section's top edge. */
-      const clearance =
-        el.getBoundingClientRect().bottom - secTop + EXIT_CLEAR_MARGIN_PX;
       if (mode === 'top') {
         const baseTop = parseFloat(getComputedStyle(el).top);
         tl.fromTo(
@@ -127,7 +147,7 @@ export function initLandingFounders() {
           0,
         ).to(
           el,
-          { top: baseTop - clearance, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+          { top: baseTop - exit, duration: FOUNDERS_EXIT_PX, ease: 'none' },
           holdEnd,
         );
       } else {
@@ -138,7 +158,7 @@ export function initLandingFounders() {
           0,
         ).to(
           el,
-          { y: -clearance, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+          { y: -exit, duration: FOUNDERS_EXIT_PX, ease: 'none' },
           holdEnd,
         );
       }

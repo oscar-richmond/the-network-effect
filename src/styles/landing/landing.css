@@ -427,7 +427,12 @@
 
 .landing-v2 .landing-founders {
 	position: sticky;
-	top: 0;
+	/* Pin where the LANDED frame sat (Oscar's fix): the section is
+	   taller than the viewport, so pinning at top:0 cut the bottom
+	   images off below the fold. This pins with the section's BOTTOM
+	   on the viewport bottom (the state where everything is in view);
+	   min() keeps it top-pinned on viewports taller than the section. */
+	top: min(0px, calc(100dvh - 1049px));
 	z-index: 260;
 	width: 100%;
 	height: 1049px;
