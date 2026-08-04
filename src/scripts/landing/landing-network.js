@@ -20,15 +20,17 @@ const MEDIA_AT_MS = 1040;
 
 /* ── Industry hover / logo swap (Oscar's rev) ─────────────────────
    Hovering (or keyboard-focusing) a sector term dims the rest of the
-   list to 10% and swaps the carousels' logo set under a blur cover:
-   a left-to-right blur WAVE (each cell delayed by its on-screen x,
-   0..SWAP_SWEEP_MS across the viewport; per-cell ramp 500ms) ->
-   rebuild both tracks from the target set and IMMEDIATELY wave the
-   un-blur left-to-right the same way — no hold at full blur: the
-   fresh logos are committed blurred (forced reflow) with fresh
-   position-derived delays in the same tick the cover starts
-   lifting. Delays are pinned at each phase start; the marquees
-   drift ~30px/s so the anchoring error over a phase is invisible. ONE persistent driver chases the LATEST target,
+   list to 10% and swaps the carousels' logo set under the CTAs'
+   ripple, scaled up: each cell's logo runs ONE blur pulse (0 ->
+   12px -> 0, 600ms, CSS keyframes) staggered left-to-right by its
+   on-screen x (0..SWAP_SWEEP_MS across the viewport), and the img's
+   src is exchanged at that cell's own pulse peak — a travelling
+   crest that reveals the new set as it passes. Same-length sets
+   swap in place (no DOM rebuild, animations undisturbed); if a
+   future real set changes length, geometry is normalised by a
+   rebuild AFTER the ripple (instant — revisit the choreography when
+   such a set actually lands). Delays pin at ripple start; marquee
+   drift (~30px/s) over one ripple is invisible. ONE persistent driver chases the LATEST target,
    so rapid hovers retarget cleanly — a new target simply becomes
    where the next (or current, on completion) cycle settles; no
    stacked transitions, no half-swapped states. Set sizes may differ
@@ -37,7 +39,7 @@ const MEDIA_AT_MS = 1040;
    --marquee-set-w = the translate distance), so the seamless loop
    holds for any length. Carousels keep animating throughout — the
    var/DOM change lands mid-flight but under full blur. */
-const SWAP_BLUR_MS = 500;
+const SWAP_RIPPLE_MS = 600;
 const SWAP_SWEEP_MS = 400;
 const CELL_PITCH_PX = 192;
 
@@ -128,48 +130,53 @@ export function initLandingNetwork() {
   let currentKey = 'all';
   let targetKey = 'all';
   let swapBusy = false;
-
-  /* Pin each cell's share of the wave: transition-delay from its
-     current on-screen x (clamped to the viewport — offscreen copies
-     ride the nearest edge). Reading rects also forces the style
-     commit the rebuild handoff relies on. */
-  const assignSweepDelays = () => {
-    const vw = window.innerWidth || 1728;
-    tracks.forEach((t) => {
-      Array.from(t.children).forEach((cell) => {
-        const img = cell.querySelector('img');
-        if (!img) return;
-        const x = Math.min(Math.max(cell.getBoundingClientRect().left, 0), vw);
-        img.style.transitionDelay = `${Math.round((x / vw) * SWAP_SWEEP_MS)}ms`;
-      });
-    });
-  };
+  let currentSetLength = NETWORK_BRAND_SETS.all.length;
 
   const pumpSwap = () => {
     if (swapBusy || targetKey === currentKey) return;
     swapBusy = true;
-    assignSweepDelays();
+    const key = targetKey;
+    const base = NETWORK_BRAND_SETS[key] ?? NETWORK_BRAND_SETS.all;
+    const vw = window.innerWidth || 1728;
+    tracks.forEach((track) => {
+      /* Random arrangement per industry swap (placeholder — see
+         shuffled()); the resting 'all' state restores canonical
+         order. Each track gets its own shuffle so the rows differ. */
+      const set = key === 'all' ? base : shuffled(base);
+      Array.from(track.children).forEach((cell, i) => {
+        const img = cell.querySelector('img');
+        if (!img) return;
+        /* Pin this cell's slot in the wave from its on-screen x
+           (offscreen copies ride the nearest edge)... */
+        const x = Math.min(Math.max(cell.getBoundingClientRect().left, 0), vw);
+        const delay = Math.round((x / vw) * SWAP_SWEEP_MS);
+        img.style.setProperty('--cell-ripple-delay', `${delay}ms`);
+        /* ...and exchange its logo at its own pulse peak. Changing
+           src does not restart a running CSS animation. */
+        const brand = set[i % set.length];
+        swapTimeouts.push(setTimeout(() => {
+          img.src = brand.src;
+          img.style.width = `${brand.w}px`;
+          img.style.height = `${brand.h}px`;
+        }, delay + SWAP_RIPPLE_MS / 2));
+      });
+      /* Same-length sets (all current ones) are now fully swapped
+         in place; a future different-length set needs its geometry
+         normalised once the ripple is over. */
+      if (set.length !== currentSetLength) {
+        swapTimeouts.push(setTimeout(() => {
+          applySetToTrack(track, set);
+        }, SWAP_SWEEP_MS + SWAP_RIPPLE_MS));
+      }
+    });
     rows.forEach((r) => r.classList.add('is-swapping'));
     swapTimeouts.push(setTimeout(() => {
-      const key = targetKey;
-      const base = NETWORK_BRAND_SETS[key] ?? NETWORK_BRAND_SETS.all;
-      /* Random arrangement per industry swap (placeholder — see
-         shuffled()); the resting 'all' state keeps canonical order.
-         Each track gets its own shuffle so the rows differ too. */
-      tracks.forEach((t) => applySetToTrack(t, key === 'all' ? base : shuffled(base)));
-      currentKey = key;
-      /* The rect reads inside assignSweepDelays force the style/
-         layout pass that commits the fresh imgs at blur(12px) under
-         is-swapping (delay doesn't apply to an initial commit) —
-         then drop the class in the same tick: they un-blur FROM
-         blurred, left to right, with zero hold. */
-      assignSweepDelays();
       rows.forEach((r) => r.classList.remove('is-swapping'));
-      swapTimeouts.push(setTimeout(() => {
-        swapBusy = false;
-        pumpSwap();
-      }, SWAP_BLUR_MS + SWAP_SWEEP_MS));
-    }, SWAP_BLUR_MS + SWAP_SWEEP_MS));
+      currentSetLength = base.length;
+      currentKey = key;
+      swapBusy = false;
+      pumpSwap();
+    }, SWAP_SWEEP_MS + SWAP_RIPPLE_MS));
   };
 
   const activate = (term) => {

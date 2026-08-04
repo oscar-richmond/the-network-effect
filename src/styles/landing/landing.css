@@ -743,16 +743,22 @@
 	top: 767px;
 }
 
-/* The swap cover (Oscar's rev): only the LOGOS blur — the cells,
-   their frosted panels and the rows' motion stay exactly as they
-   are. 12px, 0.35s each way, page vocabulary; the set exchange
-   lands while the marks are fully blurred. */
-.landing-v2 .landing-network__cell img {
-	transition: filter 0.5s ease;
+/* The swap ripple (Oscar's rev): the CTAs' char-ripple vocabulary
+   scaled to the logo row — each cell's LOGO runs one blur pulse
+   (0 -> 12px -> 0, ease-in-out, "both" so the delayed cells hold
+   sharp until their turn), staggered left-to-right by on-screen
+   position (--cell-ripple-delay, set per-img by landing-network.js).
+   The logo is swapped at its own pulse peak, so the crest reveals
+   the new set as it travels. Panels, rows and motion untouched. */
+@keyframes landing-cell-ripple {
+	0% { filter: blur(0); }
+	50% { filter: blur(12px); }
+	100% { filter: blur(0); }
 }
 
 .landing-v2 .landing-network__marquee.is-swapping .landing-network__cell img {
-	filter: blur(12px);
+	animation: landing-cell-ripple 600ms ease-in-out both;
+	animation-delay: var(--cell-ripple-delay, 0ms);
 }
 
 .landing-v2 .landing-network__track {
