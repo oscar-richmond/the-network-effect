@@ -135,6 +135,59 @@ function refineHeadlineCentring(headlineText) {
   headlineText.style.marginTop = `${bandCentre}px`;
 }
 
+/**
+ * Baseline of a line box, in page coords: CSS centres the font's
+ * ascent+descent inside the line-height, so
+ * baseline = boxTop + (lineHeight - (ascent + descent)) / 2 + ascent.
+ * Metrics come from canvas for the element's computed font.
+ */
+function lineBaseline(boxTop, lineHeightPx, font) {
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = font;
+  const m = ctx.measureText('Hy');
+  const half = (lineHeightPx - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2;
+  return boxTop + half + m.fontBoundingBoxAscent;
+}
+
+/**
+ * Vertically aligns the copy block so its LAST line's baseline sits on
+ * the baseline of "POWERED BY ACCESS." (Oscar's rev). Horizontal
+ * position is untouched — only the translateY changes, as a measured
+ * delta added to the CSS -50%. Baselines, not box bottoms: the 48px
+ * and 16px lines carry very different descender space, so box-bottom
+ * alignment would visibly miss. Idempotent (resets the transform
+ * before measuring) — safe on every rebuild/resize.
+ */
+function alignIntroToHeadline(headlineText, introText) {
+  if (!(headlineText instanceof HTMLElement) || !(introText instanceof HTMLElement)) return;
+  const line2 = headlineText.querySelector('.landing-hero__headline-line--serrif');
+  if (!(line2 instanceof HTMLElement)) return;
+
+  introText.style.transform = 'translateY(-50%)';
+
+  const hcs = getComputedStyle(line2);
+  const targetBaseline = lineBaseline(
+    line2.getBoundingClientRect().top,
+    parseFloat(hcs.lineHeight),
+    `${hcs.fontWeight} ${hcs.fontSize} ${hcs.fontFamily}`,
+  );
+
+  /* The block's last line box ends at the block's content bottom, so
+     its baseline derives from the block rect regardless of whether the
+     lines are wrapped in reveal clips yet. */
+  const ics = getComputedStyle(introText);
+  const lh = parseFloat(ics.lineHeight);
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `${ics.fontWeight} ${ics.fontSize} ${ics.fontFamily}`;
+  const m = ctx.measureText('Hy');
+  const half = (lh - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2;
+  const currentBaseline =
+    introText.getBoundingClientRect().bottom - half - m.fontBoundingBoxDescent;
+
+  const delta = targetBaseline - currentBaseline;
+  introText.style.transform = `translateY(calc(-50% + ${delta.toFixed(2)}px))`;
+}
+
 /** @type {Lenis | null} */
 let lenis = null;
 
@@ -190,6 +243,10 @@ export function initLandingHeroScroll() {
     fontsReady.then(() => {
       if (disposed) return;
       refineHeadlineCentring(headlineText);
+      if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
+        introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
+        alignIntroToHeadline(headlineText, introText);
+      }
       if (headlineText instanceof HTMLElement) {
         const lines = headlineText.querySelectorAll('.landing-hero__headline-line');
         lines.forEach((line) => {
@@ -260,6 +317,7 @@ export function initLandingHeroScroll() {
 
     if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
       introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
+      alignIntroToHeadline(headlineText, introText);
 
       const introLines = wrapIntroLines(introText);
       /* wrapLineRevealElement leaves an inline `transition: transform`
