@@ -21,8 +21,8 @@ const MEDIA_AT_MS = 1040;
 /* ── Industry hover / logo swap (Oscar's rev) ─────────────────────
    Hovering (or keyboard-focusing) a sector term dims the rest of the
    list to 10% and swaps the carousels' logo set under a blur cover:
-   blur in (250ms) -> rebuild both tracks from the target set and
-   IMMEDIATELY blur out (250ms) — no hold at full blur: the fresh
+   blur in (500ms) -> rebuild both tracks from the target set and
+   IMMEDIATELY blur out (500ms) — no hold at full blur: the fresh
    logos are committed blurred (forced reflow) in the same tick the
    cover starts lifting. ONE persistent driver chases the LATEST target,
    so rapid hovers retarget cleanly — a new target simply becomes
@@ -33,7 +33,7 @@ const MEDIA_AT_MS = 1040;
    --marquee-set-w = the translate distance), so the seamless loop
    holds for any length. Carousels keep animating throughout — the
    var/DOM change lands mid-flight but under full blur. */
-const SWAP_BLUR_MS = 250;
+const SWAP_BLUR_MS = 500;
 const CELL_PITCH_PX = 192;
 
 /**
