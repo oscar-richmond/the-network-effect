@@ -85,6 +85,22 @@ const VIDEO_MARGIN_PX = 24;
 /** Lenis smoothing — the house value (see about-scroll.js). */
 const SCROLL_LERP = 0.065;
 
+/* ── Text exit wipe — PORTED from the /old hero's Phase C
+   (about-scroll.js), constants verbatim: as the covering element
+   rises over a text block, its lines blur+fade away bottom-up,
+   scrubbed so reverse scroll runs the wipe backwards to crisp. Here
+   the covering element is the VIDEO's top clip edge during its
+   expansion (the images played that role on the old hero). Each
+   block's window: covering edge at block.bottom + WIPE_LEAD (onset
+   just before arrival) -> covering edge at block.top (block fully
+   covered). */
+const EXIT_BLUR_PX = 10;
+/** Scroll-px of onset before the video's edge reaches the block. */
+const WIPE_LEAD = 120;
+/** Per-line stagger in timeline-seconds against 1s line durations —
+ * 0.5 gives the reference's overlapping, continuous bottom-up sweep. */
+const WIPE_STAGGER = 0.5;
+
 /**
  * Copy-leading bonus (Oscar's rev): the copy's line-height gets this
  * many px MORE than the equal-solve against the headline span, and
@@ -583,6 +599,92 @@ export function initLandingHeroScroll() {
       );
       tweens.push(tween);
       if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
+    }
+
+    /* ── Text exit wipes (see the ported constants above) ──────────
+       The video's clip-top travels bandTop -> 0 over the expansion
+       window with power1.inOut INSIDE the scrub, so mapping "edge at
+       screen y" to a scroll position inverts that ease analytically.
+       Two separate cascades, one per block (the reference's own
+       structure — each block wipes against its own rect); both key
+       to the same edge, so where the rects overlap they read as one
+       event. The wipes touch only opacity/filter: the travel tweens
+       own the lines' transforms and the reveal owns the .lr-inner
+       transforms, so the handoff from the travelled resting state is
+       seamless by construction (fromTo starts at exactly that state,
+       immediateRender false). No blends anywhere in this text — the
+       filters' stacking contexts sit on plain-ink lines inside the
+       hero stage. */
+    if (video instanceof HTMLElement) {
+      const bandTop = Math.round(vh * VIDEO_BAND_TOP_FRACTION);
+      const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
+
+      const invertPower1InOut = (e) =>
+        e < 0.5 ? Math.sqrt(e / 2) : 1 - Math.sqrt((1 - e) / 2);
+
+      /** Scroll position at which the video's top edge sits at screen y. */
+      const scrollWhenVideoTopAt = (y) => {
+        const clamped = Math.min(Math.max(y, 0), bandTop);
+        const eased = 1 - clamped / bandTop;
+        return videoStart + invertPower1InOut(eased) * VIDEO_EXPAND_PX;
+      };
+
+      /** @param {(HTMLElement)[]} lines bottom-most first */
+      const buildExitWipe = (lines, rect) => {
+        const groups = lines.filter((l) => l instanceof HTMLElement);
+        if (!groups.length) return;
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: spacer,
+            start: `top+=${scrollWhenVideoTopAt(rect.bottom + WIPE_LEAD)} top`,
+            end: `top+=${scrollWhenVideoTopAt(rect.top)} top`,
+            scrub: true,
+          },
+        });
+        groups.forEach((group, i) => {
+          tl.fromTo(
+            group,
+            { opacity: 1, filter: 'blur(0px)' },
+            {
+              opacity: 0,
+              filter: `blur(${EXIT_BLUR_PX}px)`,
+              ease: 'none',
+              duration: 1,
+              immediateRender: false,
+            },
+            i * WIPE_STAGGER,
+          );
+        });
+        tweens.push(tl);
+        if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
+        return tl;
+      };
+
+      if (headlineText instanceof HTMLElement) {
+        const headlineLines = Array.from(
+          headlineText.querySelectorAll('.landing-hero__headline-line'),
+        ).reverse();
+        buildExitWipe(headlineLines, headlineText.getBoundingClientRect());
+      }
+      if (introText instanceof HTMLElement) {
+        const introClips = Array.from(introText.querySelectorAll('.lr-clip')).reverse();
+        buildExitWipe(introClips, introText.getBoundingClientRect());
+      }
+
+      if (import.meta.env.DEV) {
+        window.__landingHeroWipe = {
+          bandTop,
+          headline: headlineText instanceof HTMLElement ? {
+            start: +scrollWhenVideoTopAt(headlineText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
+            end: +scrollWhenVideoTopAt(headlineText.getBoundingClientRect().top).toFixed(1),
+          } : null,
+          intro: introText instanceof HTMLElement ? {
+            start: +scrollWhenVideoTopAt(introText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
+            end: +scrollWhenVideoTopAt(introText.getBoundingClientRect().top).toFixed(1),
+          } : null,
+          videoWindow: [videoStart, videoStart + VIDEO_EXPAND_PX],
+        };
+      }
     }
 
     /* ── The runway ────────────────────────────────────────────────
