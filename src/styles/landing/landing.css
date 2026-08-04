@@ -89,10 +89,41 @@
 	color: #ffffff;
 	mix-blend-mode: difference;
 	pointer-events: auto;
+	/* "LET'S CHAT" + arrow (Oscar's rev): no underline, text and icon
+	   on one flex row with the specced 6px gap. The hover affordance
+	   is the base rule's opacity fade (.home__topbar-email:hover
+	   { opacity: 0.6 } in home.css) — it survives the underline
+	   removal and dims text + arrow together, since they are one
+	   element. */
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	text-decoration: none;
 }
 
 .landing-v2 .home__topbar--about .home__topbar-email:hover {
 	color: #ffffff;
+}
+
+/* 9x9: the measured cap height of the 12px Dazzed 400 label is
+   8.98px (canvas actualBoundingBoxAscent of its caps, fonts loaded) —
+   and 9px-for-12px-text is also the site's established arrow pairing.
+   flex centring against the 12px line box leaves sub-2px optical
+   margins; block display kills the inline-svg baseline gap. */
+.landing-v2 .home__topbar-email-arrow {
+	display: block;
+	width: 9px;
+	height: 9px;
+	flex-shrink: 0;
+}
+
+/* MENU (Oscar's rev): caps live in the markup; the underline that
+   menu.css puts on the resting label is removed here. NOTE, flagged
+   in the report: the toggle has never had a :hover rule — the
+   underline was its only static link affordance, so what remains is
+   the pointer cursor alone. */
+.landing-v2 .home__menu-toggle [data-menu-label-menu] {
+	text-decoration: none;
 }
 
 /* ── The fixed stage ─────────────────────────────────────────────────

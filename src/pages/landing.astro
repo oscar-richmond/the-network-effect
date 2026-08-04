@@ -31,7 +31,7 @@ import '../styles/fonts.css';
         aria-expanded="false"
         aria-controls="site-menu"
       >
-        <span data-menu-label-menu>menu</span>
+        <span data-menu-label-menu>MENU</span>
         <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
           <span class="home__menu-toggle-close-text">close</span>
           <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
@@ -39,8 +39,25 @@ import '../styles/fonts.css';
       </button>
     </nav>
     <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    {/* "LET'S CHAT" replaces the visible address (Oscar's rev) — the
+        mailto target is UNCHANGED. The arrow is Oscar's supplied SVG
+        inlined per his spec: fill="currentColor" (the asset's
+        hardcoded white fill stripped, its no-op full-rect clipPath
+        dropped) so text + arrow are ONE blended element that can
+        never desync under the nav's per-item difference treatment. */}
     <a class="home__topbar-email" href="mailto:hello@networkeffectagency.co.uk">
-      hello@networkeffectagency.co.uk
+      <span>LET’S CHAT</span>
+      <svg
+        class="home__topbar-email-arrow"
+        viewBox="0 0 300 300"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z"
+          fill="currentColor"
+        />
+      </svg>
     </a>
   </header>
 
