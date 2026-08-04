@@ -743,14 +743,15 @@
 	top: 767px;
 }
 
-/* The swap cover: both rows blur EQUALLY to 12px — the same frost
-   language as the cells themselves, one signal — while the set is
-   exchanged underneath, then clear. 0.35s each way, page vocabulary. */
-.landing-v2 .landing-network__marquee {
+/* The swap cover (Oscar's rev): only the LOGOS blur — the cells,
+   their frosted panels and the rows' motion stay exactly as they
+   are. 12px, 0.35s each way, page vocabulary; the set exchange
+   lands while the marks are fully blurred. */
+.landing-v2 .landing-network__cell img {
 	transition: filter 0.35s ease;
 }
 
-.landing-v2 .landing-network__marquee.is-swapping {
+.landing-v2 .landing-network__marquee.is-swapping .landing-network__cell img {
 	filter: blur(12px);
 }
 

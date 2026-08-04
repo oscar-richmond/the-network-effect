@@ -35,6 +35,22 @@ const SWAP_BLUR_MS = 350;
 const CELL_PITCH_PX = 192;
 
 /**
+ * PLACEHOLDER randomiser (Oscar's rev): until the real per-industry
+ * sets land, each industry swap shows a random arrangement of the
+ * full set so the change is VISIBLE; hover-out restores the
+ * canonical order. Becomes dead weight (and removable) once
+ * NETWORK_BRAND_SETS carries real per-industry arrays.
+ */
+function shuffled(set) {
+  const out = [...set];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/**
  * Exact-text line wrap: the shared wrapLineRevealElement splits a
  * line into words and rejoins them SINGLE-spaced — which destroys
  * the sector list's authored double spaces around its slashes
@@ -112,8 +128,11 @@ export function initLandingNetwork() {
     rows.forEach((r) => r.classList.add('is-swapping'));
     swapTimeouts.push(setTimeout(() => {
       const key = targetKey;
-      const set = NETWORK_BRAND_SETS[key] ?? NETWORK_BRAND_SETS.all;
-      tracks.forEach((t) => applySetToTrack(t, set));
+      const base = NETWORK_BRAND_SETS[key] ?? NETWORK_BRAND_SETS.all;
+      /* Random arrangement per industry swap (placeholder — see
+         shuffled()); the resting 'all' state keeps canonical order.
+         Each track gets its own shuffle so the rows differ too. */
+      tracks.forEach((t) => applySetToTrack(t, key === 'all' ? base : shuffled(base)));
       currentKey = key;
       swapTimeouts.push(setTimeout(() => {
         rows.forEach((r) => r.classList.remove('is-swapping'));
