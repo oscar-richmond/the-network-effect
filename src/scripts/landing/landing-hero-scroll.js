@@ -86,6 +86,18 @@ const VIDEO_MARGIN_PX = 24;
 const SCROLL_LERP = 0.065;
 
 /**
+ * Copy-leading bonus (Oscar's rev): the copy's line-height gets this
+ * many px MORE than the equal-solve against the headline span, and
+ * the paragraph gap shrinks to fund it — "by half, or as much as
+ * needed" — so the block still spans exactly from BUILT's cap top to
+ * POWERED's baseline. With 4 lines (3 steps) on a 24px base gap,
+ * +4px/step lands the gap at exactly half (12px). The gap floors at
+ * 0: if the bonus ever over-eats it, the pins win and the leading
+ * gives back the difference.
+ */
+const INTRO_LEADING_BONUS_PX = 4;
+
+/**
  * Wraps each <p> of the secondary copy into line-reveal clip spans,
  * resetting to the original markup first so a re-init on resize
  * re-measures the line breaks cleanly instead of double-wrapping.
@@ -182,6 +194,7 @@ function deriveIntroLineHeight(headlineText, introText) {
 
   introText.style.lineHeight = '';
   introText.style.removeProperty('--landing-copy-clip-pad');
+  if (paragraphs[1] instanceof HTMLElement) paragraphs[1].style.marginTop = '';
 
   const ctx = document.createElement('canvas').getContext('2d');
 
@@ -218,6 +231,21 @@ function deriveIntroLineHeight(headlineText, introText) {
     return pad;
   };
 
+  /* Leading bonus + gap trade (see INTRO_LEADING_BONUS_PX): given the
+     line count, bump the equal-solve leading by the bonus and shrink
+     the paragraph gap to keep the span; the gap is written inline so
+     the correction loop (fixed-gap) still converges on the pins. */
+  const applyLeadingTrade = (lhBase, lineCount) => {
+    let lh = lhBase + INTRO_LEADING_BONUS_PX;
+    let newGap = spanNeeded - cm.actualBoundingBoxAscent - (lineCount - 1) * lh;
+    if (newGap < 0) {
+      newGap = 0;
+      lh = (spanNeeded - cm.actualBoundingBoxAscent) / (lineCount - 1);
+    }
+    paragraphs[1].style.marginTop = `${newGap.toFixed(2)}px`;
+    return lh;
+  };
+
   const clips = Array.from(introText.querySelectorAll('.lr-clip'));
 
   if (clips.length >= 2) {
@@ -227,7 +255,10 @@ function deriveIntroLineHeight(headlineText, introText) {
        just measure-and-correct; converges in one step for a linear
        system, capped at three for safety. */
     const N = clips.length;
-    let lh = (spanNeeded - cm.actualBoundingBoxAscent - gap) / (N - 1);
+    let lh = applyLeadingTrade(
+      (spanNeeded - cm.actualBoundingBoxAscent - gap) / (N - 1),
+      N,
+    );
     for (let i = 0; i < 3; i += 1) {
       const pad = applyLh(lh);
       const half = (lh - fontBox) / 2;
@@ -248,7 +279,10 @@ function deriveIntroLineHeight(headlineText, introText) {
       (introText.getBoundingClientRect().height - gap) / baseLh,
     );
     if (lineCount < 2) return;
-    applyLh((spanNeeded - cm.actualBoundingBoxAscent - gap) / (lineCount - 1));
+    applyLh(applyLeadingTrade(
+      (spanNeeded - cm.actualBoundingBoxAscent - gap) / (lineCount - 1),
+      lineCount,
+    ));
   }
 }
 
