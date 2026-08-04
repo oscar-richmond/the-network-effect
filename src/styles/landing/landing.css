@@ -234,11 +234,13 @@
 
 .landing-v2 .landing-hero__headline-line {
 	margin: 0;
-	/* Oscar's spec: 48px, #161616, line 1 Dazzed Bold, line 2 Serrif
-	   Medium. Both weights are real loaded faces (Dazzed 700 and
-	   Serrif 500 — verified in the font stack), so no synthesis. */
-	font-size: 48px;
-	line-height: 1.1;
+	/* 40px/40 (Oscar's rev — was 48px/1.1). Line 1 Dazzed Bold,
+	   line 2 Serrif Medium, both real loaded faces, no synthesis.
+	   Every derived system downstream (band centring, travel deltas,
+	   the copy block's pinned leading) measures at runtime, so they
+	   re-derive from this size automatically. */
+	font-size: 40px;
+	line-height: 40px;
 	letter-spacing: -0.02em;
 	text-transform: uppercase;
 	color: var(--landing-ink);
@@ -425,19 +427,22 @@
 /* Headline: Dazzed Bold 48/48 #EEEEF0, 900px measure at x24. The
    block top is the file's container (y240 h188) with its rendered
    192px of lines centred (238). Line 1 carries the design's
-   editorial indent — the Figma text node's leading 20-space run,
-   206.4px at this font (canvas-measured), kept as a deliberate
-   design choice and made explicit here. */
+   editorial indent — the Figma text node's leading 20-space run
+   (canvas-measured at the current size; see the indent rule), kept
+   as a deliberate design choice and made explicit here. */
 .landing-v2 .landing-founders__headline {
 	position: absolute;
-	top: 238px;
+	/* Kept centred in the Figma container (y240 h188): 4 lines at 40
+	   = 160, so top = 240 + (188 - 160) / 2 (was 238 at 48/48). */
+	top: 254px;
 	left: 24px;
 	width: 900px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 700;
-	font-size: 48px;
-	line-height: 48px;
+	/* 40px/40 (Oscar's rev — the file drew this at 48/48). */
+	font-size: 40px;
+	line-height: 40px;
 	letter-spacing: normal;
 	text-transform: uppercase;
 	color: #eeeef0;
@@ -449,7 +454,9 @@
 }
 
 .landing-v2 .landing-founders__line--indent {
-	text-indent: 206.4px;
+	/* The design's 20-space run at the NEW 40px: space advances scale
+	   linearly with size (206.4 x 40/48 — canvas-verified). */
+	text-indent: 172px;
 }
 
 /* Buttons: #343439 ground, Dazzed Bold 16 white, 38px tall. The
