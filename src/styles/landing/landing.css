@@ -468,25 +468,92 @@
 .landing-v2 .landing-founders__btn {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	/* 7px = the Figma 8px gap scaled with the 16->14px label drop. */
+	gap: 7px;
 	height: 38px;
 	padding: 0 16px;
 	border: 0;
 	background: #343439;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 700;
-	font-size: 16px;
+	/* 14px (Oscar's rev — the file drew these at 16). Widths are
+	   natural (pads + gap + label), so they narrow accordingly. */
+	font-size: 14px;
 	line-height: 1;
 	text-transform: uppercase;
 	color: #ffffff;
 	cursor: pointer;
 }
 
+/* ── Hover: label roll + arrow nudge (Oscar-approved direction 1+2;
+   ground shift held in reserve if this reads too quiet). The roll is
+   the site's clip/inner mechanism: two stacked copies inside an
+   overflow-hidden clip, inner translates one line-height up. All
+   hover motion targets CHILDREN (inner, arrow) — never the button's
+   own opacity/transform, which the entrance reveal owns — so the two
+   can't fight. NOT gated behind (hover:hover)/(pointer:fine): Oscar's
+   machine misreports both, and the roll is harmless on touch (a tap
+   just plays it once). Keyboard parity via :focus-visible. */
+.landing-v2 .landing-founders__btn-clip {
+	display: block;
+	overflow: hidden;
+	/* Window exactly ONE label line (1em = the 14px line, lh 1) —
+	   without this the clip grows to fit both stacked copies and the
+	   duplicate shows below the label (measured 28px). */
+	height: 1em;
+}
+
+.landing-v2 .landing-founders__btn-inner {
+	display: block;
+}
+
+.landing-v2 .landing-founders__btn-inner > span {
+	display: block;
+	line-height: 1;
+}
+
+/* Arrow: box = the measured cap ink of the 14px label (canvas
+   actualBoundingBox of "T" at 700 14px Dazzed = 10.472px, zero
+   descent — same derivation as the nav arrow). The SVG's ink fills
+   its viewBox corner-to-corner, so box height IS glyph height. */
 .landing-v2 .landing-founders__btn-arrow {
 	display: block;
-	width: 12px;
-	height: 12px;
+	width: 10.472px;
+	height: 10.472px;
 	flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .landing-founders__btn-inner {
+		transition: transform 0.5s cubic-bezier(0.42, 0, 0.24, 1);
+	}
+
+	.landing-v2 .landing-founders__btn-arrow {
+		transition: transform 0.45s cubic-bezier(0.42, 0, 0.24, 1);
+	}
+
+	.landing-v2 .landing-founders__btn:hover .landing-founders__btn-inner,
+	.landing-v2 .landing-founders__btn:focus-visible .landing-founders__btn-inner {
+		/* One label line exactly (-100% would reference the two-copy
+		   inner's own height and overshoot by a line). */
+		transform: translateY(-1em);
+	}
+
+	/* 1.5px along the arrow's own diagonal (up-right). */
+	.landing-v2 .landing-founders__btn:hover .landing-founders__btn-arrow,
+	.landing-v2 .landing-founders__btn:focus-visible .landing-founders__btn-arrow {
+		transform: translate(1.5px, -1.5px);
+	}
+}
+
+/* Reduced motion: a non-animated state change instead of motion —
+   the ground lifts instantly (the held-in-reserve tone), no roll,
+   no nudge. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-founders__btn:hover,
+	.landing-v2 .landing-founders__btn:focus-visible {
+		background: #3f3f45;
+	}
 }
 
 /* Image windows — plain-rectangle masks in the file, replicated as
