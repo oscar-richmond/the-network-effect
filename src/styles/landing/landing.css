@@ -112,19 +112,22 @@
 	color: #ffffff;
 }
 
-/* 9x9: the measured cap height of the 12px Dazzed 400 label is
-   8.98px (canvas actualBoundingBoxAscent of its caps, fonts loaded) —
-   and 9px-for-12px-text is also the site's established arrow pairing.
-   flex centring against the 12px line box leaves sub-2px optical
-   margins; block display kills the inline-svg baseline gap. */
+/* Glyph-exact sizing (Oscar's rev, supersedes the earlier 9px + -2px
+   optical raise): the arrow matches the CAP-INK of the "T" in CHAT —
+   the letter itself, not its text box. Measured live at the link's
+   500 12px Dazzed: T ink is 8.976px tall with zero descent (canvas
+   actualBoundingBox of "T", fonts loaded), and against the flex
+   centring a -0.48px nudge puts the arrow's top and bottom exactly on
+   the T's own top and bottom (verified rects: both pairs equal to the
+   hundredth). The arrow's SVG ink fills its viewBox corner-to-corner,
+   so box height IS glyph height. */
 .landing-v2 .home__topbar-email-arrow {
 	display: block;
-	width: 9px;
-	height: 9px;
+	width: 8.976px;
+	height: 8.976px;
 	flex-shrink: 0;
-	/* 2px above true flex-centre (Oscar's optical rev). */
 	position: relative;
-	top: -2px;
+	top: -0.48px;
 }
 
 /* MENU (Oscar's rev): caps live in the markup; the underline that
