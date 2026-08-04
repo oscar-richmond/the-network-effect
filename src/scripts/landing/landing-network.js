@@ -21,8 +21,10 @@ const MEDIA_AT_MS = 1040;
 /* ── Industry hover / logo swap (Oscar's rev) ─────────────────────
    Hovering (or keyboard-focusing) a sector term dims the rest of the
    list to 10% and swaps the carousels' logo set under a blur cover:
-   blur in (350ms) -> rebuild both tracks from the target set ->
-   blur out (350ms). ONE persistent driver chases the LATEST target,
+   blur in (250ms) -> rebuild both tracks from the target set and
+   IMMEDIATELY blur out (250ms) — no hold at full blur: the fresh
+   logos are committed blurred (forced reflow) in the same tick the
+   cover starts lifting. ONE persistent driver chases the LATEST target,
    so rapid hovers retarget cleanly — a new target simply becomes
    where the next (or current, on completion) cycle settles; no
    stacked transitions, no half-swapped states. Set sizes may differ
@@ -31,7 +33,7 @@ const MEDIA_AT_MS = 1040;
    --marquee-set-w = the translate distance), so the seamless loop
    holds for any length. Carousels keep animating throughout — the
    var/DOM change lands mid-flight but under full blur. */
-const SWAP_BLUR_MS = 350;
+const SWAP_BLUR_MS = 250;
 const CELL_PITCH_PX = 192;
 
 /**
@@ -134,8 +136,13 @@ export function initLandingNetwork() {
          Each track gets its own shuffle so the rows differ too. */
       tracks.forEach((t) => applySetToTrack(t, key === 'all' ? base : shuffled(base)));
       currentKey = key;
+      /* Force a style/layout pass so the fresh imgs get an INITIAL
+         computed state of blur(12px) under is-swapping — then drop
+         the class in the same tick: they transition out from
+         blurred, and the un-blur starts with zero hold. */
+      void tracks[0]?.offsetWidth;
+      rows.forEach((r) => r.classList.remove('is-swapping'));
       swapTimeouts.push(setTimeout(() => {
-        rows.forEach((r) => r.classList.remove('is-swapping'));
         swapBusy = false;
         pumpSwap();
       }, SWAP_BLUR_MS));

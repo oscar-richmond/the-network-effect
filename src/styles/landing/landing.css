@@ -748,7 +748,7 @@
    are. 12px, 0.35s each way, page vocabulary; the set exchange
    lands while the marks are fully blurred. */
 .landing-v2 .landing-network__cell img {
-	transition: filter 0.35s ease;
+	transition: filter 0.25s ease;
 }
 
 .landing-v2 .landing-network__marquee.is-swapping .landing-network__cell img {
