@@ -99,6 +99,13 @@
 	align-items: center;
 	gap: 6px;
 	text-decoration: none;
+	/* Typographic parity with MENU (Oscar's rev): the base email rule
+	   carries 400 / 0.03em / lh 1, while the menu-cta is 500 / normal /
+	   lh 1.333 — matched here so the two ends of the bar read as one
+	   system. */
+	font-weight: 500;
+	letter-spacing: normal;
+	line-height: 1.333;
 }
 
 .landing-v2 .home__topbar--about .home__topbar-email:hover {
@@ -115,6 +122,9 @@
 	width: 9px;
 	height: 9px;
 	flex-shrink: 0;
+	/* 2px above true flex-centre (Oscar's optical rev). */
+	position: relative;
+	top: -2px;
 }
 
 /* MENU (Oscar's rev): caps live in the markup; the underline that
