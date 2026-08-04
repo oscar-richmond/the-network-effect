@@ -33,8 +33,14 @@ gsap.registerPlugin(ScrollTrigger);
 /** Scroll px over which the headline travels from centre to rest. */
 const HEADLINE_MOVE_PX = 400;
 
-/** Headline's resting left edge, in px, at the 1728 design width. */
-const HEADLINE_REST_LEFT = 290;
+/**
+ * The travelled headline's final left margin (Oscar's rev — was a
+ * 290px rest-left). BOTH lines end at this x: each line gets its own
+ * x tween over the same scroll range, so the centre-aligned pair
+ * converges into a left-aligned stack DURING the travel — one
+ * continuous motion, no mid-flight alignment switch to snap.
+ */
+const HEADLINE_LEFT_MARGIN = 24;
 
 /** Scroll px consumed per revealed line of the secondary copy. */
 const REVEAL_LINE_PX = 130;
@@ -64,23 +70,14 @@ const VIDEO_EXPAND_PX = 700;
 const VIDEO_HOLD_PX = 300;
 
 /**
- * Clear air between the bottom of the centred headline and the top of
- * the video band, at rest. The band's top is DERIVED from the measured
- * headline rather than set as a fraction of viewport height: a fixed
- * fraction (0.55vh) put the band's edge straight through "POWERED BY
- * ACCESS." at 1728x1000 — the two-line headline is ~105px tall and
- * centred, so its lower edge and a 55% band edge land on top of each
- * other. Measuring means the gap holds at any viewport height.
+ * The video band's top edge as a fraction of viewport height. This is
+ * now INDEPENDENT of the headline (previously it was derived from the
+ * headline's bottom edge — but Oscar's centring rev makes the headline
+ * centre against the video, so that derivation would be circular).
+ * 0.625 reproduces the previous rendered geometry at 1728x1000
+ * exactly (625px), so the video's opening state is unchanged there.
  */
-const VIDEO_BAND_GAP = 72;
-
-/**
- * Floor for the opening band's visible height. Guards the measured
- * band-top above: on a short viewport, headline-bottom + gap could push
- * the band down to a sliver (or off-screen entirely), so it is never
- * allowed to start lower than this many px from the bottom.
- */
-const VIDEO_BAND_MIN_HEIGHT = 240;
+const VIDEO_BAND_TOP_FRACTION = 0.625;
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
@@ -116,6 +113,26 @@ function wrapIntroLines(introTextEl) {
  * GSAP interpolates a single consistent format cleanly). */
 function insetPx(top, right, bottom, left) {
   return `inset(${top}px ${right}px ${bottom}px ${left}px)`;
+}
+
+/**
+ * Vertically centres the headline block in the band between the nav
+ * bar's measured bottom edge and the video band's top (Oscar's rev —
+ * not viewport centring). CSS carries a calc() approximation of the
+ * same midpoint for first paint; this refines it from the MEASURED
+ * rects so it holds if either element moves, and the resize rebuild
+ * re-derives it. The block keeps its CSS translateY(-50%), so only
+ * the midpoint needs computing here.
+ */
+function refineHeadlineCentring(headlineText) {
+  if (!(headlineText instanceof HTMLElement)) return;
+  const topbar = document.querySelector('.home__topbar');
+  const navBottom = topbar instanceof HTMLElement
+    ? topbar.getBoundingClientRect().bottom
+    : 0;
+  const videoTop = Math.round(window.innerHeight * VIDEO_BAND_TOP_FRACTION);
+  const bandCentre = navBottom + (videoTop - navBottom) / 2;
+  headlineText.style.marginTop = `${bandCentre}px`;
 }
 
 /** @type {Lenis | null} */
@@ -172,9 +189,14 @@ export function initLandingHeroScroll() {
     let disposed = false;
     fontsReady.then(() => {
       if (disposed) return;
+      refineHeadlineCentring(headlineText);
       if (headlineText instanceof HTMLElement) {
-        const restLeft = headlineText.getBoundingClientRect().left;
-        gsap.set(headlineText, { x: HEADLINE_REST_LEFT - restLeft });
+        const lines = headlineText.querySelectorAll('.landing-hero__headline-line');
+        lines.forEach((line) => {
+          if (!(line instanceof HTMLElement)) return;
+          gsap.set(line, { x: 0 });
+          gsap.set(line, { x: HEADLINE_LEFT_MARGIN - line.getBoundingClientRect().left });
+        });
       }
       intro?.classList.add('is-armed');
     });
@@ -192,33 +214,40 @@ export function initLandingHeroScroll() {
   const build = () => {
     const vh = window.innerHeight;
 
-    /* ── Beat 1: the headline slides to its rest position ──────────
-       Measured, not assumed: the block is centred by flexbox, so its
-       travel is the difference between where it currently sits and the
-       target — which keeps the rest position exact at any width. */
+    /* ── Beat 1: travel left AND converge to a left-aligned stack ──
+       (Oscar's rev.) Each LINE gets its own x tween to the shared
+       24px target over the SAME scroll range: the wider line travels
+       less, the narrower line travels more, and both arrive together
+       — so the centre-aligned pair resolves into a left-aligned stack
+       continuously DURING the travel. No text-align switch, nothing
+       to snap. Deltas are measured from each line's rendered left
+       edge (x reset first), so the end state is exact at any width. */
     let sequenceEnd = 0;
 
     if (headlineText instanceof HTMLElement) {
-      gsap.set(headlineText, { x: 0 });
-      const restLeft = headlineText.getBoundingClientRect().left;
-      const moveDeltaX = HEADLINE_REST_LEFT - restLeft;
+      refineHeadlineCentring(headlineText);
+      const lines = Array.from(
+        headlineText.querySelectorAll('.landing-hero__headline-line'),
+      ).filter((el) => el instanceof HTMLElement);
 
-      const tween = gsap.fromTo(
-        headlineText,
-        { x: 0 },
-        {
-          x: moveDeltaX,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: spacer,
-            start: 'top top',
-            end: `top+=${HEADLINE_MOVE_PX} top`,
-            scrub: true,
-          },
-        },
+      lines.forEach((line) => gsap.set(line, { x: 0 }));
+      const deltas = lines.map(
+        (line) => HEADLINE_LEFT_MARGIN - line.getBoundingClientRect().left,
       );
-      tweens.push(tween);
-      if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: spacer,
+          start: 'top top',
+          end: `top+=${HEADLINE_MOVE_PX} top`,
+          scrub: true,
+        },
+      });
+      lines.forEach((line, i) => {
+        tl.fromTo(line, { x: 0 }, { x: deltas[i], ease: 'none', duration: 1 }, 0);
+      });
+      tweens.push(tl);
+      if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
 
       sequenceEnd = HEADLINE_MOVE_PX;
     }
@@ -284,17 +313,7 @@ export function initLandingHeroScroll() {
     let videoEnd = revealEnd;
 
     if (video instanceof HTMLElement) {
-      /* Band top: below the headline by VIDEO_BAND_GAP, but never so
-         low that the opening band collapses to a sliver. Measured with
-         the headline at x=0 (build() resets it), so this is its resting
-         centred geometry regardless of scroll position at rebuild. */
-      const headlineBottom =
-        headlineText instanceof HTMLElement
-          ? headlineText.getBoundingClientRect().bottom
-          : vh * 0.55;
-      const bandTop = Math.round(
-        Math.min(headlineBottom + VIDEO_BAND_GAP, vh - VIDEO_BAND_MIN_HEIGHT),
-      );
+      const bandTop = Math.round(vh * VIDEO_BAND_TOP_FRACTION);
       const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
       videoEnd = videoStart + VIDEO_EXPAND_PX;
 
@@ -333,6 +352,19 @@ export function initLandingHeroScroll() {
        tab freezes. Never shipped: stripped from production builds. */
     if (import.meta.env.DEV) {
       window.__landingHero = {
+        derived: (() => {
+          const topbar = document.querySelector('.home__topbar');
+          const navBottom = topbar ? topbar.getBoundingClientRect().bottom : 0;
+          const videoTop = Math.round(vh * VIDEO_BAND_TOP_FRACTION);
+          return {
+            navBottom,
+            videoTop,
+            bandCentre: navBottom + (videoTop - navBottom) / 2,
+            headlineMarginTop: headlineText instanceof HTMLElement
+              ? headlineText.style.marginTop
+              : null,
+          };
+        })(),
         beats: {
           headlineEnd: HEADLINE_MOVE_PX,
           revealEnd,

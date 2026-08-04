@@ -172,13 +172,23 @@
 }
 
 /* ── Headline ────────────────────────────────────────────────────────
-   Starts centred in the viewport; the scroll module tweens `x` on the
-   inner text block to bring its left edge to --landing-rest-x. */
+   RESTS vertically centred in the band between the nav bar's bottom
+   edge and the video's top edge (Oscar's rev — NOT viewport-centred).
+   This calc is the no-JS/first-paint approximation of that midpoint:
+   nav height is the topbar's own formula (2 x margin-y + 1.125rem)
+   and 62.5dvh is the video band top; translateY(-50%) centres the
+   block on that line. The scroll module then REFINES margin-top from
+   the MEASURED nav and video rects on init and every resize rebuild,
+   so the derivation holds if either element moves.
+
+   On scroll, the module tweens each LINE's own x (not the block) so
+   the two centre-aligned lines converge into a left-aligned stack as
+   they travel — see landing-hero-scroll.js. */
 .landing-v2 .landing-hero__headline {
 	position: absolute;
 	inset: 0;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: center;
 	padding: 0 var(--landing-video-margin);
 	z-index: 100;
@@ -190,6 +200,10 @@
 	flex-direction: column;
 	align-items: center;
 	margin: 0;
+	margin-top: calc(
+		(var(--home-margin-y, 32px) * 2 + 1.125rem) / 2 + 62.5dvh / 2
+	);
+	transform: translateY(-50%);
 	text-align: center;
 }
 
@@ -291,10 +305,10 @@
 	z-index: 120;
 	pointer-events: none;
 	/* Opening band: full width less the 24px side margins, running off
-	   the bottom edge. This 62% is only the pre-JS resting state — the
-	   real top edge is MEASURED from the headline's lower edge on init
-	   (see landing-hero-scroll.js) so the band always clears the type. */
-	clip-path: inset(62% var(--landing-video-margin) 0px var(--landing-video-margin));
+	   the bottom edge. 62.5dvh matches the module's independent band
+	   top (the headline now centres against the video, so the band can
+	   no longer be derived FROM the headline — that would be circular). */
+	clip-path: inset(62.5% var(--landing-video-margin) 0px var(--landing-video-margin));
 }
 
 /* ── Film grain ──────────────────────────────────────────────────────
