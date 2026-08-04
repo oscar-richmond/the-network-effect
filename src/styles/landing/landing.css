@@ -560,7 +560,8 @@
 	left: 24px;
 	bottom: 24px;
 	font-family: 'Serrif', serif;
-	font-weight: 500;
+	/* Light 300 (Oscar's rev — was Medium 500). */
+	font-weight: 300;
 	font-synthesis: none;
 	font-size: 32px;
 	line-height: 1;
