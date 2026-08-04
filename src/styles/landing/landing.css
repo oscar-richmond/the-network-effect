@@ -573,6 +573,11 @@
 
 .landing-v2 .landing-founders__portrait:hover .landing-founders__portrait-name {
 	opacity: 1;
+	/* Instant container show — the ENTRANCE belongs to the per-char
+	   blur-in (char-ripple "in" mode; chars hold hidden through their
+	   stagger via fill-both), so a container fade here would double
+	   it. The base transition still runs the fade-OUT on leave. */
+	transition: none;
 }
 
 /* Hovering either portrait dims the OTHER to 20% (:has reaches the

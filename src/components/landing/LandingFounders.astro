@@ -103,19 +103,25 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
   <figure
     class="landing-founders__portrait landing-founders__portrait--robbo"
     data-landing-founders-img
+    data-char-ripple-trigger
   >
     <span class="landing-founders__portrait-crop">
       <img src={robboPortrait} alt="" loading="lazy" decoding="async" />
     </span>
-    <span class="landing-founders__portrait-name" aria-hidden="true">Robbo McCullum</span>
+    <span class="landing-founders__portrait-name" aria-hidden="true" data-char-ripple="in"
+      >Robbo McCullum</span
+    >
   </figure>
   <figure
     class="landing-founders__portrait landing-founders__portrait--ashley"
     data-landing-founders-img
+    data-char-ripple-trigger
   >
     <span class="landing-founders__portrait-crop">
       <img src={ashleyPortrait} alt="" loading="lazy" decoding="async" />
     </span>
-    <span class="landing-founders__portrait-name" aria-hidden="true">Ashley Walters</span>
+    <span class="landing-founders__portrait-name" aria-hidden="true" data-char-ripple="in"
+      >Ashley Walters</span
+    >
   </figure>
 </section>

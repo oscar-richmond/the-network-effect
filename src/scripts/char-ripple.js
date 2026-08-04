@@ -10,6 +10,14 @@
  * after the last character, so the blur runs across the text and
  * then through the arrow.
  *
+ * MODES: the bare attribute is the PULSE (blur 0 -> 3px -> 0 on
+ * already-visible text). `data-char-ripple="in"` is the BLUR-IN
+ * (each character appears as its blur clears: opacity 0 + 3px ->
+ * visible + sharp, same duration/stagger, fill both so a character
+ * holds hidden through its stagger delay and stays visible after) —
+ * used by the founders portrait names, whose container hover-shows
+ * instantly and fades out on leave.
+ *
  * THE EFFECT (from the reference implementation): each character
  * blurs 0 -> 3px -> 0 over 0.6s ease-in-out, staggered 0.04s per
  * character index, one iteration — a pure blur sweep, no fade, no
@@ -80,10 +88,17 @@ function ensureStyles() {
     [data-char-ripple-arrow].is-rippling {
       animation: cr-blur var(--char-ripple-duration, 0.6s) ease-in-out 1;
     }
+    .cr-char.is-rippling-in {
+      animation: cr-blur-in var(--char-ripple-duration, 0.6s) ease-in-out 1 both;
+    }
     @keyframes cr-blur {
       0% { filter: blur(0); }
       50% { filter: blur(var(--char-ripple-blur, 3px)); }
       100% { filter: blur(0); }
+    }
+    @keyframes cr-blur-in {
+      0% { opacity: 0; filter: blur(var(--char-ripple-blur, 3px)); }
+      100% { opacity: 1; filter: blur(0); }
     }
   `;
   document.head.appendChild(css);
@@ -129,6 +144,8 @@ export function initCharRipple(root = document) {
 
     const trigger = el.closest('[data-char-ripple-trigger]') ?? el;
     const spans = Array.from(charBox.children);
+    const rippleClass =
+      el.dataset.charRipple === 'in' ? 'is-rippling-in' : 'is-rippling';
 
     /* A trailing icon that opted in rides the same sweep, one stagger
        slot after the final character. Being a child of the trigger
@@ -141,9 +158,9 @@ export function initCharRipple(root = document) {
     }
 
     const onEnter = () => {
-      spans.forEach((s) => s.classList.remove('is-rippling'));
+      spans.forEach((s) => s.classList.remove(rippleClass));
       void charBox.offsetWidth;
-      spans.forEach((s) => s.classList.add('is-rippling'));
+      spans.forEach((s) => s.classList.add(rippleClass));
     };
 
     trigger.addEventListener('mouseenter', onEnter);
