@@ -2,13 +2,15 @@
 
 /** @type {MenuLink[]} */
 export const menuLinks = [
-  // About points at the root landing page (the former /about-3, now
-  // served at "/" — root-landing move; /about-3 redirects there). The
+  // About points at /old — the archived full-site landing (the former
+  // /about-3, which was at "/" until the rebuild-phase archive). The
+  // root now serves the holding page, so this link must NOT be "" or
+  // the site's own nav would send visitors to the holding page. The
   // old home, /about, and /about-2 are hidden (underscore-prefixed page
   // files, kept intact for component reuse). Services goes to the
   // standalone partners-wheel page. Founders still 404s (pre-existing,
-  // unbuilt).
-  { href: '', label: 'About', image: 'about.png' },
+  // unbuilt). The holding routes do not use this menu at all.
+  { href: 'old', label: 'About', image: 'about.png' },
   { href: 'founders', label: 'Founders', image: 'team.png' },
   { href: 'services', label: 'Services', image: 'services.jpg' },
 ];

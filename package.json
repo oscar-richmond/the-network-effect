@@ -9,7 +9,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "stage": "./scripts/stage.sh"
   },
   "dependencies": {
     "@vercel/edge": "^1.3.1",

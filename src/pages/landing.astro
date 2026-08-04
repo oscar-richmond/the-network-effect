@@ -1,0 +1,67 @@
+---
+/**
+ * /landing — THE NEW SITE, in development.
+ *
+ * A fresh page: hero only, nothing beyond it. It shares the visual
+ * system with the archived build (ground, grain, top nav, Lenis/GSAP
+ * scroll architecture) but not its files — everything here is scoped to
+ * the `landing-v2` body class and lives under src/{components,styles,
+ * scripts}/landing/. Nothing on this page touches /old, /services or
+ * the holding routes.
+ *
+ * STAGING ONLY. The root serves the holding page; this route is not
+ * promoted anywhere until Oscar says so. See docs/ENVIRONMENTS.md.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LandingHero from '../components/landing/LandingHero.astro';
+import Menu from '../components/Menu.astro';
+import '../styles/home.css';
+import '../styles/landing/landing.css';
+import '../styles/fonts.css';
+---
+
+<BaseLayout title="The Network Effect" bodyClass="landing-v2" htmlClass="js">
+  {/* Top nav — the existing chrome and menu behaviour, unchanged. */}
+  <header class="home__topbar home__topbar--about">
+    <nav class="home__menu-cta" aria-label="Site">
+      <button
+        type="button"
+        class="home__menu-toggle"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-controls="site-menu"
+      >
+        <span data-menu-label-menu>menu</span>
+        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
+          <span class="home__menu-toggle-close-text">close</span>
+          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
+        </span>
+      </button>
+    </nav>
+    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    <a class="home__topbar-email" href="mailto:hello@networkeffectagency.co.uk">
+      hello@networkeffectagency.co.uk
+    </a>
+  </header>
+
+  <LandingHero />
+
+  <Menu />
+
+  {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
+  <div class="landing-grain" aria-hidden="true"></div>
+</BaseLayout>
+
+<script>
+  import { initLandingHeroScroll } from '../scripts/landing/landing-hero-scroll.js';
+
+  let cleanupLandingHero = initLandingHeroScroll();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupLandingHero();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupLandingHero = initLandingHeroScroll();
+  });
+</script>

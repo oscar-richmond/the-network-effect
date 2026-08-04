@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════════════════════════════
+   NEW LANDING PAGE (rebuild phase) — hero only.
+
+   Everything here is scoped to `.landing-v2`, a body class used by no
+   other route. Nothing in this file can reach /old, /services or the
+   holding pages, and nothing in their stylesheets reaches this page:
+   the rebuild starts clean, per the plan.
+
+   Ground, grain, type and hero geometry are lifted from the /about-3
+   hero so the new page sits in the same visual system — but as its own
+   copy, not a shared dependency, so tuning this page can never regress
+   the archived one.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.landing-v2 {
+	--landing-ground: #eeeef0;
+	--landing-ink: #161616;
+	/* The side margin the video opens FROM (Oscar's spec). */
+	--landing-video-margin: 24px;
+	/* Where the headline comes to rest, and where the secondary copy
+	   sits from the right — the old hero's 290px at 1728, kept so the
+	   two pages read as one system. */
+	--landing-rest-x: 290px;
+
+	margin: 0;
+	background: var(--landing-ground);
+	color: var(--landing-ink);
+}
+
+/* ── The fixed stage ─────────────────────────────────────────────────
+   Same pattern as .about-hero: pinned by position, not by ScrollTrigger,
+   so there is no pin-spacer to fight and no layout thrash on refresh. */
+.landing-v2 .landing-hero {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	z-index: 250;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.landing-v2 .landing-hero__bg {
+	position: absolute;
+	inset: 0;
+	background: var(--landing-ground);
+	z-index: 0;
+}
+
+/* ── The scroll runway ───────────────────────────────────────────────
+   Empty by design: it exists only to give the document the height the
+   scrubbed triggers need. landing-hero-scroll.js writes its height. */
+.landing-v2 .landing-hero-spacer {
+	position: relative;
+	width: 100%;
+	/* Provisional — replaced by the measured value on init. Keeps the
+	   page scrollable if JS fails. */
+	height: 300vh;
+}
+
+/* ── Headline ────────────────────────────────────────────────────────
+   Starts centred in the viewport; the scroll module tweens `x` on the
+   inner text block to bring its left edge to --landing-rest-x. */
+.landing-v2 .landing-hero__headline {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 var(--landing-video-margin);
+	z-index: 100;
+	pointer-events: none;
+}
+
+.landing-v2 .landing-hero__headline-text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 0;
+	text-align: center;
+}
+
+.landing-v2 .landing-hero__headline-line {
+	margin: 0;
+	/* Oscar's spec: 48px, #161616, line 1 Dazzed Bold, line 2 Serrif
+	   Medium. Both weights are real loaded faces (Dazzed 700 and
+	   Serrif 500 — verified in the font stack), so no synthesis. */
+	font-size: 48px;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+	color: var(--landing-ink);
+}
+
+.landing-v2 .landing-hero__headline-line--dazzed {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-synthesis: none;
+}
+
+.landing-v2 .landing-hero__headline-line--serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+/* ── Secondary copy ──────────────────────────────────────────────────
+   Mirrors the headline's rest position on the opposite side, exactly as
+   the old hero does. Hidden until the scroll module has wrapped its
+   lines — closes the first-paint flash window where unwrapped text
+   would show complete before the reveal takes over. */
+.landing-v2 .landing-hero__intro {
+	position: absolute;
+	inset: 0;
+	z-index: 100;
+	pointer-events: none;
+	visibility: hidden;
+}
+
+.landing-v2 .landing-hero__intro.is-armed {
+	visibility: visible;
+}
+
+.landing-v2 .landing-hero__intro-text {
+	position: absolute;
+	top: 50%;
+	right: var(--landing-rest-x);
+	transform: translateY(-50%);
+	margin: 0;
+	/* Oscar's spec: Serrif Medium 16px. */
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--landing-ink);
+}
+
+.landing-v2 .landing-hero__intro-text p {
+	margin: 0;
+}
+
+.landing-v2 .landing-hero__intro-text p + p {
+	margin-top: 24px;
+}
+
+/* ── Video ───────────────────────────────────────────────────────────
+   THE KEY DECISION: the video element is ALWAYS laid out at full
+   viewport size with object-fit:cover, and the opening band is produced
+   by CLIPPING it — `clip-path: inset(top right bottom left)`. The
+   scroll then animates only that inset.
+
+   Why clip rather than resizing the box (width/top/height):
+     - resizing a <video> re-runs layout AND re-derives the object-fit
+       cover box every frame, which is exactly where this kind of
+       gesture goes gritty;
+     - clip-path is compositor-friendly and leaves the decoded frame
+       untouched, so the footage does not swim or re-scale as the frame
+       opens — the shot stays locked while more of it is revealed;
+     - the geometry falls out for free: driving the TOP inset from its
+       opening value to 0 moves the visible band's centre onto the
+       viewport centre at precisely the moment the band fills the
+       screen, which is the "arrives centred as it covers everything"
+       the brief asks for.
+
+   The initial inset is written by JS in px (never mixed units — GSAP
+   interpolates a single consistent format cleanly) and re-derived on
+   resize. The value here is only a sane pre-JS resting state.
+
+   z-index above the text: the expansion is meant to take the screen,
+   so the copy passes behind it rather than sitting on top. */
+.landing-v2 .landing-hero__video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: 120;
+	pointer-events: none;
+	/* Opening band: full width less the 24px side margins, running off
+	   the bottom edge. This 62% is only the pre-JS resting state — the
+	   real top edge is MEASURED from the headline's lower edge on init
+	   (see landing-hero-scroll.js) so the band always clears the type. */
+	clip-path: inset(62% var(--landing-video-margin) 0px var(--landing-video-margin));
+}
+
+/* ── Film grain ──────────────────────────────────────────────────────
+   Ported from the /about-3 overlay, same texture and same reasoning:
+   a childless last-in-body sibling — never an ancestor of anything —
+   compositing NORMALLY (no mix-blend-mode) so it can never re-tint a
+   blended element beneath it. z 9000 sits above the hero stage (250)
+   and below the canvas cursor (9999). Motion is a stepped transform
+   animation: the grain DANCES, it never slides. */
+.landing-v2 .landing-grain {
+	--landing-grain-opacity: 0.05;
+	position: fixed;
+	inset: -50%;
+	width: 200%;
+	height: 200%;
+	background: url('/assets/grain.png') repeat;
+	opacity: var(--landing-grain-opacity);
+	pointer-events: none;
+	z-index: 9000;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .landing-grain {
+		animation: landing-grain-jitter 1s infinite;
+		animation-timing-function: steps(1, end);
+	}
+}
+
+/* Ten scattered stops (percentages of the 200% layer — ±10% keeps the
+   -50% overscan safely covering the viewport at every stop). */
+@keyframes landing-grain-jitter {
+	0% { transform: translate(0, 0); }
+	10% { transform: translate(-5%, -5%); }
+	20% { transform: translate(-10%, 5%); }
+	30% { transform: translate(5%, -10%); }
+	40% { transform: translate(-5%, 10%); }
+	50% { transform: translate(-10%, 5%); }
+	60% { transform: translate(10%, 0); }
+	70% { transform: translate(0, 10%); }
+	80% { transform: translate(-10%, 0); }
+	90% { transform: translate(10%, 5%); }
+	100% { transform: translate(5%, 0); }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────
+   House philosophy: keep the STATES, remove the MOTION. The scroll
+   module skips every scrubbed trigger under `reduce` and renders the
+   sequence's END state — headline at rest, copy fully visible, video
+   open — so the page reads complete and static rather than empty. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-hero__video {
+		clip-path: inset(0px 0px 0px 0px);
+	}
+
+	.landing-v2 .landing-hero-spacer {
+		height: 100vh;
+	}
+}

@@ -1,0 +1,84 @@
+---
+/**
+ * NEW LANDING HERO (rebuild phase) — hero only, nothing beyond it.
+ *
+ * Structure is the house pattern, taken from the /about-3 hero
+ * (AboutHero + about-scroll.js Phase 0) rather than reinvented:
+ *
+ *   .landing-hero          fixed full-viewport STAGE — never scrolls,
+ *                          everything visible lives here
+ *   .landing-hero-spacer   the scroll RUNWAY — an empty in-flow block
+ *                          whose height JS computes from the sequence's
+ *                          total scroll distance. Scrolling it is what
+ *                          drives every scrubbed trigger; the stage
+ *                          itself stays pinned without a GSAP pin.
+ *
+ * The two text blocks mirror the old hero exactly: the headline starts
+ * centred and slides left to rest at x=290, and the secondary paragraph
+ * sits at right:290 and reveals line by line as the headline settles.
+ * Same geometry, same reveal technique (line-reveal.js clip spans).
+ *
+ * The video replaces the old hero's three bleeding image cards. It is a
+ * FIXED, full-viewport element that is CLIPPED down to its opening
+ * band — see landing.css and landing-hero-scroll.js for why the
+ * expansion is a clip-path animation rather than a box resize.
+ *
+ * PLACEHOLDER ASSET: the video src below is a stand-in from the
+ * existing library. Oscar is supplying the real file — swapping it is
+ * this one line (plus the poster, if he sends one).
+ */
+import { asset } from '../../utils/asset.js';
+
+const heroVideo = asset('/assets/videos/louis-vuitton.mp4');
+---
+
+<div class="landing-hero" data-landing-hero aria-hidden="true">
+  <div class="landing-hero__bg"></div>
+
+  {/* HEADLINE — starts centred, slides left. Two lines, two families:
+      line 1 Dazzed Bold, line 2 Serrif Medium, both 48px #161616. */}
+  <div class="landing-hero__headline" data-landing-hero-headline>
+    <div class="landing-hero__headline-text" data-landing-hero-headline-text>
+      <p class="landing-hero__headline-line landing-hero__headline-line--dazzed">
+        BUILT ON TRUST.
+      </p>
+      <p class="landing-hero__headline-line landing-hero__headline-line--serrif">
+        POWERED BY ACCESS.
+      </p>
+    </div>
+  </div>
+
+  {/* SECONDARY COPY — revealed line by line once the headline has
+      moved. Hidden from first paint until the scroll module has
+      wrapped its lines (same flash-guard as the old hero). */}
+  <div class="landing-hero__intro" data-landing-hero-intro>
+    <div class="landing-hero__intro-text" data-landing-hero-intro-text>
+      <p>
+        Nearly 20 years building global relationships meets 30 years at the
+        heart of music, film and television.
+      </p>
+      <p>
+        Together, the network effect combines deep cultural credibility with
+        trusted access and strategic relationships.
+      </p>
+    </div>
+  </div>
+
+  {/* VIDEO — always laid out full-viewport; what changes on scroll is
+      the CLIP, not the box. See landing.css. */}
+  <video
+    class="landing-hero__video"
+    data-landing-hero-video
+    src={heroVideo}
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    aria-hidden="true"
+  ></video>
+</div>
+
+{/* The runway. Height is set by landing-hero-scroll.js from the
+    measured sequence length — never hard-coded here. */}
+<div class="landing-hero-spacer" data-landing-hero-spacer aria-hidden="true"></div>
