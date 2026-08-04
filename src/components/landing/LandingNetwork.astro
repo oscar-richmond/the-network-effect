@@ -37,6 +37,18 @@ const strip = [
 
 /** The set is rendered twice per row for the seamless wrap. */
 const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
+
+/* The sector lines, authored double spaces around each slash. They
+   reach the DOM verbatim (expression strings; white-space: pre) and
+   the reveal preserves them because these lines get an EXACT-TEXT
+   wrap in landing-network.js — the shared word-splitting wrap
+   normalises all whitespace runs (including NBSP) to single spaces,
+   measured twice the hard way. */
+const sectors = [
+  'Talent  /  Hospitality  /  TV & Film  /  Music',
+  'Luxury  /  Fashion  /  Food & Beverage  /  Sports',
+  'Production  /  Founders  /  Cultural Operators',
+];
 ---
 
 <section class="landing-network" data-landing-network aria-label="Our network">
@@ -52,9 +64,7 @@ const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
   </p>
 
   <p class="landing-network__body" data-landing-network-body>
-    <span class="landing-network__line">Talent  /  Hospitality  /  TV &amp; Film  /  Music</span>
-    <span class="landing-network__line">Luxury  /  Fashion  /  Food &amp; Beverage  /  Sports</span>
-    <span class="landing-network__line">Production  /  Founders  /  Cultural Operators</span>
+    {sectors.map((line) => <span class="landing-network__line">{line}</span>)}
   </p>
 
   {/* Marquees — aria-hidden: an infinite ambient logo drift is noise

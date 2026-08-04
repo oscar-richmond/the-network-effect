@@ -630,8 +630,10 @@
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 700;
-	font-size: 48px;
-	line-height: 48px;
+	/* 40/40 (Oscar's rev — the file drew it 48/48; 40-on-40 is the
+	   page's headline convention post-drop). */
+	font-size: 40px;
+	line-height: 40px;
 	letter-spacing: normal;
 	text-transform: uppercase;
 	color: #ffffff;
@@ -667,7 +669,10 @@
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 36px;
+	/* 32px (Oscar's rev — was the file's 36); authored 48px leading
+	   kept. The wide slash spacing is the authored DOUBLE SPACE either
+	   side of each slash, preserved by white-space: pre on the lines. */
+	font-size: 32px;
 	line-height: 48px;
 	color: #ffffff;
 }
