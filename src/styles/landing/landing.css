@@ -537,6 +537,28 @@
 	flex-shrink: 0;
 }
 
+/* ── Departure runway: the grey ground the full-screen founders photo
+   scrolls off against (see landing.astro). Exactly one viewport tall:
+   the section must travel a full viewport for its bottom to clear the
+   top, so max scroll lands precisely as the photo finishes leaving.
+   Above the fixed hero stage (250) like the track; the hero ground
+   colour so the reveal reads as the page's light grey. */
+.landing-v2 .landing-outro {
+	position: relative;
+	z-index: 260;
+	height: 100vh;
+	height: 100dvh;
+	background: var(--landing-ground);
+}
+
+/* Reduced motion: no full-screen moment, no departure — the runway
+   would be a pointless empty scroll. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-outro {
+		height: 0;
+	}
+}
+
 /* Reduced motion: the char ripple is suppressed (the utility skips
    wiring under RM), and without it these controls would have NO
    hover state at all — MENU has never had one, and the founders
