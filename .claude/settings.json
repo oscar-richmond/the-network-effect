@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(vercel deploy)",
+      "Bash(vercel deploy *)",
+      "Bash(vercel promote)",
+      "Bash(vercel promote *)",
+      "Bash(vercel alias)",
+      "Bash(vercel alias *)",
+      "Bash(vercel rollback)",
+      "Bash(vercel rollback *)",
+      "Bash(vercel redeploy)",
+      "Bash(vercel redeploy *)",
+      "Bash(git push)",
+      "Bash(git push *)"
+    ]
+  }
+}

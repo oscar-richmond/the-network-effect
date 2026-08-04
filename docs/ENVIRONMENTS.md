@@ -92,6 +92,42 @@ This is why `vercel.json` rewrites alone were not enough: those run
 rewrite was ever consulted. Middleware runs first. Do not "simplify"
 this back into `vercel.json`.
 
+## Production guardrails (installed 2026-08-04, after the outage)
+
+On Aug 4 a `git push` auto-deployed a pre-holding commit to production
+via Vercel's git integration (connected since Jul 14, production branch
+`cursor/initial-astro-scaffold`) and took the public domain off the
+holding page for ~43 minutes. Three guardrails now stand, verified from
+evidence, so that can never repeat:
+
+1. **Staged production (the structural gate).** The project's
+   `autoAssignCustomDomains` setting is OFF. A production-targeted
+   deployment — from the CLI or anywhere else — builds but does NOT
+   take the live domains. Going live is a separate, deliberate act:
+
+   ```
+   vercel promote <deployment-url>
+   ```
+
+   Verified by test: a bare `vercel deploy --prod` was run and all
+   three domains (apex, www, networkeffect.vercel.app) stayed on the
+   prior deployment; the test build was then deleted.
+
+2. **Git integration disconnected.** Pushing to origin can no longer
+   create any deployment, production or preview. If it is ever
+   reconnected, staged production (1) still catches it — but don't.
+
+3. **Claude session deny rules** (`.claude/settings.json`): Claude
+   cannot run `vercel deploy`, `vercel promote`, `vercel alias`,
+   `vercel rollback`, `vercel redeploy`, or `git push` at all —
+   deterministically denied, not classifier-judged. Staging goes
+   through `npm run stage` only; pushes to origin and production
+   promotes are run by a human.
+
+**The standing rule these implement: production releases happen only on
+Oscar's explicit word, per action, as a separate deliberate act. An
+instruction to deploy is not an instruction to release.**
+
 ## Rules during the rebuild
 
 1. The holding page stays live and working throughout. Treat
