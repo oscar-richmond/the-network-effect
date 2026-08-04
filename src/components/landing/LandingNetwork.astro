@@ -34,7 +34,6 @@ const strip = [
   { src: asset('/assets/landing/network/strip-4.jpg'), win: 346, w: 367, h: 459, x: -18, y: -69 },
   { src: asset('/assets/landing/network/strip-5.jpg'), win: 346, w: 349.01, h: 448.3, x: -2.01, y: -104.3 },
 ];
-const footerBand = asset('/assets/landing/network/footer-band.png');
 
 /** The set is rendered twice per row for the seamless wrap. */
 const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
@@ -112,15 +111,11 @@ const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
     </div>
   </div>
 
-  {/* The file's soft band behind the rows/strip seam. */}
-  <img
-    class="landing-network__footer-band"
-    src={footerBand}
-    alt=""
-    loading="lazy"
-    decoding="async"
-    aria-hidden="true"
-  />
+  {/* The file's gradient band (3:509): #161616 fading down over the
+      photo strip's top, backing the logo rows — sampled from the
+      file's export (98% -> 0 alpha, linear, horizontally uniform)
+      and reproduced as CSS rather than the 1024px-wide png. */}
+  <div class="landing-network__row-fade" aria-hidden="true"></div>
 
   {/* Photo strip — exact Figma crops (plain-rect masks), edge to edge.
       PENDING SIGN-OFF (placeholder photos). */}
