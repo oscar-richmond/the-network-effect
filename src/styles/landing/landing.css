@@ -265,6 +265,22 @@
 
 .landing-v2 .landing-hero__intro-text p {
 	margin: 0;
+	/* NOTE: no display:flex here, tempting as it is for killing the
+	   clip margins' sibling collapse — the reveal's line-measuring
+	   pass fills the <p> with per-WORD spans, and a column flex stacks
+	   every word on its own row (measured: 13 "lines"). The collapse
+	   is handled instead by deriveIntroLineHeight's measure-and-
+	   correct iteration, which works from the rendered clip rects. */
+}
+
+/* Reveal-clip window compensation for the derived tight leading (see
+   deriveIntroLineHeight): padding widens each clip's visible window by
+   the ink overhang, the negative margin cancels the layout growth —
+   line spacing unchanged, ascenders/descenders never shaved by the
+   clips' overflow:hidden. Inert (0) until the module sets the var. */
+.landing-v2 .landing-hero__intro-text .lr-clip {
+	padding: var(--landing-copy-clip-pad, 0px) 0;
+	margin: calc(-1 * var(--landing-copy-clip-pad, 0px)) 0;
 }
 
 .landing-v2 .landing-hero__intro-text p + p {

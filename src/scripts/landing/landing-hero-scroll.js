@@ -150,6 +150,161 @@ function lineBaseline(boxTop, lineHeightPx, font) {
 }
 
 /**
+ * Derives the copy's line-height so the block spans EXACTLY from the
+ * cap top of "BUILT ON TRUST." to the baseline of "POWERED BY
+ * ACCESS." (Oscar's rev — the bottom is already pinned by
+ * alignIntroToHeadline; shortening the leading is what brings the
+ * first line's top up to the headline's top). Geometry:
+ *
+ *   span = capAscent + (N - 1) * lh + paragraphGap
+ *
+ * where N is the copy's rendered line count and the paragraph gap is
+ * the second <p>'s margin (one of the N-1 baseline steps crosses it).
+ * Solving for lh gives the exact leading; everything is measured, so
+ * it re-derives on resize.
+ *
+ * CLIP-WINDOW COMPENSATION: the derived lh sits BELOW the font's
+ * ascent+descent box, so line boxes no longer contain the full ink —
+ * and the reveal wraps lines in overflow:hidden clips, which would
+ * shave ascenders/descenders. --landing-copy-clip-pad expands each
+ * clip's window by the overhang (padding) while cancelling the layout
+ * growth (negative margin), so spacing is unchanged but ink never
+ * clips. The pad is capped at 9% of the line-height: the hidden
+ * reveal state offsets lines by 110%, so a pad beyond 10% would let
+ * hidden text peek through the expanded window.
+ */
+function deriveIntroLineHeight(headlineText, introText) {
+  if (!(headlineText instanceof HTMLElement) || !(introText instanceof HTMLElement)) return;
+  const line1 = headlineText.querySelector('.landing-hero__headline-line--dazzed');
+  const line2 = headlineText.querySelector('.landing-hero__headline-line--serrif');
+  const paragraphs = introText.querySelectorAll('p');
+  if (!(line1 instanceof HTMLElement) || !(line2 instanceof HTMLElement) || paragraphs.length < 2) return;
+
+  introText.style.lineHeight = '';
+  introText.style.removeProperty('--landing-copy-clip-pad');
+
+  const ctx = document.createElement('canvas').getContext('2d');
+
+  const h1cs = getComputedStyle(line1);
+  ctx.font = `${h1cs.fontWeight} ${h1cs.fontSize} ${h1cs.fontFamily}`;
+  const h1m = ctx.measureText('B');
+  const h1lh = parseFloat(h1cs.lineHeight);
+  const h1rect = line1.getBoundingClientRect();
+  const h1baseline = h1rect.top
+    + (h1lh - (h1m.fontBoundingBoxAscent + h1m.fontBoundingBoxDescent)) / 2
+    + h1m.fontBoundingBoxAscent;
+  const headlineCapTop = h1baseline - h1m.actualBoundingBoxAscent;
+
+  const h2cs = getComputedStyle(line2);
+  const targetBaseline = lineBaseline(
+    line2.getBoundingClientRect().top,
+    parseFloat(h2cs.lineHeight),
+    `${h2cs.fontWeight} ${h2cs.fontSize} ${h2cs.fontFamily}`,
+  );
+
+  const spanNeeded = targetBaseline - headlineCapTop;
+  const gap = parseFloat(getComputedStyle(paragraphs[1]).marginTop);
+
+  const ics = getComputedStyle(introText);
+  ctx.font = `${ics.fontWeight} ${ics.fontSize} ${ics.fontFamily}`;
+  const cm = ctx.measureText('N');
+  const fontBox = cm.fontBoundingBoxAscent + cm.fontBoundingBoxDescent;
+
+  const applyLh = (lh) => {
+    introText.style.lineHeight = `${lh.toFixed(3)}px`;
+    const overhang = Math.max(0, (fontBox - lh) / 2 + 0.5);
+    const pad = Math.min(overhang, lh * 0.09);
+    introText.style.setProperty('--landing-copy-clip-pad', `${pad.toFixed(2)}px`);
+    return pad;
+  };
+
+  const clips = Array.from(introText.querySelectorAll('.lr-clip'));
+
+  if (clips.length >= 2) {
+    /* Wrapped (normal path): iterate against the RENDERED span from
+       the first/last clip rects. This absorbs whatever the clip pads'
+       sibling-margin collapse does to the real spacing — no modelling,
+       just measure-and-correct; converges in one step for a linear
+       system, capped at three for safety. */
+    const N = clips.length;
+    let lh = (spanNeeded - cm.actualBoundingBoxAscent - gap) / (N - 1);
+    for (let i = 0; i < 3; i += 1) {
+      const pad = applyLh(lh);
+      const half = (lh - fontBox) / 2;
+      const firstBaseline = clips[0].getBoundingClientRect().top + pad + half
+        + cm.fontBoundingBoxAscent;
+      const capTop = firstBaseline - cm.actualBoundingBoxAscent;
+      const lastBaseline = clips[N - 1].getBoundingClientRect().bottom - pad
+        - half - cm.fontBoundingBoxDescent;
+      const err = (lastBaseline - capTop) - spanNeeded;
+      if (Math.abs(err) < 0.05) break;
+      lh -= err / (N - 1);
+    }
+  } else {
+    /* Unwrapped (reduced-motion path — no clips, no pads, no collapse):
+       the closed-form solve is exact. */
+    const baseLh = parseFloat(ics.lineHeight);
+    const lineCount = Math.round(
+      (introText.getBoundingClientRect().height - gap) / baseLh,
+    );
+    if (lineCount < 2) return;
+    applyLh((spanNeeded - cm.actualBoundingBoxAscent - gap) / (lineCount - 1));
+  }
+}
+
+/**
+ * Final-position top-skew correction: after the bottom pin, measures
+ * the RENDERED gap between the copy's first-line cap top and the
+ * headline's cap top and folds any residual into the line-height,
+ * re-pinning the bottom each pass. The pre-align span iteration gets
+ * within a px; this loop closes the rest because its acceptance
+ * metric IS the final on-screen skew — whatever sub-pixel or
+ * margin-collapse behaviour produced the residual is corrected by
+ * construction. No-op when the copy is unwrapped (reduced motion —
+ * the closed-form solve is exact there).
+ */
+function correctIntroTop(headlineText, introText) {
+  if (!(headlineText instanceof HTMLElement) || !(introText instanceof HTMLElement)) return;
+  const line1 = headlineText.querySelector('.landing-hero__headline-line--dazzed');
+  const clips = Array.from(introText.querySelectorAll('.lr-clip'));
+  if (!(line1 instanceof HTMLElement) || clips.length < 2) return;
+
+  const ctx = document.createElement('canvas').getContext('2d');
+  const h1cs = getComputedStyle(line1);
+  ctx.font = `${h1cs.fontWeight} ${h1cs.fontSize} ${h1cs.fontFamily}`;
+  const h1m = ctx.measureText('B');
+  const h1lh = parseFloat(h1cs.lineHeight);
+  const headCapTop = line1.getBoundingClientRect().top
+    + (h1lh - (h1m.fontBoundingBoxAscent + h1m.fontBoundingBoxDescent)) / 2
+    + h1m.fontBoundingBoxAscent - h1m.actualBoundingBoxAscent;
+
+  const ics = getComputedStyle(introText);
+  ctx.font = `${ics.fontWeight} ${ics.fontSize} ${ics.fontFamily}`;
+  const cm = ctx.measureText('N');
+  const fontBox = cm.fontBoundingBoxAscent + cm.fontBoundingBoxDescent;
+
+  for (let i = 0; i < 3; i += 1) {
+    const lh = parseFloat(getComputedStyle(introText).lineHeight);
+    const pad = parseFloat(
+      getComputedStyle(introText).getPropertyValue('--landing-copy-clip-pad'),
+    ) || 0;
+    const half = (lh - fontBox) / 2;
+    const copyCapTop = clips[0].getBoundingClientRect().top + pad + half
+      + cm.fontBoundingBoxAscent - cm.actualBoundingBoxAscent;
+    const skew = copyCapTop - headCapTop;
+    if (Math.abs(skew) < 0.05) break;
+    const next = lh + skew / (clips.length - 1);
+    introText.style.lineHeight = `${next.toFixed(3)}px`;
+    const overhang = Math.max(0, (fontBox - next) / 2 + 0.5);
+    introText.style.setProperty(
+      '--landing-copy-clip-pad',
+      `${Math.min(overhang, next * 0.09).toFixed(2)}px`,
+    );
+    alignIntroToHeadline(headlineText, introText);
+  }
+}
+
+/**
  * Vertically aligns the copy block so its LAST line's baseline sits on
  * the baseline of "POWERED BY ACCESS." (Oscar's rev). Horizontal
  * position is untouched — only the translateY changes, as a measured
@@ -245,6 +400,7 @@ export function initLandingHeroScroll() {
       refineHeadlineCentring(headlineText);
       if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
         introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
+        deriveIntroLineHeight(headlineText, introText);
         alignIntroToHeadline(headlineText, introText);
       }
       if (headlineText instanceof HTMLElement) {
@@ -317,9 +473,11 @@ export function initLandingHeroScroll() {
 
     if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
       introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
-      alignIntroToHeadline(headlineText, introText);
 
       const introLines = wrapIntroLines(introText);
+      deriveIntroLineHeight(headlineText, introText);
+      alignIntroToHeadline(headlineText, introText);
+      correctIntroTop(headlineText, introText);
       /* wrapLineRevealElement leaves an inline `transition: transform`
          intended for its own class-toggle reveal; that fights a
          continuous scrub, so GSAP takes sole control of the transform. */
