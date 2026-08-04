@@ -76,21 +76,15 @@ const sectors = [
   >
     <div class="landing-network__track landing-network__track--right">
       {doubled.map((b) => (
-        b.cell ? (
-          <span class="landing-network__cell landing-network__cell--baked">
-            <img src={b.src} alt="" loading="lazy" decoding="async" />
-          </span>
-        ) : (
-          <span class="landing-network__cell">
-            <img
-              src={b.src}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              style={`width:${b.w}px;height:${b.h}px`}
-            />
-          </span>
-        )
+        <span class="landing-network__cell">
+          <img
+            src={b.src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={`width:${b.w}px;height:${b.h}px`}
+          />
+        </span>
       ))}
     </div>
   </div>
@@ -102,21 +96,15 @@ const sectors = [
   >
     <div class="landing-network__track landing-network__track--left">
       {doubled.map((b) => (
-        b.cell ? (
-          <span class="landing-network__cell landing-network__cell--baked">
-            <img src={b.src} alt="" loading="lazy" decoding="async" />
-          </span>
-        ) : (
-          <span class="landing-network__cell">
-            <img
-              src={b.src}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              style={`width:${b.w}px;height:${b.h}px`}
-            />
-          </span>
-        )
+        <span class="landing-network__cell">
+          <img
+            src={b.src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={`width:${b.w}px;height:${b.h}px`}
+          />
+        </span>
       ))}
     </div>
   </div>

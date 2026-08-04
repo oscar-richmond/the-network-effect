@@ -610,8 +610,14 @@
    per full 1728px loop, tunable live. Pure CSS animation: no rAF, no
    scroll coupling. */
 .landing-v2 .landing-network {
+	/* Speed differential (Oscar's rev): the rows previously ran
+	   48s/40s with the BOTTOM the faster one — likely why the pair
+	   read geared. Top keeps its pace; the bottom now drifts ~18%
+	   SLOWER than the top (48 / 0.82 ≈ 58.5 -> 58s), so the
+	   difference reads as lazy drift, not racing. Each is
+	   independently tunable. */
 	--network-marquee-top-dur: 48s;
-	--network-marquee-bottom-dur: 40s;
+	--network-marquee-bottom-dur: 58s;
 
 	position: relative;
 	z-index: 260;
@@ -625,7 +631,10 @@
 /* Title: OUR (Serrif Medium) NETWORK (Dazzed Bold), 48/48 white. */
 .landing-v2 .landing-network__title {
 	position: absolute;
-	top: 274px;
+	/* +82 (Oscar's rev): the whole text block moves down together so
+	   the LAST sector line ends exactly 80px above the top logo row
+	   (row top 635 - line block bottom 555 = 80). */
+	top: 356px;
 	left: 24px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -647,7 +656,7 @@
 
 .landing-v2 .landing-network__subtitle {
 	position: absolute;
-	top: 277px;
+	top: 359px;
 	left: 864px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -662,7 +671,7 @@
    it through the nowrap line spans. */
 .landing-v2 .landing-network__body {
 	position: absolute;
-	top: 329px;
+	top: 411px;
 	left: 864px;
 	width: 840px;
 	margin: 0;
@@ -744,18 +753,6 @@
 	background: rgba(233, 233, 241, 0.4);
 	-webkit-backdrop-filter: blur(12px);
 	backdrop-filter: blur(12px);
-}
-
-/* Bentley/Samsung come as full-cell exports (panel baked in). */
-.landing-v2 .landing-network__cell--baked {
-	background: none;
-	-webkit-backdrop-filter: none;
-	backdrop-filter: none;
-}
-
-.landing-v2 .landing-network__cell--baked img {
-	width: 160px;
-	height: 100px;
 }
 
 .landing-v2 .landing-network__cell img {
