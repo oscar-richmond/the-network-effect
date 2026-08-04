@@ -394,6 +394,193 @@
 	100% { transform: translate(5%, 0); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   FOUNDERS SECTION — Figma node 1:90 (see LandingFounders.astro for
+   the extraction notes). Geometry is the file's own, chrome offset
+   subtracted; all px are design-space (the sub-1728 story is the
+   scale shell, as everywhere on this page).
+
+   ARRIVAL (the page's first light->dark move, Oscar's judgment call
+   deferred to us): the section is a normal in-flow block AFTER the
+   hero runway, z-raised above the fixed hero stage (260 vs 250, still
+   under the nav's 270) — so it slides up OVER the full-screen video
+   as a hard moving edge. Recommended over a scrubbed fade because the
+   video is still holding the frame at the boundary: a fade would
+   mush two grounds together mid-hold, while the slide reads as the
+   next panel taking the screen — the house pattern for section
+   arrivals. The runway maths makes the handoff exact: the video's
+   hold ends at scroll total=1950 and the section's top crosses the
+   viewport bottom at spacer(total+vh) - vh = 1950, the same scroll
+   position — no overlap, no seam. */
+.landing-v2 .landing-founders {
+	position: relative;
+	z-index: 260;
+	width: 100%;
+	height: 1049px;
+	background: #161616;
+	overflow: hidden;
+	pointer-events: auto;
+}
+
+/* Headline: Dazzed Bold 48/48 #EEEEF0, 900px measure at x24. The
+   block top is the file's container (y240 h188) with its rendered
+   192px of lines centred (238). Line 1 carries the design's
+   editorial indent — the Figma text node's leading 20-space run,
+   206.4px at this font (canvas-measured), kept as a deliberate
+   design choice and made explicit here. */
+.landing-v2 .landing-founders__headline {
+	position: absolute;
+	top: 238px;
+	left: 24px;
+	width: 900px;
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	letter-spacing: normal;
+	text-transform: uppercase;
+	color: #eeeef0;
+}
+
+.landing-v2 .landing-founders__line {
+	display: block;
+	white-space: nowrap;
+}
+
+.landing-v2 .landing-founders__line--indent {
+	text-indent: 206.4px;
+}
+
+/* Buttons: #343439 ground, Dazzed Bold 16 white, 38px tall. The
+   Figma widths (181/195) are not fixed here — they fall out of the
+   16px side pads + 8px label-arrow gap + natural label width
+   (verified to the px at 1728). Non-navigating placeholders until
+   Oscar specifies destinations. */
+.landing-v2 .landing-founders__ctas {
+	position: absolute;
+	top: 492px;
+	left: 24px;
+	display: flex;
+	gap: 16px;
+}
+
+.landing-v2 .landing-founders__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 38px;
+	padding: 0 16px;
+	border: 0;
+	background: #343439;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 1;
+	text-transform: uppercase;
+	color: #ffffff;
+	cursor: pointer;
+}
+
+.landing-v2 .landing-founders__btn-arrow {
+	display: block;
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+}
+
+/* Image windows — plain-rectangle masks in the file, replicated as
+   overflow-hidden boxes with the source images at the file's exact
+   layer dimensions and offsets (no object-fit guessing: these ARE
+   the Figma crops). The big photo anchors right so the 24px right
+   margin holds on viewports wider than the 1728 design. All three
+   share the design's bottom line, 24px off the section bottom. */
+.landing-v2 .landing-founders__photo,
+.landing-v2 .landing-founders__portrait {
+	position: absolute;
+	margin: 0;
+	overflow: hidden;
+}
+
+.landing-v2 .landing-founders__photo {
+	top: 595px;
+	right: 24px;
+	width: 720px;
+	height: 430px;
+}
+
+.landing-v2 .landing-founders__photo img {
+	position: absolute;
+	top: -29px;
+	left: -6.7px;
+	width: 731.32px;
+	height: 487.79px;
+	max-width: none;
+}
+
+.landing-v2 .landing-founders__portrait {
+	top: 875px;
+	width: 110px;
+	height: 150px;
+}
+
+.landing-v2 .landing-founders__portrait--robbo {
+	left: 24px;
+}
+
+.landing-v2 .landing-founders__portrait--robbo img {
+	position: absolute;
+	top: -6.27px;
+	left: -2px;
+	width: 116.47px;
+	height: 162.25px;
+	max-width: none;
+}
+
+/* The file stacks a second layer under Ashley's portrait; it is
+   fully occluded, so only the top layer is rendered. */
+.landing-v2 .landing-founders__portrait--ashley {
+	left: 142px;
+}
+
+.landing-v2 .landing-founders__portrait--ashley img {
+	position: absolute;
+	top: -4.64px;
+	left: -3.47px;
+	width: 117.22px;
+	height: 163.3px;
+	max-width: none;
+}
+
+/* Entrance hidden states — no-preference only (house rule: reduced
+   motion renders the section complete and static). The vocabulary is
+   the page's own: line-reveals for the headline, fade-rise for the
+   buttons, plain fade for the images — nothing new. */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .landing-founders__btn {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .landing-founders__btn.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.landing-v2 .landing-founders__photo,
+	.landing-v2 .landing-founders__portrait {
+		opacity: 0;
+		transition: opacity 0.8s ease;
+	}
+
+	.landing-v2 .landing-founders__photo.is-visible,
+	.landing-v2 .landing-founders__portrait.is-visible {
+		opacity: 1;
+	}
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────
    House philosophy: keep the STATES, remove the MOTION. The scroll
    module skips every scrubbed trigger under `reduce` and renders the

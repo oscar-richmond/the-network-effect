@@ -1,0 +1,104 @@
+---
+/**
+ * FOUNDERS SECTION (/landing) — Figma n2cY4c7GnsR5MBx1PJoC97 node
+ * 1:90, extracted 2026-08-04. The file frames the section inside a
+ * browser-chrome mockup (nodes 1:210-1:213) and a nav mockup (1:215)
+ * — both ignored; content geometry below is the design's own group
+ * (1:170) with the 83px chrome offset subtracted. Nodes 1:194/1:197
+ * are hidden duplicates in the file — ignored.
+ *
+ * The page's first dark section: full-bleed #161616, 1728x1049 at
+ * design width. It sits IN FLOW after the hero's scroll runway and
+ * slides up OVER the full-screen video (which stays fixed beneath) —
+ * the arrival IS the light->dark transition; see landing.css.
+ *
+ * HEADLINE: the Figma text node leads with a run of 20 spaces — it
+ * renders as a deliberate editorial indent on the first line (clear
+ * in the file's own render), so it is KEPT, implemented as an
+ * explicit text-indent on line 1 rather than literal whitespace.
+ * The four spans are the design's rendered line breaks at the fixed
+ * 900px measure (line-reveal needs per-line elements — the hero's
+ * established nowrap-span pattern).
+ *
+ * BUTTONS: non-navigating placeholders — Oscar hasn't specified
+ * destinations (flagged in the report). Their Figma widths (181/195)
+ * fall out naturally from 16px pads + 8px icon gap. The 12x12 arrow
+ * is the file's vector, inlined with currentColor (hardcoded white
+ * fill stripped) so each button is one composable unit.
+ *
+ * IMAGES: all three masks in the file are PLAIN RECTANGLES (no
+ * radius), so the crops are replicated with overflow-hidden windows
+ * and the source images at the file's exact dimensions and offsets.
+ * The second portrait window stacks two layers in Figma; the Ashley
+ * layer fully occludes the one beneath, so only it is rendered.
+ *
+ * PENDING SIGN-OFF: all three photographs are the file's own assets,
+ * placeholder-until-approved per the standing content policy.
+ */
+import { asset } from '../../utils/asset.js';
+
+const foundersPhoto = asset('/assets/landing/founders/founders-photo.jpg');
+const robboPortrait = asset('/assets/landing/founders/robbo-portrait.jpg');
+const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
+---
+
+<section class="landing-founders" data-landing-founders aria-label="The founders">
+  <h2 class="landing-founders__headline" data-landing-founders-headline>
+    <span class="landing-founders__line landing-founders__line--indent"
+      >NEARLY 20 YEARS BUILDING</span
+    >
+    <span class="landing-founders__line">GLOBAL RELATIONSHIPS MEETS 30</span>
+    <span class="landing-founders__line">YEARS AT THE HEART OF MUSIC,</span>
+    <span class="landing-founders__line">FILM AND TELEVISION.</span>
+  </h2>
+
+  {/* Placeholder CTAs — destinations unspecified, flagged for Oscar. */}
+  <div class="landing-founders__ctas" data-landing-founders-ctas>
+    <button class="landing-founders__btn" type="button">
+      <span>THE FOUNDERS</span>
+      <svg
+        class="landing-founders__btn-arrow"
+        viewBox="0 0 12 12"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z"
+          fill="currentColor"
+        />
+      </svg>
+    </button>
+    <button class="landing-founders__btn" type="button">
+      <span>FEATURED WORK</span>
+      <svg
+        class="landing-founders__btn-arrow"
+        viewBox="0 0 12 12"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z"
+          fill="currentColor"
+        />
+      </svg>
+    </button>
+  </div>
+
+  {/* Exact Figma crops: window = mask rect, image = source layer at the
+      file's dimensions/offsets. PENDING SIGN-OFF (placeholder photos). */}
+  <figure class="landing-founders__photo" data-landing-founders-img>
+    <img src={foundersPhoto} alt="" loading="lazy" decoding="async" />
+  </figure>
+  <figure
+    class="landing-founders__portrait landing-founders__portrait--robbo"
+    data-landing-founders-img
+  >
+    <img src={robboPortrait} alt="" loading="lazy" decoding="async" />
+  </figure>
+  <figure
+    class="landing-founders__portrait landing-founders__portrait--ashley"
+    data-landing-founders-img
+  >
+    <img src={ashleyPortrait} alt="" loading="lazy" decoding="async" />
+  </figure>
+</section>
