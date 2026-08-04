@@ -527,11 +527,66 @@
    the Figma crops). The big photo anchors right so the 24px right
    margin holds on viewports wider than the 1728 design. All three
    share the design's bottom line, 24px off the section bottom. */
-.landing-v2 .landing-founders__photo,
-.landing-v2 .landing-founders__portrait {
+.landing-v2 .landing-founders__photo {
 	position: absolute;
 	margin: 0;
 	overflow: hidden;
+}
+
+/* Portraits: the crop moved to an inner wrapper (same window, same
+   image offsets) so the figure can host the name overlay WITHOUT
+   clipping it — the name is specced to bleed past the image. */
+.landing-v2 .landing-founders__portrait {
+	position: absolute;
+	margin: 0;
+	cursor: pointer;
+}
+
+.landing-v2 .landing-founders__portrait-crop {
+	position: absolute;
+	inset: 0;
+	display: block;
+	overflow: hidden;
+}
+
+/* Name overlay: Serrif Medium 32 white, difference-blended (inverts
+   over the photo, reads near-white where it bleeds onto the #161616
+   ground). 24px off the image's left and bottom; nowrap so it runs
+   off the image edge freely. Blend safety: its ancestors (figure,
+   section) carry no filter/transform, and the figure's opacity is 1
+   whenever the name shows (the dim applies to the OTHER portrait). */
+.landing-v2 .landing-founders__portrait-name {
+	position: absolute;
+	left: 24px;
+	bottom: 24px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 32px;
+	line-height: 1;
+	white-space: nowrap;
+	color: #ffffff;
+	mix-blend-mode: difference;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.landing-v2 .landing-founders__portrait:hover .landing-founders__portrait-name {
+	opacity: 1;
+}
+
+/* Hovering either portrait dims the OTHER to 20% (:has reaches the
+   preceding sibling; plain :hover, ungated — harmless on touch, and
+   the house hover-media gate would hide it on Oscar's misreporting
+   machine). Quick dim in, slow settle back out: while a portrait is
+   hovered the section state supplies the faster transition; on
+   release the entrance rule's 0.8s takes over. */
+.landing-v2 .landing-founders:has(.landing-founders__portrait--robbo:hover)
+	.landing-founders__portrait--ashley,
+.landing-v2 .landing-founders:has(.landing-founders__portrait--ashley:hover)
+	.landing-founders__portrait--robbo {
+	opacity: 0.2;
+	transition: opacity 0.35s ease;
 }
 
 .landing-v2 .landing-founders__photo {
@@ -610,6 +665,10 @@
 	.landing-v2 .landing-founders__photo.is-visible,
 	.landing-v2 .landing-founders__portrait.is-visible {
 		opacity: 1;
+	}
+
+	.landing-v2 .landing-founders__portrait-name {
+		transition: opacity 0.35s ease;
 	}
 }
 
