@@ -11,11 +11,28 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { NETWORK_BRAND_SETS } from '../../data/landing/network-brands.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const LINE_STAGGER_S = 0.12;
 const MEDIA_AT_MS = 1040;
+
+/* ── Industry hover / logo swap (Oscar's rev) ─────────────────────
+   Hovering (or keyboard-focusing) a sector term dims the rest of the
+   list to 10% and swaps the carousels' logo set under a blur cover:
+   blur in (350ms) -> rebuild both tracks from the target set ->
+   blur out (350ms). ONE persistent driver chases the LATEST target,
+   so rapid hovers retarget cleanly — a new target simply becomes
+   where the next (or current, on completion) cycle settles; no
+   stacked transitions, no half-swapped states. Set sizes may differ
+   per industry: each rebuild re-derives the wrap (set width = 192px
+   pitch x count, copies = enough to cover the widest viewport + 1,
+   --marquee-set-w = the translate distance), so the seamless loop
+   holds for any length. Carousels keep animating throughout — the
+   var/DOM change lands mid-flight but under full blur. */
+const SWAP_BLUR_MS = 350;
+const CELL_PITCH_PX = 192;
 
 /**
  * Exact-text line wrap: the shared wrapLineRevealElement splits a
@@ -27,16 +44,43 @@ const MEDIA_AT_MS = 1040;
  * playLineRevealElement drives it identically.
  */
 function wrapLineExact(el, delaySeconds) {
-  const text = el.textContent ?? '';
   const clip = document.createElement('span');
   clip.className = 'lr-clip';
   const inner = document.createElement('span');
   inner.className = 'lr-inner';
   inner.style.transition = `transform 1.2s cubic-bezier(0.42,0,0.24,1) ${delaySeconds.toFixed(2)}s`;
-  inner.textContent = text;
+  /* MOVE the children (term buttons, separators, text nodes) rather
+     than flattening to text — preserves both the interactive
+     structure and every authored space. */
+  while (el.firstChild) inner.appendChild(el.firstChild);
   clip.appendChild(inner);
-  el.textContent = '';
   el.appendChild(clip);
+}
+
+/** Builds one cell's DOM for a brand entry (mirrors the Astro markup). */
+function buildCell(brand) {
+  const cell = document.createElement('span');
+  cell.className = 'landing-network__cell';
+  const img = document.createElement('img');
+  img.src = brand.src;
+  img.alt = '';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.style.width = `${brand.w}px`;
+  img.style.height = `${brand.h}px`;
+  cell.appendChild(img);
+  return cell;
+}
+
+/** Rebuilds a track for a set, re-deriving the seamless-wrap geometry. */
+function applySetToTrack(track, set) {
+  const setW = CELL_PITCH_PX * set.length;
+  const copies = Math.max(2, Math.ceil((window.innerWidth || 1728) / setW) + 1);
+  track.style.setProperty('--marquee-set-w', `${setW}px`);
+  track.textContent = '';
+  for (let c = 0; c < copies; c += 1) {
+    set.forEach((brand) => track.appendChild(buildCell(brand)));
+  }
 }
 
 export function initLandingNetwork() {
@@ -45,6 +89,100 @@ export function initLandingNetwork() {
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return () => {};
+  }
+
+  /* ── Industry hover wiring (house hover gate + ?forcehover escape;
+     touch gets the resting state only — tapping a term does nothing,
+     per the recommendation). Keyboard mirrors hover via focusin. */
+  const canHover =
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
+    new URLSearchParams(window.location.search).has('forcehover');
+  const body = section.querySelector('[data-landing-network-body]');
+  const rows = Array.from(section.querySelectorAll('[data-landing-network-row]'));
+  const tracks = Array.from(section.querySelectorAll('.landing-network__track'));
+  const swapTimeouts = [];
+
+  let currentKey = 'all';
+  let targetKey = 'all';
+  let swapBusy = false;
+
+  const pumpSwap = () => {
+    if (swapBusy || targetKey === currentKey) return;
+    swapBusy = true;
+    rows.forEach((r) => r.classList.add('is-swapping'));
+    swapTimeouts.push(setTimeout(() => {
+      const key = targetKey;
+      const set = NETWORK_BRAND_SETS[key] ?? NETWORK_BRAND_SETS.all;
+      tracks.forEach((t) => applySetToTrack(t, set));
+      currentKey = key;
+      swapTimeouts.push(setTimeout(() => {
+        rows.forEach((r) => r.classList.remove('is-swapping'));
+        swapBusy = false;
+        pumpSwap();
+      }, SWAP_BLUR_MS));
+    }, SWAP_BLUR_MS));
+  };
+
+  const activate = (term) => {
+    if (!(body instanceof HTMLElement)) return;
+    body.classList.add('is-dimming');
+    body.querySelectorAll('.landing-network__term').forEach((t) => {
+      t.classList.toggle('is-active', t === term);
+    });
+    targetKey = term.dataset.networkTerm ?? 'all';
+    pumpSwap();
+  };
+
+  const deactivate = () => {
+    if (!(body instanceof HTMLElement)) return;
+    body.classList.remove('is-dimming');
+    body.querySelectorAll('.landing-network__term.is-active').forEach((t) => {
+      t.classList.remove('is-active');
+    });
+    targetKey = 'all';
+    pumpSwap();
+  };
+
+  const cleanupHover = [];
+  if (canHover && body instanceof HTMLElement) {
+    const onOver = (e) => {
+      const term = e.target instanceof Element && e.target.closest('[data-network-term]');
+      if (term instanceof HTMLElement) activate(term);
+    };
+    const onOut = (e) => {
+      const to = e.relatedTarget instanceof Element && e.relatedTarget.closest('[data-network-term]');
+      if (!to) deactivate();
+    };
+    const onFocusIn = (e) => {
+      const term = e.target instanceof Element && e.target.closest('[data-network-term]');
+      if (term instanceof HTMLElement && term.matches(':focus-visible')) activate(term);
+    };
+    const onFocusOut = (e) => {
+      const to = e.relatedTarget instanceof Element && e.relatedTarget.closest('[data-network-term]');
+      if (!to) deactivate();
+    };
+    body.addEventListener('mouseover', onOver);
+    body.addEventListener('mouseout', onOut);
+    body.addEventListener('focusin', onFocusIn);
+    body.addEventListener('focusout', onFocusOut);
+    cleanupHover.push(() => {
+      body.removeEventListener('mouseover', onOver);
+      body.removeEventListener('mouseout', onOut);
+      body.removeEventListener('focusin', onFocusIn);
+      body.removeEventListener('focusout', onFocusOut);
+    });
+  }
+
+  if (import.meta.env.DEV) {
+    window.__landingNetworkSwap = {
+      state: () => ({ currentKey, targetKey, swapBusy }),
+      request: (key) => { targetKey = key; pumpSwap(); },
+      applyTestSet: (n) => {
+        const set = NETWORK_BRAND_SETS.all.slice(0, n);
+        tracks.forEach((t) => applySetToTrack(t, set));
+        return { setW: CELL_PITCH_PX * n, cells: tracks[0].children.length };
+      },
+    };
   }
 
   const lines = Array.from(section.querySelectorAll('.landing-network__line'));
@@ -90,6 +228,8 @@ export function initLandingNetwork() {
   return () => {
     disposed = true;
     timeouts.forEach(clearTimeout);
+    swapTimeouts.forEach(clearTimeout);
+    cleanupHover.forEach((fn) => fn());
     trigger?.kill();
   };
 }

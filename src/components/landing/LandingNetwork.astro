@@ -38,16 +38,16 @@ const strip = [
 /** The set is rendered twice per row for the seamless wrap. */
 const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
 
-/* The sector lines, authored double spaces around each slash. They
-   reach the DOM verbatim (expression strings; white-space: pre) and
-   the reveal preserves them because these lines get an EXACT-TEXT
-   wrap in landing-network.js — the shared word-splitting wrap
-   normalises all whitespace runs (including NBSP) to single spaces,
-   measured twice the hard way. */
-const sectors = [
-  'Talent  /  Hospitality  /  TV & Film  /  Music',
-  'Luxury  /  Fashion  /  Food & Beverage  /  Sports',
-  'Production  /  Founders  /  Cultural Operators',
+/* The sector lines — now STRUCTURED for the industry hover (each
+   term its own focusable element) while preserving the authored
+   layout exactly: the separators carry the double-space-slash runs
+   as expression strings (white-space: pre keeps them; the reveal
+   uses the child-preserving exact wrap in landing-network.js). The
+   authored line breaks are the arrays below. */
+const sectorLines = [
+  ['Talent', 'Hospitality', 'TV & Film', 'Music'],
+  ['Luxury', 'Fashion', 'Food & Beverage', 'Sports'],
+  ['Production', 'Founders', 'Cultural Operators'],
 ];
 ---
 
@@ -64,7 +64,15 @@ const sectors = [
   </p>
 
   <p class="landing-network__body" data-landing-network-body>
-    {sectors.map((line) => <span class="landing-network__line">{line}</span>)}
+    {sectorLines.map((terms) => (
+      <span class="landing-network__line">{terms.map((term, i) => (
+        <Fragment>{i > 0 && <span class="landing-network__sep">{'  /  '}</span>}<button
+          type="button"
+          class="landing-network__term"
+          data-network-term={term}
+        >{term}</button></Fragment>
+      ))}</span>
+    ))}
   </p>
 
   {/* Marquees — aria-hidden: an infinite ambient logo drift is noise

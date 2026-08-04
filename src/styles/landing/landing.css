@@ -691,6 +691,34 @@
 	white-space: pre;
 }
 
+/* Terms are real buttons now (industry hover + keyboard path) but
+   render identically to the former plain text: full font/colour
+   inheritance, no chrome. Dim vocabulary: the page's 0.35s ease. */
+.landing-v2 .landing-network__term {
+	display: inline;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	cursor: pointer;
+	transition: opacity 0.35s ease;
+}
+
+.landing-v2 .landing-network__sep {
+	transition: opacity 0.35s ease;
+}
+
+/* Hovering (or keyboard-focusing) a term dims every other term and
+   ALL separators to 10%; the active term holds full white on the
+   #161616 ground (contrast preserved by construction). */
+.landing-v2 .landing-network__body.is-dimming .landing-network__term:not(.is-active),
+.landing-v2 .landing-network__body.is-dimming .landing-network__sep {
+	opacity: 0.1;
+}
+
 /* ── Marquees ────────────────────────────────────────────────────────
    Track = the 9-brand set twice; one set = exactly 1728px
    (9 x (160 + 32)), so translating one set width wraps seamlessly.
@@ -715,6 +743,17 @@
 	top: 767px;
 }
 
+/* The swap cover: both rows blur EQUALLY to 12px — the same frost
+   language as the cells themselves, one signal — while the set is
+   exchanged underneath, then clear. 0.35s each way, page vocabulary. */
+.landing-v2 .landing-network__marquee {
+	transition: filter 0.35s ease;
+}
+
+.landing-v2 .landing-network__marquee.is-swapping {
+	filter: blur(12px);
+}
+
 .landing-v2 .landing-network__track {
 	display: flex;
 	width: max-content;
@@ -731,13 +770,16 @@
 	}
 }
 
+/* --marquee-set-w = ONE set's width (cell pitch 192 x count), set
+   inline per track; the translate distance always equals it, so the
+   wrap stays seamless for any set length the swap loads. */
 @keyframes landing-network-marquee-left {
 	from { transform: translateX(0); }
-	to { transform: translateX(-1728px); }
+	to { transform: translateX(calc(-1 * var(--marquee-set-w, 1728px))); }
 }
 
 @keyframes landing-network-marquee-right {
-	from { transform: translateX(-1728px); }
+	from { transform: translateX(calc(-1 * var(--marquee-set-w, 1728px))); }
 	to { transform: translateX(0); }
 }
 

@@ -30,3 +30,29 @@ export const NETWORK_BRANDS = [
   { name: 'Samsung', src: asset('/assets/landing/network/cell-samsung.svg'), w: 160, h: 100 },
   { name: 'adidas', src: asset('/assets/landing/network/logo-adidas.svg'), w: 85.19, h: 42.6 },
 ];
+
+/**
+ * The eleven sector terms, exactly as rendered (keys below must match
+ * these strings character-for-character).
+ */
+export const NETWORK_INDUSTRIES = [
+  'Talent', 'Hospitality', 'TV & Film', 'Music',
+  'Luxury', 'Fashion', 'Food & Beverage', 'Sports',
+  'Production', 'Founders', 'Cultural Operators',
+];
+
+/**
+ * ═══ THE SHAPE OSCAR POPULATES LATER ═══
+ * Per-industry logo sets for the hover swap. `all` is the resting
+ * state (the current mixed set). Every industry key maps to an array
+ * of NetworkBrand entries ({ name, src, w, h }) — any length: the
+ * marquee re-derives its wrap geometry per set (cell pitch 192px, so
+ * a set's width is 192 x count, duplicated enough times to cover any
+ * viewport). PLACEHOLDER: every industry currently points at the
+ * full set so the machinery is proven; the real content drop is a
+ * data-only edit here.
+ */
+export const NETWORK_BRAND_SETS = {
+  all: NETWORK_BRANDS,
+  ...Object.fromEntries(NETWORK_INDUSTRIES.map((k) => [k, NETWORK_BRANDS])),
+};
