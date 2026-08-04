@@ -414,14 +414,38 @@
    hold ends at scroll total=1950 and the section's top crosses the
    viewport bottom at spacer(total+vh) - vh = 1950, the same scroll
    position — no overlap, no seam. */
-.landing-v2 .landing-founders {
+/* Track = section + HOLD (250, the landed "resistance" dwell) +
+   EXIT (900, items fly off + ground fade). Keep these two numbers in
+   step with FOUNDERS_HOLD_PX / FOUNDERS_EXIT_PX in
+   landing-founders.js — the sticky release and the timeline end must
+   coincide. */
+.landing-v2 .landing-founders-track {
 	position: relative;
+	z-index: 260;
+	height: calc(1049px + 250px + 900px);
+}
+
+.landing-v2 .landing-founders {
+	position: sticky;
+	top: 0;
 	z-index: 260;
 	width: 100%;
 	height: 1049px;
 	background: #161616;
 	overflow: hidden;
 	pointer-events: auto;
+}
+
+/* Reduced motion: no hold, no exit choreography — the track collapses
+   to the section and it scrolls in flow, static. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-founders-track {
+		height: auto;
+	}
+
+	.landing-v2 .landing-founders {
+		position: relative;
+	}
 }
 
 /* Headline: Dazzed Bold 48/48 #EEEEF0, 900px measure at x24. The

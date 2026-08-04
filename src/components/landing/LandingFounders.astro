@@ -42,7 +42,13 @@ const robboPortrait = asset('/assets/landing/founders/robbo-portrait.jpg');
 const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
 ---
 
-<section class="landing-founders" data-landing-founders aria-label="The founders">
+{/* The track is the section's scroll runway: section height + the
+    landed HOLD (the "resistance" dwell) + the exit window. The
+    section rides position:sticky inside it — pinned while items
+    land, hold, exit upward and the ground fades to the hero grey —
+    then releases exactly as its own bottom meets the track's. */}
+<div class="landing-founders-track" data-landing-founders-track>
+  <section class="landing-founders" data-landing-founders aria-label="The founders">
   <h2 class="landing-founders__headline" data-landing-founders-headline>
     <span class="landing-founders__line landing-founders__line--indent"
       >NEARLY 20 YEARS BUILDING</span
@@ -124,4 +130,5 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
       >Ashley Walters</span
     >
   </figure>
-</section>
+  </section>
+</div>

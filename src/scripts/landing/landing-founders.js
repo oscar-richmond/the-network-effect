@@ -48,6 +48,22 @@ const DRIFT_ROBBO_PX = 140;
 const DRIFT_ASHLEY_PX = 170;
 const DRIFT_PHOTO_PX = 200;
 
+/**
+ * The landed dwell and the exit (Oscar's rev): once the items land
+ * (section fully in view, sticky engaged) the page "resists" for
+ * FOUNDERS_HOLD_PX of scroll — nothing moves, the catch — then over
+ * FOUNDERS_EXIT_PX every item scrolls up and off at its own pace
+ * (each travels exactly its own clearance over the same window, so
+ * they leave together at different speeds — the entry mirrored) and
+ * the ground fades #161616 -> the hero grey. Keep HOLD/EXIT in step
+ * with the track height in landing.css.
+ */
+const FOUNDERS_HOLD_PX = 250;
+const FOUNDERS_EXIT_PX = 900;
+const EXIT_CLEAR_MARGIN_PX = 16;
+const SECTION_ENTRY_PX_FALLBACK = 1000; // viewport height at build time
+const GROUND_LIGHT = '#eeeef0';
+
 export function initLandingFounders() {
   const section = document.querySelector('[data-landing-founders]');
   if (!(section instanceof HTMLElement)) return () => {};
@@ -60,43 +76,91 @@ export function initLandingFounders() {
     return () => {};
   }
 
-  /* ── Entry drift: scrubbed over the section's crossing runway
-     (top-enters-bottom -> top-reaches-top), ease none so each layer
-     tracks the scroll 1:1 at its own amplitude and lands exactly at
-     its resting position. Composes with the one-shot reveal below:
-     the drift owns WHERE things are during entry, the reveal owns
-     their opacity/line choreography. Transform layers animate `y`;
-     the portraits animate `top` (see the blend note on the
-     constants). */
+  /* ── Entry -> hold -> exit, ONE scrubbed timeline (so entry and
+     exit can never fight over the same properties). The track is the
+     trigger: its top crossing the viewport bottom is the entry start,
+     and the timeline's px-denominated durations map 1:1 onto scroll
+     (entry = one viewport height; then the hold; then the exit).
+     Entry: each layer lags at its own amplitude and lands at rest.
+     Hold: the "resistance" — sticky holds the section, nothing moves.
+     Exit: each item travels exactly its own clearance (bottom edge to
+     past the section top) over the same window — they leave together
+     at different speeds, the entry mirrored — while the section's
+     ground fades to the hero grey. Portraits animate `top`, never
+     transform (the blend note on the constants). */
+  const track = section.closest('[data-landing-founders-track]') ?? section.parentElement;
   const driftTweens = [];
-  const driftSpec = [
-    { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, mode: 'y' },
-    { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, mode: 'y' },
-    { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, mode: 'y' },
-    { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, mode: 'top' },
-    { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, mode: 'top' },
-  ];
-  driftSpec.forEach(({ el, px, mode }) => {
-    if (!(el instanceof HTMLElement)) return;
-    const scrollTrigger = {
-      trigger: section,
-      start: 'top bottom',
-      end: 'top top',
-      scrub: true,
-    };
-    let tween;
-    if (mode === 'top') {
-      const baseTop = parseFloat(getComputedStyle(el).top);
-      tween = gsap.fromTo(
-        el,
-        { top: baseTop + px },
-        { top: baseTop, ease: 'none', scrollTrigger },
-      );
-    } else {
-      tween = gsap.fromTo(el, { y: px }, { y: 0, ease: 'none', scrollTrigger });
+  {
+    const entryPx = window.innerHeight || SECTION_ENTRY_PX_FALLBACK;
+    const holdEnd = entryPx + FOUNDERS_HOLD_PX;
+    const secTop = section.getBoundingClientRect().top;
+    const driftSpec = [
+      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, mode: 'top' },
+      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, mode: 'top' },
+    ];
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: track,
+        start: 'top bottom',
+        end: `+=${entryPx + FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX}`,
+        scrub: true,
+      },
+    });
+
+    driftSpec.forEach(({ el, px, mode }) => {
+      if (!(el instanceof HTMLElement)) return;
+      /* Clearance measured from the resting layout (before any tween
+         renders): how far up this item must travel for its bottom to
+         clear the pinned section's top edge. */
+      const clearance =
+        el.getBoundingClientRect().bottom - secTop + EXIT_CLEAR_MARGIN_PX;
+      if (mode === 'top') {
+        const baseTop = parseFloat(getComputedStyle(el).top);
+        tl.fromTo(
+          el,
+          { top: baseTop + px },
+          { top: baseTop, duration: entryPx, ease: 'none' },
+          0,
+        ).to(
+          el,
+          { top: baseTop - clearance, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+          holdEnd,
+        );
+      } else {
+        tl.fromTo(
+          el,
+          { y: px },
+          { y: 0, duration: entryPx, ease: 'none' },
+          0,
+        ).to(
+          el,
+          { y: -clearance, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+          holdEnd,
+        );
+      }
+    });
+
+    tl.to(
+      section,
+      { backgroundColor: GROUND_LIGHT, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+      holdEnd,
+    );
+
+    driftTweens.push(tl);
+
+    if (import.meta.env.DEV) {
+      window.__landingFounders = {
+        entryPx,
+        holdPx: FOUNDERS_HOLD_PX,
+        exitPx: FOUNDERS_EXIT_PX,
+        timelineTotal: entryPx + FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX,
+      };
     }
-    driftTweens.push(tween);
-  });
+  }
 
   /* Wrap after fonts so the clip boxes measure the real glyphs (the
      established gate — wrapping against fallback metrics mis-groups
