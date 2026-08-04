@@ -4,8 +4,11 @@
  * A label opts in with `data-char-ripple` on the TEXT element; the
  * hover surface (button/link) opts in with `data-char-ripple-trigger`
  * on itself or any ancestor of the label (falls back to the label
- * element when absent). Icons/prefixes outside the label element are
- * untouched — the nav arrow stays static by construction.
+ * element when absent). Icons outside the label element are untouched
+ * by default; a trailing icon opts INTO the sweep with
+ * `data-char-ripple-arrow` (Oscar's rev) — it pulses in the slot
+ * after the last character, so the blur runs across the text and
+ * then through the arrow.
  *
  * THE EFFECT (from the reference implementation): each character
  * blurs 0 -> 3px -> 0 over 0.6s ease-in-out, staggered 0.04s per
@@ -73,7 +76,8 @@ function ensureStyles() {
     .cr-char {
       display: inline-block;
     }
-    .cr-char.is-rippling {
+    .cr-char.is-rippling,
+    [data-char-ripple-arrow].is-rippling {
       animation: cr-blur var(--char-ripple-duration, 0.6s) ease-in-out 1;
     }
     @keyframes cr-blur {
@@ -125,6 +129,16 @@ export function initCharRipple(root = document) {
 
     const trigger = el.closest('[data-char-ripple-trigger]') ?? el;
     const spans = Array.from(charBox.children);
+
+    /* A trailing icon that opted in rides the same sweep, one stagger
+       slot after the final character. Being a child of the trigger
+       (and of any blend root), its filter is still a descendant
+       filter — same safe shape as the chars. */
+    const arrow = trigger.querySelector('[data-char-ripple-arrow]');
+    if (arrow instanceof HTMLElement || arrow instanceof SVGElement) {
+      arrow.style.animationDelay = `${(spans.length * RIPPLE_STAGGER_S).toFixed(2)}s`;
+      spans.push(arrow);
+    }
 
     const onEnter = () => {
       spans.forEach((s) => s.classList.remove('is-rippling'));
