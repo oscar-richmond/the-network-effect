@@ -549,9 +549,25 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 100vh;
-	height: 100dvh;
+	/* 1 viewport of departure runway (the founders photo scroll-off,
+	   as before) + 950px of transition runway: a 250px dwell on the
+	   services line, then its fade + the ground's fade to #161616
+	   (landing-services.js). Keep the 950 in step with the timeline
+	   constants there — the black-on-black handoff to Our Network
+	   depends on the scrub ending exactly as the next section's top
+	   crosses the viewport bottom. */
+	height: calc(100vh + 950px);
+	height: calc(100dvh + 950px);
 	background: var(--landing-ground);
+}
+
+/* The services line rides sticky at the viewport centre through the
+   outro's extra runway (the dwell + fades happen on a stable frame). */
+.landing-v2 .landing-services__title {
+	position: sticky;
+	top: 50vh;
+	top: 50dvh;
+	transform: translateY(-50%);
 }
 
 /* Two lines, 40px on the hero headline's 40px leading (Oscar's spec:
@@ -583,6 +599,226 @@
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   OUR NETWORK — Figma node 3:68 (see LandingNetwork.astro). Geometry
+   is the file's own, chrome offset subtracted; px are design-space
+   (sub-1728 = the scale shell as everywhere).
+
+   The two marquee speeds are the custom properties below — seconds
+   per full 1728px loop, tunable live. Pure CSS animation: no rAF, no
+   scroll coupling. */
+.landing-v2 .landing-network {
+	--network-marquee-top-dur: 48s;
+	--network-marquee-bottom-dur: 40s;
+
+	position: relative;
+	z-index: 260;
+	width: 100%;
+	height: 1097px;
+	background: #161616;
+	overflow: hidden;
+	pointer-events: auto;
+}
+
+/* Title: OUR (Serrif Medium) NETWORK (Dazzed Bold), 48/48 white. */
+.landing-v2 .landing-network__title {
+	position: absolute;
+	top: 274px;
+	left: 24px;
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	letter-spacing: normal;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+.landing-v2 .landing-network__title-serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+.landing-v2 .landing-network__subtitle {
+	position: absolute;
+	top: 277px;
+	left: 864px;
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 12px;
+	line-height: 14px;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+/* The wide slash spacing is authored (double spaces) — pre preserves
+   it through the nowrap line spans. */
+.landing-v2 .landing-network__body {
+	position: absolute;
+	top: 329px;
+	left: 864px;
+	width: 840px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 36px;
+	line-height: 48px;
+	color: #ffffff;
+}
+
+.landing-v2 .landing-network__line {
+	display: block;
+	white-space: pre;
+}
+
+/* ── Marquees ────────────────────────────────────────────────────────
+   Track = the 9-brand set twice; one set = exactly 1728px
+   (9 x (160 + 32)), so translating one set width wraps seamlessly.
+   Compositor-only, independent of scroll. */
+.landing-v2 .landing-network__marquee {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	overflow: hidden;
+}
+
+.landing-v2 .landing-network__marquee--top {
+	top: 635px;
+}
+
+.landing-v2 .landing-network__marquee--bottom {
+	top: 767px;
+}
+
+.landing-v2 .landing-network__track {
+	display: flex;
+	width: max-content;
+	will-change: transform;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .landing-network__track--left {
+		animation: landing-network-marquee-left var(--network-marquee-bottom-dur, 40s) linear infinite;
+	}
+
+	.landing-v2 .landing-network__track--right {
+		animation: landing-network-marquee-right var(--network-marquee-top-dur, 48s) linear infinite;
+	}
+}
+
+@keyframes landing-network-marquee-left {
+	from { transform: translateX(0); }
+	to { transform: translateX(-1728px); }
+}
+
+@keyframes landing-network-marquee-right {
+	from { transform: translateX(-1728px); }
+	to { transform: translateX(0); }
+}
+
+.landing-v2 .landing-network__cell {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 160px;
+	height: 100px;
+	margin-right: 32px;
+	background: rgba(233, 233, 241, 0.4);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+}
+
+/* Bentley/Samsung come as full-cell exports (panel baked in). */
+.landing-v2 .landing-network__cell--baked {
+	background: none;
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+}
+
+.landing-v2 .landing-network__cell--baked img {
+	width: 160px;
+	height: 100px;
+}
+
+.landing-v2 .landing-network__cell img {
+	display: block;
+	max-width: none;
+}
+
+/* The file's soft band behind the rows/strip seam (3:509). */
+.landing-v2 .landing-network__footer-band {
+	position: absolute;
+	top: 795px;
+	left: 0;
+	width: 100%;
+	height: 135px;
+	max-width: none;
+	object-fit: fill;
+	pointer-events: none;
+}
+
+/* Photo strip — exact Figma crops, edge to edge (345/346 x 5 = 1728). */
+.landing-v2 .landing-network__strip {
+	position: absolute;
+	top: 796px;
+	left: 0;
+	display: flex;
+	width: 100%;
+	height: 301px;
+}
+
+.landing-v2 .landing-network__strip-win {
+	position: relative;
+	display: block;
+	height: 301px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.landing-v2 .landing-network__strip-win img {
+	position: absolute;
+	max-width: none;
+}
+
+/* The file's edge gradient (3:620): fades the carousel/strip band into
+   the ground at 0-3% and 97-100%. Above the rows and strip. */
+.landing-v2 .landing-network__edge-fade {
+	position: absolute;
+	top: 615px;
+	left: 0;
+	width: 100%;
+	height: 482px;
+	background: linear-gradient(
+		90deg,
+		#161616 0%,
+		rgba(22, 22, 22, 0) 3%,
+		rgba(22, 22, 22, 0) 97%,
+		#161616 100%
+	);
+	pointer-events: none;
+}
+
+/* Entrance hidden states — no-preference only; the reveal module
+   (landing-network.js) arms and plays them. */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .landing-network__marquee,
+	.landing-v2 .landing-network__strip {
+		opacity: 0;
+		transition: opacity 0.8s ease;
+	}
+
+	.landing-v2 .landing-network__marquee.is-visible,
+	.landing-v2 .landing-network__strip.is-visible {
+		opacity: 1;
+	}
 }
 
 /* Reduced motion: the char ripple is suppressed (the utility skips

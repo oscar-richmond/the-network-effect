@@ -25,6 +25,28 @@ gsap.registerPlugin(ScrollTrigger);
 
 const LINE_STAGGER_S = 0.12;
 
+/**
+ * The transition OUT (Oscar's rev — the bridge into Our Network),
+ * one scrubbed gesture over the outro's extra runway, starting the
+ * moment the outro's top reaches the viewport top (i.e. exactly as
+ * the founders photo finishes departing):
+ *
+ *   0 ......... DWELL ........ 250        the services line holds
+ *   250 ....... text fade .... 650        opacity 1 -> 0
+ *   450 ....... ground fade .. 950        #EEEEF0 -> #161616
+ *
+ * The text fade and ground fade overlap by 200px so the three beats
+ * read as one continuous move, and the scrub's end (950) is the same
+ * scroll position where the network section's top crosses the
+ * viewport bottom — black arriving on black, no seam. Keep the total
+ * in step with the outro's height in landing.css.
+ */
+const TRANSITION_DWELL_PX = 250;
+const TRANSITION_TEXT_FADE_PX = 400;
+const TRANSITION_GROUND_DELAY_PX = 200;
+const TRANSITION_GROUND_FADE_PX = 500;
+const GROUND_DARK = '#161616';
+
 /** Index of the alignment glyph — the first S of "ACCESS. TO IMPACT.". */
 const ALIGN_CHAR_INDEX = 4;
 
@@ -54,6 +76,7 @@ export function initLandingServices() {
 
   let disposed = false;
   let trigger = null;
+  let transitionTl = null;
 
   const onResize = () => alignServicesLines(line1, line2);
 
@@ -67,6 +90,30 @@ export function initLandingServices() {
     window.addEventListener('resize', onResize);
 
     if (reduced) return;
+
+    /* The transition out — see the constants above. */
+    const title = document.querySelector('[data-landing-services-title]');
+    if (title instanceof HTMLElement) {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: `+=${TRANSITION_DWELL_PX + TRANSITION_GROUND_DELAY_PX + TRANSITION_GROUND_FADE_PX}`,
+          scrub: true,
+        },
+      });
+      tl.to(
+        title,
+        { opacity: 0, duration: TRANSITION_TEXT_FADE_PX, ease: 'none' },
+        TRANSITION_DWELL_PX,
+      );
+      tl.to(
+        section,
+        { backgroundColor: GROUND_DARK, duration: TRANSITION_GROUND_FADE_PX, ease: 'none' },
+        TRANSITION_DWELL_PX + TRANSITION_GROUND_DELAY_PX,
+      );
+      transitionTl = tl;
+    }
 
     const lines = [line1, line2].filter((el) => el instanceof HTMLElement);
     lines.forEach((line, i) => {
@@ -88,5 +135,7 @@ export function initLandingServices() {
     disposed = true;
     window.removeEventListener('resize', onResize);
     trigger?.kill();
+    transitionTl?.scrollTrigger?.kill();
+    transitionTl?.kill();
   };
 }

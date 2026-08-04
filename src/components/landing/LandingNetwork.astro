@@ -1,0 +1,144 @@
+---
+/**
+ * OUR NETWORK (/landing) — Figma n2cY4c7GnsR5MBx1PJoC97 node 3:68,
+ * extracted 2026-08-04. Chrome mockup (3:639-3:642) and nav mockup
+ * (3:644) ignored; geometry below is the design's own container with
+ * the 83px chrome offset subtracted.
+ *
+ * Arrives via the services transition (landing-services.js): the
+ * outro's text fades, its ground darkens to #161616, and this
+ * section (same black) enters — a black-on-black boundary, no seam.
+ *
+ * CAROUSELS: two autonomous marquee rows (top drifts RIGHT, bottom
+ * LEFT), pure CSS keyframe animation on the tracks — compositor-only
+ * transforms, no rAF, no ScrollTrigger, zero interaction with the
+ * Lenis/GSAP scroll graph. Each row renders the 9-brand set TWICE;
+ * one set is exactly 1728px (9 x 160 cells + 9 x 32 gaps), so a
+ * translate of one set width loops seamlessly at any viewport up to
+ * the design width. Speeds are the two custom properties on the
+ * section (--network-marquee-*). No hover pause (Oscar's instinct:
+ * ambient, not interactive — one line to add if he reverses).
+ *
+ * PENDING FOUNDER SIGN-OFF: the brand set names real companies — see
+ * the flag in src/data/landing/network-brands.js. The five strip
+ * photographs are the file's own assets, placeholder-until-approved
+ * per the standing content policy.
+ */
+import { NETWORK_BRANDS } from '../../data/landing/network-brands.js';
+import { asset } from '../../utils/asset.js';
+
+const strip = [
+  { src: asset('/assets/landing/network/strip-1.jpg'), win: 345, w: 351.73, h: 439.92, x: -1.28, y: -1.54 },
+  { src: asset('/assets/landing/network/strip-2.jpg'), win: 346, w: 346, h: 429, x: 0, y: -63 },
+  { src: asset('/assets/landing/network/strip-3.jpg'), win: 345, w: 355, h: 438, x: -10, y: -69 },
+  { src: asset('/assets/landing/network/strip-4.jpg'), win: 346, w: 367, h: 459, x: -18, y: -69 },
+  { src: asset('/assets/landing/network/strip-5.jpg'), win: 346, w: 349.01, h: 448.3, x: -2.01, y: -104.3 },
+];
+const footerBand = asset('/assets/landing/network/footer-band.png');
+
+/** The set is rendered twice per row for the seamless wrap. */
+const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
+---
+
+<section class="landing-network" data-landing-network aria-label="Our network">
+  <h2 class="landing-network__title" data-landing-network-title>
+    <span class="landing-network__line"
+      ><span class="landing-network__title-serrif">OUR </span>NETWORK</span
+    >
+  </h2>
+
+  <p class="landing-network__subtitle" data-landing-network-subtitle>
+    <span class="landing-network__line">Trusted by founders and</span>
+    <span class="landing-network__line">brands across culture AND commerce.</span>
+  </p>
+
+  <p class="landing-network__body" data-landing-network-body>
+    <span class="landing-network__line">Talent  /  Hospitality  /  TV &amp; Film  /  Music</span>
+    <span class="landing-network__line">Luxury  /  Fashion  /  Food &amp; Beverage  /  Sports</span>
+    <span class="landing-network__line">Production  /  Founders  /  Cultural Operators</span>
+  </p>
+
+  {/* Marquees — aria-hidden: an infinite ambient logo drift is noise
+      to AT; the brand claims read from the (pending) copy instead. */}
+  <div
+    class="landing-network__marquee landing-network__marquee--top"
+    data-landing-network-row
+    aria-hidden="true"
+  >
+    <div class="landing-network__track landing-network__track--right">
+      {doubled.map((b) => (
+        b.cell ? (
+          <span class="landing-network__cell landing-network__cell--baked">
+            <img src={b.src} alt="" loading="lazy" decoding="async" />
+          </span>
+        ) : (
+          <span class="landing-network__cell">
+            <img
+              src={b.src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              style={`width:${b.w}px;height:${b.h}px`}
+            />
+          </span>
+        )
+      ))}
+    </div>
+  </div>
+
+  <div
+    class="landing-network__marquee landing-network__marquee--bottom"
+    data-landing-network-row
+    aria-hidden="true"
+  >
+    <div class="landing-network__track landing-network__track--left">
+      {doubled.map((b) => (
+        b.cell ? (
+          <span class="landing-network__cell landing-network__cell--baked">
+            <img src={b.src} alt="" loading="lazy" decoding="async" />
+          </span>
+        ) : (
+          <span class="landing-network__cell">
+            <img
+              src={b.src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              style={`width:${b.w}px;height:${b.h}px`}
+            />
+          </span>
+        )
+      ))}
+    </div>
+  </div>
+
+  {/* The file's soft band behind the rows/strip seam. */}
+  <img
+    class="landing-network__footer-band"
+    src={footerBand}
+    alt=""
+    loading="lazy"
+    decoding="async"
+    aria-hidden="true"
+  />
+
+  {/* Photo strip — exact Figma crops (plain-rect masks), edge to edge.
+      PENDING SIGN-OFF (placeholder photos). */}
+  <div class="landing-network__strip" data-landing-network-strip aria-hidden="true">
+    {strip.map((s) => (
+      <span class="landing-network__strip-win" style={`width:${s.win}px`}>
+        <img
+          src={s.src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          style={`width:${s.w}px;height:${s.h}px;left:${s.x}px;top:${s.y}px`}
+        />
+      </span>
+    ))}
+  </div>
+
+  {/* The file's edge gradient (3:620): masks the carousel/strip edges
+      into the section ground. */}
+  <div class="landing-network__edge-fade" aria-hidden="true"></div>
+</section>

@@ -15,6 +15,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
 import LandingFounders from '../components/landing/LandingFounders.astro';
+import LandingNetwork from '../components/landing/LandingNetwork.astro';
 import Menu from '../components/Menu.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -92,6 +93,9 @@ import '../styles/fonts.css';
     </h2>
   </section>
 
+  {/* Our Network — arrives on the black the outro just faded to. */}
+  <LandingNetwork />
+
   <Menu />
 
   {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
@@ -103,17 +107,20 @@ import '../styles/fonts.css';
   import { initLandingFounders } from '../scripts/landing/landing-founders.js';
   import { initCharRipple } from '../scripts/char-ripple.js';
   import { initLandingServices } from '../scripts/landing/landing-services.js';
+  import { initLandingNetwork } from '../scripts/landing/landing-network.js';
 
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();
   let cleanupCharRipple = initCharRipple();
   let cleanupLandingServices = initLandingServices();
+  let cleanupLandingNetwork = initLandingNetwork();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupLandingHero();
     cleanupLandingFounders();
     cleanupCharRipple();
     cleanupLandingServices();
+    cleanupLandingNetwork();
   });
 
   document.addEventListener('astro:after-swap', () => {
@@ -121,5 +128,6 @@ import '../styles/fonts.css';
     cleanupLandingFounders = initLandingFounders();
     cleanupCharRipple = initCharRipple();
     cleanupLandingServices = initLandingServices();
+    cleanupLandingNetwork = initLandingNetwork();
   });
 </script>
