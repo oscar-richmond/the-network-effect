@@ -537,26 +537,52 @@
 	flex-shrink: 0;
 }
 
-/* ── Departure runway: the grey ground the full-screen founders photo
-   scrolls off against (see landing.astro). Exactly one viewport tall:
-   the section must travel a full viewport for its bottom to clear the
-   top, so max scroll lands precisely as the photo finishes leaving.
-   Above the fixed hero stage (250) like the track; the hero ground
-   colour so the reveal reads as the page's light grey. */
+/* ── Services intro / departure runway: the grey ground the
+   full-screen founders photo scrolls off against, carrying the
+   services opening line centred both ways. Exactly one viewport
+   tall: the section must travel a full viewport for its bottom to
+   clear the top, so max scroll lands precisely as the photo finishes
+   leaving. Above the fixed hero stage (250) like the track. */
 .landing-v2 .landing-outro {
 	position: relative;
 	z-index: 260;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	height: 100vh;
 	height: 100dvh;
 	background: var(--landing-ground);
 }
 
-/* Reduced motion: no full-screen moment, no departure — the runway
-   would be a pointless empty scroll. */
-@media (prefers-reduced-motion: reduce) {
-	.landing-v2 .landing-outro {
-		height: 0;
-	}
+/* Two lines, 40px on the hero headline's 40px leading (Oscar's spec:
+   same spacing as BUILT ON TRUST / POWERED BY ACCESS). Base face
+   Dazzed Bold; the OUR SERVICES. run is Serrif Medium. The block is
+   shrink-to-fit and flex-centred by the section, so the pair centres
+   TOGETHER; line 1's margin-left is derived at runtime so the O of
+   OUR sits on the first S of ACCESS (landing-services.js). */
+.landing-v2 .landing-services__title {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	width: max-content;
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 40px;
+	line-height: 40px;
+	letter-spacing: normal;
+	color: var(--landing-ink);
+}
+
+.landing-v2 .landing-services__line {
+	display: block;
+	white-space: nowrap;
+}
+
+.landing-v2 .landing-services__serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
 }
 
 /* Reduced motion: the char ripple is suppressed (the utility skips
