@@ -1078,3 +1078,195 @@
 		height: 100vh;
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   WE CREATE ACCESS — Figma 9:1472. Light ground returns after Our
+   Network's dark (plain document boundary — the section's own
+   top/bottom fades soften the arrival). Two 344px columns (x200 /
+   x1184) travel oppositely under difference words and a mixed-face
+   centre headline; interaction in landing-access.js.
+
+   Stack: masked colmask > travelling col (z1) → warp canvas (z2) →
+   unmasked veilwrap > travelling veilcol (z3) → words/headline (z4).
+   The difference words' ancestors are section > stage only.
+
+   Static CSS state = pair 1 landed (the reduced-motion / pre-JS
+   frame): column tops in dvh mirror landing-access.js's measured px
+   (centre band at 580/1029 ≈ 56.4dvh; prime offsets 1 and 6 × 524).
+   ══════════════════════════════════════════════════════════════════ */
+
+.landing-v2 .landing-access {
+	position: relative;
+	height: calc(100dvh + 2000px);
+	background: #eeeef0;
+}
+
+.landing-v2 .landing-access__stage {
+	--access-center-y: 56.4dvh;
+	position: sticky;
+	top: 0;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+.landing-v2 .landing-access__colmask {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 344px;
+	z-index: 1;
+	-webkit-mask-image: linear-gradient(180deg, transparent 0, #000 140px, #000 calc(100% - 140px), transparent 100%);
+	mask-image: linear-gradient(180deg, transparent 0, #000 140px, #000 calc(100% - 140px), transparent 100%);
+}
+
+.landing-v2 .landing-access__colmask--left { left: 200px; }
+.landing-v2 .landing-access__colmask--right { left: 1184px; }
+
+.landing-v2 .landing-access__col,
+.landing-v2 .landing-access__veilcol {
+	position: absolute;
+	left: 0;
+	width: 344px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	will-change: transform;
+}
+
+/* Pair 1 landed: prime item (index 1 left / 6 right) centred. */
+.landing-v2 [data-access-col='left'],
+.landing-v2 [data-access-veils='left'] { top: calc(var(--access-center-y, 56.4dvh) - 774px); }
+.landing-v2 [data-access-col='right'],
+.landing-v2 [data-access-veils='right'] { top: calc(var(--access-center-y, 56.4dvh) - 3394px); }
+
+.landing-v2 .landing-access__item {
+	flex: none;
+	width: 344px;
+	height: 500px;
+	margin: 0;
+	overflow: hidden;
+	/* File: off-centre images at 0.6 — the DOM/no-WebGL rendering;
+	   under the warp the shader's uFocus carries the same falloff. */
+	opacity: 0.6;
+}
+
+.landing-v2 .landing-access__item.is-prime { opacity: 1; }
+
+.landing-v2 .landing-access__item img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.landing-v2 .landing-access__canvas {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 440px;
+	z-index: 2;
+	pointer-events: none;
+	-webkit-mask-image: linear-gradient(180deg, transparent 0, #000 140px, #000 calc(100% - 140px), transparent 100%);
+	mask-image: linear-gradient(180deg, transparent 0, #000 140px, #000 calc(100% - 140px), transparent 100%);
+}
+
+.landing-v2 .landing-access__canvas--left { left: 152px; }
+.landing-v2 .landing-access__canvas--right { left: 1136px; }
+
+/* Veil wrappers: NO mask — a mask forms a backdrop root and would
+   cut the veils' backdrop-filter off from the canvas beneath. */
+.landing-v2 .landing-access__veilwrap {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 344px;
+	z-index: 3;
+	pointer-events: none;
+}
+
+.landing-v2 .landing-access__veilwrap--left { left: 200px; }
+.landing-v2 .landing-access__veilwrap--right { left: 1184px; }
+
+.landing-v2 .landing-access__veil {
+	flex: none;
+	width: 344px;
+	height: 500px;
+	/* File: rgba(255,255,255,0.1) + backdrop blur 10 on dimmed images.
+	   JS scrubs both from centre distance; this is the static frame. */
+	background: rgba(255, 255, 255, 0.1);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+}
+
+.landing-v2 [data-access-veils='left'] .landing-access__veil:nth-child(2),
+.landing-v2 [data-access-veils='right'] .landing-access__veil:nth-child(7) {
+	background: transparent;
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+}
+
+/* Word overlays — Serrif Regular, white, difference; centred on each
+   column, long words bleed symmetrically (founders-name vocabulary).
+   Positioned with left/top only: no transform on the blend element. */
+.landing-v2 .landing-access__word {
+	position: absolute;
+	z-index: 4;
+	width: 344px;
+	top: calc(var(--access-center-y, 56.4dvh) - 32px);
+	height: 64px;
+	margin: 0;
+	text-align: center;
+	white-space: nowrap;
+	pointer-events: none;
+	font-family: 'Serrif', serif;
+	font-weight: 400;
+	font-synthesis: none;
+	font-size: 64px;
+	line-height: 64px;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .landing-access__word--left { left: 200px; }
+.landing-v2 .landing-access__word--right { left: 1184px; }
+
+.landing-v2 .landing-access__word-inner {
+	display: inline-block;
+	will-change: filter;
+}
+
+/* Centre headline — 32/32 #161616, 457px measure, mixed faces per
+   the file (WE + tail Dazzed Bold, middle clause Serrif Medium). */
+.landing-v2 .landing-access__headline {
+	position: absolute;
+	z-index: 4;
+	left: 50%;
+	width: 457px;
+	margin: 0 0 0 -228.5px;
+	top: calc(var(--access-center-y, 56.4dvh) - 64px);
+	text-align: center;
+	font-size: 32px;
+	line-height: 32px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .landing-access__hl-line { display: block; }
+
+.landing-v2 .landing-access__hl-dazzed {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-synthesis: none;
+}
+
+.landing-v2 .landing-access__hl-serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-access {
+		height: 100dvh;
+	}
+}

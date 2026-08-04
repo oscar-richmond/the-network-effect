@@ -16,6 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
 import LandingFounders from '../components/landing/LandingFounders.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
+import LandingAccess from '../components/landing/LandingAccess.astro';
 import Menu from '../components/Menu.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -96,6 +97,10 @@ import '../styles/fonts.css';
   {/* Our Network — arrives on the black the outro just faded to. */}
   <LandingNetwork />
 
+  {/* We Create Access — light returns on a plain document boundary;
+      the section's own top fade softens the dark→light cut. */}
+  <LandingAccess />
+
   <Menu />
 
   {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
@@ -108,12 +113,14 @@ import '../styles/fonts.css';
   import { initCharRipple } from '../scripts/char-ripple.js';
   import { initLandingServices } from '../scripts/landing/landing-services.js';
   import { initLandingNetwork } from '../scripts/landing/landing-network.js';
+  import { initLandingAccess } from '../scripts/landing/landing-access.js';
 
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();
   let cleanupCharRipple = initCharRipple();
   let cleanupLandingServices = initLandingServices();
   let cleanupLandingNetwork = initLandingNetwork();
+  let cleanupLandingAccess = initLandingAccess();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupLandingHero();
@@ -121,6 +128,7 @@ import '../styles/fonts.css';
     cleanupCharRipple();
     cleanupLandingServices();
     cleanupLandingNetwork();
+    cleanupLandingAccess();
   });
 
   document.addEventListener('astro:after-swap', () => {
@@ -129,5 +137,6 @@ import '../styles/fonts.css';
     cleanupCharRipple = initCharRipple();
     cleanupLandingServices = initLandingServices();
     cleanupLandingNetwork = initLandingNetwork();
+    cleanupLandingAccess = initLandingAccess();
   });
 </script>

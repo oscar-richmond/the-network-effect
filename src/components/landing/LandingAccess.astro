@@ -1,0 +1,124 @@
+---
+/**
+ * WE CREATE ACCESS (/landing) — Figma n2cY4c7GnsR5MBx1PJoC97 node
+ * 9:1472 (inside frame 9:1100), extracted 2026-08-04. Chrome/nav
+ * mockup frames ignored.
+ *
+ * Two 344px image columns (left x200, right x1184) travel in
+ * OPPOSITE directions on scroll — left up, right down — landing on
+ * six word pairs together; the centre image of each column is sharp,
+ * everything else dims behind a white veil + backdrop blur. Word
+ * overlays (Serrif Regular, difference) sit at the centre band and
+ * change per pair. The whole interaction lives in
+ * src/scripts/landing/landing-access.js; the images additionally
+ * render through the curve-media warp (src/scripts/curve-media.js,
+ * the services pop-up treatment) on two per-column canvases.
+ *
+ * STACK ORDER / BLEND MAP (see landing-access.js header): masked
+ * static wrappers > travelling columns (z1) → warp canvases (z2) →
+ * travelling veil columns (z3) → difference words + headline (z4).
+ * The words' ancestor chain is the bare stage — no transform, filter,
+ * opacity or mask above them.
+ *
+ * PENDING FOUNDER SIGN-OFF: the Figma supplies only 5 distinct
+ * images per column (8 unique in the layout, 14 in the file's pool);
+ * six pairs need 12. All slots below are placeholder assignments
+ * from the file's own pool — swap freely, the pairing/order is the
+ * only structural part. Pads (top/bottom bookends) never reach the
+ * centre and are repeats by design.
+ */
+import { asset } from '../../utils/asset.js';
+
+const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
+
+/* Left column travels UP: top→bottom = pad, pair 1..6, pad. */
+const leftStack = [a(9), a(7), a(2), a(1), a(6), a(13), a(3), a(10)];
+/* Right column travels DOWN: top→bottom = pad, pair 6..1, pad. */
+const rightStack = [a(10), a(4), a(14), a(12), a(5), a(11), a(8), a(9)];
+
+/* Index of the image that is centred at rest (pair 1). */
+const PRIME_LEFT = 1;
+const PRIME_RIGHT = 6;
+---
+
+<section class="landing-access" data-landing-access aria-label="We create access">
+  <div class="landing-access__stage" data-access-stage>
+    {/* Image columns — masked static wrapper (the section's top/bottom
+        fade) around the travelling flex column. aria-hidden: ambient
+        imagery; the words + headline carry the meaning. */}
+    <div class="landing-access__colmask landing-access__colmask--left" aria-hidden="true">
+      <div class="landing-access__col" data-access-col="left">
+        {leftStack.map((src, i) => (
+          <figure class={`landing-access__item${i === PRIME_LEFT ? ' is-prime' : ''}`} data-carousel-slide>
+            <img src={src} alt="" loading="eager" decoding="async" />
+          </figure>
+        ))}
+      </div>
+    </div>
+    <div class="landing-access__colmask landing-access__colmask--right" aria-hidden="true">
+      <div class="landing-access__col" data-access-col="right">
+        {rightStack.map((src, i) => (
+          <figure class={`landing-access__item${i === PRIME_RIGHT ? ' is-prime' : ''}`} data-carousel-slide>
+            <img src={src} alt="" loading="eager" decoding="async" />
+          </figure>
+        ))}
+      </div>
+    </div>
+
+    {/* Curve-media warp canvases, one per column (each gets its own
+        velocity sign). Masked with the same fade as the columns. */}
+    <canvas class="landing-access__canvas landing-access__canvas--left" data-access-canvas="left" aria-hidden="true"></canvas>
+    <canvas class="landing-access__canvas landing-access__canvas--right" data-access-canvas="right" aria-hidden="true"></canvas>
+
+    {/* Dim veils — a second pair of travelling columns carrying ONLY
+        the white/backdrop-blur overlays, mirrored 1:1 with the image
+        columns and driven by the same progress value. They must sit
+        ABOVE the canvases (backdrop-filter samples what's painted
+        below), so they can't live inside the image columns; their
+        wrappers are NOT masked — a mask would become a backdrop root
+        and cut the veils off from the canvas pixels beneath. */}
+    <div class="landing-access__veilwrap landing-access__veilwrap--left" aria-hidden="true">
+      <div class="landing-access__veilcol landing-access__veilcol--left" data-access-veils="left">
+        {leftStack.map(() => (
+          <span class="landing-access__veil"></span>
+        ))}
+      </div>
+    </div>
+    <div class="landing-access__veilwrap landing-access__veilwrap--right" aria-hidden="true">
+      <div class="landing-access__veilcol landing-access__veilcol--right" data-access-veils="right">
+        {rightStack.map(() => (
+          <span class="landing-access__veil"></span>
+        ))}
+      </div>
+    </div>
+
+    {/* Word overlays — Serrif Regular, difference, centred on each
+        column's centre band; text swaps per pair (sentence case per
+        the Figma). Static markup = pair 1, the reduced-motion frame. */}
+    <p class="landing-access__word landing-access__word--left" data-access-word="left">
+      <span class="landing-access__word-inner">Talent</span>
+    </p>
+    <p class="landing-access__word landing-access__word--right" data-access-word="right">
+      <span class="landing-access__word-inner">Brands</span>
+    </p>
+
+    {/* Centre headline — mixed faces per the file: WE + the tail in
+        Dazzed Bold, the middle clause in Serrif Medium. Authored as
+        the file's own four rendered lines (mixed faces INSIDE lines,
+        so the reveal uses the child-preserving exact wrap). */}
+    <h2 class="landing-access__headline" data-access-headline>
+      <span class="landing-access__hl-line" data-access-line
+        ><span class="landing-access__hl-dazzed">{'WE '}</span><span class="landing-access__hl-serrif">CREATE ACCESS</span></span
+      >
+      <span class="landing-access__hl-line" data-access-line
+        ><span class="landing-access__hl-serrif">BETWEEN WORLDS</span><span class="landing-access__hl-dazzed">{' THAT'}</span></span
+      >
+      <span class="landing-access__hl-line" data-access-line
+        ><span class="landing-access__hl-dazzed">DON'T NORMALLY</span></span
+      >
+      <span class="landing-access__hl-line" data-access-line
+        ><span class="landing-access__hl-dazzed">CONNECT</span></span
+      >
+    </h2>
+  </div>
+</section>
