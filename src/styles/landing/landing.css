@@ -629,14 +629,22 @@
 	right: 24px;
 	width: 720px;
 	height: 430px;
+	/* Above the left items: the exit expands this window to the full
+	   viewport (landing-founders.js) and it should cover them. */
+	z-index: 5;
 }
 
+/* Cover-mode crop (was the exact-px Figma layer): the exit now
+   EXPANDS this window to full screen, and only object-fit:cover can
+   reveal more of the photograph as the box grows without distorting.
+   object-position 50% 57% reproduces the Figma crop to within a
+   sub-1% horizontal sliver at rest (the file's layer scale differs
+   from cover's by ~1.6%) — the sanctioned approximation. */
 .landing-v2 .landing-founders__photo img {
-	position: absolute;
-	top: -29px;
-	left: -6.7px;
-	width: 731.32px;
-	height: 487.79px;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 50% 57%;
 	max-width: none;
 }
 

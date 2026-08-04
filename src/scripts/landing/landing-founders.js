@@ -61,7 +61,6 @@ const DRIFT_PHOTO_PX = 200;
 const FOUNDERS_HOLD_PX = 250;
 const FOUNDERS_EXIT_PX = 900;
 const SECTION_ENTRY_PX_FALLBACK = 1049; // section height fallback
-const GROUND_LIGHT = '#eeeef0';
 
 /**
  * Exit travels (Oscar's rev of the rev — the clearance-based exit was
@@ -79,7 +78,24 @@ const EXIT_HEADLINE_PX = 420;
 const EXIT_CTAS_PX = 300;
 const EXIT_ROBBO_PX = 220;
 const EXIT_ASHLEY_PX = 180;
-const EXIT_PHOTO_PX = 140;
+
+/**
+ * Exit blur (Oscar's rev): as each LEFT item starts its exit travel it
+ * blurs away — the portrait names' blur vocabulary (the shared 3px),
+ * scrubbed against scroll rather than clocked, each over its own
+ * scroll distance so the speeds differ with the travel paces (the
+ * faster the mover, the quicker the dissolve). The big photo doesn't
+ * blur — it EXPANDS to full screen instead, covering the section as
+ * the sticky release approaches; the ground fade is gone (stays
+ * #161616 under the photo). Portrait blurs target the CROP spans,
+ * never the figures: a filtered/faded ancestor would isolate the
+ * difference-blended names (the six-regression class).
+ */
+const EXIT_BLUR_PX = 3;
+const EXIT_BLUR_HEADLINE_PX = 450;
+const EXIT_BLUR_CTAS_PX = 550;
+const EXIT_BLUR_ROBBO_PX = 650;
+const EXIT_BLUR_ASHLEY_PX = 700;
 
 export function initLandingFounders() {
   const section = document.querySelector('[data-landing-founders]');
@@ -119,12 +135,13 @@ export function initLandingFounders() {
       section.offsetHeight || SECTION_ENTRY_PX_FALLBACK,
     );
     const holdEnd = entryPx + FOUNDERS_HOLD_PX;
+    const photo = section.querySelector('.landing-founders__photo');
     const driftSpec = [
-      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y' },
-      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, exit: EXIT_CTAS_PX, mode: 'y' },
-      { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, exit: EXIT_PHOTO_PX, mode: 'y' },
-      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, exit: EXIT_ROBBO_PX, mode: 'top' },
-      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, exit: EXIT_ASHLEY_PX, mode: 'top' },
+      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__headline'), blurDur: EXIT_BLUR_HEADLINE_PX },
+      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, exit: EXIT_CTAS_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__ctas'), blurDur: EXIT_BLUR_CTAS_PX },
+      { el: photo, px: DRIFT_PHOTO_PX, exit: 0, mode: 'y' },
+      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, exit: EXIT_ROBBO_PX, mode: 'top', blurEl: section.querySelector('.landing-founders__portrait--robbo .landing-founders__portrait-crop'), blurDur: EXIT_BLUR_ROBBO_PX },
+      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, exit: EXIT_ASHLEY_PX, mode: 'top', blurEl: section.querySelector('.landing-founders__portrait--ashley .landing-founders__portrait-crop'), blurDur: EXIT_BLUR_ASHLEY_PX },
     ];
 
     const tl = gsap.timeline({
@@ -136,7 +153,7 @@ export function initLandingFounders() {
       },
     });
 
-    driftSpec.forEach(({ el, px, exit, mode }) => {
+    driftSpec.forEach(({ el, px, exit, mode, blurEl, blurDur }) => {
       if (!(el instanceof HTMLElement)) return;
       if (mode === 'top') {
         const baseTop = parseFloat(getComputedStyle(el).top);
@@ -145,30 +162,59 @@ export function initLandingFounders() {
           { top: baseTop + px },
           { top: baseTop, duration: entryPx, ease: 'none' },
           0,
-        ).to(
-          el,
-          { top: baseTop - exit, duration: FOUNDERS_EXIT_PX, ease: 'none' },
-          holdEnd,
         );
+        if (exit) {
+          tl.to(
+            el,
+            { top: baseTop - exit, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+            holdEnd,
+          );
+        }
       } else {
         tl.fromTo(
           el,
           { y: px },
           { y: 0, duration: entryPx, ease: 'none' },
           0,
-        ).to(
-          el,
-          { y: -exit, duration: FOUNDERS_EXIT_PX, ease: 'none' },
+        );
+        if (exit) {
+          tl.to(el, { y: -exit, duration: FOUNDERS_EXIT_PX, ease: 'none' }, holdEnd);
+        }
+      }
+      if (blurEl instanceof HTMLElement && blurDur) {
+        tl.fromTo(
+          blurEl,
+          { filter: 'blur(0px)', opacity: 1 },
+          { filter: `blur(${EXIT_BLUR_PX}px)`, opacity: 0, duration: blurDur, ease: 'none' },
           holdEnd,
         );
       }
     });
 
-    tl.to(
-      section,
-      { backgroundColor: GROUND_LIGHT, duration: FOUNDERS_EXIT_PX, ease: 'none' },
-      holdEnd,
-    );
+    /* The photo's exit: expand its crop window to the full viewport
+       (measured from the pinned geometry so it lands exactly on the
+       screen). Inline left/width seed the tween's from-state; the CSS
+       right-anchor is over-constrained away once left+width are set. */
+    if (photo instanceof HTMLElement) {
+      const secRect = section.getBoundingClientRect();
+      const pr = photo.getBoundingClientRect();
+      photo.style.left = `${(pr.left - secRect.left).toFixed(1)}px`;
+      photo.style.width = `${pr.width.toFixed(1)}px`;
+      const vh = window.innerHeight;
+      const pinTop = Math.min(0, vh - section.offsetHeight);
+      tl.to(
+        photo,
+        {
+          top: -pinTop,
+          left: 0,
+          width: window.innerWidth,
+          height: vh,
+          duration: FOUNDERS_EXIT_PX,
+          ease: 'none',
+        },
+        holdEnd,
+      );
+    }
 
     driftTweens.push(tl);
 
