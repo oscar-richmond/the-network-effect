@@ -851,20 +851,30 @@
 	position: relative;
 	z-index: 260;
 	width: 100%;
-	/* Track (Oscar's arrival rev): 1 viewport of sticky stage + a
-	   400px hold that absorbs scroll while the synchronized entrance
-	   plays (landing-network.js). */
-	height: calc(100vh + 400px);
-	height: calc(100dvh + 400px);
+	/* Track (Oscar's timing rev): the 1097px stage + a 400px hold
+	   that absorbs scroll while the synchronized entrance plays. The
+	   NEGATIVE viewport margin overlaps the services section's
+	   trailing viewport, so this section's pin — and the entrance —
+	   fires at the exact scroll position the ground fade completes:
+	   zero dead black between the sections. During the overlapping
+	   slide-in the module makes track + stage TRANSPARENT (content
+	   is hidden anyway), restored at the pin — an invisible switch,
+	   black over identical black. */
+	height: calc(1097px + 400px);
+	margin-top: calc(-1 * 100vh);
+	margin-top: calc(-1 * 100dvh);
 	background: #161616;
 	pointer-events: auto;
 }
 
+/* 1097px — the section's original design height, NOT the viewport:
+   the photo strip keeps its full pre-rev framing (clip at 1097; the
+   bottom band reveals as the section releases, exactly as the old
+   in-flow section behaved). */
 .landing-v2 .landing-network__stage {
 	position: sticky;
 	top: 0;
-	height: 100vh;
-	height: 100dvh;
+	height: 1097px;
 	overflow: hidden;
 	background: #161616;
 }
@@ -1116,6 +1126,12 @@
    rows/row-fade/strip are PARKED below the stage by transform
    (landing-network.js, non-RM only) and ride up during the
    synchronized entrance. RM default = everything in place. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-network {
+		height: 1097px;
+		margin-top: 0;
+	}
+}
 
 /* Reduced motion: the char ripple is suppressed (the utility skips
    wiring under RM), and without it these controls would have NO

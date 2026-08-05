@@ -270,6 +270,11 @@ export function initLandingNetwork() {
     });
   };
   parkMedia();
+  /* Transparent during the overlapping slide-in (see landing.css's
+     track comment): the section rides over the services fade
+     invisibly; restored at the pin — black over identical black. */
+  section.style.background = 'transparent';
+  if (stage instanceof HTMLElement) stage.style.background = 'transparent';
   const onEntryResize = () => {
     if (!entered) parkMedia();
   };
@@ -300,6 +305,8 @@ export function initLandingNetwork() {
       once: true,
       onEnter: () => {
         entered = true;
+        section.style.background = '';
+        if (stage instanceof HTMLElement) stage.style.background = '';
         lines.forEach((line) => {
           if (line instanceof HTMLElement) playLineRevealElement(line);
         });
@@ -326,6 +333,8 @@ export function initLandingNetwork() {
     swapTimeouts.forEach(clearTimeout);
     cleanupHover.forEach((fn) => fn());
     window.removeEventListener('resize', onEntryResize);
+    section.style.background = '';
+    if (stage instanceof HTMLElement) stage.style.background = '';
     trigger?.kill();
   };
 }
