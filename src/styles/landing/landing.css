@@ -1986,8 +1986,8 @@
 	z-index: 260;
 	margin-top: calc(-1 * 100vh);
 	margin-top: calc(-1 * 100dvh);
-	height: calc(100vh + 2573px); /* JS re-derives from content */
-	height: calc(100dvh + 2573px);
+	height: calc(100vh + 2634px); /* JS re-derives from content */
+	height: calc(100dvh + 2634px);
 	background: #eeeef0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: var(--landing-ink);
@@ -2059,11 +2059,15 @@
 	flex-shrink: 0;
 }
 
-/* The strip — 24px lead-in, 8px gaps, pitch 413.93. JS drives x. */
+/* The strip — 24px lead-in, 8px gaps, pitch 384 (Oscar's rev:
+   EXACTLY 4.5 cards per 1728 viewport — 1728 / 4.5). The top is
+   derived so the description never clips the viewport bottom: card
+   content is 641px tall, kept >= 24px clear (the file's 352 is the
+   cap on tall viewports). JS drives x (travel) and y (departure). */
 .landing-v2 .landing-featured__strip {
 	position: absolute;
 	left: 0;
-	top: 352px;
+	top: min(352px, calc(100dvh - 701px)); /* pre-JS fallback; JS derives from real content */
 	display: flex;
 	gap: 8px;
 	padding-left: 24px;
@@ -2073,13 +2077,13 @@
 .landing-v2 .landing-featured__card {
 	position: relative;
 	flex: none;
-	width: 405.93px;
-	height: 660px;
+	width: 376px;
+	height: 677px; /* tallest card at the 324px desc width */
 }
 
 .landing-v2 .landing-featured__imgwin {
 	position: relative;
-	width: 405.93px;
+	width: 376px;
 	height: 465px;
 	margin: 0;
 	overflow: hidden;
@@ -2129,7 +2133,7 @@
 	position: absolute;
 	left: 0;
 	top: 569px;
-	width: 350px;
+	width: 324px; /* the file's 350 scaled with the 405.93 -> 376 card */
 	margin: 0;
 	font-family: 'Serrif', serif;
 	font-weight: 500;
@@ -2141,16 +2145,17 @@
 
 /* Entrance hidden states — no-preference only. */
 @media (prefers-reduced-motion: no-preference) {
-	.landing-v2 .landing-featured__card,
-	.landing-v2 .landing-featured__viewall {
+	/* Cards only — VIEW ALL's entrance is gsap-driven (its departure
+	   is a scrubbed gsap transform; a CSS transform transition would
+	   intercept it). */
+	.landing-v2 .landing-featured__card {
 		opacity: 0;
 		transform: translateY(24px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
 			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	.landing-v2 .landing-featured__card.is-visible,
-	.landing-v2 .landing-featured__viewall.is-visible {
+	.landing-v2 .landing-featured__card.is-visible {
 		opacity: 1;
 		transform: none;
 	}

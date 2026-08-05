@@ -17,13 +17,13 @@
  * drop or any card-count change re-derives everything. The section
  * height is set from the same derivation.
  *
- * BEAT F, RELOCATED (moved from the services module, constants
- * VERBATIM — 250 dwell, 400 content fade, ground fade 500 starting
- * at +450): after the last card, the strip/header/button fade and
- * the stage ground falls to #161616, the scrub ending exactly as
- * Our Network's top crosses the viewport bottom — the identical
- * black-on-black contract Network's overlap/pin/entrance already
- * consume, one section later.
+ * THE EXIT (Oscar's rev 2 — the departure, no fades): after the
+ * last card and a 250px dwell, the whole gallery (strip + the
+ * difference header lines + VIEW ALL) rides up one viewport at 1:1
+ * scroll speed while the ground falls to #161616 over the final
+ * 500px — the services-departure treatment. The scrub still ends
+ * fully black exactly as Our Network's top crosses the viewport
+ * bottom: the same contract its overlap/pin/entrance consume.
  *
  * ENTRANCE (once, 'top 65%'): FEATURED/WORK line-reveal, VIEW ALL
  * on the founders-button vocabulary, the initially-visible cards
@@ -38,14 +38,17 @@ import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js'
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Beat F — the services transition's original constants, verbatim. */
+/* The exit (Oscar's rev — no fades): after the travel, the whole
+   gallery (strip + FEATURED/WORK + VIEW ALL) DEPARTS upward at 1:1
+   scroll speed — one viewport of travel clears everything — while
+   the ground falls to #161616 over the final 500px. The services
+   departure treatment, here. */
 const TRANSITION_DWELL_PX = 250;
-const TRANSITION_TEXT_FADE_PX = 400;
-const TRANSITION_GROUND_DELAY_PX = 200;
 const TRANSITION_GROUND_FADE_PX = 500;
-const FADE_TOTAL_PX =
-  TRANSITION_DWELL_PX + TRANSITION_GROUND_DELAY_PX + TRANSITION_GROUND_FADE_PX; // 950
 const GROUND_DARK = '#161616';
+/* Header line base tops (landing.css) — the difference-blend lines
+   depart via layout `top`, never transform. */
+const HL_BASE_TOPS = [177, 225];
 
 const RIGHT_MARGIN_PX = 24;
 const LINE_STAGGER_S = 0.12;
@@ -72,7 +75,8 @@ export function initLandingFeatured() {
      24px lead-in padding; the tail matches with RIGHT_MARGIN_PX. */
   const travel = () =>
     Math.max(strip.scrollWidth + RIGHT_MARGIN_PX - (window.innerWidth || 1728), 0);
-  const runway = () => travel() + FADE_TOTAL_PX;
+  const stageH = () => stage.clientHeight || window.innerHeight;
+  const runway = () => travel() + TRANSITION_DWELL_PX + stageH();
 
   /* The section's own height carries the runway (content-derived, so
      it can't live in static CSS). Set before triggers measure. */
@@ -81,13 +85,25 @@ export function initLandingFeatured() {
   };
   applyHeight();
 
+  /* Clip-safe strip top, DERIVED from the tallest card's real
+     content (the 324px desc width re-wraps some copy taller than
+     any fixed budget — caught in verification): keep the lowest
+     desc bottom >= 24px above the viewport bottom, capped at the
+     file's 352. */
+  const placeStrip = () => {
+    const maxBottom = Math.max(...cards.map((c) => {
+      const d = c.querySelector('.landing-featured__desc');
+      return d instanceof HTMLElement ? d.offsetTop + d.offsetHeight : 0;
+    }), 0);
+    strip.style.top = `${Math.min(352, stageH() - maxBottom - 24).toFixed(0)}px`;
+  };
+
   const timeouts = [];
   let masterTl = null;
   let revealTrigger = null;
   let disposed = false;
 
-  const fadeTargets = [strip, section.querySelector('.landing-featured__header'), viewall]
-    .filter((el) => el instanceof HTMLElement);
+  const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -102,20 +118,39 @@ export function initLandingFeatured() {
   });
   /* The horizontal travel — 1:1, reversible, free (no snap). */
   tl.to(strip, { x: () => -travel(), duration: travel() || 1 }, 0);
-  /* Beat F, relocated verbatim. */
-  tl.to(fadeTargets, {
-    opacity: 0,
-    duration: TRANSITION_TEXT_FADE_PX,
-  }, (travel() || 1) + TRANSITION_DWELL_PX);
+  /* THE DEPARTURE (no fades): after a 250px dwell everything rides
+     up one viewport at 1:1 — strip and VIEW ALL by transform, the
+     difference header lines by layout `top` (blend rule) — while
+     the ground falls to dark over the final 500px. */
+  const exitAt = () => (travel() || 1) + TRANSITION_DWELL_PX;
+  tl.to(strip, { y: () => -stageH(), duration: stageH() }, exitAt());
+  if (viewall instanceof HTMLElement) {
+    tl.to(viewall, { y: () => -stageH(), duration: stageH() }, exitAt());
+  }
+  hls.forEach((hl, i) => {
+    tl.to(hl, { top: () => HL_BASE_TOPS[i] - stageH(), duration: stageH() }, exitAt());
+  });
+  /* NUMERIC position (a function here is silently coerced to 0 —
+     caught in verification: the fade ran at the travel's start). */
   tl.to(stage, {
     backgroundColor: GROUND_DARK,
     duration: TRANSITION_GROUND_FADE_PX,
-  }, (travel() || 1) + TRANSITION_DWELL_PX + TRANSITION_GROUND_DELAY_PX);
+  }, runway() - TRANSITION_GROUND_FADE_PX);
   masterTl = tl;
+
+  /* VIEW ALL's entrance is gsap-driven (NOT the CSS hidden-state
+     class): its departure is a scrubbed gsap transform, and a CSS
+     transition on `transform` would intercept those per-frame
+     writes (caught in verification). Cards keep the CSS entrance —
+     the departure moves their CONTAINER, never them. */
+  if (viewall instanceof HTMLElement) {
+    gsap.set(viewall, { opacity: 0, y: 24 });
+  }
 
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
+    placeStrip();
     lines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapLineRevealElement(line);
@@ -127,11 +162,13 @@ export function initLandingFeatured() {
       onEnter: () => {
         lines.forEach((line) => playLineRevealElement(line));
         timeouts.push(setTimeout(() => {
-          if (viewall) viewall.classList.add('is-visible');
+          if (viewall instanceof HTMLElement) {
+            gsap.to(viewall, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' });
+          }
         }, VIEWALL_AT_MS));
         /* Stagger only the initially-visible cards; the rest arrive
            already composed as the strip travels. */
-        const visibleCount = Math.ceil((window.innerWidth || 1728) / 414);
+        const visibleCount = Math.ceil((window.innerWidth || 1728) / 384);
         cards.forEach((card, i) => {
           if (i < visibleCount) {
             timeouts.push(setTimeout(() => card.classList.add('is-visible'), CARDS_AT_MS + i * CARD_STAGGER_MS));
@@ -143,7 +180,10 @@ export function initLandingFeatured() {
     });
   });
 
-  const onResize = () => applyHeight();
+  const onResize = () => {
+    applyHeight();
+    placeStrip();
+  };
   window.addEventListener('resize', onResize);
 
   if (import.meta.env.DEV) {
