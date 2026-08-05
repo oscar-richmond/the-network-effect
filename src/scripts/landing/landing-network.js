@@ -257,9 +257,9 @@ export function initLandingNetwork() {
 
   const timeouts = [];
   let trigger = null;
-  let coverTrigger = null;
+  let groundTrigger = null;
   let disposed = false;
-  let entered = false;
+  let shown = false;
 
   /* Park each riser at the stage's bottom edge (its own distance —
      same duration and curve for all, so they LAND TOGETHER with the
@@ -272,15 +272,22 @@ export function initLandingNetwork() {
     });
   };
   parkMedia();
-  /* Hidden during the overlapping slide-in (see landing.css's track
-     comment) — and, rev 2, PIN-LINKED rather than one-shot: the
-     section is visible exactly while at/past its pin and hidden
-     above it, so scrolling back up returns to the services ground
-     fade playing natively in reverse (no hard black edge — the
-     show/hide switch always happens over identical black). */
-  section.style.visibility = 'hidden';
+  /* TWO covers, split (Oscar's rev 3 — the video hole): the GROUND
+     (track + stage black) toggles at 'top top', the exact scroll
+     position the services fade completes — an invisible switch over
+     identical black that also plugs the viewport-bottom strip the
+     old whole-section visibility toggle left open between the
+     section top and the (later, bottom-aligned) pin, where the
+     fixed hero video showed through. The CONTENT toggles at the pin
+     with a REAL reversed exit (below): the exited state IS the
+     initial parked state, so no visibility hack is needed at all. */
+  section.style.background = 'transparent';
+  if (stage instanceof HTMLElement) stage.style.background = 'transparent';
   const onEntryResize = () => {
-    if (!entered) parkMedia();
+    if (!shown) {
+      media.forEach((el) => { el.style.transition = ''; });
+      parkMedia();
+    }
   };
   window.addEventListener('resize', onEntryResize);
 
@@ -306,39 +313,74 @@ export function initLandingNetwork() {
     /* The synchronized entrance, at the pin (the black moment): text
        reveals in place; media rises over the SAME total time as the
        full text reveal (last line's delay + its transition), so both
-       arrive in their final state together. */
+       arrive in their final state together. The EXIT (Oscar's rev 3
+       — scrolling back up previously just vanished everything) is
+       the same gesture reversed: text back into its clips (delays
+       zeroed so the lines leave together), media riding back down to
+       parked, on the same curve. Both replay on every crossing —
+       CSS transitions retarget cleanly mid-flight. */
     const totalS = (lines.length - 1) * LINE_STAGGER_S + LINE_REVEAL_S;
-    /* Pin-linked cover (both directions, never 'once'). */
-    coverTrigger = ScrollTrigger.create({
-      trigger: section,
-      start: () => `top+=${pinOffset()} top`,
-      end: 'max',
-      onEnter: () => { section.style.visibility = ''; },
-      onLeaveBack: () => { section.style.visibility = 'hidden'; },
+    /* Each inner's authored stagger delay, captured post-wrap so the
+       exit can zero them and the next entrance can restore them. */
+    const delayMap = new Map();
+    lines.forEach((line) => {
+      line.querySelectorAll('.lr-inner').forEach((inner) => {
+        delayMap.set(inner, getComputedStyle(inner).transitionDelay);
+      });
     });
+    const setMediaTransition = () => {
+      media.forEach((el) => {
+        el.style.transition = `transform ${totalS.toFixed(2)}s ${ENTRY_CURVE}`;
+      });
+    };
+    const showContent = () => {
+      shown = true;
+      lines.forEach((line) => {
+        line.querySelectorAll('.lr-inner').forEach((inner) => {
+          inner.style.transitionDelay = delayMap.get(inner) ?? '';
+        });
+        playLineRevealElement(line);
+      });
+      setMediaTransition();
+      void section.offsetWidth; /* commit current state under the transition */
+      media.forEach((el) => { el.style.transform = 'translateY(0px)'; });
+    };
+    const hideContent = () => {
+      shown = false;
+      lines.forEach((line) => {
+        line.querySelectorAll('.lr-inner').forEach((inner) => {
+          inner.style.transitionDelay = '0s';
+        });
+        line.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
+          clip.classList.remove('lr-visible');
+        });
+      });
+      setMediaTransition();
+      void section.offsetWidth;
+      parkMedia();
+    };
+
+    /* Ground cover — at the section top (= the services scrub end). */
+    groundTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: 'max',
+      onEnter: () => {
+        section.style.background = '';
+        if (stage instanceof HTMLElement) stage.style.background = '';
+      },
+      onLeaveBack: () => {
+        section.style.background = 'transparent';
+        if (stage instanceof HTMLElement) stage.style.background = 'transparent';
+      },
+    });
+    /* Content — at the bottom-aligned pin, both directions. */
     trigger = ScrollTrigger.create({
       trigger: section,
       start: () => `top+=${pinOffset()} top`,
-      once: true,
-      onEnter: () => {
-        entered = true;
-        lines.forEach((line) => {
-          if (line instanceof HTMLElement) playLineRevealElement(line);
-        });
-        media.forEach((el) => {
-          el.style.transition = `transform ${totalS.toFixed(2)}s ${ENTRY_CURVE}`;
-        });
-        void section.offsetWidth; /* commit parked state under the transition */
-        media.forEach((el) => {
-          el.style.transform = 'translateY(0px)';
-        });
-        timeouts.push(setTimeout(() => {
-          media.forEach((el) => {
-            el.style.transition = '';
-            el.style.transform = '';
-          });
-        }, totalS * 1000 + 200));
-      },
+      end: 'max',
+      onEnter: showContent,
+      onLeaveBack: hideContent,
     });
   });
 
@@ -348,8 +390,9 @@ export function initLandingNetwork() {
     swapTimeouts.forEach(clearTimeout);
     cleanupHover.forEach((fn) => fn());
     window.removeEventListener('resize', onEntryResize);
-    section.style.visibility = '';
-    coverTrigger?.kill();
+    section.style.background = '';
+    if (stage instanceof HTMLElement) stage.style.background = '';
+    groundTrigger?.kill();
     trigger?.kill();
   };
 }
