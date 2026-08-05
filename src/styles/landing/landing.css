@@ -1637,11 +1637,15 @@
 	margin: 0;
 }
 
+/* 40px (Oscar's rev — was 48). Line 3 stays right-anchored; lines
+   1-2 get JS-derived LEFT anchors so the M and S keep their file
+   positions above CULTURE (offsets 97/162 scaled by 40/48 —
+   landing-closing.js). CSS right values = the pre-JS/RM frame. */
 .landing-v2 .landing-closing__hl {
 	position: absolute;
 	white-space: nowrap;
 	font-weight: 700;
-	font-size: 48px;
+	font-size: 40px;
 	line-height: 40px;
 	color: #fff;
 	mix-blend-mode: difference;
@@ -1706,16 +1710,21 @@
 	gap: 12px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 32px;
-	line-height: 32px;
+	/* 28px (Oscar's rev — was 32). */
+	font-size: 28px;
+	line-height: 28px;
 	text-transform: uppercase;
 }
 
+/* Index TOP-aligned with the keyword (Oscar's rev — was the file's
+   baseline-zone drop): cap-top optics, the featured-card treatment
+   (28px caps ~3.5 into box, 10px caps ~1.3; margin-top 2 lines the
+   cap tops up). */
 .landing-v2 .landing-closing__kw-index {
 	font-weight: 600;
 	font-size: 10px;
 	line-height: 10px;
-	margin-top: 22px; /* the file lands /0N low on the word's baseline zone */
+	margin-top: 2px;
 }
 
 .landing-v2 .landing-closing__kw-line {
