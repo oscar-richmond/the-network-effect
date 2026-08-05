@@ -72,8 +72,9 @@ const CARD_COUNT = 3;
    remaining header bands (Connect's AND Amplify's own) compress
    slowly before the departure begins. Replaces the old 250 dwell. */
 const BAND_SETTLE_PX = 500;
-const TRANSITION_GROUND_FADE_PX = 500; // final-500px ground fade
-const GROUND_DARK = '#161616';
+/* The fade-to-black formerly here now lives in landing-featured.js
+   (Beat F relocated for the Featured Work insertion — the stack
+   releases on LIGHT ground). */
 const CARD_H = 646;
 
 /* Parked divider positions — COMPRESSED stack (Oscar's revs 5+6):
@@ -379,26 +380,11 @@ export function initLandingServices() {
       y: () => morph.dy - EXIT_PX,
       duration: EXIT_PX,
     }, STACK_PX + BAND_SETTLE_PX);
-    /* ONE ground (Oscar's rev): the departing cards' opaque bodies
-       and dividers fade to dark IN THE SAME TWEEN as the stage, so
-       the whole picture darkens as a single surface — no hard line
-       between the rolling stack and the ground behind it. (The
-       difference titles whiten over the darkening ground — the
-       nav's own behaviour; the ink text melts into it as it leaves.) */
-    const groundEls = [
-      stage,
-      ...cards.map((c) => c.querySelector('.landing-svc-card__bg')),
-      ...cards.map((c) => c.querySelector('.landing-svc-card__divider')),
-      /* The MORE INFO fills join the fade too (Oscar's rev — the
-         light #E4E4EA panel stood out against the darkening ground;
-         its blue label melts into the dark like the rest of the
-         card ink). */
-      ...cards.map((c) => c.querySelector('.landing-svc-card__btn')),
-    ].filter((el) => el instanceof HTMLElement);
-    tl.to(groundEls, {
-      backgroundColor: GROUND_DARK,
-      duration: TRANSITION_GROUND_FADE_PX,
-    }, RUNWAY_PX - TRANSITION_GROUND_FADE_PX);
+    /* NO FADE (the Featured Work insertion): the stack departs on
+       the LIGHT ground and the fade-to-black lives in
+       landing-featured.js now (Beat F relocated, constants
+       verbatim, moved not duplicated). The departure itself is
+       unchanged. */
 
     masterTl = tl;
     trigger = tl.scrollTrigger ?? null;

@@ -1,0 +1,76 @@
+---
+/**
+ * FEATURED WORK (/landing) — Figma 22:3021, extracted 2026-08-06;
+ * 83px chrome offset subtracted. Horizontal gallery between the
+ * services stack and Our Network.
+ *
+ * The section overlaps the services section's trailing viewport
+ * (margin-top -100dvh, the Network device): its top lands exactly
+ * at the services scrub end, so the departing stack scrolling off
+ * the top and this section rising from the bottom read as one
+ * continuous page scroll — light on light, no dead viewport.
+ * Pins at 'top top', travels horizontally through all 8 cards
+ * (landing-featured.js), then the RELOCATED Beat F (constants
+ * verbatim) fades to black into Our Network — which enters exactly
+ * as before, one section later.
+ *
+ * z-index 260 — the exit gate over the fixed hero stage.
+ *
+ * BLEND: FEATURED/WORK are white difference over the bare ground
+ * only (bands 180-270; cards start at 352 — no overlap). Their
+ * ancestor chain is the bare sticky stage; the strip's transform is
+ * a later sibling. The reveal animates lr-inner descendants.
+ *
+ * VIEW ALL: the MORE INFO family at Oscar's revved 14px/10.5-arrow
+ * treatment (the file's 16px predates that rev — his call).
+ * Non-navigating placeholder: the selected-work page doesn't exist
+ * yet.
+ *
+ * Content/rights flags live in src/data/landing/featured-work.js.
+ */
+import { asset } from '../../utils/asset.js';
+import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
+---
+
+<section class="landing-featured" data-landing-featured aria-label="Featured work">
+  <div class="landing-featured__stage" data-featured-stage>
+    <h2 class="landing-featured__header">
+      <span class="landing-featured__hl landing-featured__hl--featured" data-featured-line>FEATURED</span>
+      <span class="landing-featured__hl landing-featured__hl--work" data-featured-line>WORK</span>
+    </h2>
+
+    {/* Non-navigating placeholder — selected-work page pending. */}
+    <button type="button" class="landing-featured__viewall" data-featured-viewall data-char-ripple-trigger>
+      <span data-char-ripple>VIEW ALL</span>
+      <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+    </button>
+
+    <div class="landing-featured__strip" data-featured-strip>
+      {FEATURED_CARDS.map((card) => (
+        <article class="landing-featured__card" data-featured-card>
+          <figure class="landing-featured__imgwin" aria-hidden="true">
+            <img
+              src={card.img.src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              class={card.img.cover ? 'is-cover' : ''}
+              style={card.img.cover ? '' : `width:${card.img.w}px;height:${card.img.h}px;left:${card.img.x}px;top:${card.img.y}px`}
+            />
+          </figure>
+          <h3 class="landing-featured__titleblock">
+            {card.title.map((line, i) => (
+              <span class="landing-featured__titleline">
+                {line}
+                {i === card.title.length - 1 && (
+                  <span class="landing-featured__index">{card.index}</span>
+                )}
+              </span>
+            ))}
+          </h3>
+          <p class="landing-featured__desc">{card.desc}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

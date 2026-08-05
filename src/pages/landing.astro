@@ -16,6 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
 import LandingFounders from '../components/landing/LandingFounders.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
+import LandingFeatured from '../components/landing/LandingFeatured.astro';
 import LandingServicesStack from '../components/landing/LandingServicesStack.astro';
 import LandingAccess from '../components/landing/LandingAccess.astro';
 import LandingClosing from '../components/landing/LandingClosing.astro';
@@ -104,7 +105,12 @@ import '../styles/fonts.css';
     </div>
   </section>
 
-  {/* Our Network — arrives on the black the outro just faded to. */}
+  {/* Featured Work — horizontal gallery; overlaps the services
+      trailing viewport (light-on-light continuous scroll) and
+      carries the relocated fade-to-black into Our Network. */}
+  <LandingFeatured />
+
+  {/* Our Network — arrives on the black Featured Work fades to. */}
   <LandingNetwork />
 
   {/* We Create Access — light returns on a plain document boundary;
@@ -129,6 +135,7 @@ import '../styles/fonts.css';
   import { initCharRipple } from '../scripts/char-ripple.js';
   import { initLandingServices } from '../scripts/landing/landing-services.js';
   import { initLandingNetwork } from '../scripts/landing/landing-network.js';
+  import { initLandingFeatured } from '../scripts/landing/landing-featured.js';
   import { initLandingAccess } from '../scripts/landing/landing-access.js';
   import { initLandingClosing } from '../scripts/landing/landing-closing.js';
 
@@ -137,6 +144,7 @@ import '../styles/fonts.css';
   let cleanupCharRipple = initCharRipple();
   let cleanupLandingServices = initLandingServices();
   let cleanupLandingNetwork = initLandingNetwork();
+  let cleanupLandingFeatured = initLandingFeatured();
   let cleanupLandingAccess = initLandingAccess();
   let cleanupLandingClosing = initLandingClosing();
 
@@ -146,6 +154,7 @@ import '../styles/fonts.css';
     cleanupCharRipple();
     cleanupLandingServices();
     cleanupLandingNetwork();
+    cleanupLandingFeatured();
     cleanupLandingAccess();
     cleanupLandingClosing();
   });
@@ -156,6 +165,7 @@ import '../styles/fonts.css';
     cleanupCharRipple = initCharRipple();
     cleanupLandingServices = initLandingServices();
     cleanupLandingNetwork = initLandingNetwork();
+    cleanupLandingFeatured = initLandingFeatured();
     cleanupLandingAccess = initLandingAccess();
     cleanupLandingClosing = initLandingClosing();
   });

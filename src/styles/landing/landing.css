@@ -1971,3 +1971,239 @@
 	.landing-v2 .landing-footer__rowitem { position: static; }
 	.landing-v2 .landing-footer__social { position: static; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FEATURED WORK — Figma 22:3021 (see LandingFeatured.astro /
+   landing-featured.js). Horizontal gallery between the services
+   stack and Our Network. The section overlaps the services trailing
+   viewport (the Network device) so its top lands at the services
+   scrub end; the runway height is content-derived and set by JS
+   (fallback below). z260 = the exit gate.
+   ══════════════════════════════════════════════════════════════════ */
+
+.landing-v2 .landing-featured {
+	position: relative;
+	z-index: 260;
+	margin-top: calc(-1 * 100vh);
+	margin-top: calc(-1 * 100dvh);
+	height: calc(100vh + 2573px); /* JS re-derives from content */
+	height: calc(100dvh + 2573px);
+	background: #eeeef0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	color: var(--landing-ink);
+}
+
+.landing-v2 .landing-featured__stage {
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
+	background: #eeeef0;
+}
+
+/* FEATURED / WORK — white difference over bare ground (no card
+   overlap: bands 180-270, cards from 352). No transform/filter
+   ancestors; the reveal moves lr-inner descendants. */
+.landing-v2 .landing-featured__header {
+	margin: 0;
+}
+
+.landing-v2 .landing-featured__hl {
+	position: absolute;
+	white-space: nowrap;
+	font-size: 48px;
+	line-height: 48px;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .landing-featured__hl--featured {
+	left: 24px;
+	top: 177px;
+	font-weight: 700;
+}
+
+.landing-v2 .landing-featured__hl--work {
+	left: 83px;
+	top: 225px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+/* VIEW ALL — the MORE INFO family at the revved 14px treatment
+   (Oscar's call over the file's stale 16px). Non-navigating. */
+.landing-v2 .landing-featured__viewall {
+	position: absolute;
+	right: 24px;
+	top: 227px;
+	height: 38px;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 0 14px;
+	border: 0;
+	background: var(--landing-svc-btn-fill);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--landing-accent-blue);
+	cursor: pointer;
+}
+
+.landing-v2 .landing-featured__viewall img {
+	display: block;
+	width: 10.5px;
+	height: 10.5px;
+	flex-shrink: 0;
+}
+
+/* The strip — 24px lead-in, 8px gaps, pitch 413.93. JS drives x. */
+.landing-v2 .landing-featured__strip {
+	position: absolute;
+	left: 0;
+	top: 352px;
+	display: flex;
+	gap: 8px;
+	padding-left: 24px;
+	will-change: transform;
+}
+
+.landing-v2 .landing-featured__card {
+	position: relative;
+	flex: none;
+	width: 405.93px;
+	height: 660px;
+}
+
+.landing-v2 .landing-featured__imgwin {
+	position: relative;
+	width: 405.93px;
+	height: 465px;
+	margin: 0;
+	overflow: hidden;
+}
+
+.landing-v2 .landing-featured__imgwin img {
+	position: absolute;
+	max-width: none;
+	object-fit: cover;
+}
+
+.landing-v2 .landing-featured__imgwin img.is-cover {
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* Title block centred on the file's y873 band (521 from card top);
+   the /0N index rides the LAST title line, 8px right, low on its
+   band (the file's own arrangement). */
+.landing-v2 .landing-featured__titleblock {
+	position: absolute;
+	left: 0;
+	top: 521px;
+	transform: translateY(-50%);
+	margin: 0;
+	font-weight: 700;
+	font-size: 32px;
+	line-height: 32px;
+	text-transform: uppercase;
+}
+
+.landing-v2 .landing-featured__titleline {
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+	white-space: nowrap;
+}
+
+.landing-v2 .landing-featured__index {
+	font-size: 10px;
+	line-height: 18px;
+	margin-bottom: 3px;
+}
+
+.landing-v2 .landing-featured__desc {
+	position: absolute;
+	left: 0;
+	top: 569px;
+	width: 350px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 18px;
+	text-transform: none;
+}
+
+/* Entrance hidden states — no-preference only. */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .landing-featured__card,
+	.landing-v2 .landing-featured__viewall {
+		opacity: 0;
+		transform: translateY(24px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .landing-featured__card.is-visible,
+	.landing-v2 .landing-featured__viewall.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* Static: first cards at rest, no pin, no travel, no overlap
+	   (the services RM frame is 100dvh static too), no fade —
+	   Network follows on its RM hard boundary. */
+	.landing-v2 .landing-featured {
+		margin-top: 0;
+		height: 100vh;
+		height: 100dvh;
+	}
+}
+
+/* Sub-1024: vertical card list (the closing-section flow-stack
+   register); the 15-inch shell remains the primary story. */
+@media (max-width: 1023px) {
+	.landing-v2 .landing-featured {
+		margin-top: 0;
+		height: auto;
+	}
+
+	.landing-v2 .landing-featured__stage {
+		position: static;
+		height: auto;
+		overflow: visible;
+		padding: 96px 24px 64px;
+	}
+
+	.landing-v2 .landing-featured__hl,
+	.landing-v2 .landing-featured__viewall {
+		position: static;
+	}
+
+	.landing-v2 .landing-featured__hl { display: block; }
+	.landing-v2 .landing-featured__viewall { margin: 24px 0 40px; }
+
+	.landing-v2 .landing-featured__strip {
+		position: static;
+		flex-direction: column;
+		gap: 40px;
+		padding-left: 0;
+		transform: none !important;
+	}
+
+	.landing-v2 .landing-featured__card {
+		width: 100%;
+		height: auto;
+	}
+
+	.landing-v2 .landing-featured__imgwin { width: 100%; }
+	.landing-v2 .landing-featured__titleblock { position: static; transform: none; margin-top: 16px; }
+	.landing-v2 .landing-featured__desc { position: static; margin-top: 8px; width: auto; }
+}
