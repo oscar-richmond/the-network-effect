@@ -16,6 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
 import LandingFounders from '../components/landing/LandingFounders.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
+import LandingServicesStack from '../components/landing/LandingServicesStack.astro';
 import LandingAccess from '../components/landing/LandingAccess.astro';
 import Menu from '../components/Menu.astro';
 import '../styles/home.css';
@@ -76,22 +77,29 @@ import '../styles/fonts.css';
       video; see the arrival note in landing.css. */}
   <LandingFounders />
 
-  {/* Services intro — doubles as the departure runway: the grey
-      viewport-height ground the full-screen founders photo scrolls
-      off against, now carrying the section's opening line (Oscar's
-      rev). Line 1 mixes faces (OUR SERVICES. in Serrif Medium, the
-      rest Dazzed Bold); its left edge aligns the O of OUR onto the
-      first S of ACCESS below — derived at runtime from the rendered
-      glyph (landing-services.js), the site's established mechanism.
-      Both lines reveal with the founders-headline vocabulary when
-      the section scrolls into view. */}
+  {/* Services — doubles as the departure runway (the grey ground the
+      full-screen founders photo scrolls off against) and now carries
+      the full stacked-services sequence (Figma 13:1729/13:2066):
+      centred intro line → title rise + morph to the small OUR
+      SERVICES → three pillar cards rise and stack at 150px offsets →
+      the fade-to-black (re-anchored, constants verbatim) into Our
+      Network. All beats in landing-services.js. Line 1 mixes faces;
+      its left edge aligns the O of OUR onto the first S of ACCESS
+      below (runtime glyph derivation, unchanged). FROM sits in its
+      own span so Beat A can exit it separately (the wrap keeps
+      element children whole). */}
   <section class="landing-outro" aria-label="Our services" data-landing-services>
-    <h2 class="landing-services__title" data-landing-services-title>
-      <span class="landing-services__line" data-landing-services-line1
-        ><span class="landing-services__serrif">OUR SERVICES.</span> FROM</span
-      >
-      <span class="landing-services__line" data-landing-services-line2>ACCESS. TO IMPACT.</span>
-    </h2>
+    <div class="landing-services__stage" data-services-stage>
+      <div class="landing-services__center" data-services-center>
+        <h2 class="landing-services__title" data-landing-services-title>
+          <span class="landing-services__line" data-landing-services-line1
+            ><span class="landing-services__serrif">OUR SERVICES.</span> <span data-services-from>FROM</span></span
+          >
+          <span class="landing-services__line" data-landing-services-line2>ACCESS. TO IMPACT.</span>
+        </h2>
+      </div>
+      <LandingServicesStack />
+    </div>
   </section>
 
   {/* Our Network — arrives on the black the outro just faded to. */}

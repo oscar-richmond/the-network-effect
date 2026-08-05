@@ -1,0 +1,147 @@
+---
+/**
+ * SERVICES STACK (/landing) — Figma n2cY4c7GnsR5MBx1PJoC97, nodes
+ * 13:1729 (pre-stack, row internals + copy) and 13:2066 (post-stack,
+ * THE GEOMETRY AUTHORITY — Oscar's call: rigid cards on post-stack
+ * internal offsets; the frames' 32px internal drift resolved toward
+ * post-stack). Chrome mockup frames ignored; 83px chrome offset
+ * subtracted throughout.
+ *
+ * Three full-width opaque cards (2px #E0E0E7 divider + 644px #EEEEF0
+ * body) that rise and stack at 150px offsets (dividers 158/308/458),
+ * plus the small OUR SERVICES morph twin (16px Dazzed Bold, white,
+ * difference, x24 — the large centred title resolves into it during
+ * Beat A; landing-services.js). Cards are position-driven by
+ * landing-services.js; the CSS default (--svc-parked-y inline below)
+ * is the PARKED state = the reduced-motion frame.
+ *
+ * BLEND: each card's title + /0N are difference INSIDE the card —
+ * the card's transform stacking context contains everything they
+ * blend against (its own opaque bg + image), so cross-card blending
+ * never occurs. No filter/opacity wrappers between card root and the
+ * titles (the Beat F fade goes on the card ROOT — composed-unit
+ * fade, safe).
+ *
+ * PENDING FOUNDER SIGN-OFF: all three images are the file's own
+ * exports, placeholder until licensed finals.
+ * CONTENT FLAG (Oscar-approved substitution, needs FOUNDER
+ * confirmation): the file lists "Industry-leading Events" twice in
+ * IMMERSE (columns 2 and 3 — a Figma slip). The column-3 occurrence
+ * below is replaced with the deck's missing 12th item, "Exceptional
+ * Culinary Experiences".
+ * MORE INFO buttons: destinations unspecified — non-navigating
+ * placeholders, flagged.
+ */
+import { asset } from '../../utils/asset.js';
+
+const cards = [
+  {
+    id: 'immerse',
+    index: '/01',
+    title: 'IMMERSE',
+    img: {
+      src: asset('/assets/landing/services-stack/immerse.jpg'),
+      w: 499.02, h: 677.25, x: -75.01, y: -121.49,
+    },
+    desc: ['Activate Experiences & Cultural Moments'],
+    listHead: 'WE BUILD',
+    listGap: 64,
+    cols: [
+      { w: 190, items: ['Talent-Led Experiences', 'Immersive Brand Worlds', 'Brand Launches', 'Fashion & Media Events'] },
+      { w: 274, items: ['Industry-leading Events', 'Cultural Programming', 'Brand Collaborations', 'Leadership Summits & Conferences'] },
+      /* Third item below = the flagged substitution (see header). */
+      { w: 215, items: ['Experiential Campaigns', 'Music & Food Festivals', 'Exceptional Culinary Experiences', 'Health & Wellbeing Retreats'] },
+    ],
+    btnTop: 473,
+    parkedY: 158,
+  },
+  {
+    id: 'connect',
+    index: '/02',
+    title: 'CONNECT',
+    img: {
+      src: asset('/assets/landing/services-stack/connect.jpg'),
+      w: 425, h: 522, x: -3, y: -4,
+    },
+    desc: ['Strategic Partnerships', '& Talent Strategy'],
+    listHead: 'WE SHAPE',
+    listGap: 100,
+    cols: [
+      { w: 301, items: ['Strategic Brand Partnerships', 'Celebrity & Talent Partnerships', 'Cultural Introductions', 'Commercial Relationship Development', 'Ambassador Programmes', 'Influencer & Creator Partnerships'] },
+      { w: 270, items: ['Long-term Partnership Strategy', 'Story-led Collaborations', 'Sponsorship Strategy & Acquisition', 'Brand-to-brand Collaborations', 'Community & Membership Engagement', 'Network-led Business Development'] },
+    ],
+    btnTop: 503,
+    parkedY: 308,
+  },
+  {
+    id: 'amplify',
+    index: '/03',
+    title: 'AMPLIFY',
+    img: {
+      /* The file's slot holds a hidden stray (a covered duplicate of
+         Connect's image) beneath this one — visible layer only. */
+      src: asset('/assets/landing/services-stack/amplify.jpg'),
+      w: 391, h: 507, x: -7, y: -13,
+    },
+    desc: ['Create Narratives', '& Media'],
+    listHead: 'WE CREATE',
+    listGap: 64,
+    cols: [
+      { w: 180, items: ['Podcasts', 'Documentary Formats', 'Original Content Series'] },
+      { w: 146, items: ['Brand Storytelling', 'Campaign Creative', 'Creative Direction'] },
+      { w: 242, items: ['Social-first Content', 'Photography & Film Production', 'Design Systems & Brand Assets'] },
+    ],
+    btnTop: 372,
+    parkedY: 458,
+  },
+];
+---
+
+{/* The morph twin — the large centred title settles into this. It
+    never transforms (blend rule: laid out with left/top only);
+    aria-hidden because the large h2 carries the semantics. */}
+<p class="landing-services__small" data-services-small aria-hidden="true">OUR SERVICES</p>
+
+{cards.map((card) => (
+  <article
+    class="landing-svc-card"
+    data-services-card
+    style={`--svc-parked-y:${card.parkedY}px`}
+  >
+    <div class="landing-svc-card__bg" aria-hidden="true"></div>
+    <div class="landing-svc-card__divider" aria-hidden="true"></div>
+    <h3 class="landing-svc-card__titlerow">
+      <span class="landing-svc-card__title" data-services-card-title>{card.title}</span>
+      <span class="landing-svc-card__index" data-services-card-index>{card.index}</span>
+    </h3>
+    <div class="landing-svc-card__img" aria-hidden="true">
+      <img
+        src={card.img.src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        style={`width:${card.img.w}px;height:${card.img.h}px;left:${card.img.x}px;top:${card.img.y}px`}
+      />
+    </div>
+    <p class="landing-svc-card__desc">
+      {card.desc.map((line, i) => (
+        <Fragment>{i > 0 && <br />}{line}</Fragment>
+      ))}
+    </p>
+    <p class="landing-svc-card__listhead">{card.listHead}</p>
+    <div class="landing-svc-card__lists" style={`gap:${card.listGap}px`}>
+      {card.cols.map((col) => (
+        <ul class="landing-svc-card__col" style={`width:${col.w}px`}>
+          {col.items.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      ))}
+    </div>
+    {/* Non-navigating placeholder — destinations unspecified. */}
+    <button type="button" class="landing-svc-card__btn" style={`top:${card.btnTop}px`}>
+      <span>MORE INFO</span>
+      <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" />
+    </button>
+  </article>
+))}

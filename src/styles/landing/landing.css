@@ -546,28 +546,45 @@
 .landing-v2 .landing-outro {
 	position: relative;
 	z-index: 260;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	/* 1 viewport of departure runway (the founders photo scroll-off,
-	   as before) + 950px of transition runway: a 250px dwell on the
-	   services line, then its fade + the ground's fade to #161616
-	   (landing-services.js). Keep the 950 in step with the timeline
-	   constants there — the black-on-black handoff to Our Network
-	   depends on the scrub ending exactly as the next section's top
-	   crosses the viewport bottom. */
-	height: calc(100vh + 950px);
-	height: calc(100dvh + 950px);
+	   as before) + 3850px of pinned runway for the stacked-services
+	   sequence: Beat A morph 500 + three card arrivals 3 x 800 + the
+	   re-anchored fade-to-black 950 (constants verbatim in
+	   landing-services.js). Keep the 3850 in step with the timeline —
+	   the black-on-black handoff to Our Network depends on the scrub
+	   ending exactly as the next section's top crosses the viewport
+	   bottom. */
+	height: calc(100vh + 3850px);
+	height: calc(100dvh + 3850px);
 	background: var(--landing-ground);
 }
 
-/* The services line rides sticky at the viewport centre through the
-   outro's extra runway (the dwell + fades happen on a stable frame). */
-.landing-v2 .landing-services__title {
+/* The sticky stage all beats play on. overflow hidden clips the
+   below-viewport parked cards. The ground fade (Beat F) tweens THIS
+   element's background. */
+.landing-v2 .landing-services__stage {
 	position: sticky;
-	top: 50vh;
-	top: 50dvh;
-	transform: translateY(-50%);
+	top: 0;
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
+	background: var(--landing-ground);
+}
+
+/* The large centred title's positioning layer (z1, under the cards).
+   The title itself transforms during the Beat A morph — it carries
+   no blend, so the transform is free. */
+.landing-v2 .landing-services__center {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.landing-v2 .landing-services__title {
+	will-change: transform;
 }
 
 /* Two lines, 40px on the hero headline's 40px leading (Oscar's spec:
@@ -599,6 +616,207 @@
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
+}
+
+/* ── The stacked services build (Figma 13:1729 / 13:2066) ──────────
+   New palette entries (first use on the main site): the MORE INFO
+   ink #232A89, its fill #E4E4EA, and the divider #E0E0E7. */
+.landing-v2 {
+	--landing-accent-blue: #232a89;
+	--landing-svc-divider: #e0e0e7;
+	--landing-svc-btn-fill: #e4e4ea;
+}
+
+/* The morph twin — post-stack frame: 16px Dazzed Bold, white,
+   difference, x24, centre y124. Laid out with left/top ONLY (blend
+   rule: never transform this element); z2 above the centre layer,
+   below the cards (which never reach above y158 anyway). JS hides it
+   until the morph resolves; this visible default is the RM frame. */
+.landing-v2 .landing-services__small {
+	position: absolute;
+	z-index: 2;
+	left: 24px;
+	top: 114px;
+	height: 20px;
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	color: #fff;
+	mix-blend-mode: difference;
+	will-change: filter;
+}
+
+/* Cards — rigid, opaque, post-stack internals (offsets from the
+   card's own divider). Default transform = PARKED (the RM frame);
+   landing-services.js re-parks them below the viewport and scrubs
+   them up. DOM order = stack order (later cards paint above). */
+.landing-v2 .landing-svc-card {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 646px;
+	z-index: 3;
+	transform: translateY(var(--svc-parked-y, 158px));
+	will-change: transform;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	color: var(--landing-ink);
+}
+
+.landing-v2 .landing-svc-card__bg {
+	position: absolute;
+	top: 2px;
+	left: 0;
+	width: 100%;
+	height: 644px;
+	background: #eeeef0;
+}
+
+.landing-v2 .landing-svc-card__divider {
+	position: absolute;
+	top: 0;
+	left: 24px;
+	width: calc(100% - 48px);
+	height: 2px;
+	background: var(--landing-svc-divider);
+}
+
+/* Title row — 48px title + 24px /0N, both white difference INSIDE
+   the card (blends against the card's own opaque bg/image only; the
+   card's transform context is safe by construction). The index sits
+   8px right of the title's rendered width (inline flex baseline
+   arrangement reproduces the file's 271/282/256 lefts). */
+.landing-v2 .landing-svc-card__titlerow {
+	position: absolute;
+	left: 24px;
+	top: 52px;
+	margin: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.landing-v2 .landing-svc-card__title {
+	font-size: 48px;
+	line-height: 48px;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .landing-svc-card__index {
+	font-size: 24px;
+	line-height: 24px;
+	margin-top: 2px; /* index centre y66 vs title centre y76 */
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+/* Image — 380x480 window at x401 y50, SQUARE corners (the file's
+   mask is a plain rect — Oscar-confirmed). Exact crops inline. */
+.landing-v2 .landing-svc-card__img {
+	position: absolute;
+	left: 401px;
+	top: 50px;
+	width: 380px;
+	height: 480px;
+	overflow: hidden;
+}
+
+.landing-v2 .landing-svc-card__img img {
+	position: absolute;
+	max-width: none;
+	object-fit: cover;
+}
+
+.landing-v2 .landing-svc-card__desc {
+	position: absolute;
+	left: 845px;
+	top: 80px;
+	transform: translateY(-50%);
+	width: 574px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 32px;
+	line-height: 34px;
+	text-transform: uppercase;
+}
+
+.landing-v2 .landing-svc-card__listhead {
+	position: absolute;
+	left: 845px;
+	top: 259.5px;
+	transform: translateY(-50%);
+	margin: 0;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 32px;
+	text-transform: uppercase;
+}
+
+.landing-v2 .landing-svc-card__lists {
+	position: absolute;
+	left: 845px;
+	top: 293px;
+	display: flex;
+}
+
+.landing-v2 .landing-svc-card__col {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.landing-v2 .landing-svc-card__col li {
+	height: 19px;
+	display: flex;
+	align-items: center;
+	white-space: nowrap;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 32px;
+}
+
+/* MORE INFO — 147x38, non-navigating placeholder (no destinations
+   yet). Top is per-row (follows each list's length), inline. */
+.landing-v2 .landing-svc-card__btn {
+	position: absolute;
+	left: 845px;
+	width: 147px;
+	height: 38px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 16px;
+	border: 0;
+	background: var(--landing-svc-btn-fill);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	color: var(--landing-accent-blue);
+	cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* Static post-stack frame: cards parked (their CSS default), small
+	   title visible, the large centred instance hidden, no runway, no
+	   fade — Our Network follows on a hard boundary. */
+	.landing-v2 .landing-outro {
+		height: 100vh;
+		height: 100dvh;
+	}
+
+	.landing-v2 .landing-services__center {
+		display: none;
+	}
 }
 
 /* ═══════════════════════════════════════════════════════════════════
