@@ -172,10 +172,23 @@ const rhythm = (card) => {
         </ul>
       ))}
     </div>
-    {/* Non-navigating placeholder — destinations unspecified. */}
-    <button type="button" class="landing-svc-card__btn" style={`top:${rhythm(card).btnTop}px`}>
-      <span>MORE INFO</span>
-      <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" />
+    {/* Non-navigating placeholder — destinations unspecified. House
+        char-ripple hover (the founders-CTA blur sweep, arrow joins
+        after the text). */}
+    <button
+      type="button"
+      class="landing-svc-card__btn"
+      style={`top:${rhythm(card).btnTop}px`}
+      data-char-ripple-trigger
+    >
+      <span data-char-ripple>MORE INFO</span>
+      <img
+        src={asset('/assets/landing/services-stack/more-arrow.svg')}
+        alt=""
+        width="12"
+        height="12"
+        data-char-ripple-arrow
+      />
     </button>
   </article>
 ))}

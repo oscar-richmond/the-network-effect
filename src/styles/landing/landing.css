@@ -728,6 +728,12 @@
 	.landing-v2 .landing-svc-card .landing-svc-card__img {
 		top: 32px;
 	}
+
+	.landing-v2 .landing-svc-card .landing-svc-card__listhead,
+	.landing-v2 .landing-svc-card .landing-svc-card__lists,
+	.landing-v2 .landing-svc-card .landing-svc-card__btn {
+		transform: translateY(-18px);
+	}
 }
 
 /* Title row — 48px title + 24px /0N, both white difference INSIDE

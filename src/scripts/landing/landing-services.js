@@ -106,6 +106,16 @@ const BAND_TARGETS = [
   ['.landing-svc-card__desc', 80 - BAND_SHIFT_PX], // 62
   ['.landing-svc-card__img', 50 - BAND_SHIFT_PX], // 32
 ];
+/* The lower right column rides UP with the band (Oscar's rev 10 —
+   Amplify's visible list/button were drifting 18px further from the
+   desc as the band compressed; now the 64/24/80 rhythm below the
+   secondary title is preserved). These tops are per-card (inline
+   vars), so they shift by transform — safe, no blends inside. */
+const BAND_RIDERS = [
+  '.landing-svc-card__listhead',
+  '.landing-svc-card__lists',
+  '.landing-svc-card__btn',
+];
 
 /* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
    morph's halfway point — while FROM/ACCESS fade and the title
@@ -329,6 +339,12 @@ export function initLandingServices() {
         const el = card.querySelector(sel);
         if (el instanceof HTMLElement) {
           tl.to(el, { top, duration: dur, ease: 'power1.inOut' }, at);
+        }
+      });
+      BAND_RIDERS.forEach((sel) => {
+        const el = card.querySelector(sel);
+        if (el instanceof HTMLElement) {
+          tl.to(el, { y: -BAND_SHIFT_PX, duration: dur, ease: 'power1.inOut' }, at);
         }
       });
     };
