@@ -78,7 +78,11 @@ const CARD_H = 646;
 /* Post-stack parked divider positions (83px chrome offset removed). */
 const PARKED_Y = [158, 308, 458];
 
-const STACK_PX = MORPH_PX + CARD_COUNT * CARD_PX; // 2900 — snap ceiling
+/* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
+   morph's halfway point — while FROM/ACCESS fade and the title
+   shrinks — and the others keep the same 800px spacing after it. */
+const CARD_START_PX = MORPH_PX * 0.5; // 250
+const STACK_PX = CARD_START_PX + CARD_COUNT * CARD_PX; // 2650 — snap ceiling
 /* 1:1 departure travel: bottom card's parked top + its height. */
 const EXIT_PX = PARKED_Y[CARD_COUNT - 1] + CARD_H; // 1104
 const RUNWAY_PX = STACK_PX + TRANSITION_DWELL_PX + EXIT_PX; // 4254
@@ -97,7 +101,9 @@ const MORPH_BLUR_PX = 4; // the FROM/line-2 exit blur
 /* Snap — the access section's Lenis-idle constants. */
 const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
-const SNAP_TARGETS = [0, 500, 1300, 2100, 2900];
+/* Rest points: section top + each card fully parked (morph-end is no
+   longer a boundary — card 1 is mid-flight there). */
+const SNAP_TARGETS = [0, 1050, 1850, 2650];
 
 /** Index of the alignment glyph — the first S of "ACCESS. TO IMPACT.". */
 const ALIGN_CHAR_INDEX = 4;
@@ -170,6 +176,7 @@ export function initLandingServices() {
 
     const serrifSpan = line1?.querySelector('.landing-services__serrif');
     const fromSpan = line1?.querySelector('[data-services-from]');
+    const stopSpan = line1?.querySelector('[data-services-stop]');
 
     if (!(stage instanceof HTMLElement) || !(title instanceof HTMLElement) || !(small instanceof HTMLElement)) {
       return;
@@ -245,7 +252,7 @@ export function initLandingServices() {
       scale: SMALL_SCALE,
       duration: MORPH_PX,
     }, 0);
-    const exitTargets = [fromSpan, line2].filter((el) => el instanceof HTMLElement);
+    const exitTargets = [fromSpan, stopSpan, line2].filter((el) => el instanceof HTMLElement);
     if (exitTargets.length) {
       tl.to(exitTargets, {
         opacity: 0,
@@ -265,14 +272,14 @@ export function initLandingServices() {
       tl.fromTo(card,
         { y: () => stageH() },
         { y: PARKED_Y[i], duration: CARD_PX, ease: 'power1.out', immediateRender: false },
-        MORPH_PX + i * CARD_PX,
+        CARD_START_PX + i * CARD_PX,
       );
       const fill = card.querySelector('[data-services-divider-fill]');
       if (fill instanceof HTMLElement) {
         tl.fromTo(fill,
           { scaleX: 1 },
           { scaleX: 0, duration: CARD_PX, ease: 'none', immediateRender: false },
-          MORPH_PX + i * CARD_PX,
+          CARD_START_PX + i * CARD_PX,
         );
       }
     });
