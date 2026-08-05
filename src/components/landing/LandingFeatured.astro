@@ -30,6 +30,7 @@
  */
 import { asset } from '../../utils/asset.js';
 import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
+import GradualBlur from '../GradualBlur.astro';
 ---
 
 <section class="landing-featured" data-landing-featured aria-label="Featured work">
@@ -74,5 +75,21 @@ import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
         </article>
       ))}
     </div>
+
+    {/* Right-edge blur (Oscar's rev) — the We Create Access section's
+        GradualBlur treatment, vertical: overlays the carousel items
+        (strip z1 < band z2) and sits under VIEW ALL (z3). Static on
+        the stage — items blur as they pass beneath it. */}
+    <GradualBlur
+      target="parent"
+      position="right"
+      strength={3}
+      width="12rem"
+      height="100%"
+      divCount={2}
+      exponential={true}
+      opacity={0.8}
+      zIndex={2}
+    />
   </div>
 </section>

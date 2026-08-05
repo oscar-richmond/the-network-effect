@@ -2054,6 +2054,7 @@
    (Oscar's call over the file's stale 16px). Non-navigating. */
 .landing-v2 .landing-featured__viewall {
 	position: absolute;
+	z-index: 3; /* above the right-edge blur band (z2) */
 	right: 24px;
 	top: 199px; /* pre-JS approximation; JS derives (bottom 80 above images) */
 	height: 38px;
@@ -2084,6 +2085,7 @@
    cap on tall viewports). JS drives x (travel) and y (departure). */
 .landing-v2 .landing-featured__strip {
 	position: absolute;
+	z-index: 1; /* under the right-edge blur band (z2) */
 	left: 0;
 	top: min(352px, calc(100dvh - 701px)); /* pre-JS fallback; JS derives from real content */
 	display: flex;
