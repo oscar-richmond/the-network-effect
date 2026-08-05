@@ -550,13 +550,14 @@
 	   as before) + 4254px of pinned runway for the stacked-services
 	   sequence: morph 500 with the first card starting at its halfway
 	   point (250) + three 800px card windows + the departure 250
-	   dwell + 1104 (the stack scrolls off at 1:1 while the ground
-	   fades to #161616 over the final 500 — landing-services.js).
-	   Keep the 4004 in step with the timeline — the black-on-black
-	   handoff to Our Network depends on the scrub ending exactly as
-	   the next section's top crosses the viewport bottom. */
-	height: calc(100vh + 4004px);
-	height: calc(100dvh + 4004px);
+	   dwell + 1044 (the compressed stack — 120px steps — scrolls off
+	   at 1:1 while the ground fades to #161616 over the final 500 —
+	   landing-services.js). Keep the 3944 in step with the timeline —
+	   the black-on-black handoff to Our Network depends on the scrub
+	   ending exactly as the next section's top crosses the viewport
+	   bottom. */
+	height: calc(100vh + 3944px);
+	height: calc(100dvh + 3944px);
 	background: var(--landing-ground);
 }
 

@@ -75,8 +75,15 @@ const TRANSITION_GROUND_FADE_PX = 500; // final-500px ground fade
 const GROUND_DARK = '#161616';
 const CARD_H = 646;
 
-/* Post-stack parked divider positions (83px chrome offset removed). */
-const PARKED_Y = [158, 308, 458];
+/* Parked divider positions — COMPRESSED stack (Oscar's rev 5: at
+   the file's 150px offsets, Amplify's image ran off the viewport
+   bottom). Each covering card now parks 120px below the card
+   beneath — the peek strip tightens around the covered card's
+   title/description as the next card lands — pulling the whole
+   stack up 120px so Amplify's image (bottom = 398 + 530 = 928)
+   sits inside the viewport. The strip size is the one knob. */
+const CARD_STEP_PX = 120;
+const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/278/398
 
 /* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
    morph's halfway point — while FROM/ACCESS fade and the title

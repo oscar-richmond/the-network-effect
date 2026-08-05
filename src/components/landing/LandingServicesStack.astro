@@ -7,8 +7,10 @@
  * post-stack). Chrome mockup frames ignored; 83px chrome offset
  * subtracted throughout.
  *
- * Three full-width opaque cards (2px #E0E0E7 divider + 644px #EEEEF0
- * body) that rise and stack at 150px offsets (dividers 158/308/458),
+ * Three full-width opaque cards (1px #E0E0E7 divider + 645px #EEEEF0
+ * body) that rise and stack at 120px offsets (dividers 158/278/398 —
+ * compressed from the file's 150 so Amplify's image clears the
+ * viewport bottom; keep in step with CARD_STEP_PX),
  * plus the small OUR SERVICES morph twin (16px Dazzed Bold, white,
  * difference, x24 — the large centred title resolves into it during
  * Beat A; landing-services.js). Cards are position-driven by
@@ -71,7 +73,7 @@ const cards = [
       { w: 301, items: ['Strategic Brand Partnerships', 'Celebrity & Talent Partnerships', 'Cultural Introductions', 'Commercial Relationship Development', 'Ambassador Programmes', 'Influencer & Creator Partnerships'] },
       { w: 270, items: ['Long-term Partnership Strategy', 'Story-led Collaborations', 'Sponsorship Strategy & Acquisition', 'Brand-to-brand Collaborations', 'Community & Membership Engagement', 'Network-led Business Development'] },
     ],
-    parkedY: 308,
+    parkedY: 278,
   },
   {
     id: 'amplify',
@@ -91,7 +93,7 @@ const cards = [
       { w: 146, items: ['Brand Storytelling', 'Campaign Creative', 'Creative Direction'] },
       { w: 242, items: ['Social-first Content', 'Photography & Film Production', 'Design Systems & Brand Assets'] },
     ],
-    parkedY: 458,
+    parkedY: 398,
   },
 ];
 
