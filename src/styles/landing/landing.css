@@ -1195,12 +1195,12 @@
 	flex: none;
 	width: 344px;
 	height: 500px;
-	/* Figma (Oscar's read): white 10% + background blur 20 on every
-	   off-centre image. JS scrubs both from centre distance; this is
-	   the static frame. */
+	/* White 10% + background blur 30 (Oscar's rev 2 — up from the
+	   Figma 20) on every off-centre image. JS scrubs both from centre
+	   distance; this is the static frame. */
 	background: rgba(255, 255, 255, 0.1);
-	-webkit-backdrop-filter: blur(20px);
-	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(30px);
+	backdrop-filter: blur(30px);
 }
 
 .landing-v2 [data-access-veils='left'] .landing-access__veil:nth-child(2),

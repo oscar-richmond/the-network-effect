@@ -48,10 +48,19 @@ const RUNWAY_PX = STEPS * STEP_SCROLL_PX;
 const TRAVEL_PX = STEPS * PITCH;
 const CENTER_FRACTION = 0.5; // pair band dead-centre (Oscar's rev; file had 580/1029)
 const DIM_RANGE = 0.8; // focus floor 0.2 -> shader alpha 0.6 (file: opacity .6)
-const VEIL_BLUR_PX = 20; // Figma background blur 20 (Oscar's rev; extraction read 10)
+const VEIL_BLUR_PX = 30; // Oscar's rev 2: stronger than the Figma 20
 const VEIL_BG_ALPHA = 0.1;
 const LINE_STAGGER_S = 0.12;
 const WORDS_AT_MS = 700;
+/* Entrance (Oscar's rev): the section greets as a PLAIN light ground
+   at the pin; then the headline reveals (hero-copy line mechanism)
+   while the left column slides up from the bottom edge and the right
+   slides down from the top — the house reveal curve, all at once.
+   The slide lives on the STATIC wrappers (colmask/canvas/veilwrap),
+   so it composes independently with the scroll travel on the inner
+   columns, and the warp planes follow the image rects wherever both
+   transforms put them. */
+const ENTRY_CURVE = 'transform 1.2s cubic-bezier(0.42, 0, 0.24, 1)';
 const WORD_SWAP_OUT_S = 0.12;
 const WORD_SWAP_IN_S = 0.22;
 const WORD_SWAP_BLUR_PX = 6;
@@ -140,6 +149,46 @@ export function initLandingAccess() {
     [cols.right, veilcols.right].forEach((el) => {
       if (el instanceof HTMLElement) el.style.top = `${colTops.right.toFixed(1)}px`;
     });
+  };
+
+  /* ── Entrance: park each side's static wrappers offscreen (left
+     below, right above) until the pin. Set NOW, before fonts/paint —
+     the arrival ground must be plain. RM never reaches this (early
+     return above keeps the static frame). */
+  const entryGroups = {
+    left: [
+      section.querySelector('.landing-access__colmask--left'),
+      canvases.left,
+      section.querySelector('.landing-access__veilwrap--left'),
+    ].filter((el) => el instanceof HTMLElement),
+    right: [
+      section.querySelector('.landing-access__colmask--right'),
+      canvases.right,
+      section.querySelector('.landing-access__veilwrap--right'),
+    ].filter((el) => el instanceof HTMLElement),
+  };
+  entryGroups.left.forEach((el) => { el.style.transform = 'translateY(100dvh)'; });
+  entryGroups.right.forEach((el) => { el.style.transform = 'translateY(-100dvh)'; });
+
+  let entered = false;
+  const playEntrance = () => {
+    if (entered) return;
+    entered = true;
+    /* Same-tick handoff via forced reflow (no rAF dependency): commit
+       the parked position under the new transition, then retarget. */
+    [...entryGroups.left, ...entryGroups.right].forEach((el) => {
+      el.style.transition = ENTRY_CURVE;
+    });
+    void section.offsetWidth;
+    [...entryGroups.left, ...entryGroups.right].forEach((el) => {
+      el.style.transform = 'translateY(0px)';
+    });
+    timeouts.push(setTimeout(() => {
+      [...entryGroups.left, ...entryGroups.right].forEach((el) => {
+        el.style.transition = '';
+        el.style.transform = '';
+      });
+    }, 1400));
   };
 
   /* ── The single shared progress. Everything below is f(p). */
@@ -261,9 +310,12 @@ export function initLandingAccess() {
     });
     revealTrigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top 65%',
+      start: 'top top',
       once: true,
       onEnter: () => {
+        /* One moment, three movements: headline lines (hero-copy
+           reveal), both columns sliding in, words on the image slot. */
+        playEntrance();
         lines.forEach((line) => {
           if (line instanceof HTMLElement) playLineRevealElement(line);
         });
