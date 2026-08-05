@@ -66,10 +66,11 @@ const PRIME_RIGHT = 6;
       </div>
     </div>
 
-    {/* Curve-media warp canvases, one per column (each gets its own
-        velocity sign). Masked with the same fade as the columns. */}
-    <canvas class="landing-access__canvas landing-access__canvas--left" data-access-canvas="left" aria-hidden="true"></canvas>
-    <canvas class="landing-access__canvas landing-access__canvas--right" data-access-canvas="right" aria-hidden="true"></canvas>
+    {/* Media shader canvas — ONE static full-stage canvas for both
+        columns (access-wave.js, the about-3 wave treatment; planes
+        track the image rects, each with its column's own velocity
+        sign). Replaces the old two-canvas curve-media warp. */}
+    <canvas class="landing-access__canvas" data-access-canvas aria-hidden="true"></canvas>
 
     {/* Dim veils — a second pair of travelling columns carrying ONLY
         the white/backdrop-blur overlays, mirrored 1:1 with the image

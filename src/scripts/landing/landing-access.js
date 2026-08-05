@@ -14,14 +14,13 @@
  * broken (two half-words), so the columns settle onto the nearest
  * pair on scroll-stop. Feel (duration/ease) is Oscar's in a real tab.
  *
- * WARP: src/scripts/curve-media.js — the services pop-up gallery's
- * treatment (about-3 detail view: default config + a virtual
- * getScrollPosition feed). One instance per column so the velocity
- * sign follows each column's own direction; the shader's uFocus
- * (via --slide-focus on each [data-carousel-slide] figure) carries
- * the scrubbed centre-sharp/edges-dim falloff, and the veil layer
- * above the canvas carries the white + backdrop-blur treatment,
- * scrubbed per-frame from the same p.
+ * MEDIA SHADER: src/scripts/landing/access-wave.js — the about-3
+ * pillar-wave treatment (velocity bow + hover grain, opaque output,
+ * colours true) on ONE static full-stage canvas, each plane's
+ * velocity signed by its column's own travel. Replaces the old
+ * curve-media warp (Oscar: "remove the old one, use the latest").
+ * The veil layer above the canvas carries the white + backdrop-blur
+ * treatment, scrubbed per-frame from the same p.
  *
  * BLEND MAP: difference words sit at z4 with ancestor chain
  * section > stage only (sticky, no transform/filter/opacity/mask);
@@ -36,7 +35,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { playLineRevealElement } from '../line-reveal.js';
-import { initCurveMedia } from '../curve-media.js';
+import { createAccessWave } from './access-wave.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -117,10 +116,7 @@ export function initLandingAccess() {
     left: section.querySelector('[data-access-veils="left"]'),
     right: section.querySelector('[data-access-veils="right"]'),
   };
-  const canvases = {
-    left: section.querySelector('[data-access-canvas="left"]'),
-    right: section.querySelector('[data-access-canvas="right"]'),
-  };
+  const canvas = section.querySelector('[data-access-canvas]');
   const wordInners = {
     left: section.querySelector('[data-access-word="left"] .landing-access__word-inner'),
     right: section.querySelector('[data-access-word="right"] .landing-access__word-inner'),
@@ -160,15 +156,15 @@ export function initLandingAccess() {
      below, right above) until the pin. Set NOW, before fonts/paint —
      the arrival ground must be plain. RM never reaches this (early
      return above keeps the static frame). */
+  /* The shader canvas is NOT parked: planes track the image rects, so
+     they ride the wrappers' entrance slide automatically. */
   const entryGroups = {
     left: [
       section.querySelector('.landing-access__colmask--left'),
-      canvases.left,
       section.querySelector('.landing-access__veilwrap--left'),
     ].filter((el) => el instanceof HTMLElement),
     right: [
       section.querySelector('.landing-access__colmask--right'),
-      canvases.right,
       section.querySelector('.landing-access__veilwrap--right'),
     ].filter((el) => el instanceof HTMLElement),
   };
@@ -213,8 +209,6 @@ export function initLandingAccess() {
          fully veiled. */
       const dead = PITCH * BLUR_DEAD_FRACTION;
       const t = isPad ? 1 : Math.min(Math.max((dist - dead) / (PITCH - dead), 0), 1);
-      /* Full-strength planes always (Figma background-blur look). */
-      fig.style.setProperty('--slide-focus', '1');
       const veil = veils[side][i];
       if (veil instanceof HTMLElement) {
         const blur = VEIL_BLUR_PX * t;
@@ -277,28 +271,24 @@ export function initLandingAccess() {
     onUpdate: (self) => applyProgress(self.progress),
   });
 
-  /* ── Warp: one curve-media instance per column so the bend and
-     aberration follow each column's own direction. Services-popup
-     parity: default config, virtual scroll feed. Null/throw →
-     DOM images (with the CSS/JS opacity falloff) are the fallback. */
-  const curves = [];
-  try {
-    const left = initCurveMedia(
-      canvases.left,
-      canvases.left,
-      items.left.map((f) => f.querySelector('img')).filter(Boolean),
-      { getScrollPosition: () => state.leftVirtual },
-    );
-    if (left) curves.push(left);
-    const right = initCurveMedia(
-      canvases.right,
-      canvases.right,
-      items.right.map((f) => f.querySelector('img')).filter(Boolean),
-      { getScrollPosition: () => state.rightVirtual },
-    );
-    if (right) curves.push(right);
-  } catch (error) {
-    console.warn('[landing-access] curve-media init failed — DOM image fallback.', error);
+  /* ── Media shader (access-wave.js): one instance, both columns,
+     per-plane velocity signed by column. Null/throw → plain DOM
+     images are the fallback. */
+  let wave = null;
+  if (canvas instanceof HTMLCanvasElement) {
+    try {
+      wave = createAccessWave(
+        stage,
+        canvas,
+        {
+          left: items.left.map((f) => f.querySelector('img')).filter(Boolean),
+          right: items.right.map((f) => f.querySelector('img')).filter(Boolean),
+        },
+        () => ({ left: state.leftVirtual, right: state.rightVirtual }),
+      );
+    } catch (error) {
+      console.warn('[landing-access] access-wave init failed — DOM image fallback.', error);
+    }
   }
 
   /* ── Arrival reveal: headline lines founders-style (exact wrap —
@@ -350,6 +340,7 @@ export function initLandingAccess() {
   if (import.meta.env.DEV) {
     window.__landingAccess = {
       state: () => ({ ...state, wordIdx }),
+      wave: () => wave,
       geometry: () => ({ centerY, colTops: { ...colTops } }),
       trigger: () => trigger,
       /* Occluded-pane harness: rAF (and so gsap playback) can be
@@ -365,7 +356,7 @@ export function initLandingAccess() {
     window.removeEventListener('resize', onResize);
     trigger.kill();
     revealTrigger?.kill();
-    curves.forEach((c) => c.destroy());
+    wave?.destroy();
     wordTls.forEach((tl) => tl.kill());
     innersList.forEach((el) => gsap.killTweensOf(el));
   };

@@ -1163,17 +1163,16 @@
 	object-fit: cover;
 }
 
+/* One static full-stage shader canvas (access-wave.js) — planes
+   track the image rects through entrance + travel transforms. */
 .landing-v2 .landing-access__canvas {
 	position: absolute;
-	top: 0;
+	inset: 0;
+	width: 100%;
 	height: 100%;
-	width: 440px;
 	z-index: 2;
 	pointer-events: none;
 }
-
-.landing-v2 .landing-access__canvas--left { left: 152px; }
-.landing-v2 .landing-access__canvas--right { left: 1136px; }
 
 /* Veil wrappers: NO mask — a mask forms a backdrop root and would
    cut the veils' backdrop-filter off from the canvas beneath. */
