@@ -68,9 +68,10 @@ const LINE_STAGGER_S = 0.12;
 const MORPH_PX = 500;
 const CARD_PX = 800;
 const CARD_COUNT = 3;
-/* Beat F — dwell kept from the original transition; the fade is now
-   a DEPARTURE (Oscar's rev): the assembly scrolls off at 1:1. */
-const TRANSITION_DWELL_PX = 250;
+/* Beat E (Oscar's rev 7) — the settle: after Amplify parks, the
+   remaining header bands (Connect's AND Amplify's own) compress
+   slowly before the departure begins. Replaces the old 250 dwell. */
+const BAND_SETTLE_PX = 500;
 const TRANSITION_GROUND_FADE_PX = 500; // final-500px ground fade
 const GROUND_DARK = '#161616';
 const CARD_H = 646;
@@ -89,8 +90,14 @@ const BAND_GAP_PX = 24; // the symmetric gap, above and below
 const BAND_SHIFT_PX = DESC_TOP_PX - BAND_GAP_PX; // 26
 const CARD_STEP_PX = DESC_BOTTOM_PX - BAND_SHIFT_PX + BAND_GAP_PX; // 108
 const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/266/374
-const TITLE_ROW_TOP_PX = 56; // titlerow CSS top (shifts to 30)
-const DESC_CSS_TOP_PX = 80; // desc CSS top (centre anchor; shifts to 54)
+/* The header band = title row + image + secondary title (Oscar's
+   rev 7: the image joins, ending BAND_GAP_PX from the line too).
+   Targets = CSS tops minus BAND_SHIFT_PX. */
+const BAND_TARGETS = [
+  ['.landing-svc-card__titlerow', 56 - BAND_SHIFT_PX], // 30
+  ['.landing-svc-card__desc', 80 - BAND_SHIFT_PX], // 54
+  ['.landing-svc-card__img', 50 - BAND_SHIFT_PX], // 24
+];
 
 /* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
    morph's halfway point — while FROM/ACCESS fade and the title
@@ -99,7 +106,7 @@ const CARD_START_PX = MORPH_PX * 0.5; // 250
 const STACK_PX = CARD_START_PX + CARD_COUNT * CARD_PX; // 2650 — snap ceiling
 /* 1:1 departure travel: bottom card's parked top + its height. */
 const EXIT_PX = PARKED_Y[CARD_COUNT - 1] + CARD_H; // 1104
-const RUNWAY_PX = STACK_PX + TRANSITION_DWELL_PX + EXIT_PX; // 4254
+const RUNWAY_PX = STACK_PX + BAND_SETTLE_PX + EXIT_PX; // 4170
 /* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
 const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
 
@@ -296,33 +303,33 @@ export function initLandingServices() {
           CARD_START_PX + i * CARD_PX,
         );
       }
-      /* As this card arrives it COVERS the previous one: the covered
-         card's header band eases up so its divider->text gap lands
-         at BAND_GAP_PX, symmetric with the gap below the text. The
-         title row carries difference blends, so it moves via layout
-         `top` (never transform — house blend rule); the desc is
-         plain ink. */
-      if (i > 0) {
-        const covered = cards[i - 1];
-        const bandRow = covered.querySelector('.landing-svc-card__titlerow');
-        const bandDesc = covered.querySelector('.landing-svc-card__desc');
-        if (bandRow instanceof HTMLElement) {
-          tl.to(bandRow, {
-            top: TITLE_ROW_TOP_PX - BAND_SHIFT_PX,
-            duration: CARD_PX, ease: 'power1.out',
-          }, CARD_START_PX + i * CARD_PX);
-        }
-        if (bandDesc instanceof HTMLElement) {
-          tl.to(bandDesc, {
-            top: DESC_CSS_TOP_PX - BAND_SHIFT_PX,
-            duration: CARD_PX, ease: 'power1.out',
-          }, CARD_START_PX + i * CARD_PX);
-        }
-      }
+
     });
 
+    /* BAND COMPRESSIONS (Oscar's rev 7): each header band (title
+       row + image + secondary title) moves ONLY AFTER the line
+       below it has landed, then eases up slowly — card 1 during
+       Amplify's rise, cards 2 and 3 (Amplify settles its own
+       header for the uniform 24px look) during the settle window
+       after the stack completes. All via layout `top` (the title
+       rows carry difference blends — never transform); the moment
+       between a cover landing and its band compressing carries a
+       ~2px transient kiss of the covered text against the divider,
+       by construction. */
+    const addBandTweens = (card, at, dur) => {
+      BAND_TARGETS.forEach(([sel, top]) => {
+        const el = card.querySelector(sel);
+        if (el instanceof HTMLElement) {
+          tl.to(el, { top, duration: dur, ease: 'power1.inOut' }, at);
+        }
+      });
+    };
+    addBandTweens(cards[0], CARD_START_PX + 2 * CARD_PX, CARD_PX);
+    addBandTweens(cards[1], STACK_PX, BAND_SETTLE_PX);
+    addBandTweens(cards[2], STACK_PX, BAND_SETTLE_PX);
+
     /* BEAT F — the departure (Oscar's rev): the whole assembly
-       scrolls up and off at 1:1 after the dwell. Cards ride their
+       scrolls up and off at 1:1 after the settle. Cards ride their
        transform (safe — their difference titles blend inside the
        card's own context); the small title rides `top` (layout),
        NEVER transform — it carries the difference blend itself. */
@@ -330,14 +337,14 @@ export function initLandingServices() {
       tl.to(card, {
         y: PARKED_Y[i] - EXIT_PX,
         duration: EXIT_PX,
-      }, STACK_PX + TRANSITION_DWELL_PX);
+      }, STACK_PX + BAND_SETTLE_PX);
     });
     /* The corner title (the travelled Serrif instance) departs with
        the assembly — transform is fine, it carries no blend. */
     tl.to(title, {
       y: () => morph.dy - EXIT_PX,
       duration: EXIT_PX,
-    }, STACK_PX + TRANSITION_DWELL_PX);
+    }, STACK_PX + BAND_SETTLE_PX);
     /* ONE ground (Oscar's rev): the departing cards' opaque bodies
        and dividers fade to dark IN THE SAME TWEEN as the stage, so
        the whole picture darkens as a single surface — no hard line
