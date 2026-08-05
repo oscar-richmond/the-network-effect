@@ -1,0 +1,98 @@
+---
+/**
+ * FOOTER (/landing) — Figma 21:2392, extracted 2026-08-06; 83px
+ * chrome offset subtracted; coordinates below are FOOTER-RELATIVE
+ * (footer top = page 1050). #232A89 surface, 811px, document flow.
+ * z-index 260 (the exit gate over the fixed hero stage).
+ *
+ * The nav's difference blend over this blue inverts to a yellowish
+ * tone — correct compositing, deliberately not suppressed.
+ *
+ * LINK DESTINATIONS (per direction):
+ * - home + BACK TO TOP -> smooth Lenis scroll to page top.
+ * - services / clients / selected work -> NON-NAVIGATING
+ *   placeholders (pages don't exist yet).
+ * - "the founders" is grey per the file — AMBIGUOUS whether it's a
+ *   column label or a nav item; built as a non-link grey line
+ *   matching the file, flagged for later resolution.
+ * - START A PROJECT -> the established mailto
+ *   (hello@networkeffectagency.co.uk).
+ * - Bottom-row email: the file's copy hello@thenetworkeffect.co.uk,
+ *   mailto'd as written per direction — NOTE it differs from the
+ *   site's established hello@networkeffectagency.co.uk; flagged.
+ * - LINKEDIN / INSTAGRAM: placeholder hrefs pending real profile
+ *   URLs. (File's "INSTATGRAM" typo fixed.)
+ *
+ * PENDING FOUNDER SIGN-OFF: the masked image is the file's export.
+ */
+import { asset } from '../../utils/asset.js';
+---
+
+<footer class="landing-footer" data-landing-footer aria-label="Site footer">
+  {/* Index columns */}
+  <div class="landing-footer__cols">
+    <nav class="landing-footer__col" data-footer-col aria-label="Site index">
+      <p class="landing-footer__label">SITE INDEX</p>
+      <a class="landing-footer__link" href="/landing" data-footer-top data-char-ripple-trigger><span data-char-ripple>HOME</span></a>
+      {/* Placeholders — pages don't exist yet. */}
+      <span class="landing-footer__link is-placeholder" data-char-ripple-trigger><span data-char-ripple>SERVICES</span></span>
+      <span class="landing-footer__link is-placeholder" data-char-ripple-trigger><span data-char-ripple>CLIENTS</span></span>
+    </nav>
+    <nav class="landing-footer__col landing-footer__col--2" data-footer-col aria-label="More">
+      {/* Grey per the file — label vs item AMBIGUOUS; see header. */}
+      <p class="landing-footer__label">THE FOUNDERS</p>
+      <span class="landing-footer__link is-placeholder" data-char-ripple-trigger><span data-char-ripple>SELECTED WORK</span></span>
+    </nav>
+    <a
+      class="landing-footer__start"
+      data-footer-col
+      href="mailto:hello@networkeffectagency.co.uk"
+      data-char-ripple-trigger
+    >
+      <span data-char-ripple>START A PROJECT</span>
+      <img src={asset('/assets/landing/closing/arrow-ne.svg')} alt="" width="10.5" height="10.5" data-char-ripple-arrow />
+    </a>
+  </div>
+
+  {/* Masked image — topmost visible layer, exact crop. */}
+  <figure class="landing-footer__img" data-footer-img aria-hidden="true">
+    <img
+      src={asset('/assets/landing/closing/footer-image.jpg')}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      style="width:243px;height:304px;left:-2px;top:-1px"
+    />
+  </figure>
+
+  {/* Big statement — line 1 carries the file's deliberate leading
+      indent, reproduced as an inline spacer element (text-indent
+      breaks the reveal wrap's line grouping; the spacer rides inside
+      line 1's clip as an atom, and works identically un-wrapped). */}
+  <div class="landing-footer__statement" data-footer-statement>
+    <p class="landing-footer__st-line" data-footer-st-line
+      ><span class="landing-footer__st-indent" aria-hidden="true"></span>Culture rarely moves in public first.</p
+    >
+    <p class="landing-footer__st-line" data-footer-st-line
+      >It moves quietly. <span class="landing-footer__st-serrif">Through people. Through relationships.</span></p
+    >
+  </div>
+
+  {/* Bottom row — absolute lefts per the file. */}
+  <div class="landing-footer__row" data-footer-row>
+    {/* File copy, mailto'd as written — differs from the site's
+        established address; see header. */}
+    <a class="landing-footer__rowitem landing-footer__rowitem--email" href="mailto:hello@thenetworkeffect.co.uk" data-char-ripple-trigger><span data-char-ripple>HELLO@THENETWORKEFFECT.CO.UK</span></a>
+    <div class="landing-footer__social">
+      {/* Placeholder hrefs pending real profile URLs. */}
+      <span class="landing-footer__rowitem is-placeholder" data-char-ripple-trigger><span data-char-ripple>LINKEDIN</span><img src={asset('/assets/landing/closing/arrow-ne.svg')} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+      <span class="landing-footer__rowitem is-placeholder" data-char-ripple-trigger><span data-char-ripple>INSTAGRAM</span><img src={asset('/assets/landing/closing/arrow-ne.svg')} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+    </div>
+    <button type="button" class="landing-footer__rowitem landing-footer__rowitem--top" data-footer-top data-char-ripple-trigger>
+      <span data-char-ripple>BACK TO TOP</span>
+      <img src={asset('/assets/landing/closing/arrow-up.svg')} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
+    </button>
+    <p class="landing-footer__rowitem landing-footer__rowitem--copyright">©2026 All rights reserved</p>
+    <p class="landing-footer__rowitem landing-footer__rowitem--siteby">site by  <span>SELFHOOD STUDIOS</span></p>
+  </div>
+</footer>

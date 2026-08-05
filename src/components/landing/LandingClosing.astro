@@ -1,0 +1,85 @@
+---
+/**
+ * CLOSING SECTION (/landing) — Figma n2cY4c7GnsR5MBx1PJoC97 node
+ * 21:2392 ("Landing Page"), extracted 2026-08-06; 83px chrome offset
+ * subtracted. Normal document flow after We Create Access — no
+ * stage, no runway. Light #EEEEF0, 1050px.
+ *
+ * z-index 260: THE EXIT GATE (the hero's fixed stage at z250 never
+ * tears down; every in-flow section must out-stack it).
+ *
+ * Headline: three right-anchored ragged lines, 48/40, white +
+ * difference (blend walk: the section root is the lines' only
+ * positioned ancestor — no transform/filter/opacity between; the
+ * reveal animates their lr-inner DESCENDANTS). Tiles: 414x450,
+ * 8px gaps, the file's topmost visible layer per mask group with
+ * exact crops. Keywords: TRUST/BEHAVIOUR/INFLUENCE/CREDIBILITY +
+ * /0N indexes + Serrif lines.
+ *
+ * CONTENT NOTE (Oscar-approved variant): the INFLUENCE line in the
+ * file reads "Traditional campaigns create awareness, relationships
+ * create influence." — built here as the approved shortened
+ * variant: "Traditional campaigns build awareness. Relationships
+ * build influence."
+ *
+ * PENDING FOUNDER SIGN-OFF: all four tile images are the file's own
+ * exports, placeholder until licensed finals.
+ */
+import { asset } from '../../utils/asset.js';
+
+const tiles = [
+  { src: asset('/assets/landing/closing/tile-1.jpg'), w: 417, h: 519, x: -3, y: -42 },
+  { src: asset('/assets/landing/closing/tile-2.jpg'), w: 421, h: 636, x: -5, y: -69 },
+  { src: asset('/assets/landing/closing/tile-3.jpg'), w: 422, h: 528, x: -5, y: -25 },
+  { src: asset('/assets/landing/closing/tile-4.jpg'), w: 425, h: 597, x: -6, y: -25 },
+];
+
+const keywords = [
+  { x: 24, w: 323, word: 'TRUST', index: '/01', line: 'Audiences trust people more than institutions.' },
+  { x: 446, w: 323, word: 'BEHAVIOUR', index: '/02', line: 'Communities shape behaviour.' },
+  /* Shortened approved variant — see the header note. */
+  { x: 868, w: 406, word: 'INFLUENCE', index: '/03', line: 'Traditional campaigns build awareness. Relationships build influence.' },
+  { x: 1290, w: 406, word: 'CREDIBILITY', index: '/04', line: 'Brands need access, credibility and participation.' },
+];
+---
+
+<section class="landing-closing" data-landing-closing aria-label="Why access matters">
+  {/* Right-anchored ragged headline — right edges per the file
+      (493/748/713 from the left at 1728). Difference over the light
+      ground and the tiles' top edge. */}
+  <h2 class="landing-closing__headline">
+    <span class="landing-closing__hl landing-closing__hl--1" data-closing-line>MOST BRANDS</span>
+    <span class="landing-closing__hl landing-closing__hl--2" data-closing-line>STRUGGLE TO ACCESS</span>
+    <span class="landing-closing__hl landing-closing__hl--3 landing-closing__hl--serrif" data-closing-line>CULTURE AUTHENTICALLY.</span>
+  </h2>
+
+  <p class="landing-closing__intro" data-closing-intro>
+    The network effect exists to connect people, brands and talent in ways that create long-term cultural and commercial value.
+  </p>
+
+  <div class="landing-closing__tiles" aria-hidden="true">
+    {tiles.map((t) => (
+      <figure class="landing-closing__tile" data-closing-tile>
+        <img
+          src={t.src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          style={`width:${t.w}px;height:${t.h}px;left:${t.x}px;top:${t.y}px`}
+        />
+      </figure>
+    ))}
+  </div>
+
+  {/* Keyword blocks — /0N indexes sit just right of each word (file
+      positions land the index low on the word's baseline zone). */}
+  {keywords.map((k) => (
+    <div class="landing-closing__kw" data-closing-kw style={`left:${k.x}px;width:${k.w}px`}>
+      <p class="landing-closing__kw-row">
+        <span class="landing-closing__kw-word">{k.word}</span>
+        <span class="landing-closing__kw-index">{k.index}</span>
+      </p>
+      <p class="landing-closing__kw-line">{k.line}</p>
+    </div>
+  ))}
+</section>

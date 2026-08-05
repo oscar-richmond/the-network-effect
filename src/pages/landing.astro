@@ -18,6 +18,8 @@ import LandingFounders from '../components/landing/LandingFounders.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
 import LandingServicesStack from '../components/landing/LandingServicesStack.astro';
 import LandingAccess from '../components/landing/LandingAccess.astro';
+import LandingClosing from '../components/landing/LandingClosing.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
 import Menu from '../components/Menu.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -109,6 +111,12 @@ import '../styles/fonts.css';
       the section's own top fade softens the dark→light cut. */}
   <LandingAccess />
 
+  {/* Closing section + footer — plain document flow, no runway
+      (Figma 21:2392). Both carry z260, the exit gate over the fixed
+      hero stage. */}
+  <LandingClosing />
+  <LandingFooter />
+
   <Menu />
 
   {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
@@ -122,6 +130,7 @@ import '../styles/fonts.css';
   import { initLandingServices } from '../scripts/landing/landing-services.js';
   import { initLandingNetwork } from '../scripts/landing/landing-network.js';
   import { initLandingAccess } from '../scripts/landing/landing-access.js';
+  import { initLandingClosing } from '../scripts/landing/landing-closing.js';
 
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();
@@ -129,6 +138,7 @@ import '../styles/fonts.css';
   let cleanupLandingServices = initLandingServices();
   let cleanupLandingNetwork = initLandingNetwork();
   let cleanupLandingAccess = initLandingAccess();
+  let cleanupLandingClosing = initLandingClosing();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupLandingHero();
@@ -137,6 +147,7 @@ import '../styles/fonts.css';
     cleanupLandingServices();
     cleanupLandingNetwork();
     cleanupLandingAccess();
+    cleanupLandingClosing();
   });
 
   document.addEventListener('astro:after-swap', () => {
@@ -146,5 +157,6 @@ import '../styles/fonts.css';
     cleanupLandingServices = initLandingServices();
     cleanupLandingNetwork = initLandingNetwork();
     cleanupLandingAccess = initLandingAccess();
+    cleanupLandingClosing = initLandingClosing();
   });
 </script>
