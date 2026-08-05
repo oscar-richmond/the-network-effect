@@ -2125,10 +2125,11 @@
 .landing-v2 .landing-featured__titleblock {
 	position: absolute;
 	left: 0;
-	/* TOP-anchored (Oscar's rev 2 — was band-centred): 28px below the
-	   image; the desc follows the title's real height + 16px
-	   (per-card inline, LandingFeatured.astro). */
-	top: 469px;
+	/* TOP-anchored: 24px below the image (Oscar's rev 3 — the
+	   closing-keywords rhythm: image 24 title 16 desc); the desc
+	   follows the title's real height + 16px (per-card inline,
+	   LandingFeatured.astro). */
+	top: 465px;
 	margin: 0;
 	font-weight: 700;
 	/* 28px (Oscar's rev — was 32). */
