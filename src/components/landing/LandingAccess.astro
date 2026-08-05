@@ -28,6 +28,7 @@
  * centre and are repeats by design.
  */
 import { asset } from '../../utils/asset.js';
+import GradualBlur from '../GradualBlur.astro';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 
@@ -120,5 +121,30 @@ const PRIME_RIGHT = 6;
         ><span class="landing-access__hl-dazzed">CONNECT</span></span
       >
     </h2>
+
+    {/* Page-edge treatment — the /services GradualBlur bands over a
+        same-colour gradient tint (see landing.css). */}
+    <div class="landing-access__edge-tint landing-access__edge-tint--top" aria-hidden="true"></div>
+    <div class="landing-access__edge-tint landing-access__edge-tint--bottom" aria-hidden="true"></div>
+    <GradualBlur
+      target="parent"
+      position="top"
+      strength={3}
+      height="12rem"
+      divCount={2}
+      exponential={true}
+      opacity={0.8}
+      zIndex={6}
+    />
+    <GradualBlur
+      target="parent"
+      position="bottom"
+      strength={3}
+      height="12rem"
+      divCount={2}
+      exponential={true}
+      opacity={0.8}
+      zIndex={6}
+    />
   </div>
 </section>

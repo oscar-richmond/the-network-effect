@@ -47,7 +47,12 @@ const STEP_SCROLL_PX = 400; // scroll runway per pair transition
 const RUNWAY_PX = STEPS * STEP_SCROLL_PX;
 const TRAVEL_PX = STEPS * PITCH;
 const CENTER_FRACTION = 0.5; // pair band dead-centre (Oscar's rev; file had 580/1029)
-const DIM_RANGE = 0.8; // focus floor 0.2 -> shader alpha 0.6 (file: opacity .6)
+/* No image dim (Oscar's rev 3): the old shader-alpha 0.6 + white wash
+   read as CLOUDY, not like a Figma background blur — Figma keeps the
+   image at full strength behind the translucent fill. Planes render
+   at focus 1 (full alpha); the veil (white 0.1 + blur) is the only
+   off-centre treatment. */
+const BLUR_DEAD_FRACTION = 0.5; // sharp until half a pitch off-centre
 const VEIL_BLUR_PX = 30; // Oscar's rev 2: stronger than the Figma 20
 const VEIL_BG_ALPHA = 0.1;
 const LINE_STAGGER_S = 0.12;
@@ -200,11 +205,16 @@ export function initLandingAccess() {
       if (!(fig instanceof HTMLElement)) return;
       const isPad = i === 0 || i === items[side].length - 1;
       const itemCenter = top + i * PITCH + ITEM_H / 2 + translate;
-      const t = isPad ? 1 : Math.min(Math.abs(itemCenter - centerY) / PITCH, 1);
-      /* Shader dim (curve-media reads --slide-focus off the figure)
-         + DOM fallback opacity for the no-WebGL path. */
-      fig.style.setProperty('--slide-focus', (1 - DIM_RANGE * t).toFixed(3));
-      fig.style.opacity = (1 - 0.4 * t).toFixed(3);
+      const dist = Math.abs(itemCenter - centerY);
+      /* Dead zone (Oscar's rev 3 — "blur set in too early"): an image
+         stays fully sharp until it's half a pitch off-centre (well on
+         its way out), then the veil ramps over the remaining half. At
+         snapped positions this still gives centre-sharp / neighbours
+         fully veiled. */
+      const dead = PITCH * BLUR_DEAD_FRACTION;
+      const t = isPad ? 1 : Math.min(Math.max((dist - dead) / (PITCH - dead), 0), 1);
+      /* Full-strength planes always (Figma background-blur look). */
+      fig.style.setProperty('--slide-focus', '1');
       const veil = veils[side][i];
       if (veil instanceof HTMLElement) {
         const blur = VEIL_BLUR_PX * t;

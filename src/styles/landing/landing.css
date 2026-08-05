@@ -1151,12 +1151,10 @@
 	height: 500px;
 	margin: 0;
 	overflow: hidden;
-	/* File: off-centre images at 0.6 — the DOM/no-WebGL rendering;
-	   under the warp the shader's uFocus carries the same falloff. */
-	opacity: 0.6;
+	/* No dim (Oscar's rev 3): full-strength imagery behind the veil —
+	   the Figma background-blur look. is-prime survives as the JS
+	   geometry anchor only. */
 }
-
-.landing-v2 .landing-access__item.is-prime { opacity: 1; }
 
 .landing-v2 .landing-access__item img {
 	display: block;
@@ -1217,9 +1215,9 @@
 	position: absolute;
 	z-index: 4;
 	width: 344px;
-	/* 32px (Oscar's rev — was 64; the file's own 61/68 were uneven). */
-	top: calc(var(--access-center-y, 50dvh) - 16px);
-	height: 32px;
+	/* 48px (Oscar's rev 3 — 64 -> 32 -> 48). */
+	top: calc(var(--access-center-y, 50dvh) - 24px);
+	height: 48px;
 	margin: 0;
 	text-align: center;
 	white-space: nowrap;
@@ -1227,8 +1225,8 @@
 	font-family: 'Serrif', serif;
 	font-weight: 400;
 	font-synthesis: none;
-	font-size: 32px;
-	line-height: 32px;
+	font-size: 48px;
+	line-height: 48px;
 	color: #fff;
 	mix-blend-mode: difference;
 }
@@ -1239,6 +1237,30 @@
 .landing-v2 .landing-access__word-inner {
 	display: inline-block;
 	will-change: filter;
+}
+
+/* Page-edge treatment (Oscar's rev 3): the /services GradualBlur
+   bands (strength 3, 12rem, 2 exponential layers, opacity 0.8) on
+   both stage edges, over a same-colour gradient tint so the edges
+   read as blurred #EEEEF0. Tint z5, blur bands z6 — siblings above
+   everything in-section; never ancestors of the difference words. */
+.landing-v2 .landing-access__edge-tint {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	height: 12rem;
+	z-index: 5;
+	pointer-events: none;
+}
+
+.landing-v2 .landing-access__edge-tint--top {
+	top: 0;
+	background: linear-gradient(180deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
+}
+
+.landing-v2 .landing-access__edge-tint--bottom {
+	bottom: 0;
+	background: linear-gradient(0deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
 }
 
 /* Centre headline — 32/32 #161616, 457px measure, mixed faces per
