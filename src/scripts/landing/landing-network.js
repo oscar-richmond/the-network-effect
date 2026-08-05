@@ -243,19 +243,21 @@ export function initLandingNetwork() {
   }
 
   const lines = Array.from(section.querySelectorAll('.landing-network__line'));
-  /* The rising group (Oscar's arrival rev): logo rows, their fade
-     band and the photo strip — parked below the stage until the
-     entrance. (The edge gradient stays put: over the bare #161616
-     ground it is invisible, so parking it buys nothing.) */
+  /* The rising group (Oscar's arrival rev): logo rows, both fade
+     bands and the photo strip — parked below the stage until the
+     entrance, so every overlay arrives ALREADY composed on its
+     media (rev 2: the edge gradient was painting early over the
+     services fade — it rides with the group now). */
   const stage = section.querySelector('[data-landing-network-stage]');
   const media = Array.from(
     section.querySelectorAll(
-      '[data-landing-network-row], [data-landing-network-strip], .landing-network__row-fade',
+      '[data-landing-network-row], [data-landing-network-strip], .landing-network__row-fade, .landing-network__edge-fade',
     ),
   ).filter((el) => el instanceof HTMLElement);
 
   const timeouts = [];
   let trigger = null;
+  let coverTrigger = null;
   let disposed = false;
   let entered = false;
 
@@ -270,15 +272,22 @@ export function initLandingNetwork() {
     });
   };
   parkMedia();
-  /* Transparent during the overlapping slide-in (see landing.css's
-     track comment): the section rides over the services fade
-     invisibly; restored at the pin — black over identical black. */
-  section.style.background = 'transparent';
-  if (stage instanceof HTMLElement) stage.style.background = 'transparent';
+  /* Hidden during the overlapping slide-in (see landing.css's track
+     comment) — and, rev 2, PIN-LINKED rather than one-shot: the
+     section is visible exactly while at/past its pin and hidden
+     above it, so scrolling back up returns to the services ground
+     fade playing natively in reverse (no hard black edge — the
+     show/hide switch always happens over identical black). */
+  section.style.visibility = 'hidden';
   const onEntryResize = () => {
     if (!entered) parkMedia();
   };
   window.addEventListener('resize', onEntryResize);
+
+  /* The stage pins BOTTOM-ALIGNED (sticky top 100dvh - 1097, so the
+     strip's bottom kisses the viewport bottom — Oscar's rev 2); the
+     pin therefore starts this many px after the section top. */
+  const pinOffset = () => Math.max(1097 - window.innerHeight, 0);
 
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
@@ -299,14 +308,20 @@ export function initLandingNetwork() {
        full text reveal (last line's delay + its transition), so both
        arrive in their final state together. */
     const totalS = (lines.length - 1) * LINE_STAGGER_S + LINE_REVEAL_S;
+    /* Pin-linked cover (both directions, never 'once'). */
+    coverTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: () => `top+=${pinOffset()} top`,
+      end: 'max',
+      onEnter: () => { section.style.visibility = ''; },
+      onLeaveBack: () => { section.style.visibility = 'hidden'; },
+    });
     trigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top top',
+      start: () => `top+=${pinOffset()} top`,
       once: true,
       onEnter: () => {
         entered = true;
-        section.style.background = '';
-        if (stage instanceof HTMLElement) stage.style.background = '';
         lines.forEach((line) => {
           if (line instanceof HTMLElement) playLineRevealElement(line);
         });
@@ -333,8 +348,8 @@ export function initLandingNetwork() {
     swapTimeouts.forEach(clearTimeout);
     cleanupHover.forEach((fn) => fn());
     window.removeEventListener('resize', onEntryResize);
-    section.style.background = '';
-    if (stage instanceof HTMLElement) stage.style.background = '';
+    section.style.visibility = '';
+    coverTrigger?.kill();
     trigger?.kill();
   };
 }

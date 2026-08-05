@@ -873,7 +873,12 @@
    in-flow section behaved). */
 .landing-v2 .landing-network__stage {
 	position: sticky;
-	top: 0;
+	/* Bottom-aligned pin (Oscar's rev 2): the strip's bottom kisses
+	   the viewport bottom while pinned (negative at sub-1097
+	   viewports); the text arrives at its correspondingly higher
+	   frame position. */
+	top: calc(100vh - 1097px);
+	top: calc(100dvh - 1097px);
 	height: 1097px;
 	overflow: hidden;
 	background: #161616;
