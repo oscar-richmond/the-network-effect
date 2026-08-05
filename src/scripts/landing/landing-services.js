@@ -28,13 +28,18 @@
  *                    viewport (800px each) and parks with its divider
  *                    at 158/308/458 (the post-stack 150px offsets).
  *                    Cards are opaque and rigid; occlusion is free.
- *   2900 .... 3850   BEAT F — the fade-to-black RE-ANCHORED, its
- *                    constants verbatim (250 dwell, 400 content fade,
- *                    ground fade 500 starting at +450): content =
- *                    card roots + small title (composed-unit fades —
- *                    blend-safe), ground = the stage background to
- *                    #161616; Our Network arrives black-on-black
- *                    exactly as before.
+ *   2900 .... 4254   BEAT F (Oscar's rev — the stack DEPARTS instead
+ *                    of fading): after a 250px dwell the whole
+ *                    assembly (three cards + the small title) scrolls
+ *                    up and off the top at 1:1 scroll speed (travel =
+ *                    card 3's parked y + card height = 1104px — the
+ *                    exact distance for the bottom card to clear),
+ *                    while the ground fades to #161616 over the final
+ *                    500px. The scrub still ends exactly as Our
+ *                    Network's top crosses the viewport bottom —
+ *                    black-on-black preserved. The small title rides
+ *                    via `top` (layout), never transform: it carries
+ *                    the difference blend.
  *
  * SNAP (Oscar-approved scope): Lenis-idle mechanism (the access
  * section's proven single-authority pattern — never ScrollTrigger's
@@ -63,20 +68,21 @@ const LINE_STAGGER_S = 0.12;
 const MORPH_PX = 500;
 const CARD_PX = 800;
 const CARD_COUNT = 3;
-/* Beat F — the original transition's constants, verbatim. */
+/* Beat F — dwell kept from the original transition; the fade is now
+   a DEPARTURE (Oscar's rev): the assembly scrolls off at 1:1. */
 const TRANSITION_DWELL_PX = 250;
-const TRANSITION_TEXT_FADE_PX = 400;
-const TRANSITION_GROUND_DELAY_PX = 200;
-const TRANSITION_GROUND_FADE_PX = 500;
+const TRANSITION_GROUND_FADE_PX = 500; // final-500px ground fade
 const GROUND_DARK = '#161616';
-
-const STACK_PX = MORPH_PX + CARD_COUNT * CARD_PX; // 2900 — snap ceiling
-const RUNWAY_PX =
-  STACK_PX + TRANSITION_DWELL_PX + TRANSITION_GROUND_DELAY_PX + TRANSITION_GROUND_FADE_PX; // 3850
-/* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
+const CARD_H = 646;
 
 /* Post-stack parked divider positions (83px chrome offset removed). */
 const PARKED_Y = [158, 308, 458];
+
+const STACK_PX = MORPH_PX + CARD_COUNT * CARD_PX; // 2900 — snap ceiling
+/* 1:1 departure travel: bottom card's parked top + its height. */
+const EXIT_PX = PARKED_Y[CARD_COUNT - 1] + CARD_H; // 1104
+const RUNWAY_PX = STACK_PX + TRANSITION_DWELL_PX + EXIT_PX; // 4254
+/* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
 const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
 
 /* Beat A choreography fractions (of MORPH_PX). The resolve windows
@@ -271,18 +277,25 @@ export function initLandingServices() {
       );
     });
 
-    /* BEAT F — the re-anchored fade, constants verbatim. Content
-       fade on the card ROOTS + small title (composed-unit fades:
-       each card's difference titles resolve against its own bg
-       first, then the whole unit fades — blend-safe). */
-    tl.to([...cards, small], {
-      opacity: 0,
-      duration: TRANSITION_TEXT_FADE_PX,
+    /* BEAT F — the departure (Oscar's rev): the whole assembly
+       scrolls up and off at 1:1 after the dwell. Cards ride their
+       transform (safe — their difference titles blend inside the
+       card's own context); the small title rides `top` (layout),
+       NEVER transform — it carries the difference blend itself. */
+    cards.forEach((card, i) => {
+      tl.to(card, {
+        y: PARKED_Y[i] - EXIT_PX,
+        duration: EXIT_PX,
+      }, STACK_PX + TRANSITION_DWELL_PX);
+    });
+    tl.to(small, {
+      top: `-=${EXIT_PX}`,
+      duration: EXIT_PX,
     }, STACK_PX + TRANSITION_DWELL_PX);
     tl.to(stage, {
       backgroundColor: GROUND_DARK,
       duration: TRANSITION_GROUND_FADE_PX,
-    }, STACK_PX + TRANSITION_DWELL_PX + TRANSITION_GROUND_DELAY_PX);
+    }, RUNWAY_PX - TRANSITION_GROUND_FADE_PX);
 
     masterTl = tl;
     trigger = tl.scrollTrigger ?? null;

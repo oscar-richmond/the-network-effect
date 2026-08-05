@@ -547,15 +547,16 @@
 	position: relative;
 	z-index: 260;
 	/* 1 viewport of departure runway (the founders photo scroll-off,
-	   as before) + 3850px of pinned runway for the stacked-services
+	   as before) + 4254px of pinned runway for the stacked-services
 	   sequence: Beat A morph 500 + three card arrivals 3 x 800 + the
-	   re-anchored fade-to-black 950 (constants verbatim in
-	   landing-services.js). Keep the 3850 in step with the timeline —
+	   departure 250 dwell + 1104 (the stack scrolls off at 1:1 while
+	   the ground fades to #161616 over the final 500 —
+	   landing-services.js). Keep the 4254 in step with the timeline —
 	   the black-on-black handoff to Our Network depends on the scrub
 	   ending exactly as the next section's top crosses the viewport
 	   bottom. */
-	height: calc(100vh + 3850px);
-	height: calc(100dvh + 3850px);
+	height: calc(100vh + 4254px);
+	height: calc(100dvh + 4254px);
 	background: var(--landing-ground);
 }
 
