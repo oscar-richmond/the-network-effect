@@ -16,7 +16,8 @@ import { NETWORK_BRAND_SETS } from '../../data/landing/network-brands.js';
 gsap.registerPlugin(ScrollTrigger);
 
 const LINE_STAGGER_S = 0.12;
-const MEDIA_AT_MS = 1040;
+const LINE_REVEAL_S = 1.2; // the reveal transition's own duration
+const ENTRY_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; // house reveal curve
 
 /* ── Industry hover / logo swap (Oscar's rev) ─────────────────────
    Hovering (or keyboard-focusing) a sector term dims the rest of the
@@ -242,13 +243,37 @@ export function initLandingNetwork() {
   }
 
   const lines = Array.from(section.querySelectorAll('.landing-network__line'));
+  /* The rising group (Oscar's arrival rev): logo rows, their fade
+     band and the photo strip — parked below the stage until the
+     entrance. (The edge gradient stays put: over the bare #161616
+     ground it is invisible, so parking it buys nothing.) */
+  const stage = section.querySelector('[data-landing-network-stage]');
   const media = Array.from(
-    section.querySelectorAll('[data-landing-network-row], [data-landing-network-strip]'),
-  );
+    section.querySelectorAll(
+      '[data-landing-network-row], [data-landing-network-strip], .landing-network__row-fade',
+    ),
+  ).filter((el) => el instanceof HTMLElement);
 
   const timeouts = [];
   let trigger = null;
   let disposed = false;
+  let entered = false;
+
+  /* Park each riser at the stage's bottom edge (its own distance —
+     same duration and curve for all, so they LAND TOGETHER with the
+     text). Re-derived on resize until the entrance has played. */
+  const stageH = () => (stage instanceof HTMLElement ? stage.clientHeight : window.innerHeight);
+  const parkMedia = () => {
+    media.forEach((el) => {
+      const d = Math.max(stageH() - el.offsetTop, 0);
+      el.style.transform = `translateY(${d.toFixed(0)}px)`;
+    });
+  };
+  parkMedia();
+  const onEntryResize = () => {
+    if (!entered) parkMedia();
+  };
+  window.addEventListener('resize', onEntryResize);
 
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
@@ -264,19 +289,33 @@ export function initLandingNetwork() {
       }
     });
 
+    /* The synchronized entrance, at the pin (the black moment): text
+       reveals in place; media rises over the SAME total time as the
+       full text reveal (last line's delay + its transition), so both
+       arrive in their final state together. */
+    const totalS = (lines.length - 1) * LINE_STAGGER_S + LINE_REVEAL_S;
     trigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top 65%',
+      start: 'top top',
       once: true,
       onEnter: () => {
+        entered = true;
         lines.forEach((line) => {
           if (line instanceof HTMLElement) playLineRevealElement(line);
         });
-        timeouts.push(
-          setTimeout(() => {
-            media.forEach((el) => el.classList.add('is-visible'));
-          }, MEDIA_AT_MS),
-        );
+        media.forEach((el) => {
+          el.style.transition = `transform ${totalS.toFixed(2)}s ${ENTRY_CURVE}`;
+        });
+        void section.offsetWidth; /* commit parked state under the transition */
+        media.forEach((el) => {
+          el.style.transform = 'translateY(0px)';
+        });
+        timeouts.push(setTimeout(() => {
+          media.forEach((el) => {
+            el.style.transition = '';
+            el.style.transform = '';
+          });
+        }, totalS * 1000 + 200));
       },
     });
   });
@@ -286,6 +325,7 @@ export function initLandingNetwork() {
     timeouts.forEach(clearTimeout);
     swapTimeouts.forEach(clearTimeout);
     cleanupHover.forEach((fn) => fn());
+    window.removeEventListener('resize', onEntryResize);
     trigger?.kill();
   };
 }

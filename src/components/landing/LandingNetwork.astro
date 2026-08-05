@@ -52,6 +52,15 @@ const sectorLines = [
 ---
 
 <section class="landing-network" data-landing-network aria-label="Our network">
+  {/* Sticky stage (Oscar's arrival rev): the section slides into the
+      viewport as PURE BLACK (text hidden in reveal clips, media
+      parked below the stage) — invisible against the services fade —
+      then pins, and one synchronized entrance fires: the text
+      reveals IN PLACE (hero-copy mechanism) while the logo rows +
+      photo strip rise from the viewport bottom on the same curve
+      and duration, everything landing together (landing-network.js).
+      The hold runway absorbs scroll while it plays. */}
+  <div class="landing-network__stage" data-landing-network-stage>
   <h2 class="landing-network__title" data-landing-network-title>
     <span class="landing-network__line"
       ><span class="landing-network__title-serrif">OUR </span>NETWORK</span
@@ -142,4 +151,5 @@ const sectorLines = [
   {/* The file's edge gradient (3:620): masks the carousel/strip edges
       into the section ground. */}
   <div class="landing-network__edge-fade" aria-hidden="true"></div>
+  </div>
 </section>

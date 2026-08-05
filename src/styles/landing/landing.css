@@ -851,10 +851,22 @@
 	position: relative;
 	z-index: 260;
 	width: 100%;
-	height: 1097px;
+	/* Track (Oscar's arrival rev): 1 viewport of sticky stage + a
+	   400px hold that absorbs scroll while the synchronized entrance
+	   plays (landing-network.js). */
+	height: calc(100vh + 400px);
+	height: calc(100dvh + 400px);
 	background: #161616;
-	overflow: hidden;
 	pointer-events: auto;
+}
+
+.landing-v2 .landing-network__stage {
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
+	background: #161616;
 }
 
 /* Title: OUR (Serrif Medium) NETWORK (Dazzed Bold), 48/48 white. */
@@ -1100,20 +1112,10 @@
 	pointer-events: none;
 }
 
-/* Entrance hidden states — no-preference only; the reveal module
-   (landing-network.js) arms and plays them. */
-@media (prefers-reduced-motion: no-preference) {
-	.landing-v2 .landing-network__marquee,
-	.landing-v2 .landing-network__strip {
-		opacity: 0;
-		transition: opacity 0.8s ease;
-	}
-
-	.landing-v2 .landing-network__marquee.is-visible,
-	.landing-v2 .landing-network__strip.is-visible {
-		opacity: 1;
-	}
-}
+/* Media entrance (Oscar's arrival rev): no opacity states — the
+   rows/row-fade/strip are PARKED below the stage by transform
+   (landing-network.js, non-RM only) and ride up during the
+   synchronized entrance. RM default = everything in place. */
 
 /* Reduced motion: the char ripple is suppressed (the utility skips
    wiring under RM), and without it these controls would have NO
