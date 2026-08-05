@@ -842,24 +842,33 @@
 	line-height: 32px;
 }
 
-/* MORE INFO — 147x38, non-navigating placeholder (no destinations
-   yet). Top is per-row (follows each list's length), inline. */
+/* MORE INFO — non-navigating placeholder (no destinations yet). Top
+   is per-row (follows each list's length), inline. 14px label with
+   arrow/pads/gap scaled by the same 16->14 ratio — the founders-CTA
+   treatment (their 14px/10.472/7 precedent); the file's 147 width
+   was natural (16+95+8+12+16), so the button narrows naturally. */
 .landing-v2 .landing-svc-card__btn {
 	position: absolute;
 	left: 845px;
-	width: 147px;
 	height: 38px;
-	display: flex;
+	display: inline-flex;
 	align-items: center;
-	justify-content: space-between;
-	padding: 0 16px;
+	gap: 7px;
+	padding: 0 14px;
 	border: 0;
 	background: var(--landing-svc-btn-fill);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 700;
-	font-size: 16px;
+	font-size: 14px;
 	color: var(--landing-accent-blue);
 	cursor: pointer;
+}
+
+.landing-v2 .landing-svc-card__btn img {
+	display: block;
+	width: 10.5px;
+	height: 10.5px;
+	flex-shrink: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
