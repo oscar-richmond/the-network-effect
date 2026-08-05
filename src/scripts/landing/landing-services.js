@@ -84,12 +84,20 @@ const CARD_H = 646;
    divider->text gap lands at 24, and the covering divider parks
    24 below the text: strip = (110 - 26) + 24 = 108. Amplify's
    image bottom = 374 + 530 = 904 — well inside the viewport. */
-const DESC_TOP_PX = 50; // desc block top inside the card
+const DESC_TOP_PX = 50; // desc block top inside the card (the rest gap)
 const DESC_BOTTOM_PX = 110; // desc block bottom
-const BAND_GAP_PX = 24; // the symmetric gap, above and below
+const BAND_GAP_PX = 24; // the compressed symmetric gap
 const BAND_SHIFT_PX = DESC_TOP_PX - BAND_GAP_PX; // 26
-const CARD_STEP_PX = DESC_BOTTOM_PX - BAND_SHIFT_PX + BAND_GAP_PX; // 108
-const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/266/374
+/* Two-stage stacking (Oscar's rev 8): a covering card FIRST lands
+   rest-symmetric — 50 above and 50 below the covered title, the
+   same air it had coming in (step 110 + 50 = 160) — and only when
+   the NEXT row rises does the pair compress to 24/24: the covered
+   band eases up 26 while the covering card slides up 52, in the
+   same window, landing at the final 108 step. */
+const STEP_REST_PX = DESC_BOTTOM_PX + DESC_TOP_PX; // 160 — first landing
+const CARD_STEP_PX = DESC_BOTTOM_PX - BAND_SHIFT_PX + BAND_GAP_PX; // 108 — final
+const FIRST_PARK_Y = [158, 158 + STEP_REST_PX, 158 + CARD_STEP_PX + STEP_REST_PX]; // 158/318/426
+const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/266/374 — final
 /* The header band = title row + image + secondary title (Oscar's
    rev 7: the image joins, ending BAND_GAP_PX from the line too).
    Targets = CSS tops minus BAND_SHIFT_PX. */
@@ -292,7 +300,7 @@ export function initLandingServices() {
     cards.forEach((card, i) => {
       tl.fromTo(card,
         { y: () => stageH() },
-        { y: PARKED_Y[i], duration: CARD_PX, ease: 'power1.out', immediateRender: false },
+        { y: FIRST_PARK_Y[i], duration: CARD_PX, ease: 'power1.out', immediateRender: false },
         CARD_START_PX + i * CARD_PX,
       );
       const fill = card.querySelector('[data-services-divider-fill]');
@@ -327,6 +335,16 @@ export function initLandingServices() {
     addBandTweens(cards[0], CARD_START_PX + 2 * CARD_PX, CARD_PX);
     addBandTweens(cards[1], STACK_PX, BAND_SETTLE_PX);
     addBandTweens(cards[2], STACK_PX, BAND_SETTLE_PX);
+    /* The covering cards' compression slides (rest 160 step -> final
+       108): Connect closes over Immerse while Amplify rises; Amplify
+       closes over Connect during the settle — same windows and ease
+       as the band compressions they pair with. */
+    tl.to(cards[1], {
+      y: PARKED_Y[1], duration: CARD_PX, ease: 'power1.inOut', immediateRender: false,
+    }, CARD_START_PX + 2 * CARD_PX);
+    tl.to(cards[2], {
+      y: PARKED_Y[2], duration: BAND_SETTLE_PX, ease: 'power1.inOut', immediateRender: false,
+    }, STACK_PX);
 
     /* BEAT F — the departure (Oscar's rev): the whole assembly
        scrolls up and off at 1:1 after the settle. Cards ride their
