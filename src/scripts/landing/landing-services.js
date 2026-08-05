@@ -75,15 +75,22 @@ const TRANSITION_GROUND_FADE_PX = 500; // final-500px ground fade
 const GROUND_DARK = '#161616';
 const CARD_H = 646;
 
-/* Parked divider positions — COMPRESSED stack (Oscar's rev 5: at
-   the file's 150px offsets, Amplify's image ran off the viewport
-   bottom). Each covering card now parks 120px below the card
-   beneath — the peek strip tightens around the covered card's
-   title/description as the next card lands — pulling the whole
-   stack up 120px so Amplify's image (bottom = 398 + 530 = 928)
-   sits inside the viewport. The strip size is the one knob. */
-const CARD_STEP_PX = 120;
-const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/278/398
+/* Parked divider positions — COMPRESSED stack (Oscar's revs 5+6):
+   the peek strip is built from SYMMETRIC 24px gaps around the
+   covered card's secondary title. The desc block sits 50..110
+   inside its card; as the next card lands, the covered card's
+   header band (title row + desc) eases UP by BAND_SHIFT so the
+   divider->text gap lands at 24, and the covering divider parks
+   24 below the text: strip = (110 - 26) + 24 = 108. Amplify's
+   image bottom = 374 + 530 = 904 — well inside the viewport. */
+const DESC_TOP_PX = 50; // desc block top inside the card
+const DESC_BOTTOM_PX = 110; // desc block bottom
+const BAND_GAP_PX = 24; // the symmetric gap, above and below
+const BAND_SHIFT_PX = DESC_TOP_PX - BAND_GAP_PX; // 26
+const CARD_STEP_PX = DESC_BOTTOM_PX - BAND_SHIFT_PX + BAND_GAP_PX; // 108
+const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/266/374
+const TITLE_ROW_TOP_PX = 56; // titlerow CSS top (shifts to 30)
+const DESC_CSS_TOP_PX = 80; // desc CSS top (centre anchor; shifts to 54)
 
 /* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
    morph's halfway point — while FROM/ACCESS fade and the title
@@ -288,6 +295,29 @@ export function initLandingServices() {
           { scaleX: 0, duration: CARD_PX, ease: 'none', immediateRender: false },
           CARD_START_PX + i * CARD_PX,
         );
+      }
+      /* As this card arrives it COVERS the previous one: the covered
+         card's header band eases up so its divider->text gap lands
+         at BAND_GAP_PX, symmetric with the gap below the text. The
+         title row carries difference blends, so it moves via layout
+         `top` (never transform — house blend rule); the desc is
+         plain ink. */
+      if (i > 0) {
+        const covered = cards[i - 1];
+        const bandRow = covered.querySelector('.landing-svc-card__titlerow');
+        const bandDesc = covered.querySelector('.landing-svc-card__desc');
+        if (bandRow instanceof HTMLElement) {
+          tl.to(bandRow, {
+            top: TITLE_ROW_TOP_PX - BAND_SHIFT_PX,
+            duration: CARD_PX, ease: 'power1.out',
+          }, CARD_START_PX + i * CARD_PX);
+        }
+        if (bandDesc instanceof HTMLElement) {
+          tl.to(bandDesc, {
+            top: DESC_CSS_TOP_PX - BAND_SHIFT_PX,
+            duration: CARD_PX, ease: 'power1.out',
+          }, CARD_START_PX + i * CARD_PX);
+        }
       }
     });
 
