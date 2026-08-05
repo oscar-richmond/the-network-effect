@@ -46,9 +46,15 @@ gsap.registerPlugin(ScrollTrigger);
 const TRANSITION_DWELL_PX = 250;
 const TRANSITION_GROUND_FADE_PX = 500;
 const GROUND_DARK = '#161616';
-/* Header line base tops (landing.css) — the difference-blend lines
-   depart via layout `top`, never transform. */
-const HL_BASE_TOPS = [177, 225];
+/* Header geometry (Oscar's rev): WORK's bottom and VIEW ALL's
+   bottom sit HEADER_GAP above the image tops; FEATURED sits one
+   line above WORK; WORK's W aligns under FEATURED's A. All derived
+   in place() since the strip top is itself content-derived. The
+   difference-blend lines depart via layout `top`, never transform. */
+const HEADER_GAP_PX = 80;
+const HL_LINE_PX = 40;
+const VIEWALL_H_PX = 38;
+const DESC_CLEAR_PX = 40; // longest desc bottom above viewport bottom
 
 const RIGHT_MARGIN_PX = 24;
 const LINE_STAGGER_S = 0.12;
@@ -86,24 +92,49 @@ export function initLandingFeatured() {
   applyHeight();
 
   /* Clip-safe strip top, DERIVED from the tallest card's real
-     content (the 324px desc width re-wraps some copy taller than
-     any fixed budget — caught in verification): keep the lowest
-     desc bottom >= 24px above the viewport bottom, capped at the
-     file's 352. */
-  const placeStrip = () => {
+     content (the 324px desc width re-wraps some copy): keep the
+     lowest desc bottom DESC_CLEAR_PX above the viewport bottom,
+     capped at the file's 352. The header hangs off the same
+     derivation (WORK/VIEW ALL bottoms HEADER_GAP above the images,
+     FEATURED a line above WORK). */
+  const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
+  const hlTops = [0, 0];
+  const place = () => {
     const maxBottom = Math.max(...cards.map((c) => {
       const d = c.querySelector('.landing-featured__desc');
       return d instanceof HTMLElement ? d.offsetTop + d.offsetHeight : 0;
     }), 0);
-    strip.style.top = `${Math.min(352, stageH() - maxBottom - 24).toFixed(0)}px`;
+    const stripTop = Math.min(352, stageH() - maxBottom - DESC_CLEAR_PX);
+    strip.style.top = `${stripTop.toFixed(0)}px`;
+    hlTops[1] = stripTop - HEADER_GAP_PX - HL_LINE_PX; // WORK
+    hlTops[0] = hlTops[1] - HL_LINE_PX; // FEATURED, one line above
+    hls.forEach((hl, i) => { hl.style.top = `${hlTops[i]}px`; });
+    if (viewall instanceof HTMLElement) {
+      viewall.style.top = `${stripTop - HEADER_GAP_PX - VIEWALL_H_PX}px`;
+    }
+  };
+
+  /* W-under-A (the O-over-S mechanism): Range around FEATURED's A —
+     runs pre-wrap (needs the raw text node). */
+  const alignWork = () => {
+    const featured = hls[0];
+    const work = hls[1];
+    if (!(featured instanceof HTMLElement) || !(work instanceof HTMLElement)) return;
+    const tn = featured.firstChild;
+    if (!tn || tn.nodeType !== Node.TEXT_NODE) return;
+    const range = document.createRange();
+    range.setStart(tn, 2); // FE[A]TURED
+    range.setEnd(tn, 3);
+    const aRect = range.getBoundingClientRect();
+    if (aRect.width === 0) return;
+    const stageRect = stage.getBoundingClientRect();
+    work.style.left = `${(aRect.left - stageRect.left).toFixed(2)}px`;
   };
 
   const timeouts = [];
   let masterTl = null;
   let revealTrigger = null;
   let disposed = false;
-
-  const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -128,7 +159,7 @@ export function initLandingFeatured() {
     tl.to(viewall, { y: () => -stageH(), duration: stageH() }, exitAt());
   }
   hls.forEach((hl, i) => {
-    tl.to(hl, { top: () => HL_BASE_TOPS[i] - stageH(), duration: stageH() }, exitAt());
+    tl.to(hl, { top: () => hlTops[i] - stageH(), duration: stageH() }, exitAt());
   });
   /* NUMERIC position (a function here is silently coerced to 0 —
      caught in verification: the fade ran at the travel's start). */
@@ -150,7 +181,8 @@ export function initLandingFeatured() {
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
-    placeStrip();
+    alignWork(); /* pre-wrap — the Range needs the raw text node */
+    place();
     lines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapLineRevealElement(line);
@@ -182,7 +214,7 @@ export function initLandingFeatured() {
 
   const onResize = () => {
     applyHeight();
-    placeStrip();
+    place();
   };
   window.addEventListener('resize', onResize);
 
