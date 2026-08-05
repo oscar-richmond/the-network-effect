@@ -79,10 +79,16 @@ const RUNWAY_PX =
 const PARKED_Y = [158, 308, 458];
 const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
 
-/* Beat A choreography fractions (of MORPH_PX). */
+/* Beat A choreography fractions (of MORPH_PX). The resolve windows
+   OVERLAP (Oscar's rev: the text must always be present — the first
+   cut faded large out then small in near-sequentially, which read as
+   a disappear/reappear): the small instance is fully in BEFORE the
+   large finishes leaving, so combined visibility never dips. */
 const EXIT_END = 0.5; // FROM + line 2 gone by here
-const RESOLVE_START = 0.55;
-const RESOLVE_END = 0.75; // large out / small landing window
+const SMALL_IN_START = 0.45;
+const SMALL_IN_END = 0.7;
+const LARGE_OUT_START = 0.6;
+const LARGE_OUT_END = 0.85;
 const MORPH_BLUR_PX = 4;
 
 /* Snap — the access section's Lenis-idle constants. */
@@ -244,16 +250,16 @@ export function initLandingServices() {
         duration: MORPH_PX * EXIT_END,
       }, 0);
     }
-    tl.to(title, {
-      opacity: 0,
-      filter: `blur(${MORPH_BLUR_PX}px)`,
-      duration: MORPH_PX * (RESOLVE_END - RESOLVE_START),
-    }, MORPH_PX * RESOLVE_START);
     tl.to(small, {
       opacity: 1,
       filter: 'blur(0px)',
-      duration: MORPH_PX * (RESOLVE_END - RESOLVE_START + 0.1),
-    }, MORPH_PX * RESOLVE_START);
+      duration: MORPH_PX * (SMALL_IN_END - SMALL_IN_START),
+    }, MORPH_PX * SMALL_IN_START);
+    tl.to(title, {
+      opacity: 0,
+      filter: `blur(${MORPH_BLUR_PX}px)`,
+      duration: MORPH_PX * (LARGE_OUT_END - LARGE_OUT_START),
+    }, MORPH_PX * LARGE_OUT_START);
 
     /* BEATS B/C/D — the cards. fromTo with function-based starts so
        refresh re-derives the below-viewport park. */

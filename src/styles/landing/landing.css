@@ -691,7 +691,9 @@
 .landing-v2 .landing-svc-card__titlerow {
 	position: absolute;
 	left: 24px;
-	top: 52px;
+	/* 40px title (Oscar's rev — was 48): top re-derived so the title
+	   centre stays on the post-stack y76. */
+	top: 56px;
 	margin: 0;
 	display: flex;
 	align-items: flex-start;
@@ -701,16 +703,17 @@
 }
 
 .landing-v2 .landing-svc-card__title {
-	font-size: 48px;
-	line-height: 48px;
+	font-size: 40px;
+	line-height: 40px;
 	color: #fff;
 	mix-blend-mode: difference;
 }
 
 .landing-v2 .landing-svc-card__index {
-	font-size: 24px;
-	line-height: 24px;
-	margin-top: 2px; /* index centre y66 vs title centre y76 */
+	/* 16px (Oscar's rev — was 24). */
+	font-size: 16px;
+	line-height: 16px;
+	margin-top: 2px; /* keeps the index centre on the post-stack y66 */
 	color: #fff;
 	mix-blend-mode: difference;
 }
@@ -740,27 +743,34 @@
 	width: 574px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 32px;
-	line-height: 34px;
+	/* 28px (Oscar's rev — was 32/34). */
+	font-size: 28px;
+	line-height: 30px;
 	text-transform: uppercase;
 }
 
+/* Right-column rhythm (Oscar's rev): header 64px below the desc,
+   list 24px below the header, button 80px below the list — tops
+   derived per row in LandingServicesStack.astro. */
 .landing-v2 .landing-svc-card__listhead {
 	position: absolute;
 	left: 845px;
-	top: 259.5px;
-	transform: translateY(-50%);
+	top: var(--svc-head-top, 159px);
+	height: 19px;
+	display: flex;
+	align-items: center;
 	margin: 0;
 	font-weight: 700;
 	font-size: 16px;
 	line-height: 32px;
 	text-transform: uppercase;
+	white-space: nowrap;
 }
 
 .landing-v2 .landing-svc-card__lists {
 	position: absolute;
 	left: 845px;
-	top: 293px;
+	top: var(--svc-list-top, 202px);
 	display: flex;
 }
 

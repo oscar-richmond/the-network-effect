@@ -43,7 +43,9 @@ const cards = [
       src: asset('/assets/landing/services-stack/immerse.jpg'),
       w: 499.02, h: 677.25, x: -75.01, y: -121.49,
     },
-    desc: ['Activate Experiences & Cultural Moments'],
+    /* Authored as the file's own two rendered lines (its h60 box =
+       2 x lh30) so the derived rhythm counts them correctly. */
+    desc: ['Activate Experiences &', 'Cultural Moments'],
     listHead: 'WE BUILD',
     listGap: 64,
     cols: [
@@ -52,7 +54,6 @@ const cards = [
       /* Third item below = the flagged substitution (see header). */
       { w: 215, items: ['Experiential Campaigns', 'Music & Food Festivals', 'Exceptional Culinary Experiences', 'Health & Wellbeing Retreats'] },
     ],
-    btnTop: 473,
     parkedY: 158,
   },
   {
@@ -70,7 +71,6 @@ const cards = [
       { w: 301, items: ['Strategic Brand Partnerships', 'Celebrity & Talent Partnerships', 'Cultural Introductions', 'Commercial Relationship Development', 'Ambassador Programmes', 'Influencer & Creator Partnerships'] },
       { w: 270, items: ['Long-term Partnership Strategy', 'Story-led Collaborations', 'Sponsorship Strategy & Acquisition', 'Brand-to-brand Collaborations', 'Community & Membership Engagement', 'Network-led Business Development'] },
     ],
-    btnTop: 503,
     parkedY: 308,
   },
   {
@@ -91,10 +91,33 @@ const cards = [
       { w: 146, items: ['Brand Storytelling', 'Campaign Creative', 'Creative Direction'] },
       { w: 242, items: ['Social-first Content', 'Photography & Film Production', 'Design Systems & Brand Assets'] },
     ],
-    btnTop: 372,
     parkedY: 458,
   },
 ];
+
+/* Right-column vertical rhythm (Oscar's rev, replacing the file's
+   absolute offsets): the desc block stays centre-anchored at y80
+   (28px/30 now), the list header sits 64px below the desc's bottom
+   edge, the list 24px below the header (19px box), and MORE INFO
+   80px below the list's bottom. Derived per row from line/item
+   counts so the rhythm holds whatever the copy does. */
+const DESC_CENTER_Y = 80;
+const DESC_LINE_H = 30;
+const HEAD_GAP = 64;
+const HEAD_H = 19;
+const LIST_GAP = 24;
+const ITEM_H = 19;
+const ITEM_GAP = 8;
+const BTN_GAP = 80;
+
+const rhythm = (card) => {
+  const descBottom = DESC_CENTER_Y + (card.desc.length * DESC_LINE_H) / 2;
+  const headTop = descBottom + HEAD_GAP;
+  const listTop = headTop + HEAD_H + LIST_GAP;
+  const rows = Math.max(...card.cols.map((c) => c.items.length));
+  const listBottom = listTop + rows * ITEM_H + (rows - 1) * ITEM_GAP;
+  return { headTop, listTop, btnTop: listBottom + BTN_GAP };
+};
 ---
 
 {/* The morph twin — the large centred title settles into this. It
@@ -106,7 +129,7 @@ const cards = [
   <article
     class="landing-svc-card"
     data-services-card
-    style={`--svc-parked-y:${card.parkedY}px`}
+    style={`--svc-parked-y:${card.parkedY}px;--svc-head-top:${rhythm(card).headTop}px;--svc-list-top:${rhythm(card).listTop}px`}
   >
     <div class="landing-svc-card__bg" aria-hidden="true"></div>
     <div class="landing-svc-card__divider" aria-hidden="true"></div>
@@ -139,7 +162,7 @@ const cards = [
       ))}
     </div>
     {/* Non-navigating placeholder — destinations unspecified. */}
-    <button type="button" class="landing-svc-card__btn" style={`top:${card.btnTop}px`}>
+    <button type="button" class="landing-svc-card__btn" style={`top:${rhythm(card).btnTop}px`}>
       <span>MORE INFO</span>
       <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" />
     </button>
