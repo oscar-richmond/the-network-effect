@@ -292,7 +292,18 @@ export function initLandingServices() {
       top: `-=${EXIT_PX}`,
       duration: EXIT_PX,
     }, STACK_PX + TRANSITION_DWELL_PX);
-    tl.to(stage, {
+    /* ONE ground (Oscar's rev): the departing cards' opaque bodies
+       and dividers fade to dark IN THE SAME TWEEN as the stage, so
+       the whole picture darkens as a single surface — no hard line
+       between the rolling stack and the ground behind it. (The
+       difference titles whiten over the darkening ground — the
+       nav's own behaviour; the ink text melts into it as it leaves.) */
+    const groundEls = [
+      stage,
+      ...cards.map((c) => c.querySelector('.landing-svc-card__bg')),
+      ...cards.map((c) => c.querySelector('.landing-svc-card__divider')),
+    ].filter((el) => el instanceof HTMLElement);
+    tl.to(groundEls, {
       backgroundColor: GROUND_DARK,
       duration: TRANSITION_GROUND_FADE_PX,
     }, RUNWAY_PX - TRANSITION_GROUND_FADE_PX);
