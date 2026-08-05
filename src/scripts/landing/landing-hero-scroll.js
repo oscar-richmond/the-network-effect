@@ -396,6 +396,12 @@ function alignIntroToHeadline(headlineText, introText) {
 /** @type {Lenis | null} */
 let lenis = null;
 
+/** The page's one smooth-scroll authority — exposed so other landing
+ *  modules can drive programmatic scrolls THROUGH Lenis (e.g. the
+ *  access section's pair snap) instead of writing scrollTop against
+ *  it, which oscillates. Null before init / after cleanup. */
+export const getLenisInstance = () => lenis;
+
 function initSmoothScrolling() {
   document.documentElement.classList.add('lenis');
 

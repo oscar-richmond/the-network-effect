@@ -10,9 +10,11 @@
  * round(p·STEPS). Two tweens could drift by a frame; two
  * assignments from one number cannot.
  *
- * SNAP: ScrollTrigger snap to 1/STEPS — a pair half-shown reads as
- * broken (two half-words), so the columns settle onto the nearest
- * pair on scroll-stop. Feel (duration/ease) is Oscar's in a real tab.
+ * SNAP: on scroll-idle, THROUGH Lenis (lenis.scrollTo — the page's
+ * one scroll authority). The first build used ScrollTrigger's own
+ * snap, whose tween writes scrollTop in parallel with Lenis's lerp
+ * loop — two writers alternating values at settle, which Oscar felt
+ * as the columns "shaking before they stop". One writer, no fight.
  *
  * MEDIA SHADER: src/scripts/landing/access-wave.js — the about-3
  * pillar-wave treatment (velocity bow + hover grain, opaque output,
@@ -35,6 +37,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { playLineRevealElement } from '../line-reveal.js';
+import { getLenisInstance } from './landing-hero-scroll.js';
 import { createAccessWave } from './access-wave.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -68,6 +71,8 @@ const ENTRY_CURVE = 'transform 1.2s cubic-bezier(0.42, 0, 0.24, 1)';
 const WORD_SWAP_OUT_S = 0.12;
 const WORD_SWAP_IN_S = 0.22;
 const WORD_SWAP_BLUR_PX = 6;
+const SNAP_IDLE_MS = 150; // scroll quiet time before the pair snap fires
+const SNAP_DURATION_S = 0.6;
 
 /** Word pairs, sentence case per the Figma. Pair 2 is deliberately
  *  the same word both sides (deck-sourced brand-to-brand). */
@@ -257,18 +262,38 @@ export function initLandingAccess() {
   measure();
   applyProgress(0);
 
+  /* ── Pair snap, single-authority: after SNAP_IDLE_MS of scroll
+     quiet inside the runway, glide to the nearest pair THROUGH
+     Lenis. Every onUpdate (including those from the snap's own
+     glide) resets the timer; when the glide lands, the final idle
+     check is within a pixel of target and no-ops — no loops, and a
+     user wheel during the glide simply retargets Lenis. */
+  let snapTimer = 0;
+  let lastSnapTarget = null;
+  const trySnap = () => {
+    const p = trigger.progress;
+    if (p <= 0.001 || p >= 0.999) return;
+    const target = trigger.start + (Math.round(p * STEPS) / STEPS) * RUNWAY_PX;
+    if (Math.abs((window.scrollY || 0) - target) < 1) return;
+    const lenis = getLenisInstance();
+    if (!lenis) return;
+    lastSnapTarget = target;
+    lenis.scrollTo(target, {
+      duration: SNAP_DURATION_S,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
+    });
+  };
+
   const trigger = ScrollTrigger.create({
     trigger: section,
     start: 'top top',
     end: `+=${RUNWAY_PX}`,
     scrub: true,
-    snap: {
-      snapTo: 1 / STEPS,
-      duration: { min: 0.25, max: 0.6 },
-      delay: 0.08,
-      ease: 'power2.out',
+    onUpdate: (self) => {
+      applyProgress(self.progress);
+      window.clearTimeout(snapTimer);
+      snapTimer = window.setTimeout(trySnap, SNAP_IDLE_MS);
     },
-    onUpdate: (self) => applyProgress(self.progress),
   });
 
   /* ── Media shader (access-wave.js): one instance, both columns,
@@ -341,6 +366,7 @@ export function initLandingAccess() {
     window.__landingAccess = {
       state: () => ({ ...state, wordIdx }),
       wave: () => wave,
+      lastSnapTarget: () => lastSnapTarget,
       geometry: () => ({ centerY, colTops: { ...colTops } }),
       trigger: () => trigger,
       /* Occluded-pane harness: rAF (and so gsap playback) can be
@@ -353,6 +379,7 @@ export function initLandingAccess() {
   return () => {
     disposed = true;
     timeouts.forEach(clearTimeout);
+    window.clearTimeout(snapTimer);
     window.removeEventListener('resize', onResize);
     trigger.kill();
     revealTrigger?.kill();

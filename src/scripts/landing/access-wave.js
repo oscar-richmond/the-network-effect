@@ -41,6 +41,12 @@ const HOVER_EASE = CustomEase.create('accessWaveHover', '0.4, 0, 0.2, 1');
 const CURSOR_LERP = 0.05;
 const MOUNT_MARGIN_PX = 400;
 const VELOCITY_EDGE_RAMP = 0.25;
+/** Per-tick lerp on the differentiated column velocity. The reference
+ *  reads Lenis's own (already-smoothed) velocity; raw per-tick deltas
+ *  of the scrub feed can alternate 0/2x when scroll events and ticker
+ *  frames interleave, which reads as bow flicker. 0.3 keeps ~3-frame
+ *  response while killing the alternation. */
+const VELOCITY_SMOOTHING = 0.3;
 const GEOMETRY_SEGMENTS = 100;
 
 /* Shader pair — wave-shader.js verbatim (see its header for the full
@@ -406,8 +412,8 @@ export function createAccessWave(stage, canvas, sides, getPositions) {
        reference's Lenis px-per-frame family. Left rises on scroll
        (positive feed), right falls (negative) — opposite bows. */
     const positions = getPositions();
-    velocities.left = positions.left - lastPositions.left;
-    velocities.right = positions.right - lastPositions.right;
+    velocities.left = lerp(velocities.left, positions.left - lastPositions.left, VELOCITY_SMOOTHING);
+    velocities.right = lerp(velocities.right, positions.right - lastPositions.right, VELOCITY_SMOOTHING);
     lastPositions.left = positions.left;
     lastPositions.right = positions.right;
 
