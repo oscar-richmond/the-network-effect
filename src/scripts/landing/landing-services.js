@@ -268,13 +268,24 @@ export function initLandingServices() {
     }, MORPH_PX * LARGE_OUT_START);
 
     /* BEATS B/C/D — the cards. fromTo with function-based starts so
-       refresh re-derives the below-viewport park. */
+       refresh re-derives the below-viewport park. Each card's
+       divider FILL drains scaleX 1 -> 0 across the SAME beat window
+       (linear on the beat progress), completing exactly at park —
+       pure f(master progress), reversible like everything else. */
     cards.forEach((card, i) => {
       tl.fromTo(card,
         { y: () => stageH() },
         { y: PARKED_Y[i], duration: CARD_PX, ease: 'power1.out', immediateRender: false },
         MORPH_PX + i * CARD_PX,
       );
+      const fill = card.querySelector('[data-services-divider-fill]');
+      if (fill instanceof HTMLElement) {
+        tl.fromTo(fill,
+          { scaleX: 1 },
+          { scaleX: 0, duration: CARD_PX, ease: 'none', immediateRender: false },
+          MORPH_PX + i * CARD_PX,
+        );
+      }
     });
 
     /* BEAT F — the departure (Oscar's rev): the whole assembly

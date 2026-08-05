@@ -675,13 +675,42 @@
 	background: #eeeef0;
 }
 
-.landing-v2 .landing-svc-card__divider {
+/* Divider — three layers (the drain): wrapper carries the geometry;
+   the grey TRACK never animates (and remains the Beat F fade
+   target); the black FILL on top drains scaleX 1 -> 0 with origin
+   RIGHT (grey resolves left-to-right, the site's sweep direction)
+   as the card rises. Transform-only — no layout, and scaleX never
+   touches the 2px vertical axis, so no edge shimmer. All inside the
+   card's stacking context; no filters/opacity — the blend walk is
+   untouched. */
+.landing-v2 .landing-svc-card__dividerwrap {
 	position: absolute;
 	top: 0;
 	left: 24px;
 	width: calc(100% - 48px);
 	height: 2px;
+}
+
+.landing-v2 .landing-svc-card__divider {
+	position: absolute;
+	inset: 0;
 	background: var(--landing-svc-divider);
+}
+
+.landing-v2 .landing-svc-card__divider-fill {
+	position: absolute;
+	inset: 0;
+	background: #161616;
+	transform-origin: 100% 50%;
+	transform: scaleX(1);
+	will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* Static resting grey — no black state, no drain. */
+	.landing-v2 .landing-svc-card__divider-fill {
+		display: none;
+	}
 }
 
 /* Title row — 48px title + 24px /0N, both white difference INSIDE

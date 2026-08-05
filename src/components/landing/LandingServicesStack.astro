@@ -132,7 +132,14 @@ const rhythm = (card) => {
     style={`--svc-parked-y:${card.parkedY}px;--svc-head-top:${rhythm(card).headTop}px;--svc-list-top:${rhythm(card).listTop}px`}
   >
     <div class="landing-svc-card__bg" aria-hidden="true"></div>
-    <div class="landing-svc-card__divider" aria-hidden="true"></div>
+    {/* Divider: three layers — wrapper, the permanent grey TRACK, and
+        the black FILL that drains (scaleX 1 -> 0, origin right: grey
+        resolves left-to-right) as the card rises, completing exactly
+        at park (landing-services.js). Starts solid black. */}
+    <div class="landing-svc-card__dividerwrap" aria-hidden="true">
+      <div class="landing-svc-card__divider"></div>
+      <div class="landing-svc-card__divider-fill" data-services-divider-fill></div>
+    </div>
     <h3 class="landing-svc-card__titlerow">
       <span class="landing-svc-card__title" data-services-card-title>{card.title}</span>
       <span class="landing-svc-card__index" data-services-card-index>{card.index}</span>
