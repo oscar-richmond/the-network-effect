@@ -120,10 +120,11 @@ const rhythm = (card) => {
 };
 ---
 
-{/* The morph twin — the large centred title settles into this. It
-    never transforms (blend rule: laid out with left/top only);
-    aria-hidden because the large h2 carries the semantics. */}
-<p class="landing-services__small" data-services-small aria-hidden="true">OUR SERVICES</p>
+{/* The corner anchor — the Serrif title travels onto this box and
+    scales to its size (single-instance morph, Oscar's rev 3); the
+    element itself stays hidden in motion mode and serves as the RM
+    static corner title. aria-hidden: the h2 carries the semantics. */}
+<p class="landing-services__small" data-services-small aria-hidden="true">OUR SERVICES.</p>
 
 {cards.map((card) => (
   <article

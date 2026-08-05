@@ -85,17 +85,14 @@ const RUNWAY_PX = STACK_PX + TRANSITION_DWELL_PX + EXIT_PX; // 4254
 /* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
 const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
 
-/* Beat A choreography fractions (of MORPH_PX). The resolve windows
-   OVERLAP (Oscar's rev: the text must always be present — the first
-   cut faded large out then small in near-sequentially, which read as
-   a disappear/reappear): the small instance is fully in BEFORE the
-   large finishes leaving, so combined visibility never dips. */
+/* Beat A choreography fractions (of MORPH_PX). SINGLE INSTANCE
+   (Oscar's rev 3): no cross-resolve at all — the Serrif OUR
+   SERVICES. itself travels to the corner and scales to the small
+   size, staying Serrif throughout. The old Dazzed twin survives
+   only as the invisible position anchor (and the RM corner title,
+   restyled Serrif to match). */
 const EXIT_END = 0.5; // FROM + line 2 gone by here
-const SMALL_IN_START = 0.45;
-const SMALL_IN_END = 0.7;
-const LARGE_OUT_START = 0.6;
-const LARGE_OUT_END = 0.85;
-const MORPH_BLUR_PX = 4;
+const MORPH_BLUR_PX = 4; // the FROM/line-2 exit blur
 
 /* Snap — the access section's Lenis-idle constants. */
 const SNAP_IDLE_MS = 150;
@@ -256,16 +253,8 @@ export function initLandingServices() {
         duration: MORPH_PX * EXIT_END,
       }, 0);
     }
-    tl.to(small, {
-      opacity: 1,
-      filter: 'blur(0px)',
-      duration: MORPH_PX * (SMALL_IN_END - SMALL_IN_START),
-    }, MORPH_PX * SMALL_IN_START);
-    tl.to(title, {
-      opacity: 0,
-      filter: `blur(${MORPH_BLUR_PX}px)`,
-      duration: MORPH_PX * (LARGE_OUT_END - LARGE_OUT_START),
-    }, MORPH_PX * LARGE_OUT_START);
+    /* No resolve: the title simply IS the corner text once parked
+       (the anchor stays hidden — it only supplies the FLIP target). */
 
     /* BEATS B/C/D — the cards. fromTo with function-based starts so
        refresh re-derives the below-viewport park. Each card's
@@ -299,8 +288,10 @@ export function initLandingServices() {
         duration: EXIT_PX,
       }, STACK_PX + TRANSITION_DWELL_PX);
     });
-    tl.to(small, {
-      top: `-=${EXIT_PX}`,
+    /* The corner title (the travelled Serrif instance) departs with
+       the assembly — transform is fine, it carries no blend. */
+    tl.to(title, {
+      y: () => morph.dy - EXIT_PX,
       duration: EXIT_PX,
     }, STACK_PX + TRANSITION_DWELL_PX);
     /* ONE ground (Oscar's rev): the departing cards' opaque bodies

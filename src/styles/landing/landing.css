@@ -628,11 +628,12 @@
 	--landing-svc-btn-fill: #e4e4ea;
 }
 
-/* The morph twin — post-stack frame: 16px Dazzed Bold, white,
-   difference, x24, centre y124. Laid out with left/top ONLY (blend
-   rule: never transform this element); z2 above the centre layer,
-   below the cards (which never reach above y158 anyway). JS hides it
-   until the morph resolves; this visible default is the RM frame. */
+/* The corner anchor (Oscar's rev 3 — the Dazzed twin is GONE as a
+   visible element): the Serrif title itself travels here and scales
+   to this size. This element only supplies the FLIP target box
+   (x24, centre y124, 16px) — permanently hidden by JS in motion
+   mode — and doubles as the RM static corner title, so it now
+   matches the travelled end state: Serrif Medium 16. */
 .landing-v2 .landing-services__small {
 	position: absolute;
 	z-index: 2;
@@ -640,13 +641,13 @@
 	top: 114px;
 	height: 20px;
 	margin: 0;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
 	font-size: 16px;
 	line-height: 20px;
 	color: #fff;
 	mix-blend-mode: difference;
-	will-change: filter;
 }
 
 /* Cards — rigid, opaque, post-stack internals (offsets from the
