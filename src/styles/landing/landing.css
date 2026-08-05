@@ -550,14 +550,14 @@
 	   as before) + 4254px of pinned runway for the stacked-services
 	   sequence: morph 500 with the first card starting at its halfway
 	   point (250) + three 800px card windows + the departure 250
-	   500 settle (the remaining header bands compress slowly) + 1020
+	   500 settle (the remaining header bands compress slowly) + 1052
 	   departure (the stack scrolls off at 1:1 while the ground fades
 	   to #161616 over the final 500 — landing-services.js). Keep the
-	   4170 in step with the timeline — the black-on-black handoff to
+	   4202 in step with the timeline — the black-on-black handoff to
 	   Our Network depends on the scrub ending exactly as the next
 	   section's top crosses the viewport bottom. */
-	height: calc(100vh + 4170px);
-	height: calc(100dvh + 4170px);
+	height: calc(100vh + 4202px);
+	height: calc(100dvh + 4202px);
 	background: var(--landing-ground);
 }
 
@@ -715,18 +715,18 @@
 		display: none;
 	}
 
-	/* Static compressed bands (all three rows, rev 7 — title row,
-	   image and secondary title all rest 24px from their line). */
+	/* Static compressed bands (all three rows — title row, image and
+	   secondary title all rest 32px from their line). */
 	.landing-v2 .landing-svc-card .landing-svc-card__titlerow {
-		top: 30px;
+		top: 38px;
 	}
 
 	.landing-v2 .landing-svc-card .landing-svc-card__desc {
-		top: 54px;
+		top: 62px;
 	}
 
 	.landing-v2 .landing-svc-card .landing-svc-card__img {
-		top: 24px;
+		top: 32px;
 	}
 }
 

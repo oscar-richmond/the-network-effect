@@ -86,8 +86,8 @@ const CARD_H = 646;
    image bottom = 374 + 530 = 904 — well inside the viewport. */
 const DESC_TOP_PX = 50; // desc block top inside the card (the rest gap)
 const DESC_BOTTOM_PX = 110; // desc block bottom
-const BAND_GAP_PX = 24; // the compressed symmetric gap
-const BAND_SHIFT_PX = DESC_TOP_PX - BAND_GAP_PX; // 26
+const BAND_GAP_PX = 32; // the compressed symmetric gap (Oscar's rev 9 — was 24)
+const BAND_SHIFT_PX = DESC_TOP_PX - BAND_GAP_PX; // 18
 /* Two-stage stacking (Oscar's rev 8): a covering card FIRST lands
    rest-symmetric — 50 above and 50 below the covered title, the
    same air it had coming in (step 110 + 50 = 160) — and only when
@@ -95,16 +95,16 @@ const BAND_SHIFT_PX = DESC_TOP_PX - BAND_GAP_PX; // 26
    band eases up 26 while the covering card slides up 52, in the
    same window, landing at the final 108 step. */
 const STEP_REST_PX = DESC_BOTTOM_PX + DESC_TOP_PX; // 160 — first landing
-const CARD_STEP_PX = DESC_BOTTOM_PX - BAND_SHIFT_PX + BAND_GAP_PX; // 108 — final
-const FIRST_PARK_Y = [158, 158 + STEP_REST_PX, 158 + CARD_STEP_PX + STEP_REST_PX]; // 158/318/426
-const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/266/374 — final
+const CARD_STEP_PX = DESC_BOTTOM_PX - BAND_SHIFT_PX + BAND_GAP_PX; // 124 — final
+const FIRST_PARK_Y = [158, 158 + STEP_REST_PX, 158 + CARD_STEP_PX + STEP_REST_PX]; // 158/318/442
+const PARKED_Y = [158, 158 + CARD_STEP_PX, 158 + 2 * CARD_STEP_PX]; // 158/282/406 — final
 /* The header band = title row + image + secondary title (Oscar's
    rev 7: the image joins, ending BAND_GAP_PX from the line too).
    Targets = CSS tops minus BAND_SHIFT_PX. */
 const BAND_TARGETS = [
-  ['.landing-svc-card__titlerow', 56 - BAND_SHIFT_PX], // 30
-  ['.landing-svc-card__desc', 80 - BAND_SHIFT_PX], // 54
-  ['.landing-svc-card__img', 50 - BAND_SHIFT_PX], // 24
+  ['.landing-svc-card__titlerow', 56 - BAND_SHIFT_PX], // 38
+  ['.landing-svc-card__desc', 80 - BAND_SHIFT_PX], // 62
+  ['.landing-svc-card__img', 50 - BAND_SHIFT_PX], // 32
 ];
 
 /* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
@@ -114,7 +114,7 @@ const CARD_START_PX = MORPH_PX * 0.5; // 250
 const STACK_PX = CARD_START_PX + CARD_COUNT * CARD_PX; // 2650 — snap ceiling
 /* 1:1 departure travel: bottom card's parked top + its height. */
 const EXIT_PX = PARKED_Y[CARD_COUNT - 1] + CARD_H; // 1104
-const RUNWAY_PX = STACK_PX + BAND_SETTLE_PX + EXIT_PX; // 4170
+const RUNWAY_PX = STACK_PX + BAND_SETTLE_PX + EXIT_PX; // 4202
 /* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
 const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
 
