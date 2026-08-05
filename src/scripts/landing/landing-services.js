@@ -389,6 +389,11 @@ export function initLandingServices() {
       stage,
       ...cards.map((c) => c.querySelector('.landing-svc-card__bg')),
       ...cards.map((c) => c.querySelector('.landing-svc-card__divider')),
+      /* The MORE INFO fills join the fade too (Oscar's rev — the
+         light #E4E4EA panel stood out against the darkening ground;
+         its blue label melts into the dark like the rest of the
+         card ink). */
+      ...cards.map((c) => c.querySelector('.landing-svc-card__btn')),
     ].filter((el) => el instanceof HTMLElement);
     tl.to(groundEls, {
       backgroundColor: GROUND_DARK,
