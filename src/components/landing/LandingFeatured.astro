@@ -68,7 +68,8 @@ import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
               </span>
             ))}
           </h3>
-          <p class="landing-featured__desc">{card.desc}</p>
+          {/* 16px below the title's real height (Oscar's rev). */}
+          <p class="landing-featured__desc" style={`top:${469 + card.title.length * 28 + 16}px`}>{card.desc}</p>
         </article>
       ))}
     </div>

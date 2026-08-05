@@ -29,13 +29,6 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 gsap.registerPlugin(ScrollTrigger);
 
 const LINE_STAGGER_S = 0.12;
-/* Headline anchoring (Oscar's 40px rev): line 3 (CULTURE
-   AUTHENTICALLY.) stays right-anchored; lines 1-2 take LEFT anchors
-   derived from line 3's rendered left edge + the file's 48px left
-   offsets (M at +97, S at +162) scaled by 40/48 — so the M and S
-   keep their positions above CULTURE at the smaller size. */
-const HL_OFFSETS_48 = [97, 162];
-const HL_SCALE = 40 / 48;
 const TILE_STAGGER_MS = 100;
 const TILES_AT_MS = 200;
 const KEYWORDS_AT_MS = 600;
@@ -73,17 +66,8 @@ export function initLandingClosing() {
   }
 
   const closingLines = Array.from(closing.querySelectorAll('[data-closing-line]'));
-
-  /* M/S-over-CULTURE anchoring — pre-wrap (rect-based, fonts-gated). */
-  const alignHeadline = () => {
-    const [l1, l2, l3] = closingLines;
-    if (!(l1 instanceof HTMLElement) || !(l2 instanceof HTMLElement) || !(l3 instanceof HTMLElement)) return;
-    const base = l3.getBoundingClientRect().left - closing.getBoundingClientRect().left;
-    [l1, l2].forEach((el, i) => {
-      el.style.right = 'auto';
-      el.style.left = `${(base + HL_OFFSETS_48[i] * HL_SCALE).toFixed(2)}px`;
-    });
-  };
+  /* Headline anchoring is pure CSS now (left-anchored on the tiles'
+     24px margin, Oscar's rev 2) — no runtime derivation. */
   const intro = closing.querySelector('[data-closing-intro]');
   const tiles = Array.from(closing.querySelectorAll('[data-closing-tile]'));
   const kws = Array.from(closing.querySelectorAll('[data-closing-kw]'));
@@ -99,8 +83,6 @@ export function initLandingClosing() {
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
-
-    alignHeadline();
 
     /* Wrap AFTER fonts (line grouping), BEFORE the triggers. */
     closingLines.forEach((line, i) => {

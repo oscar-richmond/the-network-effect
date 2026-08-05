@@ -1637,10 +1637,11 @@
 	margin: 0;
 }
 
-/* 40px (Oscar's rev — was 48). Line 3 stays right-anchored; lines
-   1-2 get JS-derived LEFT anchors so the M and S keep their file
-   positions above CULTURE (offsets 97/162 scaled by 40/48 —
-   landing-closing.js). CSS right values = the pre-JS/RM frame. */
+/* 40px, LEFT-anchored (Oscar's rev 2): CULTURE's C sits on the
+   tiles' 24px margin; the M and S keep their file offsets above it
+   (97/162 at 48px, scaled by 40/48 -> +80.83/+135). Line 3's bottom
+   (312) sits 80px above the tiles (top 392). Pure statics now — no
+   JS derivation needed. */
 .landing-v2 .landing-closing__hl {
 	position: absolute;
 	white-space: nowrap;
@@ -1651,9 +1652,9 @@
 	mix-blend-mode: difference;
 }
 
-.landing-v2 .landing-closing__hl--1 { right: 1235px; top: 170px; }
-.landing-v2 .landing-closing__hl--2 { right: 980px; top: 221px; }
-.landing-v2 .landing-closing__hl--3 { right: 1015px; top: 272px; }
+.landing-v2 .landing-closing__hl--1 { left: 104.83px; top: 170px; }
+.landing-v2 .landing-closing__hl--2 { left: 159px; top: 221px; }
+.landing-v2 .landing-closing__hl--3 { left: 24px; top: 272px; }
 
 .landing-v2 .landing-closing__hl--serrif {
 	font-family: 'Serrif', serif;
@@ -1665,7 +1666,10 @@
 .landing-v2 .landing-closing__intro {
 	position: absolute;
 	right: 24px;
-	top: 258px;
+	/* BOTTOM-anchored (Oscar's rev 2): the last line sits 80px above
+	   the tiles (bottom 312 = section 1050 - 738) whatever the wrap
+	   count does. */
+	bottom: 738px;
 	width: 330px;
 	margin: 0;
 	text-align: right;
@@ -1730,7 +1734,7 @@
 .landing-v2 .landing-closing__kw-line {
 	position: absolute;
 	left: 0;
-	top: 48px; /* keyword top 866 -> lines top 914, all rows (file) */
+	top: 44px; /* 28px keyword + the 16px gap (Oscar's rev 2) */
 	width: 100%;
 	margin: 0;
 	font-family: 'Serrif', serif;
@@ -2121,8 +2125,10 @@
 .landing-v2 .landing-featured__titleblock {
 	position: absolute;
 	left: 0;
-	top: 497px; /* rides the shorter image: 441 + the file's 56 */
-	transform: translateY(-50%);
+	/* TOP-anchored (Oscar's rev 2 — was band-centred): 28px below the
+	   image; the desc follows the title's real height + 16px
+	   (per-card inline, LandingFeatured.astro). */
+	top: 469px;
 	margin: 0;
 	font-weight: 700;
 	/* 28px (Oscar's rev — was 32). */
@@ -2150,7 +2156,7 @@
 .landing-v2 .landing-featured__desc {
 	position: absolute;
 	left: 0;
-	top: 545px; /* 441 + the file's 104 */
+	top: 541px; /* fallback (2-line title); per-card inline overrides */
 	width: 324px; /* the file's 350 scaled with the 405.93 -> 376 card */
 	margin: 0;
 	font-family: 'Serrif', serif;
