@@ -7,8 +7,8 @@
  * scrolls (body overflow hidden); wheel/touch drive the carousel's
  * virtual travel (work-page.js). Ground #EEEEF0 per the file.
  *
- * BLEND WALK: every difference element (FEATURED/WORK header, the
- * meta title/index/desc, the cursor's circle + label) sits on a
+ * BLEND WALK: every difference element (the cursor's circle +
+ * label; the header/meta are plain brand-black ink now) sits on a
  * clean ancestor chain — the stage is position:relative with no
  * z-index/transform/filter/opacity, the cursor wrapper is a plain
  * fixed element positioned via left/top (NEVER transform — it has
@@ -85,7 +85,7 @@ body.work-page {
 }
 
 /* FEATURED / WORK — the landing section's header treatment (40px
-   rev, mixed faces, difference; W-under-A derived at runtime). */
+   rev, mixed faces; W-under-A derived at runtime). Brand black. */
 .landing-v2 .work-page__hl {
 	position: absolute;
 	left: 24px;
@@ -94,8 +94,8 @@ body.work-page {
 	font-size: 40px;
 	line-height: 40px;
 	text-transform: uppercase;
-	color: #fff;
-	mix-blend-mode: difference;
+	/* Brand black, plain ink (Oscar's rev — was white + difference). */
+	color: #161616;
 	white-space: nowrap;
 }
 
@@ -152,7 +152,7 @@ body.work-page {
 .landing-v2 .work-pill--connect { width: 116px; }
 .landing-v2 .work-pill--amplify { width: 107px; }
 
-/* ── Active-project meta (difference white; swaps with the travel) */
+/* ── Active-project meta (brand black; swaps with the travel) ──── */
 .landing-v2 .work-page__meta {
 	position: absolute;
 	inset: 0;
@@ -169,8 +169,7 @@ body.work-page {
 	font-size: 32px;
 	line-height: 32px;
 	text-transform: uppercase;
-	color: #fff;
-	mix-blend-mode: difference;
+	color: #161616; /* brand black (Oscar's rev) */
 }
 
 .landing-v2 .work-page__meta-index {
@@ -182,8 +181,7 @@ body.work-page {
 	font-size: 10px;
 	line-height: 10px;
 	text-transform: uppercase;
-	color: #fff;
-	mix-blend-mode: difference;
+	color: #161616; /* brand black (Oscar's rev) */
 }
 
 .landing-v2 .work-page__meta-desc {
@@ -197,8 +195,7 @@ body.work-page {
 	font-synthesis: none;
 	font-size: 16px;
 	line-height: 22px;
-	color: #fff;
-	mix-blend-mode: difference;
+	color: #161616; /* brand black (Oscar's rev) */
 }
 
 /* ── Custom cursor (hover:hover + pointer:fine only, wired in JS).
