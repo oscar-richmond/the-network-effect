@@ -34,9 +34,9 @@ body.work-page {
 	will-change: transform; /* slides up 811px for the footer reveal */
 }
 
-/* ── Carousel (right; 1024×640 tiles — Oscar's rev: +24px wide,
-   same height, widened LEFT so the 16px right margin holds; 8px
-   gaps) ─────────────────────────────────────────────────────────── */
+/* ── Carousel (right; 1024×412 tiles — Oscar's revs: +24px wide
+   (widened LEFT, 16px right margin holds), then total size reduced
+   228px = height 640 -> 412, width kept; 8px gaps) ─────────────── */
 .landing-v2 .work-stage__carousel {
 	position: absolute;
 	left: 688px;
@@ -51,7 +51,7 @@ body.work-page {
 	left: 0;
 	top: 0;
 	width: 1024px;
-	height: 640px;
+	height: 412px;
 	display: block;
 	overflow: hidden;
 	will-change: transform;
@@ -170,9 +170,10 @@ body.work-page {
 	position: absolute;
 	left: 24px;
 	top: 441px;
-	/* shrink-to-fit: the /0N index derives 6px from the title's
-	   rendered right edge (Oscar's rev; JS measures per swap). */
-	max-width: 377px;
+	/* One line always (Oscar's rev — YOXMAN FOOD FESTIVAL wrapped
+	   onto the description); the /0N index derives 6px from the
+	   rendered right edge per swap. */
+	white-space: nowrap;
 	margin: 0;
 	font-weight: 700;
 	font-size: 32px;
@@ -333,7 +334,7 @@ body.work-page {
 		position: static;
 		width: 100%;
 		height: auto;
-		aspect-ratio: 1024 / 640;
+		aspect-ratio: 1024 / 412;
 	}
 
 	.landing-v2 .work-tile img { position: static; }

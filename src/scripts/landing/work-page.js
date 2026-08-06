@@ -42,19 +42,27 @@
  * PLACEHOLDER LINKS: tiles link to /work/[slug] — routes that don't
  * exist yet; navigation is prevented here until they do.
  *
+ * BOTTOM BEHAVIOURS (the landing pair, ported): a 2s idle stop
+ * part-way into the footer reveal glides to the very bottom (a
+ * wheel during the glide hands control back); at the bottom the
+ * nav ripples out via the shared nav-motion applier, back in on
+ * the way up.
+ *
  * RM: travel remains (direct wheel/touch writes, no momentum), meta
- * swaps instant, footer content static, no custom cursor.
+ * swaps instant, footer content static, no custom cursor, no snap.
  * <1024px: the CSS stacked list is the page; no machinery boots.
  */
 import gsap from 'gsap';
 import { createDriftDriver } from '../holding/holding-shared.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
 const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
-const IMG_H_PX = 640;
+const IMG_H_PX = 412; // 640 - 228 (Oscar's rev: total size down 228)
 const GAP_PX = 8;
-const PITCH_PX = IMG_H_PX + GAP_PX; // 648
+const PITCH_PX = IMG_H_PX + GAP_PX; // 420
+const END_GAP_PX = 80; // ground below the last image before the reveal
 const DEADZONE_PX = 24;
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const FOOTER_REVEAL_PX = 811; // the landing footer's full height
@@ -63,6 +71,10 @@ const CURSOR_LERP = 0.25; // the canvas-cursor feel
 const PILL_STAGGER_MS = 80;
 const PILLS_AT_MS = 300;
 const LINE_STAGGER_S = 0.12;
+/* Bottom behaviours — the landing constants (landing-closing.js). */
+const BOTTOM_SNAP_IDLE_MS = 2000;
+const BOTTOM_EPSILON_PX = 2;
+const NAV_SHOW_HYSTERESIS_PX = 64;
 
 const clamp = (n, min, max) => Math.max(min, Math.min(n, max));
 
@@ -131,7 +143,7 @@ export function initWorkPage() {
       img.alt = '';
       img.decoding = 'async';
       img.width = 1024;
-      img.height = 640;
+      img.height = 412;
       a.appendChild(img);
       carousel.appendChild(a);
       return { el: a, project: p };
@@ -141,7 +153,9 @@ export function initWorkPage() {
   /* Travel bounds: phase 1 ends when the last image's bottom meets
      the viewport bottom; phase 2 adds the footer reveal. */
   const carouselMax = () => {
-    const contentBottom = BASE_TOP_PX + (tiles.length - 1) * PITCH_PX + IMG_H_PX;
+    /* Phase 1 ends with the last image's bottom + the 80px run-out
+       (Oscar's rev) on the viewport bottom. */
+    const contentBottom = BASE_TOP_PX + (tiles.length - 1) * PITCH_PX + IMG_H_PX + END_GAP_PX;
     return Math.max(contentBottom - stageH(), 0);
   };
   const maxPos = () => carouselMax() + FOOTER_REVEAL_PX;
@@ -260,13 +274,28 @@ export function initWorkPage() {
     pos = clamp(raw, 0, maxPos());
     if (raw !== pos && driverTravel !== undefined) posOffset = pos - driverTravel;
     frame();
+    onPosChange();
   };
 
+  /* ROOT-CAUSE FIX (Oscar's report: no scroll over the footer):
+     the driver's wheel/touch capture is scoped to its region
+     element, and the revealed footer is a SIBLING fixed layer —
+     wheeling over it never reached the stage-scoped listener. On a
+     fixed-viewport route the whole PAGE is the input surface, so
+     the region is document.body. */
+  const inputRegion = document.body;
   if (!reduced) {
-    driver = createDriftDriver(stage, {
+    driver = createDriftDriver(inputRegion, {
       autoDrift: 0,
       touch: true,
       onFrame: (travelPx) => {
+        /* A wheel during the bottom-snap glide hands control back
+           to the user (the landing snap's Lenis-retarget
+           equivalent): any real impulse kills the tween. */
+        if (snapTween?.isActive() && Math.abs(driver.state().velocity) > 50) {
+          snapTween.kill();
+          posOffset = pos - travelPx;
+        }
         setPosClamped(travelPx + posOffset, travelPx);
       },
     });
@@ -277,8 +306,8 @@ export function initWorkPage() {
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stageH() : 1;
       setPosClamped(pos + e.deltaY * unit);
     };
-    stage.addEventListener('wheel', onWheel, { passive: false });
-    cleanups.push(() => stage.removeEventListener('wheel', onWheel));
+    inputRegion.addEventListener('wheel', onWheel, { passive: false });
+    cleanups.push(() => inputRegion.removeEventListener('wheel', onWheel));
     let touchY = 0;
     const onTouchStart = (e) => { if (e.touches.length) touchY = e.touches[0].clientY; };
     const onTouchMove = (e) => {
@@ -287,11 +316,11 @@ export function initWorkPage() {
       setPosClamped(pos + (touchY - e.touches[0].clientY));
       touchY = e.touches[0].clientY;
     };
-    stage.addEventListener('touchstart', onTouchStart, { passive: true });
-    stage.addEventListener('touchmove', onTouchMove, { passive: false });
+    inputRegion.addEventListener('touchstart', onTouchStart, { passive: true });
+    inputRegion.addEventListener('touchmove', onTouchMove, { passive: false });
     cleanups.push(() => {
-      stage.removeEventListener('touchstart', onTouchStart);
-      stage.removeEventListener('touchmove', onTouchMove);
+      inputRegion.removeEventListener('touchstart', onTouchStart);
+      inputRegion.removeEventListener('touchmove', onTouchMove);
     });
   }
 
@@ -465,9 +494,7 @@ export function initWorkPage() {
       tx = e.clientX;
       ty = e.clientY;
     };
-    const onOver = (e) => {
-      const hit = e.target instanceof Element ? e.target.closest('[data-work-link]') : null;
-      const nowOver = !!hit;
+    const setOver = (nowOver) => {
       if (nowOver === over) return;
       over = nowOver;
       if (over) {
@@ -483,18 +510,78 @@ export function initWorkPage() {
         cursorRaf = 0;
       }
     };
+    /* ROOT-CAUSE FIX (Oscar's report: the cursor stayed on the
+       footer): the old stage-scoped pointerover/OUT pair fed the
+       OUT event's target — the tile being LEFT — into the same
+       hit test, so exiting a tile toward the footer (outside the
+       stage, no matching over event) still read as "over a tile".
+       DOCUMENT-level pointerover is the correct signal: it fires
+       for whatever the pointer actually enters, footer included. */
+    const onOver = (e) => {
+      setOver(e.target instanceof Element && !!e.target.closest('[data-work-link]'));
+    };
+    const onDocLeave = () => setOver(false);
     window.addEventListener('pointermove', onMove, { passive: true });
-    stage.addEventListener('pointerover', onOver);
-    stage.addEventListener('pointerout', onOver);
+    document.addEventListener('pointerover', onOver);
+    document.documentElement.addEventListener('pointerleave', onDocLeave);
     cleanups.push(() => {
       window.removeEventListener('pointermove', onMove);
-      stage.removeEventListener('pointerover', onOver);
-      stage.removeEventListener('pointerout', onOver);
+      document.removeEventListener('pointerover', onOver);
+      document.documentElement.removeEventListener('pointerleave', onDocLeave);
       window.cancelAnimationFrame(cursorRaf);
       document.documentElement.classList.remove('work-cursor-on', 'work-cursor-live');
       document.body.classList.remove('work-cursor-on');
     });
   }
+
+  /* ── Bottom behaviours (Oscar's rev — the landing pair, ported):
+     1. AUTO-SNAP: stopping (2s idle) part-way into the footer
+        reveal, having moved DOWN, glides to the very bottom.
+     2. NAV EXIT: at the bottom, MENU / logo / LET'S CHAT ripple out
+        (the shared nav-motion applier) and back in on the way up. */
+  ensureLogoChars();
+  const menuToggle = document.querySelector('[data-menu-toggle]');
+  let navHidden = false;
+  const setNav = (hidden) => {
+    if (navHidden === hidden) return;
+    /* Never strand an open menu without its toggle. */
+    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
+    navHidden = hidden;
+    applyNavSweep(hidden, { reduced });
+  };
+
+  let snapTimer = 0;
+  let lastPos = 0;
+  let lastDirDown = false;
+  let snapTween = null;
+  const trySnapToBottom = () => {
+    if (reduced || !lastDirDown) return;
+    if (pos <= carouselMax() || pos >= maxPos() - BOTTOM_EPSILON_PX) return;
+    const proxy = { p: pos };
+    snapTween = gsap.to(proxy, {
+      p: maxPos(),
+      duration: 1.0,
+      ease: 'power3.out',
+      onUpdate: () => {
+        posOffset += proxy.p - pos;
+        setPosClamped(proxy.p);
+      },
+    });
+  };
+  const onPosChange = () => {
+    if (pos !== lastPos) {
+      lastDirDown = pos > lastPos;
+      lastPos = pos;
+    }
+    if (pos >= maxPos() - BOTTOM_EPSILON_PX) setNav(true);
+    else if (pos < maxPos() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
+  };
+  cleanups.push(() => {
+    window.clearTimeout(snapTimer);
+    snapTween?.kill();
+  });
 
   /* ── Entrances (non-RM): header word-reveals, pills stagger-fade —
      after fonts (line grouping + Range + index derivation). */
