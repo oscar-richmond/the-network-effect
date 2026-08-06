@@ -1749,13 +1749,28 @@
 
 /* ── Footer ─────────────────────────────────────────────────────── */
 
+/* PARALLAX REVEAL (Oscar's rev): the footer overlaps the closing
+   section's bottom 811px (negative margin) and STICKS bottom-aligned
+   at z259 — one below the closing's 260 — so the light section
+   slides up and uncovers it from behind. The spacer after it (see
+   landing.astro) restores the document height; the page's max
+   scroll lands exactly at full reveal. Still z > the hero stage's
+   250 — the exit gate holds. */
 .landing-v2 .landing-footer {
-	position: relative;
-	z-index: 260;
+	position: sticky;
+	top: calc(100vh - 811px);
+	top: calc(100dvh - 811px);
+	margin-top: -811px;
+	z-index: 259;
 	height: 811px;
 	background: var(--landing-accent-blue);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: #fff;
+}
+
+.landing-v2 .landing-footer-spacer {
+	height: 811px;
+	pointer-events: none;
 }
 
 .landing-v2 .landing-footer__cols {
@@ -1973,8 +1988,14 @@
 	.landing-v2 .landing-closing__kw-line { position: static; margin-top: 8px; }
 
 	.landing-v2 .landing-footer {
+		position: static;
+		margin-top: 0;
 		height: auto;
 		padding: 40px 24px 32px;
+	}
+
+	.landing-v2 .landing-footer-spacer {
+		display: none;
 	}
 
 	.landing-v2 .landing-footer__cols { position: static; flex-direction: column; gap: 24px; }

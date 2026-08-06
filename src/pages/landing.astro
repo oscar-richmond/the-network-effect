@@ -122,6 +122,11 @@ import '../styles/fonts.css';
       hero stage. */}
   <LandingClosing />
   <LandingFooter />
+  {/* Footer-reveal spacer: the footer overlaps the closing section's
+      bottom (negative margin) and pins BEHIND it (z259 < 260) at the
+      viewport bottom; this transparent, click-through spacer keeps
+      the document height so the page ends exactly at full reveal. */}
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
 
   <Menu />
 

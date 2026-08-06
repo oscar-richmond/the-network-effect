@@ -114,7 +114,12 @@ export function initLandingClosing() {
 
     triggers.push(ScrollTrigger.create({
       trigger: footer,
-      start: 'top 75%',
+      /* The footer pins BEHIND the closing section (the reveal), so
+         a viewport-percentage start would fire while it's still
+         covered: fire ~200px into the actual reveal instead (the
+         pin engages when the footer's flow top reaches
+         100dvh - 811 from the viewport top). */
+      start: () => `top ${(window.innerHeight - 811 - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {
         footerCols.forEach((col, i) => {
