@@ -41,7 +41,7 @@ export const FEATURED_CARDS = [
     index: '/01',
     title: ['WILDERNESS', 'RESERVE'],
     desc: 'Developed one of the UK’s leading luxury destinations, spanning hospitality, events, guest experiences and talent partnerships.',
-    img: { src: a(1), w: 722, h: 467, x: -168, y: -2 },
+    img: { src: a(1), cover: true }, // Oscar-supplied final (2026-08-06; file crop retired)
   },
   {
     /* RIGHTS: see the named-person flag in the header. */
