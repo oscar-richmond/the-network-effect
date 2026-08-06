@@ -1652,8 +1652,11 @@
 	mix-blend-mode: difference;
 }
 
-.landing-v2 .landing-closing__hl--1 { left: 104.83px; top: 170px; }
-.landing-v2 .landing-closing__hl--2 { left: 159px; top: 221px; }
+/* Line steps 40px = one line-height (Oscar's rev 3 — matching the
+   FEATURED/WORK spacing; was the file's 51px). Line 3 holds its
+   anchor (bottom 312 = 80 above the tiles); 1-2 stack up from it. */
+.landing-v2 .landing-closing__hl--1 { left: 104.83px; top: 192px; }
+.landing-v2 .landing-closing__hl--2 { left: 159px; top: 232px; }
 .landing-v2 .landing-closing__hl--3 { left: 24px; top: 272px; }
 
 .landing-v2 .landing-closing__hl--serrif {
