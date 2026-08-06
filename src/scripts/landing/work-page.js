@@ -1,36 +1,41 @@
 /**
- * /work — FEATURED WORK page machinery (Figma 27:3103).
+ * /work — FEATURED WORK page machinery (Figma 27:3103; Oscar's
+ * finite-travel rev 2026-08-06).
  *
  * DRIVER: the holding pages' single-velocity drift driver
  * (createDriftDriver, holding-shared.js — REUSED, not copied: wheel
  * impulses + touch position-coupling + flick momentum + rAF
  * ownership + visibility pause, the approved motion), with
  * autoDrift 0 per the /holding-2 mobile-travel precedent — travel
- * is scroll-driven only, reversible, momentum consistent with the
- * holding gallery. A dedicated Lenis instance was rejected: Lenis
- * wants a scrollable document and this page deliberately has none;
- * two scroll authorities is the settle-shake bug class.
+ * is scroll-driven only, reversible. A dedicated Lenis instance was
+ * rejected: Lenis wants a scrollable document and this page
+ * deliberately has none; two scroll authorities is the settle-shake
+ * bug class.
  *
- * WRAP: infinite both directions via modulo — each tile's y is
- * ((BASE + i*PITCH - pos) wrapped into [-LEAD, total-LEAD)), the
- * holding-travel / network-marquee recycle arithmetic. Filtered
- * sets re-derive the wrap; short sets (1–2 projects) are padded by
- * repeating the set until the ring exceeds the viewport by two
- * pitches, so the loop stays seamless at every length.
+ * FINITE TRAVEL (Oscar's rev — the loop is gone): pos clamps to
+ * [0, maxPos]. Phase 1 travels the carousel (first image top ON the
+ * meta title's top line at pos 0, nothing above); phase 2 — the
+ * last FOOTER_REVEAL_PX of travel — slides the whole stage up over
+ * the FIXED landing footer beneath it: the landing parallax
+ * uncover, virtualised. The footer's own entrance (the
+ * landing-closing choreography: column/row word reveals, image
+ * rise) fires once, ~200px into the reveal, same as /landing.
+ * Clamping rebases the driver offset so reversal is immediate (no
+ * rubber-band debt from momentum pushing past the ends).
  *
  * ACTIVE DETECTION: the tile whose image band contains the stage's
  * vertical centre, with a 24px deadzone (hysteresis: inside gaps or
- * the deadzone the previous winner holds — no flutter under
- * jitter). The meta block swaps via one persistent out→set→in
- * blur-fade state machine (the industry-hover machinery pattern):
- * rapid traversal retargets the pending project; nothing stacks.
+ * the deadzone the previous winner holds — no flutter). The meta
+ * swaps via one persistent out→set→in blur-fade state machine (the
+ * industry-hover pattern): rapid traversal retargets the pending
+ * project; nothing stacks. The /0N index derives 6px from the
+ * title's rendered right edge per swap (Oscar's rev).
  *
- * CURSOR: fresh DOM cursor, not /old's canvas-cursor — that
- * machinery renders a dot on canvas with no text support; the
- * "View project +" circle is 30 lines of DOM with difference blend
- * handled by CSS. The wrapper follows via left/top (NEVER
- * transform — difference children; blend walk in work.css) with the
- * canvas-cursor's 0.25 lerp feel. Gated (hover:hover)+(pointer:
+ * CURSOR: one large difference dot + label — two top-level fixed
+ * siblings each blending difference themselves (the nav-logo
+ * shape; a wrapper would isolate the blend), following via
+ * left/top at the canvas-cursor 0.25 lerp. The site's canvas dot
+ * hides while this cursor is live. Gated (hover:hover)+(pointer:
  * fine) — NOTE: false system-wide on Oscar's machine; verify the
  * cursor on another input device.
  *
@@ -38,7 +43,7 @@
  * exist yet; navigation is prevented here until they do.
  *
  * RM: travel remains (direct wheel/touch writes, no momentum), meta
- * swaps instant, no blur transitions, no custom cursor.
+ * swaps instant, footer content static, no custom cursor.
  * <1024px: the CSS stacked list is the page; no machinery boots.
  */
 import gsap from 'gsap';
@@ -46,16 +51,20 @@ import { createDriftDriver } from '../holding/holding-shared.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
-const BASE_TOP_PX = 445; // first tile's top at pos 0 (file 528 - 83)
+const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
 const IMG_H_PX = 640;
 const GAP_PX = 8;
 const PITCH_PX = IMG_H_PX + GAP_PX; // 648
 const DEADZONE_PX = 24;
+const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
+const FOOTER_REVEAL_PX = 811; // the landing footer's full height
+const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
 const CURSOR_LERP = 0.25; // the canvas-cursor feel
 const PILL_STAGGER_MS = 80;
 const PILLS_AT_MS = 300;
+const LINE_STAGGER_S = 0.12;
 
-const mod = (n, m) => ((n % m) + m) % m;
+const clamp = (n, min, max) => Math.max(min, Math.min(n, max));
 
 export function initWorkPage() {
   const stage = document.querySelector('[data-work-stage]');
@@ -66,6 +75,7 @@ export function initWorkPage() {
   const metaIndex = document.querySelector('[data-work-meta-index]');
   const metaDesc = document.querySelector('[data-work-meta-desc]');
   const metaEls = [metaTitle, metaIndex, metaDesc].filter((el) => el instanceof HTMLElement);
+  const footer = document.querySelector('[data-work-footer]');
 
   const cleanups = [];
 
@@ -100,23 +110,15 @@ export function initWorkPage() {
     hlWork.style.left = `${(aRect.left - stage.getBoundingClientRect().left).toFixed(2)}px`;
   };
 
-  /* ── The set + tiles. */
-  let set = WORK_PROJECTS; // active filtered set
-  let tiles = []; // rendered ring: may repeat the set (short sets)
-  let ringLen = 0; // tiles.length * PITCH
+  /* ── The set + tiles (finite — no ring, no padding). */
+  let set = WORK_PROJECTS;
+  let tiles = [];
 
   const buildTiles = () => {
-    /* The network section's applySetToTrack rebuild: wipe, re-render,
-       re-derive the wrap. Short sets pad by repetition so the ring
-       always exceeds the viewport by two pitches. */
-    const data = [];
-    if (set.length) {
-      while (data.length * PITCH_PX < stageH() + 2 * PITCH_PX || data.length < set.length) {
-        data.push(...set);
-      }
-    }
+    /* The network section's applySetToTrack rebuild: wipe,
+       re-render, re-derive the travel bounds. */
     carousel.textContent = '';
-    tiles = data.map((p, i) => {
+    tiles = set.map((p, i) => {
       const a = document.createElement('a');
       a.className = 'work-tile';
       a.href = `/work/${p.slug}`; // placeholder — see onLinkClick
@@ -128,40 +130,61 @@ export function initWorkPage() {
       img.src = p.workImg;
       img.alt = '';
       img.decoding = 'async';
-      img.width = 1000;
+      img.width = 1024;
       img.height = 640;
       a.appendChild(img);
       carousel.appendChild(a);
       return { el: a, project: p };
     });
-    ringLen = tiles.length * PITCH_PX;
   };
 
-  /* ── Layout: pure f(pos), wrapped. LEAD keeps one pitch of ring
-     above the stage top before recycling to the bottom. */
+  /* Travel bounds: phase 1 ends when the last image's bottom meets
+     the viewport bottom; phase 2 adds the footer reveal. */
+  const carouselMax = () => {
+    const contentBottom = BASE_TOP_PX + (tiles.length - 1) * PITCH_PX + IMG_H_PX;
+    return Math.max(contentBottom - stageH(), 0);
+  };
+  const maxPos = () => carouselMax() + FOOTER_REVEAL_PX;
+
+  /* ── Layout: pure f(pos). Carousel rides phase 1; the stage slides
+     up through phase 2 (the reveal). */
   let pos = 0;
+  let footerEntered = false;
   const layout = () => {
-    const lead = PITCH_PX;
+    const p1 = Math.min(pos, carouselMax());
     tiles.forEach(({ el }, i) => {
-      const y = mod(BASE_TOP_PX + i * PITCH_PX - pos + lead, ringLen) - lead;
+      const y = BASE_TOP_PX + i * PITCH_PX - p1;
       el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
     });
+    const revealT = clamp(pos - carouselMax(), 0, FOOTER_REVEAL_PX);
+    stage.style.transform = revealT > 0 ? `translate3d(0, ${(-revealT).toFixed(2)}px, 0)` : '';
+    if (!footerEntered && revealT > FOOTER_ENTRANCE_AT_PX) {
+      footerEntered = true;
+      playFooterEntrance();
+    }
   };
 
   /* ── Active detection + the single persistent meta swap. */
-  /* The SSR meta already shows the first project — seed the swap
-     state from it so boot is a no-op and only REAL changes animate
-     (no entrance tween on the meta: a fixed page's text is simply
-     there at paint). */
   let activeSlug = null;
   let shownSlug = WORK_PROJECTS[0]?.slug ?? null;
   let targetProject = null;
   let swapping = false;
 
+  /* The /0N derives from the title's rendered right edge. */
+  const placeIndex = () => {
+    if (!(metaTitle instanceof HTMLElement) || !(metaIndex instanceof HTMLElement)) return;
+    const meta = metaTitle.offsetParent;
+    if (!(meta instanceof HTMLElement)) return;
+    const tRect = metaTitle.getBoundingClientRect();
+    const mRect = meta.getBoundingClientRect();
+    metaIndex.style.left = `${(tRect.right - mRect.left + INDEX_GAP_PX).toFixed(1)}px`;
+  };
+
   const applyMetaText = (p) => {
     if (metaTitle) metaTitle.textContent = p.title.join(' ');
-    if (metaIndex) metaIndex.textContent = p.tbc ? '/–' : p.index;
+    if (metaIndex) metaIndex.textContent = p.index;
     if (metaDesc) metaDesc.textContent = p.desc;
+    placeIndex();
   };
 
   const runSwap = () => {
@@ -187,7 +210,7 @@ export function initWorkPage() {
           overwrite: 'auto',
           onComplete: () => {
             swapping = false;
-            runSwap(); // target moved on during the in-phase?
+            runSwap();
           },
         });
       },
@@ -207,9 +230,9 @@ export function initWorkPage() {
   const detectActive = () => {
     if (!tiles.length) return;
     const anchor = stageH() / 2;
-    const lead = PITCH_PX;
+    const p1 = Math.min(pos, carouselMax());
     for (let i = 0; i < tiles.length; i += 1) {
-      const y = mod(BASE_TOP_PX + i * PITCH_PX - pos + lead, ringLen) - lead;
+      const y = BASE_TOP_PX + i * PITCH_PX - p1;
       if (anchor >= y + DEADZONE_PX && anchor <= y + IMG_H_PX - DEADZONE_PX) {
         const p = tiles[i].project;
         if (p.slug !== activeSlug) {
@@ -222,8 +245,10 @@ export function initWorkPage() {
     /* Gap or deadzone under the anchor: the previous winner holds. */
   };
 
-  /* ── Input: the drift driver (non-RM) or direct writes (RM). */
-  let posOffset = 0; // filter resets / focus retargets layer over the driver
+  /* ── Input: the drift driver (non-RM) or direct writes (RM). The
+     clamp REBASES the offset so momentum can't bank debt past the
+     ends — reversal is immediate. */
+  let posOffset = 0;
   let driver = null;
 
   const frame = () => {
@@ -231,23 +256,26 @@ export function initWorkPage() {
     detectActive();
   };
 
+  const setPosClamped = (raw, driverTravel) => {
+    pos = clamp(raw, 0, maxPos());
+    if (raw !== pos && driverTravel !== undefined) posOffset = pos - driverTravel;
+    frame();
+  };
+
   if (!reduced) {
     driver = createDriftDriver(stage, {
       autoDrift: 0,
       touch: true,
       onFrame: (travelPx) => {
-        pos = travelPx + posOffset;
-        frame();
+        setPosClamped(travelPx + posOffset, travelPx);
       },
     });
     cleanups.push(() => driver.destroy());
   } else {
-    /* RM: travel remains, direct 1:1, no momentum. */
     const onWheel = (e) => {
       e.preventDefault();
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stageH() : 1;
-      pos += e.deltaY * unit;
-      frame();
+      setPosClamped(pos + e.deltaY * unit);
     };
     stage.addEventListener('wheel', onWheel, { passive: false });
     cleanups.push(() => stage.removeEventListener('wheel', onWheel));
@@ -256,9 +284,8 @@ export function initWorkPage() {
     const onTouchMove = (e) => {
       if (!e.touches.length) return;
       e.preventDefault();
-      pos += touchY - e.touches[0].clientY;
+      setPosClamped(pos + (touchY - e.touches[0].clientY));
       touchY = e.touches[0].clientY;
-      frame();
     };
     stage.addEventListener('touchstart', onTouchStart, { passive: true });
     stage.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -269,8 +296,7 @@ export function initWorkPage() {
   }
 
   /* ── Filters — blur-out → set swap → blur-in (the network
-     industry-hover machinery pattern: different-length sets, the
-     wrap re-derives on rebuild). */
+     industry-hover machinery pattern; bounds re-derive on rebuild). */
   const pills = Array.from(document.querySelectorAll('[data-work-filter]'));
   let currentFilter = 'all';
   let filtering = false;
@@ -279,12 +305,13 @@ export function initWorkPage() {
     const next = key === 'all'
       ? WORK_PROJECTS
       : WORK_PROJECTS.filter((p) => p.tags.includes(key));
-    if (!next.length) return false; // no-tag TBC guard: never an empty ring
+    if (!next.length) return false;
     set = next;
     buildTiles();
-    posOffset = -(driver ? driver.state().travelPx : 0); // pos back to 0
+    posOffset = -(driver ? driver.state().travelPx : 0);
     pos = 0;
     activeSlug = null;
+    /* footerEntered stays as-is: the footer entrance is once-only. */
     frame();
     return true;
   };
@@ -330,21 +357,92 @@ export function initWorkPage() {
     const link = e.target instanceof Element ? e.target.closest('[data-work-link]') : null;
     if (!(link instanceof HTMLElement) || !link.dataset.tileIndex) return;
     const i = Number(link.dataset.tileIndex);
-    const lead = PITCH_PX;
-    const y = mod(BASE_TOP_PX + i * PITCH_PX - pos + lead, ringLen) - lead;
-    const desired = stageH() / 2 - IMG_H_PX / 2;
-    posOffset += y - desired;
-    pos += y - desired;
-    frame();
+    const desired = clamp(BASE_TOP_PX + i * PITCH_PX - (stageH() / 2 - IMG_H_PX / 2), 0, maxPos());
+    posOffset += desired - pos;
+    setPosClamped(desired);
   };
   carousel.addEventListener('focusin', onFocusIn);
   cleanups.push(() => carousel.removeEventListener('focusin', onFocusIn));
 
-  /* ── Custom cursor (gate note: hover/fine reads FALSE system-wide
-     on Oscar's machine — verify on another device). */
-  const cursor = document.querySelector('[data-work-cursor]');
+  /* ── Footer: entrance choreography (the landing-closing footer
+     vocabulary — column/row word reveals on its stagger bases, the
+     image rise) + BACK TO TOP gliding the travel home. HOME stays a
+     real navigation here (/landing). */
+  const timeouts = [];
+  let footerWordEls = [];
+  const footerImg = footer?.querySelector('[data-footer-img]');
+  const stLines = footer ? Array.from(footer.querySelectorAll('[data-footer-st-line]')) : [];
+
+  const wrapFooter = () => {
+    if (!footer) return;
+    stLines.forEach((line, i) => {
+      if (!(line instanceof HTMLElement)) return;
+      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+      wrapWordRevealElement(line);
+      footerWordEls.push(line);
+    });
+    Array.from(footer.querySelectorAll('[data-footer-col]')).forEach((col, i) => {
+      const base = i * 0.12;
+      if (col.matches('a, button')) {
+        wrapWordRevealElement(col, { baseDelay: base });
+        footerWordEls.push(col);
+      } else {
+        Array.from(col.children).forEach((child, j) => {
+          if (!(child instanceof HTMLElement)) return;
+          wrapWordRevealElement(child, { baseDelay: base + j * 0.06 });
+          footerWordEls.push(child);
+        });
+      }
+    });
+    Array.from(footer.querySelectorAll('.landing-footer__rowitem')).forEach((item, i) => {
+      if (!(item instanceof HTMLElement)) return;
+      wrapWordRevealElement(item, { baseDelay: 0.9 + i * 0.04 });
+      footerWordEls.push(item);
+    });
+  };
+
+  const playFooterEntrance = () => {
+    footerWordEls.forEach((el) => playLineRevealElement(el));
+    timeouts.push(setTimeout(() => {
+      if (footerImg) footerImg.classList.add('is-visible');
+    }, 240));
+  };
+
+  const topLinks = footer ? Array.from(footer.querySelectorAll('[data-footer-top]')) : [];
+  const onTopClick = (e) => {
+    const el = e.currentTarget;
+    /* HOME is an anchor with a real destination (/landing) — let it
+       navigate; BACK TO TOP (a button) glides the travel home. */
+    if (el instanceof HTMLAnchorElement && el.getAttribute('href')?.startsWith('/')) return;
+    e.preventDefault();
+    const proxy = { p: pos };
+    if (reduced) {
+      posOffset += 0 - pos;
+      setPosClamped(0);
+      return;
+    }
+    gsap.to(proxy, {
+      p: 0,
+      duration: 1.2,
+      ease: 'power3.out',
+      onUpdate: () => {
+        posOffset += proxy.p - pos;
+        setPosClamped(proxy.p);
+      },
+    });
+  };
+  topLinks.forEach((el) => el.addEventListener('click', onTopClick));
+  cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
+
+  /* ── Custom cursor — one large difference dot + label (gate note:
+     hover/fine reads FALSE system-wide on Oscar's machine — verify
+     on another device). */
+  const cursorEls = [
+    document.querySelector('[data-work-cursor-circle]'),
+    document.querySelector('[data-work-cursor-label]'),
+  ].filter((el) => el instanceof HTMLElement);
   const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!reduced && fineHover && cursor instanceof HTMLElement) {
+  if (!reduced && fineHover && cursorEls.length === 2) {
     document.documentElement.classList.add('work-cursor-on');
     document.body.classList.add('work-cursor-on');
     let cx = -200;
@@ -356,9 +454,11 @@ export function initWorkPage() {
     const tick = () => {
       cx += (tx - cx) * CURSOR_LERP;
       cy += (ty - cy) * CURSOR_LERP;
-      /* left/top, never transform — difference children. */
-      cursor.style.left = `${cx.toFixed(1)}px`;
-      cursor.style.top = `${cy.toFixed(1)}px`;
+      cursorEls.forEach((el) => {
+        /* left/top, never transform — these ARE the blend elements. */
+        el.style.left = `${cx.toFixed(1)}px`;
+        el.style.top = `${cy.toFixed(1)}px`;
+      });
       cursorRaf = window.requestAnimationFrame(tick);
     };
     const onMove = (e) => {
@@ -373,10 +473,12 @@ export function initWorkPage() {
       if (over) {
         cx = tx;
         cy = ty;
-        cursor.classList.add('is-active');
+        cursorEls.forEach((el) => el.classList.add('is-active'));
+        document.documentElement.classList.add('work-cursor-live');
         if (!cursorRaf) cursorRaf = window.requestAnimationFrame(tick);
       } else {
-        cursor.classList.remove('is-active');
+        cursorEls.forEach((el) => el.classList.remove('is-active'));
+        document.documentElement.classList.remove('work-cursor-live');
         window.cancelAnimationFrame(cursorRaf);
         cursorRaf = 0;
       }
@@ -389,23 +491,24 @@ export function initWorkPage() {
       stage.removeEventListener('pointerover', onOver);
       stage.removeEventListener('pointerout', onOver);
       window.cancelAnimationFrame(cursorRaf);
-      document.documentElement.classList.remove('work-cursor-on');
+      document.documentElement.classList.remove('work-cursor-on', 'work-cursor-live');
       document.body.classList.remove('work-cursor-on');
     });
   }
 
-  /* ── Entrances (non-RM): header word-reveals, pills stagger-fade,
-     meta blur-in — after fonts (line grouping + Range). */
-  const timeouts = [];
+  /* ── Entrances (non-RM): header word-reveals, pills stagger-fade —
+     after fonts (line grouping + Range + index derivation). */
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   let disposed = false;
   fontsReady.then(() => {
     if (disposed) return;
     alignWork();
+    placeIndex();
     if (reduced) return;
+    wrapFooter();
     [hlFeatured, hlWork].forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
-      line.dataset.revealDelay = String(i * 0.12);
+      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
       playLineRevealElement(line);
     });
@@ -417,7 +520,7 @@ export function initWorkPage() {
 
   const onResize = () => {
     alignWork();
-    buildTiles();
+    placeIndex();
     frame();
   };
   window.addEventListener('resize', onResize);
@@ -430,7 +533,7 @@ export function initWorkPage() {
   if (import.meta.env.DEV) {
     window.__workPage = {
       /* Occluded-pane verification: rAF can be frozen there, which
-         stalls gsap's ticker — expose it so probes can tick
+         stalls gsap's ticker — expose it so probes can drive time
          manually (the tickOnce convention). */
       gsap,
       swapState: () => ({ swapping, target: targetProject?.slug ?? null, shown: shownSlug }),
@@ -439,7 +542,9 @@ export function initWorkPage() {
         posOffset,
         setLength: set.length,
         tileCount: tiles.length,
-        ringLen,
+        carouselMax: carouselMax(),
+        maxPos: maxPos(),
+        footerEntered,
         activeSlug,
         shownSlug,
         filter: currentFilter,
@@ -447,8 +552,7 @@ export function initWorkPage() {
       driver: () => (driver ? driver.state() : null),
       setPos: (p) => {
         posOffset += p - pos;
-        pos = p;
-        frame();
+        setPosClamped(p);
       },
     };
   }

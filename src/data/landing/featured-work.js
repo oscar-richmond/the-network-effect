@@ -194,22 +194,15 @@ export const WORK_EXTRAS = [
   },
 ];
 
-const bySlug = (slug) => {
-  const hit = [...FEATURED_CARDS, ...WORK_EXTRAS].find((c) => c.slug === slug);
-  if (!hit) throw new Error(`featured-work: unknown slug ${slug}`);
-  return hit;
-};
-
-/** The /work carousel, in the FILE'S order (Figma 27:3103 top to
- *  bottom). Every entry must carry a workImg. */
-export const WORK_PROJECTS = [
-  'wilderness-reserve',
-  'tbc-documentary',
-  'tbc-hospitality',
-  'top-boy',
-  'tbc-ashley-walters',
-  'tbc-chef',
-  'adolescence',
-  'tbc-adidas-spezial',
-  'animol',
-].map(bySlug);
+/** The /work carousel — the LANDING SECTION'S ORDER and copy
+ *  (Oscar's rev 2026-08-06, superseding the file's 9-image order):
+ *  all eight landing projects, titles + descriptions matching the
+ *  home Featured Work section. IMAGES: entries without a dedicated
+ *  work-page image fall back to their landing card image as a
+ *  PLACEHOLDER — Oscar's image drop follows (copy-only change,
+ *  his words). The WORK_EXTRAS stubs above stay defined but ride
+ *  no carousel until his content lands. */
+export const WORK_PROJECTS = FEATURED_CARDS.map((c) => ({
+  ...c,
+  workImg: c.workImg ?? c.img.src, // PLACEHOLDER pending Oscar's drop
+}));

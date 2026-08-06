@@ -6,15 +6,18 @@
  * FIXED-VIEWPORT page: the stage is 100dvh, the document never
  * scrolls (body overflow hidden); wheel/touch drive the carousel's
  * virtual travel (work-page.js). Ground #EEEEF0 per the file.
+ * FINITE travel (Oscar's rev): the stage sits at z1 over the FIXED
+ * landing footer (z0) and slides up 811px at the end of the travel
+ * — the landing parallax uncover, virtualised.
  *
- * BLEND WALK: every difference element (the cursor's circle +
- * label; the header/meta are plain brand-black ink now) sits on a
- * clean ancestor chain — the stage is position:relative with no
- * z-index/transform/filter/opacity, the cursor wrapper is a plain
- * fixed element positioned via left/top (NEVER transform — it has
- * difference children). The bottom blur band is a SIBLING layer
- * below the left column (z2 < z3): the meta text blends against
- * the band's blurred output, never rides inside it.
+ * BLEND WALK: the difference elements are the cursor's circle and
+ * label — each a TOP-LEVEL FIXED element carrying difference
+ * ITSELF (the nav-logo shape: fixed always creates a stacking
+ * context, so a wrapper would isolate the blend to nothing) and
+ * positioned via left/top, never transform. They live OUTSIDE the
+ * stage (it transforms during the footer reveal). The header/meta
+ * are plain brand-black ink. The stage's z-index:1 creates a
+ * stacking context but contains no blend elements — safe.
  */
 
 body.work-page {
@@ -23,18 +26,22 @@ body.work-page {
 
 .landing-v2 .work-stage {
 	position: relative;
+	z-index: 1; /* over the fixed footer (reveal layer below) */
 	height: 100vh;
 	height: 100dvh;
 	background: #eeeef0;
 	overflow: hidden;
+	will-change: transform; /* slides up 811px for the footer reveal */
 }
 
-/* ── Carousel (right, x712, 1000×640 tiles, 8px gaps) ───────────── */
+/* ── Carousel (right; 1024×640 tiles — Oscar's rev: +24px wide,
+   same height, widened LEFT so the 16px right margin holds; 8px
+   gaps) ─────────────────────────────────────────────────────────── */
 .landing-v2 .work-stage__carousel {
 	position: absolute;
-	left: 712px;
+	left: 688px;
 	top: 0;
-	width: 1000px;
+	width: 1024px;
 	height: 100%;
 	z-index: 1;
 }
@@ -43,7 +50,7 @@ body.work-page {
 	position: absolute;
 	left: 0;
 	top: 0;
-	width: 1000px;
+	width: 1024px;
 	height: 640px;
 	display: block;
 	overflow: hidden;
@@ -163,7 +170,9 @@ body.work-page {
 	position: absolute;
 	left: 24px;
 	top: 441px;
-	width: 377px;
+	/* shrink-to-fit: the /0N index derives 6px from the title's
+	   rendered right edge (Oscar's rev; JS measures per swap). */
+	max-width: 377px;
 	margin: 0;
 	font-weight: 700;
 	font-size: 32px;
@@ -174,7 +183,7 @@ body.work-page {
 
 .landing-v2 .work-page__meta-index {
 	position: absolute;
-	left: 407px;
+	left: 407px; /* pre-JS fallback; derived title-right + 6 per swap */
 	top: 445px;
 	margin: 0;
 	font-weight: 700;
@@ -199,53 +208,45 @@ body.work-page {
 }
 
 /* ── Custom cursor (hover:hover + pointer:fine only, wired in JS).
-   Wrapper positioned via left/top — NEVER transform (difference
-   children). Circle + label are sibling difference layers, the
-   file's own stacking. */
-.landing-v2 .work-cursor {
+   ONE large difference dot + label (Oscar's rev): circle and label
+   are TOP-LEVEL FIXED SIBLINGS, each blending difference ITSELF —
+   the nav-logo treatment — positioned via left/top (never
+   transform). The site's canvas dot is hidden while this cursor is
+   live (no black dot in the middle). */
+.landing-v2 .work-cursor__circle,
+.landing-v2 .work-cursor__label {
 	position: fixed;
 	left: 0;
 	top: 0;
 	width: 160px;
-	height: 160px;
 	margin-left: -80px;
-	margin-top: -80px;
-	z-index: 50;
+	z-index: 9999;
 	pointer-events: none;
-	visibility: hidden;
-}
-
-.landing-v2 .work-cursor.is-active { visibility: visible; }
-
-.landing-v2 .work-cursor__circle {
-	position: absolute;
-	inset: 0;
-	border-radius: 50%;
-	background: #fff;
 	mix-blend-mode: difference;
+	visibility: hidden;
 	opacity: 0;
 	filter: blur(6px);
 	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
 }
 
+.landing-v2 .work-cursor__circle {
+	height: 160px;
+	margin-top: -80px;
+	border-radius: 50%;
+	background: #fff;
+}
+
 .landing-v2 .work-cursor__label {
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 68px;
+	margin-top: -12px; /* label band sits at 68px into the 160 circle */
 	display: flex;
 	justify-content: center;
 	align-items: baseline;
 	gap: 8px;
 	color: #fff;
-	mix-blend-mode: difference;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 500;
 	font-size: 14px;
 	line-height: 16px;
-	opacity: 0;
-	filter: blur(6px);
-	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
 }
 
 .landing-v2 .work-cursor__plus {
@@ -255,8 +256,9 @@ body.work-page {
 	font-size: 15px;
 }
 
-.landing-v2 .work-cursor.is-active .work-cursor__circle,
-.landing-v2 .work-cursor.is-active .work-cursor__label {
+.landing-v2 .work-cursor__circle.is-active,
+.landing-v2 .work-cursor__label.is-active {
+	visibility: visible;
 	opacity: 1;
 	filter: blur(0);
 }
@@ -264,8 +266,29 @@ body.work-page {
 @media (hover: hover) and (pointer: fine) {
 	/* Native cursor hidden over images ONLY (the custom cursor is
 	   the affordance there); everything else keeps the system
-	   cursor. */
+	   cursor. The site's canvas-cursor dot hides while the work
+	   cursor is live — ONE large dot, nothing in the middle. */
 	.landing-v2.work-cursor-on .work-tile { cursor: none; }
+	html.work-cursor-live .canvas-cursor { visibility: hidden; }
+}
+
+/* ── Footer reveal layer: the landing footer FIXED at the viewport
+   bottom UNDER the stage (z0 < stage z1); the stage slides up to
+   uncover it. The landing flow's sticky/negative-margin placement
+   is neutralised here. */
+.landing-v2 .work-footer-wrap {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 811px;
+	z-index: 0;
+}
+
+.landing-v2 .work-footer-wrap .landing-footer {
+	position: static;
+	margin-top: 0;
+	height: 811px;
 }
 
 /* ── Entrance hidden states (no-preference; pills fade like the
@@ -310,7 +333,7 @@ body.work-page {
 		position: static;
 		width: 100%;
 		height: auto;
-		aspect-ratio: 1000 / 640;
+		aspect-ratio: 1024 / 640;
 	}
 
 	.landing-v2 .work-tile img { position: static; }
@@ -321,5 +344,8 @@ body.work-page {
 	/* The travelling meta block is desktop machinery. */
 	.landing-v2 .work-page__meta { display: none; }
 	.landing-v2 .work-stage__band { display: none; }
-	.landing-v2 .work-cursor { display: none; }
+	.landing-v2 .work-cursor__circle,
+	.landing-v2 .work-cursor__label { display: none; }
+	.landing-v2 .work-stage { will-change: auto; transform: none !important; }
+	.landing-v2 .work-footer-wrap { position: static; height: auto; }
 }

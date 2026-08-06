@@ -5,16 +5,19 @@
  * file's y107 nav ignored — the shared shell's nav position wins).
  *
  * Fixed-viewport page: left column static (FEATURED/WORK header,
- * filter pills, the active project's difference-blended meta), right
- * carousel of 1000×640 images travelling vertically on wheel/touch
+ * filter pills, the active project's brand-black meta), right
+ * carousel of 1024×640 images travelling vertically on wheel/touch
  * through the holding pages' proven single-velocity drift driver
- * (autoDrift 0 — scroll-driven only, the /holding-2 precedent), with
- * an infinite modulo wrap. All machinery in work-page.js.
+ * (autoDrift 0 — scroll-driven only, the /holding-2 precedent).
+ * FINITE travel (Oscar's rev — was an infinite loop): starts with
+ * the first image top on the meta title's top line, nothing above;
+ * ends after the last project, then the landing FOOTER reveals from
+ * behind (the parallax uncover). All machinery in work-page.js.
  *
  * Content: WORK_PROJECTS in src/data/landing/featured-work.js — the
- * landing section's entries (single source of truth) plus TBC stubs
- * for the file's images with no landing entry. RIGHTS: elevated
- * third-party-IP / named-person flags live with the data.
+ * landing section's eight projects IN ITS ORDER with its copy
+ * (Oscar's rev; images placeholder pending his drop). RIGHTS:
+ * elevated third-party-IP / named-person flags live with the data.
  *
  * Tiles are REAL LINKS to /work/[slug] — routes that don't exist
  * yet, so navigation is prevented in JS (placeholders, commented
@@ -26,6 +29,7 @@
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import GradualBlur from '../components/GradualBlur.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
 import { WORK_PROJECTS } from '../data/landing/featured-work.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -55,7 +59,7 @@ const first = WORK_PROJECTS[0];
             alt=""
             loading={i < 3 ? 'eager' : 'lazy'}
             decoding="async"
-            width="1000"
+            width="1024"
             height="640"
           />
         </a>
@@ -107,17 +111,29 @@ const first = WORK_PROJECTS[0];
       </div>
     </div>
 
-    {/* Custom cursor — hover:hover + pointer:fine only (work-page.js
-        gates it; touch taps the link directly). aria-hidden: pure
-        decoration, the tiles are the real affordance. */}
-    <div class="work-cursor" data-work-cursor aria-hidden="true">
-      <div class="work-cursor__circle"></div>
-      <div class="work-cursor__label">
-        <span>View project</span>
-        <span class="work-cursor__plus">+</span>
-      </div>
-    </div>
   </main>
+
+  {/* Footer — the landing footer, revealed from BEHIND the stage at
+      the end of the travel (the landing parallax uncover; the stage
+      slides up over this fixed layer — work-page.js phase 2). */}
+  <div class="work-footer-wrap" data-work-footer>
+    <LandingFooter />
+  </div>
+
+  {/* Custom cursor — hover:hover + pointer:fine only (work-page.js
+      gates it; touch taps the link directly). TWO SIBLING FIXED
+      elements, each carrying difference ITSELF (the nav-logo shape:
+      a fixed element always makes a stacking context, so a plain
+      wrapper would isolate its children's blend to nothing — the
+      blend must ride the context-creating elements). Outside the
+      stage: the stage transforms during the footer reveal, which
+      would re-root fixed descendants. aria-hidden: decoration, the
+      tiles are the real affordance. */}
+  <div class="work-cursor__circle" data-work-cursor-circle aria-hidden="true"></div>
+  <div class="work-cursor__label" data-work-cursor-label aria-hidden="true">
+    <span>View project</span>
+    <span class="work-cursor__plus">+</span>
+  </div>
 </SiteShell>
 
 <script>
