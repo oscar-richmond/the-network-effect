@@ -214,6 +214,43 @@ export function initLandingServices() {
       wrapWordRevealElement(line);
     });
 
+    /* Stack-card text word-reveals (Oscar's rev): every text on the
+       cards takes the entry transition, fired as each card's rise
+       window begins (master onUpdate below). BLEND: title + /0N are
+       difference INSIDE the card — the clips go INSIDE those spans
+       (descendant transforms are blend-safe); wrapping the row
+       would put the blend elements under moving ancestors. */
+    const svcCardTexts = cards.map((card) => {
+      const parts = [];
+      const add = (el, baseDelay) => {
+        if (!(el instanceof HTMLElement)) return;
+        wrapWordRevealElement(el, { baseDelay });
+        parts.push(el);
+      };
+      add(card.querySelector('.landing-svc-card__title'), 0);
+      add(card.querySelector('.landing-svc-card__index'), 0.04);
+      /* Desc = 2 authored lines (data contract), so the head lands
+         one line-step after them; items row-by-row, columns nudged
+         L->R; MORE INFO after the deepest column. */
+      add(card.querySelector('.landing-svc-card__desc'), LINE_STAGGER_S);
+      add(card.querySelector('.landing-svc-card__listhead'), 3 * LINE_STAGGER_S);
+      let maxRows = 0;
+      Array.from(card.querySelectorAll('.landing-svc-card__col')).forEach((col, c) => {
+        Array.from(col.children).forEach((li, r) => {
+          maxRows = Math.max(maxRows, r + 1);
+          add(li, 4 * LINE_STAGGER_S + r * LINE_STAGGER_S + c * 0.04);
+        });
+      });
+      add(card.querySelector('.landing-svc-card__btn'), (4 + maxRows) * LINE_STAGGER_S);
+      return parts;
+    });
+    const svcCardPlayed = cards.map(() => false);
+    const playCardTexts = (i) => {
+      if (svcCardPlayed[i]) return;
+      svcCardPlayed[i] = true;
+      svcCardTexts[i].forEach((el) => playLineRevealElement(el));
+    };
+
     const serrifSpan = line1?.querySelector('.landing-services__serrif');
     const fromSpan = line1?.querySelector('[data-services-from]');
     const stopSpan = line1?.querySelector('[data-services-stop]');
@@ -278,9 +315,14 @@ export function initLandingServices() {
         scrub: true,
         invalidateOnRefresh: true,
         onRefresh: () => measureMorph(),
-        onUpdate: () => {
+        onUpdate: (self) => {
           window.clearTimeout(snapTimer);
           snapTimer = window.setTimeout(trySnap, SNAP_IDLE_MS);
+          /* Card text reveals — as each rise window begins. */
+          const px = self.progress * RUNWAY_PX;
+          for (let i = 0; i < cards.length; i += 1) {
+            if (px >= CARD_START_PX + i * CARD_PX) playCardTexts(i);
+          }
         },
       },
     });

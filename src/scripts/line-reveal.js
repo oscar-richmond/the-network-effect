@@ -149,7 +149,7 @@ function ensureLineRevealStyles() {
   css.id = 'line-reveal-styles';
   css.textContent = `
     .lr-clip { overflow: hidden; display: block; }
-    .lr-clip--word { display: inline-block; vertical-align: top; }
+    .lr-clip--word { display: inline-block; vertical-align: top; text-indent: 0; }
     .lr-inner {
       display: block;
       transform: translateY(110%);
@@ -235,7 +235,9 @@ export function wrapWordRevealElement(el, opts = {}) {
         }
       });
     } else if (n.nodeType === Node.ELEMENT_NODE) {
-      atoms.push({ node: n, spaceBefore: pendingSpace });
+      /* BRs stay bare — a break inside an inline clip is nonsense;
+         the offsetTop grouping picks up the new line naturally. */
+      atoms.push({ node: n, isBr: n.nodeName === 'BR', spaceBefore: pendingSpace });
       pendingSpace = '';
     }
   });
@@ -243,6 +245,10 @@ export function wrapWordRevealElement(el, opts = {}) {
 
   el.textContent = '';
   const units = atoms.map((a, i) => {
+    if (a.isBr) {
+      el.appendChild(a.node);
+      return null;
+    }
     if (a.spaceBefore && i > 0) el.appendChild(document.createTextNode(a.spaceBefore));
     const clip = createClip('lr-clip lr-clip--word');
     const inner = createClip('lr-inner');
@@ -251,7 +257,7 @@ export function wrapWordRevealElement(el, opts = {}) {
     clip.appendChild(inner);
     el.appendChild(clip);
     return clip;
-  });
+  }).filter((u) => u !== null);
 
   /* Line grouping from real layout, then per-unit delays. */
   let lineIdx = 0;

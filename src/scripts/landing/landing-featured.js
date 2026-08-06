@@ -142,6 +142,9 @@ export function initLandingFeatured() {
   let masterTl = null;
   let revealTrigger = null;
   let disposed = false;
+  /* Set once fonts are ready (the wraps exist) — reveals cards'
+     texts as the travel brings them into the viewport. */
+  let revealOnTravel = null;
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -152,6 +155,7 @@ export function initLandingFeatured() {
       scrub: true,
       invalidateOnRefresh: true,
       onRefresh: applyHeight,
+      onUpdate: () => revealOnTravel?.(),
     },
   });
   /* The horizontal travel — 1:1, reversible, free (no snap). */
@@ -208,6 +212,39 @@ export function initLandingFeatured() {
   fontsReady.then(() => {
     if (disposed) return;
     alignWork(); /* pre-wrap — the Range needs the raw text node */
+    /* Card titles + descs take the word reveal (Oscar's rev):
+       initially-visible cards play with their entrance stagger; the
+       rest stay clipped until they ENTER during the travel (the
+       master scrub's onUpdate below). Wrapped before place() — it
+       measures the rendered descs. */
+    const cardTexts = cards.map((card) => {
+      const parts = [];
+      const titleLines = Array.from(card.querySelectorAll('.landing-featured__titleline'));
+      titleLines.forEach((tline, j) => {
+        if (!(tline instanceof HTMLElement)) return;
+        wrapWordRevealElement(tline, { baseDelay: j * LINE_STAGGER_S });
+        parts.push(tline);
+      });
+      const desc = card.querySelector('.landing-featured__desc');
+      if (desc instanceof HTMLElement) {
+        wrapWordRevealElement(desc, { baseDelay: titleLines.length * LINE_STAGGER_S });
+        parts.push(desc);
+      }
+      return parts;
+    });
+    const cardRevealed = cards.map(() => false);
+    const revealCardText = (i) => {
+      if (cardRevealed[i]) return;
+      cardRevealed[i] = true;
+      cardTexts[i].forEach((el) => playLineRevealElement(el));
+    };
+    revealOnTravel = () => {
+      if (cardRevealed.every(Boolean)) return;
+      const vw = window.innerWidth || 1728;
+      cards.forEach((card, i) => {
+        if (!cardRevealed[i] && card.getBoundingClientRect().left < vw) revealCardText(i);
+      });
+    };
     place();
     lines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -229,8 +266,13 @@ export function initLandingFeatured() {
         const visibleCount = Math.ceil((window.innerWidth || 1728) / 384);
         cards.forEach((card, i) => {
           if (i < visibleCount) {
-            timeouts.push(setTimeout(() => card.classList.add('is-visible'), CARDS_AT_MS + i * CARD_STAGGER_MS));
+            timeouts.push(setTimeout(() => {
+              card.classList.add('is-visible');
+              revealCardText(i);
+            }, CARDS_AT_MS + i * CARD_STAGGER_MS));
           } else {
+            /* Composed for the travel — its TEXT stays clipped until
+               the card enters (revealOnTravel). */
             card.classList.add('is-visible');
           }
         });
