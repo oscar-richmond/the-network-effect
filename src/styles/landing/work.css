@@ -34,14 +34,15 @@ body.work-page {
 	will-change: transform; /* slides up 811px for the footer reveal */
 }
 
-/* ── Carousel (right; 1024×412 tiles — Oscar's revs: +24px wide
-   (widened LEFT, 16px right margin holds), then total size reduced
-   228px = height 640 -> 412, width kept; 8px gaps) ─────────────── */
+/* ── Carousel (right; Oscar's revs: height 616 = the pre-412 size
+   minus 24; width DERIVED — left edge 8px left of the logo's T,
+   right edge held at stage-16 (work-page.js sets the vars per
+   font-load/resize; the px fallbacks approximate 1728). 8px gaps. */
 .landing-v2 .work-stage__carousel {
 	position: absolute;
-	left: 688px;
+	left: var(--work-tile-left, 756px);
 	top: 0;
-	width: 1024px;
+	width: var(--work-tile-w, 956px);
 	height: 100%;
 	z-index: 1;
 }
@@ -50,8 +51,8 @@ body.work-page {
 	position: absolute;
 	left: 0;
 	top: 0;
-	width: 1024px;
-	height: 412px;
+	width: var(--work-tile-w, 956px);
+	height: 616px;
 	display: block;
 	overflow: hidden;
 	will-change: transform;
@@ -72,13 +73,16 @@ body.work-page {
 }
 
 /* ── Bottom progressive blur band (file: blur 20 under a vertical
-   alpha ramp, ~200px) — GradualBlur layers inside this wrapper. */
+   alpha ramp; height reduced a third — Oscar's rev) — GradualBlur
+   layers inside this wrapper; the radii DRAIN over the last
+   image's second half (work-page.js, the featured band-dissolve
+   pattern — never wrapper opacity). */
 .landing-v2 .work-stage__band {
 	position: absolute;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	height: 200px;
+	height: 133px;
 	z-index: 2;
 	pointer-events: none;
 }
@@ -334,7 +338,7 @@ body.work-page {
 		position: static;
 		width: 100%;
 		height: auto;
-		aspect-ratio: 1024 / 412;
+		aspect-ratio: 1024 / 616;
 	}
 
 	.landing-v2 .work-tile img { position: static; }

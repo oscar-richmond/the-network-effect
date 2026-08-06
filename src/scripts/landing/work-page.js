@@ -59,10 +59,14 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
 const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
-const IMG_H_PX = 412; // 640 - 228 (Oscar's rev: total size down 228)
+const IMG_H_PX = 616; // Oscar's rev: the pre-412 height (640) minus 24
 const GAP_PX = 8;
-const PITCH_PX = IMG_H_PX + GAP_PX; // 420
+const PITCH_PX = IMG_H_PX + GAP_PX; // 624
 const END_GAP_PX = 80; // ground below the last image before the reveal
+const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
+const TILE_LOGO_GAP_PX = 8; // left edge 8px left of the logo's T
+const BAND_FADE_PX = 150; // radii-drain window at the last image's half
+const META_OUT_S = 0.5; // the un-reveal's tightened duration (nav-out precedent)
 const DEADZONE_PX = 24;
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const FOOTER_REVEAL_PX = 811; // the landing footer's full height
@@ -122,6 +126,18 @@ export function initWorkPage() {
     hlWork.style.left = `${(aRect.left - stage.getBoundingClientRect().left).toFixed(2)}px`;
   };
 
+  /* Tile geometry is DERIVED (Oscar's rev): left edge 8px left of
+     the nav logo's T, right edge held at stage-16. Set as CSS vars
+     (carousel + tiles read them); re-derived on fonts/resize. */
+  const deriveTileWidth = () => {
+    const logo = document.querySelector('.home__logo');
+    if (!(logo instanceof HTMLElement)) return;
+    const left = logo.getBoundingClientRect().left - TILE_LOGO_GAP_PX;
+    const width = (stage.clientWidth || window.innerWidth) - TILE_RIGHT_MARGIN_PX - left;
+    stage.style.setProperty('--work-tile-left', `${left.toFixed(1)}px`);
+    stage.style.setProperty('--work-tile-w', `${width.toFixed(1)}px`);
+  };
+
   /* ── The set + tiles (finite — no ring, no padding). */
   let set = WORK_PROJECTS;
   let tiles = [];
@@ -143,7 +159,7 @@ export function initWorkPage() {
       img.alt = '';
       img.decoding = 'async';
       img.width = 1024;
-      img.height = 412;
+      img.height = 616;
       a.appendChild(img);
       carousel.appendChild(a);
       return { el: a, project: p };
@@ -160,6 +176,28 @@ export function initWorkPage() {
   };
   const maxPos = () => carouselMax() + FOOTER_REVEAL_PX;
 
+  /* Bottom band dissolve (Oscar's rev): from HALFWAY through the
+     last image, the band's radii drain to nothing over BAND_FADE_PX
+     of travel — scrubbed, reversible (the featured band-dissolve
+     pattern; wrapper opacity would sever the backdrop filters). */
+  const bandLayers = Array.from(stage.querySelectorAll('.work-stage__band [data-gradual-blur-layer]'));
+  const bandBases = bandLayers.map((l) => {
+    const m = /([\d.]+)rem/.exec(l.style.backdropFilter || '');
+    return m ? parseFloat(m[1]) : 0;
+  });
+  let lastBandT = -1;
+  const applyBand = () => {
+    const half = BASE_TOP_PX + (tiles.length - 1) * PITCH_PX + IMG_H_PX / 2 - stageH();
+    const bandT = clamp((pos - half) / BAND_FADE_PX, 0, 1);
+    if (bandT === lastBandT) return;
+    lastBandT = bandT;
+    bandLayers.forEach((l, i) => {
+      const v = `blur(${(bandBases[i] * (1 - bandT)).toFixed(3)}rem)`;
+      l.style.backdropFilter = v;
+      l.style.webkitBackdropFilter = v;
+    });
+  };
+
   /* ── Layout: pure f(pos). Carousel rides phase 1; the stage slides
      up through phase 2 (the reveal). */
   let pos = 0;
@@ -170,6 +208,7 @@ export function initWorkPage() {
       const y = BASE_TOP_PX + i * PITCH_PX - p1;
       el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
     });
+    applyBand();
     const revealT = clamp(pos - carouselMax(), 0, FOOTER_REVEAL_PX);
     stage.style.transform = revealT > 0 ? `translate3d(0, ${(-revealT).toFixed(2)}px, 0)` : '';
     if (!footerEntered && revealT > FOOTER_ENTRANCE_AT_PX) {
@@ -177,6 +216,8 @@ export function initWorkPage() {
       playFooterEntrance();
     }
   };
+
+  const timeouts = [];
 
   /* ── Active detection + the single persistent meta swap. */
   let activeSlug = null;
@@ -201,34 +242,47 @@ export function initWorkPage() {
     placeIndex();
   };
 
+  /* The swap is the FEATURED-title vocabulary now (Oscar's rev):
+     the outgoing text UN-REVEALS (words back into their clips, the
+     network-exit reverse — delays zeroed, tightened duration, the
+     nav-out precedent), then the incoming text word-reveals L->R.
+     One persistent runner; rapid traversal retargets at the
+     set-point, nothing stacks. */
+  const wrapMetaEls = () => {
+    if (metaTitle instanceof HTMLElement) wrapWordRevealElement(metaTitle, { baseDelay: 0 });
+    if (metaIndex instanceof HTMLElement) wrapWordRevealElement(metaIndex, { baseDelay: 0.04 });
+    if (metaDesc instanceof HTMLElement) wrapWordRevealElement(metaDesc, { baseDelay: LINE_STAGGER_S });
+    placeIndex();
+  };
+  const playMeta = () => metaEls.forEach((el) => playLineRevealElement(el));
+  const unrevealMeta = () => {
+    metaEls.forEach((el) => {
+      el.querySelectorAll('.lr-inner').forEach((inn) => {
+        if (inn instanceof HTMLElement) {
+          inn.style.transition = `transform ${META_OUT_S}s cubic-bezier(0.42, 0, 0.24, 1) 0s`;
+        }
+      });
+      el.querySelectorAll(':scope > .lr-clip').forEach((c) => c.classList.remove('lr-visible'));
+    });
+  };
+
   const runSwap = () => {
     if (!targetProject || targetProject.slug === shownSlug) return;
     swapping = true;
-    gsap.to(metaEls, {
-      opacity: 0,
-      filter: 'blur(6px)',
-      duration: 0.2,
-      ease: 'power1.in',
-      overwrite: 'auto',
-      onComplete: () => {
-        /* Set-point reads the LATEST target — rapid traversal
-           retargets here, nothing stacks. */
-        const p = targetProject;
-        shownSlug = p.slug;
-        applyMetaText(p);
-        gsap.to(metaEls, {
-          opacity: 1,
-          filter: 'blur(0px)',
-          duration: 0.3,
-          ease: 'power1.out',
-          overwrite: 'auto',
-          onComplete: () => {
-            swapping = false;
-            runSwap();
-          },
-        });
-      },
-    });
+    unrevealMeta();
+    timeouts.push(setTimeout(() => {
+      /* Set-point reads the LATEST target — rapid traversal
+         retargets here, nothing stacks. */
+      const p = targetProject;
+      shownSlug = p.slug;
+      applyMetaText(p);
+      wrapMetaEls();
+      playMeta();
+      timeouts.push(setTimeout(() => {
+        swapping = false;
+        runSwap();
+      }, 400));
+    }, META_OUT_S * 1000));
   };
 
   const requestMeta = (p) => {
@@ -397,7 +451,6 @@ export function initWorkPage() {
      vocabulary — column/row word reveals on its stagger bases, the
      image rise) + BACK TO TOP gliding the travel home. HOME stays a
      real navigation here (/landing). */
-  const timeouts = [];
   let footerWordEls = [];
   const footerImg = footer?.querySelector('[data-footer-img]');
   const stLines = footer ? Array.from(footer.querySelectorAll('[data-footer-st-line]')) : [];
@@ -590,9 +643,13 @@ export function initWorkPage() {
   fontsReady.then(() => {
     if (disposed) return;
     alignWork();
+    deriveTileWidth();
     placeIndex();
     if (reduced) return;
     wrapFooter();
+    /* The meta's load entrance = the same word reveal the swaps use. */
+    wrapMetaEls();
+    playMeta();
     [hlFeatured, hlWork].forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -607,6 +664,7 @@ export function initWorkPage() {
 
   const onResize = () => {
     alignWork();
+    deriveTileWidth();
     placeIndex();
     frame();
   };
