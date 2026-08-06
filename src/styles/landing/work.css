@@ -1,0 +1,328 @@
+/*
+ * /work — FEATURED WORK PAGE (Figma 27:3103, extracted 2026-08-06;
+ * 83px chrome offset subtracted; the file's y107 nav row ignored —
+ * the new build's own nav position applies via the shared shell).
+ *
+ * FIXED-VIEWPORT page: the stage is 100dvh, the document never
+ * scrolls (body overflow hidden); wheel/touch drive the carousel's
+ * virtual travel (work-page.js). Ground #EEEEF0 per the file.
+ *
+ * BLEND WALK: every difference element (FEATURED/WORK header, the
+ * meta title/index/desc, the cursor's circle + label) sits on a
+ * clean ancestor chain — the stage is position:relative with no
+ * z-index/transform/filter/opacity, the cursor wrapper is a plain
+ * fixed element positioned via left/top (NEVER transform — it has
+ * difference children). The bottom blur band is a SIBLING layer
+ * below the left column (z2 < z3): the meta text blends against
+ * the band's blurred output, never rides inside it.
+ */
+
+body.work-page {
+	overflow: hidden;
+}
+
+.landing-v2 .work-stage {
+	position: relative;
+	height: 100vh;
+	height: 100dvh;
+	background: #eeeef0;
+	overflow: hidden;
+}
+
+/* ── Carousel (right, x712, 1000×640 tiles, 8px gaps) ───────────── */
+.landing-v2 .work-stage__carousel {
+	position: absolute;
+	left: 712px;
+	top: 0;
+	width: 1000px;
+	height: 100%;
+	z-index: 1;
+}
+
+.landing-v2 .work-tile {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 1000px;
+	height: 640px;
+	display: block;
+	overflow: hidden;
+	will-change: transform;
+}
+
+.landing-v2 .work-tile img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Real links, keyboard path: visible focus treatment (the cursor is
+   an affordance, not the only one). */
+.landing-v2 .work-tile:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: -2px;
+}
+
+/* ── Bottom progressive blur band (file: blur 20 under a vertical
+   alpha ramp, ~200px) — GradualBlur layers inside this wrapper. */
+.landing-v2 .work-stage__band {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 200px;
+	z-index: 2;
+	pointer-events: none;
+}
+
+/* ── Left column (z3 — above the band) ──────────────────────────── */
+.landing-v2 .work-stage__left {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	pointer-events: none;
+}
+
+/* FEATURED / WORK — the landing section's header treatment (40px
+   rev, mixed faces, difference; W-under-A derived at runtime). */
+.landing-v2 .work-page__hl {
+	position: absolute;
+	left: 24px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 40px;
+	line-height: 40px;
+	text-transform: uppercase;
+	color: #fff;
+	mix-blend-mode: difference;
+	white-space: nowrap;
+}
+
+.landing-v2 .work-page__hl--featured { top: 174px; }
+
+.landing-v2 .work-page__hl--work {
+	top: 214px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+/* ── Filter pills (y296; 38px, 12px gaps, widths per file; 14px
+   type — Oscar's revved treatment, the file's 16px predates it). */
+.landing-v2 .work-page__filters {
+	position: absolute;
+	left: 24px;
+	top: 296px;
+	display: flex;
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	pointer-events: auto;
+}
+
+.landing-v2 .work-pill {
+	height: 38px;
+	border: 0;
+	padding: 0;
+	background: #e4e4ea;
+	color: #232a89;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 38px;
+	text-align: center;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+
+.landing-v2 .work-pill[aria-pressed='true'] {
+	background: #232a89;
+	color: #eeeef0;
+}
+
+.landing-v2 .work-pill:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* Widths per the file. */
+.landing-v2 .work-pill--all { width: 64px; }
+.landing-v2 .work-pill--immerse { width: 112px; }
+.landing-v2 .work-pill--connect { width: 116px; }
+.landing-v2 .work-pill--amplify { width: 107px; }
+
+/* ── Active-project meta (difference white; swaps with the travel) */
+.landing-v2 .work-page__meta {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.landing-v2 .work-page__meta-title {
+	position: absolute;
+	left: 24px;
+	top: 441px;
+	width: 377px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 32px;
+	line-height: 32px;
+	text-transform: uppercase;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .work-page__meta-index {
+	position: absolute;
+	left: 407px;
+	top: 445px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 10px;
+	line-height: 10px;
+	text-transform: uppercase;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .work-page__meta-desc {
+	position: absolute;
+	left: 24px;
+	top: 489px;
+	width: 540px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 22px;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+/* ── Custom cursor (hover:hover + pointer:fine only, wired in JS).
+   Wrapper positioned via left/top — NEVER transform (difference
+   children). Circle + label are sibling difference layers, the
+   file's own stacking. */
+.landing-v2 .work-cursor {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 160px;
+	height: 160px;
+	margin-left: -80px;
+	margin-top: -80px;
+	z-index: 50;
+	pointer-events: none;
+	visibility: hidden;
+}
+
+.landing-v2 .work-cursor.is-active { visibility: visible; }
+
+.landing-v2 .work-cursor__circle {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: #fff;
+	mix-blend-mode: difference;
+	opacity: 0;
+	filter: blur(6px);
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+}
+
+.landing-v2 .work-cursor__label {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 68px;
+	display: flex;
+	justify-content: center;
+	align-items: baseline;
+	gap: 8px;
+	color: #fff;
+	mix-blend-mode: difference;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 16px;
+	opacity: 0;
+	filter: blur(6px);
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+}
+
+.landing-v2 .work-cursor__plus {
+	font-family: 'Serrif', serif;
+	font-weight: 700;
+	font-synthesis: none;
+	font-size: 15px;
+}
+
+.landing-v2 .work-cursor.is-active .work-cursor__circle,
+.landing-v2 .work-cursor.is-active .work-cursor__label {
+	opacity: 1;
+	filter: blur(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	/* Native cursor hidden over images ONLY (the custom cursor is
+	   the affordance there); everything else keeps the system
+	   cursor. */
+	.landing-v2.work-cursor-on .work-tile { cursor: none; }
+}
+
+/* ── Entrance hidden states (no-preference; pills fade like the
+   founders buttons — controls keep fades, text word-reveals). */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .work-pill {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			background 0.2s ease, color 0.2s ease;
+	}
+
+	.landing-v2 .work-pill.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* ── Sub-1024 fallback: sensible stacked scrolling list (the 15"
+   scale shell remains the primary story). The stage un-fixes, tiles
+   flow with their own meta below each image. */
+@media (max-width: 1023px) {
+	body.work-page { overflow: auto; }
+
+	.landing-v2 .work-stage {
+		height: auto;
+		overflow: visible;
+		padding: 160px 24px 64px;
+	}
+
+	.landing-v2 .work-stage__carousel {
+		position: static;
+		width: auto;
+		height: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 32px;
+	}
+
+	.landing-v2 .work-tile {
+		position: static;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1000 / 640;
+	}
+
+	.landing-v2 .work-tile img { position: static; }
+
+	.landing-v2 .work-stage__left { position: static; pointer-events: auto; }
+	.landing-v2 .work-page__hl { position: static; }
+	.landing-v2 .work-page__filters { position: static; margin: 16px 0 24px; flex-wrap: wrap; }
+	/* The travelling meta block is desktop machinery. */
+	.landing-v2 .work-page__meta { display: none; }
+	.landing-v2 .work-stage__band { display: none; }
+	.landing-v2 .work-cursor { display: none; }
+}

@@ -23,8 +23,7 @@
  *
  * VIEW ALL: the MORE INFO family at Oscar's revved 14px/10.5-arrow
  * treatment (the file's 16px predates that rev — his call).
- * Non-navigating placeholder: the selected-work page doesn't exist
- * yet.
+ * Links to /work (the Featured Work page).
  *
  * Content/rights flags live in src/data/landing/featured-work.js.
  */
@@ -40,11 +39,11 @@ import GradualBlur from '../GradualBlur.astro';
       <span class="landing-featured__hl landing-featured__hl--work" data-featured-line>WORK</span>
     </h2>
 
-    {/* Non-navigating placeholder — selected-work page pending. */}
-    <button type="button" class="landing-featured__viewall" data-featured-viewall data-char-ripple-trigger>
+    {/* -> /work (the Featured Work page; was an inert placeholder). */}
+    <a class="landing-featured__viewall" href="/work" data-featured-viewall data-char-ripple-trigger>
       <span data-char-ripple>VIEW ALL</span>
       <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-    </button>
+    </a>
 
     <div class="landing-featured__strip" data-featured-strip>
       {FEATURED_CARDS.map((card) => (

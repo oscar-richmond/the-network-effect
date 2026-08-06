@@ -1,0 +1,143 @@
+---
+/**
+ * /work — FEATURED WORK, the new build's second route (Figma
+ * 27:3103, extracted 2026-08-06; 83px chrome offset subtracted; the
+ * file's y107 nav ignored — the shared shell's nav position wins).
+ *
+ * Fixed-viewport page: left column static (FEATURED/WORK header,
+ * filter pills, the active project's difference-blended meta), right
+ * carousel of 1000×640 images travelling vertically on wheel/touch
+ * through the holding pages' proven single-velocity drift driver
+ * (autoDrift 0 — scroll-driven only, the /holding-2 precedent), with
+ * an infinite modulo wrap. All machinery in work-page.js.
+ *
+ * Content: WORK_PROJECTS in src/data/landing/featured-work.js — the
+ * landing section's entries (single source of truth) plus TBC stubs
+ * for the file's images with no landing entry. RIGHTS: elevated
+ * third-party-IP / named-person flags live with the data.
+ *
+ * Tiles are REAL LINKS to /work/[slug] — routes that don't exist
+ * yet, so navigation is prevented in JS (placeholders, commented
+ * there). Keyboard: pills and tiles tabbable; focusing a tile
+ * retargets the travel to bring it to the anchor.
+ *
+ * STAGING ONLY — same rule as /landing: nothing here is promoted
+ * anywhere until Oscar says so.
+ */
+import SiteShell from '../layouts/SiteShell.astro';
+import GradualBlur from '../components/GradualBlur.astro';
+import { WORK_PROJECTS } from '../data/landing/featured-work.js';
+import '../styles/home.css';
+import '../styles/landing/landing.css';
+import '../styles/landing/work.css';
+import '../styles/fonts.css';
+
+const first = WORK_PROJECTS[0];
+---
+
+<SiteShell title="Featured Work — The Network Effect" bodyClass="landing-v2 work-page">
+  <main class="work-stage" data-work-stage aria-label="Featured work">
+    {/* Carousel — initial server-rendered set = ALL (work-page.js
+        rebuilds on filter with the same markup shape; the network
+        section's applySetToTrack rebuild pattern). */}
+    <div class="work-stage__carousel" data-work-carousel>
+      {WORK_PROJECTS.map((p, i) => (
+        <a
+          class="work-tile"
+          href={`/work/${p.slug}`}
+          data-work-link
+          data-slug={p.slug}
+          data-index={String(i)}
+          aria-label={`${p.title.join(' ')} — view project`}
+        >
+          <img
+            src={p.workImg}
+            alt=""
+            loading={i < 3 ? 'eager' : 'lazy'}
+            decoding="async"
+            width="1000"
+            height="640"
+          />
+        </a>
+      ))}
+    </div>
+
+    {/* Bottom progressive blur — the access/featured GradualBlur
+        family, horizontal at the viewport bottom; pointer-events
+        none, SIBLING of the text layers (blend walk in work.css). */}
+    <div class="work-stage__band" aria-hidden="true">
+      <GradualBlur
+        target="parent"
+        position="bottom"
+        strength={5}
+        height="100%"
+        divCount={3}
+        exponential={true}
+        opacity={1}
+        zIndex={1}
+      />
+    </div>
+
+    {/* Left column — header, pills, active meta. */}
+    <div class="work-stage__left">
+      <h1 class="work-page__hl work-page__hl--featured" data-work-hl-featured>FEATURED</h1>
+      <p class="work-page__hl work-page__hl--work" data-work-hl-work aria-hidden="true">WORK</p>
+
+      <div class="work-page__filters" role="group" aria-label="Filter projects" data-work-filters>
+        <button type="button" class="work-pill work-pill--all" data-work-filter="all" aria-pressed="true" data-char-ripple-trigger>
+          <span data-char-ripple>ALL</span>
+        </button>
+        <button type="button" class="work-pill work-pill--immerse" data-work-filter="immerse" aria-pressed="false" data-char-ripple-trigger>
+          <span data-char-ripple>IMMERSE</span>
+        </button>
+        <button type="button" class="work-pill work-pill--connect" data-work-filter="connect" aria-pressed="false" data-char-ripple-trigger>
+          <span data-char-ripple>CONNECT</span>
+        </button>
+        <button type="button" class="work-pill work-pill--amplify" data-work-filter="amplify" aria-pressed="false" data-char-ripple-trigger>
+          <span data-char-ripple>AMPLIFY</span>
+        </button>
+      </div>
+
+      {/* Active project — announced politely on swap (a travel is a
+          browse, not an alert). */}
+      <div class="work-page__meta" data-work-meta aria-live="polite">
+        <h2 class="work-page__meta-title" data-work-meta-title>{first.title.join(' ')}</h2>
+        <p class="work-page__meta-index" data-work-meta-index>{first.index}</p>
+        <p class="work-page__meta-desc" data-work-meta-desc>{first.desc}</p>
+      </div>
+    </div>
+
+    {/* Custom cursor — hover:hover + pointer:fine only (work-page.js
+        gates it; touch taps the link directly). aria-hidden: pure
+        decoration, the tiles are the real affordance. */}
+    <div class="work-cursor" data-work-cursor aria-hidden="true">
+      <div class="work-cursor__circle"></div>
+      <div class="work-cursor__label">
+        <span>View project</span>
+        <span class="work-cursor__plus">+</span>
+      </div>
+    </div>
+  </main>
+</SiteShell>
+
+<script>
+  import { initCharRipple } from '../scripts/char-ripple.js';
+  import { initNavEntrance } from '../scripts/landing/nav-motion.js';
+  import { initWorkPage } from '../scripts/landing/work-page.js';
+
+  let cleanupCharRipple = initCharRipple();
+  let cleanupNavEntrance = initNavEntrance();
+  let cleanupWorkPage = initWorkPage();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupCharRipple();
+    cleanupNavEntrance();
+    cleanupWorkPage();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupCharRipple = initCharRipple();
+    cleanupNavEntrance = initNavEntrance();
+    cleanupWorkPage = initWorkPage();
+  });
+</script>

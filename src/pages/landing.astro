@@ -9,10 +9,14 @@
  * scripts}/landing/. Nothing on this page touches /old, /services or
  * the holding routes.
  *
+ * Page chrome (nav / menu overlay / grain) lives in the shared
+ * SiteShell (markup only — scripts boot per-page below, so the
+ * extraction left this page's build byte-identical).
+ *
  * STAGING ONLY. The root serves the holding page; this route is not
  * promoted anywhere until Oscar says so. See docs/ENVIRONMENTS.md.
  */
-import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
 import LandingFounders from '../components/landing/LandingFounders.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
@@ -21,59 +25,12 @@ import LandingServicesStack from '../components/landing/LandingServicesStack.ast
 import LandingAccess from '../components/landing/LandingAccess.astro';
 import LandingClosing from '../components/landing/LandingClosing.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
-import Menu from '../components/Menu.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/fonts.css';
 ---
 
-<BaseLayout title="The Network Effect" bodyClass="landing-v2" htmlClass="js">
-  {/* Top nav — the existing chrome and menu behaviour, unchanged. */}
-  <header class="home__topbar home__topbar--about">
-    <nav class="home__menu-cta" aria-label="Site">
-      <button
-        type="button"
-        class="home__menu-toggle"
-        data-menu-toggle
-        data-char-ripple-trigger
-        aria-expanded="false"
-        aria-controls="site-menu"
-      >
-        <span data-menu-label-menu data-char-ripple>MENU</span>
-        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
-          <span class="home__menu-toggle-close-text">CLOSE</span>
-          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
-        </span>
-      </button>
-    </nav>
-    <h1 class="home__logo">THE NETWORK EFFECT</h1>
-    {/* "LET'S CHAT" replaces the visible address (Oscar's rev) — the
-        mailto target is UNCHANGED. The arrow is Oscar's supplied SVG
-        inlined per his spec: fill="currentColor" (the asset's
-        hardcoded white fill stripped, its no-op full-rect clipPath
-        dropped) so text + arrow are ONE blended element that can
-        never desync under the nav's per-item difference treatment. */}
-    <a
-      class="home__topbar-email"
-      href="mailto:hello@networkeffectagency.co.uk"
-      data-char-ripple-trigger
-    >
-      <span data-char-ripple>LET’S CHAT</span>
-      <svg
-        class="home__topbar-email-arrow"
-        viewBox="0 0 300 300"
-        aria-hidden="true"
-        data-char-ripple-arrow
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z"
-          fill="currentColor"
-        />
-      </svg>
-    </a>
-  </header>
-
+<SiteShell title="The Network Effect" bodyClass="landing-v2">
   <LandingHero />
 
   {/* First content section — slides up over the held full-screen
@@ -127,12 +84,7 @@ import '../styles/fonts.css';
       viewport bottom; this transparent, click-through spacer keeps
       the document height so the page ends exactly at full reveal. */}
   <div class="landing-footer-spacer" aria-hidden="true"></div>
-
-  <Menu />
-
-  {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
-  <div class="landing-grain" aria-hidden="true"></div>
-</BaseLayout>
+</SiteShell>
 
 <script>
   import { initLandingHeroScroll } from '../scripts/landing/landing-hero-scroll.js';

@@ -1,0 +1,85 @@
+---
+/**
+ * SITE SHELL — the NEW BUILD's shared page chrome (/landing, /work,
+ * and every page to come): BaseLayout + the top nav (MENU / logo /
+ * LET'S CHAT), the menu overlay, and the grain layer, with the
+ * page's content slotted between nav and menu.
+ *
+ * MARKUP ONLY, deliberately: each page boots its own scripts
+ * (char-ripple, nav entrance, its sections) so this extraction
+ * changes nothing about how /landing builds — the refactor is
+ * byte-identical by construction (the holding-refactor precedent).
+ *
+ * Scoped to the `landing-v2` class family; pages pass extra body
+ * classes via bodyClass (e.g. /work adds `work-page`). Nothing here
+ * touches /old, /services or the holding routes.
+ */
+import BaseLayout from './BaseLayout.astro';
+import Menu from '../components/Menu.astro';
+
+interface Props {
+  title?: string;
+  bodyClass?: string;
+}
+
+const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
+---
+
+<BaseLayout title={title} bodyClass={bodyClass} htmlClass="js">
+  {/* Top nav — the existing chrome and menu behaviour, unchanged. */}
+  <header class="home__topbar home__topbar--about">
+    <nav class="home__menu-cta" aria-label="Site">
+      <button
+        type="button"
+        class="home__menu-toggle"
+        data-menu-toggle
+        data-char-ripple-trigger
+        aria-expanded="false"
+        aria-controls="site-menu"
+      >
+        <span data-menu-label-menu data-char-ripple>MENU</span>
+        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
+          <span class="home__menu-toggle-close-text">CLOSE</span>
+          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
+        </span>
+      </button>
+    </nav>
+    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    {/* "LET'S CHAT" replaces the visible address (Oscar's rev) — the
+        mailto target is UNCHANGED. The arrow is Oscar's supplied SVG
+        inlined per his spec: fill="currentColor" (the asset's
+        hardcoded white fill stripped, its no-op full-rect clipPath
+        dropped) so text + arrow are ONE blended element that can
+        never desync under the nav's per-item difference treatment. */}
+    <a
+      class="home__topbar-email"
+      href="mailto:hello@networkeffectagency.co.uk"
+      data-char-ripple-trigger
+    >
+      <span data-char-ripple>LET’S CHAT</span>
+      <svg
+        class="home__topbar-email-arrow"
+        viewBox="0 0 300 300"
+        aria-hidden="true"
+        data-char-ripple-arrow
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z"
+          fill="currentColor"
+        />
+      </svg>
+    </a>
+  </header>
+
+  <slot />
+
+  {/* TODO(menu): the overlay below is the /old site's shared menu
+      (data/menu.js drives /old routes) — the new build's own menu
+      isn't designed yet. When it lands, add WORK -> /work there.
+      Not building or modifying the /old menu now (scope rule). */}
+  <Menu />
+
+  {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
+  <div class="landing-grain" aria-hidden="true"></div>
+</BaseLayout>

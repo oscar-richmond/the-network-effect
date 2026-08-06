@@ -32,6 +32,7 @@
 import { asset } from '../../utils/asset.js';
 
 const a = (n) => asset(`/assets/landing/featured/work-${n}.jpg`);
+const wp = (n) => asset(`/assets/landing/work/work-page-${n}.jpg`);
 
 /** @typedef {{ index: string, title: string[], desc: string, img: { src: string, w?: number, h?: number, x?: number, y?: number, cover?: boolean } }} FeaturedCard */
 
@@ -40,6 +41,11 @@ export const FEATURED_CARDS = [
   {
     index: '/01',
     title: ['WILDERNESS', 'RESERVE'],
+    slug: 'wilderness-reserve',
+    /* PROVISIONAL pillar tags — final tagging is a founder/content
+       decision (destination experiences + partnerships). */
+    tags: ['immerse', 'connect'],
+    workImg: wp(1), // /work carousel image (Figma 27:3103, interior)
     desc: 'Developed one of the UK’s leading luxury destinations, spanning hospitality, events, guest experiences and talent partnerships.',
     img: { src: a(1), cover: true }, // Oscar-supplied final (2026-08-06; file crop retired)
   },
@@ -47,6 +53,9 @@ export const FEATURED_CARDS = [
     /* RIGHTS: recognizable cast, TV key-art class — see header. */
     index: '/02',
     title: ['TOP BOY'],
+    slug: 'top-boy',
+    tags: ['amplify'], // PROVISIONAL
+    workImg: wp(4), // /work carousel image (b/w promotional still)
     desc: 'A defining British screen project with global cultural reach, rooted in storytelling, music, fashion and culture.',
     img: { src: a(6), cover: true },
   },
@@ -54,6 +63,8 @@ export const FEATURED_CARDS = [
     /* RIGHTS: see the named-person flag in the header. */
     index: '/03',
     title: ['PAVILION', 'CLUB'],
+    slug: 'pavilion-club',
+    tags: ['connect', 'immerse'], // PROVISIONAL
     /* Trimmed one line ("high-profile" dropped) so "experiences."
        isn't a widow (Oscar's rev). */
     desc: 'Created and scaled a private membership programme across four clubs, connecting founders, CEOs and talent through cultural and business-led experiences.',
@@ -62,6 +73,8 @@ export const FEATURED_CARDS = [
   {
     index: '/04',
     title: ['PAVILION', 'SUMMIT'],
+    slug: 'pavilion-summit',
+    tags: ['immerse', 'connect'], // PROVISIONAL
     desc: 'A 24-hour immersive leadership experience, delivered from ideation to execution, bringing CEOs, founders and cultural voices together.',
     img: { src: a(3), w: 720, h: 466, x: -225.87, y: 0 },
   },
@@ -69,12 +82,17 @@ export const FEATURED_CARDS = [
     /* RIGHTS: recognizable cast, TV key-art class — see header. */
     index: '/05',
     title: ['ADOLESCENCE'],
+    slug: 'adolescence',
+    tags: ['amplify'], // PROVISIONAL
+    workImg: wp(7), // /work carousel image (series key art)
     desc: 'Contemporary screen work reinforcing Ashley’s position as one of the UK’s most recognisable voices.',
     img: { src: a(7), cover: true },
   },
   {
     index: '/06',
     title: ['YOXMAN FOOD', 'FESTIVAL'],
+    slug: 'yoxman-food-festival',
+    tags: ['immerse'], // PROVISIONAL
     /* Trimmed one line ("guest journey" dropped) so "experience."
        isn't a widow (Oscar's rev). */
     desc: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, creative direction and luxury hospitality experience.',
@@ -83,6 +101,8 @@ export const FEATURED_CARDS = [
   {
     index: '/07',
     title: ['THUNDER', 'AVIATION'],
+    slug: 'thunder-aviation',
+    tags: ['connect'], // PROVISIONAL
     desc: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
     img: { src: a(5), cover: true }, // Oscar-supplied final (2026-08-06)
   },
@@ -90,7 +110,106 @@ export const FEATURED_CARDS = [
     /* RIGHTS: Ashley on set — see header. */
     index: '/08',
     title: ['ANIMOL'],
+    slug: 'animol',
+    tags: ['amplify'], // PROVISIONAL
+    workImg: wp(9), // /work carousel image (Berlinale artwork)
     desc: 'Directorial feature debut, marking Ashley’s evolution from actor and producer to filmmaker and creative lead.',
     img: { src: a(8), cover: true },
   },
 ];
+
+/* ═══ /work PAGE (Figma 27:3103) ═══════════════════════════════════
+   The page's 9-image carousel reuses the entries above (single
+   source of truth) and adds the file's images that have NO landing
+   entry, below, as TBC content stubs — titles/copy/tags PENDING
+   OSCAR'S CONTENT DROP.
+
+   ═══ RIGHTS CONFIRMATION REQUIRED — ELEVATED, THIRD-PARTY IP /
+   NAMED PERSONS ═══ Beyond the standard pending-sign-off: the Top
+   Boy and Adolescence promotional stills, the adidas Spezial
+   campaign shot, the Animol Berlinale artwork, and every
+   recognizable-person image below (the documentary-presenter
+   portrait, the Ashley Walters portrait, the chef portrait) are
+   broadcast/brand properties or named-person likenesses, NOT
+   stock. Explicit rights confirmation is required for each before
+   anything ships. */
+
+/** @typedef {{ index: string, title: string[], desc: string, slug: string, tags: string[], workImg: string, tbc?: boolean }} WorkStub */
+
+/** @type {WorkStub[]} — TBC stubs, /work only (never on /landing). */
+export const WORK_EXTRAS = [
+  {
+    /* TBC — unidentified project. RIGHTS: recognizable public
+       figure (documentary presenter); press-photo class. */
+    index: '/00',
+    title: ['TBC'],
+    desc: 'Content to follow.',
+    slug: 'tbc-documentary',
+    tags: [], // TBC
+    workImg: wp(2),
+    tbc: true,
+  },
+  {
+    /* TBC — unidentified hospitality interior (possibly Pavilion
+       Club — Oscar to confirm; if so, fold into that entry). */
+    index: '/00',
+    title: ['TBC'],
+    desc: 'Content to follow.',
+    slug: 'tbc-hospitality',
+    tags: [], // TBC
+    workImg: wp(3),
+    tbc: true,
+  },
+  {
+    /* TBC — RIGHTS: named-person portrait (Ashley Walters). */
+    index: '/00',
+    title: ['TBC'],
+    desc: 'Content to follow.',
+    slug: 'tbc-ashley-walters',
+    tags: [], // TBC
+    workImg: wp(5),
+    tbc: true,
+  },
+  {
+    /* TBC — RIGHTS: recognizable chef portrait (possibly Yoxman-
+       related — Oscar to confirm). */
+    index: '/00',
+    title: ['TBC'],
+    desc: 'Content to follow.',
+    slug: 'tbc-chef',
+    tags: [], // TBC
+    workImg: wp(6),
+    tbc: true,
+  },
+  {
+    /* TBC — RIGHTS: adidas Spezial campaign photography (brand
+       property). */
+    index: '/00',
+    title: ['TBC'],
+    desc: 'Content to follow.',
+    slug: 'tbc-adidas-spezial',
+    tags: [], // TBC
+    workImg: wp(8),
+    tbc: true,
+  },
+];
+
+const bySlug = (slug) => {
+  const hit = [...FEATURED_CARDS, ...WORK_EXTRAS].find((c) => c.slug === slug);
+  if (!hit) throw new Error(`featured-work: unknown slug ${slug}`);
+  return hit;
+};
+
+/** The /work carousel, in the FILE'S order (Figma 27:3103 top to
+ *  bottom). Every entry must carry a workImg. */
+export const WORK_PROJECTS = [
+  'wilderness-reserve',
+  'tbc-documentary',
+  'tbc-hospitality',
+  'top-boy',
+  'tbc-ashley-walters',
+  'tbc-chef',
+  'adolescence',
+  'tbc-adidas-spezial',
+  'animol',
+].map(bySlug);

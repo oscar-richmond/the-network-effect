@@ -2128,6 +2128,7 @@
 	font-size: 14px;
 	color: var(--landing-accent-blue);
 	cursor: pointer;
+	text-decoration: none; /* it's an <a> now (-> /work) */
 }
 
 .landing-v2 .landing-featured__viewall img {
