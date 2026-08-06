@@ -185,6 +185,26 @@ export function initLandingAccess() {
   entryGroups.left.forEach((el) => { el.style.transform = 'translateY(100dvh)'; });
   entryGroups.right.forEach((el) => { el.style.transform = 'translateY(-100dvh)'; });
 
+  /* Oscar's rev: the flat 100dvh park left slivers in view on
+     arrival — the column tops overhang the viewport by construction
+     (colTops.left ~ -274, the right tail ~ +274 past its height at
+     1000dvh), so the left column's first image peeked at the
+     viewport bottom and the right column's last at the top. The
+     REAL park derives from the measured geometry: both columns
+     fully clear of the stage (24px pad), entering from their sides
+     on the same curve. Runs after measure() (init + resize) until
+     the entrance plays; the 100dvh inline park above stays as the
+     pre-measure guard. */
+  const parkOffscreen = () => {
+    const stageHv = stage.clientHeight || window.innerHeight;
+    const pad = 24;
+    const span = (n) => (n - 1) * PITCH + ITEM_H;
+    const offL = stageHv - colTops.left + pad;
+    const offR = -(colTops.right + span(items.right.length)) - pad;
+    entryGroups.left.forEach((el) => { el.style.transform = `translateY(${offL.toFixed(1)}px)`; });
+    entryGroups.right.forEach((el) => { el.style.transform = `translateY(${offR.toFixed(1)}px)`; });
+  };
+
   let entered = false;
   const playEntrance = () => {
     if (entered) return;
@@ -334,6 +354,7 @@ export function initLandingAccess() {
   };
 
   measure();
+  parkOffscreen();
   applyProgress(0);
 
   /* ── Pair snap, single-authority: after SNAP_IDLE_MS of scroll
@@ -462,6 +483,7 @@ export function initLandingAccess() {
 
   const onResize = () => {
     measure();
+    if (!entered) parkOffscreen();
     applyProgress(state.p);
   };
   window.addEventListener('resize', onResize);
