@@ -334,13 +334,53 @@ export function initLandingServices() {
       scale: SMALL_SCALE,
       duration: MORPH_PX,
     }, 0);
-    const exitTargets = [fromSpan, stopSpan, line2].filter((el) => el instanceof HTMLElement);
-    if (exitTargets.length) {
-      tl.to(exitTargets, {
-        opacity: 0,
-        filter: `blur(${MORPH_BLUR_PX}px)`,
-        duration: MORPH_PX * EXIT_END,
-      }, 0);
+    /* The exit text (". FROM" + line 2) leaves LEFT-TO-RIGHT per
+       char — the nav-entrance vocabulary, scrub-driven (Oscar's
+       rev): each char is its own blur/fade, staggered in reading
+       order across the same exit window. Chars are wrapped INSIDE
+       the reveal inners (safe descendants; kerning loss accepted —
+       the nav ripple's own trade). */
+    const charWrapText = (el) => {
+      const out = [];
+      if (!(el instanceof HTMLElement)) return out;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      let tn;
+      while ((tn = walker.nextNode())) textNodes.push(tn);
+      textNodes.forEach((node) => {
+        const frag = document.createDocumentFragment();
+        for (const ch of node.textContent ?? '') {
+          const s = document.createElement('span');
+          s.className = 'svc-exit-char';
+          s.style.whiteSpace = 'pre';
+          s.textContent = ch;
+          frag.appendChild(s);
+          out.push(s);
+        }
+        node.parentNode?.replaceChild(frag, node);
+      });
+      return out;
+    };
+    const exitChars = [
+      ...charWrapText(stopSpan),
+      ...charWrapText(fromSpan),
+      ...(line2 instanceof HTMLElement
+        ? Array.from(line2.querySelectorAll('.lr-inner')).flatMap((inn) => charWrapText(inn))
+        : []),
+    ];
+    if (exitChars.length) {
+      const EXIT_WINDOW_PX = MORPH_PX * EXIT_END;
+      const CHAR_SPAN_PX = 80;
+      tl.fromTo(exitChars,
+        { opacity: 1, filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          filter: `blur(${MORPH_BLUR_PX}px)`,
+          duration: CHAR_SPAN_PX,
+          ease: 'none',
+          immediateRender: false,
+          stagger: { each: (EXIT_WINDOW_PX - CHAR_SPAN_PX) / Math.max(exitChars.length - 1, 1) },
+        }, 0);
     }
     /* No resolve: the title simply IS the corner text once parked
        (the anchor stays hidden — it only supplies the FLIP target). */
@@ -404,6 +444,74 @@ export function initLandingServices() {
     tl.to(cards[2], {
       y: PARKED_Y[2], duration: BAND_SETTLE_PX, ease: 'power1.inOut', immediateRender: false,
     }, STACK_PX);
+
+    /* ROLL-OVER WIPES (Oscar's rev — the hero exit-wipe brought to
+       the stack): as an incoming card's top edge rides over the
+       card beneath, the covered card's lower column blurs out
+       piece by piece at the moment the edge reaches it — MORE INFO
+       first, then each list row bottom-up, then the list head. The
+       image and the secondary title stay (the surviving band; the
+       image is simply covered). Each wipe is a scrubbed fromTo
+       positioned at the DERIVED edge-crossing: the incoming rise
+       (power1.out from stageH) sampled against the covered card's
+       own slide — constructional sync, reversible like everything
+       else. Wipes ride opacity/filter; the riders' y tweens on the
+       same elements are separate properties, no conflict. */
+    const WIPE_LEAD_PX = 40;
+    const WIPE_SPAN_PX = 120;
+    const WIPE_BLUR_PX = 6;
+    const coverPairs = [
+      { covered: 0, incoming: 1, coveredFrom: FIRST_PARK_Y[0], coveredTo: FIRST_PARK_Y[0] },
+      { covered: 1, incoming: 2, coveredFrom: FIRST_PARK_Y[1], coveredTo: PARKED_Y[1] },
+    ];
+    coverPairs.forEach(({ covered, incoming, coveredFrom, coveredTo }) => {
+      const card = cards[covered];
+      if (!(card instanceof HTMLElement)) return;
+      const windowStart = CARD_START_PX + incoming * CARD_PX;
+      const cardRect = card.getBoundingClientRect();
+      const offsetBottom = (el) => el.getBoundingClientRect().bottom - cardRect.top;
+      /* Wipe units: MORE INFO, the list rows (lis grouped by row
+         across columns), the list head. */
+      const units = [];
+      const btn = card.querySelector('.landing-svc-card__btn');
+      if (btn instanceof HTMLElement) units.push({ els: [btn], bottom: offsetBottom(btn) });
+      const rowMap = new Map();
+      card.querySelectorAll('.landing-svc-card__col > li').forEach((li) => {
+        if (!(li instanceof HTMLElement)) return;
+        const b = offsetBottom(li);
+        const key = Math.round(b / 8);
+        if (!rowMap.has(key)) rowMap.set(key, { els: [], bottom: 0 });
+        const g = rowMap.get(key);
+        g.els.push(li);
+        g.bottom = Math.max(g.bottom, b);
+      });
+      units.push(...rowMap.values());
+      const listhead = card.querySelector('.landing-svc-card__listhead');
+      if (listhead instanceof HTMLElement) units.push({ els: [listhead], bottom: offsetBottom(listhead) });
+      /* Edge-crossing solve: incoming top vs unit bottom (+lead). */
+      const S = stageH();
+      const F = FIRST_PARK_Y[incoming];
+      const solveT = (bottom) => {
+        for (let k = 0; k <= 400; k += 1) {
+          const t = k / 400;
+          const yIn = S + (F - S) * (1 - (1 - t) * (1 - t));
+          const yCov = coveredFrom + (coveredTo - coveredFrom) * t;
+          if (yIn <= yCov + bottom + WIPE_LEAD_PX) return t;
+        }
+        return 1;
+      };
+      units.forEach(({ els, bottom }) => {
+        tl.fromTo(els,
+          { opacity: 1, filter: 'blur(0px)' },
+          {
+            opacity: 0,
+            filter: `blur(${WIPE_BLUR_PX}px)`,
+            duration: WIPE_SPAN_PX,
+            ease: 'none',
+            immediateRender: false,
+          }, windowStart + solveT(bottom) * CARD_PX);
+      });
+    });
 
     /* BEAT F — the departure (Oscar's rev): the whole assembly
        scrolls up and off at 1:1 after the settle. Cards ride their
