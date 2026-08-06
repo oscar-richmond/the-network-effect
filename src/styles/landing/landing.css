@@ -708,6 +708,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.landing-v2 .landing-closing {
+		margin-top: 0;
+	}
+
 	/* Static resting grey — no black state, no drain. */
 	.landing-v2 .landing-svc-card__divider-fill {
 		display: none;
@@ -1627,6 +1631,13 @@
 .landing-v2 .landing-closing {
 	position: relative;
 	z-index: 260;
+	/* Half-viewport overlap into the access section's trailing
+	   viewport (Oscar's rev — the gap between the sections halved):
+	   the closing rises over the emptying access stage during the
+	   exit's final stretch (later sibling at equal z paints above;
+	   both grounds light). */
+	margin-top: calc(-1 * 50vh);
+	margin-top: calc(-1 * 50dvh);
 	height: 1050px;
 	background: #eeeef0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -1966,6 +1977,7 @@
    this is the sensible direct-visit fallback: everything flows). */
 @media (max-width: 1023px) {
 	.landing-v2 .landing-closing {
+		margin-top: 0;
 		height: auto;
 		padding: 96px 24px 64px;
 	}
