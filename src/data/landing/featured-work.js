@@ -54,7 +54,9 @@ export const FEATURED_CARDS = [
     /* RIGHTS: see the named-person flag in the header. */
     index: '/03',
     title: ['PAVILION', 'CLUB'],
-    desc: 'Created and scaled a private membership programme across four clubs, connecting founders, CEOs and high-profile talent through cultural and business-led experiences.',
+    /* Trimmed one line ("high-profile" dropped) so "experiences."
+       isn't a widow (Oscar's rev). */
+    desc: 'Created and scaled a private membership programme across four clubs, connecting founders, CEOs and talent through cultural and business-led experiences.',
     img: { src: a(2), w: 723, h: 468, x: -165.93, y: -2 },
   },
   {
@@ -73,7 +75,9 @@ export const FEATURED_CARDS = [
   {
     index: '/06',
     title: ['YOXMAN FOOD', 'FESTIVAL'],
-    desc: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, guest journey, creative direction and luxury hospitality experience.',
+    /* Trimmed one line ("guest journey" dropped) so "experience."
+       isn't a widow (Oscar's rev). */
+    desc: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, creative direction and luxury hospitality experience.',
     img: { src: a(4), cover: true }, // Oscar-supplied final (2026-08-06)
   },
   {
