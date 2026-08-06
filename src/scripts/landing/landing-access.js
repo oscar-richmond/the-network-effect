@@ -46,8 +46,23 @@ const ITEM_H = 500;
 const PITCH = 524; // 500 image + 24 gap
 const STEPS = 5; // six pairs, five transitions
 const STEP_SCROLL_PX = 400; // scroll runway per pair transition
-const RUNWAY_PX = STEPS * STEP_SCROLL_PX;
+const RUNWAY_PX = STEPS * STEP_SCROLL_PX; // the pair travel (2000)
 const TRAVEL_PX = STEPS * PITCH;
+/* THE EXIT (Oscar's rev): after Corporate/Community land, both
+   columns ride up and out the top at 1:1 (one viewport of travel);
+   the words fade fast; the BOTTOM blur band holds then fades (radii
+   drained — the opacity-wrapper/backdrop-root lesson); the centre
+   headline holds until the bottom pair-images pass it on their way
+   up, then un-reveals (the reverse of FEATURED WORK's entrance),
+   re-revealing symmetrically on the way back down. */
+const EXIT_PX = 1000;
+const TOTAL_RUNWAY_PX = RUNWAY_PX + EXIT_PX; // 3000
+const EXIT_WORD_FADE_T = 0.15; // words gone by 15% of the exit
+const EXIT_BAND_FADE_START_T = 0.25;
+const EXIT_BAND_FADE_END_T = 0.65;
+/* Headline pass point: the centred images' bottom (centerY + 250)
+   crosses the headline block's top (centerY - 64). */
+const HEADLINE_PASS_T = (ITEM_H / 2 + 64) / EXIT_PX; // 0.314
 const CENTER_FRACTION = 0.5; // pair band dead-centre (Oscar's rev; file had 580/1029)
 /* No image dim (Oscar's rev 3): the old shader-alpha 0.6 + white wash
    read as CLOUDY, not like a Figma background blur — Figma keeps the
@@ -198,7 +213,25 @@ export function initLandingAccess() {
   };
 
   /* ── The single shared progress. Everything below is f(p). */
-  const state = { p: 0, leftVirtual: 0, rightVirtual: 0 };
+  const state = { p: 0, travelP: 0, exitT: 0, leftVirtual: 0, rightVirtual: 0 };
+
+  /* Exit-phase fixtures: the word layers, the bottom blur band's
+     layers + tint, and the headline un-reveal hooks (assigned after
+     the wrap, inside fonts.ready). */
+  const wordEls = ['left', 'right']
+    .map((s) => section.querySelector(`[data-access-word="${s}"]`))
+    .filter((el) => el instanceof HTMLElement);
+  const bottomBandLayers = Array.from(
+    section.querySelectorAll('.gradual-blur[data-gradual-blur-position="bottom"] [data-gradual-blur-layer]'),
+  );
+  const bottomBandBases = bottomBandLayers.map((l) => {
+    const m = /([\d.]+)rem/.exec(l.style.backdropFilter || '');
+    return m ? parseFloat(m[1]) : 0;
+  });
+  const bottomTint = section.querySelector('.landing-access__edge-tint--bottom');
+  let headlineHidden = false;
+  let hideHeadline = null;
+  let showHeadline = null;
 
   const updateSide = (side, translate) => {
     const top = colTops[side];
@@ -242,16 +275,46 @@ export function initLandingAccess() {
     wordTls.set(inner, tl);
   };
 
-  const applyProgress = (p) => {
-    state.p = p;
-    const y = p * TRAVEL_PX;
-    state.leftVirtual = y;
-    state.rightVirtual = -y;
-    gsap.set([cols.left, veilcols.left].filter(Boolean), { y: -y });
-    gsap.set([cols.right, veilcols.right].filter(Boolean), { y });
-    updateSide('left', -y);
-    updateSide('right', y);
-    const idx = Math.max(0, Math.min(Math.round(p * STEPS), STEPS));
+  const applyProgress = (rawP) => {
+    state.p = rawP;
+    const rel = rawP * TOTAL_RUNWAY_PX;
+    const travelP = Math.min(rel / RUNWAY_PX, 1);
+    const exitT = Math.max(0, (rel - RUNWAY_PX) / EXIT_PX);
+    state.travelP = travelP;
+    state.exitT = exitT;
+    const y = travelP * TRAVEL_PX;
+    const exitY = exitT * EXIT_PX;
+    /* Both columns ride UP together during the exit (the shader's
+       virtual feeds see the same rise, so both bow upward). */
+    state.leftVirtual = y + exitY;
+    state.rightVirtual = -y + exitY;
+    gsap.set([cols.left, veilcols.left].filter(Boolean), { y: -y - exitY });
+    gsap.set([cols.right, veilcols.right].filter(Boolean), { y: y - exitY });
+    updateSide('left', -y - exitY);
+    updateSide('right', y - exitY);
+    /* Words vanish fast as the exit begins (container opacity — the
+       entrance drives the INNER spans, no conflict). */
+    const wordAlpha = Math.max(0, 1 - exitT / EXIT_WORD_FADE_T);
+    wordEls.forEach((el) => { el.style.opacity = exitT > 0 ? wordAlpha.toFixed(3) : ''; });
+    /* Bottom band: holds, then fades (radii drained + tint). */
+    const bandT = Math.min(Math.max((exitT - EXIT_BAND_FADE_START_T) / (EXIT_BAND_FADE_END_T - EXIT_BAND_FADE_START_T), 0), 1);
+    bottomBandLayers.forEach((l, i) => {
+      const v = `blur(${(bottomBandBases[i] * (1 - bandT)).toFixed(3)}rem)`;
+      l.style.backdropFilter = v;
+      l.style.webkitBackdropFilter = v;
+    });
+    if (bottomTint instanceof HTMLElement) bottomTint.style.opacity = (1 - bandT).toFixed(3);
+    /* Headline: holds until the bottom images pass it, then
+       un-reveals (reverse of FEATURED WORK's entrance); symmetric
+       on the way back. */
+    if (exitT >= HEADLINE_PASS_T && !headlineHidden) {
+      headlineHidden = true;
+      hideHeadline?.();
+    } else if (exitT < HEADLINE_PASS_T && headlineHidden) {
+      headlineHidden = false;
+      showHeadline?.();
+    }
+    const idx = Math.max(0, Math.min(Math.round(travelP * STEPS), STEPS));
     if (idx !== wordIdx) {
       wordIdx = idx;
       swapWord(wordInners.left, PAIRS[idx][0]);
@@ -271,9 +334,10 @@ export function initLandingAccess() {
   let snapTimer = 0;
   let lastSnapTarget = null;
   const trySnap = () => {
-    const p = trigger.progress;
-    if (p <= 0.001 || p >= 0.999) return;
-    const target = trigger.start + (Math.round(p * STEPS) / STEPS) * RUNWAY_PX;
+    const rel = (window.scrollY || 0) - trigger.start;
+    /* Pairs only — the exit phase (rel > RUNWAY_PX) is free. */
+    if (rel <= 0.5 || rel >= RUNWAY_PX - 0.5) return;
+    const target = trigger.start + Math.round(rel / STEP_SCROLL_PX) * STEP_SCROLL_PX;
     if (Math.abs((window.scrollY || 0) - target) < 1) return;
     const lenis = getLenisInstance();
     if (!lenis) return;
@@ -287,7 +351,7 @@ export function initLandingAccess() {
   const trigger = ScrollTrigger.create({
     trigger: section,
     start: 'top top',
-    end: `+=${RUNWAY_PX}`,
+    end: `+=${TOTAL_RUNWAY_PX}`,
     scrub: true,
     onUpdate: (self) => {
       applyProgress(self.progress);
@@ -333,6 +397,35 @@ export function initLandingAccess() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapLineExact(line, i * LINE_STAGGER_S);
     });
+
+    /* Headline exit hooks (the network-exit pattern): un-reveal with
+       zeroed stagger delays — the reverse of FEATURED WORK's
+       entrance — and restore the delays on re-reveal. */
+    const hlDelays = new Map();
+    lines.forEach((line) => {
+      line.querySelectorAll('.lr-inner').forEach((inner) => {
+        hlDelays.set(inner, getComputedStyle(inner).transitionDelay);
+      });
+    });
+    hideHeadline = () => {
+      lines.forEach((line) => {
+        line.querySelectorAll('.lr-inner').forEach((inner) => {
+          inner.style.transitionDelay = '0s';
+        });
+        line.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
+          clip.classList.remove('lr-visible');
+        });
+      });
+    };
+    showHeadline = () => {
+      lines.forEach((line) => {
+        line.querySelectorAll('.lr-inner').forEach((inner) => {
+          inner.style.transitionDelay = hlDelays.get(inner) ?? '';
+        });
+        if (line instanceof HTMLElement) playLineRevealElement(line);
+      });
+    };
+
     revealTrigger = ScrollTrigger.create({
       trigger: section,
       start: 'top top',
