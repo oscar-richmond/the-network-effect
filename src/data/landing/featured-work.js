@@ -23,10 +23,10 @@
  * PENDING FOUNDER SIGN-OFF: all imagery is placeholder until
  * licensed finals.
  *
- * CARD-4 CROP CAVEAT (Oscar-accepted): the Yoxman asset came via a
- * trimmed node export (its direct asset URL failed), so it renders
- * as a cover fit rather than the file's exact crop — if it reads
- * wrong, re-source the asset rather than fighting the fit.
+ * Cards /04 and /05 carry OSCAR-SUPPLIED images (2026-08-06),
+ * replacing the file exports (and retiring the old card-4 trimmed-
+ * export caveat) — cover-fit, sRGB-converted. Still pending formal
+ * founder sign-off like all imagery.
  */
 import { asset } from '../../utils/asset.js';
 
@@ -60,13 +60,13 @@ export const FEATURED_CARDS = [
     index: '/04',
     title: ['YOXMAN FOOD', 'FESTIVAL'],
     desc: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, guest journey, creative direction and luxury hospitality experience.',
-    img: { src: a(4), cover: true }, // see the card-4 caveat above
+    img: { src: a(4), cover: true }, // Oscar-supplied final (2026-08-06)
   },
   {
     index: '/05', // file said /04 — corrected
     title: ['THUNDER', 'AVIATION'],
     desc: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
-    img: { src: a(5), w: 719, h: 465, x: -40.73, y: 0 },
+    img: { src: a(5), cover: true }, // Oscar-supplied final (2026-08-06; old crop numbers retired with the old asset)
   },
   /* ═══ PLACEHOLDER SLOTS /06-/08 — Oscar's content to follow. ═══ */
   {
