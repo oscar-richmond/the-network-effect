@@ -25,6 +25,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import gsap from 'gsap';
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
+import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -43,7 +44,6 @@ const BOTTOM_SNAP_IDLE_MS = 2000;
 const SNAP_ZONE_TILE_BOTTOM_PX = 150; // 450px tiles, 2/3 off the top
 const BOTTOM_EPSILON_PX = 2;
 const NAV_SHOW_HYSTERESIS_PX = 64;
-const NAV_CHAR_STAGGER_S = 0.03;
 const TILE_STAGGER_MS = 100;
 const TILES_AT_MS = 200;
 const KEYWORDS_AT_MS = 600;
@@ -75,45 +75,10 @@ export function initLandingClosing() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── Nav-at-bottom + auto-snap (all modes; RM = instant toggle,
-     no auto-snap). */
-  const navParts = [
-    document.querySelector('[data-menu-label-menu]'),
-    document.querySelector('.home__logo'),
-    document.querySelector('.home__topbar-email'),
-  ].filter((el) => el instanceof HTMLElement);
+     no auto-snap). Char wrap + sweep applier are shared with the
+     load entrance (nav-motion.js). */
   const menuToggle = document.querySelector('[data-menu-toggle]');
-
-  /* The logo has no ripple chars — wrap it once at init (the ripple
-     wrapper's shape: sr-text + aria-hidden char box; same kerning
-     class as every rippled label). */
-  const logo = document.querySelector('.home__logo');
-  if (logo instanceof HTMLElement && !logo.querySelector('.cr-char')) {
-    const text = logo.textContent;
-    logo.textContent = '';
-    const sr = document.createElement('span');
-    sr.className = 'sr-only';
-    sr.textContent = text;
-    sr.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)';
-    const box = document.createElement('span');
-    box.setAttribute('aria-hidden', 'true');
-    for (const ch of text) {
-      const s = document.createElement('span');
-      s.className = 'cr-char';
-      s.textContent = ch === ' ' ? '\u00A0' : ch;
-      box.appendChild(s);
-    }
-    logo.append(sr, box);
-  }
-
-  /* Sweep unit list per nav part: its chars (plus a trailing arrow
-     where present), else the element itself. */
-  const sweepUnits = (part) => {
-    const chars = Array.from(part.querySelectorAll('.cr-char'));
-    const arrow = part.querySelector('[data-char-ripple-arrow]');
-    const units = chars.length ? chars : [part];
-    if (arrow) units.push(arrow);
-    return units;
-  };
+  ensureLogoChars();
 
   let navHidden = false;
   const setNav = (hidden) => {
@@ -121,24 +86,7 @@ export function initLandingClosing() {
     /* Never strand an open menu without its toggle. */
     if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
     navHidden = hidden;
-    navParts.forEach((part) => {
-      part.style.pointerEvents = hidden ? 'none' : '';
-      const units = sweepUnits(part);
-      const n = units.length;
-      units.forEach((u, i) => {
-        if (reduced) {
-          u.style.opacity = hidden ? '0' : '';
-          return;
-        }
-        u.classList.remove('nav-char-out', 'nav-char-in');
-        void u.offsetWidth;
-        /* Exit sweeps right-to-left (the hover reversed), entry
-           left-to-right (the hover's own direction). */
-        u.style.animationDelay = `${((hidden ? n - 1 - i : i) * NAV_CHAR_STAGGER_S).toFixed(2)}s`;
-        u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
-      });
-    });
-    if (menuToggle instanceof HTMLElement) menuToggle.style.pointerEvents = hidden ? 'none' : '';
+    applyNavSweep(hidden, { reduced });
   };
 
   const maxScroll = () =>

@@ -143,6 +143,7 @@ import '../styles/fonts.css';
   import { initLandingFeatured } from '../scripts/landing/landing-featured.js';
   import { initLandingAccess } from '../scripts/landing/landing-access.js';
   import { initLandingClosing } from '../scripts/landing/landing-closing.js';
+  import { initNavEntrance } from '../scripts/landing/nav-motion.js';
 
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();
@@ -152,6 +153,7 @@ import '../styles/fonts.css';
   let cleanupLandingFeatured = initLandingFeatured();
   let cleanupLandingAccess = initLandingAccess();
   let cleanupLandingClosing = initLandingClosing();
+  let cleanupNavEntrance = initNavEntrance();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupLandingHero();
@@ -162,6 +164,7 @@ import '../styles/fonts.css';
     cleanupLandingFeatured();
     cleanupLandingAccess();
     cleanupLandingClosing();
+    cleanupNavEntrance();
   });
 
   document.addEventListener('astro:after-swap', () => {
@@ -173,5 +176,6 @@ import '../styles/fonts.css';
     cleanupLandingFeatured = initLandingFeatured();
     cleanupLandingAccess = initLandingAccess();
     cleanupLandingClosing = initLandingClosing();
+    cleanupNavEntrance = initNavEntrance();
   });
 </script>
