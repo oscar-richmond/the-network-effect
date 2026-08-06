@@ -2303,3 +2303,33 @@
 	.landing-v2 .landing-featured__titleblock { position: static; transform: none; margin-top: 16px; }
 	.landing-v2 .landing-featured__desc { position: static; margin-top: 8px; width: auto; }
 }
+
+/* ── Nav-at-bottom sweeps (landing-closing.js): the menu hover's
+   char-blur vocabulary — exit blurs out right-to-left, entry blurs
+   back in left-to-right. Filters live on the chars (descendants of
+   the difference elements — the safe shape). */
+@keyframes cr-nav-out {
+	to {
+		opacity: 0;
+		filter: blur(3px);
+	}
+}
+
+@keyframes cr-nav-in {
+	from {
+		opacity: 0;
+		filter: blur(3px);
+	}
+	to {
+		opacity: 1;
+		filter: blur(0);
+	}
+}
+
+.landing-v2 .nav-char-out {
+	animation: cr-nav-out 0.3s ease-in forwards;
+}
+
+.landing-v2 .nav-char-in {
+	animation: cr-nav-in 0.45s ease-out both;
+}

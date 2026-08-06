@@ -29,6 +29,21 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 gsap.registerPlugin(ScrollTrigger);
 
 const LINE_STAGGER_S = 0.12;
+/* Bottom-of-page behaviours (Oscar's rev):
+   1. AUTO-SNAP: if the user stops scrolling (2s idle) with the
+      closing tiles at least 2/3 off the top of the viewport (or any
+      further down), and the last movement was DOWNWARD, glide to
+      the very bottom (the footer's full reveal) through Lenis.
+   2. NAV EXIT: every time the page rests at the bottom, MENU / the
+      logo / LET'S CHAT ripple OUT (per-char blur, right-to-left —
+      the menu hover effect reversed) and ripple back in when
+      scrolling up. The logo gets the same char wrap at init (MENU
+      and LET'S CHAT already carry ripple chars). */
+const BOTTOM_SNAP_IDLE_MS = 2000;
+const SNAP_ZONE_TILE_BOTTOM_PX = 150; // 450px tiles, 2/3 off the top
+const BOTTOM_EPSILON_PX = 2;
+const NAV_SHOW_HYSTERESIS_PX = 64;
+const NAV_CHAR_STAGGER_S = 0.03;
 const TILE_STAGGER_MS = 100;
 const TILES_AT_MS = 200;
 const KEYWORDS_AT_MS = 600;
@@ -57,11 +72,119 @@ export function initLandingClosing() {
   };
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
 
-  const cleanupBase = () => {
-    topLinks.forEach((el) => el.removeEventListener('click', onTopClick));
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Nav-at-bottom + auto-snap (all modes; RM = instant toggle,
+     no auto-snap). */
+  const navParts = [
+    document.querySelector('[data-menu-label-menu]'),
+    document.querySelector('.home__logo'),
+    document.querySelector('.home__topbar-email'),
+  ].filter((el) => el instanceof HTMLElement);
+  const menuToggle = document.querySelector('[data-menu-toggle]');
+
+  /* The logo has no ripple chars — wrap it once at init (the ripple
+     wrapper's shape: sr-text + aria-hidden char box; same kerning
+     class as every rippled label). */
+  const logo = document.querySelector('.home__logo');
+  if (logo instanceof HTMLElement && !logo.querySelector('.cr-char')) {
+    const text = logo.textContent;
+    logo.textContent = '';
+    const sr = document.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = text;
+    sr.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)';
+    const box = document.createElement('span');
+    box.setAttribute('aria-hidden', 'true');
+    for (const ch of text) {
+      const s = document.createElement('span');
+      s.className = 'cr-char';
+      s.textContent = ch === ' ' ? '\u00A0' : ch;
+      box.appendChild(s);
+    }
+    logo.append(sr, box);
+  }
+
+  /* Sweep unit list per nav part: its chars (plus a trailing arrow
+     where present), else the element itself. */
+  const sweepUnits = (part) => {
+    const chars = Array.from(part.querySelectorAll('.cr-char'));
+    const arrow = part.querySelector('[data-char-ripple-arrow]');
+    const units = chars.length ? chars : [part];
+    if (arrow) units.push(arrow);
+    return units;
   };
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  let navHidden = false;
+  const setNav = (hidden) => {
+    if (navHidden === hidden) return;
+    /* Never strand an open menu without its toggle. */
+    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
+    navHidden = hidden;
+    navParts.forEach((part) => {
+      part.style.pointerEvents = hidden ? 'none' : '';
+      const units = sweepUnits(part);
+      const n = units.length;
+      units.forEach((u, i) => {
+        if (reduced) {
+          u.style.opacity = hidden ? '0' : '';
+          return;
+        }
+        u.classList.remove('nav-char-out', 'nav-char-in');
+        void u.offsetWidth;
+        /* Exit sweeps right-to-left (the hover reversed), entry
+           left-to-right (the hover's own direction). */
+        u.style.animationDelay = `${((hidden ? n - 1 - i : i) * NAV_CHAR_STAGGER_S).toFixed(2)}s`;
+        u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
+      });
+    });
+    if (menuToggle instanceof HTMLElement) menuToggle.style.pointerEvents = hidden ? 'none' : '';
+  };
+
+  const maxScroll = () =>
+    (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
+
+  let snapTimer = 0;
+  let lastScrollY = window.scrollY || 0;
+  let lastDirDown = false;
+  const tileEl = closing.querySelector('[data-closing-tile]');
+
+  const inSnapZone = () => {
+    if (!(tileEl instanceof HTMLElement)) return false;
+    return tileEl.getBoundingClientRect().bottom <= SNAP_ZONE_TILE_BOTTOM_PX;
+  };
+
+  const trySnapToBottom = () => {
+    if (reduced) return;
+    const y = window.scrollY || 0;
+    if (!lastDirDown || !inSnapZone()) return;
+    if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
+    const lenis = getLenisInstance();
+    if (lenis) {
+      lenis.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    }
+  };
+
+  const onScroll = () => {
+    const y = window.scrollY || 0;
+    if (y !== lastScrollY) {
+      lastDirDown = y > lastScrollY;
+      lastScrollY = y;
+    }
+    if (y >= maxScroll() - BOTTOM_EPSILON_PX) setNav(true);
+    else if (y < maxScroll() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const cleanupBase = () => {
+    topLinks.forEach((el) => el.removeEventListener('click', onTopClick));
+    window.removeEventListener('scroll', onScroll);
+    window.clearTimeout(snapTimer);
+  };
+
+  if (reduced) {
     return cleanupBase;
   }
 
