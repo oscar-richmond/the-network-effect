@@ -420,6 +420,12 @@ export function createAccessWave(stage, canvas, sides, getPositions) {
     const canvasRect = canvas.getBoundingClientRect();
 
     itemStates.forEach((state) => {
+      /* Hidden frames (the access exit's right-column tail) paint
+         nothing — the DOM visibility toggle must bind the plane too. */
+      if (state.frameEl.style.visibility === 'hidden') {
+        if (state.plane) state.plane.mesh.visible = false;
+        return;
+      }
       const rect = state.frameEl.getBoundingClientRect();
       const near = isNear(rect);
       if (near) mount(state);

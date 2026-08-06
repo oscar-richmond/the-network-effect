@@ -55,8 +55,12 @@ const TRAVEL_PX = STEPS * PITCH;
    headline holds until the bottom pair-images pass it on their way
    up, then un-reveals (the reverse of FEATURED WORK's entrance),
    re-revealing symmetrically on the way back down. */
-const EXIT_PX = 1000;
-const TOTAL_RUNWAY_PX = RUNWAY_PX + EXIT_PX; // 3000
+/* Exit distance = exactly what the VISIBLE images need to clear the
+   top (the below-partial's bottom: centerY + 250 + 524 = 1274 at the
+   1000 design viewport) — the section releases the moment they're
+   gone, no dead tail (Oscar's rev 2). */
+const EXIT_PX = 1274;
+const TOTAL_RUNWAY_PX = RUNWAY_PX + EXIT_PX; // 3274
 const EXIT_WORD_FADE_T = 0.15; // words gone by 15% of the exit
 const EXIT_BAND_FADE_START_T = 0.25;
 const EXIT_BAND_FADE_END_T = 0.65;
@@ -232,6 +236,21 @@ export function initLandingAccess() {
   let headlineHidden = false;
   let hideHeadline = null;
   let showHeadline = null;
+  /* The right column's below-viewport tail (indices 3+ at p=1 — the
+     items hanging under the centred pair after its downward travel).
+     Hidden the instant the exit begins (they're offscreen then, so
+     the toggle is invisible) so only the three in-view images are
+     seen leaving; restored at exit zero. Their veils and GL planes
+     follow (access-wave skips hidden frames). */
+  let tailHidden = false;
+  const rightTail = [
+    ...items.right.slice(3),
+    ...veils.right.slice(3),
+  ].filter((el) => el instanceof HTMLElement);
+  const setTailHidden = (hidden) => {
+    tailHidden = hidden;
+    rightTail.forEach((el) => { el.style.visibility = hidden ? 'hidden' : ''; });
+  };
 
   const updateSide = (side, translate) => {
     const top = colTops[side];
@@ -292,6 +311,8 @@ export function initLandingAccess() {
     gsap.set([cols.right, veilcols.right].filter(Boolean), { y: y - exitY });
     updateSide('left', -y - exitY);
     updateSide('right', y - exitY);
+    if (exitT > 0 && !tailHidden) setTailHidden(true);
+    else if (exitT === 0 && tailHidden) setTailHidden(false);
     /* Words vanish fast as the exit begins (container opacity — the
        entrance drives the INNER spans, no conflict). */
     const wordAlpha = Math.max(0, 1 - exitT / EXIT_WORD_FADE_T);

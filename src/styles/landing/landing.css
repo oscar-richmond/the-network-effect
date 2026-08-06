@@ -1415,10 +1415,11 @@
 	   (founders track, outro, network all do). Without this the held
 	   full-screen video paints over the whole section. */
 	z-index: 260;
-	/* 2000 pair travel + 1000 exit (both columns ride out the top,
-	   the bottom band fades, the headline un-reveals as the images
-	   pass it — landing-access.js). */
-	height: calc(100dvh + 3000px);
+	/* 2000 pair travel + 1274 exit (both columns ride out the top —
+	   only the in-view images, the right tail hides; the bottom band
+	   fades; the headline un-reveals as the images pass it —
+	   landing-access.js). */
+	height: calc(100dvh + 3274px);
 	background: #eeeef0;
 }
 
