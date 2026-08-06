@@ -57,7 +57,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -211,7 +211,7 @@ export function initLandingServices() {
     const lines = [line1, line2].filter((el) => el instanceof HTMLElement);
     lines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineRevealElement(line);
+      wrapWordRevealElement(line);
     });
 
     const serrifSpan = line1?.querySelector('.landing-services__serrif');

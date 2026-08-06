@@ -36,7 +36,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { createAccessWave } from './access-wave.js';
 
@@ -112,20 +112,6 @@ const PAIRS = [
  *  pair-1 (rest-centred) item in each 8-item stack. */
 const PRIME_LEFT = 1;
 const PRIME_RIGHT = 6;
-
-/** Child-preserving exact line wrap — the established pattern for
- *  mixed-face lines (services/network): clip + inner, children MOVED
- *  so the face spans survive. */
-function wrapLineExact(el, delaySeconds) {
-  const clip = document.createElement('span');
-  clip.className = 'lr-clip';
-  const inner = document.createElement('span');
-  inner.className = 'lr-inner';
-  inner.style.transition = `transform 1.2s cubic-bezier(0.42,0,0.24,1) ${delaySeconds.toFixed(2)}s`;
-  while (el.firstChild) inner.appendChild(el.firstChild);
-  clip.appendChild(inner);
-  el.appendChild(clip);
-}
 
 export function initLandingAccess() {
   const section = document.querySelector('[data-landing-access]');
@@ -420,7 +406,7 @@ export function initLandingAccess() {
     lines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineExact(line, i * LINE_STAGGER_S);
+      wrapWordRevealElement(line);
     });
 
     /* Headline exit hooks (the network-exit pattern): un-reveal with

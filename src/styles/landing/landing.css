@@ -1762,6 +1762,11 @@
    (28px caps ~3.5 into box, 10px caps ~1.3; margin-top 2 lines the
    cap tops up). */
 .landing-v2 .landing-closing__kw-index {
+	/* display:block keeps the cap-top margin working inside the word
+	   reveal's clip/inner (an inline span would baseline-sit in the
+	   row's 28px line box and ignore margin-top); identical unwrapped
+	   — flex items are blockified anyway. */
+	display: block;
 	font-weight: 600;
 	font-size: 10px;
 	line-height: 10px;
@@ -1963,30 +1968,20 @@
 
 /* ── Entrance hidden states (no-preference only) ────────────────── */
 @media (prefers-reduced-motion: no-preference) {
-	.landing-v2 .landing-closing__intro,
+	/* MEDIA only (Oscar's rev): every TEXT entrance is the word-by-
+	   word clip reveal now (hidden by the clip mechanism itself, no
+	   fade state needed) — the rise+fade remains for the closing
+	   tiles and the footer image. */
 	.landing-v2 .landing-closing__tile,
-	.landing-v2 .landing-closing__kw,
-	.landing-v2 .landing-footer__col,
-	.landing-v2 .landing-footer__start,
-	.landing-v2 .landing-footer__img,
-	.landing-v2 .landing-footer__row {
+	.landing-v2 .landing-footer__img {
 		opacity: 0;
 		transform: translateY(24px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
 			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	/* The intro sits beside the difference headline but is NOT an
-	   ancestor of it — its own opacity/transform are blend-safe. */
-	.landing-v2 .landing-closing__intro { transform: none; }
-
-	.landing-v2 .landing-closing__intro.is-visible,
 	.landing-v2 .landing-closing__tile.is-visible,
-	.landing-v2 .landing-closing__kw.is-visible,
-	.landing-v2 .landing-footer__col.is-visible,
-	.landing-v2 .landing-footer__start.is-visible,
-	.landing-v2 .landing-footer__img.is-visible,
-	.landing-v2 .landing-footer__row.is-visible {
+	.landing-v2 .landing-footer__img.is-visible {
 		opacity: 1;
 		transform: none;
 	}

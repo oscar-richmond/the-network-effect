@@ -149,6 +149,7 @@ function ensureLineRevealStyles() {
   css.id = 'line-reveal-styles';
   css.textContent = `
     .lr-clip { overflow: hidden; display: block; }
+    .lr-clip--word { display: inline-block; vertical-align: top; }
     .lr-inner {
       display: block;
       transform: translateY(110%);
@@ -193,6 +194,85 @@ export function playLineRevealElement(el) {
 export function wrapLineRevealElement(el) {
   ensureLineRevealStyles();
   return revealElement(el);
+}
+
+/**
+ * WORD-level reveal wrap (the landing pages' entrance): each word —
+ * or whole child ELEMENT (kept intact: face spans, term buttons,
+ * spacers all survive as live nodes) — gets its own inline
+ * clip/inner pair, staggered left-to-right within its laid-out line
+ * (wordStagger) and line by line (lineStagger), on the same clip
+ * slide the line reveal uses. Source whitespace is tracked exactly
+ * (a space is emitted between units only where the source had one —
+ * compact markup and white-space:pre content stay byte-faithful).
+ * playLineRevealElement drives it unchanged (`:scope > .lr-clip`),
+ * and .lr-inner-based exit machinery (delay maps, un-reveals)
+ * generalises to the word inners automatically.
+ *
+ * @param {HTMLElement} el
+ * @param {{ baseDelay?: number, wordStagger?: number, lineStagger?: number }} [opts]
+ */
+export function wrapWordRevealElement(el, opts = {}) {
+  ensureLineRevealStyles();
+  const base = parseFloat(el.dataset.revealDelay ?? '') || opts.baseDelay || 0;
+  const wordStagger = opts.wordStagger ?? 0.04;
+  const lineStagger = opts.lineStagger ?? 0.12;
+
+  /* Whitespace runs are carried VERBATIM (`spaceBefore` is the exact
+     source string — double spaces and NBSPs survive; the network
+     sector list's authored spacing depends on this). */
+  /** @type {{ word?: string, node?: Node, spaceBefore: string }[]} */
+  const atoms = [];
+  let pendingSpace = '';
+  Array.from(el.childNodes).forEach((n) => {
+    if (n.nodeType === Node.TEXT_NODE) {
+      (n.textContent || '').split(/(\s+)/).forEach((part) => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) pendingSpace += part;
+        else {
+          atoms.push({ word: part, spaceBefore: pendingSpace });
+          pendingSpace = '';
+        }
+      });
+    } else if (n.nodeType === Node.ELEMENT_NODE) {
+      atoms.push({ node: n, spaceBefore: pendingSpace });
+      pendingSpace = '';
+    }
+  });
+  if (!atoms.length) return null;
+
+  el.textContent = '';
+  const units = atoms.map((a, i) => {
+    if (a.spaceBefore && i > 0) el.appendChild(document.createTextNode(a.spaceBefore));
+    const clip = createClip('lr-clip lr-clip--word');
+    const inner = createClip('lr-inner');
+    if (a.node) inner.appendChild(a.node);
+    else inner.textContent = a.word ?? '';
+    clip.appendChild(inner);
+    el.appendChild(clip);
+    return clip;
+  });
+
+  /* Line grouping from real layout, then per-unit delays. */
+  let lineIdx = 0;
+  let wordIdx = 0;
+  let lastTop = null;
+  units.forEach((clip) => {
+    const top = clip.offsetTop;
+    if (lastTop === null) lastTop = top;
+    else if (Math.abs(top - lastTop) > 3) {
+      lineIdx += 1;
+      wordIdx = 0;
+      lastTop = top;
+    }
+    const inner = clip.firstChild;
+    if (inner instanceof HTMLElement) {
+      inner.style.transition = `transform 1.2s cubic-bezier(0.42,0,0.24,1) ${(base + lineIdx * lineStagger + wordIdx * wordStagger).toFixed(2)}s`;
+    }
+    wordIdx += 1;
+  });
+
+  return el;
 }
 
 /**

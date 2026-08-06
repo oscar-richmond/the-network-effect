@@ -3,16 +3,17 @@
  * once-only scrolled-into-view reveals (no scrub), per the page's
  * entrance conventions.
  *
- * CLOSING (trigger 'top 65%'): headline line-reveals in reading
- * order (the established clip mechanism — it animates the blend
- * lines' DESCENDANTS, never wraps them in moving ancestors); the
- * intro paragraph blur-fades in behind; the tiles rise+fade
- * left-to-right on a 100ms stagger; the keyword blocks (word +
- * index + line) follow as a second wave.
+ * CLOSING (trigger 'top 65%'): headline WORD-reveals in reading
+ * order (the shared word-by-word clip mechanism — it animates the
+ * blend lines' DESCENDANTS, never wraps them in moving ancestors);
+ * the intro and the keyword blocks word-reveal on the old wave's
+ * base delays; the tiles (media) keep the rise+fade left-to-right
+ * on a 100ms stagger.
  *
- * FOOTER (trigger 'top 75%'): index columns stagger-fade, the image
- * reveals, the big statement line-reveals (two staggered lines),
- * the bottom row fades last.
+ * FOOTER (trigger ~200px into the reveal): index-column and
+ * bottom-row TEXT word-reveals on the old stagger timings, the
+ * image rise+fades, the big statement word-reveals (staggered
+ * lines).
  *
  * BACK TO TOP + HOME: smooth scroll to the page top THROUGH Lenis
  * (the page's one scroll authority — the access-snap precedent).
@@ -23,7 +24,7 @@
  */
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import gsap from 'gsap';
-import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
@@ -145,7 +146,6 @@ export function initLandingClosing() {
   const footerCols = Array.from(footer.querySelectorAll('[data-footer-col]'));
   const footerImg = footer.querySelector('[data-footer-img]');
   const stLines = Array.from(footer.querySelectorAll('[data-footer-st-line]'));
-  const footerRow = footer.querySelector('[data-footer-row]');
 
   const timeouts = [];
   const triggers = [];
@@ -158,11 +158,58 @@ export function initLandingClosing() {
     /* Wrap AFTER fonts (line grouping), BEFORE the triggers. */
     closingLines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineRevealElement(line);
+      wrapWordRevealElement(line);
     });
     stLines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineRevealElement(line);
+      wrapWordRevealElement(line);
+    });
+
+    /* Word reveals replace the block fades (Oscar's rev: every text
+       entrance is the word-by-word clip reveal): the intro, the
+       keyword blocks and the footer's index/row text. Only media —
+       tiles, the footer image — keeps the rise+fade. Base delays
+       reproduce the old wave timings; each element's lines then step
+       internally at LINE_STAGGER_S. */
+    const closingWordEls = [];
+    const footerWordEls = [];
+    if (intro instanceof HTMLElement) {
+      wrapWordRevealElement(intro, { baseDelay: INTRO_AT_MS / 1000 });
+      closingWordEls.push(intro);
+    }
+    kws.forEach((kw, i) => {
+      const base = (KEYWORDS_AT_MS + i * KEYWORD_STAGGER_MS) / 1000;
+      const row = kw.querySelector('.landing-closing__kw-row');
+      const kwLine = kw.querySelector('.landing-closing__kw-line');
+      if (row instanceof HTMLElement) {
+        wrapWordRevealElement(row, { baseDelay: base });
+        closingWordEls.push(row);
+      }
+      if (kwLine instanceof HTMLElement) {
+        wrapWordRevealElement(kwLine, { baseDelay: base + LINE_STAGGER_S });
+        closingWordEls.push(kwLine);
+      }
+    });
+    footerCols.forEach((col, i) => {
+      const base = (i * FOOTER_COL_STAGGER_MS) / 1000;
+      if (col.matches('a, button')) {
+        /* START A PROJECT — a single control: its label + arrow
+           sweep as that element's own units. */
+        wrapWordRevealElement(col, { baseDelay: base });
+        footerWordEls.push(col);
+      } else {
+        Array.from(col.children).forEach((child, j) => {
+          if (!(child instanceof HTMLElement)) return;
+          wrapWordRevealElement(child, { baseDelay: base + j * 0.06 });
+          footerWordEls.push(child);
+        });
+      }
+    });
+    const rowItems = Array.from(footer.querySelectorAll('.landing-footer__rowitem'));
+    rowItems.forEach((item, i) => {
+      if (!(item instanceof HTMLElement)) return;
+      wrapWordRevealElement(item, { baseDelay: FOOTER_ROW_AT_MS / 1000 + i * 0.04 });
+      footerWordEls.push(item);
     });
 
     triggers.push(ScrollTrigger.create({
@@ -171,14 +218,9 @@ export function initLandingClosing() {
       once: true,
       onEnter: () => {
         closingLines.forEach((line) => playLineRevealElement(line));
-        timeouts.push(setTimeout(() => {
-          if (intro) intro.classList.add('is-visible');
-        }, INTRO_AT_MS));
+        closingWordEls.forEach((el) => playLineRevealElement(el));
         tiles.forEach((tile, i) => {
           timeouts.push(setTimeout(() => tile.classList.add('is-visible'), TILES_AT_MS + i * TILE_STAGGER_MS));
-        });
-        kws.forEach((kw, i) => {
-          timeouts.push(setTimeout(() => kw.classList.add('is-visible'), KEYWORDS_AT_MS + i * KEYWORD_STAGGER_MS));
         });
       },
     }));
@@ -193,16 +235,11 @@ export function initLandingClosing() {
       start: () => `top ${(window.innerHeight - 811 - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {
-        footerCols.forEach((col, i) => {
-          timeouts.push(setTimeout(() => col.classList.add('is-visible'), i * FOOTER_COL_STAGGER_MS));
-        });
+        footerWordEls.forEach((el) => playLineRevealElement(el));
         timeouts.push(setTimeout(() => {
           if (footerImg) footerImg.classList.add('is-visible');
         }, FOOTER_IMG_AT_MS));
         stLines.forEach((line) => playLineRevealElement(line));
-        timeouts.push(setTimeout(() => {
-          if (footerRow) footerRow.classList.add('is-visible');
-        }, FOOTER_ROW_AT_MS));
       },
     }));
   });

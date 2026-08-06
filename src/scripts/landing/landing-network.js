@@ -10,7 +10,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { NETWORK_BRAND_SETS } from '../../data/landing/network-brands.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -58,29 +58,6 @@ function shuffled(set) {
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
-}
-
-/**
- * Exact-text line wrap: the shared wrapLineRevealElement splits a
- * line into words and rejoins them SINGLE-spaced — which destroys
- * the sector list's authored double spaces around its slashes
- * (NBSPs die too: the splitter treats them as whitespace). These are
- * single nowrap lines, so word-level splitting buys nothing — this
- * builds the same clip/inner structure around the line's exact text.
- * playLineRevealElement drives it identically.
- */
-function wrapLineExact(el, delaySeconds) {
-  const clip = document.createElement('span');
-  clip.className = 'lr-clip';
-  const inner = document.createElement('span');
-  inner.className = 'lr-inner';
-  inner.style.transition = `transform 1.2s cubic-bezier(0.42,0,0.24,1) ${delaySeconds.toFixed(2)}s`;
-  /* MOVE the children (term buttons, separators, text nodes) rather
-     than flattening to text — preserves both the interactive
-     structure and every authored space. */
-  while (el.firstChild) inner.appendChild(el.firstChild);
-  clip.appendChild(inner);
-  el.appendChild(clip);
 }
 
 /** Builds one cell's DOM for a brand entry (mirrors the Astro markup). */
@@ -303,11 +280,10 @@ export function initLandingNetwork() {
     lines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      if (line.closest('.landing-network__body')) {
-        wrapLineExact(line, i * LINE_STAGGER_S);
-      } else {
-        wrapLineRevealElement(line);
-      }
+      /* Shared word reveal for every line — the sector lists' term
+         buttons ride as whole atoms and the authored double-spaced
+         separators survive (the wrap carries whitespace verbatim). */
+      wrapWordRevealElement(line);
     });
 
     /* The synchronized entrance, at the pin (the black moment): text

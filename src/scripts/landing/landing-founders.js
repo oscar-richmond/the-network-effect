@@ -18,7 +18,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -243,7 +243,7 @@ export function initLandingFounders() {
     lines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineRevealElement(line);
+      wrapWordRevealElement(line);
     });
 
     const play = () => {

@@ -34,7 +34,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -211,7 +211,7 @@ export function initLandingFeatured() {
     place();
     lines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineRevealElement(line);
+      wrapWordRevealElement(line);
     });
     revealTrigger = ScrollTrigger.create({
       trigger: section,
