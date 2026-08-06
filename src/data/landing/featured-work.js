@@ -1,11 +1,10 @@
 /**
  * FEATURED WORK — card content (Figma 22:3021, extracted 2026-08-06).
  *
- * Cards /01-/05 are the file's own; /06-/08 are PLACEHOLDER SLOTS —
- * Oscar's content to follow as a data-only edit here (title lines,
- * description, image + crop). Image crops are window-relative
- * (405.93 x 465 windows); `cover: true` = object-fit cover instead
- * of an exact crop.
+ * Cards /01-/05 are the file's own (several images since replaced
+ * by Oscar-supplied finals); /06-/08 are Oscar's content drop.
+ * Image crops are window-relative; `cover: true` = object-fit
+ * cover instead of an exact crop.
  *
  * FILE FIXES (Oscar-approved):
  * - Thunder Aviation's index read /04 in the file — corrected /05.
@@ -31,7 +30,6 @@
 import { asset } from '../../utils/asset.js';
 
 const a = (n) => asset(`/assets/landing/featured/work-${n}.jpg`);
-const pool = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 
 /** @typedef {{ index: string, title: string[], desc: string, img: { src: string, w?: number, h?: number, x?: number, y?: number, cover?: boolean } }} FeaturedCard */
 
@@ -68,23 +66,29 @@ export const FEATURED_CARDS = [
     desc: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
     img: { src: a(5), cover: true }, // Oscar-supplied final (2026-08-06; old crop numbers retired with the old asset)
   },
-  /* ═══ PLACEHOLDER SLOTS /06-/08 — Oscar's content to follow. ═══ */
+  /* Cards /06-/08 — Oscar's content drop (2026-08-06). RIGHTS
+     FLAGS: all three images contain recognizable people (Top Boy
+     and Adolescence casts; Ashley Walters on the Animol set), and
+     the Top Boy / Adolescence images are TV key-art class imagery
+     (third-party/Netflix promotional material) — the founders must
+     confirm both likeness permissions and usage rights before
+     launch, the Pavilion Club standard. */
   {
     index: '/06',
-    title: ['TITLE TBC'],
-    desc: 'Placeholder copy — project description to follow.',
-    img: { src: pool(2), cover: true },
+    title: ['TOP BOY'],
+    desc: 'A defining British screen project with global cultural reach, rooted in storytelling, music, fashion and culture.',
+    img: { src: a(6), cover: true },
   },
   {
     index: '/07',
-    title: ['TITLE TBC'],
-    desc: 'Placeholder copy — project description to follow.',
-    img: { src: pool(5), cover: true },
+    title: ['ADOLESCENCE'],
+    desc: 'Contemporary screen work reinforcing Ashley’s position as one of the UK’s most recognisable voices.',
+    img: { src: a(7), cover: true },
   },
   {
     index: '/08',
-    title: ['TITLE TBC'],
-    desc: 'Placeholder copy — project description to follow.',
-    img: { src: pool(6), cover: true },
+    title: ['ANIMOL'],
+    desc: 'Directorial feature debut, marking Ashley’s evolution from actor and producer to filmmaker and creative lead.',
+    img: { src: a(8), cover: true },
   },
 ];
