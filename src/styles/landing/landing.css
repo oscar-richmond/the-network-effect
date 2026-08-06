@@ -910,8 +910,10 @@
 	position: relative;
 	z-index: 260;
 	width: 100%;
-	/* Track (Oscar's timing rev): the 1097px stage + a 400px hold
-	   that absorbs scroll while the synchronized entrance plays. The
+	/* Track (Oscar's timing revs): the 1097px stage + a 900px hold
+	   that absorbs scroll while the synchronized entrance plays —
+	   long enough that the arrival completes before the section
+	   releases toward We Create Access. The
 	   NEGATIVE viewport margin overlaps the services section's
 	   trailing viewport, so this section's pin — and the entrance —
 	   fires at the exact scroll position the ground fade completes:
@@ -919,7 +921,7 @@
 	   slide-in the module makes track + stage TRANSPARENT (content
 	   is hidden anyway), restored at the pin — an invisible switch,
 	   black over identical black. */
-	height: calc(1097px + 400px);
+	height: calc(1097px + 900px);
 	margin-top: calc(-1 * 100vh);
 	margin-top: calc(-1 * 100dvh);
 	background: #161616;
