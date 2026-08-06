@@ -1651,13 +1651,14 @@
 	color: var(--landing-ink);
 }
 
-/* The brief fix: pins when the keyword descriptions' bottoms (970 in
-   the stage) sit 64px above the viewport bottom, holds for the
-   track's 300px, releases. */
+/* The brief fix: pins 48px lower than the original 64px mark
+   (Oscar's rev — the keyword descriptions' bottoms, 970 in the
+   stage, sit 16px above the viewport bottom), holds for the track's
+   300px, releases. */
 .landing-v2 .landing-closing__stage {
 	position: sticky;
-	top: calc(100vh - 1034px);
-	top: calc(100dvh - 1034px);
+	top: calc(100vh - 986px);
+	top: calc(100dvh - 986px);
 	height: 1098px;
 	background: #eeeef0;
 }
