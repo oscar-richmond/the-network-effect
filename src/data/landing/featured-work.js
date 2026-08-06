@@ -1,8 +1,10 @@
 /**
  * FEATURED WORK — card content (Figma 22:3021, extracted 2026-08-06).
  *
- * Cards /01-/05 are the file's own (several images since replaced
- * by Oscar-supplied finals); /06-/08 are Oscar's content drop.
+ * Card ORDER is Oscar's (2026-08-06 re-order): Wilderness, Top Boy,
+ * Pavilion Club, Pavilion Summit, Adolescence, Yoxman, Thunder,
+ * Animol — indexes renumbered to match. Asset filenames keep their
+ * original slot numbers (work-N maps by content, not position).
  * Image crops are window-relative; `cover: true` = object-fit
  * cover instead of an exact crop.
  *
@@ -42,50 +44,46 @@ export const FEATURED_CARDS = [
     img: { src: a(1), cover: true }, // Oscar-supplied final (2026-08-06; file crop retired)
   },
   {
-    /* RIGHTS: see the named-person flag in the header. */
+    /* RIGHTS: recognizable cast, TV key-art class — see header. */
     index: '/02',
-    title: ['PAVILION', 'CLUB'],
-    desc: 'Created and scaled a private membership programme across four clubs, connecting founders, CEOs and high-profile talent through cultural and business-led experiences.',
-    img: { src: a(2), w: 723, h: 468, x: -165.93, y: -2 },
-  },
-  {
-    index: '/03',
-    title: ['PAVILION', 'SUMMIT'],
-    desc: 'A 24-hour immersive leadership experience, delivered from ideation to execution, bringing CEOs, founders and cultural voices together.',
-    img: { src: a(3), w: 720, h: 466, x: -225.87, y: 0 },
-  },
-  {
-    index: '/04',
-    title: ['YOXMAN FOOD', 'FESTIVAL'],
-    desc: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, guest journey, creative direction and luxury hospitality experience.',
-    img: { src: a(4), cover: true }, // Oscar-supplied final (2026-08-06)
-  },
-  {
-    index: '/05', // file said /04 — corrected
-    title: ['THUNDER', 'AVIATION'],
-    desc: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
-    img: { src: a(5), cover: true }, // Oscar-supplied final (2026-08-06; old crop numbers retired with the old asset)
-  },
-  /* Cards /06-/08 — Oscar's content drop (2026-08-06). RIGHTS
-     FLAGS: all three images contain recognizable people (Top Boy
-     and Adolescence casts; Ashley Walters on the Animol set), and
-     the Top Boy / Adolescence images are TV key-art class imagery
-     (third-party/Netflix promotional material) — the founders must
-     confirm both likeness permissions and usage rights before
-     launch, the Pavilion Club standard. */
-  {
-    index: '/06',
     title: ['TOP BOY'],
     desc: 'A defining British screen project with global cultural reach, rooted in storytelling, music, fashion and culture.',
     img: { src: a(6), cover: true },
   },
   {
-    index: '/07',
+    /* RIGHTS: see the named-person flag in the header. */
+    index: '/03',
+    title: ['PAVILION', 'CLUB'],
+    desc: 'Created and scaled a private membership programme across four clubs, connecting founders, CEOs and high-profile talent through cultural and business-led experiences.',
+    img: { src: a(2), w: 723, h: 468, x: -165.93, y: -2 },
+  },
+  {
+    index: '/04',
+    title: ['PAVILION', 'SUMMIT'],
+    desc: 'A 24-hour immersive leadership experience, delivered from ideation to execution, bringing CEOs, founders and cultural voices together.',
+    img: { src: a(3), w: 720, h: 466, x: -225.87, y: 0 },
+  },
+  {
+    /* RIGHTS: recognizable cast, TV key-art class — see header. */
+    index: '/05',
     title: ['ADOLESCENCE'],
     desc: 'Contemporary screen work reinforcing Ashley’s position as one of the UK’s most recognisable voices.',
     img: { src: a(7), cover: true },
   },
   {
+    index: '/06',
+    title: ['YOXMAN FOOD', 'FESTIVAL'],
+    desc: 'Created and launched a Michelin-starred culinary festival, uniting world-class chefs, premium partnerships, guest journey, creative direction and luxury hospitality experience.',
+    img: { src: a(4), cover: true }, // Oscar-supplied final (2026-08-06)
+  },
+  {
+    index: '/07',
+    title: ['THUNDER', 'AVIATION'],
+    desc: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
+    img: { src: a(5), cover: true }, // Oscar-supplied final (2026-08-06)
+  },
+  {
+    /* RIGHTS: Ashley on set — see header. */
     index: '/08',
     title: ['ANIMOL'],
     desc: 'Directorial feature debut, marking Ashley’s evolution from actor and producer to filmmaker and creative lead.',
