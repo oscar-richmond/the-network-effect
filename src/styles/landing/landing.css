@@ -1638,7 +1638,7 @@
 	   both grounds light). */
 	margin-top: calc(-1 * 50vh);
 	margin-top: calc(-1 * 50dvh);
-	height: 1050px;
+	height: 1090px; /* the file's 1050 + 40px extra ground below (Oscar's rev) */
 	background: #eeeef0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: var(--landing-ink);
