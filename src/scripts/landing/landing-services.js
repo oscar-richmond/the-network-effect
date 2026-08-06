@@ -118,14 +118,14 @@ const BAND_RIDERS = [
   '.landing-svc-card__btn',
 ];
 
-/* Cards start EARLY (Oscar's rev 4): IMMERSE begins rising at the
-   morph's halfway point — while FROM/ACCESS fade and the title
+/* Cards start EARLY (Oscar's revs 4+11): IMMERSE begins rising at
+   the morph's QUARTER point — while FROM/ACCESS fade and the title
    shrinks — and the others keep the same 800px spacing after it. */
-const CARD_START_PX = MORPH_PX * 0.5; // 250
-const STACK_PX = CARD_START_PX + CARD_COUNT * CARD_PX; // 2650 — snap ceiling
+const CARD_START_PX = MORPH_PX * 0.25; // 125
+const STACK_PX = CARD_START_PX + CARD_COUNT * CARD_PX; // 2525 — snap ceiling
 /* 1:1 departure travel: bottom card's parked top + its height. */
 const EXIT_PX = PARKED_Y[CARD_COUNT - 1] + CARD_H; // 1104
-const RUNWAY_PX = STACK_PX + BAND_SETTLE_PX + EXIT_PX; // 4202
+const RUNWAY_PX = STACK_PX + BAND_SETTLE_PX + EXIT_PX; // 4077
 /* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
 const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
 
@@ -143,7 +143,7 @@ const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
 /* Rest points: section top + each card fully parked (morph-end is no
    longer a boundary — card 1 is mid-flight there). */
-const SNAP_TARGETS = [0, 1050, 1850, 2650];
+const SNAP_TARGETS = [0, 925, 1725, 2525];
 
 /** Index of the alignment glyph — the first S of "ACCESS. TO IMPACT.". */
 const ALIGN_CHAR_INDEX = 4;

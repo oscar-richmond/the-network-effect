@@ -547,17 +547,15 @@
 	position: relative;
 	z-index: 260;
 	/* 1 viewport of departure runway (the founders photo scroll-off,
-	   as before) + 4254px of pinned runway for the stacked-services
-	   sequence: morph 500 with the first card starting at its halfway
-	   point (250) + three 800px card windows + the departure 250
-	   500 settle (the remaining header bands compress slowly) + 1052
-	   departure (the stack scrolls off at 1:1 while the ground fades
-	   to #161616 over the final 500 — landing-services.js). Keep the
-	   4202 in step with the timeline — the black-on-black handoff to
-	   Our Network depends on the scrub ending exactly as the next
-	   section's top crosses the viewport bottom. */
-	height: calc(100vh + 4202px);
-	height: calc(100dvh + 4202px);
+	   as before) + 4077px of pinned runway for the stacked-services
+	   sequence: morph 500 with the first card starting at its quarter
+	   point (125) + three 800px card windows + the 500 settle (the
+	   remaining header bands compress slowly) + 1052 departure (the
+	   stack scrolls off at 1:1 — landing-services.js; the ground stays
+	   LIGHT, the fade lives in Featured Work now). Keep the 4077 in
+	   step with the timeline. */
+	height: calc(100vh + 4077px);
+	height: calc(100dvh + 4077px);
 	background: var(--landing-ground);
 }
 
