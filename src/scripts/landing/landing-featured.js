@@ -57,6 +57,13 @@ const VIEWALL_H_PX = 38;
 const DESC_CLEAR_PX = 40; // longest desc bottom above viewport bottom
 
 const RIGHT_MARGIN_PX = 24;
+/* Right-edge blur band fade (Oscar's rev): the band dissolves over
+   the last card-pitch of travel, so it's gone exactly when the
+   carousel reaches its end — scrubbed, so scrolling back rebuilds
+   it symmetrically. Implemented by draining the layers' backdrop
+   blur radii to 0 (NOT opacity — an opacity wrapper would become a
+   backdrop root and cut the layers off from the strip beneath). */
+const BAND_FADE_PX = 384;
 const LINE_STAGGER_S = 0.12;
 const CARD_STAGGER_MS = 100;
 const CARDS_AT_MS = 200;
@@ -167,6 +174,25 @@ export function initLandingFeatured() {
     backgroundColor: GROUND_DARK,
     duration: TRANSITION_GROUND_FADE_PX,
   }, runway() - TRANSITION_GROUND_FADE_PX);
+  /* Blur-band dissolve over the final card pitch (see BAND_FADE_PX):
+     radii drain to 0 with the scrub; reversal rebuilds them. */
+  const blurLayers = Array.from(section.querySelectorAll('[data-gradual-blur-layer]'));
+  const blurBases = blurLayers.map((l) => {
+    const m = /([\d.]+)rem/.exec(l.style.backdropFilter || '');
+    return m ? parseFloat(m[1]) : 0;
+  });
+  const bandFade = { t: 0 };
+  tl.to(bandFade, {
+    t: 1,
+    duration: BAND_FADE_PX,
+    onUpdate: () => {
+      blurLayers.forEach((l, i) => {
+        const v = `blur(${(blurBases[i] * (1 - bandFade.t)).toFixed(3)}rem)`;
+        l.style.backdropFilter = v;
+        l.style.webkitBackdropFilter = v;
+      });
+    },
+  }, (travel() || 1) - BAND_FADE_PX);
   masterTl = tl;
 
   /* VIEW ALL's entrance is gsap-driven (NOT the CSS hidden-state
