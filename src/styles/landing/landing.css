@@ -710,6 +710,11 @@
 @media (prefers-reduced-motion: reduce) {
 	.landing-v2 .landing-closing {
 		margin-top: 0;
+		height: 1098px;
+	}
+
+	.landing-v2 .landing-closing__stage {
+		position: static;
 	}
 
 	/* Static resting grey — no black state, no drain. */
@@ -1636,12 +1641,25 @@
 	   the closing rises over the emptying access stage during the
 	   exit's final stretch (later sibling at equal z paints above;
 	   both grounds light). */
-	margin-top: calc(-1 * 50vh);
-	margin-top: calc(-1 * 50dvh);
-	height: 1090px; /* the file's 1050 + 40px extra ground below (Oscar's rev) */
+	/* Overlap + the 300px hold compensation (see the stage note). */
+	margin-top: calc(-1 * (50vh + 300px));
+	margin-top: calc(-1 * (50dvh + 300px));
+	/* Stage 1098 (file 1050 + 48 extra ground, Oscar's revs) + 300 hold. */
+	height: calc(1098px + 300px);
 	background: #eeeef0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: var(--landing-ink);
+}
+
+/* The brief fix: pins when the keyword descriptions' bottoms (970 in
+   the stage) sit 64px above the viewport bottom, holds for the
+   track's 300px, releases. */
+.landing-v2 .landing-closing__stage {
+	position: sticky;
+	top: calc(100vh - 1034px);
+	top: calc(100dvh - 1034px);
+	height: 1098px;
+	background: #eeeef0;
 }
 
 /* Right-anchored ragged headline — right edges 493/748/713 (file),
@@ -1980,6 +1998,11 @@
 		margin-top: 0;
 		height: auto;
 		padding: 96px 24px 64px;
+	}
+
+	.landing-v2 .landing-closing__stage {
+		position: static;
+		height: auto;
 	}
 
 	.landing-v2 .landing-closing__hl,

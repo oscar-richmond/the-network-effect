@@ -44,6 +44,12 @@ const keywords = [
 ---
 
 <section class="landing-closing" data-landing-closing aria-label="Why access matters">
+  {/* Sticky stage (Oscar's rev): the section fixes briefly when the
+      keyword descriptions' bottoms sit 64px above the viewport
+      bottom — a 300px hold ("one more scroll") — then releases. The
+      track carries the hold; the section's overlap margin grows by
+      the same amount so the post-release flow is unchanged. */}
+  <div class="landing-closing__stage" data-closing-stage>
   {/* Right-anchored ragged headline — right edges per the file
       (493/748/713 from the left at 1728). Difference over the light
       ground and the tiles' top edge. */}
@@ -82,4 +88,5 @@ const keywords = [
       <p class="landing-closing__kw-line">{k.line}</p>
     </div>
   ))}
+  </div>
 </section>
