@@ -25,26 +25,25 @@
  * Clamping rebases the driver offset so reversal is immediate (no
  * rubber-band debt from momentum pushing past the ends).
  *
- * TRAVEL-AND-DOCK METAS (Oscar's rev — replaces swap-in-place):
- * each project's title + /0N + description is a per-project unit in
- * the left column riding its image's vertical position; it PINS at
- * the dock (441, the old meta position) while its project
- * traverses, and the successor pushes it up and out through the
- * layer's clip line at the dock (the iOS-sticky-header mechanic —
- * both visible during the handoff, contact push). Per frame:
- *   y_i = min( max(linkedY_i, dockY), y_{i+1} − blockH_i )
- * computed successor-first — pure f(travel), reversible by
- * construction (flicks and mid-push reversals mirror exactly).
- * blockH is measured per unit (multi-line descriptions push
- * further); the /0N derives 6px off each unit's title. The layer
- * sits UNDER the blur band like the images (text enters through
- * the blur) and is clipped above the dock (a pushed meta exits
- * cleanly, never overlapping the pills). Docking is announced via
- * a polite live region. ALTERNATIVE (one-flag switch if the push
- * reads badly): PUSH_HANDOFF=false fades the docked meta in place
- * instead of displacing it. NOTE: the metas are brand-black ink
- * (Oscar's standing rev) — no blend rides these transforms; the
- * page's only difference elements remain the cursor pair.
+ * TRAVEL-AND-DOCK METAS (Oscar's rev 4 — WIPE IN PLACE): each
+ * project's title + /0N + description is a per-project unit in the
+ * left column riding its image's vertical position; it PINS at the
+ * dock (441, the old meta position) and STAYS THERE — never
+ * displaced. As the successor's meta travels up and over it, the
+ * pinned text wipes LINE BY LINE, bottom first, each line blurring
+ * + fading as the incoming edge approaches it (WIPE_LEAD ahead of
+ * contact, so a line is gone before the new text physically
+ * overlaps it) — the services roll-over / hero exit-wipe contract,
+ * pure f(travel), mirrored exactly on reversal. y_i =
+ * max(linkedY_i, dockY), successor-first so each unit knows the
+ * incoming edge. Fully-overtaken units rest at the dock at opacity
+ * 0. The /0N derives 6px off each unit's title; wipe lines are
+ * measured per unit (title line + the desc's rendered lines). The
+ * layer sits UNDER the blur band like the images and keeps its
+ * clip above the dock (belt — nothing crosses it now). Docking is
+ * announced via a polite live region. NOTE: brand-black ink — no
+ * blend rides these transforms; the page's only difference
+ * elements remain the cursor pair.
  *
  * CURSOR: one large difference dot + label — two top-level fixed
  * siblings each blending difference themselves (the nav-logo
@@ -88,9 +87,12 @@ const BAND_FADE_PX = 150; // radii-drain window at the last image's half
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
 const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
-/* The flagged alternative: false = the docked meta FADES in place
-   as the successor docks, instead of being pushed out. */
-const PUSH_HANDOFF = true;
+/* The in-place wipe window: each line wipes over SPAN px of the
+   incoming edge's travel, starting LEAD px before contact. LEAD >
+   SPAN - (the title line's ~36 bottom) guarantees every line
+   completes by the moment the incoming docks. */
+const META_WIPE_SPAN_PX = 60;
+const META_WIPE_LEAD_PX = 40;
 const FOOTER_REVEAL_PX = 811; // the landing footer's full height
 const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
 const CURSOR_LERP = 0.25; // the canvas-cursor feel
@@ -334,33 +336,25 @@ export function initWorkPage() {
     for (let i = units.length - 1; i >= 0; i -= 1) {
       const u = units[i];
       const linked = BASE_TOP_PX + i * PITCH_PX - p1;
-      let y = Math.max(linked, DOCK_Y_PX);
-      if (PUSH_HANDOFF) {
-        y = Math.min(y, succY - u.blockH);
-      } else if (succY <= DOCK_Y_PX + u.blockH && i === docked) {
-        /* Flagged alternative: fade in place as the successor
-           arrives (no displacement). */
-        const t = clamp((DOCK_Y_PX + u.blockH - succY) / u.blockH, 0, 1);
-        u.el.style.opacity = String(1 - t);
-      }
-      if (!PUSH_HANDOFF && !(succY <= DOCK_Y_PX + u.blockH && i === docked)) {
-        u.el.style.opacity = '';
-      }
-      /* THE OVERTAKE WIPE (Oscar's rev 2 — LINE BY LINE): as the
-         incoming meta rides over the docked one, the outgoing text
-         wipes one line at a time, BOTTOM FIRST (the lines nearest
-         the arriving text lead), each line blurring + fading across
-         its own window of the push — pure f(travel), mirrored
-         exactly on reversal. Plain black ink — filters carry no
-         blend risk. */
-      if (PUSH_HANDOFF && u.wipeLines) {
-        const p = clamp((DOCK_Y_PX - y) / Math.max(u.blockH, 1), 0, 1);
-        if (p > 0) {
-          const n = u.wipeLines.length;
-          const win = 0.5; /* each line's wipe window (of the push) */
-          u.wipeLines.forEach((line, k) => {
-            const startP = n > 1 ? (k / n) * (1 - win) : 0;
-            const t = clamp((p - startP) / win, 0, 1);
+      const y = Math.max(linked, DOCK_Y_PX); /* pinned — NEVER displaced */
+      /* THE OVERTAKE WIPE (Oscar's rev 4 — IN PLACE, line by line):
+         the pinned text stays put; each of its lines blurs + fades
+         as the INCOMING EDGE (the successor's top) approaches it —
+         bottom lines first, each across META_WIPE_SPAN_PX of edge
+         travel, starting META_WIPE_LEAD_PX before contact so a
+         line is gone before the new text overlaps it. Pure
+         f(travel); reversal restores top-first, mirrored. Plain
+         black ink — filters carry no blend risk. */
+      if (u.wipeLines) {
+        const clear = succY - y > u.blockH + META_WIPE_LEAD_PX + META_WIPE_SPAN_PX;
+        if (!clear) {
+          u.wipeLines.forEach((line) => {
+            const lineBottomAbs = y + line.bottom;
+            const t = clamp(
+              (lineBottomAbs + META_WIPE_LEAD_PX - succY) / META_WIPE_SPAN_PX,
+              0,
+              1,
+            );
             line.els.forEach((el) => {
               el.style.opacity = t > 0 ? (1 - t).toFixed(3) : '';
               el.style.filter = t > 0 ? `blur(${(META_WIPE_BLUR_PX * t).toFixed(2)}px)` : '';
