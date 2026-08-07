@@ -77,10 +77,10 @@ const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
 const IMG_H_PX = 616; // Oscar's rev: the pre-412 height (640) minus 24
 const GAP_PX = 8;
 const PITCH_PX = IMG_H_PX + GAP_PX; // 624
-const END_GAP_PX = 152; /* ground below the last image before the
+const END_GAP_PX = 163; /* ground below the last image before the
   reveal — the landing closing's measured last-content-to-footer
-  whitespace (Oscar's rev: equal on every page; supersedes the
-  earlier 80). */
+  whitespace (Oscar's rev: equal on every page; re-measured after
+  the optical gallery rhythm shifted the closing text up 11px). */
 const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
 const TILE_LOGO_GAP_PX = 8; // left edge 8px left of the logo's T
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)

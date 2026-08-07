@@ -1749,7 +1749,8 @@
 
 .landing-v2 .landing-closing__kw {
 	position: absolute;
-	top: 866px;
+	/* OPTICAL 24 below the tiles: 20.5 box (24 - cap offset 3.56). */
+	top: 862.5px;
 }
 
 .landing-v2 .landing-closing__kw-row {
@@ -1783,7 +1784,9 @@
 .landing-v2 .landing-closing__kw-line {
 	position: absolute;
 	left: 0;
-	top: 44px; /* 28px keyword + the 16px gap (Oscar's rev 2) */
+	/* 28px keyword + OPTICAL 16 (8.5 box = 16 - descender 3.5 -
+	   Serrif cap 3.96). */
+	top: 36.5px;
 	width: 100%;
 	margin: 0;
 	font-family: 'Serrif', serif;
@@ -2220,11 +2223,12 @@
 .landing-v2 .landing-featured__titleblock {
 	position: absolute;
 	left: 0;
-	/* TOP-anchored: 24px below the image (Oscar's rev 3 — the
-	   closing-keywords rhythm: image 24 title 16 desc); the desc
-	   follows the title's real height + 16px (per-card inline,
-	   LandingFeatured.astro). */
-	top: 465px;
+	/* TOP-anchored: OPTICALLY 24px below the image (Oscar's rev —
+	   site-wide gallery rhythm, image 24 title 16 desc measured to
+	   the GLYPHS: box gap = 24 - the 28px Dazzed cap offset 3.56;
+	   the desc follows the title's real height + 8.5 box = 16
+	   visual, per-card inline in LandingFeatured.astro). */
+	top: 461.5px;
 	margin: 0;
 	font-weight: 700;
 	/* 28px (Oscar's rev — was 32). */
