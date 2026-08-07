@@ -278,9 +278,9 @@ body.case-page {
    to point left/right, rippling on hover when active. */
 .landing-v2 .cs-more {
 	position: relative;
-	/* Bottom = 131px (Oscar's revs: the equalised 163 minus 24,
-	   minus a further 8 — this page only). */
-	padding: 140px 0 131px;
+	/* Bottom = 139px (Oscar's rev: the equalised 163 minus 24, this
+	   page only). */
+	padding: 140px 0 139px;
 	overflow: hidden;
 }
 
