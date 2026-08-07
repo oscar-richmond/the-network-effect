@@ -50,7 +50,7 @@ body.case-page {
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 24px;
+	font-size: 20px; /* Oscar's rev — was 24 */
 	line-height: 32px;
 	color: #fff;
 	mix-blend-mode: difference;
