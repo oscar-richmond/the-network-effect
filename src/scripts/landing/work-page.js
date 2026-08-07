@@ -2,15 +2,17 @@
  * /work — FEATURED WORK page machinery (Figma 27:3103; Oscar's
  * finite-travel rev 2026-08-06).
  *
- * DRIVER: the holding pages' single-velocity drift driver
- * (createDriftDriver, holding-shared.js — REUSED, not copied: wheel
- * impulses + touch position-coupling + flick momentum + rAF
- * ownership + visibility pause, the approved motion), with
- * autoDrift 0 per the /holding-2 mobile-travel precedent — travel
- * is scroll-driven only, reversible. A dedicated Lenis instance was
- * rejected: Lenis wants a scrollable document and this page
- * deliberately has none; two scroll authorities is the settle-shake
- * bug class.
+ * DRIVER (Oscar's rev 3 — the case-page resistance ALL the way
+ * down): a LENIS-SEMANTICS virtual scroller. Wheel deltas move the
+ * TARGET position directly (the earlier drift-driver velocity
+ * layer spread each tick into a coast, so sustained scrolling
+ * reached a speed-matched steady state and felt 1:1 — the Lenis
+ * feel IS discrete ticks smoothed only by the position lerp); the
+ * render position chases the target at the case page's exact
+ * Lenis value (0.065) in an owned rAF loop. Touch: 1:1 drag while
+ * down + flick momentum decaying into the same lerp. A real Lenis
+ * instance still doesn't fit: it wants a scrollable document and
+ * this page deliberately has none.
  *
  * FINITE TRAVEL (Oscar's rev — the loop is gone): pos clamps to
  * [0, maxPos]. Phase 1 travels the carousel (first image top ON the
@@ -66,7 +68,6 @@
  * <1024px: the CSS stacked list is the page; no machinery boots.
  */
 import gsap from 'gsap';
-import { createDriftDriver } from '../holding/holding-shared.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
@@ -281,6 +282,7 @@ export function initWorkPage() {
      up through phase 2 (the reveal). */
   let pos = 0;
   let footerEntered = false;
+  let stepScrollRef = null; /* the dev handle's manual tick */
   const layout = () => {
     const p1 = Math.min(pos, carouselMax());
     tiles.forEach(({ el }, i) => {
@@ -379,12 +381,12 @@ export function initWorkPage() {
     announceDock(docked);
   };
 
-  /* ── Input: the drift driver (non-RM) or direct writes (RM). The
-     clamp REBASES the offset so momentum can't bank debt past the
-     ends — reversal is immediate. */
-  let posOffset = 0;
+  /* ── Input: the Lenis-semantics virtual scroller (non-RM) or
+     direct writes (RM). Wheel moves the TARGET directly; the rAF
+     loop lerps the render position toward it — resistance
+     everywhere, not just at the ends. */
   let targetPos = 0;
-  let driver = null;
+  let flickVel = 0; /* touch flick momentum, px/s */
 
   const frame = () => {
     layout();
@@ -392,46 +394,98 @@ export function initWorkPage() {
 
   /* Direct placement (tweens, focus, filters, RM, dev): render AND
      target snap together — no smoothing on deliberate moves. */
-  const setPosClamped = (raw, driverTravel) => {
+  const setPosClamped = (raw) => {
     pos = clamp(raw, 0, maxPos());
     targetPos = pos;
-    if (raw !== pos && driverTravel !== undefined) posOffset = pos - driverTravel;
     frame();
     onPosChange();
   };
 
   /* ROOT-CAUSE FIX (Oscar's report: no scroll over the footer):
-     the driver's wheel/touch capture is scoped to its region
-     element, and the revealed footer is a SIBLING fixed layer —
-     wheeling over it never reached the stage-scoped listener. On a
-     fixed-viewport route the whole PAGE is the input surface, so
-     the region is document.body. */
+     wheel/touch capture must cover the WHOLE page — the revealed
+     footer is a sibling fixed layer, so the input surface is
+     document.body. */
   const inputRegion = document.body;
   if (!reduced) {
-    driver = createDriftDriver(inputRegion, {
-      autoDrift: 0,
-      touch: true,
-      onFrame: (travelPx) => {
-        /* A wheel during the bottom-snap glide hands control back
-           to the user (the landing snap's Lenis-retarget
-           equivalent): any real impulse kills the tween. */
-        if (snapTween?.isActive() && Math.abs(driver.state().velocity) > 50) {
-          snapTween.kill();
-          posOffset = pos - travelPx;
-        }
-        /* Wheel/touch path: clamp the TARGET (rebasing the offset
-           at the ends), then lerp the render position toward it —
-           the case-page resistance. */
-        const raw = travelPx + posOffset;
-        targetPos = clamp(raw, 0, maxPos());
-        if (raw !== targetPos) posOffset = targetPos - travelPx;
+    const onWheel = (e) => {
+      e.preventDefault();
+      /* A wheel during the bottom-snap glide hands control back to
+         the user (the landing snap's Lenis-retarget equivalent). */
+      snapTween?.kill();
+      flickVel = 0;
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stageH() : 1;
+      targetPos = clamp(targetPos + e.deltaY * unit, 0, maxPos());
+    };
+    inputRegion.addEventListener('wheel', onWheel, { passive: false });
+    cleanups.push(() => inputRegion.removeEventListener('wheel', onWheel));
+
+    /* Touch: 1:1 position coupling while the finger is down (the
+       page-scroll convention), flick momentum sampled on release —
+       decaying into the same lerp. touchmove is passive:false so
+       the page never rubber-bands; taps stay tappable. */
+    let touchY = 0;
+    let touchT = 0;
+    let touchVel = 0;
+    const onTouchStart = (e) => {
+      if (!e.touches.length) return;
+      touchY = e.touches[0].clientY;
+      touchT = performance.now();
+      touchVel = 0;
+      flickVel = 0; /* grab: momentum stops under the finger */
+      snapTween?.kill();
+    };
+    const onTouchMove = (e) => {
+      if (!e.touches.length) return;
+      e.preventDefault();
+      const y = e.touches[0].clientY;
+      const now = performance.now();
+      const dy = touchY - y;
+      const dt = Math.max((now - touchT) / 1000, 0.001);
+      targetPos = clamp(targetPos + dy, 0, maxPos());
+      touchVel = touchVel * 0.6 + (dy / dt) * 0.4;
+      touchY = y;
+      touchT = now;
+    };
+    const onTouchEnd = () => {
+      flickVel = touchVel;
+      touchVel = 0;
+    };
+    inputRegion.addEventListener('touchstart', onTouchStart, { passive: true });
+    inputRegion.addEventListener('touchmove', onTouchMove, { passive: false });
+    inputRegion.addEventListener('touchend', onTouchEnd, { passive: true });
+    cleanups.push(() => {
+      inputRegion.removeEventListener('touchstart', onTouchStart);
+      inputRegion.removeEventListener('touchmove', onTouchMove);
+      inputRegion.removeEventListener('touchend', onTouchEnd);
+    });
+
+    /* The owned rAF loop: flick integration + the position lerp.
+       One smoothing step lives in stepScroll so the dev handle can
+       drive it manually (the tickOnce convention). */
+    const stepScroll = (dtMs) => {
+      const dt = Math.min(dtMs, 100) / 1000;
+      if (flickVel !== 0) {
+        targetPos = clamp(targetPos + flickVel * dt, 0, maxPos());
+        flickVel *= 0.95;
+        if (Math.abs(flickVel) < 20) flickVel = 0;
+      }
+      if (Math.abs(targetPos - pos) > 0.05) {
         pos += (targetPos - pos) * SCROLL_SMOOTH_LERP;
         if (Math.abs(targetPos - pos) < 0.05) pos = targetPos;
         frame();
         onPosChange();
-      },
-    });
-    cleanups.push(() => driver.destroy());
+      }
+    };
+    stepScrollRef = stepScroll;
+    let rafId = 0;
+    let lastT = 0;
+    const loop = (t) => {
+      stepScroll(lastT ? t - lastT : 16.7);
+      lastT = t;
+      rafId = window.requestAnimationFrame(loop);
+    };
+    rafId = window.requestAnimationFrame(loop);
+    cleanups.push(() => window.cancelAnimationFrame(rafId));
   } else {
     const onWheel = (e) => {
       e.preventDefault();
@@ -469,8 +523,9 @@ export function initWorkPage() {
     if (!next.length) return false;
     set = next;
     buildTiles();
-    posOffset = -(driver ? driver.state().travelPx : 0);
     pos = 0;
+    targetPos = 0;
+    flickVel = 0;
     dockedIdx = 0;
     announcedSlug = null; /* the new set's first dock announces */
     /* footerEntered stays as-is: the footer entrance is once-only. */
@@ -520,7 +575,6 @@ export function initWorkPage() {
     if (!(link instanceof HTMLElement) || !link.dataset.tileIndex) return;
     const i = Number(link.dataset.tileIndex);
     const desired = clamp(BASE_TOP_PX + i * PITCH_PX - (stageH() / 2 - IMG_H_PX / 2), 0, maxPos());
-    posOffset += desired - pos;
     setPosClamped(desired);
   };
   carousel.addEventListener('focusin', onFocusIn);
@@ -549,7 +603,6 @@ export function initWorkPage() {
     e.preventDefault();
     const proxy = { p: pos };
     if (reduced) {
-      posOffset += 0 - pos;
       setPosClamped(0);
       return;
     }
@@ -558,7 +611,6 @@ export function initWorkPage() {
       duration: 1.2,
       ease: 'power3.out',
       onUpdate: () => {
-        posOffset += proxy.p - pos;
         setPosClamped(proxy.p);
       },
     });
@@ -666,7 +718,6 @@ export function initWorkPage() {
       duration: 1.0,
       ease: 'power3.out',
       onUpdate: () => {
-        posOffset += proxy.p - pos;
         setPosClamped(proxy.p);
       },
     });
@@ -734,11 +785,11 @@ export function initWorkPage() {
         y: u.el.style.transform,
         blockH: u.blockH,
       })),
-      tick: (dtMs) => driver?.tickOnce(dtMs),
+      tick: (dtMs) => stepScrollRef?.(dtMs),
       state: () => ({
         pos,
         targetPos,
-        posOffset,
+        flickVel,
         setLength: set.length,
         tileCount: tiles.length,
         carouselMax: carouselMax(),
@@ -748,9 +799,7 @@ export function initWorkPage() {
         dockedSlug: units[dockedIdx]?.project.slug ?? null,
         filter: currentFilter,
       }),
-      driver: () => (driver ? driver.state() : null),
       setPos: (p) => {
-        posOffset += p - pos;
         setPosClamped(p);
       },
     };
