@@ -157,12 +157,14 @@ body.case-page {
 	white-space: nowrap;
 }
 
-/* ── Divider (both instances) ───────────────────────────────────── */
+/* ── Divider — 120 after what-we-did; 100 after the stream (file). */
 .landing-v2 .cs-divider {
 	margin: 120px 24px 0;
 	height: 1px;
 	background: rgba(22, 22, 22, 0.15);
 }
+
+.landing-v2 .cs-work + .cs-divider { margin-top: 100px; }
 
 /* ── D. The sticky rail + image stream ──────────────────────────── */
 .landing-v2 .cs-work {
@@ -267,16 +269,23 @@ body.case-page {
 	color: #161616;
 }
 
-/* ── E. More work ───────────────────────────────────────────────── */
+/* ── E. More work — the file's 1014px section, EXPLICIT height:
+   the cards are absolutely placed and contribute no flow height
+   (the collapse-and-clip bug Oscar caught: the section fell to its
+   padding height and overflow:hidden cut the cards, with the
+   footer landing right below). All children absolute against the
+   file's y-map. */
 .landing-v2 .cs-more {
 	position: relative;
-	margin-top: 0;
-	padding: 140px 0 234px;
+	height: 1014px;
 	overflow: hidden;
 }
 
 .landing-v2 .cs-more__title {
-	margin: 0 0 0 24px;
+	position: absolute;
+	left: 24px;
+	top: 140px;
+	margin: 0;
 	font-weight: 700;
 	font-size: 48px;
 	line-height: 40px;
@@ -453,7 +462,8 @@ body.case-page {
 	.landing-v2 .cs-row + .cs-row { margin-top: 0; }
 	.landing-v2 .cs-row__img { width: 100% !important; height: auto; aspect-ratio: 1095 / 640; }
 
-	.landing-v2 .cs-more { padding: 64px 0 96px; }
+	.landing-v2 .cs-more { height: auto; padding: 64px 0 96px; }
+	.landing-v2 .cs-more__title { position: static; margin-left: 24px; }
 	.landing-v2 .cs-more__pager { display: none; }
 	.landing-v2 .cs-more__card { position: static; width: auto; margin: 32px 24px 0; }
 	.landing-v2 .cs-more__imgwin { width: 100%; height: auto; aspect-ratio: 836 / 520; }
