@@ -1808,20 +1808,29 @@
 	color: #fff;
 }
 
-/* The PARALLAX PLACEMENT is /landing-only layout and must never
-   ride the shared component onto other routes: scoped so that a
-   page whose own stylesheet fails to load (the stale-HMR class
-   Oscar hit — the case study's neutralizer missing left the footer
-   sticking 189px from the viewport top, an empty blue panel over
-   everything) still gets a sane in-flow footer. Pages beyond
-   /landing carry an extra body class (work-page / case-page) and
-   are excluded here; their own wrappers place the footer. */
-.landing-v2:not(.work-page):not(.case-page) .landing-footer {
+/* The PARALLAX PLACEMENT (Oscar's rev: the same footer reveal on
+   every document-scroll page): /landing AND the case studies use
+   the sticky uncover; /work places its own fixed reveal layer and
+   is excluded. EVERYTHING reveal-critical lives HERE, in the
+   always-loaded shared sheet — a page whose own stylesheet fails
+   to load (the stale-HMR class) must still get the working
+   mechanism, never a covered page or a stray blue panel. */
+.landing-v2:not(.work-page) .landing-footer {
 	position: sticky;
 	top: calc(100vh - 811px);
 	top: calc(100dvh - 811px);
 	margin-top: -811px;
 	z-index: 259;
+}
+
+/* The case page's content gate — the landing closing-section
+   precedent (z260 over the footer's 259; difference titles inside
+   blend against the section's own opaque ground, the established
+   safe shape). Lives here, not in case-study.css: reveal-critical. */
+.landing-v2.case-page main[data-case-study] {
+	position: relative;
+	z-index: 260;
+	background: #eeeef0;
 }
 
 .landing-v2 .landing-footer-spacer {

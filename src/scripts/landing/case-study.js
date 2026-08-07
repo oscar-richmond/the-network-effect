@@ -37,12 +37,18 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
+import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const SCROLL_LERP = 0.065; // the landing hero's value, verbatim
 const LINE_STAGGER_S = 0.12;
 const COL_STAGGER_S = 0.08;
+/* Bottom behaviours — the landing constants (landing-closing.js). */
+const FOOTER_H_PX = 811;
+const BOTTOM_SNAP_IDLE_MS = 2000;
+const BOTTOM_EPSILON_PX = 2;
+const NAV_SHOW_HYSTERESIS_PX = 64;
 
 export function initCaseStudy() {
   const page = document.querySelector('[data-case-study]');
@@ -157,6 +163,50 @@ export function initCaseStudy() {
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
   cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
 
+  /* ── Bottom behaviours (Oscar's rev — the landing pair, every
+     page): the nav ripples OUT at the very bottom and back in on
+     the way up; a 2s idle stop inside the footer reveal glides to
+     the bottom (non-RM). All through the shared nav-motion applier
+     and Lenis — the landing-closing.js shape verbatim. */
+  ensureLogoChars();
+  const menuToggle = document.querySelector('[data-menu-toggle]');
+  let navHidden = false;
+  const setNav = (hidden) => {
+    if (navHidden === hidden) return;
+    /* Never strand an open menu without its toggle. */
+    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
+    navHidden = hidden;
+    applyNavSweep(hidden, { reduced });
+  };
+  const maxScroll = () =>
+    (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
+  let snapTimer = 0;
+  let lastScrollY = window.scrollY || 0;
+  let lastDirDown = false;
+  const inSnapZone = () => maxScroll() - (window.scrollY || 0) < FOOTER_H_PX - BOTTOM_EPSILON_PX;
+  const trySnapToBottom = () => {
+    if (reduced || !lastDirDown || !inSnapZone()) return;
+    const y = window.scrollY || 0;
+    if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
+    if (lenis) lenis.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
+  };
+  const onBottomScroll = () => {
+    const y = window.scrollY || 0;
+    if (y !== lastScrollY) {
+      lastDirDown = y > lastScrollY;
+      lastScrollY = y;
+    }
+    if (y >= maxScroll() - BOTTOM_EPSILON_PX) setNav(true);
+    else if (y < maxScroll() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
+  };
+  window.addEventListener('scroll', onBottomScroll, { passive: true });
+  cleanups.push(() => {
+    window.removeEventListener('scroll', onBottomScroll);
+    window.clearTimeout(snapTimer);
+  });
+
   if (reduced) {
     /* RM: static page; sticky remains (it's layout). The hidden
        entrance states are gated no-preference in CSS. */
@@ -266,35 +316,25 @@ export function initCaseStudy() {
       }));
     }
 
-    /* Footer — the shared choreography at the landing trigger, with
-       a NATIVE IntersectionObserver fallback (Oscar's empty-footer
-       report): once text is wrap-hidden, the play must never depend
-       on a single delivery path — the IO fires from the platform's
-       own intersection machinery, independent of ScrollTrigger's
-       update loop. Both paths funnel through one idempotent guard. */
-    const footer = document.querySelector('[data-cs-footer] [data-landing-footer]');
+    /* Footer — the shared choreography, on the LANDING'S covered-
+       footer trigger maths verbatim: the footer PINS BEHIND the
+       content (the parallax uncover), so a viewport-percentage
+       start fires while it's still covered — fire ~200px into the
+       actual reveal instead (the pin engages when the footer's flow
+       top reaches 100dvh - 811 from the viewport top). The earlier
+       IntersectionObserver fallback is GONE for the same reason:
+       IO can't see occlusion — a pinned-behind footer intersects
+       the viewport long before it's revealed, playing the entrance
+       under the cover (Oscar's "no reveal effect"). */
+    const footer = document.querySelector('[data-landing-footer]');
     if (footer instanceof HTMLElement) {
       const wrapped = wrapFooterReveals(footer);
-      let footerPlayed = false;
-      const playOnce = () => {
-        if (footerPlayed) return;
-        footerPlayed = true;
-        playFooterReveals(wrapped, schedule);
-      };
       triggers.push(ScrollTrigger.create({
         trigger: footer,
-        start: 'top 75%',
+        start: () => `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`,
         once: true,
-        onEnter: playOnce,
+        onEnter: () => playFooterReveals(wrapped, schedule),
       }));
-      const io = new IntersectionObserver((entries) => {
-        if (entries.some((en) => en.isIntersecting)) {
-          playOnce();
-          io.disconnect();
-        }
-      }, { rootMargin: '0px 0px -20% 0px' });
-      io.observe(footer);
-      cleanups.push(() => io.disconnect());
     }
 
     ScrollTrigger.refresh();

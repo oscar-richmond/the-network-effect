@@ -183,10 +183,13 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
     </section>
   </main>
 
-  {/* ── F. FOOTER — the shared component, flow-neutralised. */}
-  <div class="cs-footer-wrap" data-cs-footer>
-    <LandingFooter />
-  </div>
+  {/* ── F. FOOTER — the landing parallax reveal, natively (Oscar's
+      rev: the same footer reveal on every page): the footer pins
+      BEHIND the z260 content above (landing.css carries the whole
+      mechanism) and the spacer restores the document height so the
+      page ends at full reveal — the landing pattern verbatim. */}
+  <LandingFooter />
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
 </SiteShell>
 
 <script>

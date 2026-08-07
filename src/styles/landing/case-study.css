@@ -412,15 +412,10 @@ body.case-page {
 	pointer-events: none;
 }
 
-/* ── F. Footer — the shared component, flow-neutralised (the /work
-   precedent). */
-.landing-v2 .cs-footer-wrap .landing-footer {
-	/* relative, NEVER static — the containing block for its
-	   absolute children (the displaced-content lesson). */
-	position: relative;
-	margin-top: 0;
-	height: 811px;
-}
+/* ── F. Footer — the landing parallax schema applies natively now
+   (landing.css scopes it to every non-/work route); the content
+   gate (z260 + opaque ground) also lives there. Nothing to
+   neutralise here any more. */
 
 /* ── Entrance hidden states (no-preference; media rise+fade — the
    closing-tiles treatment; text is word-revealed by the module). */
@@ -498,6 +493,9 @@ body.case-page {
 	.landing-v2 .cs-row__img { width: 100% !important; height: auto; aspect-ratio: 1095 / 640; }
 
 	.landing-v2 .cs-more { padding: 64px 0 96px; }
+	/* Sub-1024: plain flow footer (no parallax). */
+	.landing-v2.case-page .landing-footer { position: static; margin-top: 0; }
+	.landing-v2.case-page .landing-footer-spacer { display: none; }
 	.landing-v2 .cs-more__pager { display: none; }
 	.landing-v2 .cs-more__viewport { margin: 32px 24px 0; overflow: visible; }
 	.landing-v2 .cs-more__track { flex-direction: column; gap: 32px; transform: none !important; }
