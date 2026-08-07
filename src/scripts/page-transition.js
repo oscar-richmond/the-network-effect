@@ -194,6 +194,12 @@ export function whenCoverRevealed(callback) {
  */
 function attachLinkInterceptor() {
   document.addEventListener('click', (event) => {
+    // Respect an upstream preventDefault (the platform contract):
+    // pages gate placeholder links (e.g. /work tiles for case
+    // studies that don't exist yet) by preventing default — the
+    // transition must not carry those into 404s. No-op for pages
+    // that never prevent internal-link defaults.
+    if (event.defaultPrevented) return;
     // Walk up the DOM to find the nearest anchor element
     const anchor = /** @type {Element | null} */ (event.target)?.closest('a');
     if (!(anchor instanceof HTMLAnchorElement)) return;

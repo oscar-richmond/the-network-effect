@@ -1,0 +1,462 @@
+/*
+ * /work/[slug] — CASE STUDY template (Figma 32:3306, extracted
+ * 2026-08-07; 118px chrome subtracted). Native document scroll
+ * (Lenis, the landing config); 1728-first, the 15" shell scales
+ * below; sub-1024 stacks (bottom of file).
+ *
+ * BLEND WALK: the hero title/subtitle are white + difference; their
+ * ancestor chain (.cs-hero > .cs > body) carries no transform/
+ * filter/opacity/z-index. The reveal animates their lr-inner
+ * DESCENDANTS (house rule). Everything else is plain ink.
+ *
+ * THE STICKY RAIL: two OVERLAPPING absolute segments in .cs-work;
+ * each holds a position:sticky block (top 120). Seg1 spans the
+ * whole stream (its pinned label is COVERED, never pushed); seg2
+ * starts at the 4th row (1944px = 3 x 648) with an opaque #EEEEF0
+ * backing and ends at the stream's end — native sticky releases it
+ * exactly as the last image's bottom passes the bullets. KEEP the
+ * 648/1944 constants in step with the row pitch.
+ */
+
+body.case-page {
+	background: #eeeef0;
+}
+
+.landing-v2 .cs {
+	position: relative;
+	background: #eeeef0;
+}
+
+/* ── A. Hero ────────────────────────────────────────────────────── */
+.landing-v2 .cs-hero {
+	position: relative;
+	padding-top: 266px;
+}
+
+.landing-v2 .cs-hero__title {
+	margin: 0 0 0 24px;
+	max-width: 1200px;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-transform: uppercase;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .cs-hero__subtitle {
+	margin: 14px 0 0 24px;
+	width: 725px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 24px;
+	line-height: 32px;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .cs-hero__img {
+	margin: 106px 0 0;
+	width: 100%;
+	height: 1006px;
+	overflow: hidden;
+}
+
+.landing-v2 .cs-hero__img img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* ── B. Intro statement + the red bar (holding-page motif) ──────── */
+.landing-v2 .cs-intro {
+	position: relative;
+	margin: 80px 24px 0;
+}
+
+.landing-v2 .cs-intro__statement {
+	margin: 0;
+	max-width: 1680px;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+/* The file's 26-space leading indent at 48px (space advances scale
+   with size — the footer-statement derivation). */
+.landing-v2 .cs-intro__indent {
+	display: inline-block;
+	width: 268px;
+	height: 1px;
+}
+
+.landing-v2 .cs-intro__bar {
+	position: absolute;
+	right: 0;
+	top: 5px;
+	width: 10px;
+	height: 180px;
+	background: #c1250e; /* the holding-page red */
+}
+
+/* ── C. What we did ─────────────────────────────────────────────── */
+.landing-v2 .cs-did {
+	position: relative;
+	margin-top: 80px;
+	height: 148px;
+	font-size: 16px;
+}
+
+.landing-v2 .cs-did__label {
+	position: absolute;
+	left: 864px;
+	top: 0;
+	margin: 0;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 19px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .cs-did__col {
+	position: absolute;
+	top: 0;
+}
+
+.landing-v2 .cs-did__col--1 { left: 1083px; }
+.landing-v2 .cs-did__col--2 { left: 1292px; }
+.landing-v2 .cs-did__col--3 { left: 1515px; }
+
+.landing-v2 .cs-did__pillar {
+	margin: 0;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 19px;
+	text-transform: uppercase;
+	color: #a6a6a8;
+}
+
+.landing-v2 .cs-did__list {
+	margin: 24px 0 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 19px;
+	color: #161616;
+	white-space: nowrap;
+}
+
+/* ── Divider (both instances) ───────────────────────────────────── */
+.landing-v2 .cs-divider {
+	margin: 120px 24px 0;
+	height: 1px;
+	background: rgba(22, 22, 22, 0.15);
+}
+
+/* ── D. The sticky rail + image stream ──────────────────────────── */
+.landing-v2 .cs-work {
+	position: relative;
+	margin-top: 120px;
+}
+
+.landing-v2 .cs-row {
+	margin-left: 609px;
+	width: 1095px;
+	display: flex;
+	gap: 8px;
+}
+
+.landing-v2 .cs-row + .cs-row { margin-top: 8px; }
+
+.landing-v2 .cs-row__img {
+	margin: 0;
+	height: 640px;
+	overflow: hidden;
+	flex: none;
+}
+
+.landing-v2 .cs-row--full .cs-row__img { width: 1095px; }
+.landing-v2 .cs-row--pair .cs-row__img:first-child { width: 360px; }
+.landing-v2 .cs-row--pair .cs-row__img:last-child { width: 727px; }
+.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:first-child { width: 727px; }
+.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:last-child { width: 360px; }
+
+.landing-v2 .cs-row__img img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.landing-v2 .cs-rail-seg {
+	position: absolute;
+	left: 0;
+	width: 609px;
+	pointer-events: none;
+}
+
+.landing-v2 .cs-rail-seg--1 {
+	top: 0;
+	height: 100%;
+}
+
+/* Seg2 begins at row 4 (3 x 648) and ends at the stream's end —
+   the release point (KEEP in step with the row pitch). */
+.landing-v2 .cs-rail-seg--2 {
+	top: 1944px;
+	height: calc(100% - 1944px);
+}
+
+.landing-v2 .cs-rail-sticky {
+	position: sticky;
+	top: 120px;
+	width: 609px;
+	padding: 0 100px 32px 24px;
+	box-sizing: border-box;
+	background: #eeeef0; /* the opaque cover block (the file's rail) */
+	pointer-events: auto;
+}
+
+.landing-v2 .cs-rail__label {
+	margin: 0;
+	font-weight: 700;
+	font-size: 32px;
+	line-height: 32px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .cs-serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+.landing-v2 .cs-rail__desc {
+	margin: 24px 0 0;
+	width: 485px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 18px;
+	color: #161616;
+}
+
+.landing-v2 .cs-rail__bullets {
+	margin: 24px 0 0;
+	padding: 0 0 0 24px;
+	width: 485px;
+	list-style: disc;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 18px;
+	color: #161616;
+}
+
+/* ── E. More work ───────────────────────────────────────────────── */
+.landing-v2 .cs-more {
+	position: relative;
+	margin-top: 0;
+	padding: 140px 0 234px;
+	overflow: hidden;
+}
+
+.landing-v2 .cs-more__title {
+	margin: 0 0 0 24px;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 40px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .cs-more__pager {
+	position: absolute;
+	right: 24px;
+	top: 128px;
+	display: flex;
+	gap: 10px;
+}
+
+.landing-v2 .cs-more__arrow {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	background: none;
+	/* Inert at 2 entries (see case-study.js) — dimmed, no cursor. */
+	opacity: 0.35;
+	cursor: default;
+}
+
+.landing-v2 .cs-more__arrow img { display: block; width: 32px; height: 32px; }
+
+.landing-v2 .cs-more__card {
+	position: absolute;
+	top: 260px;
+	width: 836px;
+	display: block;
+	color: #161616;
+	text-decoration: none;
+}
+
+.landing-v2 .cs-more__card--1 { left: 24px; }
+.landing-v2 .cs-more__card--2 { left: 868px; }
+
+.landing-v2 .cs-more__card:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
+
+.landing-v2 .cs-more__imgwin {
+	margin: 0;
+	width: 836px;
+	height: 520px;
+	overflow: hidden;
+}
+
+.landing-v2 .cs-more__imgwin img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.landing-v2 .cs-more__cardtitle {
+	display: inline-block;
+	margin-top: 32px;
+	font-weight: 700;
+	font-size: 32px;
+	line-height: 32px;
+	text-transform: uppercase;
+}
+
+.landing-v2 .cs-more__cardindex {
+	display: inline-block;
+	margin-left: 6px; /* the /work 6px convention */
+	vertical-align: top;
+	margin-top: 36px;
+	font-weight: 700;
+	font-size: 10px;
+	line-height: 10px;
+	text-transform: uppercase;
+}
+
+.landing-v2 .cs-more__carddesc {
+	display: block;
+	margin-top: 34px;
+	width: 557px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 18px;
+}
+
+/* Right-edge fade over the cards region (the file's 24px ramp). */
+.landing-v2 .cs-more__fade {
+	position: absolute;
+	right: 0;
+	top: 260px;
+	width: 24px;
+	height: 520px;
+	background: linear-gradient(to right, rgba(238, 238, 240, 0), #eeeef0);
+	pointer-events: none;
+}
+
+/* ── F. Footer — the shared component, flow-neutralised (the /work
+   precedent). */
+.landing-v2 .cs-footer-wrap .landing-footer {
+	position: static;
+	margin-top: 0;
+	height: 811px;
+}
+
+/* ── Entrance hidden states (no-preference; media rise+fade — the
+   closing-tiles treatment; text is word-revealed by the module). */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .cs-hero__img,
+	.landing-v2 .cs-row,
+	.landing-v2 .cs-more__card,
+	.landing-v2 .cs-intro__bar,
+	.landing-v2 .cs-rail-sticky {
+		opacity: 0;
+		transform: translateY(24px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	/* The rail blocks settle with a shorter rise as they first pin. */
+	.landing-v2 .cs-rail-sticky {
+		transform: translateY(12px);
+		transition-duration: 0.6s, 0.6s;
+	}
+
+	.landing-v2 .cs-hero__img.is-visible,
+	.landing-v2 .cs-row.is-visible,
+	.landing-v2 .cs-more__card.is-visible,
+	.landing-v2 .cs-intro__bar.is-visible,
+	.landing-v2 .cs-rail-sticky.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* ── Sub-1024 stack: the rail interleaves ABOVE its own image group
+   via flex order; everything flows. */
+@media (max-width: 1023px) {
+	.landing-v2 .cs-hero { padding-top: 160px; }
+	.landing-v2 .cs-hero__title { margin: 0 24px; }
+	.landing-v2 .cs-hero__subtitle { margin: 12px 24px 0; width: auto; }
+	.landing-v2 .cs-hero__img { margin-top: 48px; height: auto; aspect-ratio: 1728 / 1006; }
+
+	.landing-v2 .cs-intro { margin: 48px 24px 0; }
+	.landing-v2 .cs-intro__statement { font-size: 28px; line-height: 30px; }
+	.landing-v2 .cs-intro__indent { width: 120px; }
+	.landing-v2 .cs-intro__bar { display: none; }
+
+	.landing-v2 .cs-did { height: auto; margin: 48px 24px 0; }
+	.landing-v2 .cs-did__label { position: static; }
+	.landing-v2 .cs-did__col { position: static; margin-top: 24px; }
+
+	.landing-v2 .cs-divider { margin-top: 48px; }
+
+	.landing-v2 .cs-work {
+		margin-top: 48px;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+	}
+
+	.landing-v2 .cs-rail-seg { position: static; width: auto; height: auto; pointer-events: auto; }
+	.landing-v2 .cs-rail-sticky { position: static; width: auto; padding: 0 24px; background: none; }
+	.landing-v2 .cs-rail__desc,
+	.landing-v2 .cs-rail__bullets { width: auto; }
+
+	.landing-v2 .cs-rail-seg--1 { order: 0; }
+	.landing-v2 .cs-row:not(.cs-row--s2) { order: 1; }
+	.landing-v2 .cs-rail-seg--2 { order: 2; }
+	.landing-v2 .cs-row--s2 { order: 3; }
+
+	.landing-v2 .cs-row { margin: 0 24px; width: auto; flex-wrap: wrap; }
+	.landing-v2 .cs-row + .cs-row { margin-top: 0; }
+	.landing-v2 .cs-row__img { width: 100% !important; height: auto; aspect-ratio: 1095 / 640; }
+
+	.landing-v2 .cs-more { padding: 64px 0 96px; }
+	.landing-v2 .cs-more__pager { display: none; }
+	.landing-v2 .cs-more__card { position: static; width: auto; margin: 32px 24px 0; }
+	.landing-v2 .cs-more__imgwin { width: 100%; height: auto; aspect-ratio: 836 / 520; }
+	.landing-v2 .cs-more__carddesc { width: auto; }
+	.landing-v2 .cs-more__fade { display: none; }
+}

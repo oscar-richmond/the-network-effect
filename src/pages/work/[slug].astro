@@ -1,0 +1,202 @@
+---
+/**
+ * /work/[slug] — CASE STUDY template (Figma 32:3306, extracted
+ * 2026-08-07; the frame's 118px chrome — 35px #161616 top bar +
+ * 83px browser toolbar, both mockup context — subtracted).
+ * First instance: /work/yoxman-food-festival.
+ *
+ * EVERYTHING DATA-DRIVEN: static paths + all content from
+ * src/data/landing/case-studies.js (which references featured-work
+ * as the single source of truth for titles/slugs/indexes/tags).
+ * The client's remaining studies land as pure data drops.
+ *
+ * NATIVE document scroll through Lenis (case-study.js boots it —
+ * the landing's config verbatim); the sticky rail is native
+ * position:sticky, proven under this Lenis by /landing's own
+ * sticky stages. Chrome via the shared SiteShell; footer is the
+ * shared LandingFooter (flow-neutralised, same as /work).
+ *
+ * ═══ ALL COPY IS PLACEHOLDER ═══ pending the client's real
+ * account — flags live with the data. RIGHTS: Instagram-sourced
+ * imagery, elevated confirmation class — see case-studies.js.
+ *
+ * STAGING ONLY — same rule as /landing: nothing here is promoted
+ * anywhere until Oscar says so.
+ */
+import SiteShell from '../../layouts/SiteShell.astro';
+import LandingFooter from '../../components/landing/LandingFooter.astro';
+import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
+import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
+import { asset } from '../../utils/asset.js';
+import '../../styles/home.css';
+import '../../styles/landing/landing.css';
+import '../../styles/landing/case-study.css';
+import '../../styles/fonts.css';
+
+export function getStaticPaths() {
+  return CASE_STUDIES.map((study) => ({
+    params: { slug: study.base.slug },
+    props: { study },
+  }));
+}
+
+const { study } = Astro.props;
+const title = study.base.title.join(' ');
+const moreWork = study.moreWork.map((m) => ({
+  ...m,
+  card: FEATURED_CARDS.find((c) => c.slug === m.slug),
+  live: LIVE_CASE_SLUGS.includes(m.slug),
+}));
+---
+
+<SiteShell title={`${title} — The Network Effect`} bodyClass="landing-v2 case-page">
+  <main class="cs" data-case-study data-live-slugs={LIVE_CASE_SLUGS.join(',')}>
+    {/* ── A. HERO — title/subtitle white + difference over the bare
+        ground (blend walk: main/section ancestors carry no
+        transform/filter/opacity/z), then the full-width image. */}
+    <header class="cs-hero">
+      <h1 class="cs-hero__title" data-cs-hero-title>{title}</h1>
+      <p class="cs-hero__subtitle" data-cs-hero-subtitle>{study.subtitle}</p>
+      <figure class="cs-hero__img" data-cs-hero-img>
+        <img src={study.heroImg} alt={`${title} — hero image`} decoding="async" />
+      </figure>
+    </header>
+
+    {/* ── B. INTRO STATEMENT + the red accent bar (the holding-page
+        motif). The leading indent is an inline spacer element — the
+        footer-statement precedent (text-indent breaks the reveal
+        wrap's line grouping). */}
+    <section class="cs-intro" aria-label="Introduction">
+      <p class="cs-intro__statement" data-cs-intro
+        ><span class="cs-intro__indent" aria-hidden="true"></span>{study.intro}</p
+      >
+      <div class="cs-intro__bar" data-cs-bar aria-hidden="true"></div>
+    </section>
+
+    {/* ── C. WHAT WE DID — pillar columns from the data (services-
+        taxonomy strings only). */}
+    <section class="cs-did" aria-label="What we did" data-cs-did>
+      <h2 class="cs-did__label" data-cs-did-line>WHAT WE DID</h2>
+      {['immerse', 'connect', 'amplify'].map((pillar, c) => (
+        <div class={`cs-did__col cs-did__col--${c + 1}`}>
+          <h3 class="cs-did__pillar" data-cs-did-line data-cs-col={String(c)}>{pillar.toUpperCase()}</h3>
+          <ul class="cs-did__list">
+            {(study.whatWeDid[pillar] ?? []).map((item) => (
+              <li data-cs-did-line data-cs-col={String(c)}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <div class="cs-divider" aria-hidden="true"></div>
+
+    {/* ── D. THE STICKY RAIL — native position:sticky inside two
+        OVERLAPPING absolute segments (the file's own encoding):
+        seg1 (OUR WORK) spans the whole stream, so its label stays
+        pinned at 120 while seg2's OPAQUE sticky block — starting at
+        the 4th row's offset — travels up OVER it (covering, not
+        pushing) and pins at the same 120. Seg2 ends at the stream's
+        end, so native sticky releases its block exactly as the last
+        image's bottom passes the bullets' bottom. Rows are plain
+        flow at margin-left 609 (8px gaps); sub-1024 the section
+        flexes and `order` interleaves rail blocks above their own
+        image groups. Rail text is plain #161616 on the opaque
+        backing — no blends (per the file). */}
+    <section class="cs-work" aria-label="Our work" data-cs-work>
+      <div class="cs-rail-seg cs-rail-seg--1">
+        <div class="cs-rail-sticky" data-cs-rail>
+          <h2 class="cs-rail__label"><span class="cs-serrif">OUR</span> WORK</h2>
+          <p class="cs-rail__desc">{study.ourWork.desc}</p>
+        </div>
+      </div>
+      <div class="cs-rail-seg cs-rail-seg--2">
+        <div class="cs-rail-sticky" data-cs-rail>
+          <h2 class="cs-rail__label"><span class="cs-serrif">KEY</span> IMPACT</h2>
+          <ul class="cs-rail__bullets">
+            {study.keyImpact.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {study.ourWork.stream.map((row, r) => (
+        <div
+          class={`cs-row cs-row--${row.layout}${row.layout === 'pair' && !row.narrowFirst ? ' cs-row--wide-first' : ''}${r >= 3 ? ' cs-row--s2' : ''}`}
+          data-cs-row
+        >
+          {row.imgs.map((src) => (
+            <figure class="cs-row__img">
+              <img src={src} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" />
+            </figure>
+          ))}
+        </div>
+      ))}
+    </section>
+
+    {/* ── E. MORE WORK — refs resolved from featured-work (indexes
+        from the DATA: the file numbered Thunder /02 — its real /0N
+        renders from the single source, the slip corrected by
+        construction). Two entries → arrows INERT (a functional
+        pager arms only when data carries >2; commented in
+        case-study.js). */}
+    <div class="cs-divider" aria-hidden="true"></div>
+    <section class="cs-more" aria-label="More work" data-cs-more>
+      <h2 class="cs-more__title" data-cs-more-title>MORE WORK</h2>
+      <div class="cs-more__pager" aria-hidden="true">
+        {/* Inert at 2 entries — see case-study.js. Exported file
+            assets per the icon rule. */}
+        <button type="button" class="cs-more__arrow" disabled aria-hidden="true" tabindex="-1">
+          <img src={asset('/assets/landing/case/arrow-prev.svg')} alt="" width="32" height="32" />
+        </button>
+        <button type="button" class="cs-more__arrow" disabled aria-hidden="true" tabindex="-1">
+          <img src={asset('/assets/landing/case/arrow-next.svg')} alt="" width="32" height="32" />
+        </button>
+      </div>
+      {moreWork.map((m, i) => (
+        <a
+          class={`cs-more__card cs-more__card--${i + 1}`}
+          href={`/work/${m.slug}`}
+          data-cs-more-card
+          data-slug={m.slug}
+          data-live={m.live ? 'true' : 'false'}
+        >
+          <figure class="cs-more__imgwin">
+            <img src={m.img} alt="" loading="lazy" decoding="async" />
+          </figure>
+          <span class="cs-more__cardtitle" data-cs-card-title>{m.card.title.join(' ')}</span>
+          <span class="cs-more__cardindex">{m.card.index}</span>
+          <span class="cs-more__carddesc">{m.card.desc}</span>
+        </a>
+      ))}
+      <div class="cs-more__fade" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  {/* ── F. FOOTER — the shared component, flow-neutralised. */}
+  <div class="cs-footer-wrap" data-cs-footer>
+    <LandingFooter />
+  </div>
+</SiteShell>
+
+<script>
+  import { initCharRipple } from '../../scripts/char-ripple.js';
+  import { initNavEntrance } from '../../scripts/landing/nav-motion.js';
+  import { initCaseStudy } from '../../scripts/landing/case-study.js';
+
+  let cleanupCharRipple = initCharRipple();
+  let cleanupNavEntrance = initNavEntrance();
+  let cleanupCaseStudy = initCaseStudy();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupCharRipple();
+    cleanupNavEntrance();
+    cleanupCaseStudy();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupCharRipple = initCharRipple();
+    cleanupNavEntrance = initNavEntrance();
+    cleanupCaseStudy = initCaseStudy();
+  });
+</script>

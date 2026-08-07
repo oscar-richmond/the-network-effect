@@ -70,6 +70,8 @@ import { createDriftDriver } from '../holding/holding-shared.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
+import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 
 const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
 const IMG_H_PX = 616; // Oscar's rev: the pre-412 height (640) minus 24
@@ -108,10 +110,13 @@ export function initWorkPage() {
 
   const cleanups = [];
 
-  /* Placeholder links — /work/[slug] routes don't exist yet. */
+  /* Tiles navigate for LIVE case studies (Yoxman first); the rest
+     stay inert placeholders until their content drops. */
   const onLinkClick = (e) => {
     const link = e.target instanceof Element ? e.target.closest('[data-work-link]') : null;
-    if (link) e.preventDefault();
+    if (link instanceof HTMLElement && !LIVE_CASE_SLUGS.includes(link.dataset.slug ?? '')) {
+      e.preventDefault();
+    }
   };
   stage.addEventListener('click', onLinkClick);
   cleanups.push(() => stage.removeEventListener('click', onLinkClick));
@@ -458,43 +463,14 @@ export function initWorkPage() {
      vocabulary — column/row word reveals on its stagger bases, the
      image rise) + BACK TO TOP gliding the travel home. HOME stays a
      real navigation here (/landing). */
-  let footerWordEls = [];
-  const footerImg = footer?.querySelector('[data-footer-img]');
-  const stLines = footer ? Array.from(footer.querySelectorAll('[data-footer-st-line]')) : [];
-
+  /* The shared footer choreography (footer-motion.js — one copy
+     for /work and the case studies). */
+  let wrappedFooter = { wordEls: [], img: null };
   const wrapFooter = () => {
-    if (!footer) return;
-    stLines.forEach((line, i) => {
-      if (!(line instanceof HTMLElement)) return;
-      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapWordRevealElement(line);
-      footerWordEls.push(line);
-    });
-    Array.from(footer.querySelectorAll('[data-footer-col]')).forEach((col, i) => {
-      const base = i * 0.12;
-      if (col.matches('a, button')) {
-        wrapWordRevealElement(col, { baseDelay: base });
-        footerWordEls.push(col);
-      } else {
-        Array.from(col.children).forEach((child, j) => {
-          if (!(child instanceof HTMLElement)) return;
-          wrapWordRevealElement(child, { baseDelay: base + j * 0.06 });
-          footerWordEls.push(child);
-        });
-      }
-    });
-    Array.from(footer.querySelectorAll('.landing-footer__rowitem')).forEach((item, i) => {
-      if (!(item instanceof HTMLElement)) return;
-      wrapWordRevealElement(item, { baseDelay: 0.9 + i * 0.04 });
-      footerWordEls.push(item);
-    });
+    wrappedFooter = wrapFooterReveals(footer instanceof HTMLElement ? footer : null);
   };
-
   const playFooterEntrance = () => {
-    footerWordEls.forEach((el) => playLineRevealElement(el));
-    timeouts.push(setTimeout(() => {
-      if (footerImg) footerImg.classList.add('is-visible');
-    }, 240));
+    playFooterReveals(wrappedFooter, (fn, ms) => timeouts.push(setTimeout(fn, ms)));
   };
 
   const topLinks = footer ? Array.from(footer.querySelectorAll('[data-footer-top]')) : [];
