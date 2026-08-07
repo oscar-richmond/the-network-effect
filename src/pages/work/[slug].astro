@@ -222,7 +222,10 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
         <path d={ARROW_PATH} fill="currentColor" />
       </svg>
     </button>
-    <button type="button" class="cs-lightbox__arrow cs-lightbox__close" data-cs-lb-close-btn aria-label="Close gallery">×</button>
+    {/* CLOSE — the primary-CTA pill (Oscar's rev), ripple-wired. */}
+    <button type="button" class="cs-lightbox__closebtn" data-cs-lb-close-btn data-char-ripple-trigger aria-label="Close gallery">
+      <span data-char-ripple>CLOSE</span>
+    </button>
   </div>
 
   {/* ── F. FOOTER — the landing parallax reveal, natively (Oscar's

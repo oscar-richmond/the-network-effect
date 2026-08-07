@@ -524,13 +524,43 @@ body.case-page {
 	object-fit: contain;
 }
 
-/* The CTA-family controls (the more-work arrow treatment). */
+/* The hidden-vs-display lesson AGAIN (Oscar's report: the hidden
+   video peeking below the image): display:block beats [hidden]'s
+   UA rule — the attribute must always win. */
+.landing-v2 .cs-lightbox__media[hidden] {
+	display: none !important;
+}
+
+/* The image-change WIPE (Oscar's rev): a freeze of the OUTGOING
+   media clipped away LEFT-TO-RIGHT (hard clip edge — the house
+   lr-clip vocabulary) while it blurs, revealing the new media
+   beneath. Driven by case-study.js per swap. */
+.landing-v2 .cs-lightbox__wipe {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+	clip-path: inset(0 0 0 0);
+	filter: blur(0);
+}
+
+.landing-v2 .cs-lightbox__wipe.is-wiping {
+	transition: clip-path 0.6s cubic-bezier(0.42, 0, 0.24, 1),
+		filter 0.6s cubic-bezier(0.42, 0, 0.24, 1);
+	clip-path: inset(0 0 0 100%);
+	filter: blur(6px);
+}
+
+/* The CTA-family controls — 40px circles (Oscar's rev; the arrow
+   glyph scales on ratio: 10.5 x 40/32 = 13.1). */
 .landing-v2 .cs-lightbox__arrow {
 	position: absolute;
 	top: 50%;
-	margin-top: -16px;
-	width: 32px;
-	height: 32px;
+	margin-top: -20px;
+	width: 40px;
+	height: 40px;
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
@@ -552,17 +582,39 @@ body.case-page {
 .landing-v2 .cs-lightbox__arrow--prev { left: 24px; }
 .landing-v2 .cs-lightbox__arrow--next { right: 24px; }
 
-.landing-v2 .cs-lightbox__close {
-	top: 40px;
-	right: 24px;
-	margin-top: 0;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
-	font-size: 18px;
-	line-height: 1;
+.landing-v2 .cs-lightbox__arrow .cs-more__arrow-svg {
+	width: 13.1px;
+	height: 13.1px;
 }
 
-.landing-v2 .cs-lightbox__arrow:focus-visible {
+/* CLOSE — the primary-CTA pill (MORE INFO family: fill, blue
+   Dazzed Bold 14, the 32px CTA height), same entrance fade as the
+   arrows. */
+.landing-v2 .cs-lightbox__closebtn {
+	position: absolute;
+	top: 40px;
+	right: 24px;
+	height: 32px;
+	padding: 0 14px;
+	border: 0;
+	background: var(--landing-svc-btn-fill);
+	color: var(--landing-accent-blue);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 14px;
+	cursor: pointer;
+	opacity: 0;
+	filter: blur(4px);
+	transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+}
+
+.landing-v2 .cs-lightbox.is-open .cs-lightbox__closebtn {
+	opacity: 1;
+	filter: blur(0);
+}
+
+.landing-v2 .cs-lightbox__arrow:focus-visible,
+.landing-v2 .cs-lightbox__closebtn:focus-visible {
 	outline: 2px solid #232a89;
 	outline-offset: 2px;
 }

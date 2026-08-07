@@ -321,23 +321,49 @@ export function initCaseStudy() {
       }
     };
 
+    /* A freeze-frame of the CURRENTLY visible media (img: clone;
+       video: canvas frame grab — same-origin assets) for the
+       swap wipe. */
+    const makeSnapshot = () => {
+      if (lbImg instanceof HTMLImageElement && !lbImg.hidden && lbImg.src) {
+        const snap = document.createElement('img');
+        snap.src = lbImg.src;
+        snap.className = 'cs-lightbox__wipe';
+        return snap;
+      }
+      if (lbVideo instanceof HTMLVideoElement && !lbVideo.hidden && lbVideo.videoWidth) {
+        try {
+          const c = document.createElement('canvas');
+          c.width = lbVideo.videoWidth;
+          c.height = lbVideo.videoHeight;
+          c.getContext('2d')?.drawImage(lbVideo, 0, 0);
+          const snap = document.createElement('img');
+          snap.src = c.toDataURL('image/jpeg', 0.8);
+          snap.className = 'cs-lightbox__wipe';
+          return snap;
+        } catch { return null; }
+      }
+      return null;
+    };
+
     const showMedia = (i, instant) => {
       lbIdx = ((i % items.length) + items.length) % items.length; /* wrap */
       if (instant || reduced || !(lbStage instanceof HTMLElement)) {
         applyMedia(lbIdx);
         return;
       }
-      /* The house swap: blur-out, set, blur-in (self filter —
-         blend-free element, safe). */
-      lbStage.style.transition = 'opacity 0.15s ease-in, filter 0.15s ease-in';
-      lbStage.style.opacity = '0';
-      lbStage.style.filter = 'blur(6px)';
-      schedule(() => {
-        applyMedia(lbIdx);
-        lbStage.style.transition = 'opacity 0.25s ease-out, filter 0.25s ease-out';
-        lbStage.style.opacity = '';
-        lbStage.style.filter = '';
-      }, 160);
+      /* The L->R WIPE (Oscar's rev): the outgoing media freezes on
+         top and clips away left-to-right while blurring (the house
+         clip-reveal vocabulary), uncovering the new media set
+         beneath — one transient overlay per swap, self-removing. */
+      const snap = makeSnapshot();
+      applyMedia(lbIdx);
+      if (snap) {
+        lbStage.appendChild(snap);
+        void snap.offsetWidth; /* commit the un-wiped state */
+        snap.classList.add('is-wiping');
+        schedule(() => snap.remove(), 700);
+      }
     };
 
     const openLb = (i, opener) => {
