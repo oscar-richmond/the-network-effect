@@ -83,6 +83,7 @@ const TILE_LOGO_GAP_PX = 8; // left edge 8px left of the logo's T
 const BAND_FADE_PX = 150; // radii-drain window at the last image's half
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
+const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
 /* The flagged alternative: false = the docked meta FADES in place
    as the successor docks, instead of being pushed out. */
 const PUSH_HANDOFF = true;
@@ -318,6 +319,16 @@ export function initWorkPage() {
       }
       if (!PUSH_HANDOFF && !(succY <= DOCK_Y_PX + u.blockH && i === docked)) {
         u.el.style.opacity = '';
+      }
+      /* THE OVERTAKE WIPE (Oscar's rev): as the incoming meta rides
+         over the docked one, the outgoing text blurs + fades with
+         its displacement — the services roll-over / hero exit-wipe
+         vocabulary, pure f(travel), reversible. Plain black ink —
+         filters carry no blend risk here. */
+      if (PUSH_HANDOFF) {
+        const wipeT = clamp((DOCK_Y_PX - y) / Math.max(u.blockH, 1), 0, 1);
+        u.el.style.opacity = wipeT > 0 ? (1 - wipeT).toFixed(3) : '';
+        u.el.style.filter = wipeT > 0 ? `blur(${(META_WIPE_BLUR_PX * wipeT).toFixed(2)}px)` : '';
       }
       u.el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
       succY = y;

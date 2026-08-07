@@ -275,17 +275,55 @@ export function initCaseStudy() {
       }));
     });
 
-    /* Rail blocks — settle as each first pins (its segment's top
-       reaching the 120px pin line). */
+    /* Rail blocks — settle as each first pins; once settled, the
+       entrance's CSS transition is REMOVED (the house lesson: a CSS
+       transition on opacity would intercept the scrubbed cover
+       wipe's per-frame writes below). */
     document.querySelectorAll('.cs-rail-seg').forEach((seg) => {
       const block = seg.querySelector('[data-cs-rail]');
       triggers.push(ScrollTrigger.create({
         trigger: seg,
         start: 'top 60%',
         once: true,
-        onEnter: () => block?.classList.add('is-visible'),
+        onEnter: () => {
+          block?.classList.add('is-visible');
+          schedule(() => {
+            if (block instanceof HTMLElement) block.style.transition = 'none';
+          }, 700);
+        },
       }));
     });
+
+    /* THE COVER WIPE (Oscar's rev): as KEY IMPACT's block rides up
+       over the pinned OUR WORK, the outgoing text blurs + fades —
+       the services roll-over / hero exit-wipe vocabulary, scrubbed
+       over the exact cover window (seg2's block travelling from
+       the outgoing block's bottom to the 120px pin line; length =
+       the outgoing block's height), reversible by construction.
+       KEEP 1944/120 in step with the rail geometry. */
+    const seg1Block = document.querySelector('.cs-rail-seg--1 [data-cs-rail]');
+    const workSec = document.querySelector('[data-cs-work]');
+    if (seg1Block instanceof HTMLElement && workSec instanceof HTMLElement) {
+      const coverTween = gsap.fromTo(seg1Block,
+        { opacity: 1, filter: 'blur(0px)' },
+        {
+          opacity: 0,
+          filter: 'blur(6px)',
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: workSec,
+            start: () => `top+=${(1944 - 120 - seg1Block.offsetHeight).toFixed(0)} top`,
+            end: () => `top+=${(1944 - 120).toFixed(0)} top`,
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+      cleanups.push(() => {
+        coverTween.scrollTrigger?.kill();
+        coverTween.kill();
+      });
+    }
 
     /* More work — title reveal, cards stagger, card text rides. */
     const moreTitle = document.querySelector('[data-cs-more-title]');
