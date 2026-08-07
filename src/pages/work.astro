@@ -122,19 +122,16 @@ import '../styles/fonts.css';
   </div>
 
   {/* Custom cursor — hover:hover + pointer:fine only (work-page.js
-      gates it; touch taps the link directly). TWO SIBLING FIXED
-      elements, each carrying difference ITSELF (the nav-logo shape:
-      a fixed element always makes a stacking context, so a plain
-      wrapper would isolate its children's blend to nothing — the
-      blend must ride the context-creating elements). Outside the
-      stage: the stage transforms during the footer reveal, which
-      would re-root fixed descendants. aria-hidden: decoration, the
-      tiles are the real affordance. */}
-  <div class="work-cursor__circle" data-work-cursor-circle aria-hidden="true"></div>
-  <div class="work-cursor__label" data-work-cursor-label aria-hidden="true">
-    <span>View project</span>
-    <span class="work-cursor__plus">+</span>
-  </div>
+      gates it; touch taps the link directly). The case-study
+      GALLERY-CURSOR construction (Oscar's rev — was the big dot +
+      label pair): ONE fixed element carrying difference ITSELF
+      (fixed always makes a stacking context, so the blend must ride
+      the context-creating element), left/top follow, centring
+      margins measured in JS. Outside the stage: the stage
+      transforms during the footer reveal, which would re-root fixed
+      descendants. aria-hidden: decoration, the tiles are the real
+      affordance. */}
+  <div class="work-cursor" data-work-cursor aria-hidden="true">[ VIEW CASE STUDY + ]</div>
 </SiteShell>
 
 <script>

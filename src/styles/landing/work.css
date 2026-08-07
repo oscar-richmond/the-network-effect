@@ -10,14 +10,14 @@
  * landing footer (z0) and slides up 811px at the end of the travel
  * — the landing parallax uncover, virtualised.
  *
- * BLEND WALK: the difference elements are the cursor's circle and
- * label — each a TOP-LEVEL FIXED element carrying difference
- * ITSELF (the nav-logo shape: fixed always creates a stacking
- * context, so a wrapper would isolate the blend to nothing) and
- * positioned via left/top, never transform. They live OUTSIDE the
- * stage (it transforms during the footer reveal). The header/meta
- * are plain brand-black ink. The stage's z-index:1 creates a
- * stacking context but contains no blend elements — safe.
+ * BLEND WALK: the page's one difference element is the text cursor
+ * — a TOP-LEVEL FIXED element carrying difference ITSELF (the
+ * nav-logo shape: fixed always creates a stacking context, so a
+ * wrapper would isolate the blend to nothing) and positioned via
+ * left/top, never transform. It lives OUTSIDE the stage (it
+ * transforms during the footer reveal). The header/meta are plain
+ * brand-black ink. The stage's z-index:1 creates a stacking
+ * context but contains no blend elements — safe.
  */
 
 body.work-page {
@@ -235,56 +235,32 @@ body.work-page {
 }
 
 /* ── Custom cursor (hover:hover + pointer:fine only, wired in JS).
-   ONE large difference dot + label (Oscar's rev): circle and label
-   are TOP-LEVEL FIXED SIBLINGS, each blending difference ITSELF —
-   the nav-logo treatment — positioned via left/top (never
-   transform). The site's canvas dot is hidden while this cursor is
-   live (no black dot in the middle). */
-.landing-v2 .work-cursor__circle,
-.landing-v2 .work-cursor__label {
+   The case-study GALLERY-CURSOR construction (Oscar's rev — was
+   the big dot + label pair): ONE fixed element, difference on the
+   element ITSELF (the nav-logo treatment), left/top follow (never
+   transform), self blur-fade in/out (the house 0.25s ease-out);
+   the site's canvas dot hides while it is live. Centring margins
+   measured once in JS (no transform allowed on a blend root). */
+.landing-v2 .work-cursor {
 	position: fixed;
 	left: 0;
 	top: 0;
-	width: 160px;
-	margin-left: -80px;
 	z-index: 9999;
 	pointer-events: none;
 	mix-blend-mode: difference;
+	color: #fff;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 16px;
+	white-space: nowrap;
 	visibility: hidden;
 	opacity: 0;
 	filter: blur(6px);
 	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
 }
 
-.landing-v2 .work-cursor__circle {
-	height: 160px;
-	margin-top: -80px;
-	border-radius: 50%;
-	background: #fff;
-}
-
-.landing-v2 .work-cursor__label {
-	margin-top: -12px; /* label band sits at 68px into the 160 circle */
-	display: flex;
-	justify-content: center;
-	align-items: baseline;
-	gap: 8px;
-	color: #fff;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 500;
-	font-size: 14px;
-	line-height: 16px;
-}
-
-.landing-v2 .work-cursor__plus {
-	font-family: 'Serrif', serif;
-	font-weight: 700;
-	font-synthesis: none;
-	font-size: 15px;
-}
-
-.landing-v2 .work-cursor__circle.is-active,
-.landing-v2 .work-cursor__label.is-active {
+.landing-v2 .work-cursor.is-active {
 	visibility: visible;
 	opacity: 1;
 	filter: blur(0);
@@ -373,8 +349,7 @@ body.work-page {
 	/* The travelling meta block is desktop machinery. */
 	.landing-v2 .work-page__metas { display: none; }
 	.landing-v2 .work-stage__band { display: none; }
-	.landing-v2 .work-cursor__circle,
-	.landing-v2 .work-cursor__label { display: none; }
+	.landing-v2 .work-cursor { display: none; }
 	.landing-v2 .work-stage { will-change: auto; transform: none !important; }
 	.landing-v2 .work-footer-wrap { position: static; height: auto; }
 }

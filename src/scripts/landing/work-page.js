@@ -43,15 +43,16 @@
  * clip above the dock (belt — nothing crosses it now). Docking is
  * announced via a polite live region. NOTE: brand-black ink — no
  * blend rides these transforms; the page's only difference
- * elements remain the cursor pair.
+ * element remains the cursor.
  *
- * CURSOR: one large difference dot + label — two top-level fixed
- * siblings each blending difference themselves (the nav-logo
- * shape; a wrapper would isolate the blend), following via
- * left/top at the canvas-cursor 0.25 lerp. The site's canvas dot
- * hides while this cursor is live. Gated (hover:hover)+(pointer:
- * fine) — NOTE: false system-wide on Oscar's machine; verify the
- * cursor on another input device.
+ * CURSOR: [ VIEW CASE STUDY + ] — the case-study gallery-cursor
+ * construction (Oscar's rev; was the big dot + label pair): one
+ * top-level fixed element blending difference itself (the
+ * nav-logo shape; a wrapper would isolate the blend), centring
+ * margins measured in JS, following via left/top at the
+ * canvas-cursor 0.25 lerp. The site's canvas dot hides while it
+ * is live. Gated (hover:hover)+(pointer:fine) — NOTE: false
+ * system-wide on Oscar's machine; verify on another input device.
  *
  * PLACEHOLDER LINKS: tiles link to /work/[slug] — routes that don't
  * exist yet; navigation is prevented here until they do.
@@ -631,17 +632,24 @@ export function initWorkPage() {
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
   cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
 
-  /* ── Custom cursor — one large difference dot + label (gate note:
-     hover/fine reads FALSE system-wide on Oscar's machine — verify
-     on another device). */
-  const cursorEls = [
-    document.querySelector('[data-work-cursor-circle]'),
-    document.querySelector('[data-work-cursor-label]'),
-  ].filter((el) => el instanceof HTMLElement);
+  /* ── Custom cursor — [ VIEW CASE STUDY + ] (Oscar's rev — was the
+     big dot + label pair; now the case-study gallery-cursor
+     construction verbatim, so the dot-to-text handoff matches that
+     page exactly). Gate note: hover/fine reads FALSE system-wide on
+     Oscar's machine — verify on another device. */
+  const workCursor = document.querySelector('[data-work-cursor]');
   const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!reduced && fineHover && cursorEls.length === 2) {
+  if (!reduced && fineHover && workCursor instanceof HTMLElement) {
     document.documentElement.classList.add('work-cursor-on');
     document.body.classList.add('work-cursor-on');
+    /* Centre on the pointer without transform (blend root): the
+       measured half-extent becomes a static margin. */
+    const centre = () => {
+      workCursor.style.marginLeft = `${(-workCursor.offsetWidth / 2).toFixed(1)}px`;
+      workCursor.style.marginTop = `${(-workCursor.offsetHeight / 2).toFixed(1)}px`;
+    };
+    const fontsForCursor = document.fonts?.ready ?? Promise.resolve();
+    fontsForCursor.then(centre);
     let cx = -200;
     let cy = -200;
     let tx = -200;
@@ -651,11 +659,9 @@ export function initWorkPage() {
     const tick = () => {
       cx += (tx - cx) * CURSOR_LERP;
       cy += (ty - cy) * CURSOR_LERP;
-      cursorEls.forEach((el) => {
-        /* left/top, never transform — these ARE the blend elements. */
-        el.style.left = `${cx.toFixed(1)}px`;
-        el.style.top = `${cy.toFixed(1)}px`;
-      });
+      /* left/top, never transform — this IS the blend element. */
+      workCursor.style.left = `${cx.toFixed(1)}px`;
+      workCursor.style.top = `${cy.toFixed(1)}px`;
       cursorRaf = window.requestAnimationFrame(tick);
     };
     const onMove = (e) => {
@@ -668,11 +674,11 @@ export function initWorkPage() {
       if (over) {
         cx = tx;
         cy = ty;
-        cursorEls.forEach((el) => el.classList.add('is-active'));
+        workCursor.classList.add('is-active');
         document.documentElement.classList.add('work-cursor-live');
         if (!cursorRaf) cursorRaf = window.requestAnimationFrame(tick);
       } else {
-        cursorEls.forEach((el) => el.classList.remove('is-active'));
+        workCursor.classList.remove('is-active');
         document.documentElement.classList.remove('work-cursor-live');
         window.cancelAnimationFrame(cursorRaf);
         cursorRaf = 0;
