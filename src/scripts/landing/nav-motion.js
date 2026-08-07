@@ -30,8 +30,12 @@ export function getNavParts() {
 export function ensureLogoChars() {
   const logo = document.querySelector('.home__logo');
   if (!(logo instanceof HTMLElement) || logo.querySelector('.cr-char')) return;
-  const text = logo.textContent;
-  logo.textContent = '';
+  /* The logo text lives inside its home link when present (the
+     clickable-logo rev) — build the chars THERE so the anchor
+     survives; the sweep still finds .cr-char under .home__logo. */
+  const host = logo.querySelector('.home__logo-link') ?? logo;
+  const text = host.textContent;
+  host.textContent = '';
   const sr = document.createElement('span');
   sr.textContent = text;
   sr.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)';
@@ -43,7 +47,7 @@ export function ensureLogoChars() {
     s.textContent = ch === ' ' ? ' ' : ch;
     box.appendChild(s);
   }
-  logo.append(sr, box);
+  host.append(sr, box);
 }
 
 /** A part's sweep units: its chars (plus a trailing arrow where

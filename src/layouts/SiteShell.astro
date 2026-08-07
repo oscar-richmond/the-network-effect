@@ -44,7 +44,11 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
         </span>
       </button>
     </nav>
-    <h1 class="home__logo">THE NETWORK EFFECT</h1>
+    {/* Logo links home (Oscar's rev). The h1 stays the styled/blend/
+        sweep element (and /landing's only h1); the anchor inside is
+        the click surface — nav-motion builds the entrance chars
+        INSIDE it so the link survives the char wrap. */}
+    <h1 class="home__logo"><a class="home__logo-link" href="/landing">THE NETWORK EFFECT</a></h1>
     {/* "LET'S CHAT" replaces the visible address (Oscar's rev) — the
         mailto target is UNCHANGED. The arrow is Oscar's supplied SVG
         inlined per his spec: fill="currentColor" (the asset's

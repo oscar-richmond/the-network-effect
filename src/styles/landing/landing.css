@@ -129,6 +129,18 @@
 	top: -0.48px;
 }
 
+/* LOGO LINK (Oscar's rev): the nav logo is clickable, home to
+   /landing. The h1 keeps the whole treatment (blend/position/type,
+   pointer-events: none per the base rule); the anchor inside is the
+   click surface — plain inheritance, its own pointer-events opt-in
+   (the topbar-children pattern). The canvas dot expands over it via
+   the cursor's `a` selector, nothing extra needed. */
+.landing-v2 .home__logo-link {
+	color: inherit;
+	text-decoration: none;
+	pointer-events: auto;
+}
+
 /* MENU (Oscar's rev): caps live in the markup; the underline that
    menu.css puts on the resting label is removed here. NOTE, flagged
    in the report: the toggle has never had a :hover rule — the
