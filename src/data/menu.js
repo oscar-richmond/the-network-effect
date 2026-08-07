@@ -15,6 +15,24 @@ export const menuLinks = [
   { href: 'services', label: 'Services', image: 'services.jpg' },
 ];
 
+/** The NEW BUILD's menu items (SiteShell pages — /landing, /work and
+ *  every page to come; the old routes above keep menuLinks). Oscar's
+ *  rev 2026-08-07: Home / Founders / Services / Work / Contact, split
+ *  into two rows in SiteShell (3 + 2, list order). Founders is
+ *  UNBUILT (404 — the old menu's pre-existing behaviour, unchanged);
+ *  Services is the standalone partners-wheel page; Contact is the
+ *  LET'S CHAT mailto (absolute hrefs pass through un-prefixed).
+ *  work.jpg is a copy of the /work carousel's first tile (placeholder
+ *  imagery — same founder sign-off caveat as everything else).
+ * @type {MenuLink[]} */
+export const landingMenuLinks = [
+  { href: 'landing', label: 'Home', image: 'home.png' },
+  { href: 'founders', label: 'Founders', image: 'team.png' },
+  { href: 'services', label: 'Services', image: 'services.jpg' },
+  { href: 'work', label: 'Work', image: 'work.jpg' },
+  { href: 'mailto:hello@networkeffectagency.co.uk', label: 'Contact', image: 'contact.png' },
+];
+
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */
 
 /** @type {MenuFooterLink[]} */

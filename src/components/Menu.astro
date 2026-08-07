@@ -3,8 +3,29 @@ import { menuLinks, menuFooterLinks } from '../data/menu.js';
 import { asset } from '../utils/asset.js';
 import '../styles/menu.css';
 
+/**
+ * rows (optional): row-grouped links for the NEW BUILD's two-row menu
+ * (SiteShell passes it). WITHOUT the prop the markup below is
+ * byte-identical to the pre-prop component — the old routes render
+ * exactly as before (the SiteShell-extraction precedent). data-index
+ * runs GLOBALLY across rows: menu.js's hover blur/image swap keys on
+ * it. Absolute hrefs (mailto:) pass through un-prefixed.
+ */
+interface MenuLink {
+  href: string;
+  label: string;
+  image: string;
+}
+interface Props {
+  rows?: MenuLink[][];
+}
+
+const { rows = null } = Astro.props;
+const flatLinks = rows ? rows.flat() : menuLinks;
+
 const base = import.meta.env.BASE_URL;
-const defaultImage = asset(`/assets/images/menu/${menuLinks[0]?.image ?? 'home.png'}`);
+const defaultImage = asset(`/assets/images/menu/${flatLinks[0]?.image ?? 'home.png'}`);
+const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`);
 ---
 
 <div class="site-menu" data-menu id="site-menu" aria-hidden="true">
@@ -14,16 +35,38 @@ const defaultImage = asset(`/assets/images/menu/${menuLinks[0]?.image ?? 'home.p
       <div class="site-menu__container">
         <nav class="site-menu__body" data-menu-body aria-label="Main">
           {
-            menuLinks.map((link, index) => (
-              <a
-                href={`${base}${link.href}`}
-                class="site-menu__link"
-                data-index={String(index)}
-                data-src={asset(`/assets/images/menu/${link.image}`)}
-              >
-                {link.label}
-              </a>
-            ))
+            rows ? (
+              rows.map((row, rowIndex) => (
+                <div class="site-menu__row">
+                  {row.map((link, linkIndex) => {
+                    const index = rows
+                      .slice(0, rowIndex)
+                      .reduce((n, r) => n + r.length, 0) + linkIndex;
+                    return (
+                      <a
+                        href={linkHref(link.href)}
+                        class="site-menu__link"
+                        data-index={String(index)}
+                        data-src={asset(`/assets/images/menu/${link.image}`)}
+                      >
+                        {link.label}
+                      </a>
+                    );
+                  })}
+                </div>
+              ))
+            ) : (
+              menuLinks.map((link, index) => (
+                <a
+                  href={`${base}${link.href}`}
+                  class="site-menu__link"
+                  data-index={String(index)}
+                  data-src={asset(`/assets/images/menu/${link.image}`)}
+                >
+                  {link.label}
+                </a>
+              ))
+            )
           }
         </nav>
 

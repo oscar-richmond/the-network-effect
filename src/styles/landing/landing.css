@@ -129,6 +129,28 @@
 	top: -0.48px;
 }
 
+/* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
+   and Menu.astro are /old-shared — every change here is scoped. */
+
+/* Two menu rows, 40px apart: the body stacks the row wrappers; items
+   keep their existing padding-right rhythm inside each row. */
+.landing-v2 .site-menu__body {
+	flex-direction: column;
+	gap: 40px;
+}
+
+.landing-v2 .site-menu__row {
+	display: flex;
+	flex-wrap: nowrap;
+}
+
+/* Panel ground: the landing grey instead of white. The grain layer
+   (z 9000) already rides ABOVE the menu (z 500), so the static
+   effect covers the open menu for free. */
+.landing-v2 .site-menu__panel {
+	background-color: #eeeef0;
+}
+
 /* LOGO LINK (Oscar's rev): the nav logo is clickable, home to
    /landing. The h1 keeps the whole treatment (blend/position/type,
    pointer-events: none per the base rule); the anchor inside is the
@@ -157,12 +179,16 @@
 	font-weight: 600;
 }
 
-/* Exact overlay (Oscar's rev): menu.css anchors the CLOSE label at
-   the BUTTON's top, but the inline MENU span sits 1px lower inside
-   the button's line box (measured: menu top-in-button 1.0, close
-   0.0). One px down puts CLOSE precisely on MENU's footprint. */
+/* Exact overlay (Oscar's rev 2, 2026-08-07 — supersedes the +1px
+   box-top alignment, which aligned the BOXES but left the TEXT 4px
+   low): the ✗ inherits the unitless 1.333 line-height at its
+   inflated 1em+4px font, so its 21.33px line box drags the
+   baseline-aligned CLOSE text below the resting MENU label
+   (measured with the old +1px live, fonts loaded: close-text top 38
+   vs MENU 34 → 4px). 1 − 4 = −3px puts the CLOSE glyphs precisely
+   on MENU's footprint; the ✗/CLOSE internal relation is untouched. */
 .landing-v2 .home__menu-toggle-label--close {
-	top: 1px;
+	top: -3px;
 }
 
 /* With the menu open, the whole topbar lifts above the panel (500)
