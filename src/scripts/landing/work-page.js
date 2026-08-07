@@ -23,13 +23,26 @@
  * Clamping rebases the driver offset so reversal is immediate (no
  * rubber-band debt from momentum pushing past the ends).
  *
- * ACTIVE DETECTION: the tile whose image band contains the stage's
- * vertical centre, with a 24px deadzone (hysteresis: inside gaps or
- * the deadzone the previous winner holds — no flutter). The meta
- * swaps via one persistent out→set→in blur-fade state machine (the
- * industry-hover pattern): rapid traversal retargets the pending
- * project; nothing stacks. The /0N index derives 6px from the
- * title's rendered right edge per swap (Oscar's rev).
+ * TRAVEL-AND-DOCK METAS (Oscar's rev — replaces swap-in-place):
+ * each project's title + /0N + description is a per-project unit in
+ * the left column riding its image's vertical position; it PINS at
+ * the dock (441, the old meta position) while its project
+ * traverses, and the successor pushes it up and out through the
+ * layer's clip line at the dock (the iOS-sticky-header mechanic —
+ * both visible during the handoff, contact push). Per frame:
+ *   y_i = min( max(linkedY_i, dockY), y_{i+1} − blockH_i )
+ * computed successor-first — pure f(travel), reversible by
+ * construction (flicks and mid-push reversals mirror exactly).
+ * blockH is measured per unit (multi-line descriptions push
+ * further); the /0N derives 6px off each unit's title. The layer
+ * sits UNDER the blur band like the images (text enters through
+ * the blur) and is clipped above the dock (a pushed meta exits
+ * cleanly, never overlapping the pills). Docking is announced via
+ * a polite live region. ALTERNATIVE (one-flag switch if the push
+ * reads badly): PUSH_HANDOFF=false fades the docked meta in place
+ * instead of displacing it. NOTE: the metas are brand-black ink
+ * (Oscar's standing rev) — no blend rides these transforms; the
+ * page's only difference elements remain the cursor pair.
  *
  * CURSOR: one large difference dot + label — two top-level fixed
  * siblings each blending difference themselves (the nav-logo
@@ -66,9 +79,11 @@ const END_GAP_PX = 80; // ground below the last image before the reveal
 const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
 const TILE_LOGO_GAP_PX = 8; // left edge 8px left of the logo's T
 const BAND_FADE_PX = 150; // radii-drain window at the last image's half
-const META_OUT_S = 0.5; // the un-reveal's tightened duration (nav-out precedent)
-const DEADZONE_PX = 24;
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
+const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
+/* The flagged alternative: false = the docked meta FADES in place
+   as the successor docks, instead of being pushed out. */
+const PUSH_HANDOFF = true;
 const FOOTER_REVEAL_PX = 811; // the landing footer's full height
 const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
 const CURSOR_LERP = 0.25; // the canvas-cursor feel
@@ -87,10 +102,8 @@ export function initWorkPage() {
   const carousel = document.querySelector('[data-work-carousel]');
   if (!(stage instanceof HTMLElement) || !(carousel instanceof HTMLElement)) return () => {};
 
-  const metaTitle = document.querySelector('[data-work-meta-title]');
-  const metaIndex = document.querySelector('[data-work-meta-index]');
-  const metaDesc = document.querySelector('[data-work-meta-desc]');
-  const metaEls = [metaTitle, metaIndex, metaDesc].filter((el) => el instanceof HTMLElement);
+  const metasLayer = document.querySelector('[data-work-metas]');
+  const metaLive = document.querySelector('[data-work-meta-live]');
   const footer = document.querySelector('[data-work-footer]');
 
   const cleanups = [];
@@ -138,9 +151,22 @@ export function initWorkPage() {
     stage.style.setProperty('--work-tile-w', `${width.toFixed(1)}px`);
   };
 
-  /* ── The set + tiles (finite — no ring, no padding). */
+  /* ── The set + tiles + meta units (finite — no ring). Metas are
+     rebuilt WITH the tiles (they belong to projects), so filtered
+     sets inherit the dock mechanism automatically. */
   let set = WORK_PROJECTS;
   let tiles = [];
+  let units = [];
+
+  const measureUnits = () => {
+    units.forEach((u) => {
+      const tRect = u.title.getBoundingClientRect();
+      const uRect = u.el.getBoundingClientRect();
+      u.index.style.left = `${(tRect.right - uRect.left + INDEX_GAP_PX).toFixed(1)}px`;
+      /* Push clearance: the unit's content height (desc bottom). */
+      u.blockH = u.desc.offsetTop + u.desc.offsetHeight;
+    });
+  };
 
   const buildTiles = () => {
     /* The network section's applySetToTrack rebuild: wipe,
@@ -164,6 +190,29 @@ export function initWorkPage() {
       carousel.appendChild(a);
       return { el: a, project: p };
     });
+    if (metasLayer instanceof HTMLElement) {
+      metasLayer.textContent = '';
+      units = set.map((p, i) => {
+        const u = document.createElement('div');
+        u.className = 'work-meta-unit';
+        u.setAttribute('data-work-meta-unit', '');
+        u.dataset.slug = p.slug;
+        const title = document.createElement('h2');
+        title.className = 'work-page__meta-title';
+        title.textContent = p.title.join(' ');
+        const index = document.createElement('p');
+        index.className = 'work-page__meta-index';
+        index.textContent = p.index;
+        const desc = document.createElement('p');
+        desc.className = 'work-page__meta-desc';
+        desc.textContent = p.desc;
+        u.append(title, index, desc);
+        u.style.transform = `translate3d(0, ${(BASE_TOP_PX + i * PITCH_PX).toFixed(0)}px, 0)`;
+        metasLayer.appendChild(u);
+        return { el: u, project: p, title, index, desc, blockH: 150 };
+      });
+      measureUnits();
+    }
   };
 
   /* Travel bounds: phase 1 ends when the last image's bottom meets
@@ -208,6 +257,7 @@ export function initWorkPage() {
       const y = BASE_TOP_PX + i * PITCH_PX - p1;
       el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
     });
+    layoutMetas(p1);
     applyBand();
     const revealT = clamp(pos - carouselMax(), 0, FOOTER_REVEAL_PX);
     stage.style.transform = revealT > 0 ? `translate3d(0, ${(-revealT).toFixed(2)}px, 0)` : '';
@@ -219,98 +269,55 @@ export function initWorkPage() {
 
   const timeouts = [];
 
-  /* ── Active detection + the single persistent meta swap. */
-  let activeSlug = null;
-  let shownSlug = WORK_PROJECTS[0]?.slug ?? null;
-  let targetProject = null;
-  let swapping = false;
+  /* ── The dock: per-frame positional metas (replaces the swap
+     machinery entirely). Successor-first so each meta can be
+     displaced by the one after it; the layer's clip at the dock
+     line turns the push into the iOS exit. */
+  let dockedIdx = 0;
+  let announcedSlug = set[0]?.slug ?? null;
 
-  /* The /0N derives from the title's rendered right edge. */
-  const placeIndex = () => {
-    if (!(metaTitle instanceof HTMLElement) || !(metaIndex instanceof HTMLElement)) return;
-    const meta = metaTitle.offsetParent;
-    if (!(meta instanceof HTMLElement)) return;
-    const tRect = metaTitle.getBoundingClientRect();
-    const mRect = meta.getBoundingClientRect();
-    metaIndex.style.left = `${(tRect.right - mRect.left + INDEX_GAP_PX).toFixed(1)}px`;
+  const announceDock = (idx) => {
+    if (idx === dockedIdx && announcedSlug) return;
+    dockedIdx = idx;
+    const p = units[idx]?.project;
+    if (!p || p.slug === announcedSlug) return;
+    announcedSlug = p.slug;
+    if (metaLive) metaLive.textContent = `${p.title.join(' ')} ${p.index}. ${p.desc}`;
   };
 
-  const applyMetaText = (p) => {
-    if (metaTitle) metaTitle.textContent = p.title.join(' ');
-    if (metaIndex) metaIndex.textContent = p.index;
-    if (metaDesc) metaDesc.textContent = p.desc;
-    placeIndex();
-  };
-
-  /* The swap is the FEATURED-title vocabulary now (Oscar's rev):
-     the outgoing text UN-REVEALS (words back into their clips, the
-     network-exit reverse — delays zeroed, tightened duration, the
-     nav-out precedent), then the incoming text word-reveals L->R.
-     One persistent runner; rapid traversal retargets at the
-     set-point, nothing stacks. */
-  const wrapMetaEls = () => {
-    if (metaTitle instanceof HTMLElement) wrapWordRevealElement(metaTitle, { baseDelay: 0 });
-    if (metaIndex instanceof HTMLElement) wrapWordRevealElement(metaIndex, { baseDelay: 0.04 });
-    if (metaDesc instanceof HTMLElement) wrapWordRevealElement(metaDesc, { baseDelay: LINE_STAGGER_S });
-    placeIndex();
-  };
-  const playMeta = () => metaEls.forEach((el) => playLineRevealElement(el));
-  const unrevealMeta = () => {
-    metaEls.forEach((el) => {
-      el.querySelectorAll('.lr-inner').forEach((inn) => {
-        if (inn instanceof HTMLElement) {
-          inn.style.transition = `transform ${META_OUT_S}s cubic-bezier(0.42, 0, 0.24, 1) 0s`;
-        }
-      });
-      el.querySelectorAll(':scope > .lr-clip').forEach((c) => c.classList.remove('lr-visible'));
-    });
-  };
-
-  const runSwap = () => {
-    if (!targetProject || targetProject.slug === shownSlug) return;
-    swapping = true;
-    unrevealMeta();
-    timeouts.push(setTimeout(() => {
-      /* Set-point reads the LATEST target — rapid traversal
-         retargets here, nothing stacks. */
-      const p = targetProject;
-      shownSlug = p.slug;
-      applyMetaText(p);
-      wrapMetaEls();
-      playMeta();
-      timeouts.push(setTimeout(() => {
-        swapping = false;
-        runSwap();
-      }, 400));
-    }, META_OUT_S * 1000));
-  };
-
-  const requestMeta = (p) => {
-    targetProject = p;
+  const layoutMetas = (p1) => {
+    if (!units.length) return;
+    const docked = clamp(Math.floor(p1 / PITCH_PX), 0, units.length - 1);
     if (reduced) {
-      shownSlug = p.slug;
-      applyMetaText(p);
+      /* RM: no travel choreography — instant swap-in-place at the
+         dock, driven by the same dock-crossing trigger. */
+      units.forEach((u, i) => {
+        u.el.style.visibility = i === docked ? '' : 'hidden';
+        u.el.style.transform = `translate3d(0, ${DOCK_Y_PX}px, 0)`;
+      });
+      announceDock(docked);
       return;
     }
-    if (!swapping) runSwap();
-  };
-
-  const detectActive = () => {
-    if (!tiles.length) return;
-    const anchor = stageH() / 2;
-    const p1 = Math.min(pos, carouselMax());
-    for (let i = 0; i < tiles.length; i += 1) {
-      const y = BASE_TOP_PX + i * PITCH_PX - p1;
-      if (anchor >= y + DEADZONE_PX && anchor <= y + IMG_H_PX - DEADZONE_PX) {
-        const p = tiles[i].project;
-        if (p.slug !== activeSlug) {
-          activeSlug = p.slug;
-          requestMeta(p);
-        }
-        return;
+    let succY = Infinity;
+    for (let i = units.length - 1; i >= 0; i -= 1) {
+      const u = units[i];
+      const linked = BASE_TOP_PX + i * PITCH_PX - p1;
+      let y = Math.max(linked, DOCK_Y_PX);
+      if (PUSH_HANDOFF) {
+        y = Math.min(y, succY - u.blockH);
+      } else if (succY <= DOCK_Y_PX + u.blockH && i === docked) {
+        /* Flagged alternative: fade in place as the successor
+           arrives (no displacement). */
+        const t = clamp((DOCK_Y_PX + u.blockH - succY) / u.blockH, 0, 1);
+        u.el.style.opacity = String(1 - t);
       }
+      if (!PUSH_HANDOFF && !(succY <= DOCK_Y_PX + u.blockH && i === docked)) {
+        u.el.style.opacity = '';
+      }
+      u.el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
+      succY = y;
     }
-    /* Gap or deadzone under the anchor: the previous winner holds. */
+    announceDock(docked);
   };
 
   /* ── Input: the drift driver (non-RM) or direct writes (RM). The
@@ -321,7 +328,6 @@ export function initWorkPage() {
 
   const frame = () => {
     layout();
-    detectActive();
   };
 
   const setPosClamped = (raw, driverTravel) => {
@@ -393,7 +399,8 @@ export function initWorkPage() {
     buildTiles();
     posOffset = -(driver ? driver.state().travelPx : 0);
     pos = 0;
-    activeSlug = null;
+    dockedIdx = 0;
+    announcedSlug = null; /* the new set's first dock announces */
     /* footerEntered stays as-is: the footer entrance is once-only. */
     frame();
     return true;
@@ -644,12 +651,10 @@ export function initWorkPage() {
     if (disposed) return;
     alignWork();
     deriveTileWidth();
-    placeIndex();
+    measureUnits(); /* index offsets + push heights need real glyphs */
+    frame();
     if (reduced) return;
     wrapFooter();
-    /* The meta's load entrance = the same word reveal the swaps use. */
-    wrapMetaEls();
-    playMeta();
     [hlFeatured, hlWork].forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -665,7 +670,7 @@ export function initWorkPage() {
   const onResize = () => {
     alignWork();
     deriveTileWidth();
-    placeIndex();
+    measureUnits();
     frame();
   };
   window.addEventListener('resize', onResize);
@@ -681,7 +686,11 @@ export function initWorkPage() {
          stalls gsap's ticker — expose it so probes can drive time
          manually (the tickOnce convention). */
       gsap,
-      swapState: () => ({ swapping, target: targetProject?.slug ?? null, shown: shownSlug }),
+      metaYs: () => units.map((u) => ({
+        slug: u.project.slug,
+        y: u.el.style.transform,
+        blockH: u.blockH,
+      })),
       state: () => ({
         pos,
         posOffset,
@@ -690,8 +699,8 @@ export function initWorkPage() {
         carouselMax: carouselMax(),
         maxPos: maxPos(),
         footerEntered,
-        activeSlug,
-        shownSlug,
+        dockedIdx,
+        dockedSlug: units[dockedIdx]?.project.slug ?? null,
         filter: currentFilter,
       }),
       driver: () => (driver ? driver.state() : null),

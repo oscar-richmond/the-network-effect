@@ -36,7 +36,6 @@ import '../styles/landing/landing.css';
 import '../styles/landing/work.css';
 import '../styles/fonts.css';
 
-const first = WORK_PROJECTS[0];
 ---
 
 <SiteShell title="Featured Work — The Network Effect" bodyClass="landing-v2 work-page">
@@ -102,14 +101,33 @@ const first = WORK_PROJECTS[0];
         </button>
       </div>
 
-      {/* Active project — announced politely on swap (a travel is a
-          browse, not an alert). */}
-      <div class="work-page__meta" data-work-meta aria-live="polite">
-        <h2 class="work-page__meta-title" data-work-meta-title>{first.title.join(' ')}</h2>
-        <p class="work-page__meta-index" data-work-meta-index>{first.index}</p>
-        <p class="work-page__meta-desc" data-work-meta-desc>{first.desc}</p>
-      </div>
     </div>
+
+    {/* TRAVEL-AND-DOCK metas (Oscar's rev): one unit per project,
+        riding its image's vertical position in the left column and
+        pinning at the dock (441 — the old meta position) while its
+        project traverses; the successor pushes it up and out
+        through the layer's clip line (the iOS-sticky-header
+        mechanic). Layer z1 — UNDER the blur band (z2) like the
+        images, so text enters through the blur; brand-black ink,
+        no blends inside. Initial transforms = pos 0 (KEEP the 441/
+        624 literals in step with work-page.js BASE_TOP/PITCH).
+        Docking is announced via the live region below. */}
+    <div class="work-page__metas" data-work-metas aria-label="Project details">
+      {WORK_PROJECTS.map((p, i) => (
+        <div
+          class="work-meta-unit"
+          data-work-meta-unit
+          data-slug={p.slug}
+          style={`transform: translate3d(0, ${441 + i * 624}px, 0)`}
+        >
+          <h2 class="work-page__meta-title">{p.title.join(' ')}</h2>
+          <p class="work-page__meta-index">{p.index}</p>
+          <p class="work-page__meta-desc">{p.desc}</p>
+        </div>
+      ))}
+    </div>
+    <p class="work-sr-live" data-work-meta-live aria-live="polite"></p>
 
   </main>
 

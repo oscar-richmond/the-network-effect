@@ -163,20 +163,41 @@ body.work-page {
 .landing-v2 .work-pill--connect { width: 116px; }
 .landing-v2 .work-pill--amplify { width: 107px; }
 
-/* ── Active-project meta (brand black; swaps with the travel) ──── */
-.landing-v2 .work-page__meta {
+/* ── TRAVEL-AND-DOCK metas (Oscar's rev — replaces swap-in-place):
+   the layer sits at z1 like the images (UNDER the blur band, z2 —
+   travelling text enters through the blur exactly as its image
+   does) and is CLIPPED above the dock line (441): a docked meta
+   pushed up by its successor slides OUT through the clip — the
+   iOS-sticky-header exit — and can never overlap the pills/header
+   above. Units are transformed per frame by work-page.js (pure
+   f(travel), reversible); brand-black ink, no blends inside, so
+   the transforms carry no blend risk (the page's only difference
+   elements are the cursor pair, untouched). Type/positions inside
+   each unit are the old meta's exactly (title top 441 -> unit 0;
+   index 445 -> 4; desc 489 -> 48). */
+.landing-v2 .work-page__metas {
 	position: absolute;
 	inset: 0;
+	z-index: 1;
 	pointer-events: none;
+	clip-path: inset(441px 0 0 0);
+}
+
+.landing-v2 .work-meta-unit {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	will-change: transform;
 }
 
 .landing-v2 .work-page__meta-title {
 	position: absolute;
 	left: 24px;
-	top: 441px;
+	top: 0;
 	/* One line always (Oscar's rev — YOXMAN FOOD FESTIVAL wrapped
 	   onto the description); the /0N index derives 6px from the
-	   rendered right edge per swap. */
+	   rendered right edge per unit. */
 	white-space: nowrap;
 	margin: 0;
 	font-weight: 700;
@@ -188,8 +209,8 @@ body.work-page {
 
 .landing-v2 .work-page__meta-index {
 	position: absolute;
-	left: 407px; /* pre-JS fallback; derived title-right + 6 per swap */
-	top: 445px;
+	left: 407px; /* pre-JS fallback; derived title-right + 6 per unit */
+	top: 4px;
 	margin: 0;
 	font-weight: 700;
 	font-size: 10px;
@@ -201,7 +222,7 @@ body.work-page {
 .landing-v2 .work-page__meta-desc {
 	position: absolute;
 	left: 24px;
-	top: 489px;
+	top: 48px;
 	width: 540px;
 	margin: 0;
 	font-family: 'Serrif', serif;
@@ -210,6 +231,17 @@ body.work-page {
 	font-size: 16px;
 	line-height: 22px;
 	color: #161616; /* brand black (Oscar's rev) */
+}
+
+/* Docking announcements for screen readers (the visible metas are
+   plural now). */
+.landing-v2 .work-sr-live {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
 }
 
 /* ── Custom cursor (hover:hover + pointer:fine only, wired in JS).
@@ -347,7 +379,7 @@ body.work-page {
 	.landing-v2 .work-page__hl { position: static; }
 	.landing-v2 .work-page__filters { position: static; margin: 16px 0 24px; flex-wrap: wrap; }
 	/* The travelling meta block is desktop machinery. */
-	.landing-v2 .work-page__meta { display: none; }
+	.landing-v2 .work-page__metas { display: none; }
 	.landing-v2 .work-stage__band { display: none; }
 	.landing-v2 .work-cursor__circle,
 	.landing-v2 .work-cursor__label { display: none; }
