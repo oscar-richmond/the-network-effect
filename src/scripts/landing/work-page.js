@@ -83,7 +83,6 @@ const END_GAP_PX = 152; /* ground below the last image before the
   earlier 80). */
 const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
 const TILE_LOGO_GAP_PX = 8; // left edge 8px left of the logo's T
-const BAND_FADE_PX = 150; // radii-drain window at the last image's half
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
 const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
@@ -268,28 +267,6 @@ export function initWorkPage() {
   };
   const maxPos = () => carouselMax() + FOOTER_REVEAL_PX;
 
-  /* Bottom band dissolve (Oscar's rev): from HALFWAY through the
-     last image, the band's radii drain to nothing over BAND_FADE_PX
-     of travel — scrubbed, reversible (the featured band-dissolve
-     pattern; wrapper opacity would sever the backdrop filters). */
-  const bandLayers = Array.from(stage.querySelectorAll('.work-stage__band [data-gradual-blur-layer]'));
-  const bandBases = bandLayers.map((l) => {
-    const m = /([\d.]+)rem/.exec(l.style.backdropFilter || '');
-    return m ? parseFloat(m[1]) : 0;
-  });
-  let lastBandT = -1;
-  const applyBand = () => {
-    const half = BASE_TOP_PX + (tiles.length - 1) * PITCH_PX + IMG_H_PX / 2 - stageH();
-    const bandT = clamp((pos - half) / BAND_FADE_PX, 0, 1);
-    if (bandT === lastBandT) return;
-    lastBandT = bandT;
-    bandLayers.forEach((l, i) => {
-      const v = `blur(${(bandBases[i] * (1 - bandT)).toFixed(3)}rem)`;
-      l.style.backdropFilter = v;
-      l.style.webkitBackdropFilter = v;
-    });
-  };
-
   /* ── Layout: pure f(pos). Carousel rides phase 1; the stage slides
      up through phase 2 (the reveal). */
   let pos = 0;
@@ -302,7 +279,6 @@ export function initWorkPage() {
       el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
     });
     layoutMetas(p1);
-    applyBand();
     const revealT = clamp(pos - carouselMax(), 0, FOOTER_REVEAL_PX);
     stage.style.transform = revealT > 0 ? `translate3d(0, ${(-revealT).toFixed(2)}px, 0)` : '';
     if (!footerEntered && revealT > FOOTER_ENTRANCE_AT_PX) {

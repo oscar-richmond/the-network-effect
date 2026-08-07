@@ -72,22 +72,7 @@ body.work-page {
 	outline-offset: -2px;
 }
 
-/* ── Bottom progressive blur band (file: blur 20 under a vertical
-   alpha ramp; height reduced a third — Oscar's rev) — GradualBlur
-   layers inside this wrapper; the radii DRAIN over the last
-   image's second half (work-page.js, the featured band-dissolve
-   pattern — never wrapper opacity). */
-.landing-v2 .work-stage__band {
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	height: 133px;
-	z-index: 2;
-	pointer-events: none;
-}
-
-/* ── Left column (z3 — above the band) ──────────────────────────── */
+/* ── Left column (z3 — above the meta/carousel layers) ──────────── */
 .landing-v2 .work-stage__left {
 	position: absolute;
 	inset: 0;
@@ -170,9 +155,8 @@ body.work-page {
 .landing-v2 .work-pill--amplify { width: 107px; }
 
 /* ── TRAVEL-AND-DOCK metas (Oscar's rev — replaces swap-in-place):
-   the layer sits at z1 like the images (UNDER the blur band, z2 —
-   travelling text enters through the blur exactly as its image
-   does) and is CLIPPED above the dock line (441): a docked meta
+   the layer sits at z1 like the images and is CLIPPED above the
+   dock line (JS follows the derived dock): a docked meta
    pushed up by its successor slides OUT through the clip — the
    iOS-sticky-header exit — and can never overlap the pills/header
    above. Units are transformed per frame by work-page.js (pure

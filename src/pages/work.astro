@@ -28,7 +28,6 @@
  * anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
-import GradualBlur from '../components/GradualBlur.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { WORK_PROJECTS } from '../data/landing/featured-work.js';
 import '../styles/home.css';
@@ -63,22 +62,6 @@ import '../styles/fonts.css';
           />
         </a>
       ))}
-    </div>
-
-    {/* Bottom progressive blur — the access/featured GradualBlur
-        family, horizontal at the viewport bottom; pointer-events
-        none, SIBLING of the text layers (blend walk in work.css). */}
-    <div class="work-stage__band" aria-hidden="true">
-      <GradualBlur
-        target="parent"
-        position="bottom"
-        strength={5}
-        height="100%"
-        divCount={3}
-        exponential={true}
-        opacity={1}
-        zIndex={1}
-      />
     </div>
 
     {/* Left column — header, pills, active meta. */}
