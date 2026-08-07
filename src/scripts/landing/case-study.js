@@ -20,10 +20,14 @@
  * footer-motion choreography at the landing trigger. RM: no Lenis,
  * no entrances — sticky pinning REMAINS (layout, not motion).
  *
- * MORE-WORK pager: with exactly two entries the arrows are INERT
- * (disabled in markup); a functional horizontal pager arms only
- * when a study's moreWork data grows past two — the markup and
- * this module gate on that count, nothing else changes.
+ * MORE-WORK pager (Oscar's rev): the carousel carries EVERY /work
+ * project bar the current study; the track pages one 844px card
+ * per arrow press (clamped; arrows disable at the ends). Arrows
+ * are the LET'S CHAT arrow and ripple with its hover vocabulary
+ * (the injected char-ripple arrow animation) when active. RM:
+ * instant jumps (the glide transition is no-preference-gated).
+ * Focusing an off-page card resets the browser's scroll-of-
+ * overflow and pages to it.
  *
  * Card/tile links navigate only for LIVE case-study slugs
  * (data-live), everything else stays an inert placeholder.
@@ -77,6 +81,68 @@ export function initCaseStudy() {
       lenis = null;
       document.documentElement.classList.remove('lenis');
     });
+  }
+
+  /* ── MORE-WORK pager (all modes — navigation, not decoration). */
+  const track = document.querySelector('[data-cs-more-track]');
+  const viewport = document.querySelector('[data-cs-more-viewport]');
+  const prevBtn = document.querySelector('[data-cs-pager="prev"]');
+  const nextBtn = document.querySelector('[data-cs-pager="next"]');
+  if (track instanceof HTMLElement && prevBtn instanceof HTMLButtonElement && nextBtn instanceof HTMLButtonElement) {
+    const CARD_STEP_PX = 844; // 836 card + 8 gap
+    const PER_VIEW = 2;
+    const count = track.children.length;
+    const maxIdx = Math.max(0, count - PER_VIEW);
+    let idx = 0;
+    const applyPager = () => {
+      track.style.transform = `translate3d(${(-idx * CARD_STEP_PX).toFixed(0)}px, 0, 0)`;
+      prevBtn.disabled = idx <= 0;
+      nextBtn.disabled = idx >= maxIdx;
+    };
+    const page = (dir) => {
+      idx = Math.min(Math.max(idx + dir, 0), maxIdx);
+      applyPager();
+    };
+    const onPrev = () => page(-1);
+    const onNext = () => page(1);
+    prevBtn.addEventListener('click', onPrev);
+    nextBtn.addEventListener('click', onNext);
+    cleanups.push(() => {
+      prevBtn.removeEventListener('click', onPrev);
+      nextBtn.removeEventListener('click', onNext);
+    });
+    /* Arrow hover = the LET'S CHAT ripple (the injected char-ripple
+       arrow animation replayed on the svg), active buttons only. */
+    if (!reduced) {
+      [prevBtn, nextBtn].forEach((btn) => {
+        const svg = btn.querySelector('[data-char-ripple-arrow]');
+        if (!svg) return;
+        const onHover = () => {
+          if (btn.disabled) return;
+          svg.classList.remove('is-rippling');
+          void btn.offsetWidth;
+          svg.classList.add('is-rippling');
+        };
+        btn.addEventListener('mouseenter', onHover);
+        cleanups.push(() => btn.removeEventListener('mouseenter', onHover));
+      });
+    }
+    /* Keyboard: focusing an off-page card — undo the browser's
+       overflow scroll (it fights the transform pager) and page to
+       the card instead. */
+    const onFocusIn = (e) => {
+      if (viewport instanceof HTMLElement) viewport.scrollLeft = 0;
+      const card = e.target instanceof Element ? e.target.closest('[data-cs-more-card]') : null;
+      if (!(card instanceof HTMLElement)) return;
+      const i = Array.from(track.children).indexOf(card);
+      if (i < 0) return;
+      idx = Math.min(Math.max(i - (PER_VIEW - 1), 0), maxIdx);
+      if (i < idx) idx = i;
+      applyPager();
+    };
+    track.addEventListener('focusin', onFocusIn);
+    cleanups.push(() => track.removeEventListener('focusin', onFocusIn));
+    applyPager();
   }
 
   /* Back-to-top / home (all modes — navigation, not decoration). */

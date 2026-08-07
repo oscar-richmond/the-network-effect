@@ -77,14 +77,9 @@ export const CASE_STUDIES = [
       'Commercial sponsorship',
       'End-to-end event production',
     ],
-    /* More-work refs: featured-work slugs + this page's card images
-       (file exports). The file numbered Thunder /02 — its real index
-       (/07 in the data) renders from the reference, the file's slip
-       corrected by construction. */
-    moreWork: [
-      { slug: 'pavilion-club', img: asset('/assets/landing/case/more-pavilion-club.jpg') },
-      { slug: 'thunder-aviation', img: asset('/assets/landing/case/more-thunder-aviation.jpg') },
-    ],
+    /* MORE WORK derives in the template (Oscar's rev): every /work
+       project except this study, in the landing order, with the
+       /work page's images and descriptions — no per-study list. */
   },
 ];
 

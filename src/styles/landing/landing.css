@@ -1796,6 +1796,12 @@
    scroll lands exactly at full reveal. Still z > the hero stage's
    250 — the exit gate holds. */
 .landing-v2 .landing-footer {
+	/* RELATIVE always: every child is absolutely positioned (cols
+	   40/40, row 736...) and the footer must be their containing
+	   block on EVERY route — without this they anchor to the
+	   document root and render over the hero (Oscar's report: the
+	   footer content appearing at the page top after the reveal). */
+	position: relative;
 	height: 811px;
 	background: var(--landing-accent-blue);
 	font-family: 'Dazzed', var(--font-display, sans-serif);

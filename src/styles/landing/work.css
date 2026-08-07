@@ -323,7 +323,9 @@ body.work-page {
 }
 
 .landing-v2 .work-footer-wrap .landing-footer {
-	position: static;
+	/* relative, NEVER static — the containing block for its
+	   absolute children (the displaced-content lesson). */
+	position: relative;
 	margin-top: 0;
 	height: 811px;
 }

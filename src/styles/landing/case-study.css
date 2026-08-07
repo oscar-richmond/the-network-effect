@@ -269,23 +269,21 @@ body.case-page {
 	color: #161616;
 }
 
-/* ── E. More work — the file's 1014px section, EXPLICIT height:
-   the cards are absolutely placed and contribute no flow height
-   (the collapse-and-clip bug Oscar caught: the section fell to its
-   padding height and overflow:hidden cut the cards, with the
-   footer landing right below). All children absolute against the
-   file's y-map. */
+/* ── E. More work — a functional pager (Oscar's revs): FLOW-based
+   cards (the collapse-and-clip lesson: absolute cards carry no
+   height — never again), spacing image->title 24 / title->desc 16 /
+   100px whitespace below the descriptions. The viewport shows two
+   836px cards (836+8+836 = 1680); the track pages by one card
+   (844px) per arrow press. Arrows are the LET'S CHAT arrow rotated
+   to point left/right, rippling on hover when active. */
 .landing-v2 .cs-more {
 	position: relative;
-	height: 1014px;
+	padding: 140px 0 100px;
 	overflow: hidden;
 }
 
 .landing-v2 .cs-more__title {
-	position: absolute;
-	left: 24px;
-	top: 140px;
-	margin: 0;
+	margin: 0 0 0 24px;
 	font-weight: 700;
 	font-size: 48px;
 	line-height: 40px;
@@ -305,26 +303,48 @@ body.case-page {
 	width: 32px;
 	height: 32px;
 	padding: 0;
-	border: 0;
+	border: 1px solid rgba(22, 22, 22, 0.4);
+	border-radius: 50%;
 	background: none;
-	/* Inert at 2 entries (see case-study.js) — dimmed, no cursor. */
+	color: #161616;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+}
+
+.landing-v2 .cs-more__arrow[disabled] {
 	opacity: 0.35;
 	cursor: default;
 }
 
-.landing-v2 .cs-more__arrow img { display: block; width: 32px; height: 32px; }
+.landing-v2 .cs-more__arrow-svg {
+	display: block;
+	width: 10.5px;
+	height: 10.5px;
+}
+
+/* The chat arrow points NE (45°): +45° = right, +225° = left. */
+.landing-v2 .cs-more__arrow-svg--right { transform: rotate(45deg); }
+.landing-v2 .cs-more__arrow-svg--left { transform: rotate(225deg); }
+
+.landing-v2 .cs-more__viewport {
+	margin: 80px 24px 0; /* cards top = 140 + 40 + 80 = the file's 260 */
+	overflow: hidden;
+}
+
+.landing-v2 .cs-more__track {
+	display: flex;
+	gap: 8px;
+	will-change: transform;
+}
 
 .landing-v2 .cs-more__card {
-	position: absolute;
-	top: 260px;
 	width: 836px;
+	flex: none;
 	display: block;
 	color: #161616;
 	text-decoration: none;
 }
-
-.landing-v2 .cs-more__card--1 { left: 24px; }
-.landing-v2 .cs-more__card--2 { left: 868px; }
 
 .landing-v2 .cs-more__card:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
 
@@ -342,9 +362,17 @@ body.case-page {
 	display: block;
 }
 
+/* line-height 0 on the row kills the anchor's 16px strut — the
+   title box IS the row box, so the 16px title->desc gap measures
+   exactly (the 2.5px line-box overhang lesson). */
+.landing-v2 .cs-more__cardrow {
+	display: block;
+	line-height: 0;
+	margin-top: 24px; /* image -> title (Oscar's rev) */
+}
+
 .landing-v2 .cs-more__cardtitle {
 	display: inline-block;
-	margin-top: 32px;
 	font-weight: 700;
 	font-size: 32px;
 	line-height: 32px;
@@ -355,7 +383,7 @@ body.case-page {
 	display: inline-block;
 	margin-left: 6px; /* the /work 6px convention */
 	vertical-align: top;
-	margin-top: 36px;
+	margin-top: 4px; /* cap optics */
 	font-weight: 700;
 	font-size: 10px;
 	line-height: 10px;
@@ -364,7 +392,7 @@ body.case-page {
 
 .landing-v2 .cs-more__carddesc {
 	display: block;
-	margin-top: 34px;
+	margin-top: 16px; /* title -> description (Oscar's rev) */
 	width: 557px;
 	font-family: 'Serrif', serif;
 	font-weight: 500;
@@ -373,7 +401,7 @@ body.case-page {
 	line-height: 18px;
 }
 
-/* Right-edge fade over the cards region (the file's 24px ramp). */
+/* Right-edge fade over the card images (the file's 24px ramp). */
 .landing-v2 .cs-more__fade {
 	position: absolute;
 	right: 0;
@@ -387,7 +415,9 @@ body.case-page {
 /* ── F. Footer — the shared component, flow-neutralised (the /work
    precedent). */
 .landing-v2 .cs-footer-wrap .landing-footer {
-	position: static;
+	/* relative, NEVER static — the containing block for its
+	   absolute children (the displaced-content lesson). */
+	position: relative;
 	margin-top: 0;
 	height: 811px;
 }
@@ -410,6 +440,11 @@ body.case-page {
 	.landing-v2 .cs-rail-sticky {
 		transform: translateY(12px);
 		transition-duration: 0.6s, 0.6s;
+	}
+
+	/* The pager's glide (RM: instant jumps — no transition). */
+	.landing-v2 .cs-more__track {
+		transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
 	.landing-v2 .cs-hero__img.is-visible,
@@ -462,10 +497,11 @@ body.case-page {
 	.landing-v2 .cs-row + .cs-row { margin-top: 0; }
 	.landing-v2 .cs-row__img { width: 100% !important; height: auto; aspect-ratio: 1095 / 640; }
 
-	.landing-v2 .cs-more { height: auto; padding: 64px 0 96px; }
-	.landing-v2 .cs-more__title { position: static; margin-left: 24px; }
+	.landing-v2 .cs-more { padding: 64px 0 96px; }
 	.landing-v2 .cs-more__pager { display: none; }
-	.landing-v2 .cs-more__card { position: static; width: auto; margin: 32px 24px 0; }
+	.landing-v2 .cs-more__viewport { margin: 32px 24px 0; overflow: visible; }
+	.landing-v2 .cs-more__track { flex-direction: column; gap: 32px; transform: none !important; }
+	.landing-v2 .cs-more__card { width: auto; }
 	.landing-v2 .cs-more__imgwin { width: 100%; height: auto; aspect-ratio: 836 / 520; }
 	.landing-v2 .cs-more__carddesc { width: auto; }
 	.landing-v2 .cs-more__fade { display: none; }

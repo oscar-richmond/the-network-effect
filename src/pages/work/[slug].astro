@@ -26,8 +26,7 @@
 import SiteShell from '../../layouts/SiteShell.astro';
 import LandingFooter from '../../components/landing/LandingFooter.astro';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
-import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
-import { asset } from '../../utils/asset.js';
+import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
 import '../../styles/landing/landing.css';
 import '../../styles/landing/case-study.css';
@@ -42,11 +41,15 @@ export function getStaticPaths() {
 
 const { study } = Astro.props;
 const title = study.base.title.join(' ');
-const moreWork = study.moreWork.map((m) => ({
-  ...m,
-  card: FEATURED_CARDS.find((c) => c.slug === m.slug),
-  live: LIVE_CASE_SLUGS.includes(m.slug),
+/* MORE WORK (Oscar's rev): every /work project except this study,
+   in the landing order, with the /work page's images/descriptions. */
+const moreWork = WORK_PROJECTS.filter((p) => p.slug !== study.base.slug).map((p) => ({
+  ...p,
+  live: LIVE_CASE_SLUGS.includes(p.slug),
 }));
+/* The LET'S CHAT arrow path (SiteShell's inline asset) — reused for
+   the pager, rotated to point left/right (Oscar's rev). */
+const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z';
 ---
 
 <SiteShell title={`${title} — The Network Effect`} bodyClass="landing-v2 case-page">
@@ -134,41 +137,48 @@ const moreWork = study.moreWork.map((m) => ({
       ))}
     </section>
 
-    {/* ── E. MORE WORK — refs resolved from featured-work (indexes
-        from the DATA: the file numbered Thunder /02 — its real /0N
-        renders from the single source, the slip corrected by
-        construction). Two entries → arrows INERT (a functional
-        pager arms only when data carries >2; commented in
-        case-study.js). */}
+    {/* ── E. MORE WORK — a functional horizontal pager over EVERY
+        /work project bar this one (Oscar's rev), indexes/copy from
+        the single source. Arrows = the LET'S CHAT arrow rotated to
+        point left/right, rippling on hover when active
+        (case-study.js). */}
     <div class="cs-divider" aria-hidden="true"></div>
     <section class="cs-more" aria-label="More work" data-cs-more>
       <h2 class="cs-more__title" data-cs-more-title>MORE WORK</h2>
-      <div class="cs-more__pager" aria-hidden="true">
-        {/* Inert at 2 entries — see case-study.js. Exported file
-            assets per the icon rule. */}
-        <button type="button" class="cs-more__arrow" disabled aria-hidden="true" tabindex="-1">
-          <img src={asset('/assets/landing/case/arrow-prev.svg')} alt="" width="32" height="32" />
+      <div class="cs-more__pager">
+        <button type="button" class="cs-more__arrow" data-cs-pager="prev" aria-label="Previous projects" disabled>
+          <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
+            <path d={ARROW_PATH} fill="currentColor" />
+          </svg>
         </button>
-        <button type="button" class="cs-more__arrow" disabled aria-hidden="true" tabindex="-1">
-          <img src={asset('/assets/landing/case/arrow-next.svg')} alt="" width="32" height="32" />
+        <button type="button" class="cs-more__arrow" data-cs-pager="next" aria-label="Next projects">
+          <svg class="cs-more__arrow-svg cs-more__arrow-svg--right" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
+            <path d={ARROW_PATH} fill="currentColor" />
+          </svg>
         </button>
       </div>
-      {moreWork.map((m, i) => (
-        <a
-          class={`cs-more__card cs-more__card--${i + 1}`}
-          href={`/work/${m.slug}`}
-          data-cs-more-card
-          data-slug={m.slug}
-          data-live={m.live ? 'true' : 'false'}
-        >
-          <figure class="cs-more__imgwin">
-            <img src={m.img} alt="" loading="lazy" decoding="async" />
-          </figure>
-          <span class="cs-more__cardtitle" data-cs-card-title>{m.card.title.join(' ')}</span>
-          <span class="cs-more__cardindex">{m.card.index}</span>
-          <span class="cs-more__carddesc">{m.card.desc}</span>
-        </a>
-      ))}
+      <div class="cs-more__viewport" data-cs-more-viewport>
+        <div class="cs-more__track" data-cs-more-track>
+          {moreWork.map((m) => (
+            <a
+              class="cs-more__card"
+              href={`/work/${m.slug}`}
+              data-cs-more-card
+              data-slug={m.slug}
+              data-live={m.live ? 'true' : 'false'}
+            >
+              <figure class="cs-more__imgwin">
+                <img src={m.workImg} alt="" loading="lazy" decoding="async" />
+              </figure>
+              <span class="cs-more__cardrow">
+                <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
+                <span class="cs-more__cardindex">{m.index}</span>
+              </span>
+              <span class="cs-more__carddesc">{m.desc}</span>
+            </a>
+          ))}
+        </div>
+      </div>
       <div class="cs-more__fade" aria-hidden="true"></div>
     </section>
   </main>
