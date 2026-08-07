@@ -111,21 +111,26 @@ body.work-page {
 	white-space: nowrap;
 }
 
-.landing-v2 .work-page__hl--featured { top: 174px; }
+.landing-v2 .work-page__hl--featured {
+	/* 80px below MENU (Oscar's rev): the menu label bottoms at
+	   --home-margin-y 32 + its 16px line = 48; 48 + 80 = 128. */
+	top: 128px;
+}
 
 .landing-v2 .work-page__hl--work {
-	top: 222px; /* one 48px line below FEATURED */
+	top: 176px; /* one 48px line below FEATURED */
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
 }
 
-/* ── Filter pills (y296; 38px, 12px gaps, widths per file; 14px
-   type — Oscar's revved treatment, the file's 16px predates it). */
+/* ── Filter pills (48px below WORK — Oscar's rev: WORK bottoms at
+   176+48=224, +48 = 272; 38px, 12px gaps, widths per file; 14px
+   type, his revved treatment). */
 .landing-v2 .work-page__filters {
 	position: absolute;
 	left: 24px;
-	top: 296px;
+	top: 272px;
 	display: flex;
 	gap: 12px;
 	margin: 0;

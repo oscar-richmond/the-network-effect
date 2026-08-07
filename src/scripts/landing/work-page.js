@@ -196,9 +196,19 @@ export function initWorkPage() {
         })),
       ];
       u.wipeLines = lineUnits.sort((a, b) => b.bottom - a.bottom);
-      /* Push clearance: the unit's content height (desc bottom). */
+      /* The unit's content height (desc bottom) — the wipe range
+         and the centring basis. */
       u.blockH = u.desc.offsetTop + u.desc.offsetHeight;
+      /* VIEWPORT-CENTRED dock (Oscar's rev): each unit pins with
+         its title+description block centred in the viewport —
+         per-unit (block heights vary with description length). */
+      u.dockY = stageH() / 2 - u.blockH / 2;
     });
+    /* The layer's belt clip follows the highest dock. */
+    if (metasLayer instanceof HTMLElement && units.length) {
+      const minDock = Math.min(...units.map((u) => u.dockY));
+      metasLayer.style.clipPath = `inset(${(minDock - 8).toFixed(0)}px 0 0 0)`;
+    }
   };
 
   const buildTiles = () => {
@@ -242,7 +252,7 @@ export function initWorkPage() {
         u.append(title, index, desc);
         u.style.transform = `translate3d(0, ${(BASE_TOP_PX + i * PITCH_PX).toFixed(0)}px, 0)`;
         metasLayer.appendChild(u);
-        return { el: u, project: p, title, index, desc, descText: p.desc, blockH: 150, wipeLines: null, wiped: false };
+        return { el: u, project: p, title, index, desc, descText: p.desc, blockH: 150, dockY: null, wipeLines: null, wiped: false };
       });
       measureUnits();
     }
@@ -321,13 +331,21 @@ export function initWorkPage() {
 
   const layoutMetas = (p1) => {
     if (!units.length) return;
-    const docked = clamp(Math.floor(p1 / PITCH_PX), 0, units.length - 1);
+    /* Docked = the highest-index unit pinned at ITS dock (docks are
+       per-unit, viewport-centred). */
+    let docked = 0;
+    for (let i = units.length - 1; i >= 0; i -= 1) {
+      if (BASE_TOP_PX + i * PITCH_PX - p1 <= (units[i].dockY ?? DOCK_Y_PX)) {
+        docked = i;
+        break;
+      }
+    }
     if (reduced) {
       /* RM: no travel choreography — instant swap-in-place at the
          dock, driven by the same dock-crossing trigger. */
       units.forEach((u, i) => {
         u.el.style.visibility = i === docked ? '' : 'hidden';
-        u.el.style.transform = `translate3d(0, ${DOCK_Y_PX}px, 0)`;
+        u.el.style.transform = `translate3d(0, ${(u.dockY ?? DOCK_Y_PX).toFixed(1)}px, 0)`;
       });
       announceDock(docked);
       return;
@@ -336,7 +354,7 @@ export function initWorkPage() {
     for (let i = units.length - 1; i >= 0; i -= 1) {
       const u = units[i];
       const linked = BASE_TOP_PX + i * PITCH_PX - p1;
-      const y = Math.max(linked, DOCK_Y_PX); /* pinned — NEVER displaced */
+      const y = Math.max(linked, u.dockY ?? DOCK_Y_PX); /* pinned — NEVER displaced */
       /* THE OVERTAKE WIPE (Oscar's rev 4 — IN PLACE, line by line):
          the pinned text stays put; each of its lines blurs + fades
          as the INCOMING EDGE (the successor's top) approaches it —
