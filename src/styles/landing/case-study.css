@@ -298,17 +298,20 @@ body.case-page {
 	right: 24px;
 	top: 128px;
 	display: flex;
-	gap: 10px;
+	gap: 12px; /* Oscar's rev — was 10 */
 }
 
+/* The primary-CTA treatment (Oscar's rev): the MORE INFO / VIEW
+   ALL fill with the brand-blue arrow riding currentColor — no
+   outline stroke. */
 .landing-v2 .cs-more__arrow {
 	width: 32px;
 	height: 32px;
 	padding: 0;
-	border: 1px solid rgba(22, 22, 22, 0.4);
+	border: 0;
 	border-radius: 50%;
-	background: none;
-	color: #161616;
+	background: var(--landing-svc-btn-fill);
+	color: var(--landing-accent-blue);
 	display: grid;
 	place-items: center;
 	cursor: pointer;
