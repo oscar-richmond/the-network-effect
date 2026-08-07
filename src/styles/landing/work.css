@@ -95,15 +95,16 @@ body.work-page {
 	pointer-events: none;
 }
 
-/* FEATURED / WORK — the landing section's header treatment (40px
-   rev, mixed faces; W-under-A derived at runtime). Brand black. */
+/* FEATURED / WORK — the landing treatment at 48px (Oscar's rev,
+   this page only; mixed faces; W-under-A derived at runtime).
+   Brand black. */
 .landing-v2 .work-page__hl {
 	position: absolute;
 	left: 24px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 40px;
-	line-height: 40px;
+	font-size: 48px;
+	line-height: 48px;
 	text-transform: uppercase;
 	/* Brand black, plain ink (Oscar's rev — was white + difference). */
 	color: #161616;
@@ -113,7 +114,7 @@ body.work-page {
 .landing-v2 .work-page__hl--featured { top: 174px; }
 
 .landing-v2 .work-page__hl--work {
-	top: 214px;
+	top: 222px; /* one 48px line below FEATURED */
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
