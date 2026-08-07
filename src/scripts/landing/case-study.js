@@ -281,6 +281,132 @@ export function initCaseStudy() {
     });
   }
 
+  /* ── LIGHTBOX (Oscar's rev, all modes — it's UI): click a stream
+     item -> centred pop-up over the frosted page; prev/next via
+     the CTA arrows, arrow KEYS (and Escape to close), and wheel
+     steps (cooldown-gated); wrap-around order = the stream's.
+     Scroll locks through Lenis + body overflow while open; focus
+     moves to close and returns to the opener. Media swaps ride the
+     house blur-fade; video items autoplay muted-looped. */
+  const lightbox = document.querySelector('[data-cs-lightbox]');
+  if (lightbox instanceof HTMLElement) {
+    const lbImg = lightbox.querySelector('[data-cs-lb-img]');
+    const lbVideo = lightbox.querySelector('[data-cs-lb-video]');
+    const lbStage = lightbox.querySelector('[data-cs-lb-stage]');
+    const items = Array.from(page.querySelectorAll('[data-cs-lb-item] img, [data-cs-lb-item] video')).map((el) => ({
+      src: el.currentSrc || el.src,
+      isVideo: el.tagName === 'VIDEO',
+    }));
+    let lbIdx = 0;
+    let lbOpen = false;
+    let lbOpener = null;
+    let wheelCool = 0;
+
+    const applyMedia = (i) => {
+      const item = items[i];
+      if (!item) return;
+      if (lbImg instanceof HTMLImageElement) {
+        lbImg.hidden = item.isVideo;
+        if (!item.isVideo) lbImg.src = item.src;
+      }
+      if (lbVideo instanceof HTMLVideoElement) {
+        lbVideo.hidden = !item.isVideo;
+        if (item.isVideo) {
+          lbVideo.src = item.src;
+          lbVideo.play?.().catch(() => {});
+        } else {
+          lbVideo.pause?.();
+          lbVideo.removeAttribute('src');
+        }
+      }
+    };
+
+    const showMedia = (i, instant) => {
+      lbIdx = ((i % items.length) + items.length) % items.length; /* wrap */
+      if (instant || reduced || !(lbStage instanceof HTMLElement)) {
+        applyMedia(lbIdx);
+        return;
+      }
+      /* The house swap: blur-out, set, blur-in (self filter —
+         blend-free element, safe). */
+      lbStage.style.transition = 'opacity 0.15s ease-in, filter 0.15s ease-in';
+      lbStage.style.opacity = '0';
+      lbStage.style.filter = 'blur(6px)';
+      schedule(() => {
+        applyMedia(lbIdx);
+        lbStage.style.transition = 'opacity 0.25s ease-out, filter 0.25s ease-out';
+        lbStage.style.opacity = '';
+        lbStage.style.filter = '';
+      }, 160);
+    };
+
+    const openLb = (i, opener) => {
+      lbOpen = true;
+      lbOpener = opener ?? null;
+      showMedia(i, true);
+      lightbox.hidden = false;
+      void lightbox.offsetWidth; /* commit hidden state, then frost in */
+      lightbox.classList.add('is-open');
+      lenis?.stop();
+      document.body.style.overflow = 'hidden';
+      const closeBtn = lightbox.querySelector('[data-cs-lb-close-btn]');
+      if (closeBtn instanceof HTMLElement) closeBtn.focus();
+    };
+
+    const closeLb = () => {
+      if (!lbOpen) return;
+      lbOpen = false;
+      lightbox.classList.remove('is-open');
+      schedule(() => {
+        lightbox.hidden = true;
+        if (lbVideo instanceof HTMLVideoElement) lbVideo.pause?.();
+      }, 380);
+      lenis?.start();
+      document.body.style.overflow = '';
+      if (lbOpener instanceof HTMLElement) lbOpener.focus?.();
+    };
+
+    const onStreamClick = (e) => {
+      const fig = e.target instanceof Element ? e.target.closest('[data-cs-lb-item]') : null;
+      if (!(fig instanceof HTMLElement)) return;
+      const figs = Array.from(page.querySelectorAll('[data-cs-lb-item]'));
+      const i = figs.indexOf(fig);
+      if (i >= 0) openLb(i, fig);
+    };
+    page.addEventListener('click', onStreamClick);
+    cleanups.push(() => page.removeEventListener('click', onStreamClick));
+
+    const onLbClick = (e) => {
+      const t = e.target instanceof Element ? e.target : null;
+      if (!t) return;
+      if (t.closest('[data-cs-lb-prev]')) showMedia(lbIdx - 1);
+      else if (t.closest('[data-cs-lb-next]')) showMedia(lbIdx + 1);
+      else if (t.closest('[data-cs-lb-close], [data-cs-lb-close-btn]')) closeLb();
+    };
+    lightbox.addEventListener('click', onLbClick);
+    cleanups.push(() => lightbox.removeEventListener('click', onLbClick));
+
+    const onLbKey = (e) => {
+      if (!lbOpen) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeLb(); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showMedia(lbIdx + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showMedia(lbIdx - 1); }
+    };
+    document.addEventListener('keydown', onLbKey);
+    cleanups.push(() => document.removeEventListener('keydown', onLbKey));
+
+    const onLbWheel = (e) => {
+      if (!lbOpen) return;
+      e.preventDefault(); /* the page is locked; wheel steps navigate */
+      const now = performance.now();
+      if (now - wheelCool < 400 || Math.abs(e.deltaY) < 12) return;
+      wheelCool = now;
+      showMedia(lbIdx + (e.deltaY > 0 ? 1 : -1));
+    };
+    lightbox.addEventListener('wheel', onLbWheel, { passive: false });
+    cleanups.push(() => lightbox.removeEventListener('wheel', onLbWheel));
+  }
+
   /* Back-to-top / home (all modes — navigation, not decoration). */
   const topLinks = Array.from(document.querySelectorAll('[data-footer-top]'));
   const onTopClick = (e) => {

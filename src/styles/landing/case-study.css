@@ -194,12 +194,15 @@ body.case-page {
 .landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:first-child { width: 727px; }
 .landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:last-child { width: 360px; }
 
-.landing-v2 .cs-row__img img {
+.landing-v2 .cs-row__img img,
+.landing-v2 .cs-row__img video {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	display: block;
 }
+
+.landing-v2 .cs-row__img { cursor: pointer; /* opens the lightbox */ }
 
 .landing-v2 .cs-rail-seg {
 	position: absolute;
@@ -454,6 +457,105 @@ body.case-page {
 
 @media (hover: hover) and (pointer: fine) {
 	html.cs-cursor-live .canvas-cursor { visibility: hidden; }
+}
+
+/* ── Lightbox (Oscar's rev) — frosted page: the primary grey at
+   50% over a Figma-80 background blur (1:1 to CSS per the house
+   band mapping). The BACKDROP element carries the frost and fades
+   via its OWN background-alpha + blur-radius transition (a wrapper
+   opacity would become a backdrop root and sever the frost — the
+   house lesson). Media centred, CTA-family controls. Over the nav
+   (z400) but under the menu overlay (500). */
+.landing-v2 .cs-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 400;
+	display: grid;
+	place-items: center;
+}
+
+.landing-v2 .cs-lightbox__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(238, 238, 240, 0);
+	-webkit-backdrop-filter: blur(0);
+	backdrop-filter: blur(0);
+	transition: background-color 0.35s ease-out, backdrop-filter 0.35s ease-out,
+		-webkit-backdrop-filter 0.35s ease-out;
+	cursor: pointer;
+}
+
+.landing-v2 .cs-lightbox.is-open .cs-lightbox__backdrop {
+	background: rgba(238, 238, 240, 0.5);
+	-webkit-backdrop-filter: blur(80px);
+	backdrop-filter: blur(80px);
+}
+
+.landing-v2 .cs-lightbox__stage {
+	position: relative;
+	margin: 0;
+	max-width: 82vw;
+	max-height: 82vh;
+	opacity: 0;
+	filter: blur(6px);
+	transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+}
+
+.landing-v2 .cs-lightbox.is-open .cs-lightbox__stage {
+	opacity: 1;
+	filter: blur(0);
+}
+
+.landing-v2 .cs-lightbox__media {
+	display: block;
+	max-width: 82vw;
+	max-height: 82vh;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
+/* The CTA-family controls (the more-work arrow treatment). */
+.landing-v2 .cs-lightbox__arrow {
+	position: absolute;
+	top: 50%;
+	margin-top: -16px;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--landing-svc-btn-fill);
+	color: var(--landing-accent-blue);
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	opacity: 0;
+	filter: blur(4px);
+	transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+}
+
+.landing-v2 .cs-lightbox.is-open .cs-lightbox__arrow {
+	opacity: 1;
+	filter: blur(0);
+}
+
+.landing-v2 .cs-lightbox__arrow--prev { left: 24px; }
+.landing-v2 .cs-lightbox__arrow--next { right: 24px; }
+
+.landing-v2 .cs-lightbox__close {
+	top: 40px;
+	right: 24px;
+	margin-top: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 18px;
+	line-height: 1;
+}
+
+.landing-v2 .cs-lightbox__arrow:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
 }
 
 /* ── F. Footer — the landing parallax schema applies natively now

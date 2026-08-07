@@ -129,8 +129,16 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           data-cs-row
         >
           {row.imgs.map((src) => (
-            <figure class="cs-row__img">
-              <img src={src} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" />
+            <figure class="cs-row__img" data-cs-lb-item>
+              {src.endsWith('.mp4') || src.endsWith('.webm') ? (
+                /* Video rows (Oscar's rev): autoplay requires muted;
+                   playsinline for iOS; looped. NOTE: the current
+                   build's stream is ALL stills (the file's exports) —
+                   this renders the moment a video lands in the data. */
+                <video src={src} autoplay muted loop playsinline></video>
+              ) : (
+                <img src={src} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" />
+              )}
             </figure>
           ))}
         </div>
@@ -192,6 +200,30 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       blend element, positioned via left/top, never transform).
       aria-hidden: decoration; case-study.js gates + drives it. */}
   <div class="cs-gallery-cursor" data-cs-gallery-cursor aria-hidden="true">[ VIEW GALLERY + ]</div>
+
+  {/* ── LIGHTBOX (Oscar's rev): click any stream image -> centred
+      pop-up over a frosted backdrop (the page grey at 50% over a
+      Figma-80 background blur), CTA-family arrows left/right,
+      CTA close; arrows/Escape on the keyboard and wheel steps
+      navigate the whole stream. case-study.js drives it. */}
+  <div class="cs-lightbox" data-cs-lightbox role="dialog" aria-modal="true" aria-label="Project gallery" hidden>
+    <div class="cs-lightbox__backdrop" data-cs-lb-close aria-hidden="true"></div>
+    <figure class="cs-lightbox__stage" data-cs-lb-stage>
+      <img class="cs-lightbox__media" data-cs-lb-img src="" alt="" hidden />
+      <video class="cs-lightbox__media" data-cs-lb-video muted loop playsinline hidden></video>
+    </figure>
+    <button type="button" class="cs-lightbox__arrow cs-lightbox__arrow--prev" data-cs-lb-prev aria-label="Previous image">
+      <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <path d={ARROW_PATH} fill="currentColor" />
+      </svg>
+    </button>
+    <button type="button" class="cs-lightbox__arrow cs-lightbox__arrow--next" data-cs-lb-next aria-label="Next image">
+      <svg class="cs-more__arrow-svg cs-more__arrow-svg--right" viewBox="0 0 300 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <path d={ARROW_PATH} fill="currentColor" />
+      </svg>
+    </button>
+    <button type="button" class="cs-lightbox__arrow cs-lightbox__close" data-cs-lb-close-btn aria-label="Close gallery">×</button>
+  </div>
 
   {/* ── F. FOOTER — the landing parallax reveal, natively (Oscar's
       rev: the same footer reveal on every page): the footer pins
