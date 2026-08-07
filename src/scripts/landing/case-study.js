@@ -148,6 +148,67 @@ export function initCaseStudy() {
     };
     track.addEventListener('focusin', onFocusIn);
     cleanups.push(() => track.removeEventListener('focusin', onFocusIn));
+
+    /* DRAG (Oscar's rev): click-hold-drag pages the carousel — 1:1
+       while down (transition suspended), settling to the nearest
+       card on release through applyPager's glide. A real drag
+       (>6px) suppresses the click so card links don't fire (and
+       page-transition never sees it). All modes — input, not
+       motion. */
+    if (viewport instanceof HTMLElement) {
+      const DRAG_CLICK_SLOP_PX = 6;
+      let dragging = false;
+      let dragMoved = false;
+      let startX = 0;
+      let baseOffset = 0;
+      const maxOffset = () => maxIdx * CARD_STEP_PX;
+      const onPointerDown = (e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        dragging = true;
+        dragMoved = false;
+        startX = e.clientX;
+        baseOffset = idx * CARD_STEP_PX;
+        track.style.transition = 'none';
+        viewport.setPointerCapture?.(e.pointerId);
+      };
+      const onPointerMove = (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > DRAG_CLICK_SLOP_PX) dragMoved = true;
+        const offset = Math.min(Math.max(baseOffset - dx, 0), maxOffset());
+        track.style.transform = `translate3d(${(-offset).toFixed(1)}px, 0, 0)`;
+      };
+      const onPointerUp = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        const dx = e.clientX - startX;
+        const offset = Math.min(Math.max(baseOffset - dx, 0), maxOffset());
+        idx = Math.min(Math.max(Math.round(offset / CARD_STEP_PX), 0), maxIdx);
+        track.style.transition = '';
+        applyPager();
+      };
+      const onDragClick = (e) => {
+        if (!dragMoved) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragMoved = false;
+      };
+      const onDragStart = (e) => e.preventDefault(); /* native img drag */
+      viewport.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+      track.addEventListener('click', onDragClick, true);
+      track.addEventListener('dragstart', onDragStart);
+      cleanups.push(() => {
+        viewport.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
+        track.removeEventListener('click', onDragClick, true);
+        track.removeEventListener('dragstart', onDragStart);
+      });
+    }
     applyPager();
   }
 

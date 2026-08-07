@@ -335,7 +335,10 @@ body.case-page {
 .landing-v2 .cs-more__viewport {
 	margin: 80px 24px 0; /* cards top = 140 + 40 + 80 = the file's 260 */
 	overflow: hidden;
+	cursor: grab; /* draggable (Oscar's rev) */
 }
+
+.landing-v2 .cs-more__viewport:active { cursor: grabbing; }
 
 .landing-v2 .cs-more__track {
 	display: flex;
