@@ -35,7 +35,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
@@ -294,34 +294,49 @@ export function initCaseStudy() {
       }));
     });
 
-    /* THE COVER WIPE (Oscar's rev): as KEY IMPACT's block rides up
-       over the pinned OUR WORK, the outgoing text blurs + fades —
-       the services roll-over / hero exit-wipe vocabulary, scrubbed
-       over the exact cover window (seg2's block travelling from
-       the outgoing block's bottom to the 120px pin line; length =
-       the outgoing block's height), reversible by construction.
-       KEEP 1944/120 in step with the rail geometry. */
+    /* THE COVER WIPE (Oscar's rev 2 — LINE BY LINE): as KEY
+       IMPACT's block rides up over the pinned OUR WORK, the
+       outgoing text wipes one line at a time, BOTTOM FIRST (the
+       incoming edge reaches the lower lines first), mirrored on
+       reversal — the hero exit-wipe structure, scrubbed over the
+       exact cover window. Lines = the label + the desc's rendered
+       lines (wrapStaticLines). Each line's tween sits at its
+       crossing offset within the window (blockH - lineBottom,
+       scaled so the last wipe completes inside the window) —
+       NUMERIC positions (the house lesson). KEEP 1944/120 in step
+       with the rail geometry. */
     const seg1Block = document.querySelector('.cs-rail-seg--1 [data-cs-rail]');
     const workSec = document.querySelector('[data-cs-work]');
     if (seg1Block instanceof HTMLElement && workSec instanceof HTMLElement) {
-      const coverTween = gsap.fromTo(seg1Block,
-        { opacity: 1, filter: 'blur(0px)' },
-        {
-          opacity: 0,
-          filter: 'blur(6px)',
-          ease: 'none',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: workSec,
-            start: () => `top+=${(1944 - 120 - seg1Block.offsetHeight).toFixed(0)} top`,
-            end: () => `top+=${(1944 - 120).toFixed(0)} top`,
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        });
+      const WIPE_SPAN_PX = 40;
+      const label = seg1Block.querySelector('.cs-rail__label');
+      const desc = seg1Block.querySelector('.cs-rail__desc');
+      const lines = [];
+      if (label instanceof HTMLElement) lines.push(label);
+      if (desc instanceof HTMLElement) lines.push(...wrapStaticLines(desc));
+      const blockRect = seg1Block.getBoundingClientRect();
+      const blockH = seg1Block.offsetHeight;
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: workSec,
+          start: () => `top+=${(1944 - 120 - blockH).toFixed(0)} top`,
+          end: () => `top+=${(1944 - 120).toFixed(0)} top`,
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      });
+      const scale = Math.max((blockH - WIPE_SPAN_PX) / blockH, 0);
+      lines.forEach((line) => {
+        const b = line.getBoundingClientRect().bottom - blockRect.top;
+        const pos = Math.max((blockH - b) * scale, 0); /* bottom lines first */
+        tl.fromTo(line,
+          { opacity: 1, filter: 'blur(0px)' },
+          { opacity: 0, filter: 'blur(6px)', duration: WIPE_SPAN_PX, ease: 'none', immediateRender: false },
+          pos);
+      });
       cleanups.push(() => {
-        coverTween.scrollTrigger?.kill();
-        coverTween.kill();
+        tl.scrollTrigger?.kill();
+        tl.kill();
       });
     }
 

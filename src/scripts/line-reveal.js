@@ -197,6 +197,33 @@ export function wrapLineRevealElement(el) {
 }
 
 /**
+ * STATIC line wrap — the proven line-grouping (revealElement's
+ * layout-measured lines) yielding plain per-line block elements
+ * with NO reveal behaviour: clips pre-visible, inner transitions
+ * stripped. For per-line effects that need rendered-line targets
+ * (the overtake wipes). Call after fonts; re-call after setting
+ * textContent to re-derive.
+ *
+ * @param {HTMLElement} el
+ * @returns {HTMLElement[]} the per-line clip elements, top to bottom
+ */
+export function wrapStaticLines(el) {
+  ensureLineRevealStyles();
+  revealElement(el);
+  const clips = Array.from(el.querySelectorAll(':scope > .lr-clip'));
+  clips.forEach((clip) => {
+    clip.classList.add('lr-visible');
+    clip.querySelectorAll('.lr-inner').forEach((inn) => {
+      if (inn instanceof HTMLElement) {
+        inn.style.transition = 'none';
+        inn.style.transitionDelay = '';
+      }
+    });
+  });
+  return clips.filter((c) => c instanceof HTMLElement);
+}
+
+/**
  * WORD-level reveal wrap (the landing pages' entrance): each word —
  * or whole child ELEMENT (kept intact: face spans, term buttons,
  * spacers all survive as live nodes) — gets its own inline

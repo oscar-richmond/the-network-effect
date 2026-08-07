@@ -68,7 +68,7 @@
 import gsap from 'gsap';
 import { createDriftDriver } from '../holding/holding-shared.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
-import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
@@ -169,6 +169,22 @@ export function initWorkPage() {
       const tRect = u.title.getBoundingClientRect();
       const uRect = u.el.getBoundingClientRect();
       u.index.style.left = `${(tRect.right - uRect.left + INDEX_GAP_PX).toFixed(1)}px`;
+      /* Per-LINE wipe units (Oscar's rev): the title (+/0N) line
+         plus the desc's rendered lines (wrapStaticLines — rebuilt
+         from the source text so font-load/resize re-derive the
+         grouping), each with its bottom offset inside the unit,
+         ordered BOTTOM FIRST (the incoming edge reaches the lower
+         lines first). */
+      u.desc.textContent = u.descText;
+      const descLines = wrapStaticLines(u.desc);
+      const lineUnits = [
+        { els: [u.title, u.index], bottom: tRect.bottom - uRect.top },
+        ...descLines.map((clip) => ({
+          els: [clip],
+          bottom: clip.getBoundingClientRect().bottom - uRect.top,
+        })),
+      ];
+      u.wipeLines = lineUnits.sort((a, b) => b.bottom - a.bottom);
       /* Push clearance: the unit's content height (desc bottom). */
       u.blockH = u.desc.offsetTop + u.desc.offsetHeight;
     });
@@ -215,7 +231,7 @@ export function initWorkPage() {
         u.append(title, index, desc);
         u.style.transform = `translate3d(0, ${(BASE_TOP_PX + i * PITCH_PX).toFixed(0)}px, 0)`;
         metasLayer.appendChild(u);
-        return { el: u, project: p, title, index, desc, blockH: 150 };
+        return { el: u, project: p, title, index, desc, descText: p.desc, blockH: 150, wipeLines: null, wiped: false };
       });
       measureUnits();
     }
@@ -320,15 +336,34 @@ export function initWorkPage() {
       if (!PUSH_HANDOFF && !(succY <= DOCK_Y_PX + u.blockH && i === docked)) {
         u.el.style.opacity = '';
       }
-      /* THE OVERTAKE WIPE (Oscar's rev): as the incoming meta rides
-         over the docked one, the outgoing text blurs + fades with
-         its displacement — the services roll-over / hero exit-wipe
-         vocabulary, pure f(travel), reversible. Plain black ink —
-         filters carry no blend risk here. */
-      if (PUSH_HANDOFF) {
-        const wipeT = clamp((DOCK_Y_PX - y) / Math.max(u.blockH, 1), 0, 1);
-        u.el.style.opacity = wipeT > 0 ? (1 - wipeT).toFixed(3) : '';
-        u.el.style.filter = wipeT > 0 ? `blur(${(META_WIPE_BLUR_PX * wipeT).toFixed(2)}px)` : '';
+      /* THE OVERTAKE WIPE (Oscar's rev 2 — LINE BY LINE): as the
+         incoming meta rides over the docked one, the outgoing text
+         wipes one line at a time, BOTTOM FIRST (the lines nearest
+         the arriving text lead), each line blurring + fading across
+         its own window of the push — pure f(travel), mirrored
+         exactly on reversal. Plain black ink — filters carry no
+         blend risk. */
+      if (PUSH_HANDOFF && u.wipeLines) {
+        const p = clamp((DOCK_Y_PX - y) / Math.max(u.blockH, 1), 0, 1);
+        if (p > 0) {
+          const n = u.wipeLines.length;
+          const win = 0.5; /* each line's wipe window (of the push) */
+          u.wipeLines.forEach((line, k) => {
+            const startP = n > 1 ? (k / n) * (1 - win) : 0;
+            const t = clamp((p - startP) / win, 0, 1);
+            line.els.forEach((el) => {
+              el.style.opacity = t > 0 ? (1 - t).toFixed(3) : '';
+              el.style.filter = t > 0 ? `blur(${(META_WIPE_BLUR_PX * t).toFixed(2)}px)` : '';
+            });
+          });
+          u.wiped = true;
+        } else if (u.wiped) {
+          u.wipeLines.forEach((line) => line.els.forEach((el) => {
+            el.style.opacity = '';
+            el.style.filter = '';
+          }));
+          u.wiped = false;
+        }
       }
       u.el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
       succY = y;
