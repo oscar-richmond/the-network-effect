@@ -75,10 +75,15 @@ import GradualBlur from '../GradualBlur.astro';
       ))}
     </div>
 
-    {/* Right-edge blur (Oscar's rev) — the We Create Access section's
-        GradualBlur treatment, vertical: overlays the carousel items
-        (strip z1 < band z2) and sits under VIEW ALL (z3). Static on
-        the stage — items blur as they pass beneath it. */}
+    {/* Right-edge blur (Oscar's rev 2 — the FULL Access treatment):
+        the same-colour gradient TINT under the GradualBlur band
+        (the access edge construction: light must diffuse near the
+        edge so the blur reads as blurred #EEEEF0, not just soft
+        imagery). Strip z1 < tint/band z2 < VIEW ALL z3; static on
+        the stage — items blur as they pass beneath; the tint drains
+        WITH the band's end-of-travel dissolve (landing-featured.js),
+        as the access exit drains its own. */}
+    <div class="landing-featured__edge-tint" aria-hidden="true" data-featured-edge-tint></div>
     <GradualBlur
       target="parent"
       position="right"

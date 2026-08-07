@@ -186,6 +186,7 @@ export function initLandingFeatured() {
     return m ? parseFloat(m[1]) : 0;
   });
   const bandFade = { t: 0 };
+  const edgeTint = section.querySelector('[data-featured-edge-tint]');
   tl.to(bandFade, {
     t: 1,
     duration: BAND_FADE_PX,
@@ -195,6 +196,11 @@ export function initLandingFeatured() {
         l.style.backdropFilter = v;
         l.style.webkitBackdropFilter = v;
       });
+      /* The tint drains with the radii (the access-exit pairing) —
+         plain gradient div, opacity is safe (no backdrop root). */
+      if (edgeTint instanceof HTMLElement) {
+        edgeTint.style.opacity = (1 - bandFade.t).toFixed(3);
+      }
     },
   }, (travel() || 1) - BAND_FADE_PX);
   masterTl = tl;

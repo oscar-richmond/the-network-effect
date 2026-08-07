@@ -1576,6 +1576,20 @@
    both stage edges, over a same-colour gradient tint so the edges
    read as blurred #EEEEF0. Tint z5, blur bands z6 — siblings above
    everything in-section; never ancestors of the difference words. */
+/* Featured right edge — the access tint construction, horizontal
+   (solid at the right edge, dissolving leftward); sits just under
+   its GradualBlur band (DOM order), both at z2 over the strip. */
+.landing-v2 .landing-featured__edge-tint {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 12rem;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	background: linear-gradient(90deg, rgba(238, 238, 240, 0) 0%, #eeeef0 100%);
+}
+
 .landing-v2 .landing-access__edge-tint {
 	position: absolute;
 	left: 0;
