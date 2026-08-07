@@ -93,6 +93,11 @@ const PUSH_HANDOFF = true;
 const FOOTER_REVEAL_PX = 811; // the landing footer's full height
 const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
 const CURSOR_LERP = 0.25; // the canvas-cursor feel
+/* The case-page scroll RESISTANCE (Oscar's rev): the render
+   position lerps toward the input target at the Lenis value the
+   case study uses (0.065) — wheel input lands with the same lag/
+   ease instead of 1:1. Feel constant, one place. */
+const SCROLL_SMOOTH_LERP = 0.065;
 const PILL_STAGGER_MS = 80;
 const PILLS_AT_MS = 300;
 const LINE_STAGGER_S = 0.12;
@@ -378,14 +383,18 @@ export function initWorkPage() {
      clamp REBASES the offset so momentum can't bank debt past the
      ends — reversal is immediate. */
   let posOffset = 0;
+  let targetPos = 0;
   let driver = null;
 
   const frame = () => {
     layout();
   };
 
+  /* Direct placement (tweens, focus, filters, RM, dev): render AND
+     target snap together — no smoothing on deliberate moves. */
   const setPosClamped = (raw, driverTravel) => {
     pos = clamp(raw, 0, maxPos());
+    targetPos = pos;
     if (raw !== pos && driverTravel !== undefined) posOffset = pos - driverTravel;
     frame();
     onPosChange();
@@ -410,7 +419,16 @@ export function initWorkPage() {
           snapTween.kill();
           posOffset = pos - travelPx;
         }
-        setPosClamped(travelPx + posOffset, travelPx);
+        /* Wheel/touch path: clamp the TARGET (rebasing the offset
+           at the ends), then lerp the render position toward it —
+           the case-page resistance. */
+        const raw = travelPx + posOffset;
+        targetPos = clamp(raw, 0, maxPos());
+        if (raw !== targetPos) posOffset = targetPos - travelPx;
+        pos += (targetPos - pos) * SCROLL_SMOOTH_LERP;
+        if (Math.abs(targetPos - pos) < 0.05) pos = targetPos;
+        frame();
+        onPosChange();
       },
     });
     cleanups.push(() => driver.destroy());
@@ -716,8 +734,10 @@ export function initWorkPage() {
         y: u.el.style.transform,
         blockH: u.blockH,
       })),
+      tick: (dtMs) => driver?.tickOnce(dtMs),
       state: () => ({
         pos,
+        targetPos,
         posOffset,
         setLength: set.length,
         tileCount: tiles.length,
