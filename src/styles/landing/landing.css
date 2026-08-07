@@ -710,7 +710,7 @@
 @media (prefers-reduced-motion: reduce) {
 	.landing-v2 .landing-closing {
 		margin-top: 0;
-		height: 1098px;
+		height: 1074px;
 	}
 
 	.landing-v2 .landing-closing__stage {
@@ -1665,8 +1665,9 @@
 	/* Overlap + the 300px hold compensation (see the stage note). */
 	margin-top: calc(-1 * (50vh + 300px));
 	margin-top: calc(-1 * (50dvh + 300px));
-	/* Stage 1098 (file 1050 + 48 extra ground, Oscar's revs) + 300 hold. */
-	height: calc(1098px + 300px);
+	/* Stage 1074 (file 1050 + 48 extra ground - 24, Oscar's revs:
+	   uniform 139px pre-footer whitespace on every page) + 300 hold. */
+	height: calc(1074px + 300px);
 	background: #eeeef0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: var(--landing-ink);
@@ -1680,7 +1681,11 @@
 	position: sticky;
 	top: calc(100vh - 986px);
 	top: calc(100dvh - 986px);
-	height: 1098px;
+	/* 1074 = the uniform 139px whitespace below the keyword
+	   descriptions (Oscar's rev) — the pin maths (sticky top +
+	   in-stage content) and the 300px hold (section - stage) are
+	   height-independent. */
+	height: 1074px;
 	background: #eeeef0;
 }
 
