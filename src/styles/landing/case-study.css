@@ -474,6 +474,15 @@ body.case-page {
 	place-items: center;
 }
 
+/* ROOT FIX (Oscar's dead-hover report): display:grid above BEATS
+   the [hidden] attribute's UA display:none (class specificity), so
+   the "hidden" lightbox was silently covering the whole viewport
+   at z400 — swallowing every hover and click on the page. The
+   attribute must always win. */
+.landing-v2 .cs-lightbox[hidden] {
+	display: none !important;
+}
+
 .landing-v2 .cs-lightbox__backdrop {
 	position: absolute;
 	inset: 0;

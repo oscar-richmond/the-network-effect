@@ -13,12 +13,13 @@
  * flags mark the specific outstanding questions.
  *
  * ═══ RIGHTS CONFIRMATION REQUIRED — INSTAGRAM-SOURCED IMAGERY ═══
- * The Yoxman stream images are Instagram-sourced per the file's own
- * layer names (49035…_n etc.) and several contain RECOGNIZABLE
- * PEOPLE (chefs, guests). Explicit rights confirmation is required
- * for every image before anything ships — this is the elevated
- * third-party class, not standard pending-sign-off. sRGB-converted
- * on processing.
+ * The Yoxman stream images AND VIDEOS are Instagram-sourced per
+ * the file's own layer names (49035…_n / AQMb… etc.) and several
+ * contain RECOGNIZABLE PEOPLE (named chefs — Rogan, Roux — and
+ * guests). Explicit rights confirmation is required for every
+ * asset before anything ships — this is the elevated third-party
+ * class, not standard pending-sign-off. Stills sRGB-converted on
+ * processing; videos passed through as supplied.
  */
 import { asset } from '../../utils/asset.js';
 import { FEATURED_CARDS } from './featured-work.js';
@@ -61,10 +62,16 @@ export const CASE_STUDIES = [
          / full. */
       stream: [
         { layout: 'full', imgs: [yox('stream-1.jpg')] },
-        { layout: 'pair', narrowFirst: true, imgs: [yox('stream-2.jpg'), yox('stream-3.jpg')] },
+        /* stream-2: the chef-name portrait VIDEO (Oscar's drop
+           2026-08-07 — replaces the Davies still; autoplay muted
+           loop via the template's video branch). */
+        { layout: 'pair', narrowFirst: true, imgs: [yox('stream-2.mp4'), yox('stream-3.jpg')] },
         { layout: 'full', imgs: [yox('stream-4.jpg')] },
         { layout: 'full', imgs: [yox('stream-5.jpg')] },
-        { layout: 'pair', narrowFirst: false, imgs: [yox('stream-6.jpg'), yox('stream-7.jpg')] },
+        /* stream-7: the Yoxman-script portrait VIDEO (Oscar's drop —
+           720x1280, ~10.6MB; flag: worth a compression pass before
+           anything ships). */
+        { layout: 'pair', narrowFirst: false, imgs: [yox('stream-6.jpg'), yox('stream-7.mp4')] },
         { layout: 'full', imgs: [yox('stream-8.jpg')] },
       ],
     },
