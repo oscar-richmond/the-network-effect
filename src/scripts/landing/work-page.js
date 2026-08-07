@@ -305,36 +305,47 @@ export function initWorkPage() {
     if (metaLive) metaLive.textContent = `${p.title.join(' ')} ${p.index}. ${p.desc}`;
   };
 
+  const dockedProbe = (p1) => {
+    for (let i = units.length - 1; i >= 0; i -= 1) {
+      if (BASE_TOP_PX + i * PITCH_PX - p1 <= (units[i].dockY ?? DOCK_Y_PX)) return i;
+    }
+    return 0;
+  };
+
   const layoutMetas = (p1, revealT = 0) => {
     if (!units.length) return;
     /* FOOTER-REVEAL HOLD (Oscar's rev): as the stage rides up over
        the footer, the docked meta stays VIEWPORT-STATIONARY
        (compensating the stage transform) until the last image's
        bottom meets the description's bottom — then it locks to the
-       image and departs with it. catchT derives per unit: at
-       carouselMax the last image's bottom sits at stageH - END_GAP
-       (by construction), so contact happens after
-       stageH - END_GAP - dock - blockH of reveal travel. */
-    const holdFor = (dockI, blockH) =>
-      revealT > 0
-        ? Math.min(revealT, Math.max(stageH() - END_GAP_PX - dockI - blockH, 0))
-        : 0;
-    /* Docked = the highest-index unit pinned at ITS dock (docks are
-       per-unit, viewport-centred). */
-    let docked = 0;
-    for (let i = units.length - 1; i >= 0; i -= 1) {
-      if (BASE_TOP_PX + i * PITCH_PX - p1 <= (units[i].dockY ?? DOCK_Y_PX)) {
-        docked = i;
-        break;
+       image and departs with it. At carouselMax the last image's
+       bottom sits at stageH - END_GAP by construction, so contact
+       lands after stageH - END_GAP - dock - blockH of reveal
+       travel. ONE hold for ALL pinned units, derived from the
+       VISIBLE (docked) unit — per-unit holds froze at different
+       amounts (block heights vary), shifting the invisible older
+       units relative to their successor and nudging their wipe
+       values back under 1: the faint blurred ghost titles Oscar
+       caught. Uniform hold keeps the relative geometry — and every
+       wipe state — identical through the reveal. */
+    let hold = 0;
+    if (revealT > 0) {
+      const du = units[Math.min(units.length - 1, Math.max(0, dockedProbe(p1)))];
+      if (du) {
+        const dDock = du.dockY ?? DOCK_Y_PX;
+        hold = Math.min(revealT, Math.max(stageH() - END_GAP_PX - dDock - du.blockH, 0));
       }
     }
+    /* Docked = the highest-index unit pinned at ITS dock (docks are
+       per-unit, viewport-centred). */
+    const docked = dockedProbe(p1);
     if (reduced) {
       /* RM: no travel choreography — instant swap-in-place at the
          dock, driven by the same dock-crossing trigger. */
       units.forEach((u, i) => {
         const dockI = u.dockY ?? DOCK_Y_PX;
         u.el.style.visibility = i === docked ? '' : 'hidden';
-        u.el.style.transform = `translate3d(0, ${(dockI + holdFor(dockI, u.blockH)).toFixed(1)}px, 0)`;
+        u.el.style.transform = `translate3d(0, ${(dockI + hold).toFixed(1)}px, 0)`;
       });
       announceDock(docked);
       return;
@@ -345,7 +356,7 @@ export function initWorkPage() {
       const linked = BASE_TOP_PX + i * PITCH_PX - p1;
       const dockI = u.dockY ?? DOCK_Y_PX;
       let y = Math.max(linked, dockI); /* pinned — NEVER displaced */
-      if (y === dockI) y += holdFor(dockI, u.blockH); /* the reveal hold */
+      if (y === dockI) y += hold; /* the reveal hold, uniform */
       /* THE OVERTAKE WIPE (Oscar's rev 4 — IN PLACE, line by line):
          the pinned text stays put; each of its lines blurs + fades
          as the INCOMING EDGE (the successor's top) approaches it —
