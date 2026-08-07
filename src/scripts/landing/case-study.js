@@ -346,24 +346,94 @@ export function initCaseStudy() {
       return null;
     };
 
+    /* TWO-PHASE SWAP (Oscar's rev 2 — strictly sequential): the
+       showing media wipes OUT left-to-right to the bare backdrop
+       (the incoming stays hidden), and only once it is fully gone
+       does the new media wipe IN left-to-right with the same
+       effect. The stage box is frozen through phase 1 (the
+       absolute snapshot needs it once the media beneath hides);
+       rapid navigation retargets via pendingIdx — the sequence in
+       flight picks up the LATEST target at its phase boundary
+       (the meta-swap runner pattern, nothing stacks). */
+    const SWAP_PHASE_MS = 450;
+    let pendingIdx = null;
+    let swapAnim = false;
+
+    const hideBothMedia = () => {
+      if (lbImg instanceof HTMLImageElement) lbImg.hidden = true;
+      if (lbVideo instanceof HTMLVideoElement) {
+        lbVideo.hidden = true;
+        lbVideo.pause?.();
+      }
+    };
+
+    const visibleMedia = () =>
+      (lbImg instanceof HTMLImageElement && !lbImg.hidden && lbImg)
+      || (lbVideo instanceof HTMLVideoElement && !lbVideo.hidden && lbVideo)
+      || null;
+
+    const runSwapSequence = () => {
+      if (pendingIdx === null || !(lbStage instanceof HTMLElement)) return;
+      swapAnim = true;
+      /* Phase 1 — OUT: freeze the box, snapshot the current media
+         on top, hide the real media (bare backdrop beneath), wipe
+         the snapshot away L->R. */
+      const rect = lbStage.getBoundingClientRect();
+      lbStage.style.width = `${rect.width.toFixed(1)}px`;
+      lbStage.style.height = `${rect.height.toFixed(1)}px`;
+      const snap = makeSnapshot();
+      hideBothMedia();
+      if (snap) {
+        lbStage.appendChild(snap);
+        void snap.offsetWidth;
+        snap.classList.add('is-wiping');
+      }
+      schedule(() => {
+        snap?.remove();
+        lbStage.style.width = '';
+        lbStage.style.height = '';
+        /* Phase 2 — IN, immediately: the LATEST target reveals
+           L->R from nothing (clip grows from the left edge). */
+        const target = pendingIdx ?? lbIdx;
+        lbIdx = target;
+        applyMedia(target);
+        const el = visibleMedia();
+        if (el) {
+          el.style.transition = 'none';
+          el.style.clipPath = 'inset(0 100% 0 0)';
+          el.style.filter = 'blur(6px)';
+          void el.offsetWidth;
+          el.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s cubic-bezier(0.42, 0, 0.24, 1), filter ${SWAP_PHASE_MS / 1000}s cubic-bezier(0.42, 0, 0.24, 1)`;
+          el.style.clipPath = 'inset(0 0 0 0)';
+          el.style.filter = 'blur(0px)';
+        }
+        schedule(() => {
+          if (el) {
+            el.style.transition = '';
+            el.style.clipPath = '';
+            el.style.filter = '';
+          }
+          swapAnim = false;
+          if (pendingIdx !== lbIdx) runSwapSequence(); /* retarget */
+        }, SWAP_PHASE_MS + 30);
+      }, snap ? SWAP_PHASE_MS + 20 : 0);
+    };
+
+    /* Navigation steps FROM THE LATEST TARGET, not the settled
+       index: lbIdx only advances at the phase boundary now, so
+       stepping from it would collapse rapid inputs into one. */
+    const navIdx = () => pendingIdx ?? lbIdx;
+
     const showMedia = (i, instant) => {
-      lbIdx = ((i % items.length) + items.length) % items.length; /* wrap */
+      const wrapped = ((i % items.length) + items.length) % items.length; /* wrap */
       if (instant || reduced || !(lbStage instanceof HTMLElement)) {
+        lbIdx = wrapped;
+        pendingIdx = wrapped;
         applyMedia(lbIdx);
         return;
       }
-      /* The L->R WIPE (Oscar's rev): the outgoing media freezes on
-         top and clips away left-to-right while blurring (the house
-         clip-reveal vocabulary), uncovering the new media set
-         beneath — one transient overlay per swap, self-removing. */
-      const snap = makeSnapshot();
-      applyMedia(lbIdx);
-      if (snap) {
-        lbStage.appendChild(snap);
-        void snap.offsetWidth; /* commit the un-wiped state */
-        snap.classList.add('is-wiping');
-        schedule(() => snap.remove(), 700);
-      }
+      pendingIdx = wrapped;
+      if (!swapAnim) runSwapSequence();
     };
 
     const openLb = (i, opener) => {
@@ -405,8 +475,8 @@ export function initCaseStudy() {
     const onLbClick = (e) => {
       const t = e.target instanceof Element ? e.target : null;
       if (!t) return;
-      if (t.closest('[data-cs-lb-prev]')) showMedia(lbIdx - 1);
-      else if (t.closest('[data-cs-lb-next]')) showMedia(lbIdx + 1);
+      if (t.closest('[data-cs-lb-prev]')) showMedia(navIdx() - 1);
+      else if (t.closest('[data-cs-lb-next]')) showMedia(navIdx() + 1);
       else if (t.closest('[data-cs-lb-close], [data-cs-lb-close-btn]')) closeLb();
     };
     lightbox.addEventListener('click', onLbClick);
@@ -415,8 +485,8 @@ export function initCaseStudy() {
     const onLbKey = (e) => {
       if (!lbOpen) return;
       if (e.key === 'Escape') { e.preventDefault(); closeLb(); }
-      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showMedia(lbIdx + 1); }
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showMedia(lbIdx - 1); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showMedia(navIdx() + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showMedia(navIdx() - 1); }
     };
     document.addEventListener('keydown', onLbKey);
     cleanups.push(() => document.removeEventListener('keydown', onLbKey));
@@ -427,7 +497,7 @@ export function initCaseStudy() {
       const now = performance.now();
       if (now - wheelCool < 400 || Math.abs(e.deltaY) < 12) return;
       wheelCool = now;
-      showMedia(lbIdx + (e.deltaY > 0 ? 1 : -1));
+      showMedia(navIdx() + (e.deltaY > 0 ? 1 : -1));
     };
     lightbox.addEventListener('wheel', onLbWheel, { passive: false });
     cleanups.push(() => lightbox.removeEventListener('wheel', onLbWheel));

@@ -547,8 +547,8 @@ body.case-page {
 }
 
 .landing-v2 .cs-lightbox__wipe.is-wiping {
-	transition: clip-path 0.6s cubic-bezier(0.42, 0, 0.24, 1),
-		filter 0.6s cubic-bezier(0.42, 0, 0.24, 1);
+	transition: clip-path 0.45s cubic-bezier(0.42, 0, 0.24, 1),
+		filter 0.45s cubic-bezier(0.42, 0, 0.24, 1);
 	clip-path: inset(0 0 0 100%);
 	filter: blur(6px);
 }
