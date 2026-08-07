@@ -200,16 +200,35 @@ export function initCaseStudy() {
       }));
     }
 
-    /* Footer — the shared choreography at the landing trigger. */
+    /* Footer — the shared choreography at the landing trigger, with
+       a NATIVE IntersectionObserver fallback (Oscar's empty-footer
+       report): once text is wrap-hidden, the play must never depend
+       on a single delivery path — the IO fires from the platform's
+       own intersection machinery, independent of ScrollTrigger's
+       update loop. Both paths funnel through one idempotent guard. */
     const footer = document.querySelector('[data-cs-footer] [data-landing-footer]');
     if (footer instanceof HTMLElement) {
       const wrapped = wrapFooterReveals(footer);
+      let footerPlayed = false;
+      const playOnce = () => {
+        if (footerPlayed) return;
+        footerPlayed = true;
+        playFooterReveals(wrapped, schedule);
+      };
       triggers.push(ScrollTrigger.create({
         trigger: footer,
         start: 'top 75%',
         once: true,
-        onEnter: () => playFooterReveals(wrapped, schedule),
+        onEnter: playOnce,
       }));
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((en) => en.isIntersecting)) {
+          playOnce();
+          io.disconnect();
+        }
+      }, { rootMargin: '0px 0px -20% 0px' });
+      io.observe(footer);
+      cleanups.push(() => io.disconnect());
     }
 
     ScrollTrigger.refresh();

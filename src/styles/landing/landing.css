@@ -1796,15 +1796,26 @@
    scroll lands exactly at full reveal. Still z > the hero stage's
    250 — the exit gate holds. */
 .landing-v2 .landing-footer {
+	height: 811px;
+	background: var(--landing-accent-blue);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	color: #fff;
+}
+
+/* The PARALLAX PLACEMENT is /landing-only layout and must never
+   ride the shared component onto other routes: scoped so that a
+   page whose own stylesheet fails to load (the stale-HMR class
+   Oscar hit — the case study's neutralizer missing left the footer
+   sticking 189px from the viewport top, an empty blue panel over
+   everything) still gets a sane in-flow footer. Pages beyond
+   /landing carry an extra body class (work-page / case-page) and
+   are excluded here; their own wrappers place the footer. */
+.landing-v2:not(.work-page):not(.case-page) .landing-footer {
 	position: sticky;
 	top: calc(100vh - 811px);
 	top: calc(100dvh - 811px);
 	margin-top: -811px;
 	z-index: 259;
-	height: 811px;
-	background: var(--landing-accent-blue);
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	color: #fff;
 }
 
 .landing-v2 .landing-footer-spacer {
