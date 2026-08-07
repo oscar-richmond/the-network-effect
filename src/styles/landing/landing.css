@@ -506,7 +506,7 @@
 	align-items: center;
 	/* 7px = the Figma 8px gap scaled with the 16->14px label drop. */
 	gap: 7px;
-	height: 38px;
+	height: 32px; /* CTA height = the pager circles (Oscar's rev) */
 	padding: 0 16px;
 	border: 0;
 	background: #343439;
@@ -870,7 +870,7 @@
 .landing-v2 .landing-svc-card__btninner { display: block; }
 
 .landing-v2 .landing-svc-card__btn {
-	height: 38px;
+	height: 32px; /* CTA height = the pager circles (Oscar's rev) */
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
@@ -2171,7 +2171,7 @@
 	z-index: 3; /* above the right-edge blur band (z2) */
 	right: 24px;
 	top: 199px; /* pre-JS approximation; JS derives (bottom 80 above images) */
-	height: 38px;
+	height: 32px; /* CTA height = the pager circles (Oscar's rev) */
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;

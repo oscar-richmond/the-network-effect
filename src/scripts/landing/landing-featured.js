@@ -53,7 +53,7 @@ const GROUND_DARK = '#161616';
    difference-blend lines depart via layout `top`, never transform. */
 const HEADER_GAP_PX = 80;
 const HL_LINE_PX = 40;
-const VIEWALL_H_PX = 38;
+const VIEWALL_H_PX = 32; /* CTA height = the pager circles (Oscar's rev) */
 const DESC_CLEAR_PX = 40; // longest desc bottom above viewport bottom
 
 const RIGHT_MARGIN_PX = 24;

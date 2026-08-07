@@ -124,7 +124,7 @@ body.work-page {
 }
 
 .landing-v2 .work-pill {
-	height: 38px;
+	height: 32px; /* CTA height = the pager circles (Oscar's rev) */
 	border: 0;
 	padding: 0;
 	background: #e4e4ea;
@@ -132,7 +132,7 @@ body.work-page {
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 700;
 	font-size: 14px;
-	line-height: 38px;
+	line-height: 32px;
 	text-align: center;
 	text-transform: uppercase;
 	cursor: pointer;
