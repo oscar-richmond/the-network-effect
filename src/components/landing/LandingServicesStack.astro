@@ -175,20 +175,24 @@ const rhythm = (card) => {
     {/* Non-navigating placeholder — destinations unspecified. House
         char-ripple hover (the founders-CTA blur sweep, arrow joins
         after the text). */}
-    <button
-      type="button"
-      class="landing-svc-card__btn"
-      style={`top:${rhythm(card).btnTop}px`}
-      data-char-ripple-trigger
-    >
-      <span data-char-ripple>MORE INFO</span>
-      <img
-        src={asset('/assets/landing/services-stack/more-arrow.svg')}
-        alt=""
-        width="12"
-        height="12"
-        data-char-ripple-arrow
-      />
-    </button>
+    {/* The reveal CLIP wraps the WHOLE button (Oscar's rev: the
+        container animates with the same clip rise as the text, not
+        just its label) — the clip carries the position, the button
+        is static inside; landing-services.js sets the inner's
+        delay and plays the clip with the card's texts. */}
+    <span class="landing-svc-card__btnclip lr-clip" style={`top:${rhythm(card).btnTop}px`}>
+      <span class="landing-svc-card__btninner lr-inner">
+        <button type="button" class="landing-svc-card__btn" data-char-ripple-trigger>
+          <span data-char-ripple>MORE INFO</span>
+          <img
+            src={asset('/assets/landing/services-stack/more-arrow.svg')}
+            alt=""
+            width="12"
+            height="12"
+            data-char-ripple-arrow
+          />
+        </button>
+      </span>
+    </span>
   </article>
 ))}

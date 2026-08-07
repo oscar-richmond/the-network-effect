@@ -115,7 +115,7 @@ const BAND_TARGETS = [
 const BAND_RIDERS = [
   '.landing-svc-card__listhead',
   '.landing-svc-card__lists',
-  '.landing-svc-card__btn',
+  '.landing-svc-card__btnclip', /* the button's reveal clip carries position */
 ];
 
 /* Cards start EARLY (Oscar's revs 4+11): IMMERSE begins rising at
@@ -241,7 +241,16 @@ export function initLandingServices() {
           add(li, 4 * LINE_STAGGER_S + r * LINE_STAGGER_S + c * 0.04);
         });
       });
-      add(card.querySelector('.landing-svc-card__btn'), (4 + maxRows) * LINE_STAGGER_S);
+      /* The MORE INFO clip: the CONTAINER rises with the text's clip
+         slide (Oscar's rev) — delay on the inner, play on the clip. */
+      const btnClip = card.querySelector('.landing-svc-card__btnclip');
+      if (btnClip instanceof HTMLElement) {
+        const btnInner = btnClip.querySelector('.lr-inner');
+        if (btnInner instanceof HTMLElement) {
+          btnInner.style.transition = `transform 1.2s cubic-bezier(0.42,0,0.24,1) ${((4 + maxRows) * LINE_STAGGER_S).toFixed(2)}s`;
+        }
+        parts.push(btnClip);
+      }
       return parts;
     });
     const svcCardPlayed = cards.map(() => false);

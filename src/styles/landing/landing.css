@@ -738,7 +738,7 @@
 
 	.landing-v2 .landing-svc-card .landing-svc-card__listhead,
 	.landing-v2 .landing-svc-card .landing-svc-card__lists,
-	.landing-v2 .landing-svc-card .landing-svc-card__btn {
+	.landing-v2 .landing-svc-card .landing-svc-card__btnclip {
 		transform: translateY(-18px);
 	}
 }
@@ -860,9 +860,16 @@
    arrow/pads/gap scaled by the same 16->14 ratio — the founders-CTA
    treatment (their 14px/10.472/7 precedent); the file's 147 width
    was natural (16+95+8+12+16), so the button narrows naturally. */
-.landing-v2 .landing-svc-card__btn {
+.landing-v2 .landing-svc-card__btnclip {
 	position: absolute;
 	left: 845px;
+	display: block;
+	overflow: hidden; /* the reveal clip (lr styles inject at runtime) */
+}
+
+.landing-v2 .landing-svc-card__btninner { display: block; }
+
+.landing-v2 .landing-svc-card__btn {
 	height: 38px;
 	display: inline-flex;
 	align-items: center;
