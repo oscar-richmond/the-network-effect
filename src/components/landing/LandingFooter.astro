@@ -24,11 +24,30 @@
  *   URLs. (File's "INSTATGRAM" typo fixed.)
  *
  * PENDING FOUNDER SIGN-OFF: the masked image is the file's export.
+ *
+ * THEMES (Oscar's build 2026-08-08): `theme` picks the colourway —
+ * 'blue' (default, this file's original #232A89 scheme) or 'light'
+ * (the /services file's second official colourway: #EEEEF0 ground /
+ * #161616 ink / #A6A6A8 muted — colour-only overrides in
+ * landing.css; the arrows swap to exact #161616 variants rather
+ * than a filter). Structure, links, and animations are identical.
  */
 import { asset } from '../../utils/asset.js';
+
+interface Props {
+  theme?: 'blue' | 'light';
+}
+
+const { theme = 'blue' } = Astro.props;
+const arrowNe = asset(theme === 'light' ? '/assets/landing/closing/arrow-ne-dark.svg' : '/assets/landing/closing/arrow-ne.svg');
+const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark.svg' : '/assets/landing/closing/arrow-up.svg');
 ---
 
-<footer class="landing-footer" data-landing-footer aria-label="Site footer">
+<footer
+  class:list={['landing-footer', { 'landing-footer--light': theme === 'light' }]}
+  data-landing-footer
+  aria-label="Site footer"
+>
   {/* Index columns */}
   <div class="landing-footer__cols">
     <nav class="landing-footer__col" data-footer-col aria-label="Site index">
@@ -50,7 +69,7 @@ import { asset } from '../../utils/asset.js';
       data-char-ripple-trigger
     >
       <span data-char-ripple>START A PROJECT</span>
-      <img src={asset('/assets/landing/closing/arrow-ne.svg')} alt="" width="10.5" height="10.5" data-char-ripple-arrow />
+      <img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow />
     </a>
   </div>
 
@@ -90,12 +109,12 @@ import { asset } from '../../utils/asset.js';
     <a class="landing-footer__rowitem landing-footer__rowitem--email" href="mailto:hello@thenetworkeffect.co.uk" data-char-ripple-trigger><span data-char-ripple>HELLO@THENETWORKEFFECT.CO.UK</span></a>
     <div class="landing-footer__social">
       {/* Placeholder hrefs pending real profile URLs. */}
-      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>LINKEDIN</span><img src={asset('/assets/landing/closing/arrow-ne.svg')} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
-      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>INSTAGRAM</span><img src={asset('/assets/landing/closing/arrow-ne.svg')} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>LINKEDIN</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>INSTAGRAM</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
     </div>
     <button type="button" class="landing-footer__rowitem landing-footer__rowitem--top" data-footer-top data-char-ripple-trigger>
       <span data-char-ripple>BACK TO TOP</span>
-      <img src={asset('/assets/landing/closing/arrow-up.svg')} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
+      <img src={arrowUp} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
     </button>
     <p class="landing-footer__rowitem landing-footer__rowitem--copyright">©2026 All rights reserved</p>
     <p class="landing-footer__rowitem landing-footer__rowitem--siteby">site by  <span>SELFHOOD STUDIOS</span></p>

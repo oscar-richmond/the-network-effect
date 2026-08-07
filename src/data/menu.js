@@ -12,7 +12,10 @@ export const menuLinks = [
   // unbuilt). The holding routes do not use this menu at all.
   { href: 'old', label: 'About', image: 'about.png' },
   { href: 'founders', label: 'Founders', image: 'team.png' },
-  { href: 'services', label: 'Services', image: 'services.jpg' },
+  /* /services now serves the NEW build's services page; the archived
+     standalone partners-wheel page moved to /old/services (2026-08-08)
+     — this OLD-ROUTES menu keeps pointing at the archive. */
+  { href: 'old/services', label: 'Services', image: 'services.jpg' },
 ];
 
 /** The NEW BUILD's menu items (SiteShell pages — /landing, /work and

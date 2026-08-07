@@ -2094,6 +2094,37 @@
 }
 .landing-v2 .landing-footer__rowitem--siteby span { text-transform: uppercase; }
 
+/* ── FOOTER LIGHT THEME (the /services file's second official
+   colourway, extracted 2026-08-08): #EEEEF0 ground / #161616 ink /
+   #A6A6A8 muted (labels + the statement's Serrif span — the same
+   muted value the blue variant already uses, so those rules stand).
+   COLOURS ONLY — structure, geometry, links and every animation are
+   the shared component's. Arrow imgs are swapped to exact #161616
+   variants in the component (no filters). The nav's difference
+   blend over this light ground reads dark — correct compositing. */
+.landing-v2 .landing-footer--light {
+	background: #eeeef0;
+	color: #161616;
+}
+
+.landing-v2 .landing-footer--light .landing-footer__link,
+.landing-v2 .landing-footer--light .landing-footer__start,
+.landing-v2 .landing-footer--light .landing-footer__rowitem {
+	color: #161616;
+}
+
+/* ── /services (NEW BUILD) content gate — the case-page pattern:
+   main rides z260 over the sticky footer (259) so the landing
+   reveal schema uncovers it; relative for the containing block.
+   The background is the SCRUBBED ground (services-v2.js drives it
+   #EEEEF0 → #161616 inline) — the static value here is the resting
+   state and the reveal-critical occlusion (always-loaded sheet). */
+.landing-v2.services-v2 main[data-services-v2] {
+	position: relative;
+	z-index: 260;
+	background: #eeeef0;
+}
+
 /* ── Entrance hidden states (no-preference only) ────────────────── */
 @media (prefers-reduced-motion: no-preference) {
 	/* MEDIA only (Oscar's rev): every TEXT entrance is the word-by-

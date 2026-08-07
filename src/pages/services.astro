@@ -1,63 +1,244 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PartnersWheel from '../components/services/PartnersWheel.astro';
-import Menu from '../components/Menu.astro';
+/**
+ * /services — the NEW BUILD's services page (Figma 60:3648
+ * "Services Page - Option 1 Hero", extracted 2026-08-08; 83px
+ * chrome subtracted; hidden layers + the frame's invisible founder
+ * debris ignored). The OLD standalone partners-wheel page moved to
+ * /old/services in the same change.
+ *
+ * ANATOMY (all geometry from the extraction — see services-v2.css):
+ *  1. HERO — fixed centred title/subtitle (white + difference) over
+ *     four images that travel UP AND PAST behind the text: the /old
+ *     01-IMMERSE pillar-hero mechanic ported wholesale (same images,
+ *     same speeds, same track+drift maths — services-v2.js), slotted
+ *     into THIS file's hero geometry. NON-CLICKABLE (no links, no
+ *     hover affordances — Oscar's spec).
+ *  2. PILLARS ×3 (IMMERSE/CONNECT/AMPLIFY) — each a full-viewport
+ *     image starting exactly as the hero wave's last image exits,
+ *     then statement (+#C1250E bar — the case-study intro pattern),
+ *     hover rows (the page's one NEW mechanic), gallery + flow rows.
+ *  3. GROUND FADE — #EEEEF0 → #161616 scrubbed over the 500px
+ *     runway (the landing TRANSITION_GROUND_FADE_PX grammar) into
+ *  4. WE CREATE ACCESS + dark gallery + toggles, then the landing's
+ *     OUR NETWORK component verbatim (shared already — zero landing
+ *     change), then
+ *  5. FOOTER — shared component, the LIGHT colourway (second
+ *     official theme: #EEEEF0 ground / #161616 ink / #A6A6A8 muted).
+ *
+ * BLEND WALK: difference elements are the hero + pillar overlay
+ * texts. Chains kept bare (section > sticky stage > text; the
+ *  transformed wave track is an earlier SIBLING, never an ancestor).
+ * The scrubbed main background can't break the fixed nav's blend —
+ * difference composites against whatever is beneath.
+ *
+ * CONTENT: all copy verbatim from the file (deck-sourced); rights
+ * flags + placeholder standing in services-v2.js (data).
+ * STAGING ONLY — nothing promoted anywhere until Oscar says so.
+ */
+import SiteShell from '../layouts/SiteShell.astro';
+import LandingNetwork from '../components/landing/LandingNetwork.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
+import { SERVICES_HERO, SERVICES_PILLARS, SERVICES_ACCESS } from '../data/landing/services-v2.js';
+import { asset } from '../utils/asset.js';
 import '../styles/home.css';
-import '../styles/services/services-page.css';
+import '../styles/landing/landing.css';
+import '../styles/landing/services-v2.css';
 import '../styles/fonts.css';
 ---
 
-<BaseLayout
-  title="The Network Effect — Services"
-  description="Talent, brands and audiences — the partners we connect."
-  bodyClass="services-page"
-  htmlClass="js"
->
-  <header class="home__topbar home__topbar--about">
-    <nav class="home__menu-cta" aria-label="Site">
-      <button
-        type="button"
-        class="home__menu-toggle"
-        data-menu-toggle
-        aria-expanded="false"
-        aria-controls="site-menu"
+<SiteShell title="Services — The Network Effect" bodyClass="landing-v2 services-v2">
+  <main class="sv" data-services-v2>
+    {/* ── 1. HERO — sticky stage; the wave track scrubs up past the
+        fixed text (services-v2.js sets the runway + travel). Track
+        FIRST in DOM (paints beneath), text after (on top) — no
+        z-index needed, the blend chains stay bare. */}
+    <section class="sv-hero" data-sv-hero aria-label="From access to impact">
+      <div class="sv-hero__stage" data-sv-hero-stage>
+        <div class="sv-hero__track" data-sv-hero-track aria-hidden="true">
+          {SERVICES_HERO.wave.map((item) => (
+            <div
+              class="sv-hero__item"
+              data-sv-wave-speed={String(item.speed)}
+              style={`left:${item.x}px;top:calc(100% + ${item.y}px);width:${item.w}px;height:${item.h}px`}
+            >
+              <img src={asset(`/assets/pillar-waves/${item.file}.jpg`)} alt="" loading="eager" decoding="async" />
+            </div>
+          ))}
+        </div>
+        <h1 class="sv-hero__title" data-sv-hero-title>{SERVICES_HERO.title}</h1>
+        <p class="sv-hero__subtitle" data-sv-hero-subtitle>{SERVICES_HERO.subtitle}</p>
+      </div>
+    </section>
+
+    {/* ── 2. PILLARS */}
+    {SERVICES_PILLARS.map((p) => (
+      <Fragment>
+        {/* Full-viewport image + difference overlay texts. */}
+        <section class="sv-pillar" aria-label={`${p.num} — ${p.name}`}>
+          <img class="sv-pillar__img" src={asset(p.fullImg)} alt="" loading="lazy" decoding="async" />
+          <h2 class="sv-pillar__title" data-sv-pillar-title>{p.num} — {p.name}</h2>
+          <p class="sv-pillar__sub" data-sv-pillar-sub>{p.sub}</p>
+        </section>
+
+        {/* Statement + accent bar — the case-study intro pattern
+            (indent spacer atom inside the reveal wrap; the bar
+            draws top-to-bottom on the same trigger). */}
+        <div class="sv-intro" data-sv-intro>
+          <p class="sv-intro__statement" data-sv-statement
+            ><span class="sv-intro__indent" aria-hidden="true"></span>{p.statement}</p
+          >
+          {p.statementSub && <p class="sv-intro__sub" data-sv-statement-sub>{p.statementSub}</p>}
+          <div class="sv-intro__bar" data-sv-bar aria-hidden="true"></div>
+        </div>
+
+        {/* HOVER ROWS — resting 2px dividers + /0N + Serrif item;
+            hover = accent fill + white SemiBold marquee + the
+            280×380 image centred on the row (services-v2.js; the
+            marquee tracks are built there after fonts settle).
+            Rows carry their own img field — the file's per-pillar
+            image is the placeholder for every row, awaiting
+            Oscar's per-row content drop. */}
+        <section
+          class="sv-rows"
+          data-sv-rows
+          style={`--sv-accent:${p.accent}`}
+          aria-label={`${p.name} services`}
+        >
+          <p class="sv-rows__label">{p.label}</p>
+          <ul class="sv-rows__list" data-sv-rows-list>
+            {p.rows.map((row) => (
+              <li
+                class="sv-rows__row"
+                data-sv-row
+                data-index={row.index}
+                data-text={row.text}
+                data-img={asset(row.img ?? p.hoverImg)}
+                tabindex="0"
+              >
+                <span class="sv-rows__inner">
+                  <span class="sv-rows__index">{row.index} /</span>
+                  <span class="sv-rows__text">{row.text}</span>
+                </span>
+                <span class="sv-rows__fill" aria-hidden="true"></span>
+                <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
+                <span class="sv-rows__edges" aria-hidden="true"></span>
+              </li>
+            ))}
+          </ul>
+          <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
+            <img src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
+          </div>
+        </section>
+
+        {/* Gallery header + tiles + flow (Immerse/Connect only —
+            Amplify's gallery lives in the dark region below). */}
+        {p.gallery && (
+          <Fragment>
+            <div class="sv-galhead" data-sv-galhead>
+              <h3 class="sv-galhead__title" data-sv-galhead-title>
+                {p.galleryTitle.map((line) => (
+                  <span class="sv-galhead__line">{line}</span>
+                ))}
+              </h3>
+              {p.galleryNote && (
+                <p class="sv-galhead__note" data-sv-galhead-note
+                  ><span class="sv-galhead__note-indent" aria-hidden="true"></span><span class="sv-galhead__note-serrif">{p.galleryNote.serrif}</span><br />{p.galleryNote.bold}</p
+                >
+              )}
+            </div>
+            <div class="sv-gallery" data-sv-gallery>
+              {p.gallery.map((src) => (
+                <figure class="sv-gallery__tile" data-sv-tile>
+                  <img src={asset(src)} alt="" loading="lazy" decoding="async" />
+                </figure>
+              ))}
+            </div>
+            <div class="sv-flow" data-sv-flow>
+              {p.flow.map((block, i) => (
+                <Fragment>
+                  {i > 0 && (
+                    <span class="sv-flow__arrow" aria-hidden="true">
+                      <img src={asset('/assets/landing/services/flow-arrow.svg')} alt="" width="16" height="32" />
+                    </span>
+                  )}
+                  <span class="sv-flow__block" data-sv-flow-block>
+                    {block.map((line) => (
+                      <span class="sv-flow__line">{line}</span>
+                    ))}
+                  </span>
+                </Fragment>
+              ))}
+            </div>
+          </Fragment>
+        )}
+      </Fragment>
+    ))}
+
+    {/* ── 3. GROUND-FADE RUNWAY — 500px, the landing constant; the
+        scrub completes exactly as the access statement's top
+        reaches the viewport bottom (services-v2.js). */}
+    <div class="sv-fade-runway" data-sv-fade-runway aria-hidden="true"></div>
+
+    {/* ── 4. WE CREATE ACCESS (dark) + Amplify's gallery + toggles */}
+    <div class="sv-access" data-sv-access>
+      <p class="sv-access__statement" data-sv-access-statement
+        ><span class="sv-intro__indent" aria-hidden="true"></span>{SERVICES_ACCESS.statement}</p
       >
-        <span data-menu-label-menu>menu</span>
-        <span class="home__menu-toggle-label--close" data-menu-label-close aria-hidden="true">
-          <span class="home__menu-toggle-close-text">close</span>
-          <span class="home__menu-toggle-x" data-menu-toggle-x aria-hidden="true">×</span>
-        </span>
-      </button>
-    </nav>
-    <h1 class="home__logo">THE NETWORK EFFECT</h1>
-    <a class="home__topbar-email" href="mailto:hello@thenetworkeffect.com">
-      hello@thenetworkeffect.com
-    </a>
-  </header>
+      <p class="sv-access__note" data-sv-access-note>{SERVICES_ACCESS.note}</p>
+      <div class="sv-gallery sv-gallery--dark" data-sv-gallery>
+        {SERVICES_ACCESS.gallery.map((src) => (
+          <figure class="sv-gallery__tile" data-sv-tile>
+            <img src={asset(src)} alt="" loading="lazy" decoding="async" />
+          </figure>
+        ))}
+      </div>
+      <div class="sv-toggles" data-sv-toggles>
+        {SERVICES_ACCESS.toggles.map((pair) => (
+          <span class="sv-toggles__pair" data-sv-toggle>
+            <span>{pair[0]}</span>
+            <img src={asset('/assets/landing/services/toggle-arrows-a.svg')} alt="" width="24" height="12" />
+            <span>{pair[1]}</span>
+          </span>
+        ))}
+      </div>
+    </div>
 
-  <PartnersWheel />
-  <Menu />
+    {/* ── OUR NETWORK — the landing component VERBATIM (shared
+        already; landing untouched). Its own stage/runway/entrance
+        machinery boots below via initLandingNetwork. */}
+    <LandingNetwork />
+  </main>
 
-  <!-- Film-grain overlay — the about-3 idiom: a childless,
-       pointer-events:none SIBLING at the very top of the paint order
-       (z 9000, below only the canvas cursor at 9999). It wraps nothing
-       and blends nothing — see services-page.css. -->
-  <div class="about-grain" aria-hidden="true"></div>
-</BaseLayout>
+  {/* ── 5. FOOTER — shared structure/behaviour, the LIGHT theme
+      (the page's extracted colourway). The landing sticky-reveal
+      schema applies (landing-v2, not work-page); main carries the
+      z260 content gate. */}
+  <LandingFooter theme="light" />
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
+</SiteShell>
 
 <script>
-  import { initServicesScroll } from '../scripts/services/services-scroll.js';
-  import { initPartnersScroll } from '../scripts/services/partners-scroll.js';
+  import { initCharRipple } from '../scripts/char-ripple.js';
+  import { initNavEntrance } from '../scripts/landing/nav-motion.js';
+  import { initLandingNetwork } from '../scripts/landing/landing-network.js';
+  import { initServicesV2 } from '../scripts/landing/services-v2.js';
 
-  // Plumbing first (Lenis + ScrollTrigger wiring), then the wheel —
-  // the AboutScroll.astro init-order idiom, two modules instead of six.
-  let cleanupServicesScroll = initServicesScroll();
-  let cleanupPartnersScroll = initPartnersScroll();
+  let cleanupCharRipple = initCharRipple();
+  let cleanupNavEntrance = initNavEntrance();
+  let cleanupServices = initServicesV2();
+  let cleanupNetwork = initLandingNetwork();
 
   document.addEventListener('astro:before-swap', () => {
-    cleanupPartnersScroll?.();
-    cleanupServicesScroll?.();
-    cleanupPartnersScroll = undefined;
-    cleanupServicesScroll = undefined;
+    cleanupCharRipple();
+    cleanupNavEntrance();
+    cleanupServices();
+    cleanupNetwork();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupCharRipple = initCharRipple();
+    cleanupNavEntrance = initNavEntrance();
+    cleanupServices = initServicesV2();
+    cleanupNetwork = initLandingNetwork();
   });
 </script>

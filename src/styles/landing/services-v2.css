@@ -1,0 +1,649 @@
+/*
+ * /services (NEW BUILD) — Figma 60:3648, extracted 2026-08-08; 83px
+ * chrome subtracted. 1728 design px, the landing family's literal-px
+ * grammar. Ground #EEEEF0 → #161616 (scrubbed by services-v2.js on
+ * <main> — reveal-critical gate rules live in landing.css).
+ *
+ * BLEND WALK: hero + pillar overlay texts are white + difference.
+ * Their chains (main > section > [sticky stage >] text) carry no
+ * transform/opacity/filter/isolation — the transformed wave track
+ * and scrubbed images are SIBLINGS painted earlier, never ancestors.
+ */
+
+/* ── 1. HERO — sticky stage + wave runway. Section height = 100dvh
+   + the wave window (JS measures travel and sets the var; the
+   fallback approximates the derived window at 1006 stage). */
+.landing-v2 .sv-hero {
+	height: calc(100dvh + var(--sv-wave-runway, 3131px));
+}
+
+.landing-v2 .sv-hero__stage {
+	position: sticky;
+	top: 0;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+.landing-v2 .sv-hero__track {
+	position: absolute;
+	inset: 0;
+	will-change: transform;
+}
+
+.landing-v2 .sv-hero__item {
+	position: absolute; /* left/top/size inline per the file's slots */
+	overflow: hidden;
+	will-change: transform; /* per-item drift rides the track scrub */
+}
+
+.landing-v2 .sv-hero__item img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Fixed hero text — file: title centre 3px below viewport centre,
+   subtitle centre 63px below (Dazzed Bold 48 / Serrif Medium 22-24,
+   white + difference, centred). Margins centre without transform
+   (no transform on a blend root — the house rule). */
+.landing-v2 .sv-hero__title {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: calc(50% + 3px - 24px);
+	margin: 0;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-align: center;
+	text-transform: uppercase;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+.landing-v2 .sv-hero__subtitle {
+	position: absolute;
+	left: calc(50% - 362px);
+	width: 724px;
+	top: calc(50% + 63px - 24px);
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 22px;
+	line-height: 24px;
+	text-align: center;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+/* ── 2. PILLAR full-viewport sections — image cover, difference
+   overlay texts at the file's offsets (title block top 200,
+   sub top 264, both from section top; left 24). */
+.landing-v2 .sv-pillar {
+	position: relative;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+.landing-v2 .sv-pillar__img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.landing-v2 .sv-pillar__title {
+	position: absolute;
+	left: 24px;
+	top: 200px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	color: #fff;
+	mix-blend-mode: difference;
+	white-space: nowrap;
+}
+
+.landing-v2 .sv-pillar__sub {
+	position: absolute;
+	left: 24px;
+	top: 264px;
+	width: 382px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 22px;
+	line-height: 24px;
+	color: #fff;
+	mix-blend-mode: difference;
+}
+
+/* ── Statement + bar — the case-study intro pattern (values
+   verbatim: margins 24, indent 268, Dazzed Bold 48/48 uppercase,
+   bar 10px #C1250E at the right edge; ADAPTED: the bar spans the
+   statement block's own height — this file's statements run
+   144/144/96px vs the case page's fixed 180). 120px above per the
+   file's uniform statement gap. */
+.landing-v2 .sv-intro {
+	position: relative;
+	margin: 120px 24px 0;
+}
+
+.landing-v2 .sv-intro__statement {
+	margin: 0;
+	max-width: 1680px;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .sv-intro__indent {
+	display: inline-block;
+	width: 268px;
+	height: 1px;
+}
+
+/* Connect's Serrif sub-line (file 60:4565: Serrif Medium 24/48,
+   40px below the statement). */
+.landing-v2 .sv-intro__sub {
+	margin: 40px 0 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 24px;
+	line-height: 48px;
+	color: #161616;
+}
+
+.landing-v2 .sv-intro__bar {
+	position: absolute;
+	right: 0;
+	top: 5px;
+	bottom: 5px;
+	width: 10px;
+	background: #c1250e; /* the holding-page red */
+}
+
+/* ── HOVER ROWS — resting per file: label x24; list x543→1704;
+   66px pitch rows, 2px dividers rgba(22,22,22,.15); /0N Dazzed
+   Bold 10/16 right-aligned in 52px + item Serrif Medium 24, 64px
+   gap, content 26px below the divider. */
+.landing-v2 .sv-rows {
+	position: relative;
+	margin-top: 120px;
+}
+
+.landing-v2 .sv-rows__label {
+	position: absolute;
+	left: 24px;
+	top: 0;
+	margin: 0;
+	font-weight: 700;
+	font-size: 22px;
+	line-height: 16px;
+	color: #161616;
+	white-space: nowrap;
+}
+
+.landing-v2 .sv-rows__list {
+	margin: 0 24px 0 543px;
+	padding: 0;
+	list-style: none;
+	border-bottom: 2px solid rgba(22, 22, 22, 0.15);
+}
+
+.landing-v2 .sv-rows__row {
+	position: relative;
+	box-sizing: border-box;
+	height: 66px;
+	border-top: 2px solid rgba(22, 22, 22, 0.15);
+	transition: border-color 0.25s ease-out;
+	outline: none;
+}
+
+.landing-v2 .sv-rows__row:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: -2px;
+}
+
+.landing-v2 .sv-rows__inner {
+	position: absolute;
+	left: 0;
+	top: 24px; /* 26 below the divider top, inside the bordered box */
+	height: 16px;
+	display: flex;
+	gap: 64px;
+	align-items: center;
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+}
+
+.landing-v2 .sv-rows__index {
+	width: 52px;
+	flex: none;
+	font-weight: 700;
+	font-size: 10px;
+	line-height: 16px;
+	text-align: right;
+	color: #161616;
+}
+
+.landing-v2 .sv-rows__text {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 24px;
+	line-height: 16px;
+	white-space: nowrap;
+	color: #161616;
+}
+
+/* Hover machinery — the fill/marquee/edges cover the row band from
+   its own divider through the next (68px, the file's overlay), all
+   driven by .is-active (class-only states: rapid retargeting is
+   free). Marquee content is built in JS after fonts settle. */
+.landing-v2 .sv-rows__fill,
+.landing-v2 .sv-rows__marq,
+.landing-v2 .sv-rows__edges {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -2px;
+	height: 68px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.landing-v2 .sv-rows__fill {
+	background: var(--sv-accent, #232a89);
+	transition: opacity 0.25s ease-out;
+}
+
+.landing-v2 .sv-rows__marq {
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+	filter: blur(6px);
+}
+
+.landing-v2 .sv-rows__marq-track {
+	display: flex;
+	gap: 80px;
+	flex: none;
+	padding-left: 80px;
+}
+
+.landing-v2 .sv-rows__marq-unit {
+	flex: none;
+	font-weight: 600; /* Dazzed SemiBold per the file's hover item */
+	font-size: 22px;
+	line-height: 16px;
+	text-transform: uppercase;
+	white-space: pre; /* the file's double space after "NN /" */
+	color: #fff;
+}
+
+/* The file's Highlight Bar: accent edge fade over the marquee
+   (stops verbatim: 0 / 3 / 50 / 97 / 100%). */
+.landing-v2 .sv-rows__edges {
+	background: linear-gradient(
+		90deg,
+		var(--sv-accent, #232a89) 0%,
+		rgba(0, 0, 0, 0) 3%,
+		rgba(0, 0, 0, 0) 97%,
+		var(--sv-accent, #232a89) 100%
+	);
+	transition: opacity 0.25s ease-out;
+}
+
+.landing-v2 .sv-rows__row.is-active {
+	border-color: #fff;
+}
+
+.landing-v2 .sv-rows__row.is-active .sv-rows__inner {
+	opacity: 0;
+	filter: blur(6px);
+}
+
+.landing-v2 .sv-rows__row.is-active .sv-rows__fill,
+.landing-v2 .sv-rows__row.is-active .sv-rows__edges {
+	opacity: 1;
+}
+
+.landing-v2 .sv-rows__row.is-active .sv-rows__marq {
+	opacity: 1;
+	filter: blur(0);
+}
+
+/* The marquee only rolls while active (JS sets --sv-marq-shift =
+   one unit+gap, --sv-marq-dur = shift / the house ~35px/s). */
+@keyframes sv-marq-roll {
+	to { transform: translateX(calc(-1 * var(--sv-marq-shift, 447px))); }
+}
+
+.landing-v2 .sv-rows__row.is-active .sv-rows__marq-track {
+	animation: sv-marq-roll var(--sv-marq-dur, 12.8s) linear infinite;
+}
+
+/* Hover image — 280×380 at x1228, vertically centred on the active
+   row (JS drives top); house blur/fade entrance. Sits above the
+   rows; no blends inside. */
+.landing-v2 .sv-rows__img {
+	position: absolute;
+	left: 1228px;
+	width: 280px;
+	height: 380px;
+	top: 0;
+	z-index: 2;
+	overflow: hidden;
+	visibility: hidden;
+	opacity: 0;
+	filter: blur(6px);
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+	pointer-events: none;
+}
+
+.landing-v2 .sv-rows__img.is-active {
+	visibility: visible;
+	opacity: 1;
+	filter: blur(0);
+}
+
+.landing-v2 .sv-rows__img img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* ── Gallery header — 250px after the rows; Immerse: Dazzed Bold
+   48/48 two lines + the mixed-face note right (Serrif/Dazzed 32/34
+   at the file's centre+58 column); Connect: single line. */
+.landing-v2 .sv-galhead {
+	position: relative;
+	margin: 250px 24px 0;
+}
+
+.landing-v2 .sv-galhead__title {
+	margin: 0;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .sv-galhead__line {
+	display: block;
+}
+
+.landing-v2 .sv-galhead__note {
+	position: absolute;
+	left: calc(50% + 58px);
+	top: -14px; /* file: note centre 14px above the title centre */
+	width: 782px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 32px;
+	line-height: 34px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .sv-galhead__note-indent {
+	display: inline-block;
+	width: 178px; /* the file's 26-space run at 32px (268 × 32/48) */
+	height: 1px;
+}
+
+.landing-v2 .sv-galhead__note-serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+/* ── Gallery — 6 × 273×320, 8px gaps, centred (file x25). */
+.landing-v2 .sv-gallery {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	margin-top: 64px;
+}
+
+.landing-v2 .sv-gallery__tile {
+	margin: 0;
+	width: 273px;
+	height: 320px;
+	flex: none;
+	overflow: hidden;
+}
+
+.landing-v2 .sv-gallery__tile img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* ── Flow rows — 160px centred blocks, 32×16 arrows between
+   (file pitch 281 between centres → 44.5px flex gaps). Dazzed
+   Bold 18/22 uppercase; the arrow SVG is drawn 16×32 upward —
+   rotated to point along the row. */
+.landing-v2 .sv-flow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 44.5px;
+	margin-top: 40px;
+}
+
+.landing-v2 .sv-flow__block {
+	width: 160px;
+	flex: none;
+	text-align: center;
+	font-weight: 700;
+	font-size: 18px;
+	line-height: 22px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .sv-flow__line {
+	display: block;
+}
+
+.landing-v2 .sv-flow__arrow {
+	flex: none;
+	width: 32px;
+	height: 16px;
+	display: grid;
+	place-items: center;
+}
+
+.landing-v2 .sv-flow__arrow img {
+	display: block;
+	transform: rotate(90deg); /* the 16×32 up-arrow points right */
+}
+
+/* ── 3. Ground-fade runway — the 500px scrub window (constant per
+   the landing grammar); 102px after the flow/rows per the file's
+   10721→11323 gap composition. */
+.landing-v2 .sv-fade-runway {
+	height: 500px;
+	margin-top: 102px;
+}
+
+/* ── 4. WE CREATE ACCESS (dark region) — statement (Dazzed Bold
+   48/48 uppercase, light ink) + Serrif 16/22 note right; then the
+   dark gallery and the toggle pairs. */
+.landing-v2 .sv-access {
+	position: relative;
+}
+
+.landing-v2 .sv-access__statement {
+	margin: 0 24px;
+	width: 1016px;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-transform: uppercase;
+	color: #eeeef0;
+}
+
+.landing-v2 .sv-access__note {
+	position: absolute;
+	left: 1363px;
+	top: 0;
+	width: 340px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 22px;
+	color: #eeeef0;
+}
+
+.landing-v2 .sv-access .sv-gallery {
+	margin-top: 120px;
+}
+
+/* Toggle pairs — Dazzed Bold 14/22 uppercase white, 24×12 double
+   arrows; spread across the file's 66→1695 span, 40px below the
+   gallery. */
+.landing-v2 .sv-toggles {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 40px 33px 0 66px;
+}
+
+.landing-v2 .sv-toggles__pair {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 22px;
+	text-transform: uppercase;
+	color: #fff;
+	white-space: nowrap;
+}
+
+.landing-v2 .sv-toggles__pair img {
+	display: block;
+}
+
+/* The network section follows in flow — but the SHARED component
+   pulls itself up one viewport (margin-top -100dvh: its landing
+   arrival rides the previous section's dark runway, sliding in as
+   pure black). The file wants a plain 220px breath after the
+   toggles, so this block carries the swallowed viewport + 220 —
+   the overlap then rides over EMPTY dark ground here exactly as it
+   rides the featured fade on /landing (component untouched). */
+.landing-v2 .sv-access {
+	margin-bottom: calc(100dvh + 220px);
+}
+
+/* RM: the component's own RM rule zeroes its negative margin — the
+   compensation shrinks back to the file's plain gap. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .sv-access {
+		margin-bottom: 220px;
+	}
+}
+
+/* ── Entrance hidden states — no-preference, the house treatments
+   (media rise+fade 24px/0.8s = closing tiles; controls fade 0.6s =
+   pills; text word-reveals are wired by services-v2.js through
+   line-reveal). */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .sv-gallery__tile,
+	.landing-v2 .sv-rows__row {
+		opacity: 0;
+		transform: translateY(24px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			border-color 0.25s ease-out;
+	}
+
+	.landing-v2 .sv-flow__block,
+	.landing-v2 .sv-flow__arrow,
+	.landing-v2 .sv-toggles__pair {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .sv-gallery__tile.is-visible,
+	.landing-v2 .sv-rows__row.is-visible,
+	.landing-v2 .sv-flow__block.is-visible,
+	.landing-v2 .sv-flow__arrow.is-visible,
+	.landing-v2 .sv-toggles__pair.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* The red bar draws top-to-bottom — the case-study rev. */
+	.landing-v2 .sv-intro__bar {
+		transform: scaleY(0);
+		transform-origin: top;
+		transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .sv-intro__bar.is-visible {
+		transform: none;
+	}
+}
+
+/* RM: the hover state is COLOUR ONLY — no marquee, no image; the
+   resting text stays and flips white for contrast on the fill. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .sv-rows__row.is-active .sv-rows__inner {
+		opacity: 1;
+		filter: none;
+	}
+
+	.landing-v2 .sv-rows__row.is-active .sv-rows__index,
+	.landing-v2 .sv-rows__row.is-active .sv-rows__text {
+		color: #fff;
+	}
+
+	.landing-v2 .sv-rows__row.is-active .sv-rows__marq,
+	.landing-v2 .sv-rows__row.is-active .sv-rows__edges,
+	.landing-v2 .sv-rows__img.is-active {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+
+/* ── Sub-1024 fallback — simplified static stack (the 15" scale
+   shell remains the primary story; desktop-first staging). */
+@media (max-width: 1023px) {
+	.landing-v2 .sv-hero { height: auto; }
+	.landing-v2 .sv-hero__stage { position: static; height: auto; padding: 160px 24px 64px; }
+	.landing-v2 .sv-hero__track { display: none; }
+	.landing-v2 .sv-hero__title,
+	.landing-v2 .sv-hero__subtitle { position: static; width: auto; mix-blend-mode: normal; color: #161616; }
+	.landing-v2 .sv-pillar { height: auto; aspect-ratio: 1728 / 1006; }
+	.landing-v2 .sv-intro__indent { width: 0; }
+	.landing-v2 .sv-intro__statement { font-size: 32px; line-height: 34px; }
+	.landing-v2 .sv-rows__label { position: static; margin-bottom: 16px; }
+	.landing-v2 .sv-rows__list { margin-left: 24px; }
+	.landing-v2 .sv-rows__img { display: none; }
+	.landing-v2 .sv-gallery { flex-wrap: wrap; padding: 0 24px; }
+	.landing-v2 .sv-flow { flex-wrap: wrap; padding: 0 24px; }
+	.landing-v2 .sv-galhead__note { position: static; width: auto; margin-top: 16px; }
+	.landing-v2 .sv-access__statement { width: auto; }
+	.landing-v2 .sv-access__note { position: static; width: auto; margin: 16px 24px 0; }
+	.landing-v2 .sv-toggles { flex-wrap: wrap; gap: 16px; }
+}
