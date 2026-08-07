@@ -630,12 +630,20 @@ body.case-page {
 	.landing-v2 .cs-hero__img,
 	.landing-v2 .cs-row,
 	.landing-v2 .cs-more__card,
-	.landing-v2 .cs-intro__bar,
 	.landing-v2 .cs-rail-sticky {
 		opacity: 0;
 		transform: translateY(24px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
 			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	/* The red bar DRAWS top-to-bottom (Oscar's rev — was the rise+
+	   fade): solid colour, so a top-origin scale reads as a clean
+	   downward wipe. No fade — scaleY(0) is already invisible. */
+	.landing-v2 .cs-intro__bar {
+		transform: scaleY(0);
+		transform-origin: top;
+		transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
 	/* The rail blocks settle with a shorter rise as they first pin. */
