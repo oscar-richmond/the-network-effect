@@ -43,14 +43,19 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
                       .slice(0, rowIndex)
                       .reduce((n, r) => n + r.length, 0) + linkIndex;
                     return (
-                      <a
-                        href={linkHref(link.href)}
-                        class="site-menu__link"
-                        data-index={String(index)}
-                        data-src={asset(`/assets/images/menu/${link.image}`)}
-                      >
-                        {link.label}
-                      </a>
+                      <>
+                        {linkIndex > 0 && (
+                          <span class="site-menu__sep" aria-hidden="true"><span>/</span></span>
+                        )}
+                        <a
+                          href={linkHref(link.href)}
+                          class="site-menu__link"
+                          data-index={String(index)}
+                          data-src={asset(`/assets/images/menu/${link.image}`)}
+                        >
+                          {link.label}
+                        </a>
+                      </>
                     );
                   })}
                 </div>

@@ -132,8 +132,10 @@
 /* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
    and Menu.astro are /old-shared — every change here is scoped. */
 
-/* Two menu rows, 40px apart: the body stacks the row wrappers; items
-   keep their existing padding-right rhythm inside each row. */
+/* Two menu rows, 40px apart: the body stacks the row wrappers. The
+   32px flex gap gives every junction item |32| slash |32| item
+   (Oscar's rev); the links' own padding-right is retired in favour
+   of the gap. */
 .landing-v2 .site-menu__body {
 	flex-direction: column;
 	gap: 40px;
@@ -142,6 +144,39 @@
 .landing-v2 .site-menu__row {
 	display: flex;
 	flex-wrap: nowrap;
+	gap: 32px;
+}
+
+.landing-v2 .site-menu__link {
+	padding-right: 0;
+}
+
+/* Separator slashes — the link type exactly (size/weight/leading/
+   padding-top), aria-hidden decoration; the inner span is the
+   animated unit (joined to menu.js's rise set), masked by the
+   sep's own overflow like the link chars are by theirs. */
+.landing-v2 .site-menu__sep {
+	overflow: hidden;
+	display: flex;
+	padding-top: 10px;
+	font-size: clamp(1.625rem, calc(3.1vw + 4px), 3.25rem);
+	font-weight: 700;
+	line-height: 1.1;
+	color: var(--color-ink-strong);
+}
+
+.landing-v2 .site-menu__sep span {
+	display: inline-block;
+	will-change: transform, opacity;
+}
+
+/* MENU <-> CLOSE swap sweep (Oscar's rev): the labels stay opaque —
+   their CHARS carry visibility through the nav sweep classes (wired
+   in menu.js, landing-gated, L->R both directions). The close
+   label's resting opacity 0 (menu.css base) covers the pre-JS
+   frame and re-hides it once the closing sweep has finished. */
+.landing-v2.menu-open .home__menu-toggle-label--close {
+	opacity: 1;
 }
 
 /* Panel ground: the landing grey instead of white. The grain layer
