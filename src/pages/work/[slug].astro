@@ -185,6 +185,14 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
     </section>
   </main>
 
+  {/* Gallery cursor (Oscar's rev): hovering the OUR WORK stream
+      images swaps the site dot for this label — a TOP-LEVEL FIXED
+      element carrying difference ITSELF (the /work cursor shape:
+      fixed always creates a stacking context, so it must BE the
+      blend element, positioned via left/top, never transform).
+      aria-hidden: decoration; case-study.js gates + drives it. */}
+  <div class="cs-gallery-cursor" data-cs-gallery-cursor aria-hidden="true">[ VIEW GALLERY + ]</div>
+
   {/* ── F. FOOTER — the landing parallax reveal, natively (Oscar's
       rev: the same footer reveal on every page): the footer pins
       BEHIND the z260 content above (landing.css carries the whole

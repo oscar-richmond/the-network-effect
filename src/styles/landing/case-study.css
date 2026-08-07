@@ -422,6 +422,40 @@ body.case-page {
 	pointer-events: none;
 }
 
+/* ── Gallery cursor — the /work cursor construction: fixed +
+   difference on the element ITSELF, left/top follow (never
+   transform), self blur-fade in/out (the house 0.25s ease-out);
+   the site's canvas dot hides while it is live. Centring margin
+   is measured once in JS (no transform allowed on a blend root). */
+.landing-v2 .cs-gallery-cursor {
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 9999;
+	pointer-events: none;
+	mix-blend-mode: difference;
+	color: #fff;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 16px;
+	white-space: nowrap;
+	visibility: hidden;
+	opacity: 0;
+	filter: blur(6px);
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+}
+
+.landing-v2 .cs-gallery-cursor.is-active {
+	visibility: visible;
+	opacity: 1;
+	filter: blur(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	html.cs-cursor-live .canvas-cursor { visibility: hidden; }
+}
+
 /* ── F. Footer — the landing parallax schema applies natively now
    (landing.css scopes it to every non-/work route); the content
    gate (z260 + opaque ground) also lives there. Nothing to

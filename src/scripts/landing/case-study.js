@@ -212,6 +212,75 @@ export function initCaseStudy() {
     applyPager();
   }
 
+  /* ── Gallery cursor (Oscar's rev): "[ VIEW GALLERY + ]" over the
+     OUR WORK stream images — the /work cursor machinery verbatim
+     (canvas-cursor lerp follow via left/top, document-level
+     pointerover so exits toward any surface read correctly, the
+     site dot hidden while live, self blur-fade = the house
+     transition). Gated hover:hover + pointer:fine (NOTE: reads
+     false on Oscar's machine — verify on another device); RM: no
+     custom cursor. */
+  const galleryCursor = document.querySelector('[data-cs-gallery-cursor]');
+  const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!reduced && fineHover && galleryCursor instanceof HTMLElement) {
+    /* Centre on the pointer without transform (blend root): the
+       measured half-extent becomes a static margin. */
+    const centre = () => {
+      galleryCursor.style.marginLeft = `${(-galleryCursor.offsetWidth / 2).toFixed(1)}px`;
+      galleryCursor.style.marginTop = `${(-galleryCursor.offsetHeight / 2).toFixed(1)}px`;
+    };
+    const fontsForCursor = document.fonts?.ready ?? Promise.resolve();
+    fontsForCursor.then(centre);
+    let cx = -200;
+    let cy = -200;
+    let tx = -200;
+    let ty = -200;
+    let over = false;
+    let cursorRaf = 0;
+    const CURSOR_LERP = 0.25; /* the canvas-cursor feel */
+    const tick = () => {
+      cx += (tx - cx) * CURSOR_LERP;
+      cy += (ty - cy) * CURSOR_LERP;
+      galleryCursor.style.left = `${cx.toFixed(1)}px`;
+      galleryCursor.style.top = `${cy.toFixed(1)}px`;
+      cursorRaf = window.requestAnimationFrame(tick);
+    };
+    const onMove = (e) => {
+      tx = e.clientX;
+      ty = e.clientY;
+    };
+    const setOver = (nowOver) => {
+      if (nowOver === over) return;
+      over = nowOver;
+      if (over) {
+        cx = tx;
+        cy = ty;
+        galleryCursor.classList.add('is-active');
+        document.documentElement.classList.add('cs-cursor-live');
+        if (!cursorRaf) cursorRaf = window.requestAnimationFrame(tick);
+      } else {
+        galleryCursor.classList.remove('is-active');
+        document.documentElement.classList.remove('cs-cursor-live');
+        window.cancelAnimationFrame(cursorRaf);
+        cursorRaf = 0;
+      }
+    };
+    const onOver = (e) => {
+      setOver(e.target instanceof Element && !!e.target.closest('.cs-row__img'));
+    };
+    const onDocLeave = () => setOver(false);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    document.addEventListener('pointerover', onOver);
+    document.documentElement.addEventListener('pointerleave', onDocLeave);
+    cleanups.push(() => {
+      window.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerover', onOver);
+      document.documentElement.removeEventListener('pointerleave', onDocLeave);
+      window.cancelAnimationFrame(cursorRaf);
+      document.documentElement.classList.remove('cs-cursor-live');
+    });
+  }
+
   /* Back-to-top / home (all modes — navigation, not decoration). */
   const topLinks = Array.from(document.querySelectorAll('[data-footer-top]'));
   const onTopClick = (e) => {
