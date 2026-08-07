@@ -278,11 +278,9 @@ body.case-page {
    to point left/right, rippling on hover when active. */
 .landing-v2 .cs-more {
 	position: relative;
-	/* Bottom = 163px, the landing closing section's measured last-
-	   text-to-footer whitespace (Oscar's rev: equal on every page;
-	   re-measured after the optical 24/16 gallery rhythm shifted the
-	   closing descriptions up 11px). */
-	padding: 140px 0 163px;
+	/* Bottom = 139px (Oscar's rev: the equalised 163 minus 24, this
+	   page only). */
+	padding: 140px 0 139px;
 	overflow: hidden;
 }
 
