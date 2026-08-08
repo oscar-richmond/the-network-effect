@@ -36,18 +36,18 @@ import { Renderer, Camera, Transform, Plane, Mesh, Program, Texture } from 'ogl'
 
 gsap.registerPlugin(CustomEase);
 
-const HOVER_DURATION = 0.6;
-const HOVER_EASE = CustomEase.create('accessWaveHover', '0.4, 0, 0.2, 1');
-const CURSOR_LERP = 0.05;
-const MOUNT_MARGIN_PX = 400;
-const VELOCITY_EDGE_RAMP = 0.25;
+export const HOVER_DURATION = 0.6;
+export const HOVER_EASE = CustomEase.create('accessWaveHover', '0.4, 0, 0.2, 1');
+export const CURSOR_LERP = 0.05;
+export const MOUNT_MARGIN_PX = 400;
+export const VELOCITY_EDGE_RAMP = 0.25;
 /** Per-tick lerp on the differentiated column velocity. The reference
  *  reads Lenis's own (already-smoothed) velocity; raw per-tick deltas
  *  of the scrub feed can alternate 0/2x when scroll events and ticker
  *  frames interleave, which reads as bow flicker. 0.3 keeps ~3-frame
  *  response while killing the alternation. */
-const VELOCITY_SMOOTHING = 0.3;
-const GEOMETRY_SEGMENTS = 100;
+export const VELOCITY_SMOOTHING = 0.3;
+export const GEOMETRY_SEGMENTS = 100;
 
 /* Shader pair — wave-shader.js verbatim (see its header for the full
  * provenance notes: cover UVs from the reference's utils.glsl, snoise
@@ -171,7 +171,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   }
 `;
 
-class WavePlane {
+export class WavePlane {
   constructor(gl, geometry, scene, { src, renderOrder }) {
     const texture = new Texture(gl, {
       generateMipmaps: true,

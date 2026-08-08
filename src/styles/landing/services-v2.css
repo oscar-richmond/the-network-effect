@@ -43,10 +43,37 @@
 	display: block;
 }
 
-/* Fixed hero text — file: title centre 3px below viewport centre,
+/* The access-wave shader canvas — static over the track (planes
+   chase live frame rects); pointer-events none so the item frames
+   beneath keep the hover-grain events (the access canvas rule). */
+.landing-v2 .sv-hero__canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Hero text — file: title centre 3px below viewport centre,
    subtitle centre 63px below (Dazzed Bold 48 / Serrif Medium 22-24,
-   white + difference, centred). Margins centre without transform
-   (no transform on a blend root — the house rule). */
+   centred). THE WRAP is the blend root (Oscar's rev — the nav-bar
+   shape): a sibling sticky element after the stage carrying
+   difference ITSELF, so the blend sees the page ground AND the
+   travelling images (a blend inside the sticky stage's isolated
+   context could only see the stage — the white-text bug). White
+   ink + difference = black over the grey, inverted over imagery,
+   exactly the main navigation's read. Sticky geometry mirrors the
+   stage (top 0, one viewport, pulled up over it); pointer-events
+   none — decoration layer over non-clickable images. */
+.landing-v2 .sv-hero__textwrap {
+	position: sticky;
+	top: 0;
+	height: 100dvh;
+	margin-top: -100dvh;
+	pointer-events: none;
+	mix-blend-mode: difference;
+}
+
 .landing-v2 .sv-hero__title {
 	position: absolute;
 	left: 0;
@@ -59,7 +86,6 @@
 	text-align: center;
 	text-transform: uppercase;
 	color: #fff;
-	mix-blend-mode: difference;
 }
 
 .landing-v2 .sv-hero__subtitle {
@@ -75,7 +101,6 @@
 	line-height: 24px;
 	text-align: center;
 	color: #fff;
-	mix-blend-mode: difference;
 }
 
 /* ── 2. PILLAR full-viewport sections — image cover, difference
@@ -87,13 +112,33 @@
 	overflow: hidden;
 }
 
-.landing-v2 .sv-pillar__img {
+/* The image carries the landing hero VIDEO's treatment (Oscar's
+   rev): the FRAME holds the clip — resting state = the 24px side
+   band (the VIDEO_MARGIN_PX grammar), expanding to full-bleed over
+   the ported 700px scrub window as the section arrives
+   (services-v2.js, power1.inOut inside the scrub — the house
+   shape). The IMG inside is oversized +160px and rides an ±80px
+   scrubbed y across the section's transit — the parallax; clip on
+   the frame, transform on the image, so the two never fight (a
+   transform would drag a same-element clip region with it). Both
+   are SIBLINGS painted before the difference titles — never blend
+   ancestors. */
+.landing-v2 .sv-pillar__frame {
 	position: absolute;
 	inset: 0;
+	clip-path: inset(0 24px 0 24px);
+}
+
+.landing-v2 .sv-pillar__img {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -80px;
 	width: 100%;
-	height: 100%;
+	height: calc(100% + 160px);
 	object-fit: cover;
 	display: block;
+	will-change: transform;
 }
 
 .landing-v2 .sv-pillar__title {

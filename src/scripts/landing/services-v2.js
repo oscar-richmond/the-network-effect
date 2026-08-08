@@ -44,6 +44,7 @@ import Lenis from 'lenis';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { createServicesHeroWave } from './services-hero-wave.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -65,6 +66,14 @@ const MARQ_GAP_PX = 80;
    (row divider top + 34 = band centre; image top = centre − 190). */
 const HOVER_IMG_HALF_PX = 190;
 const ROW_BAND_CENTRE_PX = 34;
+/* Pillar image treatment — the landing hero VIDEO's constants
+   (landing-hero-scroll.js): 24px side band, 700px expand window
+   (here ending exactly as the section tops the viewport),
+   power1.inOut inside the scrub; ±80px parallax across the
+   section's transit (the oversized-img/frame split). */
+const PILLAR_MARGIN_PX = 24; // = VIDEO_MARGIN_PX
+const PILLAR_EXPAND_PX = 700; // = VIDEO_EXPAND_PX
+const PILLAR_PARALLAX_PX = 80;
 /* Bottom behaviours — the landing constants. */
 const FOOTER_H_PX = 811;
 const BOTTOM_SNAP_IDLE_MS = 2000;
@@ -325,7 +334,74 @@ export function initServicesV2() {
           },
         });
       });
+
+      /* ── The access-wave shader on the travelling images (Oscar's
+         rev): same treatment as the WE CREATE ACCESS columns —
+         velocity bow + hover grain — adapted to per-item composed
+         velocities (services-hero-wave.js). Gated inside the
+         factory (house hover rule + ?forcehover); null = plain DOM
+         images stand. */
+      const waveCanvas = document.querySelector('[data-sv-hero-canvas]');
+      if (waveCanvas instanceof HTMLCanvasElement) {
+        const waveItems = items
+          .map((frameEl) => ({
+            frameEl,
+            imgEl: frameEl.querySelector('img'),
+            speed: itemSpeed(frameEl),
+          }))
+          .filter((it) => it.imgEl instanceof HTMLImageElement);
+        const heroWave = createServicesHeroWave(
+          stage,
+          waveCanvas,
+          waveItems,
+          () => -(Number(gsap.getProperty(track, 'y')) || 0),
+        );
+        if (heroWave) {
+          cleanups.push(() => heroWave.destroy());
+          if (import.meta.env.DEV) window.__svHeroWave = heroWave;
+        }
+      }
     }
+
+    /* ── Pillar images — the landing hero video treatment (Oscar's
+       rev): the frame's clip opens from the 24px band to full-bleed
+       over the ported 700px window, completing exactly as the
+       section tops the viewport (power1.inOut inside the scrub);
+       the oversized img rides the ±80px parallax across the whole
+       transit. Both scrubbed — reversible by construction. */
+    document.querySelectorAll('.sv-pillar').forEach((section) => {
+      const frame = section.querySelector('[data-sv-pillar-frame]');
+      const img = section.querySelector('[data-sv-pillar-img]');
+      if (frame instanceof HTMLElement) {
+        gsap.fromTo(frame, {
+          clipPath: `inset(0px ${PILLAR_MARGIN_PX}px 0px ${PILLAR_MARGIN_PX}px)`,
+        }, {
+          clipPath: 'inset(0px 0px 0px 0px)',
+          ease: 'power1.inOut',
+          scrollTrigger: {
+            trigger: section,
+            start: () => `top ${PILLAR_EXPAND_PX}px`,
+            end: 'top top',
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+      }
+      if (img instanceof HTMLElement) {
+        gsap.fromTo(img, { y: PILLAR_PARALLAX_PX }, {
+          y: -PILLAR_PARALLAX_PX,
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: section,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+      }
+    });
 
     /* ── Pillar overlay texts — word reveals on entry, once. */
     document.querySelectorAll('.sv-pillar').forEach((section) => {
