@@ -140,7 +140,10 @@ body.founders-page {
 	right: 24px;
 	bottom: 24px;
 	width: 640px;
-	z-index: 1;
+	/* NO z-index (Oscar's rev 3): z1 lifted the portrait over the
+	   z-auto names, so the name slid UNDER the image. DOM order
+	   paints portrait < slides < names — the names ride over the
+	   image and difference-blend against it (the file's design). */
 }
 
 .landing-v2 .fd-portrait__img {
@@ -198,6 +201,8 @@ body.founders-page {
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
+	white-space: pre-line; /* honours forced \n breaks in the data
+	   (Oscar's rev 3: Ashley's "culture" drops to the last line) */
 }
 
 .landing-v2 .fd-slide__bio-indent {
@@ -319,6 +324,10 @@ body.founders-page {
 
 .landing-v2.founders-page .fd-footer-wrap .landing-footer {
 	position: relative;
+	top: auto; /* belt — the sticky schema's `top` shifted even the
+	   relative box down 100vh−811, cutting the bottom row (Oscar's
+	   "less tall" report); the schema now excludes founders-page in
+	   landing.css, this pins it if that ever regresses */
 	margin-top: 0;
 	height: 811px;
 }

@@ -1912,12 +1912,16 @@
 
 /* The PARALLAX PLACEMENT (Oscar's rev: the same footer reveal on
    every document-scroll page): /landing AND the case studies use
-   the sticky uncover; /work places its own fixed reveal layer and
-   is excluded. EVERYTHING reveal-critical lives HERE, in the
-   always-loaded shared sheet — a page whose own stylesheet fails
-   to load (the stale-HMR class) must still get the working
-   mechanism, never a covered page or a stray blue panel. */
-.landing-v2:not(.work-page) .landing-footer {
+   the sticky uncover; /work AND /founders place their own fixed
+   reveal layers and are excluded (Oscar's report on founders: the
+   schema's `top` leaked onto the relative footer inside the fixed
+   wrap, shifting it 100vh−811 down and cutting the bottom row —
+   "the footer looks less tall"). EVERYTHING reveal-critical lives
+   HERE, in the always-loaded shared sheet — a page whose own
+   stylesheet fails to load (the stale-HMR class) must still get
+   the working mechanism, never a covered page or a stray blue
+   panel. */
+.landing-v2:not(.work-page):not(.founders-page) .landing-footer {
 	position: sticky;
 	top: calc(100vh - 811px);
 	top: calc(100dvh - 811px);

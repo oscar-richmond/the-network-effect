@@ -4,12 +4,13 @@
  *
  * NO SLIDE 1 FRAME EXISTS IN THE FILE (the canvas holds only the
  * slide-2 frame; both founders' image layers live inside it). Slide
- * 1 is therefore built from the same template with Robbo's imagery
- * and PLACEHOLDER copy: the bio is the landing founders section's
- * approved Robbo line restyled into the slide-2 bio grammar, and
- * the slash-list is a placeholder in the same voice — ALL SLIDE-1
- * COPY PENDING THE DECK. ("Rob" vs "Robbo" remains flagged
- * site-wide; the file's own layer names say Robbo.)
+ * 1 is therefore built from the same template with Robbo's imagery:
+ * the BIO is still PLACEHOLDER (the landing founders section's
+ * approved Robbo line restyled into the slide-2 bio grammar,
+ * pending the deck), but the list is APPROVED copy — Oscar's
+ * 2026-08-08 attachment ("Relationships across:" + seven sectors).
+ * ("Rob" vs "Robbo" remains flagged site-wide; the file's own
+ * layer names say Robbo.)
  *
  * SLIDE-2 COPY VERBATIM, including the deck quirk that the wrapped
  * item "INDUSTRY RELATIONSHIPS" carries TWO superscript indexes
@@ -33,15 +34,18 @@ export const FOUNDERS_SLIDES = [
        close). */
     bioBold: 'RELATIONSHIP ARCHITECT WITH NEARLY 20 YEARS BUILDING GLOBAL PARTNERSHIPS.',
     bioSerrif: 'Trusted connector. Strategic operator.',
-    listLabel: 'The network advantage:',
-    /* PLACEHOLDER list (the slide-2 grammar; pending the deck). */
+    /* APPROVED COPY (Oscar's attachment, 2026-08-08) — replaces the
+       placeholder list: "Relationships across:" + the seven sectors
+       on two lines (break after FOOD & BEVERAGE, per the visual). */
+    listLabel: 'Relationships across:',
     list: [
-      { text: 'GLOBAL PARTNERSHIPS', index: '/01' },
-      { text: 'TRUSTED CONNECTOR', index: '/02' },
-      { text: 'STRATEGIC OPERATOR', index: '/03', breakAfter: true },
-      { text: 'COMMERCIAL INSTINCT', index: '/04' },
-      { text: 'LONG-TERM RELATIONSHIPS', index: '/05' },
-      { text: 'CULTURAL FLUENCY', index: '/06' },
+      { text: 'TALENT', index: '/01' },
+      { text: 'HOSPITALITY', index: '/02' },
+      { text: 'FOOD & BEVERAGE', index: '/03', breakAfter: true },
+      { text: 'BRANDS', index: '/04' },
+      { text: 'EVENTS', index: '/05' },
+      { text: 'PRODUCTION', index: '/06' },
+      { text: 'DESIGN', index: '/07' },
     ],
   },
   {
@@ -50,7 +54,9 @@ export const FOUNDERS_SLIDES = [
     name: 'Ashley Walters',
     img: '/assets/landing/founders-page/ashley.png',
     bioBold: 'ONE OF THE UK’S MOST RESPECTED CULTURAL VOICES WITH OVER 30 YEARS ACROSS MUSIC, FILM AND TELEVISION.',
-    bioSerrif: 'Decades inside rooms where culture was built.',
+    /* Forced break (Oscar's rev 3): "culture" drops to the last
+       line — rendered via white-space:pre-line on the Serrif block. */
+    bioSerrif: 'Decades inside rooms where\nculture was built.',
     listLabel: 'The network advantage:',
     /* VERBATIM incl. the double-indexed wrapped item (see header). */
     list: [
