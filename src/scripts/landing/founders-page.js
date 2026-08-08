@@ -49,7 +49,7 @@ import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 
 const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
 const TRANSITION_PX = 600;
-const RELEASE_RISE_PX = 156; /* 180 below the image − the 24 rest */
+const RELEASE_RISE_PX = 96; /* the 120px white gap − the 24 rest (rev 2) */
 const FOOTER_REVEAL_PX = 811;
 const NAME_END_GAP_PX = 40;
 const SNAP_IDLE_MS = 600;
@@ -67,10 +67,11 @@ export function initFoundersPage() {
   const narrow = window.matchMedia('(max-width: 1023px)').matches;
   if (narrow) return () => {}; /* the static stacked fallback (CSS) */
 
+  const content = stage.querySelector('[data-fd-content]');
   const portrait = stage.querySelector('[data-fd-portrait]');
   const imgOver = stage.querySelector('[data-fd-img-over]');
   const slides = Array.from(stage.querySelectorAll('[data-fd-slide]'));
-  const names = slides.map((s) => s.querySelector('[data-fd-name]'));
+  const names = slides.map((_, i) => stage.querySelector(`[data-fd-name][data-slide="${i}"]`));
   const elsPerSlide = slides.map((s) => Array.from(s.querySelectorAll('[data-fd-el]')));
   const thumbs = Array.from(stage.querySelectorAll('[data-fd-thumb]'));
   const labelRow = stage.querySelector('[data-fd-labelrow]');
@@ -156,12 +157,18 @@ export function initFoundersPage() {
        names are blend roots — self-filters safe, transforms not). */
     slides.forEach((slide, i) => {
       const els = [...elsPerSlide[i], names[i]].filter((el) => el instanceof HTMLElement);
+      /* NORMALISED stagger (rev 2 root-cause fix: without the span
+         term the last elements only ever reached 1 − j×step —
+         Ashley's name/button/list sat permanently dimmed+blurred):
+         each half-window is stretched by the total stagger span so
+         element j completes at (1 + span) − j×step ≥ 1. */
+      const span = (els.length - 1) * STAGGER_STEP;
       els.forEach((el, j) => {
         let p; /* 1 = fully hidden */
         if (i === 0) {
-          p = clamp(t2e * 2 - j * STAGGER_STEP, 0, 1);
+          p = clamp(t2e * 2 * (1 + span) - j * STAGGER_STEP, 0, 1);
         } else {
-          p = 1 - clamp((t2e - 0.5) * 2 - j * STAGGER_STEP, 0, 1);
+          p = 1 - clamp((t2e - 0.5) * 2 * (1 + span) - j * STAGGER_STEP, 0, 1);
         }
         el.style.opacity = String(1 - p);
         el.style.filter = p > 0.001 ? `blur(${(6 * p).toFixed(2)}px)` : '';
@@ -181,8 +188,15 @@ export function initFoundersPage() {
     }
     setActiveSlide(t2e >= 0.5 ? 1 : 0);
 
-    /* Release + footer reveal — the /work stage-ride grammar. */
-    stage.style.transform = `translate3d(0, ${(-(rise + reveal)).toFixed(1)}px, 0)`;
+    /* Release (rev 2): the CONTENT rides up leaving the white gap
+       below the portrait (24 rest + 96 = 120 at full rise) — the
+       stage ground stays put beneath it; ONLY the footer reveal
+       rides the stage (the /work uncover), so the gap reads as
+       part of the slide, not as the reveal. */
+    if (content instanceof HTMLElement) {
+      content.style.transform = `translate3d(0, ${(-rise).toFixed(1)}px, 0)`;
+    }
+    stage.style.transform = `translate3d(0, ${(-reveal).toFixed(1)}px, 0)`;
 
     /* Bottom nav sweep at the very end (the landing pair). */
     setNav(reveal >= FOOTER_REVEAL_PX - NAV_EXIT_EPSILON_PX);

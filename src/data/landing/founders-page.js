@@ -38,7 +38,7 @@ export const FOUNDERS_SLIDES = [
     list: [
       { text: 'GLOBAL PARTNERSHIPS', index: '/01' },
       { text: 'TRUSTED CONNECTOR', index: '/02' },
-      { text: 'STRATEGIC OPERATOR', index: '/03' },
+      { text: 'STRATEGIC OPERATOR', index: '/03', breakAfter: true },
       { text: 'COMMERCIAL INSTINCT', index: '/04' },
       { text: 'LONG-TERM RELATIONSHIPS', index: '/05' },
       { text: 'CULTURAL FLUENCY', index: '/06' },

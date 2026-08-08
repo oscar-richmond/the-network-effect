@@ -27,6 +27,18 @@ body.founders-page {
 	will-change: transform; /* slides up 811 for the footer reveal */
 }
 
+/* The content wrapper — its OWN opaque ground (the difference
+   names blend against it at rest AND inside the release's
+   transform-isolated group; beneath it the identical stage ground
+   shows as the white gap while it rides up). NO z-index at rest —
+   the release transform is the only context it ever forms. */
+.landing-v2 .fd-content {
+	position: absolute;
+	inset: 0;
+	background: #eeeef0;
+	will-change: transform;
+}
+
 /* ── Indicator (file: thumbs (40,144) 80×48, gap 16; label row
    beside the active thumb — JS scrubs its 64px travel). */
 .landing-v2 .fd-ind {
@@ -150,7 +162,9 @@ body.founders-page {
 .landing-v2 .fd-slide {
 	position: absolute;
 	inset: 0;
-	z-index: 2;
+	/* NO z-index (rev 2): a slide-level stacking context isolated
+	   the names' difference — the white-name bug. DOM order paints
+	   the texts over the portrait. */
 	pointer-events: none;
 }
 
@@ -169,26 +183,27 @@ body.founders-page {
 
 .landing-v2 .fd-slide__bio-text {
 	margin: 0;
-	font-size: 40px;
+	font-size: 38px; /* Oscar's rev 2 — was the file's 40 */
 	line-height: 40px;
 	text-transform: uppercase;
 	color: #161616;
+}
+
+.landing-v2 .fd-slide__bio-text--bold {
+	font-weight: 700;
+}
+
+.landing-v2 .fd-slide__bio-text--serrif {
+	margin-top: 24px; /* the bold→Serrif gap (Oscar's rev 2) */
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
 }
 
 .landing-v2 .fd-slide__bio-indent {
 	display: inline-block;
 	width: 200px; /* the file's lead run at 40px */
 	height: 1px;
-}
-
-.landing-v2 .fd-slide__bio-bold {
-	font-weight: 700;
-}
-
-.landing-v2 .fd-slide__bio-serrif {
-	font-family: 'Serrif', serif;
-	font-weight: 500;
-	font-synthesis: none;
 }
 
 /* Button — file 195×38 at (24,680 content); the small-CTA family
@@ -276,7 +291,7 @@ body.founders-page {
 	line-height: 80px;
 	color: #f9f9f9;
 	mix-blend-mode: difference;
-	z-index: 3;
+	pointer-events: none;
 }
 
 .landing-v2 .fd-sr-live {
@@ -313,6 +328,7 @@ body.founders-page {
 @media (max-width: 1023px) {
 	body.founders-page { overflow: auto; }
 	.landing-v2 .fd-stage { height: auto; overflow: visible; padding: 160px 24px 64px; will-change: auto; transform: none !important; }
+	.landing-v2 .fd-content { position: static; transform: none !important; will-change: auto; }
 	.landing-v2 .fd-ind { display: none; }
 	.landing-v2 .fd-portrait { position: static; width: 100%; height: auto; aspect-ratio: 640 / 922; margin-bottom: 32px; }
 	.landing-v2 .fd-portrait__img { position: static; }

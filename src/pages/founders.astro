@@ -37,6 +37,14 @@ import '../styles/fonts.css';
 
 <SiteShell title="The Founders — The Network Effect" bodyClass="landing-v2 founders-page">
   <main class="fd-stage" data-founders-stage aria-label="The founders">
+    {/* THE CONTENT WRAPPER (Oscar's rev 2): carries its OWN opaque
+        ground so the difference names blend correctly at rest AND
+        while the release translates it (a transformed ancestor
+        isolates blends — with an opaque ground inside the group the
+        difference stays correct everywhere; the white-name bug's
+        fix). The release rides THIS up (white gap grows below the
+        portrait); only the footer reveal rides the stage. */}
+    <div class="fd-content" data-fd-content>
     {/* ── Indicator — thumbs 80×48 (16 gap) at (40,144); the label
         + divider travel beside the active thumb (founders-page.js
         scrubs the 64px); active thumb carries the 3px #232A89
@@ -77,10 +85,13 @@ import '../styles/fonts.css';
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
     {FOUNDERS_SLIDES.map((slide, i) => (
       <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'}>
+        {/* Bio — bold block + Serrif block with the 24px gap
+            (Oscar's rev 2; was a continuous flow). */}
         <div class="fd-slide__bio" data-fd-el>
-          <p class="fd-slide__bio-text"
-            ><span class="fd-slide__bio-indent" aria-hidden="true"></span><span class="fd-slide__bio-bold">{slide.bioBold}</span><br /><span class="fd-slide__bio-serrif">{slide.bioSerrif}</span></p
+          <p class="fd-slide__bio-text fd-slide__bio-text--bold"
+            ><span class="fd-slide__bio-indent" aria-hidden="true"></span>{slide.bioBold}</p
           >
+          <p class="fd-slide__bio-text fd-slide__bio-text--serrif">{slide.bioSerrif}</p>
         </div>
         <a class="fd-slide__btn" data-fd-el href={FOUNDERS_CTA.href} data-char-ripple-trigger tabindex={i === 0 ? undefined : -1}>
           <span data-char-ripple>{FOUNDERS_CTA.label}</span>
@@ -90,7 +101,8 @@ import '../styles/fonts.css';
         <p class="fd-slide__list" data-fd-el>
           {slide.list.map((item, j) => (
             <Fragment>
-              {j > 0 && !slide.list[j - 1].joinNext && (
+              {j > 0 && slide.list[j - 1].breakAfter && <br />}
+              {j > 0 && !slide.list[j - 1].joinNext && !slide.list[j - 1].breakAfter && (
                 <span class="fd-slide__list-sep" aria-hidden="true">{' / '}</span>
               )}
               {j > 0 && slide.list[j - 1].joinNext && ' '}
@@ -98,11 +110,19 @@ import '../styles/fonts.css';
             </Fragment>
           ))}
         </p>
-        {/* The travelling name — difference over the portrait;
-            founders-page.js drives `top` (layout, the blend rule). */}
-        <h2 class="fd-slide__name" data-fd-name>{slide.name}</h2>
       </div>
     ))}
+
+    {/* The travelling names — OUTSIDE the slide containers (their
+        z/position stacking contexts isolated the difference — the
+        white-name bug): direct wrapper children, chain kept bare,
+        blending against the wrapper's opaque ground + the portrait.
+        founders-page.js drives `top` (layout, the blend rule) and
+        groups each with its slide's transition. */}
+    {FOUNDERS_SLIDES.map((slide, i) => (
+      <h2 class="fd-slide__name" data-fd-name data-slide={String(i)}>{slide.name}</h2>
+    ))}
+    </div>
 
     <p class="fd-sr-live" data-fd-live aria-live="polite"></p>
   </main>
