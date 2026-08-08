@@ -155,28 +155,50 @@ export function initServicesV2() {
     const fontsForMarq = document.fonts?.ready ?? Promise.resolve();
     fontsForMarq.then(buildMarquees);
 
+    /* Image swap runner (Oscar's rev 2 — no vanish/reappear pop):
+       first activation fades/blurs the frame in at the row; moving
+       BETWEEN rows keeps it visible, GLIDES top to the new row (CSS
+       transition) and swaps src under a brief blur pulse — a
+       pending-src latch mid-pulse picks up the newest target (the
+       lightbox runner pattern, nothing stacks). */
+    let swapTimer = 0;
     const setActive = (row) => {
       if (row === active) return;
+      const hadActive = active instanceof HTMLElement;
       if (active) active.classList.remove('is-active');
       active = row;
       if (!(row instanceof HTMLElement)) {
-        imgWrap?.classList.remove('is-active');
+        imgWrap?.classList.remove('is-active', 'is-swapping');
+        window.clearTimeout(swapTimer);
         return;
       }
       row.classList.add('is-active');
       if (reduced || !(imgWrap instanceof HTMLElement)) return;
-      /* Image: centre on the row band, swap src (per-row data —
-         placeholder shared per pillar today), replay the house
-         blur/fade entrance. */
       imgWrap.style.top = `${row.offsetTop + ROW_BAND_CENTRE_PX - HOVER_IMG_HALF_PX}px`;
-      const src = row.dataset.img;
-      if (imgEl instanceof HTMLImageElement && src && !imgEl.src.endsWith(src)) {
-        imgEl.src = src;
+      const src = row.dataset.img ?? '';
+      const needsSwap = imgEl instanceof HTMLImageElement && src && !imgEl.src.endsWith(src);
+      if (!hadActive || !imgWrap.classList.contains('is-active')) {
+        /* Fresh entrance: set the src immediately, blur/fade in. */
+        if (needsSwap) imgEl.src = src;
+        imgWrap.classList.remove('is-active', 'is-swapping');
+        void imgWrap.offsetWidth;
+        imgWrap.classList.add('is-active');
+        return;
       }
-      imgWrap.classList.remove('is-active');
-      void imgWrap.offsetWidth;
-      imgWrap.classList.add('is-active');
+      /* Row-to-row: glide (top transition) + blur-pulse the swap. */
+      if (needsSwap) {
+        imgWrap.classList.add('is-swapping');
+        window.clearTimeout(swapTimer);
+        swapTimer = window.setTimeout(() => {
+          /* The latch: the CURRENT active row's src, not the one
+             captured at pulse start — rapid hops land the newest. */
+          const latest = active?.dataset.img ?? src;
+          if (imgEl instanceof HTMLImageElement) imgEl.src = latest;
+          imgWrap.classList.remove('is-swapping');
+        }, 180);
+      }
     };
+    cleanups.push(() => window.clearTimeout(swapTimer));
 
     if (fineHover) {
       const onOver = (e) => {

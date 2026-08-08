@@ -53,9 +53,10 @@ export const SERVICES_HERO = {
 /**
  * The three pillars. Per-pillar accent = the file's Highlight Bar
  * colour (extracted): IMMERSE #232A89, CONNECT #C1250E, AMPLIFY
- * #232A89. `hoverImg` is the file's single per-pillar hover image,
- * used as the PLACEHOLDER for every row in that pillar — each row
- * carries its own `img` field for Oscar's per-row content drop.
+ * #232A89. Each row carries its own `img` — DUMMY content (Oscar's
+ * rev 2026-08-08: distinct site imagery per row so the row-to-row
+ * swap can be tested; his real per-row drop replaces these).
+ * `hoverImg` remains the fallback for rows without an img.
  */
 export const SERVICES_PILLARS = [
   {
@@ -71,20 +72,20 @@ export const SERVICES_PILLARS = [
     accent: '#232a89',
     hoverImg: '/assets/landing/services/hover-immerse.png', // Instagram-sourced — RIGHTS
     rows: [
-      { index: '01', text: 'Talent-Led Experiences' },
-      { index: '02', text: 'Immersive Brand Worlds' },
-      { index: '03', text: 'Brand Launches' },
-      { index: '04', text: 'Industry-leading Events' },
-      { index: '05', text: 'Cultural Programming' },
-      { index: '06', text: 'Brand Collaborations' },
-      { index: '07', text: 'Experiential Campaigns' },
-      { index: '08', text: 'Music & Food Festivals' },
+      { index: '01', text: 'Talent-Led Experiences', img: '/assets/pillar-waves/alaia-table-setting.jpg' },
+      { index: '02', text: 'Immersive Brand Worlds', img: '/assets/pillar-waves/projection-dinner.jpg' },
+      { index: '03', text: 'Brand Launches', img: '/assets/pillar-waves/theatre-seats.jpg' },
+      { index: '04', text: 'Industry-leading Events', img: '/assets/pillar-waves/public-kitchen-cards.jpg' },
+      { index: '05', text: 'Cultural Programming', img: '/assets/pillar-waves/red-room-dinner.jpg' },
+      { index: '06', text: 'Brand Collaborations', img: '/assets/pillar-waves/hotel-balzac-door.jpg' },
+      { index: '07', text: 'Experiential Campaigns', img: '/assets/pillar-waves/ommo-orange-panel.jpg' },
+      { index: '08', text: 'Music & Food Festivals', img: '/assets/pillar-waves/film-set-monitor.jpg' },
       /* Resting text sourced from the file's hover demo (see header
          flag — duplicates 04 verbatim in the deck). */
-      { index: '09', text: 'Industry-Leading Events' },
-      { index: '10', text: 'Fashion & Media Events' },
-      { index: '11', text: 'Leadership Summits & Conferences' },
-      { index: '12', text: 'Health & Wellbeing Retreats' },
+      { index: '09', text: 'Industry-Leading Events', img: '/assets/pillar-waves/osaka-clay-court.jpg' },
+      { index: '10', text: 'Fashion & Media Events', img: '/assets/pillar-waves/comme-des-garcons-walk.jpg' },
+      { index: '11', text: 'Leadership Summits & Conferences', img: '/assets/pillar-waves/rotary-phone-story.jpg' },
+      { index: '12', text: 'Health & Wellbeing Retreats', img: '/assets/pillar-waves/wax-seal-envelope.jpg' },
     ],
     galleryTitle: ['OUR SERVICES SPAN', 'END-TO-END:'],
     galleryNote: {
@@ -116,19 +117,19 @@ export const SERVICES_PILLARS = [
     accent: '#c1250e',
     hoverImg: '/assets/landing/services/hover-connect.png',
     rows: [
-      { index: '01', text: 'Strategic Brand Partnerships' },
-      { index: '02', text: 'Celebrity & Talent Partnerships' },
-      { index: '03', text: 'Cultural Introductions' },
-      { index: '04', text: 'Commercial Relationship Development' },
-      { index: '05', text: 'Long-term Partnership Strategy' },
-      { index: '06', text: 'Story-led Collaborations' },
-      { index: '07', text: 'Sponsorship Strategy & Acquisition' },
-      { index: '08', text: 'Brand-to-brand Collaborations' },
+      { index: '01', text: 'Strategic Brand Partnerships', img: '/assets/pillar-waves/burberry-surfboard.jpg' },
+      { index: '02', text: 'Celebrity & Talent Partnerships', img: '/assets/pillar-waves/lagerfeld-pharrell-bw.jpg' },
+      { index: '03', text: 'Cultural Introductions', img: '/assets/pillar-waves/skater-wine-field.jpg' },
+      { index: '04', text: 'Commercial Relationship Development', img: '/assets/pillar-waves/collectors-key.jpg' },
+      { index: '05', text: 'Long-term Partnership Strategy', img: '/assets/pillar-waves/skims-taxi.jpg' },
+      { index: '06', text: 'Story-led Collaborations', img: '/assets/pillar-waves/rhode-corvette-plate.jpg' },
+      { index: '07', text: 'Sponsorship Strategy & Acquisition', img: '/assets/pillar-waves/bstn-newspaper-car.jpg' },
+      { index: '08', text: 'Brand-to-brand Collaborations', img: '/assets/pillar-waves/red-leather-tie.jpg' },
       /* Resting text from the file's hover demo. */
-      { index: '09', text: 'Ambassador Programmes' },
-      { index: '10', text: 'Influencer & Creator Partnerships' },
-      { index: '11', text: 'Community & Membership Engagement' },
-      { index: '12', text: 'Network-led Business Development' },
+      { index: '09', text: 'Ambassador Programmes', img: '/assets/pillar-waves/portre-flatlay.jpg' },
+      { index: '10', text: 'Influencer & Creator Partnerships', img: '/assets/pillar-waves/red-socks-car.jpg' },
+      { index: '11', text: 'Community & Membership Engagement', img: '/assets/pillar-waves/queen-vinyl-blue.jpg' },
+      { index: '12', text: 'Network-led Business Development', img: '/assets/pillar-waves/tennis-ball-car.jpg' },
     ],
     galleryTitle: ['OUR SERVICES Include'],
     galleryNote: null,
@@ -163,15 +164,15 @@ export const SERVICES_PILLARS = [
     accent: '#232a89',
     hoverImg: '/assets/landing/services/hover-amplify.png',
     rows: [
-      { index: '01', text: 'Podcasts' },
-      { index: '02', text: 'Documentary Formats' },
-      { index: '03', text: 'Original Content Series' },
-      { index: '04', text: 'Brand Storytelling' },
-      { index: '05', text: 'Campaign Creative' },
-      { index: '06', text: 'Creative Direction' },
-      { index: '07', text: 'Social-first Content' },
-      { index: '08', text: 'Photography & Film Production' },
-      { index: '09', text: 'Design Systems & Brand Assets' },
+      { index: '01', text: 'Podcasts', img: '/assets/pillar-waves/stage-performance-bw.jpg' },
+      { index: '02', text: 'Documentary Formats', img: '/assets/pillar-waves/veiled-portrait.jpg' },
+      { index: '03', text: 'Original Content Series', img: '/assets/pillar-waves/yellow-inflatable-suit.jpg' },
+      { index: '04', text: 'Brand Storytelling', img: '/assets/pillar-waves/chef-window.jpg' },
+      { index: '05', text: 'Campaign Creative', img: '/assets/pillar-waves/bubble-gum-glass.jpg' },
+      { index: '06', text: 'Creative Direction', img: '/assets/pillar-waves/red-hooded-jacket.jpg' },
+      { index: '07', text: 'Social-first Content', img: '/assets/landing/featured/work-1.jpg' },
+      { index: '08', text: 'Photography & Film Production', img: '/assets/landing/featured/work-2.jpg' },
+      { index: '09', text: 'Design Systems & Brand Assets', img: '/assets/landing/featured/work-3.jpg' },
     ],
     /* Amplify's gallery lives in the DARK region (SERVICES_ACCESS
        below) — no light gallery/flow here. */
