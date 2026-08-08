@@ -185,7 +185,7 @@ export function initContactPage() {
       opener = null;
     };
     if (reduced) finish();
-    else schedule(finish, 360); /* the frost-out's 0.35s */
+    else schedule(finish, 620); /* the frost-out's 0.6s (rev 2) */
   };
 
   if (openBtn instanceof HTMLElement) {
@@ -287,9 +287,9 @@ export function initContactPage() {
       schedule(() => cta.classList.add('is-visible'), 300 + i * 60);
     });
 
-    /* Image — media rise at the hero-image beat. */
+    /* Media (the hero video) — blur/fade at the hero-image beat. */
     schedule(() => {
-      document.querySelector('[data-ct-image]')?.classList.add('is-visible');
+      document.querySelector('[data-ct-media]')?.classList.add('is-visible');
     }, 300);
 
     /* Footer — the covered-trigger reveal maths, verbatim. */

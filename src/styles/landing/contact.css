@@ -13,16 +13,26 @@
 
 .landing-v2 .ct {
 	position: relative;
-	height: 1002px; /* file: footer at content-y 1002 */
+	/* ONE VIEWPORT (Oscar's rev 2 — the page ran long): the section
+	   ends with the viewport; the scroll below is exactly the footer
+	   reveal (spacer 811). */
+	height: 100dvh;
 }
 
-/* Intro — file (24,405), 717w; Dazzed Bold 48 line + Serrif line;
-   the file's 15-space lead as an inline spacer atom (the reveal-
-   wrap convention — text-indent breaks line grouping). */
-.landing-v2 .ct__intro {
+/* The intro + CTA cluster — vertically centred on landing (no
+   blend elements on this page, so the transform is safe). The 80px
+   intro-to-CTAs gap is the file's rhythm (493 → 573). */
+.landing-v2 .ct__cluster {
 	position: absolute;
 	left: 24px;
-	top: 405px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+/* Intro — 717w; Dazzed Bold 48 line + Serrif line; the file's
+   15-space lead as an inline spacer atom (the reveal-wrap
+   convention — text-indent breaks line grouping). */
+.landing-v2 .ct__intro {
 	width: 717px;
 	margin: 0;
 	font-weight: 700;
@@ -47,11 +57,10 @@
 /* ── The three 64px CTAs — the primary family's fill/ink at the
    file's LARGE scale (64px tall, 16px Dazzed Bold labels; the
    existing family is 32/14 — this is the file's own variant, not
-   drift). Row at (24,573), 16px gaps, file widths. */
+   drift). In the cluster's flow, 80px below the intro, 16px gaps,
+   file widths. */
 .landing-v2 .ct__ctas {
-	position: absolute;
-	left: 24px;
-	top: 573px;
+	margin-top: 80px;
 	display: flex;
 	gap: 16px;
 }
@@ -89,7 +98,7 @@
 	width: 48px;
 	height: 48px;
 	flex: none;
-	border-radius: 50%;
+	/* SQUARE (Oscar's rev 2 — was a circle). */
 	overflow: hidden;
 }
 
@@ -110,22 +119,18 @@
 	outline-offset: 2px;
 }
 
-/* Image — file (1295,405) 409×231 (RIGHTS-ELEVATED, see data). */
-.landing-v2 .ct__image {
+/* Media — the HERO'S VIDEO (Oscar's rev 2), the file's 409×231
+   slot at x1295, vertically centred like the cluster. */
+.landing-v2 .ct__media {
 	position: absolute;
 	left: 1295px;
-	top: 405px;
+	top: 50%;
+	transform: translateY(-50%);
 	width: 409px;
 	height: 231px;
-	margin: 0;
-	overflow: hidden;
-}
-
-.landing-v2 .ct__image img {
-	width: 100%;
-	height: 100%;
 	object-fit: cover;
 	display: block;
+	overflow: hidden;
 }
 
 /* ── SCHEDULE A CALL modal — the lightbox machinery, brand-black
@@ -151,8 +156,9 @@
 	background: rgba(22, 22, 22, 0);
 	-webkit-backdrop-filter: blur(0px);
 	backdrop-filter: blur(0px);
-	transition: background 0.35s ease-out, -webkit-backdrop-filter 0.35s ease-out,
-		backdrop-filter 0.35s ease-out;
+	/* Slightly slower frost (Oscar's rev 2 — premium feel). */
+	transition: background 0.6s ease-out, -webkit-backdrop-filter 0.6s ease-out,
+		backdrop-filter 0.6s ease-out;
 }
 
 .landing-v2 .ct-modal.is-open .ct-modal__backdrop {
@@ -161,11 +167,25 @@
 	backdrop-filter: blur(52px);
 }
 
-/* Ghost display text behind the window — file: 142px, white 10%,
-   SCHEDULE (Dazzed Bold) left at (344,187), A CALL (Serrif) right-
-   aligned at (344,742), both 145-tall blocks. Content fades with
-   the frost (opacity rides is-open, ON the ghosts — they are not
-   backdrop roots). */
+/* The BAND (Oscar's rev 2): everything centres between the LOGO's
+   bottom (the topbar band height) and the viewport bottom. The
+   file's INTERNAL geometry is preserved as offsets around the
+   band's centre, the whole SET true-centred (the 45/35 overlaps
+   are asymmetric, so the set spans centre±350 with the window 5px
+   above centre): SCHEDULE top = centre−350, window = centre−250,
+   A CALL = centre+205, CLOSE = centre−330 (40px above the
+   window, the file's gap). */
+.landing-v2 .ct-modal__band {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: calc(var(--home-margin-y) * 2 + 1.125rem);
+	bottom: 0;
+}
+
+/* Ghost display text behind the window — file: 142px, white 10%;
+   ON OPEN they drift in BEHIND the popup (Oscar's rev 2): rise +
+   blur clearing on the house ease, a beat behind the frost. */
 .landing-v2 .ct-modal__ghost {
 	position: absolute;
 	left: 344px;
@@ -179,38 +199,47 @@
 	line-height: 32px;
 	color: rgba(255, 255, 255, 0.1);
 	opacity: 0;
-	transition: opacity 0.35s ease-out;
+	transform: translateY(24px);
+	filter: blur(6px);
+	transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.15s,
+		transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.15s,
+		filter 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.15s;
 	pointer-events: none;
 }
 
-.landing-v2 .ct-modal.is-open .ct-modal__ghost { opacity: 1; }
+.landing-v2 .ct-modal.is-open .ct-modal__ghost {
+	opacity: 1;
+	transform: none;
+	filter: blur(0);
+}
 
 .landing-v2 .ct-modal__ghost--top {
-	top: 187px;
+	top: calc(50% - 350px);
 	font-weight: 700;
 	width: 1016px;
 }
 
 .landing-v2 .ct-modal__ghost--bottom {
-	top: 742px;
+	top: calc(50% + 205px);
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
 	text-align: right;
+	transition-delay: 0.27s, 0.27s, 0.27s; /* the second beat */
 }
 
-/* The window — file (344,287) 1040×490; the embed target fills it;
-   fallback centred. Fades with the frost. */
+/* The window — 1040×490 centred in the band; the embed target
+   fills it; fallback centred. Arrives after the ghosts settle. */
 .landing-v2 .ct-modal__window {
 	position: absolute;
 	left: 344px;
-	top: 287px;
+	top: calc(50% - 250px);
 	width: 1040px;
 	height: 490px;
 	background: #eeeef0;
 	overflow: hidden;
 	opacity: 0;
-	transition: opacity 0.35s ease-out;
+	transition: opacity 0.35s ease-out 0.25s;
 }
 
 .landing-v2 .ct-modal.is-open .ct-modal__window { opacity: 1; }
@@ -255,12 +284,13 @@
 	text-decoration: none;
 }
 
-/* CLOSE — file: 97×40 pill at (1287,207), right edge flush with
-   the window, fill + blue 14/18, its own 12px frost. */
+/* CLOSE — file: 97×40 pill, right edge flush with the window,
+   80px above it (band-centred: centre − 245 − 80), fill + blue
+   14/18, its own 12px frost. Arrives with the window. */
 .landing-v2 .ct-modal__close {
 	position: absolute;
 	left: 1287px;
-	top: 207px;
+	top: calc(50% - 330px);
 	width: 97px;
 	height: 40px;
 	border: 0;
@@ -275,7 +305,7 @@
 	text-transform: uppercase;
 	cursor: pointer;
 	opacity: 0;
-	transition: opacity 0.35s ease-out;
+	transition: opacity 0.35s ease-out 0.25s;
 }
 
 .landing-v2 .ct-modal.is-open .ct-modal__close { opacity: 1; }
@@ -335,16 +365,19 @@
 		transform: none;
 	}
 
-	.landing-v2 .ct__image {
+	/* The media keeps its centring transform — the entrance rides
+	   opacity + blur instead of the rise (a translate would fight
+	   translateY(-50%)). */
+	.landing-v2 .ct__media {
 		opacity: 0;
-		transform: translateY(24px);
+		filter: blur(6px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+			filter 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	.landing-v2 .ct__image.is-visible {
+	.landing-v2 .ct__media.is-visible {
 		opacity: 1;
-		transform: none;
+		filter: blur(0);
 	}
 }
 
@@ -364,10 +397,12 @@
    lightbox's mobile behaviour); ghosts are desktop dressing. */
 @media (max-width: 1023px) {
 	.landing-v2 .ct { height: auto; padding: 160px 24px 64px; }
-	.landing-v2 .ct__intro { position: static; width: auto; }
+	.landing-v2 .ct__cluster { position: static; transform: none; }
+	.landing-v2 .ct__intro { width: auto; }
 	.landing-v2 .ct__intro-indent { width: 0; }
-	.landing-v2 .ct__ctas { position: static; margin-top: 32px; flex-direction: column; align-items: flex-start; }
-	.landing-v2 .ct__image { position: static; margin-top: 32px; width: 100%; height: auto; aspect-ratio: 409 / 231; }
+	.landing-v2 .ct__ctas { margin-top: 32px; flex-direction: column; align-items: flex-start; }
+	.landing-v2 .ct__media { position: static; transform: none; margin-top: 32px; width: 100%; height: auto; aspect-ratio: 409 / 231; }
+	.landing-v2 .ct-modal__band { top: 0; }
 	.landing-v2 .ct-modal__ghost { display: none; }
 	.landing-v2 .ct-modal__window { left: 0; top: 0; width: 100%; height: 100%; }
 	.landing-v2 .ct-modal__close { left: auto; right: 16px; top: 16px; }

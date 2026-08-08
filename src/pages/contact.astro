@@ -39,6 +39,11 @@ import '../styles/fonts.css';
 
 <SiteShell title="Contact — The Network Effect" bodyClass="landing-v2 contact-page">
   <main class="ct" data-contact>
+    {/* One viewport (Oscar's rev 2 — the page was too long): the
+        intro + CTA cluster and the media both VERTICALLY CENTRED;
+        the section's end IS the page's end, then the footer
+        reveals. */}
+    <div class="ct__cluster" data-ct-cluster>
     {/* Intro — file: Dazzed Bold 48 with the leading indent, then
         the Serrif line (the mixed-face pair). */}
     <h1 class="ct__intro" data-ct-intro
@@ -69,10 +74,23 @@ import '../styles/fonts.css';
       </a>
     </div>
 
-    {/* Right-side image — RIGHTS-ELEVATED (LV show stack). */}
-    <figure class="ct__image" data-ct-image aria-hidden="true">
-      <img src={asset('/assets/landing/contact/contact-image.png')} alt="" loading="eager" decoding="async" />
-    </figure>
+    </div>
+
+    {/* Right-side media — THE HERO'S VIDEO (Oscar's rev 2; replaces
+        the LV-stack image). Same placeholder standing as the hero:
+        the asset is the established LV stand-in, pending licensed
+        finals. */}
+    <video
+      class="ct__media"
+      data-ct-media
+      src={asset('/assets/videos/louis-vuitton.mp4')}
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+    ></video>
   </main>
 
   {/* Footer — the shared BLUE colourway, untouched. */}
@@ -84,18 +102,25 @@ import '../styles/fonts.css';
       window by order alone. */}
   <div class="ct-modal" data-ct-modal role="dialog" aria-modal="true" aria-label="Schedule a call" hidden>
     <div class="ct-modal__backdrop" data-ct-backdrop aria-hidden="true"></div>
-    <p class="ct-modal__ghost ct-modal__ghost--top" aria-hidden="true">SCHEDULE</p>
-    <p class="ct-modal__ghost ct-modal__ghost--bottom" aria-hidden="true">A CALL</p>
-    <div class="ct-modal__window" data-ct-window>
-      <div class="ct-modal__cal" data-ct-cal></div>
-      <div class="ct-modal__fallback" data-ct-fallback hidden>
-        <p>{CAL_FALLBACK.message}</p>
-        <a href={CONTACT_MAILTO} data-char-ripple-trigger><span data-char-ripple>{CAL_FALLBACK.action}</span></a>
+    {/* The band — everything centres between the LOGO's bottom and
+        the viewport bottom (Oscar's rev 2); offsets inside preserve
+        the file's internal geometry (overlaps 45/35, close 80 above
+        the window). DOM order = paint order: ghosts behind, window,
+        close. */}
+    <div class="ct-modal__band" aria-hidden="false">
+      <p class="ct-modal__ghost ct-modal__ghost--top" aria-hidden="true">SCHEDULE</p>
+      <p class="ct-modal__ghost ct-modal__ghost--bottom" aria-hidden="true">A CALL</p>
+      <div class="ct-modal__window" data-ct-window>
+        <div class="ct-modal__cal" data-ct-cal></div>
+        <div class="ct-modal__fallback" data-ct-fallback hidden>
+          <p>{CAL_FALLBACK.message}</p>
+          <a href={CONTACT_MAILTO} data-char-ripple-trigger><span data-char-ripple>{CAL_FALLBACK.action}</span></a>
+        </div>
       </div>
+      <button type="button" class="ct-modal__close" data-ct-close data-char-ripple-trigger>
+        <span data-char-ripple>CLOSE</span>
+      </button>
     </div>
-    <button type="button" class="ct-modal__close" data-ct-close data-char-ripple-trigger>
-      <span data-char-ripple>CLOSE</span>
-    </button>
   </div>
   {/* The logo twin — TOP-LEVEL fixed difference element (never
       inside the modal's backdrop-filter subtree). */}
