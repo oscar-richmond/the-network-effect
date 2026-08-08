@@ -1,0 +1,138 @@
+---
+/**
+ * /founders — the NEW BUILD's founders page (Figma 73:5519 "The
+ * Founders — Slide 2", extracted 2026-08-08; 83px chrome
+ * subtracted; Chrome mockup frames ignored). NO SLIDE 1 FRAME
+ * EXISTS in the file — slide 1 is the same template with Robbo's
+ * imagery + flagged placeholder copy (see founders-page.js).
+ *
+ * A TWO-SLIDE, FIXED-VIEWPORT scroll experience (the /work driver
+ * lineage — founders-page.js): one virtual progress axis through
+ * phases: P1 Robbo's name travels DOWN the portrait (top at the
+ * image's live centre → bottom 40px above its live bottom, layout
+ * `top` never transform — the name is difference-blended); P2 the
+ * slide transition (text out/in staggered blur-fade, portrait
+ * blur-crossfade, indicator label travels 64px + 01→02 roll,
+ * boundary-snapped); P3 Ashley's travel; P4 release (content up
+ * to 180px below the image, then the /work footer-reveal grammar
+ * over the fixed footer wrap).
+ *
+ * BLEND WALK: the names are #F9F9F9 + difference; their chain
+ * (stage > slide > name) carries no transform/opacity/filter —
+ * the portrait layers are earlier SIBLINGS (the crossfade rides
+ * them, never an ancestor). The stage is the /work fixed-viewport
+ * shape.
+ *
+ * IMAGERY pending founder sign-off. STAGING ONLY.
+ */
+import SiteShell from '../layouts/SiteShell.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
+import { FOUNDERS_SLIDES, FOUNDERS_CTA } from '../data/landing/founders-page.js';
+import { asset } from '../utils/asset.js';
+import '../styles/home.css';
+import '../styles/landing/landing.css';
+import '../styles/landing/founders.css';
+import '../styles/fonts.css';
+---
+
+<SiteShell title="The Founders — The Network Effect" bodyClass="landing-v2 founders-page">
+  <main class="fd-stage" data-founders-stage aria-label="The founders">
+    {/* ── Indicator — thumbs 80×48 (16 gap) at (40,144); the label
+        + divider travel beside the active thumb (founders-page.js
+        scrubs the 64px); active thumb carries the 3px #232A89
+        stroke. Thumbs drive the slides. */}
+    <div class="fd-ind" data-fd-ind>
+      <div class="fd-ind__thumbs">
+        {FOUNDERS_SLIDES.map((slide, i) => (
+          <button
+            type="button"
+            class="fd-ind__thumb"
+            data-fd-thumb
+            data-slide={String(i)}
+            aria-current={i === 0 ? 'true' : 'false'}
+            aria-label={`Go to founder ${slide.number}: ${slide.name}`}
+          >
+            <img src={asset(slide.img)} alt="" loading="eager" decoding="async" />
+          </button>
+        ))}
+      </div>
+      <div class="fd-ind__labelrow" data-fd-labelrow>
+        <span class="fd-ind__divider" aria-hidden="true"></span>
+        <span class="fd-ind__label" data-fd-label>
+          <span class="fd-ind__label-line" data-fd-label-a>/ 01 Founder</span>
+          <span class="fd-ind__label-line" data-fd-label-b aria-hidden="true">/ 02 Founder</span>
+        </span>
+      </div>
+    </div>
+
+    {/* ── Portrait — anchored top 88 / right 24 / bottom 24 (height
+        flexes with the viewport; the name clamps derive from the
+        LIVE rect). Robbo ON TOP for the crossfade (opacity+blur
+        out reveals Ashley beneath). */}
+    <div class="fd-portrait" data-fd-portrait aria-hidden="true">
+      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
+    </div>
+
+    {/* ── Slides' text (bio, button, list) + the travelling name. */}
+    {FOUNDERS_SLIDES.map((slide, i) => (
+      <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'}>
+        <div class="fd-slide__bio" data-fd-el>
+          <p class="fd-slide__bio-text"
+            ><span class="fd-slide__bio-indent" aria-hidden="true"></span><span class="fd-slide__bio-bold">{slide.bioBold}</span><br /><span class="fd-slide__bio-serrif">{slide.bioSerrif}</span></p
+          >
+        </div>
+        <a class="fd-slide__btn" data-fd-el href={FOUNDERS_CTA.href} data-char-ripple-trigger tabindex={i === 0 ? undefined : -1}>
+          <span data-char-ripple>{FOUNDERS_CTA.label}</span>
+          <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+        </a>
+        <p class="fd-slide__listlabel" data-fd-el>{slide.listLabel}</p>
+        <p class="fd-slide__list" data-fd-el>
+          {slide.list.map((item, j) => (
+            <Fragment>
+              {j > 0 && !slide.list[j - 1].joinNext && (
+                <span class="fd-slide__list-sep" aria-hidden="true">{' / '}</span>
+              )}
+              {j > 0 && slide.list[j - 1].joinNext && ' '}
+              <span class="fd-slide__list-item">{item.text}<sup class="fd-slide__list-index">{item.index}</sup></span>
+            </Fragment>
+          ))}
+        </p>
+        {/* The travelling name — difference over the portrait;
+            founders-page.js drives `top` (layout, the blend rule). */}
+        <h2 class="fd-slide__name" data-fd-name>{slide.name}</h2>
+      </div>
+    ))}
+
+    <p class="fd-sr-live" data-fd-live aria-live="polite"></p>
+  </main>
+
+  {/* Footer — revealed from BEHIND the stage at the release's end
+      (the /work fixed-wrap grammar; the sticky schema is opted out
+      for this page in founders.css). */}
+  <div class="fd-footer-wrap" data-fd-footer>
+    <LandingFooter />
+  </div>
+</SiteShell>
+
+<script>
+  import { initCharRipple } from '../scripts/char-ripple.js';
+  import { initNavEntrance } from '../scripts/landing/nav-motion.js';
+  import { initFoundersPage } from '../scripts/landing/founders-page.js';
+
+  let cleanupCharRipple = initCharRipple();
+  let cleanupNavEntrance = initNavEntrance();
+  let cleanupFounders = initFoundersPage();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupCharRipple();
+    cleanupNavEntrance();
+    cleanupFounders();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupCharRipple = initCharRipple();
+    cleanupNavEntrance = initNavEntrance();
+    cleanupFounders = initFoundersPage();
+  });
+</script>

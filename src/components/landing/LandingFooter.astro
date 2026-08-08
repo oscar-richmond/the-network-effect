@@ -58,8 +58,10 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
       <span class="landing-footer__link is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>CLIENTS</span></span>
     </nav>
     <nav class="landing-footer__col landing-footer__col--2" data-footer-col aria-label="More">
-      {/* Grey per the file — label vs item AMBIGUOUS; see header. */}
-      <p class="landing-footer__label">THE FOUNDERS</p>
+      {/* RESOLVED (2026-08-08): /founders exists — the grey label is
+          a LINK now, the white link treatment (the ambiguity flag in
+          the header is settled). */}
+      <a class="landing-footer__link" href="/founders" data-char-ripple-trigger><span data-char-ripple>THE FOUNDERS</span></a>
       <span class="landing-footer__link is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>SELECTED WORK</span></span>
     </nav>
     <a

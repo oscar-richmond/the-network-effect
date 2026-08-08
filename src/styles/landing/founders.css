@@ -1,0 +1,328 @@
+/*
+ * /founders — Figma 73:5519, extracted 2026-08-08; 83px chrome
+ * subtracted; 1728 design px (content viewport 1034 at the design
+ * height — the image anchors top 88 / bottom 24 so shorter
+ * viewports flex the portrait, and the name clamps derive from the
+ * LIVE rect in founders-page.js; the 14/15" story stays the site's
+ * iframe scale shell). Ground #EEEEF0.
+ *
+ * FIXED-VIEWPORT page (the /work shape): the stage is 100dvh over
+ * the fixed footer wrap (stage z1 > wrap z0); the sticky footer
+ * schema is opted out below (the /work precedent). BLEND WALK:
+ * the names are #F9F9F9 + difference — chain stage > slide > name
+ * kept bare; the portrait layers are earlier siblings.
+ */
+
+body.founders-page {
+	overflow: hidden;
+}
+
+.landing-v2 .fd-stage {
+	position: relative;
+	z-index: 1; /* over the fixed footer (the /work pattern) */
+	height: 100vh;
+	height: 100dvh;
+	background: #eeeef0;
+	overflow: hidden;
+	will-change: transform; /* slides up 811 for the footer reveal */
+}
+
+/* ── Indicator (file: thumbs (40,144) 80×48, gap 16; label row
+   beside the active thumb — JS scrubs its 64px travel). */
+.landing-v2 .fd-ind {
+	position: absolute;
+	left: 40px;
+	top: 144px;
+	z-index: 4;
+}
+
+.landing-v2 .fd-ind__thumbs {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.landing-v2 .fd-ind__thumb {
+	width: 80px;
+	height: 48px;
+	padding: 0;
+	border: 0;
+	background: #161616;
+	overflow: hidden;
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+.landing-v2 .fd-ind__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Thumb crops per the file's mask offsets (centre-crop lands on
+   dark clothing — the faces sit high): Robbo 19/(113−48)=29%,
+   Ashley 14/(114−48)=21%. */
+.landing-v2 .fd-ind__thumb[data-slide='0'] img { object-position: 50% 29%; }
+.landing-v2 .fd-ind__thumb[data-slide='1'] img { object-position: 50% 21%; }
+
+/* The active stroke — the file's 3px #232A89. */
+.landing-v2 .fd-ind__thumb[aria-current='true'] {
+	outline: 3px solid #232a89;
+	outline-offset: -3px;
+}
+
+.landing-v2 .fd-ind__thumb:focus-visible {
+	outline: 3px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* Label row — divider 16×0.5 + "/ 0N Founder" Serrif 12; top is
+   driven by JS between the thumb centres (+24 → +88). The label
+   text ROLLS 01→02 at the boundary (a two-line clip). */
+.landing-v2 .fd-ind__labelrow {
+	position: absolute;
+	left: 96px; /* file: divider at x136 − indicator x40 */
+	top: 19px; /* thumb-1 centre (24) − half the 10px label */
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	white-space: nowrap;
+}
+
+.landing-v2 .fd-ind__divider {
+	width: 16px;
+	height: 0.5px;
+	background: #161616;
+	flex: none;
+}
+
+.landing-v2 .fd-ind__label {
+	display: block;
+	height: 18px;
+	overflow: hidden;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 12px;
+	line-height: 18px;
+	color: #161616;
+}
+
+.landing-v2 .fd-ind__label-line {
+	display: block;
+	transition: transform 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+/* Roll state: both lines shift up one slot (JS toggles). */
+.landing-v2 .fd-ind__label.is-second .fd-ind__label-line {
+	transform: translateY(-18px);
+}
+
+/* ── Portrait — top 88 / right 24 / bottom 24 (the file's margins;
+   height flexes). Robbo layer on top carries the crossfade
+   (opacity + blur driven by JS). */
+.landing-v2 .fd-portrait {
+	position: absolute;
+	top: 88px;
+	right: 24px;
+	bottom: 24px;
+	width: 640px;
+	z-index: 1;
+}
+
+.landing-v2 .fd-portrait__img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Main crops per the file's mask offsets (56% / 43%). */
+.landing-v2 .fd-portrait__img--over { object-position: 50% 56%; }
+.landing-v2 .fd-portrait__img--under { object-position: 50% 43%; }
+
+/* ── Slides — text left, the travelling name over the portrait.
+   Inactive slide's text is hidden (JS drives the staggered
+   blur-fade during the transition). */
+.landing-v2 .fd-slide {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.landing-v2 .fd-slide[data-active='false'] {
+	visibility: hidden;
+}
+
+/* Bio — file (24,381 content) 952w; Dazzed Bold 40/40 + Serrif
+   40/40 close; the file's leading indent as a spacer atom. */
+.landing-v2 .fd-slide__bio {
+	position: absolute;
+	left: 24px;
+	top: 381px;
+	width: 952px;
+}
+
+.landing-v2 .fd-slide__bio-text {
+	margin: 0;
+	font-size: 40px;
+	line-height: 40px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .fd-slide__bio-indent {
+	display: inline-block;
+	width: 200px; /* the file's lead run at 40px */
+	height: 1px;
+}
+
+.landing-v2 .fd-slide__bio-bold {
+	font-weight: 700;
+}
+
+.landing-v2 .fd-slide__bio-serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+/* Button — file 195×38 at (24,680 content); the small-CTA family
+   (fill/ink), 16px label; REAL link to /work. */
+.landing-v2 .fd-slide__btn {
+	position: absolute;
+	left: 24px;
+	top: 680px;
+	width: 195px;
+	height: 38px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 16px;
+	box-sizing: border-box;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	color: var(--landing-accent-blue, #232a89);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 16px;
+	text-transform: uppercase;
+	text-decoration: none;
+	pointer-events: auto;
+}
+
+.landing-v2 .fd-slide__btn:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* List label + slash-list — anchored to the viewport bottom (the
+   file's cluster rides the image's lower region): label 14 Serrif,
+   list Dazzed Bold 14/18 with 6px superscript indexes, wrapping in
+   the file's 590px column. */
+.landing-v2 .fd-slide__listlabel {
+	position: absolute;
+	left: 25px;
+	bottom: 130px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 14px;
+	line-height: 18px;
+	color: #161616;
+}
+
+.landing-v2 .fd-slide__list {
+	position: absolute;
+	left: 24px;
+	bottom: 64px;
+	width: 590px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 24px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .fd-slide__list-index {
+	font-size: 6px;
+	line-height: 1;
+	vertical-align: super;
+}
+
+.landing-v2 .fd-slide__list-sep {
+	white-space: pre;
+}
+
+/* The travelling name — Serrif 80, #F9F9F9 + DIFFERENCE (the file);
+   left 913, width 723 (overlapping the portrait); `top` is driven
+   by JS between the live clamps. */
+.landing-v2 .fd-slide__name {
+	position: absolute;
+	left: 913px;
+	top: 0; /* JS-driven */
+	width: 723px;
+	margin: 0;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 80px;
+	line-height: 80px;
+	color: #f9f9f9;
+	mix-blend-mode: difference;
+	z-index: 3;
+}
+
+.landing-v2 .fd-sr-live {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+}
+
+/* ── Footer reveal layer — the /work fixed-wrap grammar verbatim:
+   fixed at the viewport bottom UNDER the stage; the stage slides
+   up to uncover it. The landing sticky schema + generic main gate
+   don't apply here (no <main> ancestor for the footer; the wrap
+   neutralises the flow placement). */
+.landing-v2.founders-page .fd-footer-wrap {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 811px;
+	z-index: 0;
+}
+
+.landing-v2.founders-page .fd-footer-wrap .landing-footer {
+	position: relative;
+	margin-top: 0;
+	height: 811px;
+}
+
+/* ── Sub-1024 fallback — static stacked slides (desktop-first
+   staging; the scale shell carries 14/15"). */
+@media (max-width: 1023px) {
+	body.founders-page { overflow: auto; }
+	.landing-v2 .fd-stage { height: auto; overflow: visible; padding: 160px 24px 64px; will-change: auto; transform: none !important; }
+	.landing-v2 .fd-ind { display: none; }
+	.landing-v2 .fd-portrait { position: static; width: 100%; height: auto; aspect-ratio: 640 / 922; margin-bottom: 32px; }
+	.landing-v2 .fd-portrait__img { position: static; }
+	.landing-v2 .fd-portrait__img--over { display: none; }
+	.landing-v2 .fd-slide { position: static; visibility: visible !important; }
+	.landing-v2 .fd-slide__bio,
+	.landing-v2 .fd-slide__btn,
+	.landing-v2 .fd-slide__listlabel,
+	.landing-v2 .fd-slide__list,
+	.landing-v2 .fd-slide__name { position: static; width: auto; margin: 16px 0; }
+	.landing-v2 .fd-slide__name { mix-blend-mode: normal; color: #161616; font-size: 48px; line-height: 48px; }
+	.landing-v2.founders-page .fd-footer-wrap { position: static; height: auto; }
+}
