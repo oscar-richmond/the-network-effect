@@ -141,10 +141,24 @@
 	will-change: transform;
 }
 
-.landing-v2 .sv-pillar__title {
+/* The text cluster centres VERTICALLY in the image (Oscar's rev —
+   was the file's top-200 placement): flex centring, NO transform
+   and no z/opacity/filter on the wrapper (a stacking-context
+   ancestor would isolate the difference texts — the hero lesson);
+   the 16px gap is the file's title-to-sub rhythm (264 − 248). */
+.landing-v2 .sv-pillar__text {
 	position: absolute;
-	left: 24px;
-	top: 200px;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	padding-left: 24px;
+	gap: 16px;
+	pointer-events: none;
+}
+
+.landing-v2 .sv-pillar__title {
 	margin: 0;
 	font-weight: 700;
 	font-size: 48px;
@@ -155,9 +169,6 @@
 }
 
 .landing-v2 .sv-pillar__sub {
-	position: absolute;
-	left: 24px;
-	top: 264px;
 	width: 382px;
 	margin: 0;
 	font-family: 'Serrif', serif;

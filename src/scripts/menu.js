@@ -91,6 +91,9 @@ export function initMenu(scope = document) {
     return units;
   };
 
+  let sweepBeltTimer = 0;
+  let logoBeltTimer = 0;
+
   const sweepLabels = (opening) => {
     const menuUnits = swapUnits(labelMenu);
     const closeUnits = swapUnits(closeText instanceof HTMLElement ? closeText : labelClose, closeX);
@@ -119,6 +122,15 @@ export function initMenu(scope = document) {
       u.style.animationDelay = `${(inBaseDelay + i * SWAP_STAGGER_S).toFixed(2)}s`;
       u.classList.add('nav-char-in');
     });
+    /* END-STATE BELT (Oscar's rev 3 — "fix properly"): once the out
+       window has elapsed, the outgoing units are pinned hidden
+       INLINE, independent of the CSS animation having actually run
+       (style beats everything; the next sweep clears it above).
+       Guards any environment where the sweep animation misfires. */
+    window.clearTimeout(sweepBeltTimer);
+    sweepBeltTimer = window.setTimeout(() => {
+      outUnits.forEach((u) => { u.style.opacity = '0'; });
+    }, Math.ceil(inBaseDelay * 1000));
   };
 
   /* LOGO sweep with the menu (Oscar's rev 2): THE NETWORK EFFECT
@@ -141,10 +153,18 @@ export function initMenu(scope = document) {
     }
     units.forEach((u, i) => {
       u.classList.remove('nav-char-out', 'nav-char-in');
+      u.style.opacity = '';
       void u.offsetWidth;
       u.style.animationDelay = `${(i * SWAP_STAGGER_S).toFixed(2)}s`;
       u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
     });
+    /* The same end-state belt as the labels (see sweepLabels). */
+    window.clearTimeout(logoBeltTimer);
+    if (hidden) {
+      logoBeltTimer = window.setTimeout(() => {
+        units.forEach((u) => { u.style.opacity = '0'; });
+      }, Math.ceil(((units.length - 1) * SWAP_STAGGER_S + NAV_CHAR_OUT_S) * 1000));
+    }
   };
 
   gsap.set(allChars, { y: '100%', opacity: 0 });
@@ -296,6 +316,8 @@ export function initMenu(scope = document) {
   document.addEventListener('keydown', onKeyDown);
 
   return () => {
+    window.clearTimeout(sweepBeltTimer);
+    window.clearTimeout(logoBeltTimer);
     close();
     toggle.removeEventListener('click', onToggleClick);
     backdrop.removeEventListener('click', onBackdropClick);

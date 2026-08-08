@@ -63,7 +63,15 @@ export function sweepUnits(part) {
 /** Show/hide the nav with the char sweep. `hidden: true` = exit
  *  (right-to-left), false = entry (left-to-right). */
 export function applyNavSweep(hidden, { reduced = false } = {}) {
+  /* While the MENU OVERLAY is open, the toggle label and the logo
+     belong to the menu's own swap/sweep (menu.js): a SHOW sweep
+     landing late — the fonts-gated entrance timer racing a fast
+     first click — must not resurrect MENU under CLOSE or the logo
+     over the open panel (Oscar's overlaid-labels report). */
+  const menuOverlayOpen = document.querySelector('[data-menu]')?.classList.contains('is-open') ?? false;
   getNavParts().forEach((part) => {
+    if (!hidden && menuOverlayOpen
+      && (part.matches('[data-menu-label-menu]') || part.matches('.home__logo'))) return;
     part.style.pointerEvents = hidden ? 'none' : '';
     part.style.opacity = ''; /* any boot-hide handled by the classes now */
     const units = sweepUnits(part);

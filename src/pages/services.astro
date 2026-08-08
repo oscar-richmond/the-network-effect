@@ -92,8 +92,16 @@ import '../styles/fonts.css';
           <div class="sv-pillar__frame" data-sv-pillar-frame>
             <img class="sv-pillar__img" data-sv-pillar-img src={asset(p.fullImg)} alt="" loading="lazy" decoding="async" />
           </div>
-          <h2 class="sv-pillar__title" data-sv-pillar-title>{p.num} — {p.name}</h2>
-          <p class="sv-pillar__sub" data-sv-pillar-sub>{p.sub}</p>
+          {/* Title + subtitle VERTICALLY CENTRED as a cluster
+              (Oscar's rev — was the file's top-200 placement): a
+              flex-centring wrapper, NO transform (a transformed
+              ancestor would isolate the difference texts — the
+              hero's white-text lesson); each text keeps its own
+              blend. */}
+          <div class="sv-pillar__text" aria-hidden="false">
+            <h2 class="sv-pillar__title" data-sv-pillar-title>{p.num} — {p.name}</h2>
+            <p class="sv-pillar__sub" data-sv-pillar-sub>{p.sub}</p>
+          </div>
         </section>
 
         {/* Statement + accent bar — the case-study intro pattern
