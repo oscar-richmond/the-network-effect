@@ -242,16 +242,34 @@
 	margin: 0 24px 0 543px;
 	padding: 0;
 	list-style: none;
-	border-bottom: 2px solid rgba(22, 22, 22, 0.15);
 }
 
 .landing-v2 .sv-rows__row {
 	position: relative;
-	box-sizing: border-box;
 	height: 66px;
-	border-top: 2px solid rgba(22, 22, 22, 0.15);
-	transition: border-color 0.25s ease-out;
 	outline: none;
+}
+
+/* The divider — a DRAWABLE 1px line (Oscar's rev 5: was a 2px
+   border): background swaps to white under the active fill; the
+   entrance draw (scaleX left-origin, the red-bar pattern turned
+   horizontal) lives in the no-preference block below. The endline
+   after the list is the closing divider — same element, drawn
+   LAST (it was a static list border that appeared first). */
+.landing-v2 .sv-rows__divider {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 1px;
+	background: rgba(22, 22, 22, 0.15);
+	transition: background-color 0.25s ease-out 0.15s;
+}
+
+.landing-v2 .sv-rows__endline {
+	position: relative;
+	margin: 0 24px 0 543px;
+	height: 1px;
 }
 
 .landing-v2 .sv-rows__row:focus-visible {
@@ -262,7 +280,7 @@
 .landing-v2 .sv-rows__inner {
 	position: absolute;
 	left: 0;
-	top: 24px; /* 26 below the divider top, inside the bordered box */
+	top: 26px; /* the file's 26 below the divider line */
 	height: 16px;
 	display: flex;
 	gap: 64px;
@@ -310,8 +328,8 @@
 	position: absolute;
 	left: 0;
 	right: 0;
-	top: -2px;
-	height: 68px;
+	top: 0;
+	height: 67px; /* own 1px divider + the 66 row = through the next line */
 	pointer-events: none;
 }
 
@@ -369,9 +387,8 @@
 	transition: opacity 0.3s ease-out 0s;
 }
 
-.landing-v2 .sv-rows__row.is-active {
-	border-color: #fff;
-	transition-delay: 0.15s; /* the divider whitens once the fill is under it */
+.landing-v2 .sv-rows__row.is-active .sv-rows__divider {
+	background-color: #fff; /* whitens once the fill is under it (0.15s delay above) */
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__inner {
@@ -448,6 +465,15 @@
    above would beat the UA [hidden] rule (the lightbox lesson). */
 .landing-v2 .sv-rows__img img[hidden] {
 	display: none !important;
+}
+
+/* While the overlay covers, the BASE blurs up 0→6 (the lightbox
+   out-phase read — Oscar's rev 5: the swap's blur wasn't legible
+   with only the incoming side carrying it). services-v2.js clears
+   the class transition-free once the base adopts the new image. */
+.landing-v2 .sv-rows__img.is-covering img[data-sv-img-base] {
+	filter: blur(6px);
+	transition: filter 0.45s cubic-bezier(0.42, 0, 0.24, 1);
 }
 
 /* ── Gallery header — 250px after the rows; Immerse: Dazzed Bold
@@ -657,13 +683,45 @@
    pills; text word-reveals are wired by services-v2.js through
    line-reveal). */
 @media (prefers-reduced-motion: no-preference) {
-	.landing-v2 .sv-gallery__tile,
-	.landing-v2 .sv-rows__row {
+	.landing-v2 .sv-gallery__tile {
 		opacity: 0;
 		transform: translateY(24px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	/* Row entrance (Oscar's rev 5): each divider DRAWS left-to-right
+	   (scaleX, left origin, house ease) while its row's text rises
+	   on the same beat — rows staggered top-to-bottom by JS, the
+	   endline drawn last. */
+	.landing-v2 .sv-rows__divider {
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			background-color 0.25s ease-out 0.15s;
+	}
+
+	.landing-v2 .sv-rows__row.is-visible .sv-rows__divider,
+	.landing-v2 .sv-rows__endline.is-visible .sv-rows__divider {
+		transform: none;
+	}
+
+	.landing-v2 .sv-rows__row .sv-rows__inner {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
 			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			border-color 0.25s ease-out;
+			filter 0.25s ease-out;
+	}
+
+	.landing-v2 .sv-rows__row.is-visible .sv-rows__inner {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* The active-state hide must still win over the entrance. */
+	.landing-v2 .sv-rows__row.is-active .sv-rows__inner {
+		opacity: 0;
 	}
 
 	.landing-v2 .sv-flow__block,
@@ -676,7 +734,6 @@
 	}
 
 	.landing-v2 .sv-gallery__tile.is-visible,
-	.landing-v2 .sv-rows__row.is-visible,
 	.landing-v2 .sv-flow__block.is-visible,
 	.landing-v2 .sv-flow__arrow.is-visible,
 	.landing-v2 .sv-toggles__pair.is-visible {

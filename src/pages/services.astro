@@ -121,6 +121,11 @@ import '../styles/fonts.css';
           aria-label={`${p.name} services`}
         >
           <p class="sv-rows__label">{p.label}</p>
+          {/* Dividers are DRAWABLE elements (Oscar's rev 5 — they
+              draw left-to-right one by one on entry, so borders are
+              out); the endline below the list is the LAST divider,
+              drawn last in the stagger (it was a static border
+              before — the appeared-first bug). */}
           <ul class="sv-rows__list" data-sv-rows-list>
             {p.rows.map((row) => (
               <li
@@ -131,6 +136,7 @@ import '../styles/fonts.css';
                 data-img={asset(row.img ?? p.hoverImg)}
                 tabindex="0"
               >
+                <span class="sv-rows__divider" aria-hidden="true"></span>
                 <span class="sv-rows__inner">
                   <span class="sv-rows__index">{row.index} /</span>
                   <span class="sv-rows__text">{row.text}</span>
@@ -141,6 +147,9 @@ import '../styles/fonts.css';
               </li>
             ))}
           </ul>
+          <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
+            <span class="sv-rows__divider"></span>
+          </div>
           {/* Two stacked imgs (Oscar's rev 4): BASE shows the current
               row's image; OVER is the swap layer — the NEW image
               wipes in on top, then base adopts it and over hides

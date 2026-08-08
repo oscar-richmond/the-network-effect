@@ -161,6 +161,7 @@ export function initServicesV2() {
       swapTimers.forEach(window.clearTimeout);
       swapTimers.length = 0;
       swapAnim = false;
+      imgWrap?.classList.remove('is-covering');
       if (overEl instanceof HTMLImageElement) {
         overEl.hidden = true;
         overEl.style.transition = '';
@@ -178,9 +179,12 @@ export function initServicesV2() {
       const target = pendingRow;
       if (!(target instanceof HTMLElement) || target === shownRow) return;
       swapAnim = true;
-      /* The NEW image wipes in over the old; the frame glides to
-         the target row underneath both (top transition). */
+      /* The NEW image wipes in over the old (blur 6→0) while the
+         BASE blurs up 0→6 beneath it (.is-covering — the lightbox
+         out-phase read, Oscar's rev 5: one-sided blur wasn't
+         legible); the frame glides to the target row meanwhile. */
       placeAt(target);
+      imgWrap.classList.add('is-covering');
       overEl.src = target.dataset.img ?? '';
       overEl.hidden = false;
       overEl.style.transition = 'none';
@@ -191,9 +195,19 @@ export function initServicesV2() {
       overEl.style.clipPath = 'inset(0 0 0 0)';
       overEl.style.filter = 'blur(0px)';
       swapSchedule(() => {
-        /* Fully covered — the base adopts the new image, the
-           overlay retires (no stacking beyond the pair). */
-        if (imgEl instanceof HTMLImageElement) imgEl.src = overEl.src;
+        /* Fully covered — the base adopts the new image and
+           UN-BLURS TRANSITION-FREE under the overlay (a visible
+           0.45s un-blur would follow the class removal
+           otherwise), then the overlay retires. */
+        if (imgEl instanceof HTMLImageElement) {
+          imgEl.src = overEl.src;
+          imgEl.style.transition = 'none';
+          imgWrap.classList.remove('is-covering');
+          void imgEl.offsetWidth;
+          imgEl.style.transition = '';
+        } else {
+          imgWrap.classList.remove('is-covering');
+        }
         shownRow = target;
         clearSwap();
         if (pendingRow !== shownRow && pendingRow instanceof HTMLElement) runSwapSequence();
@@ -497,16 +511,23 @@ export function initServicesV2() {
       }));
     });
 
-    /* ── Rows resting entrance — staggered rise+fade (cs-more
-       cards' treatment; 60ms steps). */
+    /* ── Rows resting entrance (Oscar's rev 5) — each divider draws
+       left-to-right with its row's text rising on the same beat,
+       staggered top-to-bottom (60ms steps); the ENDLINE (the
+       closing divider) draws LAST, one slot after the final row
+       (it was a static border that appeared first — the bug). */
     rowSections.forEach((section) => {
       const rows = Array.from(section.querySelectorAll('[data-sv-row]'));
+      const endline = section.querySelector('[data-sv-rows-end]');
       triggers.push(ScrollTrigger.create({
         trigger: section,
         start: 'top 70%',
         once: true,
         onEnter: () => {
           rows.forEach((row, i) => schedule(() => row.classList.add('is-visible'), i * 60));
+          if (endline instanceof HTMLElement) {
+            schedule(() => endline.classList.add('is-visible'), rows.length * 60);
+          }
         },
       }));
     });
@@ -537,8 +558,11 @@ export function initServicesV2() {
       }));
     });
 
-    /* ── Gallery tiles — rise+fade, 100ms L→R (closing tiles). */
+    /* ── Gallery tiles — rise+fade, 100ms L→R (closing tiles). The
+       ACCESS gallery is excluded: it reveals with its whole section
+       the moment the ground fade completes (below). */
     document.querySelectorAll('[data-sv-gallery]').forEach((gallery) => {
+      if (gallery.closest('[data-sv-access]')) return;
       const tiles = Array.from(gallery.querySelectorAll('[data-sv-tile]'));
       triggers.push(ScrollTrigger.create({
         trigger: gallery,
@@ -550,7 +574,7 @@ export function initServicesV2() {
       }));
     });
 
-    /* ── Flow rows + toggles — the pills' 0.6s fade, staggered. */
+    /* ── Flow rows — the pills' 0.6s fade, staggered. */
     document.querySelectorAll('[data-sv-flow]').forEach((flow) => {
       const units = Array.from(flow.children).filter((el) => el instanceof HTMLElement);
       triggers.push(ScrollTrigger.create({
@@ -562,20 +586,13 @@ export function initServicesV2() {
         },
       }));
     });
-    const toggles = document.querySelector('[data-sv-toggles]');
-    if (toggles instanceof HTMLElement) {
-      const pairs = Array.from(toggles.querySelectorAll('[data-sv-toggle]'));
-      triggers.push(ScrollTrigger.create({
-        trigger: toggles,
-        start: 'top 85%',
-        once: true,
-        onEnter: () => {
-          pairs.forEach((pair, i) => schedule(() => pair.classList.add('is-visible'), i * 60));
-        },
-      }));
-    }
 
-    /* ── Access statement — word reveal + note. */
+    /* ── ACCESS SECTION — ONE entrance for the whole dark block
+       (Oscar's rev 5 — it read late): statement + note + gallery +
+       toggles all fire THE MOMENT THE GROUND FADE COMPLETES. The
+       fade's scrub ends exactly when the section's top reaches the
+       viewport bottom (the runway construction), so 'top bottom'
+       IS the fully-black moment — same anchor, two consumers. */
     const accessStatement = document.querySelector('[data-sv-access-statement]');
     const accessNote = document.querySelector('[data-sv-access-note]');
     [accessStatement, accessNote].forEach((line, i) => {
@@ -585,14 +602,18 @@ export function initServicesV2() {
     });
     const access = document.querySelector('[data-sv-access]');
     if (access instanceof HTMLElement) {
+      const accessTiles = Array.from(access.querySelectorAll('[data-sv-tile]'));
+      const accessPairs = Array.from(access.querySelectorAll('[data-sv-toggle]'));
       triggers.push(ScrollTrigger.create({
         trigger: access,
-        start: 'top 70%',
+        start: 'top bottom',
         once: true,
         onEnter: () => {
           [accessStatement, accessNote].forEach((line) => {
             if (line instanceof HTMLElement) playLineRevealElement(line);
           });
+          accessTiles.forEach((tile, i) => schedule(() => tile.classList.add('is-visible'), i * 100));
+          accessPairs.forEach((pair, i) => schedule(() => pair.classList.add('is-visible'), i * 60));
         },
       }));
     }
@@ -631,8 +652,9 @@ export function initServicesV2() {
 
   if (import.meta.env.DEV) {
     /* Occluded-pane verification (the work-page convention): rAF can
-       be frozen there, stalling gsap's ticker — expose the clock. */
-    window.__servicesV2 = { gsap, ScrollTrigger };
+       be frozen there, stalling gsap's ticker — expose the clock,
+       and Lenis so probes scroll THROUGH the one writer. */
+    window.__servicesV2 = { gsap, ScrollTrigger, get lenis() { return getLenisInstance(); } };
   }
 
   return () => {
