@@ -468,7 +468,11 @@ export function initServicesV2() {
       }
     });
 
-    /* ── Pillar overlay texts — word reveals on entry, once. */
+    /* ── Pillar overlay texts — word reveals ONLY once the image
+       has opened to full viewport width (Oscar's rev 7): the clip
+       expansion completes exactly at 'top top' (the 700px window's
+       end anchor), so that IS the full-bleed moment — same anchor,
+       two consumers. */
     document.querySelectorAll('.sv-pillar').forEach((section) => {
       const title = section.querySelector('[data-sv-pillar-title]');
       const sub = section.querySelector('[data-sv-pillar-sub]');
@@ -479,7 +483,7 @@ export function initServicesV2() {
       });
       triggers.push(ScrollTrigger.create({
         trigger: section,
-        start: 'top 65%',
+        start: 'top top',
         once: true,
         onEnter: () => {
           [title, sub].forEach((line) => {

@@ -163,8 +163,8 @@
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 22px;
-	line-height: 24px;
+	font-size: 16px; /* Oscar's rev 7 — was the file's 22; house 16/22 */
+	line-height: 22px;
 	color: #fff;
 	mix-blend-mode: difference;
 }

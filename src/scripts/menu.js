@@ -65,7 +65,7 @@ export function initMenu(scope = document) {
   const closeText = labelClose.querySelector('.home__menu-toggle-close-text');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SWAP_STAGGER_S = 0.03; /* = nav-motion NAV_CHAR_STAGGER_S — keep in step */
-  const SWAP_IN_DELAY_S = 0.15; /* CLOSE starts as MENU is mid-blur */
+  const NAV_CHAR_OUT_S = 0.3; /* = landing.css cr-nav-out duration — keep in step */
 
   if (landingSwap && closeText instanceof HTMLElement && !closeText.querySelector('.cr-char')) {
     const text = closeText.textContent ?? '';
@@ -101,6 +101,11 @@ export function initMenu(scope = document) {
       inUnits.forEach((u) => { u.style.opacity = ''; });
       return;
     }
+    /* STRICTLY SEQUENTIAL (Oscar's rev 2 — the cross-blur read as
+       both labels overlaid): the incoming label starts only after
+       the outgoing's LAST char has fully blurred away — the
+       lightbox two-phase grammar on the toggle. */
+    const inBaseDelay = (outUnits.length - 1) * SWAP_STAGGER_S + NAV_CHAR_OUT_S;
     [...outUnits, ...inUnits].forEach((u) => {
       u.classList.remove('nav-char-out', 'nav-char-in');
       u.style.opacity = '';
@@ -111,8 +116,34 @@ export function initMenu(scope = document) {
       u.classList.add('nav-char-out');
     });
     inUnits.forEach((u, i) => {
-      u.style.animationDelay = `${(SWAP_IN_DELAY_S + i * SWAP_STAGGER_S).toFixed(2)}s`;
+      u.style.animationDelay = `${(inBaseDelay + i * SWAP_STAGGER_S).toFixed(2)}s`;
       u.classList.add('nav-char-in');
+    });
+  };
+
+  /* LOGO sweep with the menu (Oscar's rev 2): THE NETWORK EFFECT
+     blurs out L→R as the menu opens and back in on close — the
+     nav-char vocabulary on the logo's own chars (built by
+     nav-motion's ensureLogoChars on the landing pages; the bare
+     element is the no-chars fallback, the applyNavSweep shape).
+     The logo is a LINK and the topbar rides ABOVE the open panel
+     (menu-open z600), so while hidden it must not be clickable. */
+  const sweepLogo = (hidden) => {
+    const logo = document.querySelector('.home__logo');
+    if (!(logo instanceof HTMLElement)) return;
+    const link = logo.querySelector('.home__logo-link');
+    if (link instanceof HTMLElement) link.style.pointerEvents = hidden ? 'none' : '';
+    const chars = Array.from(logo.querySelectorAll('.cr-char'));
+    const units = chars.length ? chars : [logo];
+    if (reducedMotion) {
+      units.forEach((u) => { u.style.opacity = hidden ? '0' : ''; });
+      return;
+    }
+    units.forEach((u, i) => {
+      u.classList.remove('nav-char-out', 'nav-char-in');
+      void u.offsetWidth;
+      u.style.animationDelay = `${(i * SWAP_STAGGER_S).toFixed(2)}s`;
+      u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
     });
   };
 
@@ -179,14 +210,20 @@ export function initMenu(scope = document) {
   const open = () => {
     if (tl.reversed() || tl.progress() === 0) {
       tl.play();
-      if (landingSwap) sweepLabels(true);
+      if (landingSwap) {
+        sweepLabels(true);
+        sweepLogo(true);
+      }
     }
   };
 
   const close = () => {
     if (!tl.reversed() && tl.progress() > 0) {
       tl.reverse();
-      if (landingSwap) sweepLabels(false);
+      if (landingSwap) {
+        sweepLabels(false);
+        sweepLogo(false);
+      }
     }
   };
 
