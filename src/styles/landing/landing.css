@@ -2113,15 +2113,29 @@
 	color: #161616;
 }
 
-/* ── /services (NEW BUILD) content gate — the case-page pattern:
-   main rides z260 over the sticky footer (259) so the landing
-   reveal schema uncovers it; relative for the containing block.
-   The background is the SCRUBBED ground (services-v2.js drives it
-   #EEEEF0 → #161616 inline) — the static value here is the resting
-   state and the reveal-critical occlusion (always-loaded sheet). */
-.landing-v2.services-v2 main[data-services-v2] {
+/* ── CONTENT GATE, generalized (2026-08-08 — /contact shipped
+   WITHOUT its gate and the footer overlaid the page: the sticky
+   reveal schema above applies to EVERY landing-v2 page, and an
+   ungated main paints under the z259 footer). The schema and the
+   gate are a PAIR: every landing-v2 page's <main> rides z260 over
+   the footer structurally HERE — a new page cannot forget it —
+   while the OPAQUE background (occlusion needs it; transparency
+   lets the footer show through) stays per-page below. /work opts
+   out with the schema itself (fixed-viewport machinery). */
+.landing-v2:not(.work-page) main {
 	position: relative;
 	z-index: 260;
+}
+
+/* /services — the background is the SCRUBBED ground
+   (services-v2.js drives #EEEEF0 → #161616 inline); the static
+   value is the resting state + the reveal-critical occlusion. */
+.landing-v2.services-v2 main[data-services-v2] {
+	background: #eeeef0;
+}
+
+/* /contact — plain ground, same occlusion duty. */
+.landing-v2.contact-page main[data-contact] {
 	background: #eeeef0;
 }
 
