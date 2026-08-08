@@ -216,7 +216,13 @@ export function initFoundersPage() {
     applyNavSweep(hidden, { reduced });
   };
 
-  /* ── Input (the /work port). */
+  /* ── Input (the /work port). ROOT-CAUSE FIX (Oscar's report: the
+     reveal stalls partway, footer top items cut off): wheel/touch
+     capture must cover the WHOLE page — once the stage rides up,
+     the revealed footer is a SIBLING fixed layer, so events over
+     it never bubble through the stage. The input surface is
+     document.body (the /work fix, ported). */
+  const inputRegion = document.body;
   const setPosClamped = (raw) => {
     targetPos = clamp(raw, 0, maxPos());
   };
@@ -227,8 +233,8 @@ export function initFoundersPage() {
     setPosClamped(targetPos + e.deltaY * unit);
     markInput();
   };
-  stage.addEventListener('wheel', onWheel, { passive: false });
-  cleanups.push(() => stage.removeEventListener('wheel', onWheel));
+  inputRegion.addEventListener('wheel', onWheel, { passive: false });
+  cleanups.push(() => inputRegion.removeEventListener('wheel', onWheel));
 
   let touchY = 0;
   let touchT = 0;
@@ -259,13 +265,13 @@ export function initFoundersPage() {
     touchVel = 0;
     markInput();
   };
-  stage.addEventListener('touchstart', onTouchStart, { passive: true });
-  stage.addEventListener('touchmove', onTouchMove, { passive: false });
-  stage.addEventListener('touchend', onTouchEnd, { passive: true });
+  inputRegion.addEventListener('touchstart', onTouchStart, { passive: true });
+  inputRegion.addEventListener('touchmove', onTouchMove, { passive: false });
+  inputRegion.addEventListener('touchend', onTouchEnd, { passive: true });
   cleanups.push(() => {
-    stage.removeEventListener('touchstart', onTouchStart);
-    stage.removeEventListener('touchmove', onTouchMove);
-    stage.removeEventListener('touchend', onTouchEnd);
+    inputRegion.removeEventListener('touchstart', onTouchStart);
+    inputRegion.removeEventListener('touchmove', onTouchMove);
+    inputRegion.removeEventListener('touchend', onTouchEnd);
   });
 
   /* ── The boundary snap (P2 only): idle inside the window glides
