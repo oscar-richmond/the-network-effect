@@ -213,6 +213,107 @@ export function initContactPage() {
     document.body.style.overflow = '';
   });
 
+  /* ── EMAIL click-to-copy — the HOLDING page's contact UX ported
+     (the source pattern is holding-deck-form.js's
+     initHoldingContactCopy; the holding files are untouched): the
+     click COPIES the address, confirms via the cursor-bound pill
+     (keyboard anchors under the link; mobile centres below it;
+     the aria announcer mirrors for AT), and the mailto STILL
+     fires — most visitors have no desktop mail client (Oscar's
+     report: a bare mailto is a silent no-op), the copy is what
+     actually helps; mailto never unloads the page, so the pill
+     survives it. Same constants as the holding implementation. */
+  const COPY_RESET_MS = 2600;
+  const TIP_OFFSET_X = 14;
+  const TIP_OFFSET_Y = 18;
+  const TIP_FADE_OUT_MS = 220;
+  const MOBILE_TIP_GAP = 24;
+  const copyLinks = Array.from(document.querySelectorAll('[data-ct-copy]'));
+  const copyTip = document.querySelector('[data-ct-copy-tip]');
+  const copyAnnouncer = document.querySelector('[data-ct-copy-announcer]');
+  if (copyLinks.length && copyTip instanceof HTMLElement) {
+    let hideTimer = 0;
+    let removeTimer = 0;
+    let tracking = false;
+    const copyAnnounce = (text) => {
+      if (copyAnnouncer instanceof HTMLElement) copyAnnouncer.textContent = text;
+    };
+    const place = (x, y) => {
+      copyTip.style.transform = `translate3d(${x + TIP_OFFSET_X}px, ${y + TIP_OFFSET_Y}px, 0)`;
+    };
+    const onMove = (event) => place(event.clientX, event.clientY);
+    const stopTracking = () => {
+      if (tracking) {
+        window.removeEventListener('mousemove', onMove);
+        tracking = false;
+      }
+    };
+    const hideTip = () => {
+      stopTracking();
+      copyAnnounce('');
+      copyTip.classList.remove('is-in');
+      removeTimer = window.setTimeout(() => { copyTip.hidden = true; }, TIP_FADE_OUT_MS);
+    };
+    const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
+    const showTip = (link, x, y) => {
+      window.clearTimeout(hideTimer);
+      window.clearTimeout(removeTimer);
+      copyTip.hidden = false;
+      if (isMobile()) {
+        const rect = link.getBoundingClientRect();
+        const tipW = copyTip.offsetWidth;
+        const cx = Math.min(
+          Math.max(rect.left + rect.width / 2 - tipW / 2, 8),
+          window.innerWidth - tipW - 8,
+        );
+        copyTip.style.transform = `translate3d(${cx}px, ${rect.bottom + MOBILE_TIP_GAP}px, 0)`;
+      } else {
+        place(x, y);
+      }
+      void copyTip.offsetWidth;
+      copyTip.classList.add('is-in');
+      if (!isMobile() && !tracking) {
+        window.addEventListener('mousemove', onMove);
+        tracking = true;
+      }
+      hideTimer = window.setTimeout(hideTip, COPY_RESET_MS);
+    };
+    copyLinks.forEach((link) => {
+      if (!(link instanceof HTMLAnchorElement)) return;
+      const email = link.dataset.contactEmail;
+      if (!email) return;
+      const onCopyClick = (event) => {
+        event.preventDefault();
+        const rect = link.getBoundingClientRect();
+        const hasPointer = event.clientX !== 0 || event.clientY !== 0;
+        const x = hasPointer ? event.clientX : rect.left;
+        const y = hasPointer ? event.clientY : rect.bottom;
+        const copy = navigator.clipboard
+          ? navigator.clipboard
+              .writeText(email)
+              .then(() => {
+                showTip(link, x, y);
+                copyAnnounce('Email copied');
+              })
+              .catch(() => {
+                /* Clipboard blocked (rare) — the mailto below still
+                   fires as the fallback. */
+              })
+          : Promise.resolve();
+        copy.finally(() => {
+          window.location.href = link.href;
+        });
+      };
+      link.addEventListener('click', onCopyClick);
+      cleanups.push(() => link.removeEventListener('click', onCopyClick));
+    });
+    cleanups.push(() => {
+      stopTracking();
+      window.clearTimeout(hideTimer);
+      window.clearTimeout(removeTimer);
+    });
+  }
+
   /* ── Back-to-top / home (the shared footer contract). */
   const topLinks = Array.from(document.querySelectorAll('[data-footer-top]'));
   const onTopClick = (e) => {

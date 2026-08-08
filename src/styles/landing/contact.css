@@ -407,3 +407,54 @@
 	.landing-v2 .ct-modal__window { left: 0; top: 0; width: 100%; height: 100%; }
 	.landing-v2 .ct-modal__close { left: auto; right: 16px; top: 16px; }
 }
+
+/* ── Copy-confirmation pill — the HOLDING page's tooltip treatment
+   ported verbatim (holding-page.css .holding-final__copy-tip; the
+   holding files untouched): #161616 pill, tick + "Email copied"
+   Dazzed Medium 12 white, cursor-bound via JS transform. z8000 —
+   over the modal (400), under the grain (9000). */
+.landing-v2 .ct-copy-tip {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 8000;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 16px 10px 14px;
+	background: #161616;
+	border-radius: 999px;
+	color: #ffffff;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 500;
+	font-size: 12px;
+	line-height: 1;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.landing-v2 .ct-copy-tip[hidden] { display: none !important; }
+
+.landing-v2 .ct-copy-tip svg {
+	display: block;
+	width: 10px;
+	height: 10px;
+}
+
+.landing-v2 .ct-copy-announcer {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .ct-copy-tip {
+		opacity: 0;
+		transition: opacity 0.2s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .ct-copy-tip.is-in { opacity: 1; }
+}

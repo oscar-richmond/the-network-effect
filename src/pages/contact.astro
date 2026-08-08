@@ -29,7 +29,7 @@
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
-import { CONTACT_INTRO, CONTACT_MAILTO, CAL_FALLBACK } from '../data/landing/contact.js';
+import { CONTACT_INTRO, CONTACT_EMAIL, CONTACT_MAILTO, CAL_FALLBACK } from '../data/landing/contact.js';
 import { asset } from '../utils/asset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -68,7 +68,13 @@ import '../styles/fonts.css';
         <span data-char-ripple>START A PROJECT</span>
         <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
       </span>
-      <a class="ct-cta ct-cta--email" href={CONTACT_MAILTO} data-char-ripple-trigger>
+      {/* EMAIL US — the HOLDING PAGE's contact UX ported (Oscar's
+          rev 3: a bare mailto is a silent no-op without a mail
+          client): click COPIES the address and confirms via the
+          cursor-bound pill below; the mailto still fires after
+          (holding-deck-form.js is the source pattern — the holding
+          page itself untouched). */}
+      <a class="ct-cta ct-cta--email" href={CONTACT_MAILTO} data-ct-copy data-contact-email={CONTACT_EMAIL} data-char-ripple-trigger>
         <span data-char-ripple>EMAIL US</span>
         <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
       </a>
@@ -114,7 +120,7 @@ import '../styles/fonts.css';
         <div class="ct-modal__cal" data-ct-cal></div>
         <div class="ct-modal__fallback" data-ct-fallback hidden>
           <p>{CAL_FALLBACK.message}</p>
-          <a href={CONTACT_MAILTO} data-char-ripple-trigger><span data-char-ripple>{CAL_FALLBACK.action}</span></a>
+          <a href={CONTACT_MAILTO} data-ct-copy data-contact-email={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>{CAL_FALLBACK.action}</span></a>
         </div>
       </div>
       <button type="button" class="ct-modal__close" data-ct-close data-char-ripple-trigger>
@@ -122,6 +128,19 @@ import '../styles/fonts.css';
       </button>
     </div>
   </div>
+  {/* Copy-confirmation pill — the holding page's tooltip verbatim
+      (#161616 pill, tick, "Email copied" Dazzed Medium 12 white,
+      cursor-bound; keyboard anchors to the link, mobile centres
+      below it; aria-hidden with the announcer live-region for AT).
+      z8000: over the modal (400), under the grain (9000). */}
+  <div class="ct-copy-tip" data-ct-copy-tip aria-hidden="true" hidden>
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.5 5.4L4 7.9L8.5 2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <span>Email copied</span>
+  </div>
+  <p class="ct-copy-announcer" data-ct-copy-announcer aria-live="polite"></p>
+
   {/* The logo twin — TOP-LEVEL fixed difference element (never
       inside the modal's backdrop-filter subtree). */}
   <a class="ct-modal__logo" data-ct-logo href="/landing" hidden>THE NETWORK EFFECT</a>
