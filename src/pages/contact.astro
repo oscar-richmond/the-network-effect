@@ -1,0 +1,125 @@
+---
+/**
+ * /contact — the NEW BUILD's contact page + the SCHEDULE A CALL
+ * modal (Figma 70:5009 / 70:5172, extracted 2026-08-08; 83px chrome
+ * subtracted; hidden layers + Chrome mockup frames ignored).
+ *
+ * PAGE: intro (Dazzed/Serrif 48 pair), three 64px primary CTAs
+ * (the family's fill/ink at the file's large scale — see
+ * contact.css), the right-side image (RIGHTS-ELEVATED — see
+ * data/landing/contact.js), the shared BLUE footer.
+ *
+ * MODAL: the case-study lightbox machinery reused (own-property
+ * backdrop fade, [hidden] guard, Lenis lock, Esc/focus pattern)
+ * themed brand black + blur 52 per the frame; ghost display text
+ * behind the window; cal.com's official embed LAZY-LOADED on first
+ * open only, CAL_BOOKING_LINK the one config point (empty =
+ * graceful fallback, zero cal.com network).
+ *
+ * Z-ORDER: modal root z400 sits ABOVE the topbar (260) — MENU and
+ * LET'S CHAT bury under the dark blur; the LOGO alone stays
+ * visible via the modal's logo twin: a TOP-LEVEL fixed anchor at
+ * z401 carrying difference ITSELF (the nav-logo/work-cursor shape
+ * — its backdrop is the modal's dark overlay, difference(white,
+ * near-black) reads white). It joins the focus trap. The twin is
+ * a sibling AFTER the modal root, never inside its
+ * backdrop-filter subtree (backdrop roots cut blends off).
+ *
+ * STAGING ONLY — nothing promoted anywhere until Oscar says so.
+ */
+import SiteShell from '../layouts/SiteShell.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
+import { CONTACT_INTRO, CONTACT_MAILTO, CAL_FALLBACK } from '../data/landing/contact.js';
+import { asset } from '../utils/asset.js';
+import '../styles/home.css';
+import '../styles/landing/landing.css';
+import '../styles/landing/contact.css';
+import '../styles/fonts.css';
+---
+
+<SiteShell title="Contact — The Network Effect" bodyClass="landing-v2 contact-page">
+  <main class="ct" data-contact>
+    {/* Intro — file: Dazzed Bold 48 with the leading indent, then
+        the Serrif line (the mixed-face pair). */}
+    <h1 class="ct__intro" data-ct-intro
+      ><span class="ct__intro-indent" aria-hidden="true"></span>{CONTACT_INTRO.line1}<br /><span class="ct__intro-serrif">{CONTACT_INTRO.line2}</span></h1
+    >
+
+    {/* Three 64px primary CTAs (file widths 292/230/163, 16px
+        gaps). SCHEDULE opens the modal; START A PROJECT is the
+        footer-placeholder convention (styled, rippling, dot-
+        expanding, NON-NAVIGATING — no destination yet, Oscar to
+        wire); EMAIL US is the established enquiry mailto. */}
+    <div class="ct__ctas" data-ct-ctas>
+      <button type="button" class="ct-cta ct-cta--schedule" data-ct-open data-char-ripple-trigger>
+        {/* Robbo crop — standing founder sign-off caveat. */}
+        <span class="ct-cta__profile" aria-hidden="true">
+          <img src={asset('/assets/landing/contact/robbo-profile.png')} alt="" loading="eager" decoding="async" />
+        </span>
+        <span data-char-ripple>SCHEDULE A CALL</span>
+        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+      </button>
+      <span class="ct-cta ct-cta--start is-placeholder" data-hover data-char-ripple-trigger>
+        <span data-char-ripple>START A PROJECT</span>
+        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+      </span>
+      <a class="ct-cta ct-cta--email" href={CONTACT_MAILTO} data-char-ripple-trigger>
+        <span data-char-ripple>EMAIL US</span>
+        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+      </a>
+    </div>
+
+    {/* Right-side image — RIGHTS-ELEVATED (LV show stack). */}
+    <figure class="ct__image" data-ct-image aria-hidden="true">
+      <img src={asset('/assets/landing/contact/contact-image.png')} alt="" loading="eager" decoding="async" />
+    </figure>
+  </main>
+
+  {/* Footer — the shared BLUE colourway, untouched. */}
+  <LandingFooter />
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
+
+  {/* ── SCHEDULE A CALL modal (see header). DOM order: backdrop,
+      ghosts, window, close — the ghosts paint between backdrop and
+      window by order alone. */}
+  <div class="ct-modal" data-ct-modal role="dialog" aria-modal="true" aria-label="Schedule a call" hidden>
+    <div class="ct-modal__backdrop" data-ct-backdrop aria-hidden="true"></div>
+    <p class="ct-modal__ghost ct-modal__ghost--top" aria-hidden="true">SCHEDULE</p>
+    <p class="ct-modal__ghost ct-modal__ghost--bottom" aria-hidden="true">A CALL</p>
+    <div class="ct-modal__window" data-ct-window>
+      <div class="ct-modal__cal" data-ct-cal></div>
+      <div class="ct-modal__fallback" data-ct-fallback hidden>
+        <p>{CAL_FALLBACK.message}</p>
+        <a href={CONTACT_MAILTO} data-char-ripple-trigger><span data-char-ripple>{CAL_FALLBACK.action}</span></a>
+      </div>
+    </div>
+    <button type="button" class="ct-modal__close" data-ct-close data-char-ripple-trigger>
+      <span data-char-ripple>CLOSE</span>
+    </button>
+  </div>
+  {/* The logo twin — TOP-LEVEL fixed difference element (never
+      inside the modal's backdrop-filter subtree). */}
+  <a class="ct-modal__logo" data-ct-logo href="/landing" hidden>THE NETWORK EFFECT</a>
+</SiteShell>
+
+<script>
+  import { initCharRipple } from '../scripts/char-ripple.js';
+  import { initNavEntrance } from '../scripts/landing/nav-motion.js';
+  import { initContactPage } from '../scripts/landing/contact.js';
+
+  let cleanupCharRipple = initCharRipple();
+  let cleanupNavEntrance = initNavEntrance();
+  let cleanupContact = initContactPage();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupCharRipple();
+    cleanupNavEntrance();
+    cleanupContact();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupCharRipple = initCharRipple();
+    cleanupNavEntrance = initNavEntrance();
+    cleanupContact = initContactPage();
+  });
+</script>

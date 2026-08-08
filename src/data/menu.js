@@ -33,7 +33,9 @@ export const landingMenuLinks = [
   { href: 'founders', label: 'Founders', image: 'team.png' },
   { href: 'services', label: 'Services', image: 'services.jpg' },
   { href: 'work', label: 'Work', image: 'work.jpg' },
-  { href: 'mailto:hello@networkeffectagency.co.uk', label: 'Contact', image: 'contact.png' },
+  /* Contact points at the new /contact page (2026-08-08 — was the
+     LET'S CHAT mailto while no page existed). */
+  { href: 'contact', label: 'Contact', image: 'contact.png' },
 ];
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */

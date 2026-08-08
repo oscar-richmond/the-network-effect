@@ -1,0 +1,374 @@
+/*
+ * /contact — Figma 70:5009 + the 70:5172 modal, extracted
+ * 2026-08-08; 83px chrome subtracted; 1728 design px (the landing
+ * family's literal grammar). Ground #EEEEF0.
+ *
+ * BLEND WALK: the page itself has NO difference elements. The
+ * modal's logo twin is the one blend carrier — a TOP-LEVEL fixed
+ * anchor carrying difference ITSELF (the nav-logo shape), a
+ * SIBLING after the modal root so the backdrop-filter subtree is
+ * never its ancestor (backdrop roots cut blends off); it
+ * composites against the dark blurred overlay beneath it.
+ */
+
+.landing-v2 .ct {
+	position: relative;
+	height: 1002px; /* file: footer at content-y 1002 */
+}
+
+/* Intro — file (24,405), 717w; Dazzed Bold 48 line + Serrif line;
+   the file's 15-space lead as an inline spacer atom (the reveal-
+   wrap convention — text-indent breaks line grouping). */
+.landing-v2 .ct__intro {
+	position: absolute;
+	left: 24px;
+	top: 405px;
+	width: 717px;
+	margin: 0;
+	font-weight: 700;
+	font-size: 48px;
+	line-height: 48px;
+	text-transform: uppercase;
+	color: #161616;
+}
+
+.landing-v2 .ct__intro-indent {
+	display: inline-block;
+	width: 155px; /* the file's 15-space run at 48px */
+	height: 1px;
+}
+
+.landing-v2 .ct__intro-serrif {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+}
+
+/* ── The three 64px CTAs — the primary family's fill/ink at the
+   file's LARGE scale (64px tall, 16px Dazzed Bold labels; the
+   existing family is 32/14 — this is the file's own variant, not
+   drift). Row at (24,573), 16px gaps, file widths. */
+.landing-v2 .ct__ctas {
+	position: absolute;
+	left: 24px;
+	top: 573px;
+	display: flex;
+	gap: 16px;
+}
+
+.landing-v2 .ct-cta {
+	position: relative;
+	display: flex;
+	align-items: center;
+	height: 64px;
+	border: 0;
+	padding: 0 32px;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	color: var(--landing-accent-blue, #232a89);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 16px;
+	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	box-sizing: border-box;
+	justify-content: space-between;
+}
+
+.landing-v2 .ct-cta--schedule { width: 292px; padding-left: 8px; }
+.landing-v2 .ct-cta--start { width: 230px; }
+.landing-v2 .ct-cta--email { width: 163px; }
+
+/* The placeholder convention (footer coming-soon items): styled,
+   rippling, dot-expanding, non-navigating. */
+.landing-v2 .ct-cta.is-placeholder { cursor: default; }
+
+.landing-v2 .ct-cta__profile {
+	width: 48px;
+	height: 48px;
+	flex: none;
+	border-radius: 50%;
+	overflow: hidden;
+}
+
+.landing-v2 .ct-cta__profile img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.landing-v2 .ct-cta__arrow {
+	flex: none;
+	display: block;
+}
+
+.landing-v2 .ct-cta:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* Image — file (1295,405) 409×231 (RIGHTS-ELEVATED, see data). */
+.landing-v2 .ct__image {
+	position: absolute;
+	left: 1295px;
+	top: 405px;
+	width: 409px;
+	height: 231px;
+	margin: 0;
+	overflow: hidden;
+}
+
+.landing-v2 .ct__image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* ── SCHEDULE A CALL modal — the lightbox machinery, brand-black
+   theme (file: rgba(22,22,22,.8) + blur 52). z400 = the lightbox
+   tier: ABOVE the topbar (260 — MENU/LET'S CHAT bury), below the
+   menu overlay (500) and grain (9000). */
+.landing-v2 .ct-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 400;
+}
+
+/* The [hidden] guard — the lightbox specificity lesson. */
+.landing-v2 .ct-modal[hidden] {
+	display: none !important;
+}
+
+/* Backdrop fades via ITS OWN properties (never wrapper opacity —
+   the backdrop-root lesson): colour alpha 0→.8, blur 0→52. */
+.landing-v2 .ct-modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(22, 22, 22, 0);
+	-webkit-backdrop-filter: blur(0px);
+	backdrop-filter: blur(0px);
+	transition: background 0.35s ease-out, -webkit-backdrop-filter 0.35s ease-out,
+		backdrop-filter 0.35s ease-out;
+}
+
+.landing-v2 .ct-modal.is-open .ct-modal__backdrop {
+	background: rgba(22, 22, 22, 0.8);
+	-webkit-backdrop-filter: blur(52px);
+	backdrop-filter: blur(52px);
+}
+
+/* Ghost display text behind the window — file: 142px, white 10%,
+   SCHEDULE (Dazzed Bold) left at (344,187), A CALL (Serrif) right-
+   aligned at (344,742), both 145-tall blocks. Content fades with
+   the frost (opacity rides is-open, ON the ghosts — they are not
+   backdrop roots). */
+.landing-v2 .ct-modal__ghost {
+	position: absolute;
+	left: 344px;
+	width: 1040px;
+	height: 145px;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	font-size: 142px;
+	line-height: 32px;
+	color: rgba(255, 255, 255, 0.1);
+	opacity: 0;
+	transition: opacity 0.35s ease-out;
+	pointer-events: none;
+}
+
+.landing-v2 .ct-modal.is-open .ct-modal__ghost { opacity: 1; }
+
+.landing-v2 .ct-modal__ghost--top {
+	top: 187px;
+	font-weight: 700;
+	width: 1016px;
+}
+
+.landing-v2 .ct-modal__ghost--bottom {
+	top: 742px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	text-align: right;
+}
+
+/* The window — file (344,287) 1040×490; the embed target fills it;
+   fallback centred. Fades with the frost. */
+.landing-v2 .ct-modal__window {
+	position: absolute;
+	left: 344px;
+	top: 287px;
+	width: 1040px;
+	height: 490px;
+	background: #eeeef0;
+	overflow: hidden;
+	opacity: 0;
+	transition: opacity 0.35s ease-out;
+}
+
+.landing-v2 .ct-modal.is-open .ct-modal__window { opacity: 1; }
+
+.landing-v2 .ct-modal__cal {
+	position: absolute;
+	inset: 0;
+	overflow: auto;
+}
+
+.landing-v2 .ct-modal__fallback {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 20px;
+	line-height: 24px;
+	color: #161616;
+}
+
+.landing-v2 .ct-modal__fallback[hidden] { display: none !important; }
+
+.landing-v2 .ct-modal__fallback p { margin: 0; }
+
+.landing-v2 .ct-modal__fallback a {
+	display: inline-flex;
+	align-items: center;
+	height: 32px; /* the primary CTA height */
+	padding: 0 16px;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	color: var(--landing-accent-blue, #232a89);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 14px;
+	text-transform: uppercase;
+	text-decoration: none;
+}
+
+/* CLOSE — file: 97×40 pill at (1287,207), right edge flush with
+   the window, fill + blue 14/18, its own 12px frost. */
+.landing-v2 .ct-modal__close {
+	position: absolute;
+	left: 1287px;
+	top: 207px;
+	width: 97px;
+	height: 40px;
+	border: 0;
+	background: #e4e4ea;
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	color: #232a89;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 18px;
+	text-transform: uppercase;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.35s ease-out;
+}
+
+.landing-v2 .ct-modal.is-open .ct-modal__close { opacity: 1; }
+
+.landing-v2 .ct-modal__close:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* The logo twin — the topbar logo's exact treatment (18px/500/
+   0.04em per the topbar reset), centred, TOP-LEVEL fixed at z401
+   carrying difference ITSELF. Same nav band geometry as the
+   topbar (centred in its height). */
+.landing-v2 .ct-modal__logo {
+	position: fixed;
+	/* CONTENT-SIZED box centred by MEASURED margin (contact.js after
+	   fonts — the gallery-cursor pattern; a full-band box would
+	   swallow clicks where MENU / LET'S CHAT sit, and a transform
+	   is barred on a blend root). Clicks beside it fall through to
+	   the backdrop (which closes — standard). */
+	left: 50%;
+	top: 0;
+	z-index: 401;
+	width: max-content;
+	height: calc(var(--home-margin-y) * 2 + 1.125rem);
+	display: flex;
+	align-items: center;
+	margin: 0;
+	font-family: var(--font-logo);
+	font-size: 18px;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	text-decoration: none;
+	color: #ffffff;
+	mix-blend-mode: difference;
+	opacity: 0;
+	transition: opacity 0.35s ease-out;
+}
+
+.landing-v2 .ct-modal__logo[hidden] { display: none !important; }
+
+.landing-v2 .ct-modal__logo.is-open { opacity: 1; }
+
+/* ── Entrance hidden states (no-preference; the pills' fade+rise
+   for the CTAs, the media rise for the image; intro word-reveals
+   are wired in contact.js). */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .ct-cta {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .ct-cta.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+
+	.landing-v2 .ct__image {
+		opacity: 0;
+		transform: translateY(24px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .ct__image.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* RM: the modal opens/closes INSTANTLY — no blur/opacity
+   transitions; the backdrop still blocks (full state applied). */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .ct-modal__backdrop,
+	.landing-v2 .ct-modal__ghost,
+	.landing-v2 .ct-modal__window,
+	.landing-v2 .ct-modal__close,
+	.landing-v2 .ct-modal__logo {
+		transition: none;
+	}
+}
+
+/* ── Sub-1024 — buttons stack; the modal goes full-screen (the
+   lightbox's mobile behaviour); ghosts are desktop dressing. */
+@media (max-width: 1023px) {
+	.landing-v2 .ct { height: auto; padding: 160px 24px 64px; }
+	.landing-v2 .ct__intro { position: static; width: auto; }
+	.landing-v2 .ct__intro-indent { width: 0; }
+	.landing-v2 .ct__ctas { position: static; margin-top: 32px; flex-direction: column; align-items: flex-start; }
+	.landing-v2 .ct__image { position: static; margin-top: 32px; width: 100%; height: auto; aspect-ratio: 409 / 231; }
+	.landing-v2 .ct-modal__ghost { display: none; }
+	.landing-v2 .ct-modal__window { left: 0; top: 0; width: 100%; height: 100%; }
+	.landing-v2 .ct-modal__close { left: auto; right: 16px; top: 16px; }
+}
