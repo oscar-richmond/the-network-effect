@@ -558,31 +558,29 @@ export function initServicesV2() {
       }));
     });
 
-    /* ── Gallery tiles — rise+fade, 100ms L→R (closing tiles). The
-       ACCESS gallery is excluded: it reveals with its whole section
-       the moment the ground fade completes (below). */
+    /* ── Gallery tiles + their captions — blur-fade in L→R, 100ms
+       slots (Oscar's rev 6): the caption COLUMN under each tile
+       (the flow block; arrows ride the half-slot between) fires ON
+       ITS TILE'S SLOT — one trigger per gallery, one clock. The
+       ACCESS gallery is excluded here: it reveals with its whole
+       section the moment the ground fade completes (below), same
+       per-column pairing. */
     document.querySelectorAll('[data-sv-gallery]').forEach((gallery) => {
       if (gallery.closest('[data-sv-access]')) return;
       const tiles = Array.from(gallery.querySelectorAll('[data-sv-tile]'));
+      const flow = gallery.nextElementSibling?.matches?.('[data-sv-flow]')
+        ? gallery.nextElementSibling
+        : null;
+      const blocks = flow ? Array.from(flow.querySelectorAll('[data-sv-flow-block]')) : [];
+      const arrows = flow ? Array.from(flow.querySelectorAll('.sv-flow__arrow')) : [];
       triggers.push(ScrollTrigger.create({
         trigger: gallery,
         start: 'top 75%',
         once: true,
         onEnter: () => {
           tiles.forEach((tile, i) => schedule(() => tile.classList.add('is-visible'), i * 100));
-        },
-      }));
-    });
-
-    /* ── Flow rows — the pills' 0.6s fade, staggered. */
-    document.querySelectorAll('[data-sv-flow]').forEach((flow) => {
-      const units = Array.from(flow.children).filter((el) => el instanceof HTMLElement);
-      triggers.push(ScrollTrigger.create({
-        trigger: flow,
-        start: 'top 80%',
-        once: true,
-        onEnter: () => {
-          units.forEach((unit, i) => schedule(() => unit.classList.add('is-visible'), i * 60));
+          blocks.forEach((block, i) => schedule(() => block.classList.add('is-visible'), i * 100));
+          arrows.forEach((arrow, i) => schedule(() => arrow.classList.add('is-visible'), i * 100 + 50));
         },
       }));
     });
@@ -612,8 +610,10 @@ export function initServicesV2() {
           [accessStatement, accessNote].forEach((line) => {
             if (line instanceof HTMLElement) playLineRevealElement(line);
           });
+          /* Toggle pairs share their tile's slot (rev 6 — the
+             caption-under-image pairing, same as the flow blocks). */
           accessTiles.forEach((tile, i) => schedule(() => tile.classList.add('is-visible'), i * 100));
-          accessPairs.forEach((pair, i) => schedule(() => pair.classList.add('is-visible'), i * 60));
+          accessPairs.forEach((pair, i) => schedule(() => pair.classList.add('is-visible'), i * 100));
         },
       }));
     }

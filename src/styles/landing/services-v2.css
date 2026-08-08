@@ -196,15 +196,15 @@
 	height: 1px;
 }
 
-/* Connect's Serrif sub-line (file 60:4565: Serrif Medium 24/48,
-   40px below the statement). */
+/* Connect's Serrif sub-line — Oscar's rev 6: 16px (the house
+   Serrif 16/22 pairing; was the file's 24/48). 40 gap kept. */
 .landing-v2 .sv-intro__sub {
 	margin: 40px 0 0;
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 24px;
-	line-height: 48px;
+	font-size: 16px;
+	line-height: 22px;
 	color: #161616;
 }
 
@@ -280,7 +280,9 @@
 .landing-v2 .sv-rows__inner {
 	position: absolute;
 	left: 0;
-	top: 26px; /* the file's 26 below the divider line */
+	top: 25px; /* rev 6: the 16px line box centred in the 66 band
+	   ((66 − 16) / 2 — the smaller text re-balanced; the numbers and
+	   the row pitch are untouched) */
 	height: 16px;
 	display: flex;
 	gap: 64px;
@@ -302,7 +304,7 @@
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 24px;
+	font-size: 16px; /* Oscar's rev 6 — was the file's 24 */
 	line-height: 16px;
 	white-space: nowrap;
 	color: #161616;
@@ -499,12 +501,15 @@
 
 .landing-v2 .sv-galhead__note {
 	position: absolute;
-	left: calc(50% + 58px);
-	/* Oscar's rev: the note's FIRST-LINE TOP aligns with the title's
-	   first-line top (was the file's centre-offset placement). */
+	/* Oscar's rev 6: RIGHT-ANCHORED — the line ends ("EVENTS" /
+	   "MOMENTS.") sit at the galhead's right edge = 24px from the
+	   screen (the galhead's own margin); text ragged-left. First-line
+	   top stays level with the title's. */
+	right: 0;
 	top: 0;
 	width: 782px;
 	margin: 0;
+	text-align: right;
 	font-weight: 700;
 	font-size: 28px; /* Oscar's rev — was the file's 32 */
 	line-height: 30px;
@@ -683,11 +688,16 @@
    pills; text word-reveals are wired by services-v2.js through
    line-reveal). */
 @media (prefers-reduced-motion: no-preference) {
+	/* Tiles blur-fade in (Oscar's rev 6 — the house blur entrance
+	   joins the rise), staggered L→R by JS; the caption under each
+	   tile fires on the SAME slot (flow blocks / toggle pairs). */
 	.landing-v2 .sv-gallery__tile {
 		opacity: 0;
 		transform: translateY(24px);
+		filter: blur(6px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			filter 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
 	/* Row entrance (Oscar's rev 5): each divider DRAWS left-to-right
@@ -733,7 +743,12 @@
 			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	.landing-v2 .sv-gallery__tile.is-visible,
+	.landing-v2 .sv-gallery__tile.is-visible {
+		opacity: 1;
+		transform: none;
+		filter: blur(0);
+	}
+
 	.landing-v2 .sv-flow__block.is-visible,
 	.landing-v2 .sv-flow__arrow.is-visible,
 	.landing-v2 .sv-toggles__pair.is-visible {

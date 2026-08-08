@@ -172,7 +172,7 @@ import '../styles/fonts.css';
               </h3>
               {p.galleryNote && (
                 <p class="sv-galhead__note" data-sv-galhead-note
-                  ><span class="sv-galhead__note-indent" aria-hidden="true"></span><span class="sv-galhead__note-serrif">{p.galleryNote.serrif}</span><br />{p.galleryNote.bold}</p
+                  ><span class="sv-galhead__note-serrif">{p.galleryNote.serrif}</span><br />{p.galleryNote.bold}</p
                 >
               )}
             </div>
@@ -233,10 +233,11 @@ import '../styles/fonts.css';
       </div>
     </div>
 
-    {/* ── OUR NETWORK — the landing component VERBATIM (shared
-        already; landing untouched). Its own stage/runway/entrance
-        machinery boots below via initLandingNetwork. */}
-    <LandingNetwork />
+    {/* ── OUR NETWORK — the landing component (shared; landing
+        untouched — no prop there). entry="prev-exit" fires its
+        entrance THE MOMENT the access block above is fully out of
+        the viewport (Oscar's rev 6), measured, not hardcoded. */}
+    <LandingNetwork entry="prev-exit" />
   </main>
 
   {/* ── 5. FOOTER — shared structure/behaviour, the LIGHT theme

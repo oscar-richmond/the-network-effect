@@ -350,10 +350,26 @@ export function initLandingNetwork() {
         if (stage instanceof HTMLElement) stage.style.background = 'transparent';
       },
     });
-    /* Content — at the bottom-aligned pin, both directions. */
+    /* Content — at the bottom-aligned pin (the landing default),
+       OR at the preceding sibling's exit when the host page opts in
+       with entry="prev-exit" (/services — Oscar's rev 2026-08-08:
+       enter as soon as the section above is fully out). The offset
+       is MEASURED (section top − previous sibling's bottom, a
+       layout constant per page), so host-page spacing changes can't
+       silently break the anchor. */
+    const prevExitOffset = () => {
+      const prev = section.previousElementSibling;
+      if (!prev) return 0;
+      return Math.round(
+        section.getBoundingClientRect().top - prev.getBoundingClientRect().bottom,
+      );
+    };
     trigger = ScrollTrigger.create({
       trigger: section,
-      start: () => `top+=${pinOffset()} top`,
+      start: () =>
+        section.dataset.networkEntry === 'prev-exit'
+          ? `top ${prevExitOffset()}px`
+          : `top+=${pinOffset()} top`,
       end: 'max',
       onEnter: showContent,
       onLeaveBack: hideContent,

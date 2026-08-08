@@ -25,6 +25,16 @@
  * per the standing content policy.
  */
 import { NETWORK_BRANDS } from '../../data/landing/network-brands.js';
+
+interface Props {
+  /** Entrance anchor: 'pin' (default — the landing's bottom-aligned
+   *  pin moment) or 'prev-exit' (fire as the PRECEDING sibling's
+   *  bottom clears the viewport top — /services; the offset is
+   *  measured live in landing-network.js). */
+  entry?: 'pin' | 'prev-exit';
+}
+
+const { entry = 'pin' } = Astro.props;
 import { asset } from '../../utils/asset.js';
 
 const strip = [
@@ -51,7 +61,7 @@ const sectorLines = [
 ];
 ---
 
-<section class="landing-network" data-landing-network aria-label="Our network">
+<section class="landing-network" data-landing-network data-network-entry={entry} aria-label="Our network">
   {/* Sticky stage (Oscar's arrival rev): the section slides into the
       viewport as PURE BLACK (text hidden in reveal clips, media
       parked below the stage) — invisible against the services fade —
