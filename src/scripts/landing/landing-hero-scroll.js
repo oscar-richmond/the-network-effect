@@ -23,7 +23,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import { initSiteScroll } from './site-scroll.js';
 import { wrapLineRevealElement } from '../line-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -82,8 +82,9 @@ const VIDEO_BAND_TOP_FRACTION = 0.625;
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
 
-/** Lenis smoothing — the house value (see about-scroll.js). */
-const SCROLL_LERP = 0.065;
+/* Lenis smoothing now lives in site-scroll.js (SCROLL_LERP 0.065,
+   the house value) — ONE source of truth for every native-scroll
+   page (Oscar's uniform-feel mandate, 2026-08-08). */
 
 /* ── Text exit wipe — PORTED from the /old hero's Phase C
    (about-scroll.js), constants verbatim: as the covering element
@@ -393,32 +394,11 @@ function alignIntroToHeadline(headlineText, introText) {
   introText.style.transform = `translateY(calc(-50% + ${delta.toFixed(2)}px))`;
 }
 
-/** @type {Lenis | null} */
-let lenis = null;
-
-/** The page's one smooth-scroll authority — exposed so other landing
- *  modules can drive programmatic scrolls THROUGH Lenis (e.g. the
- *  access section's pair snap) instead of writing scrollTop against
- *  it, which oscillates. Null before init / after cleanup. */
-export const getLenisInstance = () => lenis;
-
-function initSmoothScrolling() {
-  document.documentElement.classList.add('lenis');
-
-  lenis = new Lenis({
-    lerp: SCROLL_LERP,
-    smoothWheel: true,
-  });
-
-  lenis.on('scroll', () => ScrollTrigger.update());
-
-  const scrollFn = (time) => {
-    lenis?.raf(time);
-    requestAnimationFrame(scrollFn);
-  };
-
-  requestAnimationFrame(scrollFn);
-}
+/* The smooth-scroll boot + instance moved to site-scroll.js (the
+   shared house feel). getLenisInstance is RE-EXPORTED below so the
+   landing modules that import it from here (access snap, closing,
+   services) stay untouched. */
+export { getLenisInstance } from './site-scroll.js';
 
 export function initLandingHeroScroll() {
   const hero = document.querySelector('[data-landing-hero]');
@@ -474,7 +454,7 @@ export function initLandingHeroScroll() {
     };
   }
 
-  initSmoothScrolling();
+  const cleanupScroll = initSiteScroll();
 
   /** Everything created here, torn down together on cleanup. */
   const triggers = [];
@@ -774,8 +754,6 @@ export function initLandingHeroScroll() {
     window.removeEventListener('resize', onResize);
     triggers.forEach((t) => t.kill());
     tweens.forEach((t) => t.kill());
-    lenis?.destroy();
-    lenis = null;
-    document.documentElement.classList.remove('lenis');
+    cleanupScroll();
   };
 }

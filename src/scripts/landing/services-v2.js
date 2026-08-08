@@ -40,7 +40,7 @@
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
@@ -48,7 +48,6 @@ import { createServicesHeroWave } from './services-hero-wave.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SCROLL_LERP = 0.065; // the landing hero's value, verbatim
 const LINE_STAGGER_S = 0.12;
 /* Wave pace port (see header): /old's window over /old's wave-0
    travel at the same stage height. */
@@ -90,25 +89,11 @@ export function initServicesV2() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  /* ── Lenis (non-RM): the landing boot, verbatim. */
-  let lenis = null;
-  if (!reduced) {
-    document.documentElement.classList.add('lenis');
-    lenis = new Lenis({ lerp: SCROLL_LERP, smoothWheel: true });
-    lenis.on('scroll', () => ScrollTrigger.update());
-    let rafId = 0;
-    const raf = (time) => {
-      lenis?.raf(time);
-      rafId = window.requestAnimationFrame(raf);
-    };
-    rafId = window.requestAnimationFrame(raf);
-    cleanups.push(() => {
-      window.cancelAnimationFrame(rafId);
-      lenis?.destroy();
-      lenis = null;
-      document.documentElement.classList.remove('lenis');
-    });
-  }
+  /* ── Scroll: the SHARED house boot (site-scroll.js — one source
+     of truth for the uniform feel; non-RM only). `lenis` reads the
+     live instance so later closures always see the current one. */
+  if (!reduced) cleanups.push(initSiteScroll());
+  const lenis = { get i() { return getLenisInstance(); } };
 
   /* ── HOVER ROWS — wired for every mode (activation differs; the
      marquee/image build is skipped under RM, CSS enforces too). */
@@ -155,50 +140,99 @@ export function initServicesV2() {
     const fontsForMarq = document.fonts?.ready ?? Promise.resolve();
     fontsForMarq.then(buildMarquees);
 
-    /* Image swap runner (Oscar's rev 2 — no vanish/reappear pop):
-       first activation fades/blurs the frame in at the row; moving
-       BETWEEN rows keeps it visible, GLIDES top to the new row (CSS
-       transition) and swaps src under a brief blur pulse — a
-       pending-src latch mid-pulse picks up the newest target (the
-       lightbox runner pattern, nothing stacks). */
-    let swapTimer = 0;
+    /* Image swap runner (Oscar's rev 3 — THE CASE GALLERY'S swap,
+       the lightbox two-phase sequence ported): first activation
+       blur/fades the frame in at the row; moving BETWEEN rows runs
+       strictly sequential phases — the showing image wipes OUT
+       left-to-right (clip + 6px blur, 0.45s on the lightbox
+       curve), then the frame repositions INVISIBLY to the new row
+       and the new image wipes IN left-to-right with the same
+       effect. One sequence in flight; the phase boundary reads the
+       LATEST pending row (the lightbox pendingIdx latch), so rapid
+       hops never stack and always land the newest. */
+    const SWAP_PHASE_MS = 450; /* the lightbox constant */
+    const SWAP_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)';
+    let shownRow = null;
+    let pendingRow = null;
+    let swapAnim = false;
+    const swapTimers = [];
+    const swapSchedule = (fn, ms) => swapTimers.push(window.setTimeout(fn, ms));
+    const clearSwap = () => {
+      swapTimers.forEach(window.clearTimeout);
+      swapTimers.length = 0;
+      swapAnim = false;
+      if (imgEl instanceof HTMLImageElement) {
+        imgEl.style.transition = '';
+        imgEl.style.clipPath = '';
+        imgEl.style.filter = '';
+      }
+    };
+    const placeAt = (row) => {
+      if (imgWrap instanceof HTMLElement) {
+        imgWrap.style.top = `${row.offsetTop + ROW_BAND_CENTRE_PX - HOVER_IMG_HALF_PX}px`;
+      }
+    };
+    const runSwapSequence = () => {
+      if (!(imgEl instanceof HTMLImageElement) || !(imgWrap instanceof HTMLElement)) return;
+      swapAnim = true;
+      /* Phase 1 — OUT: the showing image wipes away L→R. */
+      imgEl.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
+      imgEl.style.clipPath = 'inset(0 0 0 100%)';
+      imgEl.style.filter = 'blur(6px)';
+      swapSchedule(() => {
+        const target = pendingRow;
+        if (!(target instanceof HTMLElement)) {
+          /* Deactivated mid-phase: the wrap's own exit handles it. */
+          clearSwap();
+          return;
+        }
+        /* Boundary — reposition while nothing is visible, take the
+           LATEST target's image, wipe it in L→R. */
+        placeAt(target);
+        imgEl.src = target.dataset.img ?? '';
+        shownRow = target;
+        imgEl.style.transition = 'none';
+        imgEl.style.clipPath = 'inset(0 100% 0 0)';
+        imgEl.style.filter = 'blur(6px)';
+        void imgEl.offsetWidth;
+        imgEl.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
+        imgEl.style.clipPath = 'inset(0 0 0 0)';
+        imgEl.style.filter = 'blur(0px)';
+        swapSchedule(() => {
+          clearSwap();
+          if (pendingRow !== shownRow && pendingRow instanceof HTMLElement) runSwapSequence();
+        }, SWAP_PHASE_MS + 30);
+      }, SWAP_PHASE_MS + 20);
+    };
     const setActive = (row) => {
       if (row === active) return;
-      const hadActive = active instanceof HTMLElement;
       if (active) active.classList.remove('is-active');
       active = row;
       if (!(row instanceof HTMLElement)) {
-        imgWrap?.classList.remove('is-active', 'is-swapping');
-        window.clearTimeout(swapTimer);
+        pendingRow = null;
+        clearSwap();
+        imgWrap?.classList.remove('is-active');
+        shownRow = null;
         return;
       }
       row.classList.add('is-active');
       if (reduced || !(imgWrap instanceof HTMLElement)) return;
-      imgWrap.style.top = `${row.offsetTop + ROW_BAND_CENTRE_PX - HOVER_IMG_HALF_PX}px`;
-      const src = row.dataset.img ?? '';
-      const needsSwap = imgEl instanceof HTMLImageElement && src && !imgEl.src.endsWith(src);
-      if (!hadActive || !imgWrap.classList.contains('is-active')) {
-        /* Fresh entrance: set the src immediately, blur/fade in. */
-        if (needsSwap) imgEl.src = src;
-        imgWrap.classList.remove('is-active', 'is-swapping');
+      pendingRow = row;
+      if (!imgWrap.classList.contains('is-active')) {
+        /* Fresh entrance: place + src directly, blur/fade in. */
+        clearSwap();
+        placeAt(row);
+        if (imgEl instanceof HTMLImageElement) imgEl.src = row.dataset.img ?? '';
+        shownRow = row;
         void imgWrap.offsetWidth;
         imgWrap.classList.add('is-active');
         return;
       }
-      /* Row-to-row: glide (top transition) + blur-pulse the swap. */
-      if (needsSwap) {
-        imgWrap.classList.add('is-swapping');
-        window.clearTimeout(swapTimer);
-        swapTimer = window.setTimeout(() => {
-          /* The latch: the CURRENT active row's src, not the one
-             captured at pulse start — rapid hops land the newest. */
-          const latest = active?.dataset.img ?? src;
-          if (imgEl instanceof HTMLImageElement) imgEl.src = latest;
-          imgWrap.classList.remove('is-swapping');
-        }, 180);
-      }
+      /* Row-to-row: the two-phase sequence (unless one is already
+         in flight — it will pick pendingRow up at its boundary). */
+      if (!swapAnim && row !== shownRow) runSwapSequence();
     };
-    cleanups.push(() => window.clearTimeout(swapTimer));
+    cleanups.push(clearSwap);
 
     if (fineHover) {
       const onOver = (e) => {
@@ -236,7 +270,7 @@ export function initServicesV2() {
     const el = e.currentTarget;
     if (el instanceof HTMLAnchorElement && el.getAttribute('href')?.startsWith('/')) return;
     e.preventDefault();
-    if (lenis) lenis.scrollTo(0, { duration: 1.2, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    if (lenis.i) lenis.i.scrollTo(0, { duration: 1.2, easing: (t) => 1 - Math.pow(1 - t, 3) });
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
@@ -264,7 +298,7 @@ export function initServicesV2() {
     if (reduced || !lastDirDown || !inSnapZone()) return;
     const y = window.scrollY || 0;
     if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
-    if (lenis) lenis.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    if (lenis.i) lenis.i.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
   };
   const onBottomScroll = () => {
     const y = window.scrollY || 0;

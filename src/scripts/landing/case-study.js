@@ -34,14 +34,13 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SCROLL_LERP = 0.065; // the landing hero's value, verbatim
 const LINE_STAGGER_S = 0.12;
 const COL_STAGGER_S = 0.08;
 /* Bottom behaviours — the landing constants (landing-closing.js). */
@@ -69,25 +68,11 @@ export function initCaseStudy() {
   page.addEventListener('click', onLinkClick);
   cleanups.push(() => page.removeEventListener('click', onLinkClick));
 
-  /* ── Lenis (non-RM): the landing boot, verbatim. */
-  let lenis = null;
-  if (!reduced) {
-    document.documentElement.classList.add('lenis');
-    lenis = new Lenis({ lerp: SCROLL_LERP, smoothWheel: true });
-    lenis.on('scroll', () => ScrollTrigger.update());
-    let rafId = 0;
-    const raf = (time) => {
-      lenis?.raf(time);
-      rafId = window.requestAnimationFrame(raf);
-    };
-    rafId = window.requestAnimationFrame(raf);
-    cleanups.push(() => {
-      window.cancelAnimationFrame(rafId);
-      lenis?.destroy();
-      lenis = null;
-      document.documentElement.classList.remove('lenis');
-    });
-  }
+  /* ── Scroll: the SHARED house boot (site-scroll.js — one source
+     of truth for the uniform feel; non-RM only). `lenis` reads the
+     live instance so later closures always see the current one. */
+  if (!reduced) cleanups.push(initSiteScroll());
+  const lenis = { get i() { return getLenisInstance(); } };
 
   /* ── MORE-WORK pager (all modes — navigation, not decoration). */
   const track = document.querySelector('[data-cs-more-track]');
@@ -443,7 +428,7 @@ export function initCaseStudy() {
       lightbox.hidden = false;
       void lightbox.offsetWidth; /* commit hidden state, then frost in */
       lightbox.classList.add('is-open');
-      lenis?.stop();
+      lenis.i?.stop();
       document.body.style.overflow = 'hidden';
       const closeBtn = lightbox.querySelector('[data-cs-lb-close-btn]');
       if (closeBtn instanceof HTMLElement) closeBtn.focus();
@@ -457,7 +442,7 @@ export function initCaseStudy() {
         lightbox.hidden = true;
         if (lbVideo instanceof HTMLVideoElement) lbVideo.pause?.();
       }, 380);
-      lenis?.start();
+      lenis.i?.start();
       document.body.style.overflow = '';
       if (lbOpener instanceof HTMLElement) lbOpener.focus?.();
     };
@@ -509,7 +494,7 @@ export function initCaseStudy() {
     const el = e.currentTarget;
     if (el instanceof HTMLAnchorElement && el.getAttribute('href')?.startsWith('/')) return;
     e.preventDefault();
-    if (lenis) lenis.scrollTo(0, { duration: 1.2, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    if (lenis.i) lenis.i.scrollTo(0, { duration: 1.2, easing: (t) => 1 - Math.pow(1 - t, 3) });
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
@@ -540,7 +525,7 @@ export function initCaseStudy() {
     if (reduced || !lastDirDown || !inSnapZone()) return;
     const y = window.scrollY || 0;
     if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
-    if (lenis) lenis.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    if (lenis.i) lenis.i.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
   };
   const onBottomScroll = () => {
     const y = window.scrollY || 0;

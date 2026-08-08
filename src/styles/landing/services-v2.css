@@ -97,7 +97,7 @@
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 22px;
+	font-size: 20px; /* Oscar's rev — was 22 */
 	line-height: 24px;
 	text-align: center;
 	color: #fff;
@@ -326,9 +326,11 @@
 	mask-position: 100% 0; /* fully off — the band sits past the right edge */
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
-	transition: mask-position 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-		-webkit-mask-position 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-		filter 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	/* One third of the original speed (Oscar's rev 3: 0.6s read too
+	   fast) — the wipe takes 1.8s on the house ease. */
+	transition: mask-position 1.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+		-webkit-mask-position 1.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+		filter 1.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 
 .landing-v2 .sv-rows__marq {
@@ -358,9 +360,11 @@
 }
 
 /* The file's Highlight Bar: accent edge fade over the marquee
-   (stops verbatim: 0 / 3 / 50 / 97 / 100%). It ARRIVES 0.25s
-   behind the fill's wipe and leaves immediately with it (the
-   delay swaps on deactivate) — never visible over bare ground. */
+   (stops verbatim: 0 / 3 / 50 / 97 / 100%). It appears ONLY once
+   the wipe has reached the far side (delay = the fill's full 1.8s;
+   Oscar's rev 3 — at any earlier moment its right end would sit
+   over bare ground) and leaves immediately with the fill (delay 0
+   on deactivate, the base rule). */
 .landing-v2 .sv-rows__edges {
 	opacity: 0;
 	background: linear-gradient(
@@ -392,7 +396,7 @@
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__edges {
 	opacity: 1;
-	transition-delay: 0.25s;
+	transition-delay: 1.8s; /* = the fill wipe's duration, exactly */
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__marq {
@@ -413,10 +417,11 @@
 
 /* Hover image — 280×380 at x1228, vertically centred on the active
    row (JS drives top); house blur/fade entrance. Sits above the
-   rows; no blends inside. ROW-TO-ROW (Oscar's rev 2): the frame
-   GLIDES to the new row (top transitions on the house ease) while
-   the src swaps under a brief blur pulse (.is-swapping, wired in
-   services-v2.js) — no vanish/reappear pop. */
+   rows; no blends inside. ROW-TO-ROW (Oscar's rev 3): the CASE
+   GALLERY'S swap — strictly sequential two-phase L→R wipe (the
+   lightbox effect: out fully, reposition invisibly, then in),
+   driven inline by services-v2.js on the img; the wrap only ever
+   fades on first entrance / exit. */
 .landing-v2 .sv-rows__img {
 	position: absolute;
 	left: 1228px;
@@ -428,14 +433,8 @@
 	visibility: hidden;
 	opacity: 0;
 	filter: blur(6px);
-	transition: opacity 0.4s ease-out, filter 0.4s ease-out,
-		top 0.5s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	transition: opacity 0.4s ease-out, filter 0.4s ease-out;
 	pointer-events: none;
-}
-
-.landing-v2 .sv-rows__img.is-active.is-swapping {
-	filter: blur(10px);
-	transition-duration: 0.18s, 0.18s, 0.5s; /* quick into the pulse, house glide */
 }
 
 .landing-v2 .sv-rows__img.is-active {
@@ -462,8 +461,8 @@
 .landing-v2 .sv-galhead__title {
 	margin: 0;
 	font-weight: 700;
-	font-size: 48px;
-	line-height: 48px;
+	font-size: 40px; /* Oscar's rev — was the file's 48 */
+	line-height: 40px;
 	text-transform: uppercase;
 	color: #161616;
 }
@@ -475,19 +474,21 @@
 .landing-v2 .sv-galhead__note {
 	position: absolute;
 	left: calc(50% + 58px);
-	top: -14px; /* file: note centre 14px above the title centre */
+	/* Oscar's rev: the note's FIRST-LINE TOP aligns with the title's
+	   first-line top (was the file's centre-offset placement). */
+	top: 0;
 	width: 782px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 32px;
-	line-height: 34px;
+	font-size: 28px; /* Oscar's rev — was the file's 32 */
+	line-height: 30px;
 	text-transform: uppercase;
 	color: #161616;
 }
 
 .landing-v2 .sv-galhead__note-indent {
 	display: inline-block;
-	width: 178px; /* the file's 26-space run at 32px (268 × 32/48) */
+	width: 156.3px; /* the 26-space run rescaled to 28px (268 × 28/48) */
 	height: 1px;
 }
 
