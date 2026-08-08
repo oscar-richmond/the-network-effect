@@ -140,18 +140,18 @@ export function initServicesV2() {
     const fontsForMarq = document.fonts?.ready ?? Promise.resolve();
     fontsForMarq.then(buildMarquees);
 
-    /* Image swap runner (Oscar's rev 3 — THE CASE GALLERY'S swap,
-       the lightbox two-phase sequence ported): first activation
-       blur/fades the frame in at the row; moving BETWEEN rows runs
-       strictly sequential phases — the showing image wipes OUT
-       left-to-right (clip + 6px blur, 0.45s on the lightbox
-       curve), then the frame repositions INVISIBLY to the new row
-       and the new image wipes IN left-to-right with the same
-       effect. One sequence in flight; the phase boundary reads the
-       LATEST pending row (the lightbox pendingIdx latch), so rapid
-       hops never stack and always land the newest. */
+    /* Image swap runner (Oscar's rev 4 — COVER, don't clear): the
+       NEW image wipes in L→R ON TOP of the old one (the overlay
+       img), the frame gliding to the new row meanwhile (CSS top
+       transition); once the cover completes, the BASE adopts the
+       new src and the overlay hides — the old image is never wiped
+       out first, so at no point is the frame empty. One run in
+       flight; the completion re-checks the LATEST pending row (the
+       lightbox latch), so rapid hops never stack and always land
+       the newest. */
     const SWAP_PHASE_MS = 450; /* the lightbox constant */
     const SWAP_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)';
+    const overEl = imgWrap instanceof HTMLElement ? imgWrap.querySelector('[data-sv-img-over]') : null;
     let shownRow = null;
     let pendingRow = null;
     let swapAnim = false;
@@ -161,10 +161,11 @@ export function initServicesV2() {
       swapTimers.forEach(window.clearTimeout);
       swapTimers.length = 0;
       swapAnim = false;
-      if (imgEl instanceof HTMLImageElement) {
-        imgEl.style.transition = '';
-        imgEl.style.clipPath = '';
-        imgEl.style.filter = '';
+      if (overEl instanceof HTMLImageElement) {
+        overEl.hidden = true;
+        overEl.style.transition = '';
+        overEl.style.clipPath = '';
+        overEl.style.filter = '';
       }
     };
     const placeAt = (row) => {
@@ -173,36 +174,30 @@ export function initServicesV2() {
       }
     };
     const runSwapSequence = () => {
-      if (!(imgEl instanceof HTMLImageElement) || !(imgWrap instanceof HTMLElement)) return;
+      if (!(overEl instanceof HTMLImageElement) || !(imgWrap instanceof HTMLElement)) return;
+      const target = pendingRow;
+      if (!(target instanceof HTMLElement) || target === shownRow) return;
       swapAnim = true;
-      /* Phase 1 — OUT: the showing image wipes away L→R. */
-      imgEl.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
-      imgEl.style.clipPath = 'inset(0 0 0 100%)';
-      imgEl.style.filter = 'blur(6px)';
+      /* The NEW image wipes in over the old; the frame glides to
+         the target row underneath both (top transition). */
+      placeAt(target);
+      overEl.src = target.dataset.img ?? '';
+      overEl.hidden = false;
+      overEl.style.transition = 'none';
+      overEl.style.clipPath = 'inset(0 100% 0 0)';
+      overEl.style.filter = 'blur(6px)';
+      void overEl.offsetWidth;
+      overEl.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
+      overEl.style.clipPath = 'inset(0 0 0 0)';
+      overEl.style.filter = 'blur(0px)';
       swapSchedule(() => {
-        const target = pendingRow;
-        if (!(target instanceof HTMLElement)) {
-          /* Deactivated mid-phase: the wrap's own exit handles it. */
-          clearSwap();
-          return;
-        }
-        /* Boundary — reposition while nothing is visible, take the
-           LATEST target's image, wipe it in L→R. */
-        placeAt(target);
-        imgEl.src = target.dataset.img ?? '';
+        /* Fully covered — the base adopts the new image, the
+           overlay retires (no stacking beyond the pair). */
+        if (imgEl instanceof HTMLImageElement) imgEl.src = overEl.src;
         shownRow = target;
-        imgEl.style.transition = 'none';
-        imgEl.style.clipPath = 'inset(0 100% 0 0)';
-        imgEl.style.filter = 'blur(6px)';
-        void imgEl.offsetWidth;
-        imgEl.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
-        imgEl.style.clipPath = 'inset(0 0 0 0)';
-        imgEl.style.filter = 'blur(0px)';
-        swapSchedule(() => {
-          clearSwap();
-          if (pendingRow !== shownRow && pendingRow instanceof HTMLElement) runSwapSequence();
-        }, SWAP_PHASE_MS + 30);
-      }, SWAP_PHASE_MS + 20);
+        clearSwap();
+        if (pendingRow !== shownRow && pendingRow instanceof HTMLElement) runSwapSequence();
+      }, SWAP_PHASE_MS + 30);
     };
     const setActive = (row) => {
       if (row === active) return;
@@ -516,11 +511,16 @@ export function initServicesV2() {
       }));
     });
 
-    /* ── Gallery headers — word reveals on entry. */
+    /* ── Gallery headers — word reveals on entry. The title wraps
+       PER LINE SPAN (the footer-statement pattern): wrapping the
+       whole h3 would fold its block-level line spans into
+       inline-block word atoms and collapse the two lines onto one
+       (Oscar's report — the END-TO-END: line merging up). */
     document.querySelectorAll('[data-sv-galhead]').forEach((head) => {
-      const title = head.querySelector('[data-sv-galhead-title]');
+      const titleLines = Array.from(head.querySelectorAll('.sv-galhead__line'));
       const note = head.querySelector('[data-sv-galhead-note]');
-      [title, note].forEach((line, i) => {
+      const parts = [...titleLines, note];
+      parts.forEach((line, i) => {
         if (!(line instanceof HTMLElement)) return;
         line.dataset.revealDelay = String(i * LINE_STAGGER_S);
         wrapWordRevealElement(line);
@@ -530,7 +530,7 @@ export function initServicesV2() {
         start: 'top 70%',
         once: true,
         onEnter: () => {
-          [title, note].forEach((line) => {
+          parts.forEach((line) => {
             if (line instanceof HTMLElement) playLineRevealElement(line);
           });
         },

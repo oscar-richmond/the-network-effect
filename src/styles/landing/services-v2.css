@@ -317,20 +317,13 @@
 
 .landing-v2 .sv-rows__fill {
 	background: var(--sv-accent, #232a89);
+	/* Oscar's rev 4 — the directional wipe is out: the colour BLURS
+	   STRAIGHT IN (whole band at once, opacity + the house blur
+	   settling) at the rev-2 pace, 0.6s on the house ease. */
+	opacity: 0;
 	filter: blur(6px);
-	-webkit-mask-image: linear-gradient(90deg, #000 40%, rgba(0, 0, 0, 0) 60%);
-	mask-image: linear-gradient(90deg, #000 40%, rgba(0, 0, 0, 0) 60%);
-	-webkit-mask-size: 250% 100%;
-	mask-size: 250% 100%;
-	-webkit-mask-position: 100% 0;
-	mask-position: 100% 0; /* fully off — the band sits past the right edge */
-	-webkit-mask-repeat: no-repeat;
-	mask-repeat: no-repeat;
-	/* One third of the original speed (Oscar's rev 3: 0.6s read too
-	   fast) — the wipe takes 1.8s on the house ease. */
-	transition: mask-position 1.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-		-webkit-mask-position 1.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-		filter 1.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+		filter 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 
 .landing-v2 .sv-rows__marq {
@@ -360,11 +353,10 @@
 }
 
 /* The file's Highlight Bar: accent edge fade over the marquee
-   (stops verbatim: 0 / 3 / 50 / 97 / 100%). It appears ONLY once
-   the wipe has reached the far side (delay = the fill's full 1.8s;
-   Oscar's rev 3 — at any earlier moment its right end would sit
-   over bare ground) and leaves immediately with the fill (delay 0
-   on deactivate, the base rule). */
+   (stops verbatim: 0 / 3 / 50 / 97 / 100%). With the fill blurring
+   straight in (no wipe), the gradient rides slightly BEHIND it
+   (0.3s delay in, 0 out) — its accent can never outrun the fill's,
+   so it never reads over bare ground. */
 .landing-v2 .sv-rows__edges {
 	opacity: 0;
 	background: linear-gradient(
@@ -389,14 +381,13 @@
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__fill {
-	-webkit-mask-position: 0% 0;
-	mask-position: 0% 0;
+	opacity: 1;
 	filter: blur(0);
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__edges {
 	opacity: 1;
-	transition-delay: 1.8s; /* = the fill wipe's duration, exactly */
+	transition-delay: 0.3s; /* rides behind the fill's blur-in */
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__marq {
@@ -417,11 +408,11 @@
 
 /* Hover image — 280×380 at x1228, vertically centred on the active
    row (JS drives top); house blur/fade entrance. Sits above the
-   rows; no blends inside. ROW-TO-ROW (Oscar's rev 3): the CASE
-   GALLERY'S swap — strictly sequential two-phase L→R wipe (the
-   lightbox effect: out fully, reposition invisibly, then in),
-   driven inline by services-v2.js on the img; the wrap only ever
-   fades on first entrance / exit. */
+   rows; no blends inside. ROW-TO-ROW (Oscar's rev 4): the NEW
+   image wipes in L→R ON TOP of the old (the overlay img below),
+   the frame gliding to the new row meanwhile; once fully covered
+   the base adopts the new src and the overlay hides — the old is
+   never wiped out first (services-v2.js runner). */
 .landing-v2 .sv-rows__img {
 	position: absolute;
 	left: 1228px;
@@ -433,7 +424,8 @@
 	visibility: hidden;
 	opacity: 0;
 	filter: blur(6px);
-	transition: opacity 0.4s ease-out, filter 0.4s ease-out;
+	transition: opacity 0.4s ease-out, filter 0.4s ease-out,
+		top 0.45s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	pointer-events: none;
 }
 
@@ -444,10 +436,18 @@
 }
 
 .landing-v2 .sv-rows__img img {
+	position: absolute;
+	inset: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	display: block;
+}
+
+/* The overlay MUST vanish when hidden — explicit display class
+   above would beat the UA [hidden] rule (the lightbox lesson). */
+.landing-v2 .sv-rows__img img[hidden] {
+	display: none !important;
 }
 
 /* ── Gallery header — 250px after the rows; Immerse: Dazzed Bold
@@ -701,10 +701,7 @@
    resting text stays and flips white for contrast on the fill. */
 @media (prefers-reduced-motion: reduce) {
 	.landing-v2 .sv-rows__fill {
-		-webkit-mask-image: none;
-		mask-image: none;
 		filter: none;
-		opacity: 0;
 		transition: none;
 	}
 

@@ -141,8 +141,13 @@ import '../styles/fonts.css';
               </li>
             ))}
           </ul>
+          {/* Two stacked imgs (Oscar's rev 4): BASE shows the current
+              row's image; OVER is the swap layer — the NEW image
+              wipes in on top, then base adopts it and over hides
+              (services-v2.js runner). */}
           <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
-            <img src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
+            <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
+            <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
           </div>
         </section>
 
