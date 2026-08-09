@@ -224,6 +224,72 @@ export function wrapStaticLines(el) {
 }
 
 /**
+ * An element atom's OWN leading/trailing whitespace, moved out of the
+ * element and returned so the caller can emit it BETWEEN clips.
+ *
+ * Why: each atom is wrapped in a `display:inline-block` clip, and CSS
+ * deletes collapsible whitespace at a line-box edge. A face span
+ * authored as `<span>WE </span><span>CREATE ACCESS</span>` therefore
+ * renders "WECREATE ACCESS" — the space is inside the clip, at its
+ * edge, so it is dropped (Oscar's report). Hoisted into the gap
+ * between the two clips the same space survives as an ordinary
+ * collapsed space, which is what the source means.
+ *
+ * Elements that PRESERVE whitespace (white-space: pre / pre-wrap /
+ * break-spaces) are left untouched: their spacing is authored and
+ * already renders correctly inside the clip — the network sector
+ * separators and OUR/NETWORK title depend on exactly that.
+ *
+ * @param {Node} node
+ * @returns {{ lead: string, trail: string }}
+ */
+function hoistEdgeWhitespace(node) {
+  const none = { lead: '', trail: '' };
+  if (!(node instanceof HTMLElement) || node.nodeName === 'BR') return none;
+
+  const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+  /** @type {Text[]} */
+  const texts = [];
+  for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+    if (t instanceof Text) texts.push(t);
+  }
+  if (!texts.length) return none;
+
+  /* Read computed styles NOW — the caller detaches these nodes
+     moments later, and a detached node has no computed style. */
+  const preserved = (text) => {
+    const owner = text.parentElement ?? node;
+    return /^(pre|pre-wrap|break-spaces)$/.test(getComputedStyle(owner).whiteSpace);
+  };
+
+  /* An all-whitespace text node is left alone: it is a deliberate
+     spacer atom, not an edge run on real text. */
+  let lead = '';
+  const first = texts[0];
+  const firstText = first.textContent ?? '';
+  if (!preserved(first) && !/^\s+$/.test(firstText)) {
+    const m = firstText.match(/^\s+/);
+    if (m) {
+      lead = m[0];
+      first.textContent = firstText.slice(lead.length);
+    }
+  }
+
+  let trail = '';
+  const last = texts[texts.length - 1];
+  const lastText = last.textContent ?? '';
+  if (!preserved(last) && !/^\s+$/.test(lastText)) {
+    const m = lastText.match(/\s+$/);
+    if (m) {
+      trail = m[0];
+      last.textContent = lastText.slice(0, lastText.length - trail.length);
+    }
+  }
+
+  return { lead, trail };
+}
+
+/**
  * WORD-level reveal wrap (the landing pages' entrance): each word —
  * or whole child ELEMENT (kept intact: face spans, term buttons,
  * spacers all survive as live nodes) — gets its own inline
@@ -231,7 +297,10 @@ export function wrapStaticLines(el) {
  * (wordStagger) and line by line (lineStagger), on the same clip
  * slide the line reveal uses. Source whitespace is tracked exactly
  * (a space is emitted between units only where the source had one —
- * compact markup and white-space:pre content stay byte-faithful).
+ * compact markup and white-space:pre content stay byte-faithful),
+ * INCLUDING whitespace that sits inside an element atom's own edges,
+ * which is hoisted into the inter-clip gap (see hoistEdgeWhitespace)
+ * because the clip's inline-block edge would otherwise delete it.
  * playLineRevealElement drives it unchanged (`:scope > .lr-clip`),
  * and .lr-inner-based exit machinery (delay maps, un-reveals)
  * generalises to the word inners automatically.
@@ -264,8 +333,9 @@ export function wrapWordRevealElement(el, opts = {}) {
     } else if (n.nodeType === Node.ELEMENT_NODE) {
       /* BRs stay bare — a break inside an inline clip is nonsense;
          the offsetTop grouping picks up the new line naturally. */
-      atoms.push({ node: n, isBr: n.nodeName === 'BR', spaceBefore: pendingSpace });
-      pendingSpace = '';
+      const { lead, trail } = hoistEdgeWhitespace(n);
+      atoms.push({ node: n, isBr: n.nodeName === 'BR', spaceBefore: pendingSpace + lead });
+      pendingSpace = trail;
     }
   });
   if (!atoms.length) return null;
