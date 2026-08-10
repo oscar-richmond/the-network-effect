@@ -129,8 +129,78 @@
 	top: -0.48px;
 }
 
+/* ── THE PRIMARY CTA — the 64px fill/ink family at the contact
+   file's large scale (16px Dazzed Bold labels; the smaller family
+   is 32/14 — this is the file's own variant, not drift). It lives
+   HERE, not in contact.css, because BOTH /contact and the main
+   menu use these exact CTAs (Oscar's rev) and landing.css is the
+   sheet every new-build page loads. Per-surface WIDTHS stay with
+   their own surface (contact.css / menu.css), which load after. */
+.landing-v2 .ct-cta {
+	position: relative;
+	display: flex;
+	align-items: center;
+	height: 64px;
+	border: 0;
+	padding: 0 32px;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	color: var(--landing-accent-blue, #232a89);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 16px;
+	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	box-sizing: border-box;
+	justify-content: space-between;
+}
+
+/* The file's widths — shared, so a CTA is the same size wherever
+   it appears (/contact's cluster and the menu block alike). */
+.landing-v2 .ct-cta--schedule { width: 292px; padding-left: 8px; }
+.landing-v2 .ct-cta--start { width: 230px; }
+.landing-v2 .ct-cta--email { width: 163px; }
+
+/* The placeholder convention (footer coming-soon items): styled,
+   rippling, dot-expanding, non-navigating. */
+.landing-v2 .ct-cta.is-placeholder { cursor: default; }
+
+.landing-v2 .ct-cta__profile {
+	width: 48px;
+	height: 48px;
+	flex: none;
+	/* SQUARE (Oscar's rev 2 — was a circle). */
+	overflow: hidden;
+}
+
+.landing-v2 .ct-cta__profile img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.landing-v2 .ct-cta__arrow {
+	flex: none;
+	display: block;
+}
+
+.landing-v2 .ct-cta:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
 /* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
    and Menu.astro are /old-shared — every change here is scoped. */
+
+/* With the CTA block present the footer's 40px margin-top would
+   make the lower gap 40px bigger than the upper one — zero it so
+   space-between centres the CTAs exactly between nav and footer. */
+.landing-v2 .site-menu__footer {
+	margin-top: 0;
+}
 
 /* Two menu rows, 40px apart: the body stacks the row wrappers. The
    32px flex gap gives every junction item |32| slash |32| item

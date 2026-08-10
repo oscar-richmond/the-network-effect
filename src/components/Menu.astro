@@ -75,6 +75,40 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
           }
         </nav>
 
+        {/* CTAs (NEW BUILD only — `rows` is the new-build gate, so
+            /old is untouched): the /contact pair reused verbatim,
+            same classes, same 64px fill/ink component now shared
+            from landing.css. They are the MIDDLE flex child of a
+            space-between column, so the free space splits equally
+            above and below — i.e. the block sits vertically centred
+            between the nav rows and the footer links BY
+            CONSTRUCTION, at any panel height. Left edge = the
+            wrapper's own margin, same as the nav. */}
+        {rows && (
+          <div class="site-menu__ctas">
+            {/* SCHEDULE A CALL lives on /contact (the modal is that
+                page's machinery) — from the menu it navigates
+                there. START A PROJECT keeps the placeholder
+                convention it has on /contact: styled and rippling,
+                non-navigating until Oscar wires a destination. */}
+            <a
+              class="ct-cta ct-cta--schedule"
+              href={`${base}contact`}
+              data-char-ripple-trigger
+            >
+              <span class="ct-cta__profile" aria-hidden="true">
+                <img src={asset('/assets/landing/contact/robbo-profile.png')} alt="" loading="lazy" decoding="async" />
+              </span>
+              <span data-char-ripple>SCHEDULE A CALL</span>
+              <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+            </a>
+            <span class="ct-cta ct-cta--start is-placeholder" data-hover data-char-ripple-trigger>
+              <span data-char-ripple>START A PROJECT</span>
+              <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+            </span>
+          </div>
+        )}
+
         <div class="site-menu__footer">
           {
             menuFooterLinks.map((link) => (

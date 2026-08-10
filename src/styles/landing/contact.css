@@ -65,59 +65,11 @@
 	gap: 16px;
 }
 
-.landing-v2 .ct-cta {
-	position: relative;
-	display: flex;
-	align-items: center;
-	height: 64px;
-	border: 0;
-	padding: 0 32px;
-	background: var(--landing-svc-btn-fill, #e4e4ea);
-	color: var(--landing-accent-blue, #232a89);
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 16px;
-	text-transform: uppercase;
-	text-decoration: none;
-	white-space: nowrap;
-	cursor: pointer;
-	box-sizing: border-box;
-	justify-content: space-between;
-}
-
-.landing-v2 .ct-cta--schedule { width: 292px; padding-left: 8px; }
-.landing-v2 .ct-cta--start { width: 230px; }
-.landing-v2 .ct-cta--email { width: 163px; }
-
-/* The placeholder convention (footer coming-soon items): styled,
-   rippling, dot-expanding, non-navigating. */
-.landing-v2 .ct-cta.is-placeholder { cursor: default; }
-
-.landing-v2 .ct-cta__profile {
-	width: 48px;
-	height: 48px;
-	flex: none;
-	/* SQUARE (Oscar's rev 2 — was a circle). */
-	overflow: hidden;
-}
-
-.landing-v2 .ct-cta__profile img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
-}
-
-.landing-v2 .ct-cta__arrow {
-	flex: none;
-	display: block;
-}
-
-.landing-v2 .ct-cta:focus-visible {
-	outline: 2px solid #232a89;
-	outline-offset: 2px;
-}
+/* The CTA COMPONENT — including its per-variant widths — now lives
+   in landing.css: the main menu reuses these exact CTAs (Oscar's
+   rev), and landing.css is the sheet every new-build page loads,
+   so one definition serves both surfaces. Only this page's LAYOUT
+   of them (.ct__ctas above) stays here. */
 
 /* Media — the HERO'S VIDEO (Oscar's rev 2), the file's 409×231
    slot at x1295, vertically centred like the cluster. */

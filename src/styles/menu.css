@@ -111,6 +111,18 @@ body.menu-open .home__menu-cta {
   will-change: transform, opacity;
 }
 
+/* CTA block (new build only) — the middle child of the container's
+   space-between column, so the free space above and below it is
+   equal and the block reads as vertically centred between the nav
+   rows and the footer links. The footer's own margin-top is zeroed
+   in that case (landing.css) or the lower gap would be 40px
+   larger. Widths come from the shared component + contact.css. */
+.site-menu__ctas {
+  display: flex;
+  gap: 16px;
+  flex: none;
+}
+
 .site-menu__footer {
   display: flex;
   align-items: flex-end;
