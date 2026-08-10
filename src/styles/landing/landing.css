@@ -142,7 +142,18 @@
 	align-items: center;
 	height: 64px;
 	border: 0;
-	padding: 0 32px;
+	/* ARROW SPACING (Oscar's 16" design, 2026-08-10): text, 8px, the
+	   arrow, then 22px to the edge — the same on every CTA. It was
+	   space-between against a FIXED width, so the leftover decided
+	   the gap and each button got a different one (measured 20 / 4 /
+	   8px). Content-flow + an explicit gap is the only way to hold
+	   both numbers, so the widths below are the CONSEQUENCE of the
+	   spec rather than the file's boxes. Plain px: the scale shell
+	   renders these in design space, so they scale with everything
+	   else on 14"/15". */
+	padding: 0 22px 0 32px;
+	gap: 8px;
+	justify-content: flex-start;
 	background: var(--landing-svc-btn-fill, #e4e4ea);
 	color: var(--landing-accent-blue, #232a89);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -154,14 +165,11 @@
 	white-space: nowrap;
 	cursor: pointer;
 	box-sizing: border-box;
-	justify-content: space-between;
 }
 
-/* The file's widths — shared, so a CTA is the same size wherever
-   it appears (/contact's cluster and the menu block alike). */
-.landing-v2 .ct-cta--schedule { width: 292px; padding-left: 8px; }
-.landing-v2 .ct-cta--start { width: 230px; }
-.landing-v2 .ct-cta--email { width: 163px; }
+/* Width is content-driven now (see above). Only the schedule CTA's
+   own left inset differs — its profile crop sits 8px from the edge. */
+.landing-v2 .ct-cta--schedule { padding-left: 8px; }
 
 /* The placeholder convention (footer coming-soon items): styled,
    rippling, dot-expanding, non-navigating. */
@@ -171,6 +179,10 @@
 	width: 48px;
 	height: 48px;
 	flex: none;
+	/* The flex `gap` above is the TEXT->ARROW spec (8px); the crop
+	   sat 20px off its label under the old distribution, so it keeps
+	   that with an explicit 12px on top of the gap. */
+	margin-right: 12px;
 	/* SQUARE (Oscar's rev 2 — was a circle). */
 	overflow: hidden;
 }

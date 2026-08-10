@@ -15,7 +15,11 @@ export const menuLinks = [
   /* /services now serves the NEW build's services page; the archived
      standalone partners-wheel page moved to /old/services (2026-08-08)
      — this OLD-ROUTES menu keeps pointing at the archive. */
-  { href: 'old/services', label: 'Services', image: 'services.jpg' },
+  /* Repointed to the capitalised file (2026-08-10): Oscar's new menu
+     imagery REPLACED lowercase services.jpg, which still resolved on
+     the case-insensitive Mac filesystem but would 404 on the
+     case-sensitive deploy target. */
+  { href: 'old/services', label: 'Services', image: 'Services.jpg' },
 ];
 
 /** The NEW BUILD's menu items (SiteShell pages — /landing, /work and
@@ -25,14 +29,19 @@ export const menuLinks = [
  *  UNBUILT (404 — the old menu's pre-existing behaviour, unchanged);
  *  Services is the standalone partners-wheel page; Contact is the
  *  LET'S CHAT mailto (absolute hrefs pass through un-prefixed).
- *  work.jpg is a copy of the /work carousel's first tile (placeholder
- *  imagery — same founder sign-off caveat as everything else).
+ *
+ *  HOVER IMAGERY (Oscar, 2026-08-10): his own selects, supplied as
+ *  Home/Founders/Services/Work.jpg. Filenames are CAPITALISED
+ *  exactly as delivered — the deploy target is case-sensitive, so
+ *  these must not be "tidied" to lowercase. Contact keeps the
+ *  existing contact.png. Standard founder/rights sign-off caveat
+ *  applies to the imagery itself.
  * @type {MenuLink[]} */
 export const landingMenuLinks = [
-  { href: 'landing', label: 'Home', image: 'home.png' },
-  { href: 'founders', label: 'Founders', image: 'team.png' },
-  { href: 'services', label: 'Services', image: 'services.jpg' },
-  { href: 'work', label: 'Work', image: 'work.jpg' },
+  { href: 'landing', label: 'Home', image: 'Home.jpg' },
+  { href: 'founders', label: 'Founders', image: 'Founders.jpg' },
+  { href: 'services', label: 'Services', image: 'Services.jpg' },
+  { href: 'work', label: 'Work', image: 'Work.jpg' },
   /* Contact points at the new /contact page (2026-08-08 — was the
      LET'S CHAT mailto while no page existed). */
   { href: 'contact', label: 'Contact', image: 'contact.png' },
@@ -61,7 +70,19 @@ export const menuFooterLinks = [
   { href: 'terms', label: 'terms & conditions' },
 ];
 
-/* The NEW BUILD's menu footer (Oscar's rev): instagram + the email
-   only — privacy policy and terms & conditions are dropped from
-   the main menu. The /old routes keep the full set above. */
-export const landingMenuFooterLinks = menuFooterLinks.slice(0, 2);
+/* The NEW BUILD's menu footer (Oscar's rev): Instagram + the email
+   only — privacy policy and terms & conditions are dropped from the
+   main menu. Spelled out rather than sliced from the list above so
+   the capital "I" (Oscar, 2026-08-10) is the NEW BUILD's alone; the
+   /old routes keep their lowercase "instagram". */
+export const landingMenuFooterLinks = [
+  {
+    href: 'https://instagram.com/thenetwork_effect',
+    label: 'Instagram',
+    external: true,
+  },
+  {
+    href: `mailto:${CONTACT_EMAIL}`,
+    label: CONTACT_EMAIL,
+  },
+];
