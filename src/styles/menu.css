@@ -159,10 +159,29 @@ body.menu-open .home__menu-cta {
   display: none;
 }
 
+/* Base + overlay stack for the cover-then-retire swap (the
+   /services hover-rows grammar — scripts/cover-swap.js). */
 .site-menu__image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+/* The overlay MUST vanish when hidden — the explicit display above
+   would otherwise beat the UA [hidden] rule (the lightbox lesson). */
+.site-menu__image img[hidden] {
+  display: none !important;
+}
+
+/* While the overlay covers, the BASE blurs up 0→6 beneath it;
+   menu.js clears the class transition-free once the base has
+   adopted the new image. */
+.site-menu__image.is-covering img[data-menu-image-base] {
+  filter: blur(6px);
+  transition: filter 0.45s cubic-bezier(0.42, 0, 0.24, 1);
 }
 
 .home__menu-toggle {
@@ -243,6 +262,7 @@ body.menu-open .home__menu-cta {
     width: 500px;
     height: 450px;
     position: relative;
+    overflow: hidden; /* containing block + clip for the cover swap */
     opacity: 0;
   }
 }

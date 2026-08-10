@@ -45,6 +45,7 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { createServicesHeroWave } from './services-hero-wave.js';
+import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -154,8 +155,9 @@ export function initServicesV2() {
        flight; the completion re-checks the LATEST pending row (the
        lightbox latch), so rapid hops never stack and always land
        the newest. */
-    const SWAP_PHASE_MS = 450; /* the lightbox constant */
-    const SWAP_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)';
+    /* Timing/curve now live in scripts/cover-swap.js — the menu's
+       hover image runs this same swap, and one definition means the
+       two can never drift apart. */
     const overEl = imgWrap instanceof HTMLElement ? imgWrap.querySelector('[data-sv-img-over]') : null;
     let shownRow = null;
     let pendingRow = null;

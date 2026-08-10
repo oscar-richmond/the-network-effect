@@ -96,8 +96,12 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
         </div>
       </div>
 
+      {/* Base + overlay pair — the /services hover-rows swap
+          grammar (scripts/cover-swap.js): the incoming image wipes
+          in OVER the outgoing one, which never disappears first. */}
       <div class="site-menu__image" data-menu-image aria-hidden="true">
-        <img src={defaultImage} alt="" data-menu-image-el decoding="async" />
+        <img src={defaultImage} alt="" data-menu-image-el data-menu-image-base decoding="async" />
+        <img src={defaultImage} alt="" data-menu-image-over decoding="async" hidden />
       </div>
     </div>
   </div>

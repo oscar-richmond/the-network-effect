@@ -1,4 +1,5 @@
 import gsap from 'gsap';
+import { createCoverSwap } from './cover-swap.js';
 
 const ease = 'power3.inOut';
 
@@ -15,6 +16,7 @@ export function initMenu(scope = document) {
   const navBody = root?.querySelector('[data-menu-body]');
   const navImage = root?.querySelector('[data-menu-image]');
   const navImageEl = root?.querySelector('[data-menu-image-el]');
+  const navImageOver = root?.querySelector('[data-menu-image-over]');
   const backdrop = root?.querySelector('[data-menu-backdrop]');
   const footerItems = root?.querySelectorAll('.site-menu__footer li') ?? [];
 
@@ -32,6 +34,19 @@ export function initMenu(scope = document) {
   ) {
     return () => {};
   }
+
+  /* Hover image swap — the /services hover-rows grammar, shared
+     (scripts/cover-swap.js) so the two surfaces can never drift.
+     If the overlay element is absent (a stale cached document
+     against fresh JS), `hasCoverSwap` falls the hover back to the
+     old direct assignment rather than leaving the image frozen. */
+  const hasCoverSwap = navImageOver instanceof HTMLImageElement;
+  const imageSwap = createCoverSwap({
+    wrap: navImage,
+    baseEl: navImageEl,
+    overEl: hasCoverSwap ? navImageOver : undefined,
+  });
+  let navImageShown = false;
 
   const navLinks = root.querySelectorAll('.site-menu__link');
 
@@ -238,6 +253,10 @@ export function initMenu(scope = document) {
   };
 
   const close = () => {
+    /* The frame goes with the overlay — drop any pending swap so a
+       timer can't land on the next open. */
+    navImageShown = false;
+    imageSwap.reset();
     if (!tl.reversed() && tl.progress() > 0) {
       tl.reverse();
       if (landingSwap) {
@@ -274,10 +293,19 @@ export function initMenu(scope = document) {
       });
     });
 
+    /* Image change = the /services hover-rows swap (Oscar's rev):
+       the first hover of a visit PLACES the image (the frame is
+       still fading in — nothing to wipe over); every hover after
+       that runs the cover-then-retire sequence. */
     const src = link.dataset.src;
     if (src) {
-      navImageEl.src = src;
+      /* RM gets the plain cut (the pre-swap behaviour, and what
+         /services does with this same mechanic). */
+      if (!hasCoverSwap || reducedMotion) navImageEl.src = src;
+      else if (navImageShown) imageSwap.swapTo(src);
+      else imageSwap.showInstant(src);
     }
+    navImageShown = true;
     /* The separator slashes read as "the rest of the line" — they
        soften with the non-hovered links (no-op without seps). */
     if (navSeps.length) {
@@ -287,6 +315,10 @@ export function initMenu(scope = document) {
   };
 
   const onNavMouseLeave = () => {
+    /* An in-flight swap is deliberately NOT cancelled — it finishes
+       under the fading frame, so nothing snaps back to the old
+       image on the way out. The next entrance places directly. */
+    navImageShown = false;
     gsap.to(navLinks, {
       filter: 'blur(0px)',
       opacity: 1,
