@@ -25,6 +25,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll } from './site-scroll.js';
 import { wrapLineRevealElement } from '../line-reveal.js';
+import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -414,6 +415,20 @@ export function initLandingHeroScroll() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* MOBILE (<=1024, the viewport.js seam): the SAME machine runs —
+     headline travel, line reveals, exit wipes, video expansion are all
+     measurement-driven, so they follow the mobile CSS composition.
+     What differs is ownership of the DERIVED layout: on mobile the
+     headline sits under the topbar and the intro flows BELOW it
+     (landing.css owns both), so refineHeadlineCentring, the intro
+     width-match and the headline-span-pinned leading (derive/align/
+     correct) are skipped — they encode the desktop side-by-side
+     composition. vh comes from the stage's rendered height (100svh on
+     mobile) so the band and runway never re-derive on URL-bar
+     collapse; the resize rebuild fires on WIDTH change only for the
+     same reason. */
+  const isMob = isMobileViewport();
+
   /* EVERYTHING below measures rendered text — the headline's travel is
      the distance from its laid-out left edge, and the copy's reveal
      clips are grouped by each word's offsetTop. Both are wrong if they
@@ -433,8 +448,8 @@ export function initLandingHeroScroll() {
     let disposed = false;
     fontsReady.then(() => {
       if (disposed) return;
-      refineHeadlineCentring(headlineText);
-      if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
+      if (!isMob) refineHeadlineCentring(headlineText);
+      if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
         introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
         deriveIntroLineHeight(headlineText, introText);
         alignIntroToHeadline(headlineText, introText);
@@ -461,7 +476,9 @@ export function initLandingHeroScroll() {
   const tweens = [];
 
   const build = () => {
-    const vh = window.innerHeight;
+    /* Mobile: the stage's rendered height (100svh) — stable under
+       URL-bar collapse; desktop keeps the shipped innerHeight read. */
+    const vh = isMob ? hero.clientHeight || window.innerHeight : window.innerHeight;
 
     /* ── Beat 1: travel left AND converge to a left-aligned stack ──
        (Oscar's rev.) Each LINE gets its own x tween to the shared
@@ -474,7 +491,7 @@ export function initLandingHeroScroll() {
     let sequenceEnd = 0;
 
     if (headlineText instanceof HTMLElement) {
-      refineHeadlineCentring(headlineText);
+      if (!isMob) refineHeadlineCentring(headlineText);
       const lines = Array.from(
         headlineText.querySelectorAll('.landing-hero__headline-line'),
       ).filter((el) => el instanceof HTMLElement);
@@ -508,12 +525,14 @@ export function initLandingHeroScroll() {
     let revealEnd = sequenceEnd;
 
     if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
-      introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
+      if (!isMob) introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
 
       const introLines = wrapIntroLines(introText);
-      deriveIntroLineHeight(headlineText, introText);
-      alignIntroToHeadline(headlineText, introText);
-      correctIntroTop(headlineText, introText);
+      if (!isMob) {
+        deriveIntroLineHeight(headlineText, introText);
+        alignIntroToHeadline(headlineText, introText);
+        correctIntroTop(headlineText, introText);
+      }
       /* wrapLineRevealElement leaves an inline `transition: transform`
          intended for its own class-toggle reveal; that fights a
          continuous scrub, so GSAP takes sole control of the transform. */
@@ -735,8 +754,13 @@ export function initLandingHeroScroll() {
   /* Rebuild on resize: the headline's travel, the copy's line breaks and
      the video's band are all measured from the viewport, so a resize
      invalidates all three. Debounced — this tears down and re-measures,
-     which is far too heavy to run per event. */
+     which is far too heavy to run per event. On MOBILE, width-change
+     only: the URL bar collapsing fires height-only resizes mid-scroll,
+     and a rebuild there re-derives the runway under the user's finger. */
+  let lastW = window.innerWidth;
   const onResize = () => {
+    if (isMob && window.innerWidth === lastW) return;
+    lastW = window.innerWidth;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(rebuild, 200);
   };

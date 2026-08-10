@@ -57,6 +57,7 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { isMobileViewport } from './viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 
@@ -176,6 +177,14 @@ export function initLandingServices() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
+
+  /* MOBILE (the viewport.js seam): no pin, no morph, no parking — the
+     cards render as sequential full-width sections (landing.css) with
+     every internal visible. Gated BEFORE the non-RM parking below, or
+     the cards would be thrown a stage-height down and never recalled. */
+  if (isMobileViewport()) {
+    return () => {};
+  }
 
   let disposed = false;
   let trigger = null;

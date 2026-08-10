@@ -12,6 +12,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { NETWORK_BRAND_SETS } from '../../data/landing/network-brands.js';
+import { isMobileViewport, isTouchPrimary } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -178,6 +179,31 @@ export function initLandingNetwork() {
   };
 
   const cleanupHover = [];
+  /* A3 (mobile brief): TOUCH gets tap-to-toggle — tap a term to dim
+     the rest and swap the rows; tap the active term (or outside the
+     list) to clear. An explicit click path, not focus: iOS Safari
+     does not reliably focus <button> on tap. Bound before the hover
+     branch so a hybrid device gets exactly one interaction model. */
+  if (!canHover && isTouchPrimary() && body instanceof HTMLElement) {
+    const onClick = (e) => {
+      const term = e.target instanceof Element && e.target.closest('[data-network-term]');
+      if (term instanceof HTMLElement) {
+        if (term.classList.contains('is-active')) deactivate();
+        else activate(term);
+      }
+    };
+    const onDocClick = (e) => {
+      if (!(e.target instanceof Element) || !e.target.closest('[data-landing-network-body]')) {
+        deactivate();
+      }
+    };
+    body.addEventListener('click', onClick);
+    document.addEventListener('click', onDocClick);
+    cleanupHover.push(() => {
+      body.removeEventListener('click', onClick);
+      document.removeEventListener('click', onDocClick);
+    });
+  }
   if (canHover && body instanceof HTMLElement) {
     const onOver = (e) => {
       const term = e.target instanceof Element && e.target.closest('[data-network-term]');
@@ -216,6 +242,18 @@ export function initLandingNetwork() {
         tracks.forEach((t) => applySetToTrack(t, set));
         return { setW: CELL_PITCH_PX * n, cells: tracks[0].children.length };
       },
+    };
+  }
+
+  /* MOBILE (the viewport.js seam): the section renders complete and
+     static (landing.css linearises it) — no media parking, no ground
+     toggle, no pin-anchored entrance. Everything ABOVE this line
+     (marquee swaps + the term interaction, including the tap path)
+     stays live; everything below is the desktop arrival. */
+  if (isMobileViewport()) {
+    return () => {
+      swapTimeouts.forEach(clearTimeout);
+      cleanupHover.forEach((fn) => fn());
     };
   }
 

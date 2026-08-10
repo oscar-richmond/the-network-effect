@@ -29,6 +29,7 @@
  */
 import { asset } from '../../utils/asset.js';
 import GradualBlur from '../GradualBlur.astro';
+import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 
@@ -122,6 +123,33 @@ const PRIME_RIGHT = 6;
         ><span class="landing-access__hl-dazzed">CONNECT</span></span
       >
     </h2>
+
+    {/* MOBILE COMPOSITION (Oscar's mobile brief, 2026-08-10) — the
+        opposed-column scrub can't survive a 390px canvas, so the
+        section's meaning is restated: the headline, then all six
+        word pairs as a typographic ledger (left word / right word —
+        the opposition read as a line, not a travel), between two
+        ambient images from the same pool. display:none above 1024
+        (landing.css); the desktop DOM above is untouched and the
+        desktop scrub never sees this block. aria-hidden on imagery
+        only — the pairs are real content. */}
+    <div class="landing-access__mobile" data-access-mobile>
+      <figure class="landing-access__m-img" aria-hidden="true">
+        <img src={a(2)} alt="" loading="lazy" decoding="async" />
+      </figure>
+      <ul class="landing-access__m-pairs">
+        {ACCESS_PAIRS.map((pair) => (
+          <li class="landing-access__m-pair">
+            <span class="landing-access__m-word">{pair[0]}</span>
+            <span class="landing-access__m-sep" aria-hidden="true"></span>
+            <span class="landing-access__m-word">{pair[1]}</span>
+          </li>
+        ))}
+      </ul>
+      <figure class="landing-access__m-img" aria-hidden="true">
+        <img src={a(5)} alt="" loading="lazy" decoding="async" />
+      </figure>
+    </div>
 
     {/* Page-edge treatment — the /services GradualBlur bands over a
         same-colour gradient tint (see landing.css). */}

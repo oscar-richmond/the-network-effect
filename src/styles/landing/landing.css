@@ -2724,3 +2724,626 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	text-decoration: none;
 	color: inherit;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE — the landing page's native <=1024 layout (Oscar's mobile
+   brief, 2026-08-10; the seam and shared scaffolding live in
+   mobile.css / viewport.js). Every desktop pin/scrub EXCEPT the hero
+   is gated off in JS at the same seam; these rules linearise those
+   sections. The HERO keeps its full choreography (headline travel,
+   line reveals, row-blur exit, video expansion) — the machine is
+   measurement-driven, so it runs against this mobile composition
+   with the JS branches marked `mobile` in landing-hero-scroll.js.
+   Closing/footer/featured base fallbacks live earlier in this file;
+   the blocks here refine them.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+	/* ── HERO ──────────────────────────────────────────────────────
+	   The stage stays fixed (the mechanic needs it) at 100svh: the
+	   band geometry must NOT re-derive when the URL bar collapses —
+	   an under-fill strip during collapsed-bar is the accepted trade
+	   (the founders section slides over the stage regardless). */
+	.landing-v2 .landing-hero {
+		height: 100vh;
+		height: 100svh;
+	}
+
+	/* Headline near the top (the desktop band-centring calc gives way
+	   — JS skips refineHeadlineCentring on mobile; CSS owns this). */
+	.landing-v2 .landing-hero__headline-text {
+		margin-top: 128px;
+		transform: none;
+	}
+
+	.landing-v2 .landing-hero__headline-line {
+		/* 28px, sized so BOTH lines hold single-line at 342px (390 −
+		   margins): the travel converges LINE boxes to the left edge,
+		   and a wrapped line spans the container and stays visually
+		   centred — the convergence needs one box per line. */
+		font-size: 28px;
+		line-height: 32px;
+	}
+
+	/* Intro below the headline, full measure — the desktop right-rest
+	   and the headline-span-pinned leading are skipped in JS. */
+	.landing-v2 .landing-hero__intro-text {
+		top: 240px;
+		left: var(--m-margin, 24px);
+		right: var(--m-margin, 24px);
+		transform: none;
+		width: auto !important; /* JS width-match is skipped on mobile; belt */
+		line-height: 24px;
+	}
+
+	.landing-v2 .landing-hero__intro-text p + p {
+		margin-top: 16px;
+	}
+
+	/* Cramped landscape phones: tighter type so the text band stays
+	   above the video band. Degraded-but-graceful (A2 decision). */
+	@media (max-height: 520px) {
+		.landing-v2 .landing-hero__headline-text { margin-top: 96px; }
+		.landing-v2 .landing-hero__headline-line { font-size: 22px; line-height: 25px; }
+		.landing-v2 .landing-hero__intro-text { top: 164px; font-size: 13px; line-height: 18px; }
+	}
+
+	/* ── FOUNDERS (dark section) — linear stack. ─────────────────── */
+	.landing-v2 .landing-founders-track {
+		height: auto;
+	}
+
+	.landing-v2 .landing-founders {
+		position: relative;
+		top: auto;
+		height: auto;
+		padding: 96px var(--m-margin, 24px) 64px;
+	}
+
+	.landing-v2 .landing-founders__headline {
+		position: static;
+		width: auto;
+		font-size: 24px;
+		line-height: 30px;
+	}
+
+	.landing-v2 .landing-founders__line { display: inline; }
+	/* The four authored line spans sit flush in the markup (no
+	   whitespace between them — they were blocks); flowed inline they
+	   need the inter-line space restored or words weld together
+	   ("BUILDINGGLOBAL" — the edge-whitespace class of bug). */
+	.landing-v2 .landing-founders__line::after { content: ' '; }
+	.landing-v2 .landing-founders__line--indent { text-indent: 0; }
+
+	.landing-v2 .landing-founders__ctas {
+		position: static;
+		margin-top: 32px;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+
+	.landing-v2 .landing-founders__photo {
+		position: static;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 10;
+		margin: 48px 0 0;
+		overflow: hidden;
+	}
+
+	.landing-v2 .landing-founders__photo img {
+		position: static;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* Portraits side by side; names ALWAYS visible on touch (no hover
+	   exists — the A3 rule). */
+	.landing-v2 .landing-founders__portrait {
+		position: static;
+		width: calc(50% - 4px);
+		height: auto;
+		margin: 8px 0 0;
+	}
+
+	.landing-v2 .landing-founders__portrait--robbo { float: left; }
+	.landing-v2 .landing-founders__portrait--ashley { float: right; }
+
+	.landing-v2 .landing-founders__portrait-crop {
+		position: static;
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 3 / 4;
+	}
+
+	.landing-v2 .landing-founders__portrait-crop img {
+		position: static;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.landing-v2 .landing-founders::after { content: ''; display: block; clear: both; }
+
+	/* ── SERVICES — sequential full-width sections (the stack pin is
+	   gated off; parked transforms neutralised). ──────────────────── */
+	.landing-v2 .landing-outro {
+		height: auto;
+		padding: 96px 0 0;
+	}
+
+	.landing-v2 .landing-services__stage {
+		position: static;
+		height: auto;
+	}
+
+	.landing-v2 .landing-services__center {
+		position: static;
+		display: block;
+		padding: 0 var(--m-margin, 24px);
+	}
+
+	.landing-v2 .landing-services__title {
+		position: static;
+		transform: none;
+		font-size: 28px;
+		line-height: 32px;
+		text-align: left;
+	}
+
+	.landing-v2 .landing-services__line { display: block; position: static; }
+	.landing-v2 .landing-services__small { display: none; }
+
+	.landing-v2 .landing-svc-card {
+		position: static;
+		transform: none !important;
+		height: auto;
+		margin: 48px 0 0;
+		padding: 0 var(--m-margin, 24px) 8px;
+	}
+
+	.landing-v2 .landing-svc-card__bg { display: none; }
+
+	.landing-v2 .landing-svc-card__dividerwrap {
+		position: static;
+		height: 1px;
+		margin-bottom: 24px;
+	}
+
+	.landing-v2 .landing-svc-card__divider,
+	.landing-v2 .landing-svc-card__divider-fill {
+		position: static;
+		height: 1px;
+		transform: none !important;
+	}
+
+	.landing-v2 .landing-svc-card__divider-fill { display: none; }
+
+	.landing-v2 .landing-svc-card__titlerow {
+		position: static;
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		/* Ink, not white-difference: the mobile card has no opaque
+		   dark layer beneath — blend-safe by construction. */
+		color: #161616;
+		mix-blend-mode: normal;
+		font-size: 32px;
+		line-height: 36px;
+	}
+
+	.landing-v2 .landing-svc-card__titlerow > * {
+		position: static;
+		color: inherit;
+		mix-blend-mode: normal;
+	}
+
+	.landing-v2 .landing-svc-card__img {
+		position: static;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 424 / 515;
+		margin-top: 24px;
+		overflow: hidden;
+	}
+
+	.landing-v2 .landing-svc-card__img img {
+		position: static !important;
+		width: 100% !important;
+		height: 100% !important;
+		object-fit: cover;
+	}
+
+	.landing-v2 .landing-svc-card__desc {
+		position: static;
+		transform: none;
+		width: auto;
+		margin-top: 24px;
+		font-size: 22px;
+		line-height: 28px;
+	}
+
+	.landing-v2 .landing-svc-card__listhead {
+		position: static;
+		margin-top: 32px;
+	}
+
+	.landing-v2 .landing-svc-card__lists {
+		position: static;
+		margin-top: 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 0 !important;
+	}
+
+	.landing-v2 .landing-svc-card__col {
+		width: auto !important;
+		margin: 0;
+	}
+
+	.landing-v2 .landing-svc-card__col li { margin-top: 8px; }
+
+	.landing-v2 .landing-svc-card__btnclip {
+		position: static !important;
+		top: auto !important;
+		display: inline-block;
+		margin-top: 32px;
+	}
+
+	.landing-v2 .landing-svc-card__btninner {
+		position: static;
+		transform: none !important;
+	}
+
+	/* ── FEATURED — native horizontal swipe (upgrades the stacked
+	   fallback earlier in this file; these win by source order). ──── */
+	.landing-v2 .landing-featured__stage {
+		padding: 96px 0 64px;
+	}
+
+	.landing-v2 .landing-featured__hl,
+	.landing-v2 .landing-featured__viewall {
+		margin-left: var(--m-margin, 24px);
+	}
+
+	.landing-v2 .landing-featured__hl {
+		font-size: 32px;
+		line-height: 34px;
+		color: #161616;
+		mix-blend-mode: normal;
+	}
+
+	.landing-v2 .landing-featured__strip {
+		flex-direction: row;
+		gap: 16px;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		-webkit-overflow-scrolling: touch;
+		scroll-snap-type: x mandatory;
+		padding: 0 var(--m-margin, 24px);
+		scroll-padding-left: var(--m-margin, 24px);
+	}
+
+	.landing-v2 .landing-featured__card {
+		flex: 0 0 80%;
+		max-width: 360px;
+		width: auto;
+		scroll-snap-align: start;
+	}
+
+	.landing-v2 .landing-featured__imgwin {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+	}
+
+	.landing-v2 .landing-featured__imgwin img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		position: static;
+	}
+
+	/* The desktop right-edge blur band + tint ghost the second card on
+	   a native swipe strip — the peek IS the affordance here. */
+	.landing-v2 .landing-featured__edge-tint,
+	.landing-v2 .landing-featured__stage > .gradual-blur {
+		display: none;
+	}
+
+	/* Tap affordance — the desktop custom cursor's copy, resident on
+	   every card (A3: no pointer, so the card carries its own label). */
+	.landing-v2 .landing-featured__card::after {
+		content: '[ VIEW CASE STUDY + ]';
+		display: block;
+		margin-top: 12px;
+		font-weight: 700;
+		font-size: 12px;
+		line-height: 14px;
+		color: #161616;
+	}
+
+	.landing-v2 .landing-featured__titleblock {
+		font-size: 22px;
+		line-height: 26px;
+	}
+
+	/* ── OUR NETWORK — static dark section (pin/hold gated off). ──── */
+	.landing-v2 .landing-network {
+		height: auto;
+		margin-top: 0;
+	}
+
+	.landing-v2 .landing-network__stage {
+		position: static;
+		height: auto;
+		padding: 96px 0 64px;
+	}
+
+	.landing-v2 .landing-network__title,
+	.landing-v2 .landing-network__subtitle,
+	.landing-v2 .landing-network__body {
+		position: static;
+		width: auto;
+		margin-left: var(--m-margin, 24px);
+		margin-right: var(--m-margin, 24px);
+	}
+
+	.landing-v2 .landing-network__title {
+		font-size: 32px;
+		line-height: 34px;
+	}
+
+	.landing-v2 .landing-network__subtitle { margin-top: 16px; }
+
+	.landing-v2 .landing-network__body {
+		margin-top: 32px;
+		font-size: 15px;
+		line-height: 26px;
+	}
+
+	.landing-v2 .landing-network__line {
+		display: inline;
+		position: static;
+		white-space: normal;
+	}
+	/* Flush-authored line spans flowed inline: restore the inter-line
+	   space (the founders weld bug, same fix). */
+	.landing-v2 .landing-network__subtitle .landing-network__line::after,
+	.landing-v2 .landing-network__body .landing-network__line::after {
+		content: ' ';
+	}
+
+	/* Terms: real tap targets (44px effective via padding, layout
+	   preserved with negative margin). */
+	.landing-v2 .landing-network__term {
+		padding: 12px 4px;
+		margin: -12px -4px;
+	}
+
+	.landing-v2 .landing-network__marquee {
+		position: static;
+		margin-top: 48px;
+	}
+
+	.landing-v2 .landing-network__marquee--bottom { margin-top: 16px; }
+
+	.landing-v2 .landing-network__row-fade { display: none; }
+
+	/* Photo strip: native horizontal scroll (the 5 fixed windows run
+	   1728px — a swipe strip, not a squeeze). */
+	.landing-v2 .landing-network__strip {
+		position: static;
+		margin-top: 48px;
+		display: flex;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior-x: contain;
+	}
+
+	.landing-v2 .landing-network__edge-fade { display: none; }
+
+	/* ── WE CREATE ACCESS — recomposed (see LandingAccess.astro). ─── */
+	.landing-v2 .landing-access {
+		height: auto;
+		margin-top: 0;
+	}
+
+	.landing-v2 .landing-access__stage {
+		position: static;
+		height: auto;
+		padding: 96px var(--m-margin, 24px) 64px;
+	}
+
+	.landing-v2 .landing-access__colmask,
+	.landing-v2 .landing-access__veilwrap,
+	.landing-v2 .landing-access__canvas,
+	.landing-v2 .landing-access__word,
+	.landing-v2 .landing-access__edge-tint,
+	.landing-v2 .landing-access__stage > .gradual-blur {
+		display: none;
+	}
+
+	.landing-v2 .landing-access__headline {
+		position: static;
+		transform: none;
+		width: auto;
+		text-align: left;
+		font-size: 30px;
+		line-height: 36px;
+		/* Ink — the difference treatment needs the image columns
+		   beneath; the mobile ground is flat. */
+		color: #161616;
+		mix-blend-mode: normal;
+	}
+
+	.landing-v2 .landing-access__hl-line { position: static; display: block; }
+
+	/* Higher specificity than the base display:none at file end (which
+	   sits LATER in source — the base must win above the seam). */
+	.landing-v2 .landing-access__stage .landing-access__mobile { display: block; }
+
+	.landing-v2 .landing-access__m-img {
+		margin: 40px 0 0;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+	}
+
+	.landing-v2 .landing-access__m-img img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.landing-v2 .landing-access__m-pairs {
+		list-style: none;
+		margin: 40px 0 0;
+		padding: 0;
+	}
+
+	.landing-v2 .landing-access__m-pair {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 14px 0;
+		border-bottom: 1px solid rgba(22, 22, 22, 0.15);
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-synthesis: none;
+		font-size: 22px;
+		line-height: 26px;
+		color: #161616;
+	}
+
+	.landing-v2 .landing-access__m-pair:first-child {
+		border-top: 1px solid rgba(22, 22, 22, 0.15);
+	}
+
+	.landing-v2 .landing-access__m-sep {
+		flex: 1 1 auto;
+		border-bottom: 1px solid rgba(22, 22, 22, 0.15);
+		transform: translateY(-6px);
+	}
+
+	/* ── CLOSING + FOOTER refinements over the base fallback. ─────── */
+	.landing-v2 .landing-closing__hl {
+		font-size: 30px;
+		line-height: 34px;
+	}
+
+	.landing-v2 .landing-closing__tiles { gap: 8px; }
+
+	.landing-v2 .landing-closing__tile {
+		height: auto;
+		aspect-ratio: 3 / 4;
+		overflow: hidden;
+	}
+
+	.landing-v2 .landing-closing__tile img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		position: static;
+	}
+
+	.landing-v2 .landing-footer {
+		padding-bottom: max(32px, var(--safe-bottom, 0px));
+	}
+}
+
+/* The mobile Access block must NOT exist on desktop — the scrub's
+   geometry (and the baseline fingerprints) never see it. Outside the
+   media query so the default is airtight at every width above the
+   seam. */
+.landing-v2 .landing-access__mobile { display: none; }
+
+@media (max-width: 1024px) {
+	/* Touch has no hover: portrait names render permanently (A3). The
+	   difference blend stays — over the portrait imagery it composites
+	   exactly as the desktop hover state does. */
+	.landing-v2 .landing-founders__portrait-name {
+		opacity: 1;
+	}
+
+	/* The featured module is gated off on mobile (the swipe strip
+	   replaces the scrub), so nothing ever adds .is-visible — the
+	   no-preference hidden state must not apply here. */
+	.landing-v2 .landing-featured__card {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+}
+
+@media (max-width: 1024px) {
+	/* Overflow root-causes found by measurement at 390 (the LV-
+	   expansion amplifier: any in-flow overflow widens the mobile
+	   layout viewport, which fixed elements then span — so these are
+	   page-level fixes, not cosmetic ones). Specificity matches the
+	   desktop centring rules where needed. */
+	.landing-v2 .landing-access__stage .landing-access__headline {
+		width: auto;
+		margin-left: 0;
+		margin-right: 0;
+		left: auto;
+		white-space: normal;
+	}
+
+	.landing-v2 .landing-access__stage .landing-access__hl-line {
+		white-space: normal;
+		/* Inline flow (not the authored blocks): the desktop line
+		   breaks fall at desktop measures; at 342px they orphan single
+		   words ("THAT"). The mixed faces live INSIDE the spans, so a
+		   natural reflow keeps them; ::after restores the inter-span
+		   spaces (flush-authored markup, the founders weld fix). */
+		display: inline;
+	}
+
+	.landing-v2 .landing-access__stage .landing-access__hl-line::after {
+		content: ' ';
+	}
+
+	.landing-v2 .landing-founders__headline .landing-founders__line {
+		white-space: normal;
+	}
+
+	.landing-v2 .landing-closing__hl {
+		white-space: normal;
+	}
+
+	.landing-v2 .landing-closing__kw {
+		width: auto !important; /* inline style from the component */
+		left: auto !important;
+	}
+
+	.landing-v2 .landing-footer__st-line {
+		font-size: 26px;
+		line-height: 30px;
+	}
+
+	/* Topbar: the shared chrome at phone width — the grid's
+	   min-content (logo 231 + MENU + LET'S CHAT + padding) exceeded
+	   390 and expanded the layout viewport. Smaller logo, tighter
+	   email; safe-area floors on the side padding. home.css is never
+	   edited (scope rule) — these override it from here. */
+	.landing-v2 .home__topbar {
+		padding-left: max(20px, var(--safe-left, 0px));
+		padding-right: max(20px, var(--safe-right, 0px));
+	}
+
+	.landing-v2 .home__logo {
+		font-size: 12px;
+		padding: 0 8px;
+	}
+
+	.landing-v2 .home__topbar-email {
+		font-size: 11px;
+	}
+}

@@ -39,6 +39,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { createAccessWave } from './access-wave.js';
+import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
+import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -97,16 +99,9 @@ const WORD_SWAP_BLUR_PX = 6;
 const SNAP_IDLE_MS = 150; // scroll quiet time before the pair snap fires
 const SNAP_DURATION_S = 0.6;
 
-/** Word pairs, sentence case per the Figma. Pair 2 is deliberately
- *  the same word both sides (deck-sourced brand-to-brand). */
-const PAIRS = [
-  ['Talent', 'Brands'],
-  ['Brands', 'Brands'],
-  ['Talent', 'Business'],
-  ['Hospitality', 'Culture'],
-  ['Media', 'Commerce'],
-  ['Corporate', 'Community'],
-];
+/** Word pairs — moved to data/landing/access-pairs.js (the mobile
+ *  composition renders all six statically; one content source). */
+const PAIRS = ACCESS_PAIRS;
 
 /** Column stack shapes (must match LandingAccess.astro): index of the
  *  pair-1 (rest-centred) item in each 8-item stack. */
@@ -118,6 +113,14 @@ export function initLandingAccess() {
   if (!(section instanceof HTMLElement)) return () => {};
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return () => {};
+  }
+
+  /* MOBILE (the viewport.js seam): the opposed-column scrub, veils,
+     words and the GL wave never boot — the section renders the static
+     recomposition (headline + the six-pair ledger, LandingAccess.astro
+     + landing.css). Zero WebGL contexts on phones (A4). */
+  if (isMobileViewport()) {
     return () => {};
   }
 

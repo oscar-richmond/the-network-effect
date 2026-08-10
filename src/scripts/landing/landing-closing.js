@@ -27,6 +27,7 @@ import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -232,7 +233,15 @@ export function initLandingClosing() {
          covered: fire ~200px into the actual reveal instead (the
          pin engages when the footer's flow top reaches
          100dvh - 811 from the viewport top). */
-      start: () => `top ${(window.innerHeight - 811 - 200).toFixed(0)}px`,
+      /* MOBILE: no pin — the footer is plain flow, so the desktop
+         formula (innerHeight − 811 − 200, i.e. the top rising past
+         the viewport) can sit beyond the document's end and never
+         fire, leaving the footer text in its clips forever. A plain
+         in-view start is the correct trigger there. */
+      start: () =>
+        isMobileViewport()
+          ? 'top 85%'
+          : `top ${(window.innerHeight - 811 - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {
         footerWordEls.forEach((el) => playLineRevealElement(el));

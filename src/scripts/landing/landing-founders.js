@@ -19,6 +19,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -123,7 +124,12 @@ export function initLandingFounders() {
      transform (the blend note on the constants). */
   const track = section.closest('[data-landing-founders-track]') ?? section.parentElement;
   const driftTweens = [];
-  {
+  /* MOBILE (the viewport.js seam): the drift/hold/exit scrub encodes
+     the desktop sticky-track geometry (portrait `top` bases, the photo
+     crop expansion, the pin catch) — the linear mobile stack has none
+     of it. The ENTRANCE below (word reveals + is-visible) runs on both
+     regimes; only this scrub is desktop's. */
+  if (!isMobileViewport()) {
     /* Entry runs until the sticky pin engages — which, with the
        bottom-aligned pin (the section is taller than the viewport),
        is one full SECTION height of scroll after the track's top
