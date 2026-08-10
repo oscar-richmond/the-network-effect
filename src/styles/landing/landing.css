@@ -2663,3 +2663,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 /* The menu's CTAs reuse the MORE INFO button (Oscar's rev) — carry
    the placeholder convention across to that class too. */
 .landing-v2 .landing-svc-card__btn.is-placeholder { cursor: default; }
+
+/* char-ripple wraps the label in spans, which then matched the
+   footer's old `li span { color: #9f9689 }` rule and turned the
+   links grey (Oscar's report). Inherit the link's own ink instead —
+   scoped to the LINKS, so any other footer span keeps its colour. */
+.landing-v2 .site-menu__footer-link,
+.landing-v2 .site-menu__footer-link span {
+	color: var(--color-ink-strong);
+}
