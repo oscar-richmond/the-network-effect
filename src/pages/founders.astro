@@ -85,6 +85,17 @@ import '../styles/fonts.css';
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
     {FOUNDERS_SLIDES.map((slide, i) => (
       <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'}>
+        {/* MOBILE portrait (mobile brief, 2026-08-10): the desktop
+            crossfade pair (.fd-portrait) can only show ONE founder
+            statically — and its base is Ashley, so the linear stack
+            paired her photo with Robbo's text. Each slide leads with
+            its own portrait instead; display:none above the seam
+            (founders.css), where the crossfade pair still owns the
+            imagery. Same asset, same sign-off caveat. */}
+        <figure class="fd-slide__m-portrait" aria-hidden="true">
+          <span class="fd-slide__m-name">{slide.name}</span>
+          <img src={asset(slide.img)} alt="" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+        </figure>
         {/* Bio — bold block + Serrif block with the 24px gap
             (Oscar's rev 2; was a continuous flow). */}
         <div class="fd-slide__bio" data-fd-el>

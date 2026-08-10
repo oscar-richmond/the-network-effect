@@ -368,3 +368,50 @@ body.founders-page {
 	.landing-v2 .fd-slide__name { mix-blend-mode: normal; color: #161616; font-size: 48px; line-height: 48px; }
 	.landing-v2.founders-page .fd-footer-wrap { position: static; height: auto; }
 }
+
+/* ── MOBILE refinements (mobile brief, 2026-08-10) over the fallback
+   block above. ──────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+	/* The desktop crossfade pair shows one founder statically (and
+	   the wrong pairing) — each slide carries its own portrait now. */
+	.landing-v2 .fd-portrait { display: none; }
+
+	.landing-v2 .fd-slide__m-portrait {
+		display: block;
+		margin: 0 0 24px;
+		width: 100%;
+	}
+
+	/* Ratio on the IMG, not the figure — the name heading lives in
+	   the figure's flow above it and must never be clipped. */
+	.landing-v2 .fd-slide__m-portrait img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 640 / 922;
+		max-height: 70svh;
+		object-fit: cover;
+		display: block;
+	}
+
+	.landing-v2 .fd-slide + .fd-slide { margin-top: 64px; }
+
+	/* The travelling names are desktop machinery (they follow the
+	   crossfade); each mobile figure carries its own name heading. */
+	.landing-v2 [data-fd-name] { display: none; }
+
+	.landing-v2 .fd-slide__m-name {
+		display: block;
+		margin: 0 0 16px;
+		font-weight: 700;
+		font-size: 34px;
+		line-height: 38px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+}
+
+/* Desktop keeps the crossfade pair; the per-slide figures must not
+   exist above the seam. */
+@media (min-width: 1025px) {
+	.landing-v2 .fd-slide__m-portrait { display: none; }
+}
