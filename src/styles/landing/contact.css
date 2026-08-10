@@ -410,3 +410,24 @@
 
 	.landing-v2 .ct-copy-tip.is-in { opacity: 1; }
 }
+
+/* ── MOBILE refinements (mobile brief, 2026-08-10). ─────────────── */
+@media (max-width: 1024px) {
+	.landing-v2 .ct__intro {
+		font-size: 30px;
+		line-height: 34px;
+	}
+
+	/* CTA rows: real tap targets. */
+	.landing-v2 .ct__cta { min-height: 44px; }
+
+	/* Full-screen modal chrome: 44px close clear of the notch. */
+	.landing-v2 .ct-modal__close {
+		height: 44px;
+		top: max(12px, var(--safe-top, 0px));
+		right: max(12px, var(--safe-right, 0px));
+	}
+
+	/* The cal window scrolls its own content; keep momentum. */
+	.landing-v2 .ct-modal__cal { -webkit-overflow-scrolling: touch; }
+}
