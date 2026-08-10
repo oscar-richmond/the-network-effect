@@ -41,6 +41,16 @@ body.menu-open .home__menu-cta {
   z-index: 0;
 }
 
+/* NEW BUILD ONLY: 24px per Figma (Oscar, 2026-08-10). A px literal in
+   the 1728 design grammar, like every other measure here — the scale
+   shell scales it with the rest of the page. Scoped rather than
+   changed in place because Menu.astro is shared with the archived
+   /old routes, which keep the 16px they were built with. */
+.landing-v2 .site-menu__backdrop {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
 .site-menu.is-open .site-menu__backdrop {
   pointer-events: auto;
   cursor: pointer;

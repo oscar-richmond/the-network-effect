@@ -132,13 +132,35 @@ body.case-page {
 	right: 24px;  /* the page margin — the row can never run past it */
 	top: 0;
 	display: flex;
-	gap: 24px; /* THE GUTTER: guaranteed between the widest parts */
+	/* THE GUTTER (Oscar, 2026-08-10): 16px of CLEAR SPACE between the
+	   widest element of one column and the left edge of the next.
+	   Because the columns below are content-sized, this gap IS that
+	   clearance — measured ink to ink, not box to box. */
+	gap: 16px;
 	align-items: flex-start;
 }
 
 .landing-v2 .cs-did__col {
-	flex: 1 1 0;
-	min-width: 0; /* let long items wrap instead of pushing a neighbour */
+	/* Content-sized, never stretched and never shrunk. The list items
+	   are `white-space: nowrap` (below), so an equal-width column
+	   (`flex: 1 1 0`) could not wrap a long item — it OVERFLOWED its
+	   own box instead and ran into the neighbour: on /work/
+	   wilderness-reserve "Health & Wellbeing Retreats" spilled 25px
+	   past its column and sat 1px inside CONNECT. Sizing each column
+	   to its own widest line is what makes the gap above a real
+	   guarantee rather than a box-edge one.
+
+	   flex-shrink STAYS 1 as the pressure valve: /work/pavilion-summit
+	   carries "Leadership Summits & Conferences" (273px), and three
+	   content-sized columns plus two 16px gaps come to 640px against
+	   the 621px available between 1083 and the 24px page margin. Left
+	   free-standing the row would have run 19px past that margin, so
+	   there the columns shrink and the long item wraps. Wrapped ink can
+	   never exceed its own box, so the 16px clearance is preserved
+	   either way — this only ever trades a line break for a margin
+	   breach, never for an overlap. */
+	flex: 0 1 auto;
+	width: max-content;
 }
 
 .landing-v2 .cs-did__pillar {
@@ -163,7 +185,11 @@ body.case-page {
 	font-size: 16px;
 	line-height: 19px;
 	color: #161616;
-	white-space: nowrap;
+	/* NOT `white-space: nowrap` any more. The column is sized to its
+	   longest line (`width: max-content`), so items sit on one line
+	   without being forced to — and forcing it was the bug: under the
+	   old equal-width columns a long item could not wrap, so it
+	   overflowed its box and collided with the next column. */
 }
 
 /* ── Divider — 120 after what-we-did; 100 after the stream (file). */
