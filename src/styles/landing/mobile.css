@@ -158,3 +158,19 @@
 	.landing-v2 .sv-rows__index,
 	.landing-v2 .work-tile__m-index { font-size: 12px; }
 }
+
+/* ── .cr-sr STATIC (Phase C finding — the CLOSECLOSE bug): char-
+   ripple injects this rule from JS, but only on hover devices (its
+   touch early-return skips ensureStyles). menu.js builds .cr-sr
+   screen-reader duplicates on EVERY device, so touch rendered them
+   visibly — the toggle read "CLOSECLOSE". Static and unconditioned
+   here; on desktop it duplicates the injected rule verbatim
+   (visually inert). */
+.landing-v2 .cr-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
