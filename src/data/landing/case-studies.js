@@ -164,14 +164,8 @@ export const CASE_STUDIES = [
         'Jamie Laing',
         'Sophie Habboo',
       ] },
-      { serrif: '', rest: 'SCOPE', items: [
-        'Creative Direction',
-        'Event Strategy',
-        'Speaker Curation',
-        'Brand Partnerships',
-        'Guest Experience',
-        'Event Production',
-      ] },
+      /* SCOPE removed at Oscar's request (2026-08-10) — his copy
+         listed it, he has since cut it from this study. */
     ],
   },
 
