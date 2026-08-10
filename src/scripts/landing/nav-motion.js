@@ -108,6 +108,14 @@ export function initNavEntrance() {
 
   const timeouts = [];
   let disposed = false;
+  /* RE-ANCHORED (Oscar's splash sequence): when the splash owns the
+     load it drives the nav's arrival itself — the logo lands via the
+     handoff cross-resolve, MENU and LET'S CHAT ripple in after it.
+     The parts stay hidden above; this entrance must NOT also fire or
+     both would play. Every other load keeps the original timing. */
+  if (document.documentElement.getAttribute('data-ne-splash') === 'on') {
+    return () => { disposed = true; timeouts.forEach(clearTimeout); };
+  }
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;

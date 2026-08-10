@@ -17,6 +17,7 @@
  * promoted anywhere until Oscar says so. See docs/ENVIRONMENTS.md.
  */
 import SiteShell from '../layouts/SiteShell.astro';
+import LandingSplash from '../components/landing/LandingSplash.astro';
 import LandingHero from '../components/landing/LandingHero.astro';
 import LandingFounders from '../components/landing/LandingFounders.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
@@ -31,6 +32,9 @@ import '../styles/fonts.css';
 ---
 
 <SiteShell title="The Network Effect" bodyClass="landing-v2">
+  {/* Entry sequence — first visit only, pre-paint decision inside. */}
+  <LandingSplash />
+
   <LandingHero />
 
   {/* First content section — slides up over the held full-screen
@@ -96,6 +100,16 @@ import '../styles/fonts.css';
   import { initLandingAccess } from '../scripts/landing/landing-access.js';
   import { initLandingClosing } from '../scripts/landing/landing-closing.js';
   import { initNavEntrance } from '../scripts/landing/nav-motion.js';
+  import { initSplash } from '../scripts/landing/splash.js';
+
+  /* The splash boots FIRST so it owns the load before any section
+     schedules its own arrival. It only exists when the pre-paint
+     decision in LandingSplash.astro turned it on. */
+  const splashEl = document.querySelector('[data-landing-splash]');
+  let cleanupSplash = document.documentElement.getAttribute('data-ne-splash') === 'on'
+    && splashEl instanceof HTMLElement
+    ? initSplash(splashEl)
+    : () => {};
 
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();

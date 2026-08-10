@@ -1,0 +1,128 @@
+---
+/**
+ * SPLASH / ENTRY SEQUENCE (/landing, first visit only) — markup +
+ * CRITICAL inline CSS + a synchronous pre-paint decision.
+ *
+ * The cover and its hidden state MUST exist before first paint, so
+ * both the styles and the show/hide decision are inline here rather
+ * than in a bundled sheet (the flash-window discipline the wipe's
+ * pre-paint hold established). scripts/landing/splash.js owns
+ * everything after boot.
+ *
+ * Z 11000 — above the wipe's cover (10000), the canvas cursor
+ * (9999), grain (9000), the topbar (600) and every modal.
+ */
+---
+
+<style is:inline>
+  .splash-v2 {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    background: #161616;
+    will-change: transform;
+    /* Hidden by default: only the inline boot below reveals it, so a
+       load that should NOT splash never paints black at all. */
+    display: none;
+  }
+
+  html[data-ne-splash='on'] .splash-v2 { display: block; }
+
+  /* Scroll is locked while the cover is up, and nothing beneath is
+     tabbable (the gate is the /old splash's own convention, which
+     Menu.astro already honours).
+
+     Keyed on .splash-active ONLY — that class is added pre-paint by
+     the inline boot below and REMOVED when the sequence finishes.
+     Keying it on [data-ne-splash] instead left the page unscrollable
+     for good, because that attribute has to persist to keep the
+     entrance's end states from snapping back. */
+  html.splash-active,
+  html.splash-active body {
+    overflow: hidden !important;
+  }
+
+  html.splash-active [data-splash-gate] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .splash-v2__logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    /* The nav wordmark's exact treatment at 24px, white on black. */
+    font-family: 'Dazzed', var(--font-display, sans-serif);
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: #fff;
+    white-space: nowrap;
+    transform-origin: 50% 50%;
+  }
+
+  /* Each character starts hidden; the nav's own .nav-char-in
+     animation (landing.css) ripples them in left-to-right. */
+  .splash-v2__logo .cr-char {
+    display: inline-block;
+    opacity: 0;
+  }
+
+  .splash-v2__line {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .splash-v2__line { display: none; }
+    .splash-v2__logo .cr-char { opacity: 1; animation: none !important; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    /* PRE-PAINT DECISION. First visit only: sessionStorage
+       'ne-splash-seen'. ?splash=1 forces, ?splash=0 suppresses. The
+       page-transition wipe owns any load it is mid-handoff on, so
+       its hold attribute wins outright — the two can never both
+       run. Mirrors splashWanted() in splash.js; it must be inline
+       and synchronous to beat the first paint. */
+    try {
+      var p = new URLSearchParams(window.location.search).get('splash');
+      var on;
+      if (p === '1') on = true;
+      else if (p === '0') on = false;
+      else if (document.documentElement.getAttribute('data-ne-cover') === 'hold') on = false;
+      else {
+        try { on = !sessionStorage.getItem('ne-splash-seen'); }
+        catch (e) { on = true; }
+      }
+      if (on) {
+        document.documentElement.setAttribute('data-ne-splash', 'on');
+        /* Pre-paint scroll lock — splash.js re-adds this idempotently
+           and removes it when the sequence ends. */
+        document.documentElement.classList.add('splash-active');
+      }
+    } catch (e) {
+      /* Never strand the page on a boot error — no splash. */
+    }
+  })();
+</script>
+
+<div class="splash-v2" data-landing-splash aria-hidden="true">
+  {/* aria-hidden: the REAL nav logo carries the accessible name.
+      The document is aria-busy while this is up (splash.js). */}
+  <p class="splash-v2__logo" data-splash-logo>THE NETWORK EFFECT</p>
+  <div class="splash-v2__line" data-splash-line></div>
+</div>
