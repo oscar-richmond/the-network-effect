@@ -31,6 +31,9 @@ const ref = (slug) => {
 };
 
 const yox = (n) => asset(`/assets/landing/case/yoxman/${n}`);
+const pcl = (n) => asset(`/assets/landing/case/pavilion-club/${n}`);
+const psu = (n) => asset(`/assets/landing/case/pavilion-summit/${n}`);
+const wld = (n) => asset(`/assets/landing/case/wilderness-reserve/${n}`);
 
 /**
  * @typedef {{ layout: 'full' | 'pair', narrowFirst?: boolean, imgs: string[] }} StreamRow
@@ -76,17 +79,132 @@ export const CASE_STUDIES = [
       ],
     },
     /* PLACEHOLDER copy — the file's six bullets. */
-    keyImpact: [
+    railBlocks: [{ serrif: 'KEY', rest: 'IMPACT', items: [
       'Festival concept and brand positioning',
       'Michelin-star chef programming',
       'Premium partnership development',
       'Guest experience and hospitality design',
       'Commercial sponsorship',
       'End-to-end event production',
-    ],
+    ] }],
     /* MORE WORK derives in the template (Oscar's rev): every /work
        project except this study, in the landing order, with the
        /work page's images and descriptions — no per-study list. */
+  },
+
+  /* ── PAVILION CLUB (Oscar's copy drop 2026-08-10). Titles, Our
+     Work and Key Impact are HIS VERBATIM; the hero intro below is
+     mine, written to the Yoxman length brief (3-4 lines at 16/14")
+     and flagged for his approval. Imagery is his supplied set —
+     standard sign-off caveat, and it contains recognisable people. */
+  {
+    base: ref('pavilion-club'),
+    subtitle: 'Building a Community Through Culture and Connection',
+    heroImg: pcl('hero.jpg'),
+    /* CLAUDE-WRITTEN intro — pending Oscar's approval. */
+    intro:
+      'Built from the ground up, Pavilion\u2019s membership brings founders, investors and cultural leaders into the same room \u2014 and gives them a reason to keep coming back.',
+    whatWeDid: {
+      immerse: ['Cultural Programming', 'Industry-leading Events', 'Talent-Led Experiences'],
+      connect: ['Strategic Introductions', 'Brand Alignment', 'Commercial Management'],
+      amplify: ['Brand-led Narratives', 'Talent Partnerships'],
+    },
+    ourWork: {
+      desc: 'Rob created and launched Pavilion\u2019s private membership proposition, helping scale the brand across four London clubs. His focus was on creating meaningful connections between founders, CEOs, investors, creatives and cultural leaders through carefully curated experiences and programming.',
+      stream: [
+        { layout: 'full', imgs: [pcl('stream-1.jpg')] },
+        { layout: 'pair', narrowFirst: true, imgs: [pcl('stream-2.jpg'), pcl('stream-3.jpg')] },
+        { layout: 'full', imgs: [pcl('stream-4.jpg')] },
+        { layout: 'full', imgs: [pcl('stream-5.jpg')] },
+        { layout: 'pair', narrowFirst: false, imgs: [pcl('stream-6.jpg'), pcl('stream-7.jpg')] },
+        { layout: 'full', imgs: [pcl('stream-8.jpg')] },
+      ],
+    },
+    railBlocks: [{ serrif: 'KEY', rest: 'IMPACT', items: [
+      'Developed Pavilion\u2019s membership proposition and member journey',
+      'Launched and scaled membership across four London locations',
+      'Produced flagship founder and CEO programming',
+      'Curated conversations with industry-leading entrepreneurs and cultural figures',
+      'Secured strategic partnerships and commercial collaborations',
+      'Positioned Pavilion as a destination for business, culture and community',
+    ] }],
+  },
+
+  /* ── PAVILION SUMMIT. TWO rail blocks (his copy gives Featured
+     Speakers AND Scope rather than a Key Impact list). NAMED
+     INDIVIDUALS in the speaker list — rights/consent confirmation
+     needed before anything ships, the elevated third-party class. */
+  {
+    base: ref('pavilion-summit'),
+    subtitle: '24 Hours Outside the Everyday',
+    heroImg: psu('hero.jpg'),
+    /* CLAUDE-WRITTEN intro — pending Oscar's approval. */
+    intro:
+      'Twenty-four hours away from the everyday, bringing founders, athletes and cultural voices together for the conversations that boardrooms rarely make room for.',
+    whatWeDid: {
+      immerse: ['Leadership Summits & Conferences', 'Industry-leading Events', 'Cultural Programming'],
+      connect: ['Talent Partnerships', 'Strategic Introductions', 'Brand Alignment'],
+      amplify: ['Brand-led Narratives', 'Campaign Content'],
+    },
+    ourWork: {
+      desc: 'Rob conceived and delivered an immersive leadership experience bringing together influential founders, business leaders and cultural voices for meaningful conversation beyond the boardroom. From concept through to execution, he curated every aspect of the experience including speakers, partnerships, hospitality and guest journey.',
+      stream: [
+        { layout: 'full', imgs: [psu('stream-1.jpg')] },
+        { layout: 'pair', narrowFirst: true, imgs: [psu('stream-2.jpg'), psu('stream-3.jpg')] },
+        { layout: 'full', imgs: [psu('stream-4.jpg')] },
+        { layout: 'full', imgs: [psu('stream-5.jpg')] },
+      ],
+    },
+    railBlocks: [
+      { serrif: 'FEATURED', rest: 'SPEAKERS', items: [
+        'Ashley Walters',
+        'Stephen Graham',
+        'Joe Marler',
+        'Professor Tim Spector',
+        'Jamie Laing',
+        'Sophie Habboo',
+      ] },
+      { serrif: '', rest: 'SCOPE', items: [
+        'Creative Direction',
+        'Event Strategy',
+        'Speaker Curation',
+        'Brand Partnerships',
+        'Guest Experience',
+        'Event Production',
+      ] },
+    ],
+  },
+
+  /* ── WILDERNESS RESERVE. */
+  {
+    base: ref('wilderness-reserve'),
+    subtitle: 'From Estate to Destination',
+    heroImg: wld('hero.jpg'),
+    /* CLAUDE-WRITTEN intro — pending Oscar's approval. */
+    intro:
+      'Seven years turning a private Suffolk estate into one of Britain\u2019s defining luxury destinations \u2014 three estates, twenty-eight residences and a brand people travel for.',
+    whatWeDid: {
+      immerse: ['Talent-Led Experiences', 'Immersive Brand Worlds', 'Health & Wellbeing Retreats'],
+      connect: ['Strategic Introductions', 'Brand Alignment', 'Commercial Management'],
+      amplify: ['Brand-led Narratives', 'Talent Partnerships', 'Campaign Content'],
+    },
+    ourWork: {
+      desc: 'Over seven years, Rob helped transform Wilderness Reserve from a private country estate into one of Britain\u2019s leading luxury hospitality destinations. Working across commercial strategy, brand development, partnerships, events and audience growth, he played a key role in building the business into a recognised lifestyle brand.',
+      stream: [
+        { layout: 'full', imgs: [wld('stream-1.jpg')] },
+        { layout: 'pair', narrowFirst: true, imgs: [wld('stream-2.jpg'), wld('stream-3.jpg')] },
+        { layout: 'full', imgs: [wld('stream-4.jpg')] },
+        { layout: 'pair', narrowFirst: false, imgs: [wld('stream-5.jpg'), wld('stream-6.jpg')] },
+      ],
+    },
+    railBlocks: [{ serrif: 'KEY', rest: 'IMPACT', items: [
+      'Growth from 7 luxury residences to more than 28 properties across three estates',
+      'Digital audience increased from 10,000 to over 415,000',
+      'Helped establish three core revenue pillars: Leisure \u2022 Weddings \u2022 Corporate Retreats',
+      'Developed partnerships with luxury brands, global businesses and cultural talent',
+      'Curated celebrity stays, private events and brand experiences that elevated the estate\u2019s profile',
+      'Supported the commercial growth that positioned Wilderness Reserve as one of the UK\u2019s premier luxury destinations',
+    ] }],
   },
 ];
 

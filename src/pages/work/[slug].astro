@@ -115,12 +115,22 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       </div>
       <div class="cs-rail-seg cs-rail-seg--2">
         <div class="cs-rail-sticky" data-cs-rail>
-          <h2 class="cs-rail__label"><span class="cs-serrif">KEY</span> IMPACT</h2>
-          <ul class="cs-rail__bullets">
-            {study.keyImpact.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
+          {/* One or more labelled bullet blocks (Oscar's rev): most
+              studies carry a single KEY IMPACT list; Pavilion Summit
+              carries FEATURED SPEAKERS + SCOPE. Data-driven so a new
+              study stays a pure data drop. */}
+          {study.railBlocks.map((block, bi) => (
+            <Fragment>
+              <h2 class="cs-rail__label" style={bi > 0 ? 'margin-top:40px' : undefined}>
+                <span class="cs-serrif">{block.serrif}</span> {block.rest}
+              </h2>
+              <ul class="cs-rail__bullets">
+                {block.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </Fragment>
+          ))}
         </div>
       </div>
       {study.ourWork.stream.map((row, r) => (
