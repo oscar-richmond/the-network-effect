@@ -56,3 +56,77 @@
     --m-margin-safe-r: max(var(--m-margin), var(--safe-right, 0px));
   }
 }
+
+/* ── MENU OVERLAY at phone width (B7). The shared menu.css handles
+   sub-1000 loosely (it predates the new build); these rules make the
+   overlay a designed full-screen mobile menu. .landing-v2-scoped —
+   /old keeps its own menu rendering. */
+@media (max-width: 1024px) {
+	.landing-v2 .site-menu__container {
+		padding: max(16px, var(--safe-top, 0px)) var(--m-margin-safe-r, 24px)
+			max(24px, var(--safe-bottom, 0px)) var(--m-margin-safe-l, 24px);
+		width: 100%;
+	}
+
+	.landing-v2 .site-menu__wrapper {
+		width: 100%;
+		display: block;
+	}
+
+	/* Rows wrap; links sized for the 342px measure with 44px targets.
+	   Specificity (0,3,0) throughout this block: landing.css owns the
+	   desktop menu rows at (0,2,0) and sits later in the bundle. */
+	.landing-v2 .site-menu__body .site-menu__row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 18px;
+		row-gap: 0;
+		gap: 18px;
+	}
+
+	.landing-v2 .site-menu__body .site-menu__link {
+		font-size: 34px;
+		line-height: 56px;
+	}
+
+	.landing-v2 .site-menu__sep { font-size: 24px; }
+
+	/* CTAs stack full-width above the footer links — the desktop
+	   places them side by side over the footer row. */
+	.landing-v2 .site-menu__panel .site-menu__footer {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+		margin-top: 32px;
+		position: static;
+	}
+
+	.landing-v2 .site-menu__panel .site-menu__ctas {
+		position: static;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+		margin: 0;
+	}
+
+	.landing-v2 .site-menu__ctaclip { position: static; }
+
+	.landing-v2 .site-menu__panel .site-menu__footer ul {
+		position: static;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin: 0;
+		padding: 0;
+		width: auto;
+	}
+
+	.landing-v2 .site-menu__panel .site-menu__footer-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+	}
+}
