@@ -345,7 +345,7 @@ const base = import.meta.env.BASE_URL;
     <script is:inline>
       (function () {
         /* Landing only — and BEFORE first paint. */
-        if (!/\/landing\/?$/.test(window.location.pathname)) return;
+        if (!/^\/(?:landing\/?)?$/.test(window.location.pathname)) return;
         try {
           var p = new URLSearchParams(window.location.search).get('splash');
           var on;

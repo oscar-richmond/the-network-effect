@@ -38,7 +38,9 @@ export const menuLinks = [
  *  applies to the imagery itself.
  * @type {MenuLink[]} */
 export const landingMenuLinks = [
-  { href: 'landing', label: 'Home', image: 'Home.jpg' },
+  /* Home -> the root now (release restructure). linkHref('')
+     resolves to base = '/'. */
+  { href: '', label: 'Home', image: 'Home.jpg' },
   { href: 'founders', label: 'Founders', image: 'Founders.jpg' },
   { href: 'services', label: 'Services', image: 'Services.jpg' },
   { href: 'work', label: 'Work', image: 'Work.jpg' },

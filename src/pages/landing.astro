@@ -1,147 +1,22 @@
 ---
 /**
- * /landing — THE NEW SITE, in development.
- *
- * A fresh page: hero only, nothing beyond it. It shares the visual
- * system with the archived build (ground, grain, top nav, Lenis/GSAP
- * scroll architecture) but not its files — everything here is scoped to
- * the `landing-v2` body class and lives under src/{components,styles,
- * scripts}/landing/. Nothing on this page touches /old, /services or
- * the holding routes.
- *
- * Page chrome (nav / menu overlay / grain) lives in the shared
- * SiteShell (markup only — scripts boot per-page below, so the
- * extraction left this page's build byte-identical).
- *
- * STAGING ONLY. The root serves the holding page; this route is not
- * promoted anywhere until Oscar says so. See docs/ENVIRONMENTS.md.
+ * /landing — REDIRECT STUB (release restructure, Oscar 2026-08-10).
+ * The landing page moved to "/" (index.astro). This keeps every old
+ * bookmark/deep link working; nothing in the site links here. A
+ * plain document on purpose: no BaseLayout, so no scale-shell boot,
+ * no splash gate, no wipe — just an instant client-side redirect
+ * with a meta fallback for no-JS.
  */
-import SiteShell from '../layouts/SiteShell.astro';
-import LandingSplash from '../components/landing/LandingSplash.astro';
-import LandingHero from '../components/landing/LandingHero.astro';
-import LandingFounders from '../components/landing/LandingFounders.astro';
-import LandingNetwork from '../components/landing/LandingNetwork.astro';
-import LandingFeatured from '../components/landing/LandingFeatured.astro';
-import LandingServicesStack from '../components/landing/LandingServicesStack.astro';
-import LandingAccess from '../components/landing/LandingAccess.astro';
-import LandingClosing from '../components/landing/LandingClosing.astro';
-import LandingFooter from '../components/landing/LandingFooter.astro';
-import '../styles/home.css';
-import '../styles/landing/landing.css';
-import '../styles/fonts.css';
 ---
 
-<SiteShell title="The Network Effect" bodyClass="landing-v2">
-  {/* Entry sequence — first visit only, pre-paint decision inside. */}
-  <LandingSplash />
-
-  <LandingHero />
-
-  {/* First content section — slides up over the held full-screen
-      video; see the arrival note in landing.css. */}
-  <LandingFounders />
-
-  {/* Services — doubles as the departure runway (the grey ground the
-      full-screen founders photo scrolls off against) and now carries
-      the full stacked-services sequence (Figma 13:1729/13:2066):
-      centred intro line → title rise + morph to the small OUR
-      SERVICES → three pillar cards rise and stack at 150px offsets →
-      the fade-to-black (re-anchored, constants verbatim) into Our
-      Network. All beats in landing-services.js. Line 1 mixes faces;
-      its left edge aligns the O of OUR onto the first S of ACCESS
-      below (runtime glyph derivation, unchanged). FROM sits in its
-      own span so Beat A can exit it separately (the wrap keeps
-      element children whole). */}
-  <section class="landing-outro" aria-label="Our services" data-landing-services>
-    <div class="landing-services__stage" data-services-stage>
-      <div class="landing-services__center" data-services-center>
-        <h2 class="landing-services__title" data-landing-services-title>
-          <span class="landing-services__line" data-landing-services-line1
-            ><span class="landing-services__serrif">OUR SERVICES<span data-services-stop>.</span></span> <span data-services-from>FROM</span></span
-          >
-          <span class="landing-services__line" data-landing-services-line2>ACCESS. TO IMPACT.</span>
-        </h2>
-      </div>
-      <LandingServicesStack />
-    </div>
-  </section>
-
-  {/* Featured Work — horizontal gallery; overlaps the services
-      trailing viewport (light-on-light continuous scroll) and
-      carries the relocated fade-to-black into Our Network. */}
-  <LandingFeatured />
-
-  {/* Our Network — arrives on the black Featured Work fades to. */}
-  <LandingNetwork />
-
-  {/* We Create Access — light returns on a plain document boundary;
-      the section's own top fade softens the dark→light cut. */}
-  <LandingAccess />
-
-  {/* Closing section + footer — plain document flow, no runway
-      (Figma 21:2392). Both carry z260, the exit gate over the fixed
-      hero stage. */}
-  <LandingClosing />
-  <LandingFooter />
-  {/* Footer-reveal spacer: the footer overlaps the closing section's
-      bottom (negative margin) and pins BEHIND it (z259 < 260) at the
-      viewport bottom; this transparent, click-through spacer keeps
-      the document height so the page ends exactly at full reveal. */}
-  <div class="landing-footer-spacer" aria-hidden="true"></div>
-</SiteShell>
-
-<script>
-  import { initLandingHeroScroll } from '../scripts/landing/landing-hero-scroll.js';
-  import { initLandingFounders } from '../scripts/landing/landing-founders.js';
-  import { initCharRipple } from '../scripts/char-ripple.js';
-  import { initLandingServices } from '../scripts/landing/landing-services.js';
-  import { initLandingNetwork } from '../scripts/landing/landing-network.js';
-  import { initLandingFeatured } from '../scripts/landing/landing-featured.js';
-  import { initLandingAccess } from '../scripts/landing/landing-access.js';
-  import { initLandingClosing } from '../scripts/landing/landing-closing.js';
-  import { initNavEntrance } from '../scripts/landing/nav-motion.js';
-  import { initSplash } from '../scripts/landing/splash.js';
-
-  /* The splash boots FIRST so it owns the load before any section
-     schedules its own arrival. It only exists when the pre-paint
-     decision in LandingSplash.astro turned it on. */
-  const splashEl = document.querySelector('[data-landing-splash]');
-  let cleanupSplash = document.documentElement.getAttribute('data-ne-splash') === 'on'
-    && splashEl instanceof HTMLElement
-    ? initSplash(splashEl)
-    : () => {};
-
-  let cleanupLandingHero = initLandingHeroScroll();
-  let cleanupLandingFounders = initLandingFounders();
-  let cleanupCharRipple = initCharRipple();
-  let cleanupLandingServices = initLandingServices();
-  let cleanupLandingNetwork = initLandingNetwork();
-  let cleanupLandingFeatured = initLandingFeatured();
-  let cleanupLandingAccess = initLandingAccess();
-  let cleanupLandingClosing = initLandingClosing();
-  let cleanupNavEntrance = initNavEntrance();
-
-  document.addEventListener('astro:before-swap', () => {
-    cleanupLandingHero();
-    cleanupLandingFounders();
-    cleanupCharRipple();
-    cleanupLandingServices();
-    cleanupLandingNetwork();
-    cleanupLandingFeatured();
-    cleanupLandingAccess();
-    cleanupLandingClosing();
-    cleanupNavEntrance();
-  });
-
-  document.addEventListener('astro:after-swap', () => {
-    cleanupLandingHero = initLandingHeroScroll();
-    cleanupLandingFounders = initLandingFounders();
-    cleanupCharRipple = initCharRipple();
-    cleanupLandingServices = initLandingServices();
-    cleanupLandingNetwork = initLandingNetwork();
-    cleanupLandingFeatured = initLandingFeatured();
-    cleanupLandingAccess = initLandingAccess();
-    cleanupLandingClosing = initLandingClosing();
-    cleanupNavEntrance = initNavEntrance();
-  });
-</script>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0;url=/" />
+    <link rel="canonical" href="/" />
+    <title>The Network Effect</title>
+    <script>window.location.replace('/');</script>
+  </head>
+  <body></body>
+</html>
