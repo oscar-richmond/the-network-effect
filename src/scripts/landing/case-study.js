@@ -154,7 +154,13 @@ export function initCaseStudy() {
         startX = e.clientX;
         baseOffset = idx * CARD_STEP_PX;
         track.style.transition = 'none';
-        viewport.setPointerCapture?.(e.pointerId);
+        /* NO setPointerCapture (Oscar's report: MORE WORK cards were
+           unclickable). Capturing on the VIEWPORT retargets the
+           subsequent `click` to the viewport itself, so the card's
+           anchor never received it and no navigation ever fired —
+           and it was never released either. The window-level
+           pointermove/up listeners below already track the pointer
+           outside the element, so the capture bought nothing. */
       };
       const onPointerMove = (e) => {
         if (!dragging) return;
