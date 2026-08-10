@@ -922,3 +922,9 @@
 	   gated off — it has no business on the linear hero. */
 	.landing-v2 .sv-hero__canvas { display: none; }
 }
+
+@media (max-width: 1024px) {
+	/* Type floor (Phase C) — this file sits after mobile.css in the
+	   bundle, so the floor must live here to win. */
+	.landing-v2 .sv-rows__index { font-size: 12px; }
+}

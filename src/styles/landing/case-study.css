@@ -798,3 +798,8 @@ body.case-page {
 
 	.landing-v2 .cs-lightbox__arrow { display: none; }
 }
+
+@media (max-width: 1024px) {
+	/* Type floor (Phase C): the More-Work card indices rendered 10px. */
+	.landing-v2 .cs-more__cardindex { font-size: 12px; }
+}

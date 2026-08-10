@@ -415,3 +415,9 @@ body.founders-page {
 @media (min-width: 1025px) {
 	.landing-v2 .fd-slide__m-portrait { display: none; }
 }
+
+@media (max-width: 1024px) {
+	/* Type floor (Phase C): the list index superscripts rendered 10px.
+	   Desktop keeps Oscar's tuned size — this floors mobile only. */
+	.landing-v2 .fd-slide__list-index { font-size: 12px; }
+}

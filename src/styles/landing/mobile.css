@@ -130,3 +130,31 @@
 		min-height: 44px;
 	}
 }
+
+/* ── Phase C fixes: tap-target floors + the 12px type floor. ────── */
+@media (max-width: 1024px) {
+	/* Topbar + footer text links render 15-16px tall; padding extends
+	   each hit area to 44px effective with negative margin cancelling
+	   the layout growth (the network-terms pattern) — visual layout
+	   byte-identical, targets compliant. */
+	/* Filled buttons (founders CTAs etc.) are excluded — padding grows
+	   a visible fill; their natural boxes already run ~40px+. */
+	.landing-v2 .home__menu-toggle,
+	.landing-v2 .home__topbar-email,
+	.landing-v2 .home__logo-link,
+	.landing-v2 .landing-footer__link,
+	.landing-v2 .landing-footer__rowitem,
+	.landing-v2 .landing-footer__start {
+		padding-top: 14px;
+		padding-bottom: 14px;
+		margin-top: -14px;
+		margin-bottom: -14px;
+	}
+
+	/* Type floor: nothing under 12px effective (C-TYPE). */
+	.landing-v2 .home__topbar-email { font-size: 12px; }
+	.landing-v2 .landing-closing__kw-index,
+	.landing-v2 .landing-featured__index,
+	.landing-v2 .sv-rows__index,
+	.landing-v2 .work-tile__m-index { font-size: 12px; }
+}
