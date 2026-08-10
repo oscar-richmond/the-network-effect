@@ -145,8 +145,17 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           class={`cs-row cs-row--${row.layout}${row.layout === 'pair' && !row.narrowFirst ? ' cs-row--wide-first' : ''}${r >= 3 ? ' cs-row--s2' : ''}`}
           data-cs-row
         >
-          {row.imgs.map((src) => (
-            <figure class="cs-row__img" data-cs-lb-item>
+          {row.imgs.map((src, i) => (
+            /* `row.framing` (optional, per image): the crop anchor for
+               that slot. Default is the CSS centre crop; 'top' frames
+               from the top edge down, which is what portraits-in-a-
+               landscape-slot need so heads aren't cut (Oscar's report
+               on Pavilion Summit). */
+            <figure
+              class="cs-row__img"
+              data-cs-lb-item
+              style={row.framing?.[i] ? `--cs-img-pos:${row.framing[i]}` : undefined}
+            >
               {src.endsWith('.mp4') || src.endsWith('.webm') ? (
                 /* Video rows (Oscar's rev): autoplay requires muted;
                    playsinline for iOS; looped. NOTE: the current

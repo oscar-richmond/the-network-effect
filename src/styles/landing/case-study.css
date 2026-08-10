@@ -208,6 +208,10 @@ body.case-page {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	/* Crop anchor — centre by default; a row can override per slot
+	   via --cs-img-pos (e.g. 'top', so a group shot in a landscape
+	   slot keeps its heads rather than cropping them off). */
+	object-position: var(--cs-img-pos, 50% 50%);
 	display: block;
 }
 

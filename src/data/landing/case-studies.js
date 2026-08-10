@@ -137,7 +137,10 @@ export const CASE_STUDIES = [
   {
     base: ref('pavilion-summit'),
     subtitle: '24 Hours Outside the Everyday',
-    heroImg: psu('hero.jpg'),
+    /* HERO = the LAST image in the gallery (Oscar's rev). The gallery
+       keeps its own order below, unchanged — this only re-points the
+       hero at stream-5. */
+    heroImg: psu('stream-5.jpg'),
     /* CLAUDE-WRITTEN intro — pending Oscar's approval. */
     intro:
       'Twenty-four hours away from the everyday, bringing founders, athletes and cultural voices together for the conversations that boardrooms rarely make room for.',
@@ -150,8 +153,11 @@ export const CASE_STUDIES = [
       desc: 'Rob conceived and delivered an immersive leadership experience bringing together influential founders, business leaders and cultural voices for meaningful conversation beyond the boardroom. From concept through to execution, he curated every aspect of the experience including speakers, partnerships, hospitality and guest journey.',
       stream: [
         { layout: 'full', imgs: [psu('stream-1.jpg')] },
-        { layout: 'pair', narrowFirst: true, imgs: [psu('stream-2.jpg'), psu('stream-3.jpg')] },
-        { layout: 'full', imgs: [psu('stream-4.jpg')] },
+        /* Gallery image 3 (the panel) frames from the TOP — the
+           centre crop was cutting the speakers' heads (Oscar). */
+        { layout: 'pair', narrowFirst: true, imgs: [psu('stream-2.jpg'), psu('stream-3.jpg')], framing: [null, 'top'] },
+        /* Gallery image 4 (the woods) — same. */
+        { layout: 'full', imgs: [psu('stream-4.jpg')], framing: ['top'] },
         { layout: 'full', imgs: [psu('stream-5.jpg')] },
       ],
     },
