@@ -758,3 +758,43 @@ body.case-page {
 	.landing-v2 .cs-more__carddesc { width: auto; }
 	.landing-v2 .cs-more__fade { display: none; }
 }
+
+/* ── MOBILE refinements (mobile brief, 2026-08-10) over the fallback
+   block above. ──────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+	/* What-we-did: the absolute columns row (left 1083) is desktop
+	   geometry — static stack on mobile; every column fits 342px
+	   (widest item 273px), the 16px ink-clearance rule is moot in a
+	   single-column stack. */
+	.landing-v2 .cs-did { min-height: 0; }
+	.landing-v2 .cs-did__cols {
+		position: static;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		margin-top: 24px;
+	}
+	.landing-v2 .cs-did__col { margin-top: 0; }
+
+	.landing-v2 .cs-intro__statement { font-size: 26px; line-height: 30px; }
+	.landing-v2 .cs-intro__indent { width: 80px; }
+	.landing-v2 .cs-hero__title { font-size: 32px; line-height: 34px; }
+	.landing-v2 .cs-hero__subtitle { font-size: 17px; line-height: 26px; }
+
+	/* Rail sticky bands read as inline section headers on mobile —
+	   give them breathing room in the flow. */
+	.landing-v2 .cs-rail-sticky { margin-bottom: 8px; }
+
+	/* Lightbox: 44px-effective close, safe-area clear of the notch;
+	   arrows become plain tap zones at the stage edges. */
+	.landing-v2 .cs-lightbox__closebtn {
+		top: max(16px, var(--safe-top, 0px));
+		right: max(16px, var(--safe-right, 0px));
+		height: 44px;
+		padding: 0 18px;
+		opacity: 1;
+		filter: none;
+	}
+
+	.landing-v2 .cs-lightbox__arrow { display: none; }
+}

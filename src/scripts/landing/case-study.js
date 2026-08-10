@@ -492,6 +492,42 @@ export function initCaseStudy() {
     };
     lightbox.addEventListener('wheel', onLbWheel, { passive: false });
     cleanups.push(() => lightbox.removeEventListener('wheel', onLbWheel));
+
+    /* TOUCH (mobile brief, A3/B3): swipe left/right steps the
+       gallery (the desktop arrows are hidden on mobile), swipe down
+       dismisses — the platform's sheet convention. One-axis winner:
+       whichever axis dominates the gesture decides, so a diagonal
+       can't both navigate and close. Pinch is not intercepted — the
+       overlay shows one media at a time; nothing to zoom into
+       (declared in the report). */
+    let tX = 0;
+    let tY = 0;
+    let tLive = false;
+    const onLbTouchStart = (e) => {
+      if (!lbOpen || e.touches.length !== 1) { tLive = false; return; }
+      tLive = true;
+      tX = e.touches[0].clientX;
+      tY = e.touches[0].clientY;
+    };
+    const onLbTouchEnd = (e) => {
+      if (!lbOpen || !tLive) return;
+      tLive = false;
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - tX;
+      const dy = t.clientY - tY;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        if (dy > 70) closeLb(); /* swipe down = dismiss */
+      } else if (Math.abs(dx) > 50) {
+        showMedia(navIdx() + (dx < 0 ? 1 : -1));
+      }
+    };
+    lightbox.addEventListener('touchstart', onLbTouchStart, { passive: true });
+    lightbox.addEventListener('touchend', onLbTouchEnd, { passive: true });
+    cleanups.push(() => {
+      lightbox.removeEventListener('touchstart', onLbTouchStart);
+      lightbox.removeEventListener('touchend', onLbTouchEnd);
+    });
   }
 
   /* Back-to-top / home (all modes — navigation, not decoration). */
