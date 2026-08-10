@@ -48,28 +48,45 @@
   }
 
   .splash-v2__logo {
-    position: absolute;
+    /* A TOP-LEVEL FIXED SIBLING of the cover, NOT a child (Oscar's
+       rev 3: the logo must LAND in the nav and STAY while the black
+       lifts — as a child it rode up off-screen with the cover, which
+       read as "disappears, then the black exits").
+
+       It carries DIFFERENCE itself at z 11001 (the contact modal's
+       logo-twin precedent — top-level so no ancestor stacking
+       context isolates the blend): over the black cover the grey
+       renders light; as the cover's edge passes it the backdrop
+       becomes the page ground and the SAME element renders black —
+       the white-to-black flip Oscar described, done by compositing,
+       no swap or crossfade at all. */
+    position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%) scale(1);
+    z-index: 11001;
     margin: 0;
-    /* The NAV WORDMARK'S EXACT treatment (Oscar's fix — it must BE
-       the nav logo, only larger): same family token, same 500
-       weight, same 0.04em tracking as
-       .landing-v2 .home__topbar--about .home__logo — at 24px.
-       Because both instances share family/weight/em-tracking and
-       text, the handoff's scale maps one onto the other with
-       pixel-matched endpoints by construction. */
+    display: none;
+    /* The NAV WORDMARK'S EXACT treatment (same family token, 500,
+       0.04em) at 24px — both instances share family/weight/em-
+       tracking/text, so the handoff's scale maps one onto the other
+       with pixel-matched endpoints by construction. Colour is the
+       site ground grey (Oscar's rev 3 — was #fff), matching the
+       loading line. */
     font-family: var(--font-logo, 'Arial Black', sans-serif);
     font-weight: 500;
     font-size: 24px;
     line-height: 1;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #fff;
+    color: #eeeef0;
+    mix-blend-mode: difference;
     white-space: nowrap;
     transform-origin: 50% 50%;
+    pointer-events: none;
   }
+
+  html[data-ne-splash='on'] .splash-v2__logo { display: block; }
 
   /* Each character starts hidden; splash.js applies the nav's own
      .nav-char-in class, but HERE it runs the splash's own variant
@@ -102,7 +119,7 @@
     bottom: 0;
     width: 100%;
     height: 1px;
-    background: #fff;
+    background: #eeeef0; /* the site ground grey (Oscar's rev 3 — was #fff) */
     transform: scaleX(0);
     transform-origin: 0 50%;
     will-change: transform;
@@ -145,8 +162,11 @@
 </script>
 
 <div class="splash-v2" data-landing-splash aria-hidden="true">
-  {/* aria-hidden: the REAL nav logo carries the accessible name.
-      The document is aria-busy while this is up (splash.js). */}
-  <p class="splash-v2__logo" data-splash-logo>THE NETWORK EFFECT</p>
+  {/* The black cover + loading line. The logo is deliberately NOT
+      in here — the cover translates away and the logo must stay. */}
   <div class="splash-v2__line" data-splash-line></div>
 </div>
+{/* The wordmark — a top-level SIBLING (see the CSS blend walk).
+    aria-hidden: the REAL nav logo carries the accessible name; the
+    document is aria-busy while splashing (splash.js). */}
+<p class="splash-v2__logo" data-splash-logo aria-hidden="true">THE NETWORK EFFECT</p>

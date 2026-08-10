@@ -146,23 +146,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	transform: translate3d(0, 0, 0) scale(1);
 }
 
-html[data-ne-splash='on'] .landing-v2 .landing-hero__headline {
-	opacity: 0;
-	transform: translate3d(0, 16px, 0);
-	transition: opacity 0.8s cubic-bezier(0.66, 0, 0.34, 1),
-		transform 0.8s cubic-bezier(0.66, 0, 0.34, 1);
-}
-
-html[data-ne-splash='on'] .landing-v2 .landing-hero__headline.is-entered {
-	opacity: 1;
-	transform: translate3d(0, 0, 0);
-}
+/* The headline's splash entrance is the FOUNDERS treatment now
+   (Oscar's rev 3): splash.js wraps the two lines with the word-clip
+   rise (line-reveal.js) under the cover and plays them as it lifts —
+   no CSS fade here; the clips carry the hidden state themselves. */
 
 @media (prefers-reduced-motion: reduce) {
-	html[data-ne-splash='on'] .landing-v2 .landing-hero__video,
-	html[data-ne-splash='on'] .landing-v2 .landing-hero__headline {
+	html[data-ne-splash='on'] .landing-v2 .landing-hero__video {
 		transform: none;
-		opacity: 1;
 		transition: none;
 	}
 }

@@ -31,6 +31,7 @@
  */
 
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 /* ── The register (every duration a named constant). */
 const MIN_MS = 1200;        // floor, so a warm cache still reads as a beat
@@ -138,9 +139,19 @@ export function initSplash(root) {
   if (!(root instanceof HTMLElement)) return () => {};
   const html = document.documentElement;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const logo = root.querySelector('[data-splash-logo]');
+  /* The logo is a top-level SIBLING of the cover (see the component's
+     blend walk) — query the document, not the root. */
+  const logo = document.querySelector('[data-splash-logo]');
   const line = root.querySelector('[data-splash-line]');
   const navLogo = document.querySelector('.home__logo');
+  /* The hero headline's founders-style entrance (Oscar's rev 3):
+     the two lines get the word-clip rise at the founders' 0.12s
+     line stagger. Wrapped after fonts settle (readiness), played as
+     the cover lifts. */
+  const HEADLINE_LINE_STAGGER_S = 0.12;
+  const headlineLines = Array.from(
+    document.querySelectorAll('[data-landing-hero-headline] .landing-hero__headline-line'),
+  );
 
   let disposed = false;
   const timers = [];
@@ -156,9 +167,12 @@ export function initSplash(root) {
      arrives, and the nav ripples in AFTER the logo has landed. */
   const playPageEntrance = () => {
     const video = document.querySelector('[data-landing-hero-video]');
-    const headline = document.querySelector('[data-landing-hero-headline]');
     if (video instanceof HTMLElement) video.classList.add('is-entered');
-    if (headline instanceof HTMLElement) headline.classList.add('is-entered');
+    /* Headline: the founders bio treatment — play the wrapped clips
+       (wrapped in the main flow once fonts were ready). */
+    headlineLines.forEach((el) => {
+      if (el instanceof HTMLElement) playLineRevealElement(el);
+    });
     timers.push(setTimeout(() => {
       if (disposed) return;
       /* MENU and LET'S CHAT only — the LOGO has already arrived via
@@ -188,6 +202,17 @@ export function initSplash(root) {
     if (disposed) return;
     html.classList.remove('splash-active');
     html.removeAttribute('aria-busy');
+    /* THE SWAP — atomic, same synchronous block: the real nav logo
+       becomes visible as the twin leaves, so the two difference
+       layers never composite on top of each other (stacked
+       difference would re-lighten the glyphs) and there is no
+       frame with neither. Endpoints are pixel-matched, so nothing
+       moves. */
+    if (navLogo instanceof HTMLElement) {
+      navLogo.style.transition = '';
+      navLogo.style.opacity = '';
+    }
+    if (logo instanceof HTMLElement) logo.remove();
     root.remove();
     markSplashSeen();
     document.dispatchEvent(new CustomEvent('splash:complete'));
@@ -229,6 +254,14 @@ export function initSplash(root) {
 
     await Promise.race([readiness(root), delay(MAX_MS)]);
     if (disposed) return;
+    /* Fonts are settled (or the failsafe fired) — wrap the headline
+       lines for their founders-style clip rise. Under the opaque
+       cover, so the restructure can never be seen happening. */
+    headlineLines.forEach((el, i) => {
+      if (!(el instanceof HTMLElement)) return;
+      el.dataset.revealDelay = String(i * HEADLINE_LINE_STAGGER_S);
+      wrapWordRevealElement(el);
+    });
     const elapsed = performance.now() - t0;
     if (elapsed < MIN_MS) await wait(MIN_MS - elapsed);
     if (disposed) return;
@@ -252,20 +285,18 @@ export function initSplash(root) {
       /* The -50%,-50% centring terms STAY in the transform — writing
          a bare translate(dx,dy) REPLACED them, so the logo first
          jumped right/down by half its own box and the travel read
-         as "up and right" (Oscar's report). With both instances now
+         as "up and right" (Oscar's report). With both instances
          sharing the nav's exact type treatment, dx is ~0 and the
-         travel is straight up. */
-      logo.style.transition =
-        `transform ${HANDOFF_MS / 1000}s ${EASE}, opacity ${HANDOFF_MS / 2000}s ${EASE} ${HANDOFF_MS / 2000}s, filter ${HANDOFF_MS / 1000}s ${EASE}`;
+         travel is straight up.
+
+         NO FADE (Oscar's rev 3): the logo lands and STAYS — it is
+         the visible logo right through the cover's exit, flipping
+         light->dark by its own difference blend as the cover edge
+         passes. The real nav logo stays hidden beneath the cover
+         until finish() swaps them atomically. */
+      logo.style.transition = `transform ${HANDOFF_MS / 1000}s ${EASE}`;
       logo.style.transform =
         `translate(calc(-50% + ${dx.toFixed(1)}px), calc(-50% + ${dy.toFixed(1)}px)) scale(${scale.toFixed(4)})`;
-      logo.style.opacity = '0';
-      logo.style.filter = 'blur(3px)';
-    }
-    /* The REAL nav logo resolves up at its native size, in place. */
-    if (navLogo instanceof HTMLElement) {
-      navLogo.style.transition = `opacity ${HANDOFF_MS / 2000}s ${EASE}`;
-      navLogo.style.opacity = '1';
     }
 
     await wait(HANDOFF_MS);
