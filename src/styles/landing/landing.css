@@ -232,6 +232,17 @@
 	white-space: nowrap;
 }
 
+/* instagram + the email: Serrif Medium 14 (Oscar's rev), replacing
+   the inherited Dazzed 12. Scoped to the new build — /old's menu
+   footer keeps its own treatment. */
+.landing-v2 .site-menu__footer-link {
+	font-family: 'Serrif', serif;
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 14px;
+	line-height: 18px;
+}
+
 /* Two menu rows, 40px apart: the body stacks the row wrappers. The
    32px flex gap gives every junction item |32| slash |32| item
    (Oscar's rev); the links' own padding-right is retired in favour
