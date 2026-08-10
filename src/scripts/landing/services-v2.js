@@ -46,6 +46,7 @@ import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { createServicesHeroWave } from './services-hero-wave.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
+import { isMobileViewport, isTouchPrimary } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -94,6 +95,11 @@ export function initServicesV2() {
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  /* The viewport.js seam — mobile keeps the reveals, the rows (with
+     the tap path below) and the bottom behaviours; the hero wave,
+     pillar clip/parallax scrubs and the desktop image-frame glide
+     are gated where they occur. */
+  const isMob = isMobileViewport();
 
   /* ── Scroll: the SHARED house boot (site-scroll.js — one source
      of truth for the uniform feel; non-RM only). `lenis` reads the
@@ -177,6 +183,9 @@ export function initServicesV2() {
       }
     };
     const placeAt = (row) => {
+      /* Mobile: the frame is CSS-docked at the section's bottom slot
+         (services-v2.css) — the glide is a desktop read. */
+      if (isMob) return;
       if (imgWrap instanceof HTMLElement) {
         imgWrap.style.top = `${row.offsetTop + ROW_BAND_CENTRE_PX - HOVER_IMG_HALF_PX}px`;
       }
@@ -262,6 +271,26 @@ export function initServicesV2() {
         section.removeEventListener('pointerover', onOver);
         section.removeEventListener('pointerleave', onLeave);
       });
+    } else if (isTouchPrimary()) {
+      /* A3 (mobile brief): TAP-TO-ACTIVATE — the rows are
+         non-navigating showcases, so the tap owns activation
+         outright: tap a row -> fill + marquee + the docked image
+         adopt it; tap another -> switch; tap the active row ->
+         clear. The FIRST row pre-activates once the section's
+         entrance has drawn it, so the mechanic is never a dead
+         list (the report's rule). */
+      const onTap = (e) => {
+        const row = e.target instanceof Element ? e.target.closest('[data-sv-row]') : null;
+        if (!(row instanceof HTMLElement) || !section.contains(row)) return;
+        setActive(row === active ? null : row);
+      };
+      section.addEventListener('click', onTap);
+      cleanups.push(() => section.removeEventListener('click', onTap));
+      if (!reduced && rows[0] instanceof HTMLElement) {
+        schedule(() => {
+          if (!active) setActive(rows[0]);
+        }, 1400);
+      }
     }
     /* Keyboard parity — focus gets the same state in every mode. */
     const onFocusIn = (e) => {
@@ -357,11 +386,14 @@ export function initServicesV2() {
       playLineRevealElement(line);
     });
 
-    /* ── HERO WAVE — the ported mechanic. */
+    /* ── HERO WAVE — the ported mechanic. Desktop only: the mobile
+       hero is linear (the track is display:none) — mounting the
+       scrub + GL against a hidden track would burn a context for
+       nothing (A4: zero GL on mobile). */
     const hero = document.querySelector('[data-sv-hero]');
     const stage = document.querySelector('[data-sv-hero-stage]');
     const track = document.querySelector('[data-sv-hero-track]');
-    if (hero instanceof HTMLElement && stage instanceof HTMLElement && track instanceof HTMLElement) {
+    if (!isMob && hero instanceof HTMLElement && stage instanceof HTMLElement && track instanceof HTMLElement) {
       const items = Array.from(track.children).filter((el) => el instanceof HTMLElement);
       const itemSpeed = (item) => parseFloat(item.dataset.svWaveSpeed || '1') || 1;
       let waveTravel = 0;
@@ -444,6 +476,10 @@ export function initServicesV2() {
     document.querySelectorAll('.sv-pillar').forEach((section) => {
       const frame = section.querySelector('[data-sv-pillar-frame]');
       const img = section.querySelector('[data-sv-pillar-img]');
+      /* Mobile: the pillar is a static aspect box — no clip
+         expansion, no parallax (the oversized-img ride would fight
+         the static crop). */
+      if (isMob) return;
       if (frame instanceof HTMLElement) {
         gsap.fromTo(frame, {
           clipPath: `inset(0px ${PILLAR_MARGIN_PX}px 0px ${PILLAR_MARGIN_PX}px)`,
@@ -653,7 +689,12 @@ export function initServicesV2() {
       const wrapped = wrapFooterReveals(footer);
       triggers.push(ScrollTrigger.create({
         trigger: footer,
-        start: () => `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`,
+        /* Mobile: plain-flow footer — the desktop pin formula can sit
+           past the document end and never fire (the landing-closing
+           lesson). */
+        start: () => (isMob
+          ? 'top 85%'
+          : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),
       }));

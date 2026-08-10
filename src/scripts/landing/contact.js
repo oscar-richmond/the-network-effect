@@ -28,6 +28,7 @@ import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CAL_BOOKING_LINK } from '../../data/landing/contact.js';
+import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -399,7 +400,9 @@ export function initContactPage() {
       const wrapped = wrapFooterReveals(footer);
       triggers.push(ScrollTrigger.create({
         trigger: footer,
-        start: () => `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`,
+        start: () => (isMobileViewport()
+          ? 'top 85%' /* mobile plain-flow footer — the desktop pin formula can never fire (landing-closing lesson) */
+          : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),
       }));
