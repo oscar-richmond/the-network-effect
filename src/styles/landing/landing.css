@@ -236,24 +236,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 /* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
    and Menu.astro are /old-shared — every change here is scoped. */
 
-/* The BOTTOM BAND (Oscar's rev 2): CTAs + the two remaining links
-   share one row, bottom-aligned. The columns are pinned to the
-   slot starts the four-link footer used to produce (measured at
-   the 1728 design width: 0 / 292 / 693 / 1006 inside the content
-   box), so instagram and the email now sit exactly where privacy
-   policy and terms & conditions did; the CTA block spans the two
-   left columns it vacated. px-literal, like the rest of the 1728
-   grammar. */
+/* The BOTTOM BAND: CTAs + the two remaining links share one row,
+   bottom-aligned. The CTA block takes its content width and the two
+   links split what remains (Oscar's rev — they sit between the
+   buttons and the hover-image slot). */
 .landing-v2 .site-menu__footer {
 	margin-top: 0;
 	display: grid;
-	grid-template-columns: 292px 401px 313px auto;
+	grid-template-columns: max-content 1fr 1fr;
 	align-items: end; /* the buttons' bottom edge meets the links' */
 	gap: 0;
 }
 
 .landing-v2 .site-menu__ctas {
-	grid-column: 1 / span 2;
+	grid-column: 1;
 }
 
 /* The links' UL carries the UA's default block margins (10px/12px);
@@ -264,12 +260,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	margin: 0;
 }
 
-/* The email is far longer than the "terms & conditions" it replaces
-   in this slot, so pinning its START to that column clipped it at
-   the panel edge. Anchor its END to the row's right edge instead —
-   the same right edge the old last column had. */
-.landing-v2 .site-menu__footer ul:last-child {
-	justify-self: end;
+/* Oscar's rev: the two links sit in the band BETWEEN the CTA block
+   and the hover-image slot. The CTA column is content-width now
+   (the buttons became the small MORE INFO size), and the links take
+   an equal share of the space that leaves, centred in it — so they
+   re-centre automatically if either the buttons or the labels
+   change width. */
+.landing-v2 .site-menu__footer ul {
+	justify-self: center;
 	white-space: nowrap;
 }
 

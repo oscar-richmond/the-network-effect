@@ -133,11 +133,14 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
                   <a
                     href={link.external ? link.href : `${base}${link.href}`}
                     class="site-menu__footer-link"
+                    data-char-ripple-trigger
                     {...(link.external
                       ? { target: '_blank', rel: 'noopener noreferrer' }
                       : {})}
                   >
-                    {link.label}
+                    {/* Hover = the MENU button's per-char blur ripple
+                        (Oscar's rev), not an underline. */}
+                    <span data-char-ripple>{link.label}</span>
                   </a>
                 </li>
               </ul>

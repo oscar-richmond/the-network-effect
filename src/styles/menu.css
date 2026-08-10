@@ -186,7 +186,11 @@ body.menu-open .home__menu-cta {
   white-space: nowrap;
 }
 
-.site-menu__footer-link:hover {
+/* Hover is the MENU button's per-char blur ripple (char-ripple.js)
+   on the new build — no underline (Oscar's rev). The /old routes
+   keep the underline via the scoped rule below. */
+html:not(.js) .site-menu__footer-link:hover,
+body:not(.landing-v2) .site-menu__footer-link:hover {
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
