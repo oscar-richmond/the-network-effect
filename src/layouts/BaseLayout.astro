@@ -100,6 +100,22 @@ const base = import.meta.env.BASE_URL;
         if (noscale || params.get('framed') === '1') return;
 
         function enterShell() {
+          /* CARRY THE RELOAD SIGNAL ACROSS THE HANDOVER (Oscar's rev:
+             refresh must replay the splash). The shell rewrites the
+             address bar to the real path, so a refresh re-requests
+             THIS document — which then location.replace()s into the
+             shell, and a replace is a 'navigate'. The inner document
+             therefore never sees 'reload'. Stash it here, on the only
+             document that knows, and let the splash's own decision
+             consume it. Landing paths only, so refreshing any other
+             page can't arm it. */
+          try {
+            var navE = performance.getEntriesByType('navigation')[0];
+            if (navE && navE.type === 'reload'
+                && /^\/(?:landing\/?)?$/.test(window.location.pathname)) {
+              sessionStorage.setItem('ne-splash-reload', '1');
+            }
+          } catch (e) {}
           var p = new URLSearchParams(window.location.search);
           p.set('framed', '1');
           var target =
@@ -353,8 +369,41 @@ const base = import.meta.env.BASE_URL;
           else if (p === '0') on = false;
           else if (document.documentElement.getAttribute('data-ne-cover') === 'hold') on = false;
           else {
-            try { on = !sessionStorage.getItem('ne-splash-seen'); }
-            catch (e) { on = true; }
+            /* RELOAD ALWAYS REPLAYS (Oscar's rev): a refresh or hard
+               refresh on the landing page shows the sequence again;
+               only same-session arrivals that are NOT reloads are
+               suppressed by the seen-flag. Internal navigation is
+               already excluded above — the wipe owns those loads.
+
+               THE SHELL CAVEAT: below 1728 the page runs inside
+               scale-shell.html's iframe, and the shell re-sets
+               frame.src on every load — so the INNER document always
+               reports 'navigate', never 'reload'. Read the TOP
+               document's navigation type when framed (same-origin by
+               construction), which is the one that actually knows a
+               refresh happened. */
+            var navType = '';
+            try {
+              var perfSrc = (window.top !== window.self && window.top.performance)
+                ? window.top.performance
+                : window.performance;
+              var navEntry = perfSrc.getEntriesByType('navigation')[0];
+              navType = navEntry ? navEntry.type : '';
+            } catch (e) { /* cross-origin or unsupported — fall through */ }
+
+            /* Either the document itself was reloaded (bare, >=1728)
+               or the pre-shell document was and left the marker. */
+            var carried = false;
+            try {
+              carried = !!sessionStorage.getItem('ne-splash-reload');
+              if (carried) sessionStorage.removeItem('ne-splash-reload');
+            } catch (e) {}
+
+            if (navType === 'reload' || carried) on = true;
+            else {
+              try { on = !sessionStorage.getItem('ne-splash-seen'); }
+              catch (e) { on = true; }
+            }
           }
           if (on) {
             document.documentElement.setAttribute('data-ne-splash', 'on');
