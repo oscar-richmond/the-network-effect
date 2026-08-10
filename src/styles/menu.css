@@ -45,10 +45,26 @@ body.menu-open .home__menu-cta {
    the 1728 design grammar, like every other measure here — the scale
    shell scales it with the rest of the page. Scoped rather than
    changed in place because Menu.astro is shared with the archived
-   /old routes, which keep the 16px they were built with. */
+   /old routes, which keep the 16px they were built with.
+
+   THE PREFIXED PROPERTY LIVES IN ITS OWN @supports BLOCK ON PURPOSE.
+   The build minifier treats `backdrop-filter` and its -webkit- alias
+   as one property and keeps only the LAST of the pair. The rule above
+   declares unprefixed first, so the build DROPPED the standard
+   property and shipped `-webkit-backdrop-filter` alone — which Chrome
+   does not support (CSS.supports('-webkit-backdrop-filter', …) is
+   false there), so that blur has never actually rendered on Chrome.
+   Split across two rules, neither can swallow the other: Chrome takes
+   the standard property here, and WebKit engines too old for it take
+   the alias below. Verified against the deployed CSS, not the source. */
 .landing-v2 .site-menu__backdrop {
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .landing-v2 .site-menu__backdrop {
+    -webkit-backdrop-filter: blur(24px);
+  }
 }
 
 .site-menu.is-open .site-menu__backdrop {
