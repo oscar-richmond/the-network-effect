@@ -812,7 +812,7 @@
 
 /* ── Sub-1024 fallback — simplified static stack (the 15" scale
    shell remains the primary story; desktop-first staging). */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	.landing-v2 .sv-hero { height: auto; }
 	.landing-v2 .sv-hero__stage { position: static; height: auto; padding: 160px 24px 64px; }
 	.landing-v2 .sv-hero__track { display: none; }

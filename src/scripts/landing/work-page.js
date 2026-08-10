@@ -65,7 +65,7 @@
  *
  * RM: travel remains (direct wheel/touch writes, no momentum), meta
  * swaps instant, footer content static, no custom cursor, no snap.
- * <1024px: the CSS stacked list is the page; no machinery boots.
+ * <=1024px: the CSS stacked list is the page; no machinery boots.
  */
 import gsap from 'gsap';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
@@ -133,8 +133,8 @@ export function initWorkPage() {
   stage.addEventListener('click', onLinkClick);
   cleanups.push(() => stage.removeEventListener('click', onLinkClick));
 
-  /* <1024: the CSS stacked list is the whole story. */
-  if ((window.innerWidth || 1728) < 1024) {
+  /* <=1024 (the viewport.js seam): the CSS stacked list is the whole story. */
+  if ((window.innerWidth || 1728) <= 1024) {
     return () => cleanups.forEach((fn) => fn());
   }
 

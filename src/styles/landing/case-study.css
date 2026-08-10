@@ -708,7 +708,7 @@ body.case-page {
 
 /* ── Sub-1024 stack: the rail interleaves ABOVE its own image group
    via flex order; everything flows. */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	.landing-v2 .cs-hero { padding-top: 160px; }
 	.landing-v2 .cs-hero__title { margin: 0 24px; }
 	.landing-v2 .cs-hero__subtitle { margin: 12px 24px 0; width: auto; }

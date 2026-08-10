@@ -286,7 +286,7 @@ body.work-page {
 /* ── Sub-1024 fallback: sensible stacked scrolling list (the 15"
    scale shell remains the primary story). The stage un-fixes, tiles
    flow with their own meta below each image. */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	body.work-page { overflow: auto; }
 
 	.landing-v2 .work-stage {

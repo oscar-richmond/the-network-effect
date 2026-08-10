@@ -347,7 +347,7 @@
 
 /* ── Sub-1024 — buttons stack; the modal goes full-screen (the
    lightbox's mobile behaviour); ghosts are desktop dressing. */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	.landing-v2 .ct { height: auto; padding: 160px 24px 64px; }
 	.landing-v2 .ct__cluster { position: static; transform: none; }
 	.landing-v2 .ct__intro { width: auto; }

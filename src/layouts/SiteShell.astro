@@ -9,6 +9,10 @@
  * (char-ripple, nav entrance, its sections) so this extraction
  * changes nothing about how /landing builds — the refactor is
  * byte-identical by construction (the holding-refactor precedent).
+ * ONE exception to markup-only (Oscar's mobile brief, 2026-08-10):
+ * the shared mobile foundation stylesheet is imported here because
+ * every new-build page needs it — its rules are all <=1024px/touch
+ * gated, so desktop bundles gain bytes but render identically.
  *
  * Scoped to the `landing-v2` class family; pages pass extra body
  * classes via bodyClass (e.g. /work adds `work-page`). Nothing here
@@ -17,6 +21,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Menu from '../components/Menu.astro';
 import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
+import '../styles/landing/mobile.css';
 
 interface Props {
   title?: string;

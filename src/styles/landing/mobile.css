@@ -1,0 +1,58 @@
+/**
+ * MOBILE FOUNDATION — the new build's shared mobile scaffolding
+ * (Oscar's mobile brief, 2026-08-10). Imported by SiteShell, so every
+ * new-build page carries it; NOTHING here reaches /old or the holding
+ * routes (every selector is .landing-v2-scoped).
+ *
+ * THE SEAM: <=1024px = native mobile (the shell never engages — see
+ * scripts/landing/viewport.js, the one boundary). Every layout rule
+ * in this file sits behind that query; the touch-affordance rules sit
+ * behind (hover: none)/(pointer: coarse) instead, because touch is a
+ * property of the device, not the width.
+ *
+ * DESKTOP INVARIANT: at >1024 with a fine pointer this file is
+ * byte-inert by construction — verified against the geometry baseline
+ * (mobile-baseline/scrollmaps) after every page batch.
+ */
+
+/* ── Touch press feedback (A3): every interactive element gets a
+   visible :active response — the char-ripple's role on touch. The
+   default grey tap flash is removed ONLY on elements this state
+   covers (the brief's rule). Gated on coarse/no-hover so desktop
+   mice never see it. */
+@media (hover: none), (pointer: coarse) {
+  .landing-v2 a,
+  .landing-v2 button,
+  .landing-v2 [data-char-ripple-trigger],
+  .landing-v2 [data-hover],
+  .landing-v2 [tabindex='0'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .landing-v2 a:active,
+  .landing-v2 button:active,
+  .landing-v2 [data-char-ripple-trigger]:active,
+  .landing-v2 [tabindex='0']:active {
+    opacity: 0.55;
+    transition: opacity 0.08s ease-out;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* ── Ground + overflow discipline. overflow-x is a BELT (the audit
+     measures scrollWidth honestly and fixes real offenders); clip,
+     not hidden — hidden creates a scroll container and can strand
+     position:sticky descendants. */
+  .landing-v2 {
+    overflow-x: clip;
+  }
+
+  /* ── The mobile margin: the desktop 24px page margin carries over
+     verbatim (Oscar's grammar; every pre-existing mobile block
+     already used it). One token so a later rethink is one line. */
+  .landing-v2 {
+    --m-margin: 24px;
+    --m-margin-safe-l: max(var(--m-margin), var(--safe-left, 0px));
+    --m-margin-safe-r: max(var(--m-margin), var(--safe-right, 0px));
+  }
+}

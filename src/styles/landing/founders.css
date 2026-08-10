@@ -351,7 +351,7 @@ body.founders-page {
 
 /* ── Sub-1024 fallback — static stacked slides (desktop-first
    staging; the scale shell carries 14/15"). */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	body.founders-page { overflow: auto; }
 	.landing-v2 .fd-stage { height: auto; overflow: visible; padding: 160px 24px 64px; will-change: auto; transform: none !important; }
 	.landing-v2 .fd-content { position: static; transform: none !important; will-change: auto; }

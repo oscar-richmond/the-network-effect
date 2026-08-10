@@ -2318,7 +2318,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* ── Sub-1024 stack (the 15" scale shell remains the primary story;
    this is the sensible direct-visit fallback: everything flows). */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	.landing-v2 .landing-closing {
 		margin-top: 0;
 		height: auto;
@@ -2591,7 +2591,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* Sub-1024: vertical card list (the closing-section flow-stack
    register); the 15-inch shell remains the primary story. */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
 	.landing-v2 .landing-featured {
 		margin-top: 0;
 		height: auto;

@@ -51,9 +51,20 @@ const base = import.meta.env.BASE_URL;
        *
        * Escape hatches: ?noscale serves the page bare (persists for the
        * tab session via sessionStorage); ?noscale=0 re-enables the shell.
+       *
+       * MOBILE (Oscar's brief, 2026-08-10): at and below MOBILE_MAX the
+       * shell NEVER engages — the page serves bare and the native mobile
+       * layout (the max-width:1024px blocks + mobile JS paths) is the
+       * experience. 1024 is the house seam: the holding pages' proven
+       * MOBILE_MAX_WIDTH, and the boundary every new-build stylesheet
+       * and driver already gates on. A phone in either orientation
+       * (widest: 932 logical) never crosses it; only iPads do, on
+       * rotation — that crossing is a full navigation by design (the
+       * shell is a different document; there is no in-place handover).
        */
       (function () {
         var DESIGN_WIDTH = 1728;
+        var MOBILE_MAX = 1024;
         var params = new URLSearchParams(window.location.search);
 
         var noscaleParam = params.get('noscale');
@@ -128,17 +139,62 @@ const base = import.meta.env.BASE_URL;
           );
         }
 
-        if (window.innerWidth >= DESIGN_WIDTH) {
-          // Loaded bare on a wide viewport. If the window later shrinks
-          // below the design width (e.g. dragged from an external monitor
-          // to the laptop), re-enter the shell once the resize settles.
+        // The shell serves ONLY the (MOBILE_MAX, DESIGN_WIDTH) band.
+        // Outside it the page stays bare: >=1728 is the design size;
+        // <=1024 is native mobile. Either bare mode watches for the
+        // window settling INTO the band (monitor drag, iPad rotation)
+        // and enters the shell then — the same 300ms settle the
+        // original wide-side listener used.
+        //
+        // TWO width sources, deliberately: the >=1728 side keeps
+        // window.innerWidth — the shipped desktop semantics, untouched.
+        // The MOBILE side reads documentElement.clientWidth — the SAME
+        // measure the max-width:1024px media queries resolve against,
+        // so JS and CSS can never disagree about which side of the
+        // seam the page is on (innerWidth is also the read known to go
+        // stale after emulation/device-toolbar resizes — the
+        // scale-shell sizing lesson).
+        function mobileWidth() {
+          return document.documentElement.clientWidth || window.innerWidth;
+        }
+        function inShellBand() {
+          return mobileWidth() > MOBILE_MAX && window.innerWidth < DESIGN_WIDTH;
+        }
+        if (!inShellBand()) {
+          // Which bare regime booted: scripts and CSS were chosen for
+          // THIS side of the seam. If a settled resize crosses it
+          // without entering the shell (1728-wide window dragged to
+          // phone width, or a mobile-booted window stretched past
+          // 1728), one clean reload reboots the right regime — the
+          // same full-navigation answer the shell handovers use; an
+          // in-place regime swap would strand the booted drivers.
+          var bootedMobile = mobileWidth() <= MOBILE_MAX;
           var t;
-          window.addEventListener('resize', function () {
+          var settle = function () {
             clearTimeout(t);
             t = setTimeout(function () {
-              if (window.innerWidth < DESIGN_WIDTH) enterShell();
+              if (inShellBand()) {
+                enterShell();
+                return;
+              }
+              if ((mobileWidth() <= MOBILE_MAX) !== bootedMobile) {
+                window.location.reload();
+              }
             }, 300);
-          });
+          };
+          window.addEventListener('resize', settle);
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', settle);
+          }
+          // resize events are not guaranteed to accompany every real
+          // viewport change (emulation toolbars, some rotation paths)
+          // — observing documentElement catches the layout change
+          // itself, the scale-shell's proven self-healing pattern.
+          // Its initial fire runs one settle check against the boot
+          // regime: a no-op by construction.
+          if (window.ResizeObserver) {
+            new ResizeObserver(settle).observe(document.documentElement);
+          }
           return;
         }
 

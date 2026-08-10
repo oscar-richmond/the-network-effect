@@ -10,6 +10,13 @@
  */
 (function () {
   var DESIGN_WIDTH = 1728;
+  // At and below this width the shell must NOT serve the page — the
+  // native mobile layout does (Oscar's mobile brief, 2026-08-10; the
+  // same 1024 seam as the BaseLayout boot and the holding pages).
+  // Reached mid-life only by an iPad rotating to portrait or a window
+  // being dragged narrow; the exit is a full navigation to the bare
+  // page, mirroring how the boot entered.
+  var MOBILE_MAX = 1024;
 
   var frame = document.getElementById('ne-scale-frame');
   if (!frame) return;
@@ -27,6 +34,30 @@
     // the site root; its boot re-enters the shell with a proper hash if
     // the viewport still calls for it.
     window.location.replace('./');
+    return;
+  }
+
+  // Exit to the bare page (the mobile handover): the inner document's
+  // CURRENT location wins — the user may have navigated inside the
+  // frame since mount — with the frame marker stripped so the bare
+  // boot makes a fresh decision.
+  function exitToBare() {
+    var url;
+    try {
+      url = new URL(frame.contentWindow.location.href);
+    } catch (e) {
+      url = new URL(target, window.location.origin);
+    }
+    url.searchParams.delete('framed');
+    window.location.replace(url.pathname + url.search + url.hash);
+  }
+
+  // Opened at mobile width (deep link straight to the shell file, or a
+  // race with rotation): never mount — hand over before first paint.
+  // clientWidth over innerWidth for the same staleness reason as the
+  // mid-life check below.
+  if ((document.documentElement.clientWidth || window.innerWidth) <= MOBILE_MAX) {
+    exitToBare();
     return;
   }
 
@@ -100,19 +131,68 @@
   }
 
   size();
-  window.addEventListener('resize', size);
+  // Mid-life crossing into mobile territory (iPad rotating portrait,
+  // window dragged narrow): exit once the size SETTLES — the same
+  // 300ms debounce the BaseLayout boot uses on its side of the seam,
+  // so a transient mid-drag read can't bounce the document.
+  //
+  // The check reads documentElement.clientWidth, NOT innerWidth:
+  // innerWidth is exactly the read this file already documents as
+  // going stale after emulation/device-toolbar resizes (observed
+  // again here: innerWidth stuck at the old width while the layout
+  // viewport had settled at 390). The shell's documentElement is
+  // viewport-sized (height:100%, absolute frame doesn't feed back),
+  // so its clientWidth is a live layout truth on real devices and
+  // emulators alike. And the check rides the SAME self-healing
+  // triggers as sizing (verify loop below), so it converges even if
+  // no resize event ever fires — the sizing lesson applied.
+  var exitTimer;
+  var exiting = false;
+  function mobileWidth() {
+    return document.documentElement.clientWidth || window.innerWidth;
+  }
+  function maybeExit() {
+    if (exiting) return;
+    if (mobileWidth() > MOBILE_MAX) {
+      clearTimeout(exitTimer);
+      exitTimer = 0;
+      return;
+    }
+    if (exitTimer) return; // settle window already open
+    exitTimer = setTimeout(function () {
+      exitTimer = 0;
+      if (!exiting && mobileWidth() <= MOBILE_MAX) {
+        exiting = true;
+        exitToBare();
+      }
+    }, 300);
+  }
+  window.addEventListener('resize', function () {
+    size();
+    maybeExit();
+  });
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', size);
+    window.visualViewport.addEventListener('resize', function () {
+      size();
+      maybeExit();
+    });
   }
   // Slow safety net: if a stale read outlives the post-trigger rechecks
   // and no further viewport signal ever fires, converge anyway. One rect
-  // read + two viewport reads every 2s — negligible.
-  setInterval(verifySize, 2000);
+  // read + two viewport reads every 2s — negligible. The mobile-exit
+  // check rides the same net (see maybeExit's header).
+  setInterval(function () {
+    verifySize();
+    maybeExit();
+  }, 2000);
   if (window.ResizeObserver) {
     // documentElement is viewport-sized (height:100%, absolute frame
     // doesn't feed back into it), so this fires exactly when the real
     // viewport changes — independent of resize-event timing.
-    new ResizeObserver(verifySize).observe(document.documentElement);
+    new ResizeObserver(function () {
+      verifySize();
+      maybeExit();
+    }).observe(document.documentElement);
   }
 
   // Focus the framed document immediately so keyboard scrolling and the

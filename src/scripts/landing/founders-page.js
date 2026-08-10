@@ -64,7 +64,7 @@ export function initFoundersPage() {
 
   const cleanups = [];
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const narrow = window.matchMedia('(max-width: 1023px)').matches;
+  const narrow = window.matchMedia('(max-width: 1024px)').matches;
   if (narrow) return () => {}; /* the static stacked fallback (CSS) */
 
   const content = stage.querySelector('[data-fd-content]');
