@@ -51,25 +51,49 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1);
     margin: 0;
-    /* The nav wordmark's exact treatment at 24px, white on black. */
-    font-family: 'Dazzed', var(--font-display, sans-serif);
-    font-weight: 800;
+    /* The NAV WORDMARK'S EXACT treatment (Oscar's fix — it must BE
+       the nav logo, only larger): same family token, same 500
+       weight, same 0.04em tracking as
+       .landing-v2 .home__topbar--about .home__logo — at 24px.
+       Because both instances share family/weight/em-tracking and
+       text, the handoff's scale maps one onto the other with
+       pixel-matched endpoints by construction. */
+    font-family: var(--font-logo, 'Arial Black', sans-serif);
+    font-weight: 500;
     font-size: 24px;
     line-height: 1;
-    letter-spacing: 0.36em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #fff;
     white-space: nowrap;
     transform-origin: 50% 50%;
   }
 
-  /* Each character starts hidden; the nav's own .nav-char-in
-     animation (landing.css) ripples them in left-to-right. */
+  /* Each character starts hidden; splash.js applies the nav's own
+     .nav-char-in class, but HERE it runs the splash's own variant
+     (Oscar's rev: twice as slow as the nav's 0.45s, with a much
+     bigger blur — 10px vs the nav's 3). Scoped to the splash logo,
+     so the nav's sweeps everywhere else are untouched. */
   .splash-v2__logo .cr-char {
     display: inline-block;
     opacity: 0;
+  }
+
+  .splash-v2__logo .cr-char.nav-char-in {
+    animation: splash-char-in 0.9s ease-out both;
+  }
+
+  @keyframes splash-char-in {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
   }
 
   .splash-v2__line {

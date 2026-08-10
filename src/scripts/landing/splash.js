@@ -249,9 +249,16 @@ export function initSplash(root) {
       const scale = to.height > 0 ? to.height / from.height : 0.5;
       const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
       const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+      /* The -50%,-50% centring terms STAY in the transform — writing
+         a bare translate(dx,dy) REPLACED them, so the logo first
+         jumped right/down by half its own box and the travel read
+         as "up and right" (Oscar's report). With both instances now
+         sharing the nav's exact type treatment, dx is ~0 and the
+         travel is straight up. */
       logo.style.transition =
         `transform ${HANDOFF_MS / 1000}s ${EASE}, opacity ${HANDOFF_MS / 2000}s ${EASE} ${HANDOFF_MS / 2000}s, filter ${HANDOFF_MS / 1000}s ${EASE}`;
-      logo.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${scale.toFixed(4)})`;
+      logo.style.transform =
+        `translate(calc(-50% + ${dx.toFixed(1)}px), calc(-50% + ${dy.toFixed(1)}px)) scale(${scale.toFixed(4)})`;
       logo.style.opacity = '0';
       logo.style.filter = 'blur(3px)';
     }
@@ -264,10 +271,11 @@ export function initSplash(root) {
     await wait(HANDOFF_MS);
     if (disposed) return;
 
-    /* 4 — the cover leaves downward; the page entrance rides out
-       with it. */
+    /* 4 — the cover lifts UPWARD (Oscar's rev — was downward): its
+       bottom edge rises, so the page reveals bottom-to-top. The
+       page entrance rides out with it. */
     root.style.transition = `transform ${COVER_EXIT_MS / 1000}s ${EASE}`;
-    root.style.transform = 'translate3d(0, 100%, 0)';
+    root.style.transform = 'translate3d(0, -100%, 0)';
     timers.push(setTimeout(() => { if (!disposed) playPageEntrance(); }, PAGE_ENTRANCE_LEAD_MS));
 
     await wait(COVER_EXIT_MS);
