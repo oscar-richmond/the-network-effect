@@ -1,5 +1,5 @@
 ---
-import { menuLinks, menuFooterLinks } from '../data/menu.js';
+import { menuLinks, menuFooterLinks as defaultFooterLinks } from '../data/menu.js';
 import { asset } from '../utils/asset.js';
 import '../styles/menu.css';
 
@@ -16,11 +16,19 @@ interface MenuLink {
   label: string;
   image: string;
 }
+interface MenuFooterLink {
+  href: string;
+  label: string;
+  external?: boolean;
+}
 interface Props {
   rows?: MenuLink[][];
+  /** Footer links; omitted = the /old set (privacy + terms included). */
+  footerLinks?: MenuFooterLink[];
 }
 
-const { rows = null } = Astro.props;
+const { rows = null, footerLinks = null } = Astro.props;
+const menuFooterLinks = footerLinks ?? defaultFooterLinks;
 const flatLinks = rows ? rows.flat() : menuLinks;
 
 const base = import.meta.env.BASE_URL;
@@ -75,15 +83,14 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
           }
         </nav>
 
+        <div class="site-menu__footer">
         {/* CTAs (NEW BUILD only — `rows` is the new-build gate, so
             /old is untouched): the /contact pair reused verbatim,
             same classes, same 64px fill/ink component now shared
-            from landing.css. They are the MIDDLE flex child of a
-            space-between column, so the free space splits equally
-            above and below — i.e. the block sits vertically centred
-            between the nav rows and the footer links BY
-            CONSTRUCTION, at any panel height. Left edge = the
-            wrapper's own margin, same as the nav. */}
+            from landing.css. Oscar's rev 2: they live INSIDE the
+            footer band and are bottom-aligned with the links, so
+            the buttons' bottom edge sits on the links' bottom edge.
+            Left edge = the wrapper's own margin, same as the nav. */}
         {rows && (
           <div class="site-menu__ctas">
             {/* SCHEDULE A CALL lives on /contact (the modal is that
@@ -109,7 +116,6 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
           </div>
         )}
 
-        <div class="site-menu__footer">
           {
             menuFooterLinks.map((link) => (
               <ul>

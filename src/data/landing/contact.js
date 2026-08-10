@@ -10,12 +10,12 @@
  * profile crop carries the standing founder-imagery sign-off
  * caveat.
  *
- * EMAIL: the file's EMAIL US points at hello@thenetworkeffect.co.uk
- * (the footer bottom-row address — NOTE it differs from the site's
- * established hello@networkeffectagency.co.uk used by LET'S CHAT /
- * START A PROJECT; both flagged in LandingFooter since 2026-08-06).
- * Subject = the holding page's established enquiry subject,
- * verbatim.
+ * EMAIL: hello@networkeffectagency.co.uk — the ONE correct address
+ * (Oscar, 2026-08-10). The Figma file's EMAIL US said
+ * hello@thenetworkeffect.co.uk; that address is wrong and is
+ * retired everywhere, so EMAIL US, the copy-to-clipboard pill and
+ * the footer all now agree with LET'S CHAT. Subject = the holding
+ * page's established enquiry subject, verbatim.
  */
 
 export const CONTACT_INTRO = {
@@ -23,7 +23,7 @@ export const CONTACT_INTRO = {
   line2: 'CONVERSATION.', // Serrif Medium 48
 };
 
-export const CONTACT_EMAIL = 'hello@thenetworkeffect.co.uk';
+export const CONTACT_EMAIL = 'hello@networkeffectagency.co.uk';
 export const CONTACT_MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
   'The Network Effect — Enquiry',
 )}`;

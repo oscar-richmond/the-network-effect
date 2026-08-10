@@ -40,6 +40,12 @@ export const landingMenuLinks = [
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */
 
+/* THE ONE CORRECT ADDRESS (Oscar, 2026-08-10): every earlier
+   variant — hello@thenetworkeffect.com and
+   hello@thenetworkeffect.co.uk — was wrong and is now retired
+   site-wide. The holding pages already used this one. */
+export const CONTACT_EMAIL = 'hello@networkeffectagency.co.uk';
+
 /** @type {MenuFooterLink[]} */
 export const menuFooterLinks = [
   {
@@ -48,9 +54,14 @@ export const menuFooterLinks = [
     external: true,
   },
   {
-    href: 'mailto:hello@thenetworkeffect.com',
-    label: 'hello@thenetworkeffect.com',
+    href: `mailto:${CONTACT_EMAIL}`,
+    label: CONTACT_EMAIL,
   },
   { href: 'privacy', label: 'privacy policy' },
   { href: 'terms', label: 'terms & conditions' },
 ];
+
+/* The NEW BUILD's menu footer (Oscar's rev): instagram + the email
+   only — privacy policy and terms & conditions are dropped from
+   the main menu. The /old routes keep the full set above. */
+export const landingMenuFooterLinks = menuFooterLinks.slice(0, 2);

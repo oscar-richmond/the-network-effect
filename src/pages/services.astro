@@ -88,7 +88,11 @@ import '../styles/fonts.css';
             img split carries the landing hero video treatment
             (Oscar's rev): 24px band -> full-bleed clip on the FRAME,
             parallax y on the oversized IMG (services-v2.js). */}
-        <section class="sv-pillar" aria-label={`${p.num} — ${p.name}`}>
+        {/* id = the deep-link target for /landing's MORE INFO
+            buttons: the section top IS the full-bleed moment (the
+            clip expansion ends at 'top top'), so an anchor landing
+            here shows the image with its title. */}
+        <section class="sv-pillar" id={p.id} aria-label={`${p.num} — ${p.name}`}>
           <div class="sv-pillar__frame" data-sv-pillar-frame>
             <img class="sv-pillar__img" data-sv-pillar-img src={asset(p.fullImg)} alt="" loading="lazy" decoding="async" />
           </div>

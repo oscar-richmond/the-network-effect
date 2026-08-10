@@ -37,6 +37,8 @@
  */
 import { asset } from '../../utils/asset.js';
 
+const base = import.meta.env.BASE_URL;
+
 const cards = [
   {
     id: 'immerse',
@@ -172,9 +174,11 @@ const rhythm = (card) => {
         </ul>
       ))}
     </div>
-    {/* Non-navigating placeholder — destinations unspecified. House
-        char-ripple hover (the founders-CTA blur sweep, arrow joins
-        after the text). */}
+    {/* Deep-links to this service's own section on /services
+        (Oscar's rev): the pillar id there is this card's id, and
+        the section top is the full-bleed moment, so the user lands
+        on the image with its title. House char-ripple hover (the
+        founders-CTA blur sweep, arrow joins after the text). */}
     {/* The reveal CLIP wraps the WHOLE button (Oscar's rev: the
         container animates with the same clip rise as the text, not
         just its label) — the clip carries the position, the button
@@ -182,7 +186,7 @@ const rhythm = (card) => {
         delay and plays the clip with the card's texts. */}
     <span class="landing-svc-card__btnclip lr-clip" style={`top:${rhythm(card).btnTop}px`}>
       <span class="landing-svc-card__btninner lr-inner">
-        <button type="button" class="landing-svc-card__btn" data-char-ripple-trigger>
+        <a class="landing-svc-card__btn" href={`${base}services#${card.id}`} data-char-ripple-trigger>
           <span data-char-ripple>MORE INFO</span>
           <img
             src={asset('/assets/landing/services-stack/more-arrow.svg')}
@@ -191,7 +195,7 @@ const rhythm = (card) => {
             height="12"
             data-char-ripple-arrow
           />
-        </button>
+        </a>
       </span>
     </span>
   </article>

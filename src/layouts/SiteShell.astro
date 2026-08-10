@@ -16,7 +16,7 @@
  */
 import BaseLayout from './BaseLayout.astro';
 import Menu from '../components/Menu.astro';
-import { landingMenuLinks } from '../data/menu.js';
+import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
 
 interface Props {
   title?: string;
@@ -85,7 +85,10 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
       Not building or modifying the /old menu now (scope rule). */}
   {/* The new build's five items in two rows, 3 + 2 in list order
       (Oscar's rev 2026-08-07); row layout/spacing in landing.css. */}
-  <Menu rows={[landingMenuLinks.slice(0, 3), landingMenuLinks.slice(3)]} />
+  <Menu
+    rows={[landingMenuLinks.slice(0, 3), landingMenuLinks.slice(3)]}
+    footerLinks={landingMenuFooterLinks}
+  />
 
   {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
   <div class="landing-grain" aria-hidden="true"></div>

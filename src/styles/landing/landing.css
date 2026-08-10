@@ -195,11 +195,41 @@
 /* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
    and Menu.astro are /old-shared — every change here is scoped. */
 
-/* With the CTA block present the footer's 40px margin-top would
-   make the lower gap 40px bigger than the upper one — zero it so
-   space-between centres the CTAs exactly between nav and footer. */
+/* The BOTTOM BAND (Oscar's rev 2): CTAs + the two remaining links
+   share one row, bottom-aligned. The columns are pinned to the
+   slot starts the four-link footer used to produce (measured at
+   the 1728 design width: 0 / 292 / 693 / 1006 inside the content
+   box), so instagram and the email now sit exactly where privacy
+   policy and terms & conditions did; the CTA block spans the two
+   left columns it vacated. px-literal, like the rest of the 1728
+   grammar. */
 .landing-v2 .site-menu__footer {
 	margin-top: 0;
+	display: grid;
+	grid-template-columns: 292px 401px 313px auto;
+	align-items: end; /* the buttons' bottom edge meets the links' */
+	gap: 0;
+}
+
+.landing-v2 .site-menu__ctas {
+	grid-column: 1 / span 2;
+}
+
+/* The links' UL carries the UA's default block margins (10px/12px);
+   with the CTAs in the same row that 12px lifted the text 12px off
+   the row's bottom edge while the buttons sat flush on it. Zeroed,
+   so the buttons' bottom and the links' bottom are the same line. */
+.landing-v2 .site-menu__footer ul {
+	margin: 0;
+}
+
+/* The email is far longer than the "terms & conditions" it replaces
+   in this slot, so pinning its START to that column clipped it at
+   the panel edge. Anchor its END to the row's right edge instead —
+   the same right edge the old last column had. */
+.landing-v2 .site-menu__footer ul:last-child {
+	justify-self: end;
+	white-space: nowrap;
 }
 
 /* Two menu rows, 40px apart: the body stacks the row wrappers. The
@@ -1025,6 +1055,8 @@
 	font-size: 14px;
 	color: var(--landing-accent-blue);
 	cursor: pointer;
+	text-decoration: none; /* it is an <a> now (deep-links to /services) */
+	box-sizing: border-box;
 }
 
 .landing-v2 .landing-svc-card__btn img {

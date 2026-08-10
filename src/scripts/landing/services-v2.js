@@ -660,6 +660,28 @@ export function initServicesV2() {
     }
 
     ScrollTrigger.refresh();
+
+    /* DEEP LINK (/landing's MORE INFO -> /services#immerse|connect
+       |amplify): the browser's own anchor jump happens before this
+       page's triggers exist and before Lenis takes over the scroll,
+       so it lands short once the pins are measured. Re-seat it here
+       — AFTER the refresh above, through Lenis when it is the
+       writer — on the section top, which is the full-bleed moment.
+       Runs once, under the transition cover. */
+    const hashId = (window.location.hash || '').slice(1);
+    if (hashId) {
+      const target = document.getElementById(hashId);
+      if (target instanceof HTMLElement && target.classList.contains('sv-pillar')) {
+        const y = target.getBoundingClientRect().top + window.scrollY;
+        const lenis = getLenisInstance();
+        if (lenis && typeof lenis.scrollTo === 'function') {
+          lenis.scrollTo(y, { immediate: true, force: true });
+        } else {
+          window.scrollTo(0, y);
+        }
+        ScrollTrigger.update();
+      }
+    }
   });
 
   if (import.meta.env.DEV) {
