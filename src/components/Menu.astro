@@ -85,9 +85,7 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
 
         <div class="site-menu__footer">
         {/* CTAs (NEW BUILD only — `rows` is the new-build gate, so
-            /old is untouched): the /contact pair reused verbatim,
-            same classes, same 64px fill/ink component now shared
-            from landing.css. Oscar's rev 2: they live INSIDE the
+            /old is untouched). Oscar's rev 2: they live INSIDE the
             footer band and are bottom-aligned with the links, so
             the buttons' bottom edge sits on the links' bottom edge.
             Left edge = the wrapper's own margin, same as the nav. */}
@@ -98,11 +96,11 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
                 carries the box, the button is static inside and
                 rises through it); menu.js plays them on open.
 
-                Both are PLAIN .ct-cta (Oscar's rev): no profile
-                crop on SCHEDULE A CALL here and no width variants,
-                so the two match the standard text CTA format —
-                32px in, label, 8px, arrow, 22px out. /contact keeps
-                its own designed treatment.
+                Both reuse .landing-svc-card__btn — the MORE INFO
+                button from the landing services stack (Oscar's rev:
+                they must match those, not the big 64px contact
+                CTAs). Same class, not copied values, so the style
+                and spacing can never drift from the source.
 
                 SCHEDULE A CALL lives on /contact (the modal is that
                 page's machinery) — from the menu it navigates
@@ -111,17 +109,17 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
                 until Oscar wires a destination. */}
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
-                <a class="ct-cta" href={`${base}contact`} data-char-ripple-trigger>
+                <a class="landing-svc-card__btn" href={`${base}contact`} data-char-ripple-trigger>
                   <span data-char-ripple>SCHEDULE A CALL</span>
-                  <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+                  <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
                 </a>
               </span>
             </span>
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
-                <span class="ct-cta is-placeholder" data-hover data-char-ripple-trigger>
+                <span class="landing-svc-card__btn is-placeholder" data-hover data-char-ripple-trigger>
                   <span data-char-ripple>START A PROJECT</span>
-                  <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+                  <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
                 </span>
               </span>
             </span>

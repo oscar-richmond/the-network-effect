@@ -348,16 +348,13 @@
 
 .landing-v2 .sv-rows__fill {
 	background: var(--sv-accent, #232a89);
-	/* Oscar's rev 4 — the directional wipe is out: the colour BLURS
-	   STRAIGHT IN (whole band at once, opacity + the house blur
-	   settling) on the house ease. Oscar's rev 8: TWICE THE SPEED,
-	   0.6s -> 0.3s. Every other beat in this hover (text-out,
-	   marquee, edge gradient + its delay) is halved with it so the
-	   choreography keeps its shape, just faster. */
+	/* Oscar's rev 9: a PLAIN FADE at 300ms — no blur at all. The
+	   colour used to blur in (6 -> 0) alongside the opacity, which
+	   read as a slow soft entry when moving row to row; it is now
+	   opacity only, same 0.3s pace. The other beats (text-out,
+	   marquee, edge gradient + its delay) are unchanged. */
 	opacity: 0;
-	filter: blur(6px);
-	transition: opacity 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-		filter 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	transition: opacity 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 
 .landing-v2 .sv-rows__marq {
@@ -388,7 +385,7 @@
 
 /* The file's Highlight Bar: accent edge fade over the marquee
    (stops verbatim: 0 / 3 / 50 / 97 / 100%). With the fill blurring
-   straight in (no wipe), the gradient rides slightly BEHIND it
+   in as a plain fade (rev 9), the gradient rides slightly BEHIND it
    (delay in, 0 out) — its accent can never outrun the fill's, so it
    never reads over bare ground. Duration AND delay halved with the
    fill (rev 8), so it still lands just behind the colour. */
@@ -416,12 +413,11 @@
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__fill {
 	opacity: 1;
-	filter: blur(0);
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__edges {
 	opacity: 1;
-	transition-delay: 0.15s; /* rides behind the fill's blur-in (halved, rev 8) */
+	transition-delay: 0.15s; /* rides behind the fill's fade (rev 9) */
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__marq {

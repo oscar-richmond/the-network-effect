@@ -2661,3 +2661,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .nav-char-in {
 	animation: cr-nav-in 0.45s ease-out both;
 }
+
+/* The menu's CTAs reuse the MORE INFO button (Oscar's rev) — carry
+   the placeholder convention across to that class too. */
+.landing-v2 .landing-svc-card__btn.is-placeholder { cursor: default; }
