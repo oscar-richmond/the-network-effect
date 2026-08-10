@@ -63,7 +63,10 @@ export const FOUNDERS_SLIDES = [
       { text: 'CULTURAL CREDIBILITY', index: '/01' },
       { text: 'TRUSTED ACCESS TO TALENT', index: '/02' },
       { text: 'INDUSTRY', index: '/03', joinNext: true },
-      { text: 'RELATIONSHIPS', index: '/04' },
+      /* Explicit break (Oscar's rev 4) — at 20px this line ended
+         here by natural wrap anyway; pinning it keeps the two-line
+         set deterministic instead of column-width dependent. */
+      { text: 'RELATIONSHIPS', index: '/04', breakAfter: true },
       { text: 'AUTHENTICITY WITHIN CULTURE', index: '/05' },
       { text: 'CREATIVE INFLUENCE', index: '/06' },
     ],

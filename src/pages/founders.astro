@@ -103,7 +103,7 @@ import '../styles/fonts.css';
             <Fragment>
               {j > 0 && slide.list[j - 1].breakAfter && <br />}
               {j > 0 && !slide.list[j - 1].joinNext && !slide.list[j - 1].breakAfter && (
-                <span class="fd-slide__list-sep" aria-hidden="true">{' / '}</span>
+                <span class="fd-slide__list-sep" aria-hidden="true">{'  /  '}</span>
               )}
               {j > 0 && slide.list[j - 1].joinNext && ' '}
               <span class="fd-slide__list-item">{item.text}<sup class="fd-slide__list-index">{item.index}</sup></span>

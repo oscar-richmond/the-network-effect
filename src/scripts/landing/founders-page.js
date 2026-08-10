@@ -83,14 +83,38 @@ export function initFoundersPage() {
      clamp correctly). */
   let nameStartTop = 0;
   let nameTravel = 1;
+  /* Robbo's name (slide 0) is placed so the PORTRAIT'S LEFT EDGE
+     runs through the middle of the first "b" (Oscar's rev 4).
+     Derived from the live glyph box — a Range over that single
+     character — so it holds at any name size, after the webfont
+     swaps, and at every viewport (the shell's interior included).
+     Ashley's name has no "b" and keeps the authored left. */
+  const alignNameToPortrait = () => {
+    const el = names[0];
+    if (!(el instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return;
+    const textNode = Array.from(el.childNodes).find((n) => n.nodeType === Node.TEXT_NODE);
+    if (!textNode) return;
+    const i = (textNode.textContent || '').toLowerCase().indexOf('b');
+    if (i < 0) return;
+    el.style.left = ''; /* measure from the CSS anchor, never a prior result */
+    const range = document.createRange();
+    range.setStart(textNode, i);
+    range.setEnd(textNode, i + 1);
+    const glyph = range.getBoundingClientRect();
+    if (!glyph.width) return; /* font not ready — the fonts hook re-runs this */
+    const offsetToGlyphCentre = glyph.left + glyph.width / 2 - el.getBoundingClientRect().left;
+    el.style.left = `${(portrait.getBoundingClientRect().left - offsetToGlyphCentre).toFixed(1)}px`;
+  };
+
   const measure = () => {
     const pr = portrait instanceof HTMLElement ? portrait.getBoundingClientRect() : null;
     const imgTop = pr ? pr.top : 88;
     const imgBottom = pr ? pr.bottom : window.innerHeight - 24;
-    const nameH = names[0] instanceof HTMLElement ? names[0].offsetHeight : 80;
+    const nameH = names[0] instanceof HTMLElement ? names[0].offsetHeight : 56;
     nameStartTop = imgTop + (imgBottom - imgTop) / 2;
     const nameEndTop = imgBottom - NAME_END_GAP_PX - nameH;
     nameTravel = Math.max(nameEndTop - nameStartTop, 1);
+    alignNameToPortrait();
   };
   measure();
 
@@ -360,7 +384,12 @@ export function initFoundersPage() {
   const footerEl = footerWrap?.querySelector('[data-landing-footer]');
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
-    if (disposed || !(footerEl instanceof HTMLElement)) return;
+    if (disposed) return;
+    /* The webfont changes the glyph advances the name alignment and
+       the travel clamps are derived from — re-derive once it lands. */
+    measure();
+    frame();
+    if (!(footerEl instanceof HTMLElement)) return;
     wrappedFooter = wrapFooterReveals(footerEl);
   });
   function maybePlayFooter() {

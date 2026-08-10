@@ -241,19 +241,22 @@ body.founders-page {
 }
 
 /* List label + slash-list — anchored to the viewport bottom (the
-   file's cluster rides the image's lower region): label 14 Serrif,
-   list Dazzed Bold 14/18 with 6px superscript indexes, wrapping in
-   the file's 590px column. */
+   file's cluster rides the image's lower region). Oscar's rev 4:
+   label 16 Serrif, list Dazzed Bold 20 with 8px indexes, indexes
+   TOP-aligned to the words, double spaces around each slash. The
+   column widened to 1000 (the free width left of the portrait at
+   x1064 less the 24 margin and a gutter) so the DATA's explicit
+   breaks decide the lines, never an accidental wrap. */
 .landing-v2 .fd-slide__listlabel {
 	position: absolute;
 	left: 25px;
-	bottom: 130px;
+	bottom: 142px; /* clears the taller 2-line list below (rev 4) */
 	margin: 0;
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 14px;
-	line-height: 18px;
+	font-size: 16px;
+	line-height: 22px;
 	color: #161616;
 }
 
@@ -261,28 +264,40 @@ body.founders-page {
 	position: absolute;
 	left: 24px;
 	bottom: 64px;
-	width: 590px;
+	width: 1000px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 14px;
-	line-height: 24px;
+	font-size: 20px;
+	line-height: 30px;
 	text-transform: uppercase;
 	color: #161616;
 }
 
+/* Index — TOP-ALIGNED with the word beside it (Oscar's rev 4).
+   Both runs share a baseline, so their INK tops meet when the small
+   run is lifted by the difference of their ink ascents. MEASURED in
+   Dazzed Bold via canvas actualBoundingBoxAscent (not assumed — the
+   digits are cut slightly taller than the caps): cap "T" at 20px =
+   14.96, digit "0" at 8px = 6.08, so the lift is 8.88px. Re-measure
+   if either size or the face changes. */
 .landing-v2 .fd-slide__list-index {
-	font-size: 6px;
+	font-size: 8px;
 	line-height: 1;
-	vertical-align: super;
+	vertical-align: baseline;
+	position: relative;
+	top: -8.88px;
 }
 
 .landing-v2 .fd-slide__list-sep {
-	white-space: pre;
+	white-space: pre; /* the authored DOUBLE spaces either side survive */
 }
 
-/* The travelling name — Serrif 80, #F9F9F9 + DIFFERENCE (the file);
-   left 913, width 723 (overlapping the portrait); `top` is driven
-   by JS between the live clamps. */
+/* The travelling name — Serrif 56 (Oscar's rev 4: the file's 80
+   less 24), #F9F9F9 + DIFFERENCE; `top` is driven by JS between the
+   live clamps. LEFT: the authored 913 is the FALLBACK only — for
+   Robbo (slide 0) founders-page.js overrides it so the portrait's
+   left edge runs through the middle of the first "b" (Oscar's rev
+   4), measured from the live glyph box. Ashley keeps 913. */
 .landing-v2 .fd-slide__name {
 	position: absolute;
 	left: 913px;
@@ -292,8 +307,8 @@ body.founders-page {
 	font-family: 'Serrif', serif;
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 80px;
-	line-height: 80px;
+	font-size: 56px;
+	line-height: 56px;
 	color: #f9f9f9;
 	mix-blend-mode: difference;
 	pointer-events: none;
