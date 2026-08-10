@@ -1,5 +1,7 @@
 import gsap from 'gsap';
 import { createCoverSwap } from './cover-swap.js';
+import { playLineRevealElement } from './line-reveal.js';
+import { sweepUnits } from './landing/nav-motion.js';
 
 const ease = 'power3.inOut';
 
@@ -155,16 +157,19 @@ export function initMenu(scope = document) {
      element is the no-chars fallback, the applyNavSweep shape).
      The logo is a LINK and the topbar rides ABOVE the open panel
      (menu-open z600), so while hidden it must not be clickable. */
-  const sweepLogo = (hidden) => {
-    const logo = document.querySelector('.home__logo');
-    if (!(logo instanceof HTMLElement)) return;
-    const link = logo.querySelector('.home__logo-link');
-    if (link instanceof HTMLElement) link.style.pointerEvents = hidden ? 'none' : '';
-    const chars = Array.from(logo.querySelectorAll('.cr-char'));
-    const units = chars.length ? chars : [logo];
+  const sweepNavPart = (part, hidden) => {
+    if (!(part instanceof HTMLElement)) return;
+    /* Both parts are LINKS and the topbar rides ABOVE the open panel
+       (menu-open z600), so while hidden neither may be clickable. */
+    const link = part.querySelector('.home__logo-link');
+    (link instanceof HTMLElement ? link : part).style.pointerEvents = hidden ? 'none' : '';
+    /* nav-motion's own unit list — chars PLUS a trailing arrow.
+       LET'S CHAT ends in an arrow SVG that is not a .cr-char, so a
+       chars-only sweep left it hanging in the corner. */
+    const units = sweepUnits(part);
     if (reducedMotion) {
       units.forEach((u) => { u.style.opacity = hidden ? '0' : ''; });
-      return;
+      return { units, ms: 0 };
     }
     units.forEach((u, i) => {
       u.classList.remove('nav-char-out', 'nav-char-in');
@@ -173,12 +178,25 @@ export function initMenu(scope = document) {
       u.style.animationDelay = `${(i * SWAP_STAGGER_S).toFixed(2)}s`;
       u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
     });
-    /* The same end-state belt as the labels (see sweepLabels). */
+    return { units, ms: Math.ceil(((units.length - 1) * SWAP_STAGGER_S + NAV_CHAR_OUT_S) * 1000) };
+  };
+
+  /* The LOGO and LET'S CHAT leave together when the menu opens and
+     return together once it has closed (Oscar's rev). */
+  const sweepLogo = (hidden) => {
+    const parts = [
+      document.querySelector('.home__logo'),
+      document.querySelector('.home__topbar-email'),
+    ];
+    const results = parts.map((p) => sweepNavPart(p, hidden)).filter(Boolean);
+    /* The same end-state belt as the labels (see sweepLabels): pin
+       the hidden state once the sweep's own animation has run, so a
+       dropped animationend can never leave a part half-visible. */
     window.clearTimeout(logoBeltTimer);
-    if (hidden) {
+    if (hidden && results.length) {
       logoBeltTimer = window.setTimeout(() => {
-        units.forEach((u) => { u.style.opacity = '0'; });
-      }, Math.ceil(((units.length - 1) * SWAP_STAGGER_S + NAV_CHAR_OUT_S) * 1000));
+        results.forEach((r) => r.units.forEach((u) => { u.style.opacity = '0'; }));
+      }, Math.max(...results.map((r) => r.ms)));
     }
   };
 
@@ -212,6 +230,12 @@ export function initMenu(scope = document) {
       labelMenu.setAttribute('aria-hidden', 'false');
       labelClose.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('menu-open');
+      /* The logo and LET'S CHAT sweep back in ONLY NOW — once the
+         panel has finished retracting (Oscar's rev). It belongs in
+         THIS callback rather than an eventCallback() from close():
+         that would REPLACE the cleanup above, stranding `is-open`
+         (which the applyNavSweep guard keys on). */
+      if (landingSwap) sweepLogo(false);
     },
   });
 
@@ -242,9 +266,27 @@ export function initMenu(scope = document) {
       0.4,
     );
 
+  /* CTA reveal — the MORE INFO clip rise, played with the panel's
+     own entrance and re-armed on close so every open replays it.
+     playLineRevealElement injects the .lr-* styles on first use. */
+  const ctaBlock = root.querySelector('[data-menu-ctas]');
+  const ctaClips = Array.from(root.querySelectorAll('.site-menu__ctaclip'));
+  let ctaRevealTimer = 0;
+  const revealCTAs = (show) => {
+    if (!(ctaBlock instanceof HTMLElement) || !ctaClips.length) return;
+    window.clearTimeout(ctaRevealTimer);
+    if (!show) {
+      ctaClips.forEach((c) => c.classList.remove('lr-visible'));
+      return;
+    }
+    /* Rides in behind the nav rows, like the footer items do. */
+    ctaRevealTimer = window.setTimeout(() => playLineRevealElement(ctaBlock), 400);
+  };
+
   const open = () => {
     if (tl.reversed() || tl.progress() === 0) {
       tl.play();
+      revealCTAs(true);
       if (landingSwap) {
         sweepLabels(true);
         sweepLogo(true);
@@ -257,11 +299,17 @@ export function initMenu(scope = document) {
        timer can't land on the next open. */
     navImageShown = false;
     imageSwap.reset();
+    revealCTAs(false); /* re-arm so the next open replays the rise */
     if (!tl.reversed() && tl.progress() > 0) {
       tl.reverse();
       if (landingSwap) {
+        /* CLOSE -> MENU swaps immediately (it IS the toggle), but the
+           logo and LET'S CHAT wait for the panel to finish closing
+           and only then sweep back in (Oscar's rev) — they should
+           not reappear over a panel that is still retracting. */
         sweepLabels(false);
-        sweepLogo(false);
+        /* sweepLogo(false) is NOT called here — the timeline's own
+           onReverseComplete runs it once the panel has closed. */
       }
     }
   };
@@ -350,6 +398,7 @@ export function initMenu(scope = document) {
   return () => {
     window.clearTimeout(sweepBeltTimer);
     window.clearTimeout(logoBeltTimer);
+    window.clearTimeout(ctaRevealTimer);
     close();
     toggle.removeEventListener('click', onToggleClick);
     backdrop.removeEventListener('click', onBackdropClick);

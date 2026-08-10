@@ -92,26 +92,38 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
             the buttons' bottom edge sits on the links' bottom edge.
             Left edge = the wrapper's own margin, same as the nav. */}
         {rows && (
-          <div class="site-menu__ctas">
-            {/* SCHEDULE A CALL lives on /contact (the modal is that
+          <div class="site-menu__ctas" data-menu-ctas>
+            {/* Each CTA rides its own reveal CLIP — the /landing
+                services stack's MORE INFO grammar exactly (the clip
+                carries the box, the button is static inside and
+                rises through it); menu.js plays them on open.
+
+                Both are PLAIN .ct-cta (Oscar's rev): no profile
+                crop on SCHEDULE A CALL here and no width variants,
+                so the two match the standard text CTA format —
+                32px in, label, 8px, arrow, 22px out. /contact keeps
+                its own designed treatment.
+
+                SCHEDULE A CALL lives on /contact (the modal is that
                 page's machinery) — from the menu it navigates
                 there. START A PROJECT keeps the placeholder
-                convention it has on /contact: styled and rippling,
-                non-navigating until Oscar wires a destination. */}
-            <a
-              class="ct-cta ct-cta--schedule"
-              href={`${base}contact`}
-              data-char-ripple-trigger
-            >
-              <span class="ct-cta__profile" aria-hidden="true">
-                <img src={asset('/assets/landing/contact/robbo-profile.png')} alt="" loading="lazy" decoding="async" />
+                convention: styled and rippling, non-navigating
+                until Oscar wires a destination. */}
+            <span class="site-menu__ctaclip lr-clip">
+              <span class="lr-inner">
+                <a class="ct-cta" href={`${base}contact`} data-char-ripple-trigger>
+                  <span data-char-ripple>SCHEDULE A CALL</span>
+                  <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+                </a>
               </span>
-              <span data-char-ripple>SCHEDULE A CALL</span>
-              <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-            </a>
-            <span class="ct-cta ct-cta--start is-placeholder" data-hover data-char-ripple-trigger>
-              <span data-char-ripple>START A PROJECT</span>
-              <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+            </span>
+            <span class="site-menu__ctaclip lr-clip">
+              <span class="lr-inner">
+                <span class="ct-cta is-placeholder" data-hover data-char-ripple-trigger>
+                  <span data-char-ripple>START A PROJECT</span>
+                  <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+                </span>
+              </span>
             </span>
           </div>
         )}

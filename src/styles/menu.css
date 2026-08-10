@@ -123,6 +123,30 @@ body.menu-open .home__menu-cta {
   flex: none;
 }
 
+/* Reveal clip — the services stack's MORE INFO grammar (its
+   .landing-svc-card__btnclip): the clip is the box, the button
+   rises through it. The .lr-clip/.lr-inner transform pair is
+   line-reveal.js's (its styles inject when menu.js plays the
+   reveal); the transition is declared here because this markup is
+   hand-authored rather than wrapped at runtime. The second button
+   follows the first by one house stagger step. */
+.site-menu__ctaclip {
+  display: block;
+  overflow: hidden;
+}
+
+.site-menu__ctas .lr-inner {
+  transition: transform 1.2s cubic-bezier(0.42, 0, 0.24, 1);
+}
+
+.site-menu__ctas .site-menu__ctaclip:nth-child(2) .lr-inner {
+  transition-delay: 0.06s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-menu__ctas .lr-inner { transition: none; }
+}
+
 .site-menu__footer {
   display: flex;
   align-items: flex-end;
