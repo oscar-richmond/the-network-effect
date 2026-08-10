@@ -153,6 +153,13 @@ const base = import.meta.env.BASE_URL;
         z-index: 10000; /* above EVERYTHING incl. the canvas cursor (9999) */
       }
       .page-cover--blocking { pointer-events: all; }
+      /* The ARRIVING document paints its root black while the cover
+         is held, so the inter-document handover (root background
+         until first paint) is black at BOTH ends — the departing
+         page sets it inline in page-transition.js. Cleared with the
+         attribute when the reveal finishes. */
+      html[data-ne-cover='hold'],
+      html[data-ne-cover='hold'] body { background: #161616; }
       html[data-ne-cover='hold'] .page-cover {
         transform: none !important; /* covered before first paint; module takes over inline */
         pointer-events: all;
@@ -196,6 +203,164 @@ const base = import.meta.env.BASE_URL;
           setTimeout(function () { d.removeAttribute('data-ne-cover'); }, 900);
         }, 2500);
         window.__neCoverBoot = { cancel: function () { clearTimeout(t); } };
+      })();
+    </script>
+    <style is:inline>
+      /* ── SPLASH pre-paint (see LandingSplash.astro). MUST be in the
+         head: in the body the light page paints first (Oscar's white
+         flash). */
+  .splash-v2 {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    background: #161616;
+    will-change: transform;
+    /* Hidden by default: only the inline boot below reveals it, so a
+       load that should NOT splash never paints black at all. */
+    display: none;
+  }
+
+  html[data-ne-splash='on'] .splash-v2 { display: block; }
+
+  /* Scroll is locked while the cover is up, and nothing beneath is
+     tabbable (the gate is the /old splash's own convention, which
+     Menu.astro already honours).
+
+     Keyed on .splash-active ONLY — that class is added pre-paint by
+     the inline boot below and REMOVED when the sequence finishes.
+     Keying it on [data-ne-splash] instead left the page unscrollable
+     for good, because that attribute has to persist to keep the
+     entrance's end states from snapping back. */
+  html.splash-active,
+  html.splash-active body {
+    overflow: hidden !important;
+  }
+
+  html.splash-active [data-splash-gate] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .splash-v2__logo {
+    /* A TOP-LEVEL FIXED SIBLING of the cover, NOT a child (Oscar's
+       rev 3: the logo must LAND in the nav and STAY while the black
+       lifts — as a child it rode up off-screen with the cover, which
+       read as "disappears, then the black exits").
+
+       It carries DIFFERENCE itself at z 11001 (the contact modal's
+       logo-twin precedent — top-level so no ancestor stacking
+       context isolates the blend): over the black cover the grey
+       renders light; as the cover's edge passes it the backdrop
+       becomes the page ground and the SAME element renders black —
+       the white-to-black flip Oscar described, done by compositing,
+       no swap or crossfade at all. */
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    z-index: 11001;
+    margin: 0;
+    display: none;
+    /* The NAV WORDMARK'S EXACT treatment (same family token, 500,
+       0.04em) at 24px — both instances share family/weight/em-
+       tracking/text, so the handoff's scale maps one onto the other
+       with pixel-matched endpoints by construction. Colour is the
+       site ground grey (Oscar's rev 3 — was #fff), matching the
+       loading line. */
+    font-family: var(--font-logo, 'Arial Black', sans-serif);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #eeeef0;
+    mix-blend-mode: difference;
+    white-space: nowrap;
+    transform-origin: 50% 50%;
+    pointer-events: none;
+  }
+
+  html[data-ne-splash='on'] .splash-v2__logo { display: block; }
+
+  /* Each character starts hidden; splash.js applies the nav's own
+     .nav-char-in class, but HERE it runs the splash's own variant
+     (Oscar's rev: twice as slow as the nav's 0.45s, with a much
+     bigger blur — 10px vs the nav's 3). Scoped to the splash logo,
+     so the nav's sweeps everywhere else are untouched. */
+  .splash-v2__logo .cr-char {
+    display: inline-block;
+    opacity: 0;
+  }
+
+  /* The wordmark is INVISIBLE until splash.js has split it into
+     .cr-char units and armed the ripple (Oscar's report: the logo
+     appeared, vanished, then animated in — that gap was the raw
+     text painting before the chars existed). visibility, not
+     opacity: opacity would make this element its own stacking
+     context and break its difference blend. */
+  .splash-v2__logo { visibility: hidden; }
+  .splash-v2__logo.is-ready { visibility: visible; }
+
+  /* The GROUND is black the moment the splash is on, so no light
+     frame can ever paint beneath the cover. Keyed on .splash-active
+     (added pre-paint by the boot below, REMOVED when the sequence
+     finishes) — NOT on [data-ne-splash], which has to persist to
+     hold the entrance's end states and would leave the page black
+     for good. */
+  html.splash-active,
+  html.splash-active body { background: #161616 !important; }
+
+  .splash-v2__logo .cr-char.nav-char-in {
+    animation: splash-char-in 0.9s ease-out both;
+  }
+
+  @keyframes splash-char-in {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  .splash-v2__line {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: #eeeef0; /* the site ground grey (Oscar's rev 3 — was #fff) */
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .splash-v2__line { display: none; }
+    .splash-v2__logo .cr-char { opacity: 1; animation: none !important; }
+  }
+</style>
+    <script is:inline>
+      (function () {
+        /* Landing only — and BEFORE first paint. */
+        if (!/\/landing\/?$/.test(window.location.pathname)) return;
+        try {
+          var p = new URLSearchParams(window.location.search).get('splash');
+          var on;
+          if (p === '1') on = true;
+          else if (p === '0') on = false;
+          else if (document.documentElement.getAttribute('data-ne-cover') === 'hold') on = false;
+          else {
+            try { on = !sessionStorage.getItem('ne-splash-seen'); }
+            catch (e) { on = true; }
+          }
+          if (on) {
+            document.documentElement.setAttribute('data-ne-splash', 'on');
+            document.documentElement.classList.add('splash-active');
+          }
+        } catch (e) {}
       })();
     </script>
   </head>

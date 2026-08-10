@@ -189,6 +189,14 @@ function reveal() {
 
 function commit(href) {
   state = 'departing';
+  /* THE INTER-DOCUMENT GAP (Oscar's report: a white flash during the
+     page change). Once location.href commits, the browser tears the
+     old document down and paints the ROOT ELEMENT'S background until
+     the next document's first paint — white by default, which read
+     as a flash through the black cover. Painting the root black for
+     the handover makes that gap invisible; the arriving document's
+     head CSS holds it black while its own cover is up. */
+  document.documentElement.style.background = '#161616';
   try {
     sessionStorage.setItem(TRANSITION_KEY, '1');
   } catch {

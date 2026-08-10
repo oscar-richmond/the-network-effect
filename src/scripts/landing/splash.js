@@ -120,6 +120,11 @@ function rippleIn(el, reduced) {
     });
   }
   const units = Array.from(el.querySelectorAll('.cr-char'));
+  /* Only NOW is the wordmark allowed to be visible: the head CSS
+     keeps it visibility:hidden until this class lands, so the raw
+     text can never paint before its characters exist (Oscar's
+     report: logo appeared, vanished, then animated). */
+  el.classList.add('is-ready');
   if (reduced) {
     units.forEach((u) => { u.style.opacity = '1'; });
     return;
@@ -222,7 +227,7 @@ export function initSplash(root) {
      Never a naked unstyled load, never a ripple/sweep/travel. */
   if (reduced) {
     ensureLogoChars();
-    if (logo instanceof HTMLElement) logo.style.opacity = '1';
+    if (logo instanceof HTMLElement) logo.classList.add('is-ready');
     (async () => {
       await Promise.race([readiness(root), delay(MAX_MS)]);
       if (disposed) return;
