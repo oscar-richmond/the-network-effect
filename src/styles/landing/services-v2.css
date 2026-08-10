@@ -350,11 +350,14 @@
 	background: var(--sv-accent, #232a89);
 	/* Oscar's rev 4 — the directional wipe is out: the colour BLURS
 	   STRAIGHT IN (whole band at once, opacity + the house blur
-	   settling) at the rev-2 pace, 0.6s on the house ease. */
+	   settling) on the house ease. Oscar's rev 8: TWICE THE SPEED,
+	   0.6s -> 0.3s. Every other beat in this hover (text-out,
+	   marquee, edge gradient + its delay) is halved with it so the
+	   choreography keeps its shape, just faster. */
 	opacity: 0;
 	filter: blur(6px);
-	transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-		filter 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	transition: opacity 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+		filter 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 
 .landing-v2 .sv-rows__marq {
@@ -362,7 +365,7 @@
 	display: flex;
 	align-items: center;
 	opacity: 0;
-	transition: opacity 0.4s ease-out, filter 0.4s ease-out;
+	transition: opacity 0.2s ease-out, filter 0.2s ease-out; /* halved (rev 8) */
 	filter: blur(6px);
 }
 
@@ -386,8 +389,9 @@
 /* The file's Highlight Bar: accent edge fade over the marquee
    (stops verbatim: 0 / 3 / 50 / 97 / 100%). With the fill blurring
    straight in (no wipe), the gradient rides slightly BEHIND it
-   (0.3s delay in, 0 out) — its accent can never outrun the fill's,
-   so it never reads over bare ground. */
+   (delay in, 0 out) — its accent can never outrun the fill's, so it
+   never reads over bare ground. Duration AND delay halved with the
+   fill (rev 8), so it still lands just behind the colour. */
 .landing-v2 .sv-rows__edges {
 	opacity: 0;
 	background: linear-gradient(
@@ -397,7 +401,7 @@
 		rgba(0, 0, 0, 0) 97%,
 		var(--sv-accent, #232a89) 100%
 	);
-	transition: opacity 0.3s ease-out 0s;
+	transition: opacity 0.15s ease-out 0s;
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__divider {
@@ -407,7 +411,7 @@
 .landing-v2 .sv-rows__row.is-active .sv-rows__inner {
 	opacity: 0;
 	filter: blur(6px);
-	transition-duration: 0.35s, 0.35s;
+	transition-duration: 0.175s, 0.175s; /* halved (rev 8) */
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__fill {
@@ -417,7 +421,7 @@
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__edges {
 	opacity: 1;
-	transition-delay: 0.3s; /* rides behind the fill's blur-in */
+	transition-delay: 0.15s; /* rides behind the fill's blur-in (halved, rev 8) */
 }
 
 .landing-v2 .sv-rows__row.is-active .sv-rows__marq {

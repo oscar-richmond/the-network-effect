@@ -72,6 +72,11 @@ const ROW_BAND_CENTRE_PX = 34;
    section's transit (the oversized-img/frame split). */
 const PILLAR_MARGIN_PX = 24; // = VIDEO_MARGIN_PX
 const PILLAR_EXPAND_PX = 700; // = VIDEO_EXPAND_PX
+/* How far BEFORE full-bleed the pillar title/sub start revealing
+   (Oscar's rev 8 — "slightly earlier"). Measured down the same
+   700px expansion window: the text fires with ~17% of the opening
+   still to run. */
+const PILLAR_TEXT_LEAD_PX = 120;
 const PILLAR_PARALLAX_PX = 80;
 /* Bottom behaviours — the landing constants. */
 const FOOTER_H_PX = 811;
@@ -468,11 +473,12 @@ export function initServicesV2() {
       }
     });
 
-    /* ── Pillar overlay texts — word reveals ONLY once the image
-       has opened to full viewport width (Oscar's rev 7): the clip
-       expansion completes exactly at 'top top' (the 700px window's
-       end anchor), so that IS the full-bleed moment — same anchor,
-       two consumers. */
+    /* ── Pillar overlay texts — word reveals as the image NEARS
+       full viewport width. The clip expansion completes at 'top
+       top'; Oscar's rev 8 fires the text PILLAR_TEXT_LEAD_PX
+       earlier, i.e. with the last ~17% of the 700px expansion still
+       running, so the title is already arriving as the image
+       finishes opening rather than starting after it. */
     document.querySelectorAll('.sv-pillar').forEach((section) => {
       const title = section.querySelector('[data-sv-pillar-title]');
       const sub = section.querySelector('[data-sv-pillar-sub]');
@@ -483,7 +489,7 @@ export function initServicesV2() {
       });
       triggers.push(ScrollTrigger.create({
         trigger: section,
-        start: 'top top',
+        start: () => `top ${PILLAR_TEXT_LEAD_PX}px`,
         once: true,
         onEnter: () => {
           [title, sub].forEach((line) => {

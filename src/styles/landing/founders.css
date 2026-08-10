@@ -273,19 +273,21 @@ body.founders-page {
 	color: #161616;
 }
 
-/* Index — TOP-ALIGNED with the word beside it (Oscar's rev 4).
-   Both runs share a baseline, so their INK tops meet when the small
-   run is lifted by the difference of their ink ascents. MEASURED in
-   Dazzed Bold via canvas actualBoundingBoxAscent (not assumed — the
-   digits are cut slightly taller than the caps): cap "T" at 20px =
-   14.96, digit "0" at 8px = 6.08, so the lift is 8.88px. Re-measure
-   if either size or the face changes. */
+/* Index — 10px (Oscar's rev 5: +2), set 4px clear of the word and
+   TOP-ALIGNED with it. Both runs share a baseline, so their INK
+   tops meet when the small run is lifted by the difference of their
+   ink ascents. MEASURED in Dazzed Bold via canvas
+   actualBoundingBoxAscent (not assumed — the digits are cut
+   slightly taller than the caps): cap "T" at 20px = 14.96, digit
+   "0" at 10px = 7.60, so the lift is 7.36px. Re-measure if either
+   size or the face changes. */
 .landing-v2 .fd-slide__list-index {
-	font-size: 8px;
+	font-size: 10px;
 	line-height: 1;
+	margin-left: 4px; /* the gap from the word (rev 5) */
 	vertical-align: baseline;
 	position: relative;
-	top: -8.88px;
+	top: -7.36px;
 }
 
 .landing-v2 .fd-slide__list-sep {

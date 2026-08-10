@@ -102,11 +102,18 @@ import '../styles/fonts.css';
           {slide.list.map((item, j) => (
             <Fragment>
               {j > 0 && slide.list[j - 1].breakAfter && <br />}
-              {j > 0 && !slide.list[j - 1].joinNext && !slide.list[j - 1].breakAfter && (
+              {j > 0 && !slide.list[j - 1].breakAfter && (
                 <span class="fd-slide__list-sep" aria-hidden="true">{'  /  '}</span>
               )}
-              {j > 0 && slide.list[j - 1].joinNext && ' '}
-              <span class="fd-slide__list-item">{item.text}<sup class="fd-slide__list-index">{item.index}</sup></span>
+              {/* An item's text may carry its OWN break (\n) — one
+                  item, one index, split across two lines with the
+                  index after the last word (Oscar's rev 5:
+                  "INDUSTRY / RELATIONSHIPS /03"). */}
+              <span class="fd-slide__list-item"
+                >{item.text.split('\n').map((part, k) => (
+                  <Fragment>{k > 0 && <br />}{part}</Fragment>
+                ))}<sup class="fd-slide__list-index">{item.index}</sup></span
+              >
             </Fragment>
           ))}
         </p>

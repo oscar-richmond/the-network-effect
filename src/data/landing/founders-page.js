@@ -12,11 +12,12 @@
  * ("Rob" vs "Robbo" remains flagged site-wide; the file's own
  * layer names say Robbo.)
  *
- * SLIDE-2 COPY VERBATIM, including the deck quirk that the wrapped
- * item "INDUSTRY RELATIONSHIPS" carries TWO superscript indexes
- * (/03 after INDUSTRY at the line end, /04 after RELATIONSHIPS on
- * the next line) — six indexes across five conceptual items,
- * preserved not "fixed".
+ * SLIDE-2 COPY is the deck's, with ONE deliberate correction
+ * (Oscar, rev 5): the deck double-indexed the wrapped item
+ * "INDUSTRY RELATIONSHIPS" (/03 after INDUSTRY, /04 after
+ * RELATIONSHIPS). It is now a single item with a single index /03
+ * and an authored line break between its words; the items after it
+ * renumber to /04 and /05.
  *
  * IMAGERY: founder portraits — standard pending founder sign-off.
  * BUTTON: the file's 195×38 "FEATURED WORK" CTA — /work exists, so
@@ -38,11 +39,14 @@ export const FOUNDERS_SLIDES = [
        placeholder list: "Relationships across:" + the seven sectors
        on two lines (break after FOOD & BEVERAGE, per the visual). */
     listLabel: 'Relationships across:',
+    /* Oscar's rev 5: BRANDS moves UP to line 1 (so a slash divider
+       now falls between FOOD & BEVERAGE and BRANDS); the break
+       runs after BRANDS instead. */
     list: [
       { text: 'TALENT', index: '/01' },
       { text: 'HOSPITALITY', index: '/02' },
-      { text: 'FOOD & BEVERAGE', index: '/03', breakAfter: true },
-      { text: 'BRANDS', index: '/04' },
+      { text: 'FOOD & BEVERAGE', index: '/03' },
+      { text: 'BRANDS', index: '/04', breakAfter: true },
       { text: 'EVENTS', index: '/05' },
       { text: 'PRODUCTION', index: '/06' },
       { text: 'DESIGN', index: '/07' },
@@ -58,17 +62,18 @@ export const FOUNDERS_SLIDES = [
        line — rendered via white-space:pre-line on the Serrif block. */
     bioSerrif: 'Decades inside rooms where\nculture was built.',
     listLabel: 'The network advantage:',
-    /* VERBATIM incl. the double-indexed wrapped item (see header). */
+    /* Oscar's rev 5 — the deck's double-index quirk is RESOLVED, not
+       preserved: "INDUSTRY RELATIONSHIPS" is ONE item carrying ONE
+       index (/03), with an authored break between its two words so
+       RELATIONSHIPS starts line 2 and a normal slash divider follows
+       it. The two items after it renumber accordingly (/04, /05) —
+       five conceptual items, five indexes. */
     list: [
       { text: 'CULTURAL CREDIBILITY', index: '/01' },
       { text: 'TRUSTED ACCESS TO TALENT', index: '/02' },
-      { text: 'INDUSTRY', index: '/03', joinNext: true },
-      /* Explicit break (Oscar's rev 4) — at 20px this line ended
-         here by natural wrap anyway; pinning it keeps the two-line
-         set deterministic instead of column-width dependent. */
-      { text: 'RELATIONSHIPS', index: '/04', breakAfter: true },
-      { text: 'AUTHENTICITY WITHIN CULTURE', index: '/05' },
-      { text: 'CREATIVE INFLUENCE', index: '/06' },
+      { text: 'INDUSTRY\nRELATIONSHIPS', index: '/03' },
+      { text: 'AUTHENTICITY WITHIN CULTURE', index: '/04' },
+      { text: 'CREATIVE INFLUENCE', index: '/05' },
     ],
   },
 ];
