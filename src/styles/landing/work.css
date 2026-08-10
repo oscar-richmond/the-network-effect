@@ -241,39 +241,9 @@ body.work-page {
    transform), self blur-fade in/out (the house 0.25s ease-out);
    the site's canvas dot hides while it is live. Centring margins
    measured once in JS (no transform allowed on a blend root). */
-.landing-v2 .work-cursor {
-	position: fixed;
-	left: 0;
-	top: 0;
-	z-index: 9999;
-	pointer-events: none;
-	mix-blend-mode: difference;
-	color: #fff;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
-	font-size: 16px;
-	line-height: 16px;
-	white-space: nowrap;
-	visibility: hidden;
-	opacity: 0;
-	filter: blur(6px);
-	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
-}
-
-.landing-v2 .work-cursor.is-active {
-	visibility: visible;
-	opacity: 1;
-	filter: blur(0);
-}
-
-@media (hover: hover) and (pointer: fine) {
-	/* Native cursor hidden over images ONLY (the custom cursor is
-	   the affordance there); everything else keeps the system
-	   cursor. The site's canvas-cursor dot hides while the work
-	   cursor is live — ONE large dot, nothing in the middle. */
-	.landing-v2.work-cursor-on .work-tile { cursor: none; }
-	html.work-cursor-live .canvas-cursor { visibility: hidden; }
-}
+/* The [ VIEW CASE STUDY + ] cursor's styles moved to landing.css
+   (Oscar's rev): the landing FEATURED WORK carousel uses the same
+   cursor and landing.css is the sheet every new-build page loads. */
 
 /* ── Footer reveal layer: the landing footer FIXED at the viewport
    bottom UNDER the stage (z0 < stage z1); the stage slides up to

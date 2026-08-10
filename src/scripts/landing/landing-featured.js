@@ -35,6 +35,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { initViewCaseCursor } from './view-case-cursor.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -73,9 +74,29 @@ export function initLandingFeatured() {
   const section = document.querySelector('[data-landing-featured]');
   if (!(section instanceof HTMLElement)) return () => {};
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return () => {};
-  }
+  /* Card links navigate only for LIVE studies; everything else stays
+     an inert placeholder (/work's rule). Bound on the SECTION, not
+     document, so it preventDefaults BEFORE page-transition's
+     document-level interceptor sees the click (bubble order) — and
+     bound BEFORE the reduced-motion return, because the gate is
+     behaviour, not motion. */
+  const onCardClick = (e) => {
+    const card = e.target instanceof Element ? e.target.closest('[data-work-link]') : null;
+    if (card instanceof HTMLElement && card.dataset.live !== 'true') e.preventDefault();
+  };
+  section.addEventListener('click', onCardClick);
+  const removeGate = () => section.removeEventListener('click', onCardClick);
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) return removeGate;
+
+  /* The [ VIEW CASE STUDY + ] cursor — the shared module, so this
+     carousel reads exactly like /work's tiles. */
+  const cleanupCursor = initViewCaseCursor({
+    cursorEl: section.querySelector('[data-featured-cursor]'),
+    linkSelector: '[data-work-link]',
+    reduced: reducedMotion,
+  });
 
   const stage = section.querySelector('[data-featured-stage]');
   const strip = section.querySelector('[data-featured-strip]');
@@ -302,6 +323,8 @@ export function initLandingFeatured() {
 
   return () => {
     disposed = true;
+    removeGate();
+    cleanupCursor();
     timeouts.forEach(clearTimeout);
     window.removeEventListener('resize', onResize);
     revealTrigger?.kill();

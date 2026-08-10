@@ -28,6 +28,7 @@
  * Content/rights flags live in src/data/landing/featured-work.js.
  */
 import { asset } from '../../utils/asset.js';
+import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
 import GradualBlur from '../GradualBlur.astro';
 ---
@@ -46,8 +47,20 @@ import GradualBlur from '../GradualBlur.astro';
     </a>
 
     <div class="landing-featured__strip" data-featured-strip>
+      {/* A REAL LINK to the study (Oscar's rev — was an inert
+          <article>). data-live gates it exactly as /work's tiles do:
+          unbuilt studies stay inert placeholders, and data-work-link
+          is what the shared VIEW CASE STUDY cursor hit-tests on, so
+          the carousel reads like /work. */}
       {FEATURED_CARDS.map((card) => (
-        <article class="landing-featured__card" data-featured-card>
+        <a
+          class="landing-featured__card"
+          href={`/work/${card.slug}`}
+          data-featured-card
+          data-work-link
+          data-slug={card.slug}
+          data-live={LIVE_CASE_SLUGS.includes(card.slug) ? 'true' : 'false'}
+        >
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
               src={card.img.src}
@@ -71,7 +84,7 @@ import GradualBlur from '../GradualBlur.astro';
           {/* 16px below the title's real height (image 24 / title 16 —
               the closing-keywords rhythm). */}
           <p class="landing-featured__desc" style={`top:${461.5 + card.title.length * 28 + 8.5}px`}>{card.desc}</p>
-        </article>
+        </a>
       ))}
     </div>
 
@@ -96,4 +109,9 @@ import GradualBlur from '../GradualBlur.astro';
       zIndex={2}
     />
   </div>
+
+  {/* The shared [ VIEW CASE STUDY + ] cursor — a top-level element
+      inside the section, carrying difference itself (see
+      view-case-cursor.js). */}
+  <div class="work-cursor" data-featured-cursor aria-hidden="true">[ VIEW CASE STUDY + ]</div>
 </section>

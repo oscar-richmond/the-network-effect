@@ -107,7 +107,10 @@ body.case-page {
 .landing-v2 .cs-did {
 	position: relative;
 	margin-top: 80px;
-	height: 148px;
+	/* min-height, not height: a wrapped column must not spill into
+	   the divider below (the columns are absolute, so this holds the
+	   section open). */
+	min-height: 148px;
 	font-size: 16px;
 }
 
@@ -123,14 +126,20 @@ body.case-page {
 	color: #161616;
 }
 
-.landing-v2 .cs-did__col {
+.landing-v2 .cs-did__cols {
 	position: absolute;
+	left: 1083px; /* the file's first-column start, kept */
+	right: 24px;  /* the page margin — the row can never run past it */
 	top: 0;
+	display: flex;
+	gap: 24px; /* THE GUTTER: guaranteed between the widest parts */
+	align-items: flex-start;
 }
 
-.landing-v2 .cs-did__col--1 { left: 1083px; }
-.landing-v2 .cs-did__col--2 { left: 1292px; }
-.landing-v2 .cs-did__col--3 { left: 1515px; }
+.landing-v2 .cs-did__col {
+	flex: 1 1 0;
+	min-width: 0; /* let long items wrap instead of pushing a neighbour */
+}
 
 .landing-v2 .cs-did__pillar {
 	margin: 0;

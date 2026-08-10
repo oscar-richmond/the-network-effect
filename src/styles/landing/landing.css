@@ -2672,3 +2672,55 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .site-menu__footer-link span {
 	color: var(--color-ink-strong);
 }
+
+/* ── [ VIEW CASE STUDY + ] CURSOR — shared by /work's tiles and the
+   landing FEATURED WORK carousel (scripts/landing/view-case-cursor.js).
+   Moved here from work.css so both surfaces have it. Carries
+   difference ITSELF and is positioned on left/top — never transform,
+   which would make it its own stacking context and kill the blend. */
+.landing-v2 .work-cursor {
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 9999;
+	pointer-events: none;
+	mix-blend-mode: difference;
+	color: #fff;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 16px;
+	white-space: nowrap;
+	visibility: hidden;
+	opacity: 0;
+	filter: blur(6px);
+	transition: opacity 0.25s ease-out, filter 0.25s ease-out;
+}
+
+.landing-v2 .work-cursor.is-active {
+	visibility: visible;
+	opacity: 1;
+	filter: blur(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	/* Native cursor hidden over images ONLY (the custom cursor is
+	   the affordance there); everything else keeps the system
+	   cursor. The site's canvas-cursor dot hides while the work
+	   cursor is live — ONE large dot, nothing in the middle. */
+	.landing-v2.work-cursor-on .work-tile { cursor: none; }
+	html.work-cursor-live .canvas-cursor { visibility: hidden; }
+}
+
+/* The landing carousel's cards get the same native-cursor
+   suppression /work's tiles do. */
+@media (hover: hover) and (pointer: fine) {
+	.landing-v2.work-cursor-on .landing-featured__card { cursor: none; }
+}
+
+/* The carousel card is an anchor now — reset link styling. */
+.landing-v2 .landing-featured__card {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+}

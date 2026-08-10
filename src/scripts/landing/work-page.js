@@ -73,6 +73,7 @@ import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '.
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
+import { initViewCaseCursor } from './view-case-cursor.js';
 
 const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
 const IMG_H_PX = 616; // Oscar's rev: the pre-412 height (640) minus 24
@@ -95,7 +96,6 @@ const META_WIPE_SPAN_PX = 60;
 const META_WIPE_LEAD_PX = 40;
 const FOOTER_REVEAL_PX = 811; // the landing footer's full height
 const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
-const CURSOR_LERP = 0.25; // the canvas-cursor feel
 /* The case-page scroll RESISTANCE (Oscar's rev): the render
    position lerps toward the input target at the Lenis value the
    case study uses (0.065) — wheel input lands with the same lag/
@@ -633,81 +633,15 @@ export function initWorkPage() {
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
   cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
 
-  /* ── Custom cursor — [ VIEW CASE STUDY + ] (Oscar's rev — was the
-     big dot + label pair; now the case-study gallery-cursor
-     construction verbatim, so the dot-to-text handoff matches that
-     page exactly). Gate note: hover/fine reads FALSE system-wide on
-     Oscar's machine — verify on another device. */
-  const workCursor = document.querySelector('[data-work-cursor]');
-  const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!reduced && fineHover && workCursor instanceof HTMLElement) {
-    document.documentElement.classList.add('work-cursor-on');
-    document.body.classList.add('work-cursor-on');
-    /* Centre on the pointer without transform (blend root): the
-       measured half-extent becomes a static margin. */
-    const centre = () => {
-      workCursor.style.marginLeft = `${(-workCursor.offsetWidth / 2).toFixed(1)}px`;
-      workCursor.style.marginTop = `${(-workCursor.offsetHeight / 2).toFixed(1)}px`;
-    };
-    const fontsForCursor = document.fonts?.ready ?? Promise.resolve();
-    fontsForCursor.then(centre);
-    let cx = -200;
-    let cy = -200;
-    let tx = -200;
-    let ty = -200;
-    let over = false;
-    let cursorRaf = 0;
-    const tick = () => {
-      cx += (tx - cx) * CURSOR_LERP;
-      cy += (ty - cy) * CURSOR_LERP;
-      /* left/top, never transform — this IS the blend element. */
-      workCursor.style.left = `${cx.toFixed(1)}px`;
-      workCursor.style.top = `${cy.toFixed(1)}px`;
-      cursorRaf = window.requestAnimationFrame(tick);
-    };
-    const onMove = (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
-    };
-    const setOver = (nowOver) => {
-      if (nowOver === over) return;
-      over = nowOver;
-      if (over) {
-        cx = tx;
-        cy = ty;
-        workCursor.classList.add('is-active');
-        document.documentElement.classList.add('work-cursor-live');
-        if (!cursorRaf) cursorRaf = window.requestAnimationFrame(tick);
-      } else {
-        workCursor.classList.remove('is-active');
-        document.documentElement.classList.remove('work-cursor-live');
-        window.cancelAnimationFrame(cursorRaf);
-        cursorRaf = 0;
-      }
-    };
-    /* ROOT-CAUSE FIX (Oscar's report: the cursor stayed on the
-       footer): the old stage-scoped pointerover/OUT pair fed the
-       OUT event's target — the tile being LEFT — into the same
-       hit test, so exiting a tile toward the footer (outside the
-       stage, no matching over event) still read as "over a tile".
-       DOCUMENT-level pointerover is the correct signal: it fires
-       for whatever the pointer actually enters, footer included. */
-    const onOver = (e) => {
-      setOver(e.target instanceof Element && !!e.target.closest('[data-work-link]'));
-    };
-    const onDocLeave = () => setOver(false);
-    window.addEventListener('pointermove', onMove, { passive: true });
-    document.addEventListener('pointerover', onOver);
-    document.documentElement.addEventListener('pointerleave', onDocLeave);
-    cleanups.push(() => {
-      window.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerover', onOver);
-      document.documentElement.removeEventListener('pointerleave', onDocLeave);
-      window.cancelAnimationFrame(cursorRaf);
-      document.documentElement.classList.remove('work-cursor-on', 'work-cursor-live');
-      document.body.classList.remove('work-cursor-on');
-    });
-  }
+  /* ── Custom cursor — [ VIEW CASE STUDY + ]. The machinery lives
+     in view-case-cursor.js now (Oscar's rev): the landing page's
+     FEATURED WORK carousel uses the same cursor, and one module
+     means the two can never drift. */
+  cleanups.push(initViewCaseCursor({
+    cursorEl: document.querySelector('[data-work-cursor]'),
+    linkSelector: '[data-work-link]',
+    reduced,
+  }));
 
   /* ── Bottom behaviours (Oscar's rev — the landing pair, ported):
      1. AUTO-SNAP: stopping (2s idle) part-way into the footer
