@@ -133,8 +133,35 @@ export function initWorkPage() {
   stage.addEventListener('click', onLinkClick);
   cleanups.push(() => stage.removeEventListener('click', onLinkClick));
 
-  /* <=1024 (the viewport.js seam): the CSS stacked list is the whole story. */
+  /* <=1024 (the viewport.js seam): the CSS stacked list is the page —
+     no driver, no docking metas. The FILTERS stay fully functional
+     (the brief's requirement): a pill toggles tile visibility by the
+     tags each tile now carries; aria-pressed and the live region
+     track it exactly as the desktop rebuild does. */
   if ((window.innerWidth || 1728) <= 1024) {
+    const pills = Array.from(document.querySelectorAll('[data-work-filter]'));
+    const tiles = Array.from(carousel.querySelectorAll('[data-work-link]'));
+    const applyFilter = (key) => {
+      pills.forEach((p) => {
+        p.setAttribute('aria-pressed', p.dataset.workFilter === key ? 'true' : 'false');
+      });
+      let shown = 0;
+      tiles.forEach((tile) => {
+        const tags = (tile.dataset.tags ?? '').split(' ');
+        const match = key === 'all' || tags.includes(key);
+        tile.classList.toggle('is-filtered-out', !match);
+        if (match) shown += 1;
+      });
+      if (metaLive instanceof HTMLElement) {
+        metaLive.textContent = `${shown} project${shown === 1 ? '' : 's'} shown`;
+      }
+    };
+    const onPillClick = (e) => {
+      const pill = e.target instanceof Element ? e.target.closest('[data-work-filter]') : null;
+      if (pill instanceof HTMLElement) applyFilter(pill.dataset.workFilter ?? 'all');
+    };
+    document.addEventListener('click', onPillClick);
+    cleanups.push(() => document.removeEventListener('click', onPillClick));
     return () => cleanups.forEach((fn) => fn());
   }
 

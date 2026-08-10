@@ -286,14 +286,27 @@ body.work-page {
 /* ── Sub-1024 fallback: sensible stacked scrolling list (the 15"
    scale shell remains the primary story). The stage un-fixes, tiles
    flow with their own meta below each image. */
+/* MOBILE (<=1024, the viewport.js seam — mobile brief 2026-08-10):
+   the fixed-viewport driver, infinite travel and docking metas are
+   the desktop identity; on touch they fight native momentum, so the
+   page becomes a designed vertical list — full-width tiles, each
+   carrying its own meta + tap affordance, filters as working tap
+   pills (work-page.js mobile branch). Declared trade in the report. */
 @media (max-width: 1024px) {
 	body.work-page { overflow: auto; }
 
 	.landing-v2 .work-stage {
 		height: auto;
 		overflow: visible;
-		padding: 160px 24px 64px;
+		padding: 140px var(--m-margin, 24px) 64px;
+		/* DOM puts the header/filters column AFTER the carousel (the
+		   desktop absolute layout doesn't care) — the linear page
+		   needs it first. */
+		display: flex;
+		flex-direction: column;
 	}
+
+	.landing-v2 .work-stage__left { order: -1; }
 
 	.landing-v2 .work-stage__carousel {
 		position: static;
@@ -301,25 +314,111 @@ body.work-page {
 		height: auto;
 		display: flex;
 		flex-direction: column;
-		gap: 32px;
+		gap: 48px;
 	}
 
 	.landing-v2 .work-tile {
 		position: static;
 		width: 100%;
 		height: auto;
-		aspect-ratio: 1024 / 616;
+		display: block;
+		text-decoration: none;
+		color: #161616;
 	}
 
-	.landing-v2 .work-tile img { position: static; }
+	.landing-v2 .work-tile.is-filtered-out { display: none; }
 
-	.landing-v2 .work-stage__left { position: static; pointer-events: auto; }
-	.landing-v2 .work-page__hl { position: static; }
-	.landing-v2 .work-page__filters { position: static; margin: 16px 0 24px; flex-wrap: wrap; }
+	.landing-v2 .work-tile img {
+		position: static;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1024 / 616;
+		object-fit: cover;
+		display: block;
+	}
+
+	.landing-v2 .work-tile__m {
+		display: block;
+		margin-top: 12px;
+	}
+
+	.landing-v2 .work-tile__m-titlerow {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+
+	.landing-v2 .work-tile__m-title {
+		font-weight: 700;
+		font-size: 22px;
+		line-height: 26px;
+		text-transform: uppercase;
+	}
+
+	.landing-v2 .work-tile__m-index {
+		font-weight: 700;
+		font-size: 12px;
+		line-height: 14px;
+	}
+
+	.landing-v2 .work-tile__m-desc {
+		display: block;
+		margin-top: 8px;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 24px;
+	}
+
+	.landing-v2 .work-tile__m-cta {
+		display: block;
+		margin-top: 10px;
+		font-weight: 700;
+		font-size: 12px;
+		line-height: 14px;
+	}
+
+	.landing-v2 .work-stage__left { position: static; pointer-events: auto; width: auto; }
+	.landing-v2 .work-page__hl {
+		position: static;
+		font-size: 32px;
+		line-height: 34px;
+		color: #161616;
+		mix-blend-mode: normal;
+	}
+
+	/* Pills: real 44px-effective tap targets, horizontally scrollable
+	   if they ever outgrow the row. */
+	.landing-v2 .work-page__filters {
+		position: static;
+		margin: 20px 0 32px;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.landing-v2 .work-pill {
+		min-height: 44px;
+		padding: 10px 18px;
+		width: auto; /* the desktop per-pill fixed widths don't fit the 44px pads */
+		/* The staggered fade is desktop machinery (the module returns
+		   early on mobile — nothing would ever add .is-visible). */
+		opacity: 1;
+		transform: none;
+		transition: background 0.2s ease, color 0.2s ease;
+	}
+
 	/* The travelling meta block is desktop machinery. */
 	.landing-v2 .work-page__metas { display: none; }
 	.landing-v2 .work-stage__band { display: none; }
 	.landing-v2 .work-cursor { display: none; }
 	.landing-v2 .work-stage { will-change: auto; transform: none !important; }
 	.landing-v2 .work-footer-wrap { position: static; height: auto; }
+}
+
+/* The mobile per-tile meta must not exist above the seam — the
+   desktop carousel renders bare images with the travelling metas. */
+@media (min-width: 1025px) {
+	.landing-v2 .work-tile__m { display: none; }
 }

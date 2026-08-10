@@ -50,6 +50,7 @@ import '../styles/fonts.css';
           data-work-link
           data-slug={p.slug}
           data-index={String(i)}
+          data-tags={p.tags.join(' ')}
           aria-label={`${p.title.join(' ')} — view project`}
         >
           <img
@@ -60,6 +61,21 @@ import '../styles/fonts.css';
             width="1024"
             height="616"
           />
+          {/* MOBILE meta (mobile brief, 2026-08-10): the travelling
+              meta block is desktop machinery — on the linear list each
+              tile carries its own title/index/desc plus the tap
+              affordance (the custom cursor's copy — no pointer exists
+              on touch). display:none above the seam (work.css);
+              aria-hidden because the anchor's aria-label already
+              carries the accessible name. */}
+          <span class="work-tile__m" aria-hidden="true">
+            <span class="work-tile__m-titlerow">
+              <span class="work-tile__m-title">{p.title.join(' ')}</span>
+              <span class="work-tile__m-index">{p.index}</span>
+            </span>
+            <span class="work-tile__m-desc">{p.desc}</span>
+            <span class="work-tile__m-cta">[ VIEW CASE STUDY + ]</span>
+          </span>
         </a>
       ))}
     </div>
