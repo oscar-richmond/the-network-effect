@@ -238,13 +238,18 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       <img class="cs-lightbox__media" data-cs-lb-img src="" alt="" hidden />
       <video class="cs-lightbox__media" data-cs-lb-video muted loop playsinline hidden></video>
     </figure>
+    {/* data-char-ripple-arrow (audit follow-up): these are the SAME
+        icon button as the MORE WORK pager above, drawn from the same
+        ARROW_PATH with the same svg class — but they carried no
+        hover affordance at all while their twin ripples. The attr is
+        inert markup; case-study.js wires the replay for both pairs. */}
     <button type="button" class="cs-lightbox__arrow cs-lightbox__arrow--prev" data-cs-lb-prev aria-label="Previous image">
-      <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
         <path d={ARROW_PATH} fill="currentColor" />
       </svg>
     </button>
     <button type="button" class="cs-lightbox__arrow cs-lightbox__arrow--next" data-cs-lb-next aria-label="Next image">
-      <svg class="cs-more__arrow-svg cs-more__arrow-svg--right" viewBox="0 0 300 300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <svg class="cs-more__arrow-svg cs-more__arrow-svg--right" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
         <path d={ARROW_PATH} fill="currentColor" />
       </svg>
     </button>

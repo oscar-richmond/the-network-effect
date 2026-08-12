@@ -75,6 +75,26 @@ export function initCaseStudy() {
   if (!reduced) cleanups.push(initSiteScroll());
   const lenis = { get i() { return getLenisInstance(); } };
 
+  /* Arrow hover = the LET'S CHAT ripple (the injected char-ripple
+     arrow animation replayed on the svg). Extracted to a helper
+     (audit follow-up) because the LIGHTBOX arrows are the same icon
+     button as the pager's and had no hover affordance at all — one
+     definition means the two pairs can never drift apart again.
+     Non-RM only; disabled buttons never play. */
+  const wireArrowRipple = (btn) => {
+    if (reduced || !(btn instanceof HTMLElement)) return;
+    const svg = btn.querySelector('[data-char-ripple-arrow]');
+    if (!svg) return;
+    const onHover = () => {
+      if (btn.disabled) return;
+      svg.classList.remove('is-rippling');
+      void btn.offsetWidth;
+      svg.classList.add('is-rippling');
+    };
+    btn.addEventListener('mouseenter', onHover);
+    cleanups.push(() => btn.removeEventListener('mouseenter', onHover));
+  };
+
   /* ── MORE-WORK pager (all modes — navigation, not decoration). */
   const track = document.querySelector('[data-cs-more-track]');
   const viewport = document.querySelector('[data-cs-more-viewport]');
@@ -103,22 +123,7 @@ export function initCaseStudy() {
       prevBtn.removeEventListener('click', onPrev);
       nextBtn.removeEventListener('click', onNext);
     });
-    /* Arrow hover = the LET'S CHAT ripple (the injected char-ripple
-       arrow animation replayed on the svg), active buttons only. */
-    if (!reduced) {
-      [prevBtn, nextBtn].forEach((btn) => {
-        const svg = btn.querySelector('[data-char-ripple-arrow]');
-        if (!svg) return;
-        const onHover = () => {
-          if (btn.disabled) return;
-          svg.classList.remove('is-rippling');
-          void btn.offsetWidth;
-          svg.classList.add('is-rippling');
-        };
-        btn.addEventListener('mouseenter', onHover);
-        cleanups.push(() => btn.removeEventListener('mouseenter', onHover));
-      });
-    }
+    [prevBtn, nextBtn].forEach(wireArrowRipple);
     /* Keyboard: focusing an off-page card — undo the browser's
        overflow scroll (it fights the transform pager) and page to
        the card instead. */
@@ -282,6 +287,9 @@ export function initCaseStudy() {
      house blur-fade; video items autoplay muted-looped. */
   const lightbox = document.querySelector('[data-cs-lightbox]');
   if (lightbox instanceof HTMLElement) {
+    /* Same icon button as the MORE WORK pager — same affordance
+       (audit follow-up; previously these had none). */
+    lightbox.querySelectorAll('[data-cs-lb-prev], [data-cs-lb-next]').forEach(wireArrowRipple);
     const lbImg = lightbox.querySelector('[data-cs-lb-img]');
     const lbVideo = lightbox.querySelector('[data-cs-lb-video]');
     const lbStage = lightbox.querySelector('[data-cs-lb-stage]');

@@ -233,6 +233,83 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	outline-offset: 2px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   KEYBOARD FOCUS — completing the set (audit follow-up 2026-08-11).
+   ADDITIVE ONLY: nothing here paints at rest or on hover.
+
+   WHY IT MATTERED: the hover affordance on these controls is the JS
+   char-ripple, which gates itself behind (hover:hover)+(pointer:fine)
+   — so a keyboard user got NOTHING on MENU, LET'S CHAT, MORE INFO,
+   VIEW ALL, the founders CTAs, the network terms, the menu links and
+   every footer link. The only ripple-related :focus-visible rule in
+   the build sits inside @media (prefers-reduced-motion: reduce), so
+   it never applied under normal motion.
+
+   THE PATTERN is the one already on .ct-cta / .fd-slide__btn /
+   .work-pill / .ct-modal__close / .cs-more__card / .cs-lightbox__*:
+       outline: 2px solid <accent>; outline-offset: 2px;
+   with outline-offset -2px where the control fills its own box and an
+   outset ring would be clipped (the .work-tile / .sv-rows__row
+   precedent).
+
+   ONE RING, THREE INK VALUES — a contrast requirement, not a second
+   style. #232a89 is the house accent, but it is ALSO the blue
+   footer's ground and it reads as dark-on-dark over #161616 and
+   #343439. Measured grounds decided each value below; a ring that
+   isn't visible is not a focus state.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Light grounds (#eeeef0 / #e4e4ea) — the house pattern verbatim. */
+.landing-v2 .landing-svc-card__btn:focus-visible,
+.landing-v2 .landing-featured__viewall:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* Image tile in a clipping stage — inset, matching .work-tile. */
+.landing-v2 .landing-featured__card:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: -2px;
+}
+
+/* Dark grounds: the founders CTAs sit on #343439 inside the #161616
+   band, the network terms on #161616. Accent blue would vanish. */
+.landing-v2 .landing-founders__btn:focus-visible,
+.landing-v2 .landing-network__term:focus-visible {
+	outline: 2px solid #eeeef0;
+	outline-offset: 2px;
+}
+
+/* The footer's DEFAULT theme ground IS #232a89 — the ring takes the
+   light ink instead; the --light theme (/services) flips back to the
+   house accent. */
+.landing-v2 .landing-footer__link:focus-visible,
+.landing-v2 .landing-footer__start:focus-visible,
+.landing-v2 .landing-footer__rowitem:focus-visible {
+	outline: 2px solid #eeeef0;
+	outline-offset: 2px;
+}
+
+.landing-v2 .landing-footer--light .landing-footer__link:focus-visible,
+.landing-v2 .landing-footer--light .landing-footer__start:focus-visible,
+.landing-v2 .landing-footer--light .landing-footer__rowitem:focus-visible {
+	outline-color: #232a89;
+}
+
+/* The topbar carries mix-blend-mode: difference on the bar AND on
+   each item, so ANY outline inside it composites against whatever is
+   behind — a fixed colour would invert to an arbitrary hue and can go
+   invisible (measured: #232a89 over the #161616 hero video resolves
+   to rgb(13,20,115) — effectively black on black). currentColor is
+   the ink the blend system was designed around, so the ring inverts
+   exactly as the label does and stays legible on every ground. */
+.landing-v2 .home__menu-toggle:focus-visible,
+.landing-v2 .home__logo-link:focus-visible,
+.landing-v2 .home__topbar-email:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
 /* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
    and Menu.astro are /old-shared — every change here is scoped. */
 
@@ -280,6 +357,17 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	font-synthesis: none;
 	font-size: 14px;
 	line-height: 18px;
+}
+
+/* Menu overlay focus (audit follow-up): the panel ground is #eeeef0
+   with #161616 ink, so the house accent applies. The menu LINKS had
+   a :focus-visible rule in menu.css already — but it only sets
+   `text-decoration: none`, i.e. it REMOVES an affordance and paints
+   nothing. Scoped to .landing-v2 so /old's menu is untouched. */
+.landing-v2 .site-menu__link:focus-visible,
+.landing-v2 .site-menu__footer-link:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
 }
 
 /* Two menu rows, 40px apart: the body stacks the row wrappers. The

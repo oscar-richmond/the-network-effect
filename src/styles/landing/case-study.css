@@ -364,6 +364,16 @@ body.case-page {
 	cursor: default;
 }
 
+/* Keyboard focus (audit follow-up): the pager buttons had a hover
+   affordance (the arrow ripple, replayed in case-study.js) but no
+   keyboard state. The house pattern, on the light #eeeef0 ground.
+   Disabled buttons are not focusable, so the [disabled] rule above
+   is unaffected. */
+.landing-v2 .cs-more__arrow:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
 .landing-v2 .cs-more__arrow-svg {
 	display: block;
 	width: 10.5px;

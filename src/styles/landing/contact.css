@@ -236,6 +236,22 @@
 	text-decoration: none;
 }
 
+/* Keyboard focus (audit follow-up): the modal's fallback mailto is a
+   ripple-wired text link on the light #eeeef0 window — the house
+   pattern. Its sibling CLOSE already had a ring. */
+.landing-v2 .ct-modal__fallback a:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
+}
+
+/* The logo twin carries mix-blend-mode: difference (it is the
+   topbar wordmark's exact treatment), so like the topbar it takes
+   currentColor — see the note in landing.css. */
+.landing-v2 .ct-modal__logo:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
 /* CLOSE — file: 97×40 pill, right edge flush with the window,
    80px above it (band-centred: centre − 245 − 80), fill + blue
    14/18, its own 12px frost. Arrives with the window. */
