@@ -41,6 +41,7 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 import { createAccessWave } from './access-wave.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport } from './viewport.js';
+import { initMobileEntrance } from './m-entrance.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -108,6 +109,27 @@ const PAIRS = ACCESS_PAIRS;
 const PRIME_LEFT = 1;
 const PRIME_RIGHT = 6;
 
+/* ── MOBILE ROWS (the 402-frame rebuild, 2026-08-13) ────────────────
+   The desktop's opposed COLUMNS become two opposed horizontal ROWS:
+   360×240 items on a 368px pitch (file 0:299-0:328 — the file's
+   neighbour positions are exactly one pitch apart), top row
+   travelling RIGHT, bottom LEFT, autonomously. ONE clock drives an
+   offset both rows consume with opposite signs, and the top row's
+   DOM order is reversed (Astro), so the centred pair is a desktop
+   pair BY CONSTRUCTION — never by tuned coincidence. The highlight
+   slots sit at 50vw+60 (top) and 50vw−60 (bottom), decoded from the
+   file. Rhythm: pairs DWELL centred (words in), then TRAVEL one
+   pitch on the holding curve (words retire at departure, the next
+   pair's words rise on arrival). All tunables: */
+const ACCESS_M_PITCH_PX = 368; // 360 item + 8 gap
+const ACCESS_M_SET = 6; // pairs per row; rendered twice for the wrap
+const ACCESS_M_DWELL_MS = 2200; // centred hold per pair
+const ACCESS_M_TRAVEL_MS = 900; // one-pitch travel
+const ACCESS_M_CENTRE_SHIFT_PX = 60; // highlight slots: 50vw ± this
+const ACCESS_M_DIM_BLUR_PX = 4; // off-centre soften (desktop veil grammar)
+const ACCESS_M_VEIL_ALPHA = 0.25; // off-centre white veil strength
+const ACCESS_M_WORD_SWAP_MS = 450; // word retire/reveal transition (CSS twin)
+
 export function initLandingAccess() {
   const section = document.querySelector('[data-landing-access]');
   if (!(section instanceof HTMLElement)) return () => {};
@@ -116,12 +138,166 @@ export function initLandingAccess() {
     return () => {};
   }
 
-  /* MOBILE (the viewport.js seam): the opposed-column scrub, veils,
-     words and the GL wave never boot — the section renders the static
-     recomposition (headline + the six-pair ledger, LandingAccess.astro
-     + landing.css). Zero WebGL contexts on phones (A4). */
+  /* MOBILE (the viewport.js seam): the opposed-column scrub, veils
+     and the GL wave never boot (zero WebGL contexts on phones, A4) —
+     the ROWS mechanic runs instead (constants block above). The
+     reduced-motion return upstream means this code never runs under
+     RM: the static markup/CSS frame (pair 1 centred, words in) is
+     the RM rendering. */
   if (isMobileViewport()) {
-    return () => {};
+    const tracks = {
+      top: section.querySelector('[data-access-mtrack="top"]'),
+      bottom: section.querySelector('[data-access-mtrack="bottom"]'),
+    };
+    const inners = {
+      top: section.querySelector('[data-access-mword-inner="top"]'),
+      bottom: section.querySelector('[data-access-mword-inner="bottom"]'),
+    };
+    const mrows = section.querySelector('[data-access-mrows]');
+
+    /* Entrance: headline lines are difference-blended → line-reveal;
+       the rows block fade-rises (its words blend against the row's
+       own imagery, inside the risen group — safe). */
+    const cleanupEnt = initMobileEntrance(section, {
+      lines: Array.from(section.querySelectorAll('[data-access-line]')),
+      media: [mrows].filter((el) => el instanceof HTMLElement),
+    });
+
+    if (!(tracks.top instanceof HTMLElement) || !(tracks.bottom instanceof HTMLElement) || !(mrows instanceof HTMLElement)) {
+      return cleanupEnt;
+    }
+
+    const setW = ACCESS_M_PITCH_PX * ACCESS_M_SET;
+    const mod = (v) => ((v % setW) + setW) % setW;
+    const items = {
+      top: Array.from(tracks.top.children).filter((el) => el instanceof HTMLElement),
+      bottom: Array.from(tracks.bottom.children).filter((el) => el instanceof HTMLElement),
+    };
+    const ease = gsap.parseEase('power2.inOut');
+
+    /* Track x for a continuous rightward offset (top) / leftward
+       (bottom), wrapped so the doubled strip always covers the
+       viewport. Derivations in the constants block; the centre reads
+       live, so resize needs no rebuild. */
+    const xTop = (off) => {
+      const rest = window.innerWidth / 2 + ACCESS_M_CENTRE_SHIFT_PX - 180 - (ACCESS_M_SET - 1) * ACCESS_M_PITCH_PX;
+      return -setW + mod(rest + off);
+    };
+    const xBottom = (off) => {
+      const rest = window.innerWidth / 2 - ACCESS_M_CENTRE_SHIFT_PX - 180;
+      return -setW + mod(rest - off);
+    };
+
+    const applyX = (off) => {
+      tracks.top.style.transform = `translateX(${xTop(off).toFixed(2)}px)`;
+      tracks.bottom.style.transform = `translateX(${xBottom(off).toFixed(2)}px)`;
+    };
+
+    /* Continuous dim: veil/blur proportional to each item's distance
+       from its row's highlight slot (the desktop veil grammar). */
+    const applyDim = () => {
+      ['top', 'bottom'].forEach((key) => {
+        const centre = window.innerWidth / 2 + (key === 'top' ? 1 : -1) * ACCESS_M_CENTRE_SHIFT_PX;
+        items[key].forEach((item) => {
+          const r = item.getBoundingClientRect();
+          const t = Math.min(1, Math.abs(r.left + r.width / 2 - centre) / ACCESS_M_PITCH_PX);
+          const veil = item.lastElementChild;
+          if (veil instanceof HTMLElement) veil.style.opacity = t.toFixed(3);
+          const img = item.firstElementChild;
+          if (img instanceof HTMLElement) {
+            img.style.filter = t > 0.02 ? `blur(${(t * ACCESS_M_DIM_BLUR_PX).toFixed(2)}px)` : 'none';
+          }
+        });
+      });
+    };
+
+    const setWords = (pairIdx) => {
+      if (inners.top instanceof HTMLElement) inners.top.textContent = PAIRS[pairIdx][0];
+      if (inners.bottom instanceof HTMLElement) inners.bottom.textContent = PAIRS[pairIdx][1];
+    };
+    const retireWords = () => {
+      [inners.top, inners.bottom].forEach((el) => el?.classList.add('is-out'));
+    };
+    const revealWords = (pairIdx) => {
+      setWords(pairIdx);
+      [inners.top, inners.bottom].forEach((el) => {
+        if (!(el instanceof HTMLElement)) return;
+        void el.offsetHeight; /* commit the swapped text while hidden */
+        el.classList.remove('is-out');
+      });
+    };
+
+    /* The clock: dwell → travel(+1 pitch, eased) → dwell…; only ticks
+       while the rows are on screen (IntersectionObserver). */
+    let steps = 0;
+    let phase = 'dwell';
+    let phaseStart = 0;
+    let raf = 0;
+
+    const tick = (now) => {
+      if (!phaseStart) phaseStart = now;
+      const elapsed = now - phaseStart;
+      if (phase === 'dwell') {
+        if (elapsed >= ACCESS_M_DWELL_MS) {
+          phase = 'travel';
+          phaseStart = now;
+          retireWords();
+        }
+        applyX(steps * ACCESS_M_PITCH_PX);
+      } else {
+        const p = Math.min(elapsed / ACCESS_M_TRAVEL_MS, 1);
+        applyX((steps + ease(p)) * ACCESS_M_PITCH_PX);
+        applyDim();
+        if (p >= 1) {
+          steps += 1;
+          phase = 'dwell';
+          phaseStart = now;
+          revealWords(steps % ACCESS_M_SET);
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    const start = () => {
+      if (!raf) {
+        phaseStart = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    const stop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    applyX(0);
+    applyDim();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => (entry.isIntersecting ? start() : stop()));
+      },
+      { rootMargin: '10% 0px' },
+    );
+    io.observe(mrows);
+
+    if (import.meta.env.DEV) {
+      window.__landingAccessM = {
+        state: () => ({ steps, phase, pair: steps % ACCESS_M_SET, running: !!raf }),
+        constants: {
+          pitch: ACCESS_M_PITCH_PX,
+          dwellMs: ACCESS_M_DWELL_MS,
+          travelMs: ACCESS_M_TRAVEL_MS,
+          centreShift: ACCESS_M_CENTRE_SHIFT_PX,
+        },
+      };
+    }
+
+    return () => {
+      stop();
+      io.disconnect();
+      cleanupEnt();
+    };
   }
 
   const stage = section.querySelector('[data-access-stage]');

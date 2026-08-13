@@ -88,5 +88,34 @@ const keywords = [
       <p class="landing-closing__kw-line">{k.line}</p>
     </div>
   ))}
+
+  {/* MOBILE carousel (402-frame rebuild 2026-08-13; file 0:159/0:330/
+      0:333): tile + keyword + index + line travel as ONE unit — a
+      340×340 swipe carousel with the shared indicator (the file
+      doesn't draw one here; the brief standardises it). SAME data as
+      the desktop blocks above (zipped by order — tiles and keywords
+      are parallel arrays), so content can never fork; the desktop
+      tiles/kws are display:none <=1024 and this block >=1025, so AT
+      reads exactly one of the two. The slides join the module's
+      existing tile entrance (landing-closing.js). */}
+  <div class="landing-closing__m-carousel" data-m-carousel>
+    <div class="landing-closing__m-strip" data-carousel-strip>
+      {keywords.map((k, i) => (
+        <article class="landing-closing__m-slide">
+          <figure class="landing-closing__m-img" aria-hidden="true">
+            <img src={tiles[i].src} alt="" loading="lazy" decoding="async" />
+          </figure>
+          <p class="landing-closing__m-kwrow">
+            <span class="landing-closing__m-kw">{k.word}</span>
+            <span class="landing-closing__m-index">{k.index}</span>
+          </p>
+          <p class="landing-closing__m-line">{k.line}</p>
+        </article>
+      ))}
+    </div>
+    <span class="m-carousel-ind" data-carousel-ind aria-hidden="true">
+      <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
+    </span>
+  </div>
   </div>
 </section>

@@ -28,6 +28,7 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -97,10 +98,19 @@ export function initLandingClosing() {
   let snapTimer = 0;
   let lastScrollY = window.scrollY || 0;
   let lastDirDown = false;
-  const tileEl = closing.querySelector('[data-closing-tile]');
+  /* The zone anchor must be a RENDERED tile: on mobile the desktop
+     tiles are display:none (zero rects — bottom 0 would read as
+     permanently in-zone and snap from anywhere), so fall through to
+     the mobile carousel's first slide. */
+  const tileEls = Array.from(
+    closing.querySelectorAll('[data-closing-tile], .landing-closing__m-slide'),
+  );
 
   const inSnapZone = () => {
-    if (!(tileEl instanceof HTMLElement)) return false;
+    const tileEl = tileEls.find(
+      (t) => t instanceof HTMLElement && t.getBoundingClientRect().height > 0,
+    );
+    if (!tileEl) return false;
     return tileEl.getBoundingClientRect().bottom <= SNAP_ZONE_TILE_BOTTOM_PX;
   };
 
@@ -128,10 +138,15 @@ export function initLandingClosing() {
   };
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  /* Mobile tile-carousel indicator (Part-2 rebuild) — swipe feedback,
+     not motion, so it lives above the RM return. */
+  const cleanupInd = isMobileViewport() ? initCarouselIndicators(closing) : () => {};
+
   const cleanupBase = () => {
     topLinks.forEach((el) => el.removeEventListener('click', onTopClick));
     window.removeEventListener('scroll', onScroll);
     window.clearTimeout(snapTimer);
+    cleanupInd();
   };
 
   if (reduced) {
@@ -142,7 +157,12 @@ export function initLandingClosing() {
   /* Headline anchoring is pure CSS now (left-anchored on the tiles'
      24px margin, Oscar's rev 2) — no runtime derivation. */
   const intro = closing.querySelector('[data-closing-intro]');
-  const tiles = Array.from(closing.querySelectorAll('[data-closing-tile]'));
+  /* The mobile carousel slides (Part-2 rebuild) join the tile
+     entrance: on desktop they're display:none, so the added class is
+     inert; on mobile they fade-rise on the tiles' slots. */
+  const tiles = Array.from(
+    closing.querySelectorAll('[data-closing-tile], .landing-closing__m-slide'),
+  );
   const kws = Array.from(closing.querySelectorAll('[data-closing-kw]'));
   const footerCols = Array.from(footer.querySelectorAll('[data-footer-col]'));
   const footerImg = footer.querySelector('[data-footer-img]');

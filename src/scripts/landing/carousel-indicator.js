@@ -15,21 +15,21 @@
  * iOS rubber-band overshoot. Zero-overflow strips (a carousel whose
  * columns happen to fit) keep the thumb parked at 0.
  *
- * Used by the services list carousels now; Part 2's featured-work
- * and tile carousels take the same wiring.
+ * Used by the services list carousels, the featured-work cards
+ * (Part 2, the file's 200px track via `--wide`), and the closing
+ * tiles — track/thumb geometry is MEASURED per instance, so any
+ * width modifier works without new constants.
  *
  * @param {ParentNode} scope subtree to wire (a section, or document)
  * @returns {() => void} cleanup
  */
-const TRACK_PX = 100;
-const THUMB_PX = 32;
-
 export function initCarouselIndicators(scope = document) {
   const cleanups = [];
 
   scope.querySelectorAll('[data-svc-m-carousel], [data-m-carousel]').forEach((root) => {
     const strip = root.querySelector('[data-carousel-strip]');
     const ind = root.querySelector('[data-carousel-ind]');
+    const thumb = root.querySelector('[data-carousel-thumb]');
     if (!(strip instanceof HTMLElement) || !(ind instanceof HTMLElement)) return;
 
     let raf = 0;
@@ -38,7 +38,8 @@ export function initCarouselIndicators(scope = document) {
       raf = 0;
       const max = strip.scrollWidth - strip.clientWidth;
       const p = max > 0 ? Math.min(1, Math.max(0, strip.scrollLeft / max)) : 0;
-      ind.style.setProperty('--ci-x', `${(p * (TRACK_PX - THUMB_PX)).toFixed(1)}px`);
+      const travel = ind.clientWidth - (thumb instanceof HTMLElement ? thumb.offsetWidth : 32);
+      ind.style.setProperty('--ci-x', `${(p * Math.max(travel, 0)).toFixed(1)}px`);
     };
 
     const onScroll = () => {

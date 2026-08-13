@@ -37,6 +37,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport } from './viewport.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
+import { initMobileEntrance } from './m-entrance.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -88,14 +90,30 @@ export function initLandingFeatured() {
   section.addEventListener('click', onCardClick);
   const removeGate = () => section.removeEventListener('click', onCardClick);
 
+  /* MOBILE (the viewport.js seam) — the 402-frame rebuild: a native
+     swipe carousel with the shared 200px indicator, plus the section's
+     one-shot arrival (header line-reveals + card fade-rises, the
+     founders slots). BEFORE the RM return: the indicator follows the
+     user's own swipe (feedback, not motion), so RM keeps it; the
+     entrance module gates itself on RM internally. */
+  if (isMobileViewport()) {
+    const cleanupInd = initCarouselIndicators(section);
+    const header = Array.from(section.querySelectorAll('[data-featured-line]'));
+    const media = [
+      section.querySelector('[data-featured-viewall]'),
+      ...section.querySelectorAll('[data-featured-card]'),
+      section.querySelector('[data-carousel-ind]'),
+    ].filter((el) => el instanceof HTMLElement);
+    const cleanupEnt = initMobileEntrance(section, { lines: header, media });
+    return () => {
+      removeGate();
+      cleanupInd();
+      cleanupEnt();
+    };
+  }
+
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) return removeGate;
-
-  /* MOBILE (the viewport.js seam): the pinned horizontal scrub gives
-     way to a native swipe strip (scroll-snap, landing.css) — no
-     machinery at all. The live-link gate above stays (behaviour, not
-     motion); the hidden card states are neutralised in CSS. */
-  if (isMobileViewport()) return removeGate;
 
   /* The [ VIEW CASE STUDY + ] cursor — the shared module, so this
      carousel reads exactly like /work's tiles. */

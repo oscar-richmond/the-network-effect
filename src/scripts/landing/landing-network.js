@@ -13,6 +13,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { NETWORK_BRAND_SETS } from '../../data/landing/network-brands.js';
 import { isMobileViewport, isTouchPrimary } from './viewport.js';
+import { initMobileEntrance } from './m-entrance.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,6 +45,13 @@ const ENTRY_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; // house reveal curve
 const SWAP_RIPPLE_MS = 600;
 const SWAP_SWEEP_MS = 400;
 const CELL_PITCH_PX = 192;
+/* MOBILE pitch (the 402-frame rebuild, 2026-08-13): 102.4px cells +
+   8px gaps per file 0:180/0:235 — the CSS mirrors it (cell width +
+   margin) and seeds the static tracks' --marquee-set-w fallback;
+   this constant keeps the SWAP path's rebuilt tracks on the same
+   geometry, so the seamless wrap holds through industry swaps. */
+const CELL_PITCH_PX_M = 110.4;
+const cellPitch = () => (isMobileViewport() ? CELL_PITCH_PX_M : CELL_PITCH_PX);
 
 /**
  * PLACEHOLDER randomiser (Oscar's rev): until the real per-industry
@@ -78,7 +86,7 @@ function buildCell(brand) {
 
 /** Rebuilds a track for a set, re-deriving the seamless-wrap geometry. */
 function applySetToTrack(track, set) {
-  const setW = CELL_PITCH_PX * set.length;
+  const setW = cellPitch() * set.length;
   const copies = Math.max(2, Math.ceil((window.innerWidth || 1728) / setW) + 1);
   track.style.setProperty('--marquee-set-w', `${setW}px`);
   track.textContent = '';
@@ -251,9 +259,24 @@ export function initLandingNetwork() {
      (marquee swaps + the term interaction, including the tap path)
      stays live; everything below is the desktop arrival. */
   if (isMobileViewport()) {
+    /* Part-2 rebuild: the section still linearises (no pin, no media
+       parking), but arrives via the shared mobile entrance — text +
+       rows + strip fade-rise on the founders slots (.is-visible
+       states in the landing-home mobile block; marquees/strip carry
+       no blends, so the transform rise is safe). */
+    const cleanupEnt = initMobileEntrance(section, {
+      media: [
+        section.querySelector('[data-landing-network-title]'),
+        section.querySelector('[data-landing-network-subtitle]'),
+        section.querySelector('[data-landing-network-body]'),
+        ...section.querySelectorAll('[data-landing-network-row]'),
+        section.querySelector('[data-landing-network-strip]'),
+      ].filter((el) => el instanceof HTMLElement),
+    });
     return () => {
       swapTimeouts.forEach(clearTimeout);
       cleanupHover.forEach((fn) => fn());
+      cleanupEnt();
     };
   }
 

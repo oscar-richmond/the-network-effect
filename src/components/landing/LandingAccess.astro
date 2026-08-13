@@ -124,31 +124,72 @@ const PRIME_RIGHT = 6;
       >
     </h2>
 
-    {/* MOBILE COMPOSITION (Oscar's mobile brief, 2026-08-10) — the
-        opposed-column scrub can't survive a 390px canvas, so the
-        section's meaning is restated: the headline, then all six
-        word pairs as a typographic ledger (left word / right word —
-        the opposition read as a line, not a travel), between two
-        ambient images from the same pool. display:none above 1024
-        (landing.css); the desktop DOM above is untouched and the
-        desktop scrub never sees this block. aria-hidden on imagery
-        only — the pairs are real content. */}
+    {/* MOBILE COMPOSITION — THE ROWS (402-frame rebuild 2026-08-13,
+        replacing the 2026-08-10 ledger): two 360×240 image rows on a
+        368px pitch (file 0:299-0:328), top travelling RIGHT, bottom
+        LEFT, both off ONE clock (landing-access.js mobile branch) so
+        the centred pair is always a desktop pair by construction.
+        The highlight slots sit at 50vw+60 (top) and 50vw−60
+        (bottom) — decoded from the file's own node positions, which
+        are exactly one pitch apart around those centres. Each row =
+        the pair set TWICE for the seamless wrap; top copies are
+        REVERSED so a rightward travel advances pair order. Images:
+        the desktop columns' own pair assignments (left column → top
+        row, right column → bottom row; same pool, same placeholder
+        flags). The words are the desktop's difference treatment at
+        the file's mobile scale, revealing through a clip slot; the
+        static markup (pair 1 centred, words in) IS the reduced-
+        motion and pre-JS frame. display:none above 1024; desktop
+        DOM untouched. aria-hidden imagery; the words are read via
+        the visible headline + the rows' aria-label. */}
     <div class="landing-access__mobile" data-access-mobile>
-      <figure class="landing-access__m-img" aria-hidden="true">
-        <img src={a(2)} alt="" loading="lazy" decoding="async" />
-      </figure>
-      <ul class="landing-access__m-pairs">
-        {ACCESS_PAIRS.map((pair) => (
-          <li class="landing-access__m-pair">
-            <span class="landing-access__m-word">{pair[0]}</span>
-            <span class="landing-access__m-sep" aria-hidden="true"></span>
-            <span class="landing-access__m-word">{pair[1]}</span>
-          </li>
-        ))}
-      </ul>
-      <figure class="landing-access__m-img" aria-hidden="true">
-        <img src={a(5)} alt="" loading="lazy" decoding="async" />
-      </figure>
+      <div
+        class="landing-access__m-rows"
+        data-access-mrows
+        role="img"
+        aria-label={`Worlds we connect: ${ACCESS_PAIRS.map((p) => p.join(' and ')).join(', ')}`}
+      >
+        <div class="landing-access__m-row landing-access__m-row--top" aria-hidden="true">
+          <div class="landing-access__m-track" data-access-mtrack="top">
+            {[0, 1].map(() =>
+              [a(7), a(2), a(1), a(6), a(13), a(3)]
+                .reverse()
+                .map((src) => (
+                  <figure class="landing-access__m-item">
+                    <img src={src} alt="" loading="lazy" decoding="async" />
+                    <span class="landing-access__m-veil"></span>
+                  </figure>
+                )),
+            )}
+          </div>
+          <p class="landing-access__m-word" data-access-mword="top">
+            <span class="landing-access__m-word-clip"
+              ><span class="landing-access__m-word-inner" data-access-mword-inner="top"
+                >{ACCESS_PAIRS[0][0]}</span
+              ></span
+            >
+          </p>
+        </div>
+        <div class="landing-access__m-row landing-access__m-row--bottom" aria-hidden="true">
+          <div class="landing-access__m-track" data-access-mtrack="bottom">
+            {[0, 1].map(() =>
+              [a(8), a(11), a(5), a(12), a(14), a(4)].map((src) => (
+                <figure class="landing-access__m-item">
+                  <img src={src} alt="" loading="lazy" decoding="async" />
+                  <span class="landing-access__m-veil"></span>
+                </figure>
+              )),
+            )}
+          </div>
+          <p class="landing-access__m-word" data-access-mword="bottom">
+            <span class="landing-access__m-word-clip"
+              ><span class="landing-access__m-word-inner" data-access-mword-inner="bottom"
+                >{ACCESS_PAIRS[0][1]}</span
+              ></span
+            >
+          </p>
+        </div>
+      </div>
     </div>
 
     {/* Page-edge treatment — the /services GradualBlur bands over a

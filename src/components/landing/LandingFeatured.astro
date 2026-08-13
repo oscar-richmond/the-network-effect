@@ -33,8 +33,12 @@ import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
 import GradualBlur from '../GradualBlur.astro';
 ---
 
+{/* data-m-carousel / data-carousel-strip / data-carousel-ind (mobile
+    rebuild 2026-08-13): the mobile swipe-carousel wiring contract
+    (carousel-indicator.js). Attributes only — inert on desktop, where
+    landing-featured.js never boots the indicator module. */}
 <section class="landing-featured" data-landing-featured aria-label="Featured work">
-  <div class="landing-featured__stage" data-featured-stage>
+  <div class="landing-featured__stage" data-featured-stage data-m-carousel>
     <h2 class="landing-featured__header">
       <span class="landing-featured__hl landing-featured__hl--featured" data-featured-line>FEATURED</span>
       <span class="landing-featured__hl landing-featured__hl--work" data-featured-line>WORK</span>
@@ -46,7 +50,7 @@ import GradualBlur from '../GradualBlur.astro';
       <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
     </a>
 
-    <div class="landing-featured__strip" data-featured-strip>
+    <div class="landing-featured__strip" data-featured-strip data-carousel-strip>
       {/* A REAL LINK to the study (Oscar's rev — was an inert
           <article>). data-live gates it exactly as /work's tiles do:
           unbuilt studies stay inert placeholders, and data-work-link
@@ -87,6 +91,13 @@ import GradualBlur from '../GradualBlur.astro';
         </a>
       ))}
     </div>
+
+    {/* MOBILE swipe indicator — the file's 200×1 element (0:337) at
+        the strip's foot; the shared component at its --wide width.
+        display:none above the seam (mobile.css). */}
+    <span class="m-carousel-ind m-carousel-ind--wide" data-carousel-ind aria-hidden="true">
+      <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
+    </span>
 
     {/* Right-edge blur (Oscar's rev 2 — the FULL Access treatment):
         the same-colour gradient TINT under the GradualBlur band
