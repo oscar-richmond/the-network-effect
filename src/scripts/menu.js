@@ -223,21 +223,28 @@ export function initMenu(scope = document) {
       labelClose.setAttribute('aria-hidden', 'false');
       document.body.classList.add('menu-open');
     },
-    onReverseComplete: () => {
-      root.classList.remove('is-open');
-      root.setAttribute('aria-hidden', 'true');
-      toggle.setAttribute('aria-expanded', 'false');
-      labelMenu.setAttribute('aria-hidden', 'false');
-      labelClose.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('menu-open');
-      /* The logo and LET'S CHAT sweep back in ONLY NOW — once the
-         panel has finished retracting (Oscar's rev). It belongs in
-         THIS callback rather than an eventCallback() from close():
-         that would REPLACE the cleanup above, stranding `is-open`
-         (which the applyNavSweep guard keys on). */
-      if (landingSwap) sweepLogo(false);
-    },
+    onReverseComplete: () => closedHousekeeping(),
   });
+
+  /* The closed-state housekeeping — ONE function (R1 item 2): the
+     timeline's onReverseComplete runs it on a normal close, and
+     close() runs it DIRECTLY when reverse() lands on a timeline
+     that never ticked (a rapid open→close at progress 0 — GSAP
+     fires no callback there, which used to strand is-open/aria
+     'open' on a visually closed menu and hold the wordmark chars
+     in their swept-out blur). The logo and LET'S CHAT sweep back
+     in ONLY here — once the panel has finished retracting (Oscar's
+     rev); an eventCallback from close() would replace the cleanup
+     and strand `is-open` (the applyNavSweep guard keys on it). */
+  function closedHousekeeping() {
+    root.classList.remove('is-open');
+    root.setAttribute('aria-hidden', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+    labelMenu.setAttribute('aria-hidden', 'false');
+    labelClose.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('menu-open');
+    if (landingSwap) sweepLogo(false);
+  }
 
   tl.to(panel, { height: 'auto', duration: 1, ease }, 0)
     .to(backdrop, { opacity: 1, duration: 1, ease }, 0);
@@ -283,6 +290,48 @@ export function initMenu(scope = document) {
     ctaRevealTimer = window.setTimeout(() => playLineRevealElement(ctaBlock), 400);
   };
 
+  /* ── THE SWEEP SETTLE BELT (Oscar's device report, R1 item 2:
+     residual blurred wordmark letters). ROOT CAUSE, proven by
+     hammering the toggle: the logo/email return sweep hangs
+     EXCLUSIVELY off the timeline's onReverseComplete, while the
+     out-sweep and its inline opacity-0 belt fire unconditionally on
+     open — and close() was a no-op at progress 0 (a queued open
+     kept playing), so rapid toggles could end CLOSED with chars
+     still carrying .nav-char-out (animation-fill blur 3px) and the
+     belt's pinned opacity. The belt below is the guarantee the
+     choreography can't give: after EVERY toggle transition, one
+     settle timer reconciles the chars to the authoritative menu
+     state — closed = classes off, inline animation/opacity/filter
+     cleared (computed filter none), open = pinned hidden. Also runs
+     when the tab returns to visibility (frozen-tab animations). */
+  const NAV_SETTLE_MS = 1500; /* > the longest sweep window */
+  let settleTimer = 0;
+  const reconcileNav = () => {
+    const isOpen = root.classList.contains('is-open');
+    [document.querySelector('.home__logo'), document.querySelector('.home__topbar-email')]
+      .forEach((part) => {
+        if (!(part instanceof HTMLElement)) return;
+        sweepUnits(part).forEach((u) => {
+          u.classList.remove('nav-char-out', 'nav-char-in');
+          u.style.animationDelay = '';
+          u.style.filter = '';
+          u.style.opacity = isOpen ? '0' : '';
+        });
+        if (!isOpen) {
+          const link = part.querySelector('.home__logo-link');
+          (link instanceof HTMLElement ? link : part).style.pointerEvents = '';
+        }
+      });
+  };
+  const scheduleSettle = () => {
+    window.clearTimeout(settleTimer);
+    settleTimer = window.setTimeout(reconcileNav, NAV_SETTLE_MS);
+  };
+  const onVisibility = () => {
+    if (document.visibilityState === 'visible') scheduleSettle();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+
   const open = () => {
     if (tl.reversed() || tl.progress() === 0) {
       tl.play();
@@ -291,6 +340,7 @@ export function initMenu(scope = document) {
         sweepLabels(true);
         sweepLogo(true);
       }
+      scheduleSettle();
     }
   };
 
@@ -300,7 +350,12 @@ export function initMenu(scope = document) {
     navImageShown = false;
     imageSwap.reset();
     revealCTAs(false); /* re-arm so the next open replays the rise */
-    if (!tl.reversed() && tl.progress() > 0) {
+    /* NO progress>0 guard (R1 item 2): a rapid open→close used to
+       no-op here while the queued play() carried on opening the
+       panel — and the return sweep never came. reverse() at 0 simply
+       parks the queued open; the settle belt owns the terminal char
+       state either way. */
+    if (!tl.reversed()) {
       tl.reverse();
       if (landingSwap) {
         /* CLOSE -> MENU swaps immediately (it IS the toggle), but the
@@ -308,9 +363,13 @@ export function initMenu(scope = document) {
            and only then sweep back in (Oscar's rev) — they should
            not reappear over a panel that is still retracting. */
         sweepLabels(false);
-        /* sweepLogo(false) is NOT called here — the timeline's own
-           onReverseComplete runs it once the panel has closed. */
+        /* sweepLogo(false) is NOT called here — closedHousekeeping
+           runs it once the panel has closed. */
       }
+      /* The no-tick path: reverse() at progress 0 completes without
+         a tick and fires NO callback — run the housekeeping now. */
+      if (tl.progress() === 0) closedHousekeeping();
+      scheduleSettle();
     }
   };
 
@@ -396,6 +455,9 @@ export function initMenu(scope = document) {
   document.addEventListener('keydown', onKeyDown);
 
   return () => {
+    window.clearTimeout(settleTimer);
+    document.removeEventListener('visibilitychange', onVisibility);
+    reconcileNav(); /* never hand a stuck sweep to the next page */
     window.clearTimeout(sweepBeltTimer);
     window.clearTimeout(logoBeltTimer);
     window.clearTimeout(ctaRevealTimer);

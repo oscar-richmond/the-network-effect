@@ -155,12 +155,17 @@ export function initLandingAccess() {
     };
     const mrows = section.querySelector('[data-access-mrows]');
 
-    /* Entrance: headline lines are difference-blended → line-reveal;
-       the rows block fade-rises (its words blend against the row's
-       own imagery, inside the risen group — safe). */
+    /* Entrance (R1 revision): the welded mixed-face headline takes
+       the fade-rise — it's PLAIN INK on mobile (the interim block
+       already flattened its blend for the flat ground), and no
+       reveal wrap survives welded spans. The rows block fade-rises
+       too (its words blend against the row's own imagery, inside
+       the risen group — safe). */
     const cleanupEnt = initMobileEntrance(section, {
-      lines: Array.from(section.querySelectorAll('[data-access-line]')),
-      media: [mrows].filter((el) => el instanceof HTMLElement),
+      media: [
+        section.querySelector('[data-access-headline]'),
+        mrows,
+      ].filter((el) => el instanceof HTMLElement),
     });
 
     if (!(tracks.top instanceof HTMLElement) || !(tracks.bottom instanceof HTMLElement) || !(mrows instanceof HTMLElement)) {

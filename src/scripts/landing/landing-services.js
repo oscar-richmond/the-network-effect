@@ -61,6 +61,7 @@ import { isMobileViewport } from './viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
+import { initMobileEntrance } from './m-entrance.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -180,14 +181,44 @@ export function initLandingServices() {
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
 
   /* MOBILE (the viewport.js seam): no pin, no morph, no parking — the
-     cards render as sequential full-width sections (landing.css) with
-     every internal visible. Gated BEFORE the non-RM parking below, or
-     the cards would be thrown a stage-height down and never recalled.
-     The one mobile behaviour is the list carousels' swipe-progress
-     indicators (the 402-frame rebuild) — observation only, the strips
-     scroll natively. */
+     cards render as sequential full-width sections (landing.css).
+     Mobile behaviours: the list carousels' swipe indicators
+     (observation only) and — R1 item 10 — the section's entrances:
+     the heading lines via the line-reveal (they're difference-
+     blended: clip INSIDE the element, the safe shape) and each
+     card's internals fade-rising on approach (the /work-list
+     rhythm; states in the R1 CSS block, no-preference gated). */
   if (isMobileViewport()) {
-    return initCarouselIndicators(section);
+    const cleanupInd = initCarouselIndicators(section);
+    const cleanups = [cleanupInd];
+    /* The heading is a WELDED mixed-face paragraph — no reveal wrap
+       survives it (line wraps split at span boundaries, word wraps
+       broke the flow measurements; both caught in R1 verification).
+       Over the mobile flat ground it renders as plain ink (the /work
+       header decision), so the fade-rise is blend-safe. */
+    cleanups.push(
+      initMobileEntrance(section, {
+        media: [title].filter((el) => el instanceof HTMLElement),
+      }),
+    );
+    cards.forEach((card) => {
+      if (!(card instanceof HTMLElement)) return;
+      cleanups.push(
+        initMobileEntrance(card, {
+          lines: [card.querySelector('.landing-svc-card__titlerow')].filter(
+            (el) => el instanceof HTMLElement,
+          ),
+          media: [
+            card.querySelector('.landing-svc-card__m-img'),
+            card.querySelector('.landing-svc-card__desc'),
+            card.querySelector('.landing-svc-card__m-listblock'),
+            card.querySelector('.landing-svc-card__btnclip'),
+          ].filter((el) => el instanceof HTMLElement),
+          start: 'top 75%',
+        }),
+      );
+    });
+    return () => cleanups.forEach((fn) => fn());
   }
 
   let disposed = false;

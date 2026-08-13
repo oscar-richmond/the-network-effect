@@ -111,8 +111,20 @@ const EXIT_BLUR_ASHLEY_PX = 700;
  * the file's expanded keyframe shows the photo alone. Scroll px are
  * the scrub's denominator (the page's grammar; ease:none).
  */
+/* R1 item 4a (Oscar's device pass): the scrub STARTS LATER so the
+   resting grid holds through its arrival — both ends are his
+   fine-tune knobs. START is the grid-top viewport line that arms
+   the scrub ('top 45%' = begins once the grid has climbed to the
+   viewport's upper half; was 75%); LEN is the scroll distance of
+   the full expansion. */
+const FD_M_SCRUB_START = 'top 45%';
 const FD_M_EXPAND_PX = 340;
 const FD_M_TARGET_H = 400;
+/* R1 item 4b: the grid's rest margin below (94 = 400−306). The scrub
+   drains it to 0 while the height grows by the same 94, so the dark
+   band's bottom NEVER moves and the fully-expanded image lands flush
+   on it — no dark strip below, at any viewport height. */
+const FD_M_REST_MB_PX = FD_M_TARGET_H - 306;
 const FD_M_IMG_FROM = { left: '-47.25%', width: '181.1%' };
 const FD_M_IMG_TO = { left: '-29.6%', width: '151.2%' };
 const FD_M_FADE_PORTION = 0.6;
@@ -286,7 +298,7 @@ export function initLandingFounders() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: grid,
-          start: 'top 75%',
+          start: FD_M_SCRUB_START,
           end: `+=${FD_M_EXPAND_PX}`,
           scrub: true,
         },
@@ -304,7 +316,14 @@ export function initLandingFounders() {
         { ...FD_M_IMG_TO, duration: 1, ease: 'none' },
         0,
       );
-      tl.to(grid, { height: FD_M_TARGET_H, duration: 1, ease: 'none' }, 0);
+      /* Height grows exactly as the rest margin drains (item 4b) —
+         the band bottom is stationary and the image ends flush. */
+      tl.to(grid, {
+        height: FD_M_TARGET_H,
+        marginBottom: 0,
+        duration: 1,
+        ease: 'none',
+      }, 0);
       if (portraits.length) {
         /* immediateRender:false — the entrance's .is-visible fade owns
            opacity until the scrub's first real update. */

@@ -288,3 +288,64 @@
 @media (min-width: 1025px) {
 	.landing-v2 .m-carousel-ind { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   HORIZONTAL-PAN CONTAINMENT (Oscar's device report, R1 item 9).
+   ROOT CAUSE: fixed-position layers ESCAPE the body's overflow-x
+   clip (their containing block is the viewport, not body), and iOS
+   Safari extends the pannable visual viewport to any fixed layer
+   painted beyond the edges. Two offenders, measured:
+   1. .landing-grain — 200%×200% (804px at 402), jittering by
+      transform. Mobile: viewport-sized, jittering by BACKGROUND
+      POSITION instead — the texture repeats, so the visual is
+      identical and the box never leaves the viewport.
+   2. .page-cover — parked off the LEFT edge by translate(-100%).
+      Mobile: visibility-parked; every painted phase of the wipe
+      (covering/revealing = .page-cover--blocking, pre-paint hold +
+      failsafe = html[data-ne-cover]) re-shows it.
+   The hero video was NOT an offender (its fixed stage is viewport-
+   wide with overflow hidden) — it merely showed through the pan
+   gutter these two opened. Desktop: byte-untouched (all <=1024).
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+	/* body-qualified (0,2,1): landing.css's base grain rule sits later
+	   in the bundle and would win the (0,2,0) tie. */
+	body.landing-v2 .landing-grain {
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		animation: none;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		body.landing-v2 .landing-grain {
+			animation: landing-grain-jitter-m 1s infinite;
+			animation-timing-function: steps(1, end);
+		}
+	}
+
+	.landing-v2 .page-cover {
+		visibility: hidden;
+	}
+
+	.landing-v2 .page-cover--blocking,
+	html[data-ne-cover] .landing-v2 .page-cover {
+		visibility: visible;
+	}
+}
+
+/* The mobile jitter: the same ten scattered stops as the desktop
+   transform dance, expressed as texture offsets (px of the repeating
+   grain tile — visually equivalent, box never moves). */
+@keyframes landing-grain-jitter-m {
+	0% { background-position: 0 0; }
+	10% { background-position: -37px 22px; }
+	20% { background-position: 41px -19px; }
+	30% { background-position: -23px -41px; }
+	40% { background-position: 18px 33px; }
+	50% { background-position: -45px 8px; }
+	60% { background-position: 29px -35px; }
+	70% { background-position: -12px 44px; }
+	80% { background-position: 38px 15px; }
+	90% { background-position: -31px -27px; }
+}

@@ -3427,7 +3427,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   build's call, flagged); expansion to inset 0 = full bleed at
 	   full viewport height, the desktop clip mechanic verbatim. */
 	.landing-v2.landing-home .landing-hero__headline-text {
-		margin-top: 118px; /* file: tagline centre band under the nav */
+		/* R1 item 1: JS centres the tagline live between the nav's
+		   measured bottom and the band top (refineHeadlineCentring,
+		   mobile too now). This calc is the pre-JS approximation of
+		   the same midpoint (nav bottom ~98px, band top 50svh);
+		   translateY(-50%) restores the block-centre anchor the
+		   derivation assumes (the interim had flattened it). */
+		margin-top: calc(49px + 25svh);
+		transform: translateY(-50%);
 	}
 
 	.landing-v2.landing-home .landing-hero__headline-line {
@@ -3443,8 +3450,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	/* ── FOUNDERS BAND (file 0:19/0:56/0:39/0:20/0:58) ──────────── */
 	.landing-v2.landing-home .landing-founders {
-		padding: 96px 0 64px; /* side padding moves onto children — the
-		   photo must reach the true viewport edge at full expansion */
+		/* Side padding moves onto children (full-bleed expansion);
+		   NO bottom padding (R1 item 4b) — the grid's own 94px rest
+		   margin is the below-grid breathing room, and the scrub
+		   drains it as the image grows so the expanded image meets
+		   the band's end exactly. */
+		padding: 96px 0 0;
 	}
 
 	/* The file KEEPS the editorial lead indent (20 spaces at 26px);
@@ -3487,7 +3498,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-founders__grid-space {
 		position: relative;
 		margin-top: 64px;
-		height: 306px; /* JS animates to 400 */
+		height: 306px; /* JS animates to 400… */
+		margin-bottom: 94px; /* …while this drains to 0 (R1 item 4b) */
 	}
 
 	.landing-v2.landing-home .landing-founders__portrait {
@@ -3549,8 +3561,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-services__title {
 		font-size: 30px;
 		line-height: 30px;
-		color: #fff;
-		mix-blend-mode: difference;
+		/* Plain ink on the flat mobile ground (R1: the difference pair
+		   render identically here, and plain ink lets the fade-rise
+		   entrance run without blend isolation). */
+		color: #161616;
+		mix-blend-mode: normal;
 		text-indent: 56px;
 		width: auto; /* the desktop measure is a px width — it overflows 402 */
 		/* Desktop stacks the lines as a flex column — flex items
@@ -4583,5 +4598,107 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-network__body .landing-network__line + .landing-network__line::before {
 		content: '  /  ';
 		white-space: pre;
+	}
+}
+
+@media (max-width: 1024px) {
+	/* ═══ R1 FIX ROUND (Oscar's device review, 2026-08-13) ═══════════ */
+
+	/* Item 3: the burger's optical centre rides the wordmark's
+	   vertical centre (measured: burger c27 vs wordmark c31 → +4). */
+	.landing-v2 .home__menu-burger {
+		position: relative;
+		top: 4px;
+	}
+
+	/* Item 5: services card internals in the design's order —
+	   TITLE(+/0N) → IMAGE → SUBTITLE → LIST BLOCK → CTA — with the
+	   frame's measured rhythm (divider→title 24, then 32 between
+	   every block, 64 into the next card; region y2767-4700). */
+	.landing-v2.landing-home .landing-svc-card {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__dividerwrap { order: 0; }
+	.landing-v2.landing-home .landing-svc-card__titlerow { order: 1; }
+	.landing-v2.landing-home .landing-svc-card__m-img { order: 2; margin-top: 32px; }
+	.landing-v2.landing-home .landing-svc-card__desc { order: 3; margin-top: 32px; }
+	.landing-v2.landing-home .landing-svc-card__m-listblock { order: 4; margin-top: 32px; }
+	.landing-v2.landing-home .landing-svc-card__btnclip { order: 5; margin-top: 32px; }
+
+	/* Item 6: VIEW ALL gets the MORE INFO chip (fill, 38px, 16px
+	   pads), right at the margin, its BOTTOM flush with the bottom
+	   of WORK (header top 100 + 60 − 38). Tap floor via the
+	   invisible ::after (the filled-button convention). */
+	.landing-v2.landing-home .landing-featured__viewall {
+		top: 122px;
+		padding: 0 16px;
+		margin-top: 0;
+		height: 38px;
+		background: #e4e4ea;
+	}
+
+	.landing-v2.landing-home .landing-featured__viewall::after {
+		content: '';
+		position: absolute;
+		inset: -3px 0;
+	}
+
+	/* Item 7: the /0N indexes top-align to the title's cap line
+	   (they sat low on the baseline-relative raise). Applies to
+	   every carousel meta family. */
+	.landing-v2.landing-home .landing-featured__index,
+	.landing-v2.landing-home .landing-closing__m-index {
+		vertical-align: top;
+		position: relative;
+		top: 1px;
+	}
+
+	/* Item 8: the card CTA line sits exactly 24px under the desc
+	   (the /work list button already carries 24 — reported). */
+	.landing-v2 .landing-featured__card::after {
+		margin-top: 24px;
+	}
+}
+
+/* R1 item 10 — services mobile entrance states (m-entrance adds
+   .is-visible per element; the titlerow/heading use the line-reveal
+   instead — no CSS here, the clips carry their own hidden state). */
+@media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+	.landing-v2.landing-home .landing-svc-card__m-img,
+	.landing-v2.landing-home .landing-svc-card__desc,
+	.landing-v2.landing-home .landing-svc-card__m-listblock,
+	.landing-v2.landing-home .landing-svc-card__btnclip {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-img.is-visible,
+	.landing-v2.landing-home .landing-svc-card__desc.is-visible,
+	.landing-v2.landing-home .landing-svc-card__m-listblock.is-visible,
+	.landing-v2.landing-home .landing-svc-card__btnclip.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* R1 item 10 — the two welded flowing headlines take the fade-rise
+   (plain ink on mobile; no wrap survives welded mixed-face spans). */
+@media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+	.landing-v2.landing-home .landing-services__title,
+	.landing-v2.landing-home .landing-access__headline {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2.landing-home .landing-services__title.is-visible,
+	.landing-v2.landing-home .landing-access__headline.is-visible {
+		opacity: 1;
+		transform: none;
 	}
 }

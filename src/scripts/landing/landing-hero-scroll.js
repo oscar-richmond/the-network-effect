@@ -167,13 +167,24 @@ function insetPx(top, right, bottom, left) {
  * re-derives it. The block keeps its CSS translateY(-50%), so only
  * the midpoint needs computing here.
  */
-function refineHeadlineCentring(headlineText) {
+function refineHeadlineCentring(
+  headlineText,
+  bandFrac = VIDEO_BAND_TOP_FRACTION,
+  vh = window.innerHeight,
+  wordmarkAnchor = false,
+) {
   if (!(headlineText instanceof HTMLElement)) return;
-  const topbar = document.querySelector('.home__topbar');
-  const navBottom = topbar instanceof HTMLElement
-    ? topbar.getBoundingClientRect().bottom
+  /* Desktop: the topbar box bottom (shipped derivation, untouched).
+     Mobile (R1 item 1): the WORDMARK'S OWN bottom — Oscar's spec is
+     "between the bottom of the nav wordmark and the top of the
+     video", measured live so it holds across widths and dvh. */
+  const anchorEl = wordmarkAnchor
+    ? document.querySelector('.home__logo')
+    : document.querySelector('.home__topbar');
+  const navBottom = anchorEl instanceof HTMLElement
+    ? anchorEl.getBoundingClientRect().bottom
     : 0;
-  const videoTop = Math.round(window.innerHeight * VIDEO_BAND_TOP_FRACTION);
+  const videoTop = Math.round(vh * bandFrac);
   const bandCentre = navBottom + (videoTop - navBottom) / 2;
   headlineText.style.marginTop = `${bandCentre}px`;
 }
@@ -467,7 +478,12 @@ export function initLandingHeroScroll() {
     let disposed = false;
     fontsReady.then(() => {
       if (disposed) return;
-      if (!isMob) refineHeadlineCentring(headlineText);
+      refineHeadlineCentring(
+        headlineText,
+        bandFrac,
+        isMob ? (hero.clientHeight || window.innerHeight) : window.innerHeight,
+        isMob,
+      );
       if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
         introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
         deriveIntroLineHeight(headlineText, introText);
@@ -510,7 +526,11 @@ export function initLandingHeroScroll() {
     let sequenceEnd = 0;
 
     if (headlineText instanceof HTMLElement) {
-      if (!isMob) refineHeadlineCentring(headlineText);
+      /* MOBILE too (R1 item 1): centre the tagline between the
+         measured nav bottom and the band top — live-derived, so it
+         holds across widths and dvh (the stage's svh height is the
+         band's own denominator). Desktop keeps its exact call. */
+      refineHeadlineCentring(headlineText, bandFrac, vh, isMob);
       const lines = Array.from(
         headlineText.querySelectorAll('.landing-hero__headline-line'),
       ).filter((el) => el instanceof HTMLElement);

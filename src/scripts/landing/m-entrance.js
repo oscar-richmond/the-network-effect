@@ -20,7 +20,12 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+/* WORD-level wrap (the founders headline mechanism), NOT the line
+   wrap: the mobile headers weld mixed-face spans into flowing
+   paragraphs, and the line wrap splits fragments at span boundaries
+   (re-blocking the flow — caught in R1). The word wrap preserves
+   children and the natural line breaks exactly. */
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -47,7 +52,7 @@ export function initMobileEntrance(section, { lines = [], media = [], start = 't
     lines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapLineRevealElement(line);
+      wrapWordRevealElement(line);
     });
 
     trigger = ScrollTrigger.create({

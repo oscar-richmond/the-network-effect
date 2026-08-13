@@ -543,3 +543,13 @@ body.work-page {
 	   natural height (the rebuilt footer runs ~1090). */
 	.landing-v2 .work-footer-wrap .landing-footer { height: auto; }
 }
+
+@media (max-width: 1024px) {
+	/* R1 item 7 (same misalignment confirmed here): index top-aligns
+	   to the title cap line. */
+	.landing-v2 .work-m__index {
+		vertical-align: top;
+		position: relative;
+		top: 1px;
+	}
+}
