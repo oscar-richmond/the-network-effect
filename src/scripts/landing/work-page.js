@@ -68,7 +68,9 @@
  * <=1024px: the CSS stacked list is the page; no machinery boots.
  */
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
+import { initMobileEntrance } from './m-entrance.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
@@ -133,35 +135,97 @@ export function initWorkPage() {
   stage.addEventListener('click', onLinkClick);
   cleanups.push(() => stage.removeEventListener('click', onLinkClick));
 
-  /* <=1024 (the viewport.js seam): the CSS stacked list is the page —
-     no driver, no docking metas. The FILTERS stay fully functional
-     (the brief's requirement): a pill toggles tile visibility by the
-     tags each tile now carries; aria-pressed and the live region
-     track it exactly as the desktop rebuild does. */
+  /* <=1024 (the viewport.js seam) — the 402-frame rebuild: the page
+     is the NATIVE VERTICAL LIST (.work-m, its own markup in file
+     order); no driver, no docking metas, no cursor, no band. This
+     branch wires:
+     1. FILTERS — desktop semantics on the list entries (same tags,
+        aria-pressed, live-region count), with the desktop's
+        blur-out → swap → blur-in grammar as the CSS .is-swapping
+        twin; the entry set toggles at the blurred midpoint. RM:
+        instant toggle, no blur (the transition is no-preference).
+     2. ENTRANCES — header lines via the shared line-reveal path,
+        pills on the load beat, then one once-only trigger per entry
+        (image → meta stagger via the CSS delays). */
   if ((window.innerWidth || 1728) <= 1024) {
     const pills = Array.from(document.querySelectorAll('[data-work-filter]'));
-    const tiles = Array.from(carousel.querySelectorAll('[data-work-link]'));
-    const applyFilter = (key) => {
-      pills.forEach((p) => {
-        p.setAttribute('aria-pressed', p.dataset.workFilter === key ? 'true' : 'false');
-      });
+    const list = document.querySelector('[data-work-m]');
+    const entries = Array.from(document.querySelectorAll('[data-work-m-entry]'));
+    const reducedM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SWAP_MS = 220; /* keep in step with work.css .is-swapping */
+
+    const setEntries = (key) => {
       let shown = 0;
-      tiles.forEach((tile) => {
-        const tags = (tile.dataset.tags ?? '').split(' ');
+      entries.forEach((entry) => {
+        const tags = (entry.dataset.tags ?? '').split(' ');
         const match = key === 'all' || tags.includes(key);
-        tile.classList.toggle('is-filtered-out', !match);
+        entry.classList.toggle('is-filtered-out', !match);
         if (match) shown += 1;
       });
       if (metaLive instanceof HTMLElement) {
         metaLive.textContent = `${shown} project${shown === 1 ? '' : 's'} shown`;
       }
     };
+
+    let mCurrent = 'all';
+    let mSwapping = false;
+    const swapTimeouts = [];
+    const applyFilter = (key) => {
+      if (mSwapping || key === mCurrent) return;
+      mCurrent = key;
+      pills.forEach((p) => {
+        p.setAttribute('aria-pressed', p.dataset.workFilter === key ? 'true' : 'false');
+      });
+      if (reducedM || !(list instanceof HTMLElement)) {
+        setEntries(key);
+        return;
+      }
+      mSwapping = true;
+      list.classList.add('is-swapping');
+      swapTimeouts.push(setTimeout(() => {
+        setEntries(key);
+        list.classList.remove('is-swapping');
+        mSwapping = false;
+      }, SWAP_MS));
+    };
     const onPillClick = (e) => {
       const pill = e.target instanceof Element ? e.target.closest('[data-work-filter]') : null;
       if (pill instanceof HTMLElement) applyFilter(pill.dataset.workFilter ?? 'all');
     };
     document.addEventListener('click', onPillClick);
-    cleanups.push(() => document.removeEventListener('click', onPillClick));
+    cleanups.push(() => {
+      document.removeEventListener('click', onPillClick);
+      swapTimeouts.forEach(clearTimeout);
+    });
+
+    /* Entrances (skip whole-sale under RM — CSS renders complete). */
+    if (!reducedM) {
+      const stage = document.querySelector('[data-work-stage]');
+      const header = [
+        document.querySelector('[data-work-hl-featured]'),
+        document.querySelector('[data-work-hl-work]'),
+      ].filter((el) => el instanceof HTMLElement);
+      cleanups.push(
+        initMobileEntrance(stage instanceof HTMLElement ? stage : document.body, {
+          lines: header,
+          media: pills,
+        }),
+      );
+      const entryTriggers = entries.map((entry) =>
+        ScrollTrigger.create({
+          trigger: entry,
+          start: 'top 80%',
+          once: true,
+          onEnter: () => entry.classList.add('is-visible'),
+        }),
+      );
+      cleanups.push(() => entryTriggers.forEach((t) => t.kill()));
+    } else {
+      /* RM: the hidden states are no-preference-gated, but the
+         is-visible class keeps the DOM state coherent for both. */
+      entries.forEach((entry) => entry.classList.add('is-visible'));
+    }
+
     return () => cleanups.forEach((fn) => fn());
   }
 

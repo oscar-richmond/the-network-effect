@@ -292,133 +292,254 @@ body.work-page {
    page becomes a designed vertical list — full-width tiles, each
    carrying its own meta + tap affordance, filters as working tap
    pills (work-page.js mobile branch). Declared trade in the report. */
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE /work — the 402-frame rebuild (Figma cqJWAceQKUmyuhF1ZxYXLI
+   frame 1:11, 2026-08-13), replacing the 2026-08-10 interim stacked
+   list. The page is a NATIVE VERTICAL LIST: normal document scroll,
+   finite, no driver, no docking metas, no cursor, no blur band —
+   those are desktop identity and their machinery never boots here
+   (work-page.js's mobile branch). The desktop rules above are
+   untouched; everything below sits behind the seam.
+   ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
 	body.work-page { overflow: auto; }
+
+	/* The frame's 16px margin grammar (page-scoped, the landing-home
+	   pattern — other routes keep their own tokens). */
+	.landing-v2.work-page { --m-margin: 16px; }
 
 	.landing-v2 .work-stage {
 		height: auto;
 		overflow: visible;
-		padding: 140px var(--m-margin, 24px) 64px;
-		/* DOM puts the header/filters column AFTER the carousel (the
-		   desktop absolute layout doesn't care) — the linear page
-		   needs it first. */
+		padding: 169px 0 100px; /* file: header y169; last button → footer 100 */
 		display: flex;
 		flex-direction: column;
+		will-change: auto;
+		transform: none !important;
 	}
 
-	.landing-v2 .work-stage__left { order: -1; }
+	/* Desktop machinery, retired under the seam. */
+	.landing-v2 .work-stage__carousel { display: none; }
+	.landing-v2 .work-page__metas { display: none; }
+	.landing-v2 .work-stage__band { display: none; }
+	.landing-v2 .work-cursor { display: none; }
+	.landing-v2 .work-footer-wrap { position: static; height: auto; }
 
-	.landing-v2 .work-stage__carousel {
+	.landing-v2 .work-stage__left {
+		order: -1;
 		position: static;
+		pointer-events: auto;
 		width: auto;
-		height: auto;
-		display: flex;
-		flex-direction: column;
-		gap: 48px;
+		margin: 0 var(--m-margin, 16px);
 	}
 
-	.landing-v2 .work-tile {
+	/* Header — the mobile landing featured-section stacked grammar
+	   verbatim (the brief's instruction): 30/30, WORK Serrif with the
+	   37px stagger, white + difference (reads brand-black over the
+	   flat ground; the file draws the same treatment). */
+	.landing-v2 .work-page__hl {
 		position: static;
-		width: 100%;
-		height: auto;
 		display: block;
-		text-decoration: none;
+		font-size: 30px;
+		line-height: 30px;
+		/* Plain brand-black ink — the desktop page's own rev (was
+		   white+difference); over the flat mobile ground the render
+		   is identical and the blend's isolation traps don't apply. */
 		color: #161616;
+		mix-blend-mode: normal;
+		white-space: nowrap;
 	}
 
-	.landing-v2 .work-tile.is-filtered-out { display: none; }
+	.landing-v2 .work-page__hl--work { margin-left: 37px; }
 
-	.landing-v2 .work-tile img {
+	/* Pills — file Frame 48: 38px chips, natural widths (16px pads
+	   land the file's 56/92/95/88 exactly), 8px gaps, active = navy
+	   fill / #e4e4ea label. The ::after extends each hit box to 44px
+	   effective without growing the visible chip (filled-button
+	   convention: never pad the fill). */
+	.landing-v2 .work-page__filters {
 		position: static;
+		margin: 40px 0 0;
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 8px;
+	}
+
+	.landing-v2 .work-pill {
+		position: relative;
+		width: auto;
+		height: 38px;
+		padding: 0 16px;
+		font-size: 12px;
+		line-height: 38px;
+	}
+
+	.landing-v2 .work-pill::after {
+		content: '';
+		position: absolute;
+		inset: -3px 0;
+	}
+
+	.landing-v2 .work-pill[aria-pressed='true'] { color: #e4e4ea; }
+
+	/* At 360 the 355px row + 32px margins can't fit — compress the
+	   pads (12px) and gaps (6px) under 380: 48+84+87+80+18 = 317,
+	   inside the 328 measure. One row always; no rail scroll. */
+	@media (max-width: 380px) {
+		.landing-v2 .work-page__filters { gap: 6px; }
+		.landing-v2 .work-pill { padding: 0 12px; }
+	}
+
+	/* ── The list (file pitch: img 240 → 24 → meta → 24 → button 38
+	   → 57 → next image; pills → first image 64). */
+	.landing-v2 .work-m {
+		display: block;
+		margin-top: 64px;
+	}
+
+	.landing-v2 .work-m__entry { margin: 0 0 57px; }
+	.landing-v2 .work-m__entry:last-child { margin-bottom: 0; }
+	.landing-v2 .work-m__entry.is-filtered-out { display: none; }
+
+	.landing-v2 .work-m__imglink { display: block; }
+
+	.landing-v2 .work-m__img {
+		margin: 0 var(--m-margin, 16px);
+		aspect-ratio: 370 / 240;
+		overflow: hidden;
+	}
+
+	.landing-v2 .work-m__img img {
 		width: 100%;
-		height: auto;
-		aspect-ratio: 1024 / 616;
+		height: 100%;
 		object-fit: cover;
 		display: block;
 	}
 
-	.landing-v2 .work-tile__m {
-		display: block;
-		margin-top: 12px;
-	}
-
-	.landing-v2 .work-tile__m-titlerow {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-	}
-
-	.landing-v2 .work-tile__m-title {
+	.landing-v2 .work-m__title {
+		margin: 24px var(--m-margin, 16px) 0;
 		font-weight: 700;
 		font-size: 22px;
-		line-height: 26px;
+		line-height: 22px;
 		text-transform: uppercase;
+		color: #161616;
 	}
 
-	.landing-v2 .work-tile__m-index {
-		font-weight: 700;
-		font-size: 12px;
-		line-height: 14px;
+	.landing-v2 .work-m__titleline { display: block; }
+
+	.landing-v2 .work-m__index {
+		font-size: 10px;
+		line-height: 10px;
+		margin-left: 5px;
+		vertical-align: 6px;
 	}
 
-	.landing-v2 .work-tile__m-desc {
-		display: block;
-		margin-top: 8px;
+	.landing-v2 .work-m__desc {
+		margin: 8px var(--m-margin, 16px) 0;
+		max-width: 340px;
 		font-family: 'Serrif', serif;
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 16px;
-		line-height: 24px;
+		font-size: 14px;
+		line-height: 16px;
+		color: #161616;
 	}
 
-	.landing-v2 .work-tile__m-cta {
-		display: block;
-		margin-top: 10px;
+	/* VIEW CASE STUDY — file 1:130: the MORE INFO family at 161×38
+	   (16px pads + 12px label + 9px arrow land the width naturally). */
+	.landing-v2 .work-m__btn {
+		margin: 24px var(--m-margin, 16px) 0;
+		display: inline-flex;
+		align-items: center;
+		align-self: flex-start;
+		gap: 6px;
+		height: 38px;
+		padding: 0 16px;
+		background: #e4e4ea;
+		color: #232a89;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-size: 12px;
-		line-height: 14px;
+		text-transform: uppercase;
+		text-decoration: none;
+		cursor: pointer;
 	}
 
-	.landing-v2 .work-stage__left { position: static; pointer-events: auto; width: auto; }
-	.landing-v2 .work-page__hl {
-		position: static;
-		font-size: 32px;
-		line-height: 34px;
-		color: #161616;
-		mix-blend-mode: normal;
+	.landing-v2 .work-m__btn img { width: 9px; height: 9px; }
+	.landing-v2 .work-m__btn.is-placeholder { cursor: default; }
+
+	.landing-v2 .work-m__btn:focus-visible {
+		outline: 2px solid #232a89;
+		outline-offset: 2px;
 	}
 
-	/* Pills: real 44px-effective tap targets, horizontally scrollable
-	   if they ever outgrow the row. */
-	.landing-v2 .work-page__filters {
-		position: static;
-		margin: 20px 0 32px;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
+	/* Filter swap — the desktop's blur-out → set swap → blur-in
+	   grammar (work-page.js gsap 8px) as a list-level CSS twin;
+	   the JS toggles entries at the blurred midpoint. RM: none —
+	   the swap is instant. */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2 .work-m {
+			transition: filter 0.22s ease, opacity 0.22s ease;
+		}
+
+		.landing-v2 .work-m.is-swapping {
+			filter: blur(8px);
+			opacity: 0;
+		}
 	}
 
-	.landing-v2 .work-pill {
-		min-height: 44px;
-		padding: 10px 18px;
-		width: auto; /* the desktop per-pill fixed widths don't fit the 44px pads */
-		/* The staggered fade is desktop machinery (the module returns
-		   early on mobile — nothing would ever add .is-visible). */
-		opacity: 1;
-		transform: none;
-		transition: background 0.2s ease, color 0.2s ease;
-	}
+	/* Entrances (no-preference; work-page.js mobile branch adds
+	   .is-visible): pills fade-rise on the load beat; each entry
+	   reveals once on approach — image first, meta stepping after
+	   (the founders slot rhythm as transition delays). */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2 .work-pill {
+			opacity: 0;
+			transform: translateY(12px);
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				background 0.2s ease, color 0.2s ease;
+		}
 
-	/* The travelling meta block is desktop machinery. */
-	.landing-v2 .work-page__metas { display: none; }
-	.landing-v2 .work-stage__band { display: none; }
-	.landing-v2 .work-cursor { display: none; }
-	.landing-v2 .work-stage { will-change: auto; transform: none !important; }
-	.landing-v2 .work-footer-wrap { position: static; height: auto; }
+		.landing-v2 .work-pill.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+
+		.landing-v2 .work-m__entry .work-m__img,
+		.landing-v2 .work-m__entry .work-m__title,
+		.landing-v2 .work-m__entry .work-m__desc,
+		.landing-v2 .work-m__entry .work-m__btn {
+			opacity: 0;
+			transform: translateY(16px);
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+
+		.landing-v2 .work-m__entry.is-visible .work-m__img { transition-delay: 0s; }
+		.landing-v2 .work-m__entry.is-visible .work-m__title { transition-delay: 0.1s; }
+		.landing-v2 .work-m__entry.is-visible .work-m__desc { transition-delay: 0.18s; }
+		.landing-v2 .work-m__entry.is-visible .work-m__btn { transition-delay: 0.26s; }
+
+		.landing-v2 .work-m__entry.is-visible .work-m__img,
+		.landing-v2 .work-m__entry.is-visible .work-m__title,
+		.landing-v2 .work-m__entry.is-visible .work-m__desc,
+		.landing-v2 .work-m__entry.is-visible .work-m__btn {
+			opacity: 1;
+			transform: none;
+		}
+	}
 }
 
-/* The mobile per-tile meta must not exist above the seam — the
-   desktop carousel renders bare images with the travelling metas. */
+/* The mobile list must not exist above the seam — the desktop
+   carousel + travelling metas are the page there. */
 @media (min-width: 1025px) {
-	.landing-v2 .work-tile__m { display: none; }
+	.landing-v2 .work-m { display: none; }
+}
+
+@media (max-width: 1024px) {
+	/* The desktop reveal pins the footer to 811 inside its wrap at
+	   (0,3,0) — the mobile footer's grid restructure needs its
+	   natural height (the rebuilt footer runs ~1090). */
+	.landing-v2 .work-footer-wrap .landing-footer { height: auto; }
 }

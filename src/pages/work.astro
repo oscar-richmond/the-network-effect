@@ -29,11 +29,41 @@
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
-import { WORK_PROJECTS } from '../data/landing/featured-work.js';
+import { WORK_PROJECTS, WORK_EXTRAS } from '../data/landing/featured-work.js';
+import { LIVE_CASE_SLUGS } from '../data/landing/case-studies.js';
+import { asset } from '../utils/asset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/work.css';
 import '../styles/fonts.css';
+
+/* ── MOBILE LIST (Figma cqJWAceQKUmyuhF1ZxYXLI frame 1:11, rebuild
+   2026-08-13): the FILE'S nine-entry order wins for mobile display
+   (Oscar's brief) — content still comes from the single source
+   above (WORK_PROJECTS + the WORK_EXTRAS stubs the file includes),
+   NO forked copy. The file's own text layers for the TBC-class
+   entries are copy-paste placeholders (see the build report), so
+   the data's TBC stubs render verbatim until Oscar's content drop.
+   NOTE the deltas, all reported: Thunder Aviation (/07) has no slot
+   in the file's mobile order; the Ashley-portrait and adidas
+   Spezial stubs (elevated-rights imagery — flags live on the data)
+   appear only here. */
+const MOBILE_ORDER = [
+  'wilderness-reserve',
+  'pavilion-club',
+  'pavilion-summit',
+  'top-boy',
+  'tbc-ashley-walters',
+  'yoxman-food-festival',
+  'adolescence',
+  'tbc-adidas-spezial',
+  'animol',
+];
+const workPool = [...WORK_PROJECTS, ...WORK_EXTRAS];
+const MOBILE_ENTRIES = MOBILE_ORDER.map((slug) => workPool.find((p) => p.slug === slug)).filter(
+  (p) => p !== undefined,
+);
+const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
 
 ---
 
@@ -61,23 +91,61 @@ import '../styles/fonts.css';
             width="1024"
             height="616"
           />
-          {/* MOBILE meta (mobile brief, 2026-08-10): the travelling
-              meta block is desktop machinery — on the linear list each
-              tile carries its own title/index/desc plus the tap
-              affordance (the custom cursor's copy — no pointer exists
-              on touch). display:none above the seam (work.css);
-              aria-hidden because the anchor's aria-label already
-              carries the accessible name. */}
-          <span class="work-tile__m" aria-hidden="true">
-            <span class="work-tile__m-titlerow">
-              <span class="work-tile__m-title">{p.title.join(' ')}</span>
-              <span class="work-tile__m-index">{p.index}</span>
-            </span>
-            <span class="work-tile__m-desc">{p.desc}</span>
-            <span class="work-tile__m-cta">[ VIEW CASE STUDY + ]</span>
-          </span>
+          {/* (The 2026-08-10 per-tile mobile meta is retired — the
+              402-frame rebuild renders its own mobile list below;
+              this carousel is display:none under the seam.) */}
         </a>
       ))}
+    </div>
+
+    {/* ── MOBILE LIST (frame 1:11) — the native vertical page:
+        nine entries in the FILE's order (frontmatter note), each an
+        image + title/index + description + VIEW CASE STUDY button.
+        display:none above the seam (work.css); the desktop carousel
+        and its whole driver never see it. Buttons follow the site's
+        live-vs-placeholder link rule; images link too (the /work
+        tile behaviour). Entrances: per-entry once-only reveals
+        (work-page.js mobile branch). */}
+    <div class="work-m" data-work-m>
+      {MOBILE_ENTRIES.map((p) => {
+        const live = LIVE_CASE_SLUGS.includes(p.slug);
+        const lastLine = p.title.length - 1;
+        return (
+          <article class="work-m__entry" data-work-m-entry data-tags={p.tags.join(' ')}>
+            {live ? (
+              <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true">
+                <figure class="work-m__img">
+                  <img src={p.workImg} alt="" loading="lazy" decoding="async" width="1024" height="616" />
+                </figure>
+              </a>
+            ) : (
+              <figure class="work-m__img">
+                <img src={p.workImg} alt="" loading="lazy" decoding="async" width="1024" height="616" />
+              </figure>
+            )}
+            <h2 class="work-m__title">
+              {p.title.map((line, i) => (
+                <span class="work-m__titleline">
+                  {line}
+                  {i === lastLine && <span class="work-m__index">{p.index}</span>}
+                </span>
+              ))}
+            </h2>
+            <p class="work-m__desc">{p.desc}</p>
+            {live ? (
+              <a class="work-m__btn" href={`/work/${p.slug}`} data-char-ripple-trigger>
+                <span data-char-ripple>VIEW CASE STUDY</span>
+                <img src={moreArrow} alt="" width="9" height="9" data-char-ripple-arrow />
+              </a>
+            ) : (
+              <span class="work-m__btn is-placeholder" data-hover data-char-ripple-trigger>
+                <span data-char-ripple>VIEW CASE STUDY</span>
+                <img src={moreArrow} alt="" width="9" height="9" data-char-ripple-arrow />
+              </span>
+            )}
+          </article>
+        );
+      })}
     </div>
 
     {/* Left column — header, pills, active meta. */}
