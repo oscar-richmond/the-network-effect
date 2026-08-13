@@ -332,8 +332,42 @@ export function initMenu(scope = document) {
   };
   document.addEventListener('visibilitychange', onVisibility);
 
+  /* ── CLOSE-TAIL BOOST (Oscar's device report: a dead pause before
+     the exit visibly begins). MEASURED at 915ms tap-to-first-panel-
+     motion: the timeline's tail (char + footer staggers, running to
+     ~1.9s) reverses BEFORE the playhead re-enters the panel's [0..1s]
+     band. The boost reverses that tail at 12× (≈75ms) and restores
+     1× the moment the panel band begins — the exit's visible speed
+     and character are untouched, only the inaudible tail is
+     compressed. Open() clears any active boost (a re-open mid-close
+     must run at normal speed). */
+  const PANEL_BAND_END_S = 1.0; /* the panel tween's slot */
+  const CLOSE_TAIL_TIMESCALE = 20;
+  let tailWatch = null;
+  const clearTailBoost = () => {
+    if (tailWatch) {
+      gsap.ticker.remove(tailWatch);
+      tailWatch = null;
+    }
+    /* GSAP-3 pitfall (the wedge this fix round found): the timeScale
+       SETTER clears reversed() — reversed playback rides the scale's
+       sign — so the direction must be restored around every set. */
+    const wasReversed = tl.reversed();
+    tl.timeScale(1);
+    tl.reversed(wasReversed);
+  };
+
   const open = () => {
     if (tl.reversed() || tl.progress() === 0) {
+      clearTailBoost();
+      /* Re-resolve the panel's height:'auto' against the CURRENT
+         content each open (R2 item 7): gsap caches the px from the
+         first resolution, which was measured against init-time
+         layout — 80px taller than the settled mobile content, so the
+         menu background ran past the 32px bottom spec. At progress 0
+         every tween's start state is its parked rest, so the
+         re-record is loss-free. */
+      if (tl.progress() === 0) tl.invalidate();
       tl.play();
       revealCTAs(true);
       if (landingSwap) {
@@ -357,6 +391,14 @@ export function initMenu(scope = document) {
        state either way. */
     if (!tl.reversed()) {
       tl.reverse();
+      if (!reducedMotion && tl.time() > PANEL_BAND_END_S) {
+        tl.timeScale(CLOSE_TAIL_TIMESCALE);
+        tl.reversed(true); /* the setter just cleared it (sign pitfall) */
+        tailWatch = () => {
+          if (!tl.reversed() || tl.time() <= PANEL_BAND_END_S) clearTailBoost();
+        };
+        gsap.ticker.add(tailWatch);
+      }
       if (landingSwap) {
         /* CLOSE -> MENU swaps immediately (it IS the toggle), but the
            logo and LET'S CHAT wait for the panel to finish closing
@@ -455,6 +497,7 @@ export function initMenu(scope = document) {
   document.addEventListener('keydown', onKeyDown);
 
   return () => {
+    clearTailBoost();
     window.clearTimeout(settleTimer);
     document.removeEventListener('visibilitychange', onVisibility);
     reconcileNav(); /* never hand a stuck sweep to the next page */
