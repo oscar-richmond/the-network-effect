@@ -83,6 +83,19 @@ const VIDEO_BAND_TOP_FRACTION = 0.625;
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
 
+/* ── Mobile values (the Figma 402-frame rebuild, 2026-08-13) ──────────
+   The frame's grammar is 16px side margins (landing.css sets
+   --landing-video-margin to match on .landing-home), and the file
+   drops the intro copy entirely — Beat 2 is skipped below, and the
+   tagline travels to the 16px margin. The file only draws the
+   EXPANDED video keyframe (402×874 full-bleed), so the REST band's
+   top fraction is the build's call: 0.5 places the band across the
+   lower half — clear of the two-line tagline with the file's
+   breathing room — and is flagged as such in the build report. */
+const VIDEO_BAND_TOP_FRACTION_M = 0.5;
+const VIDEO_MARGIN_PX_M = 16;
+const HEADLINE_LEFT_MARGIN_M = 16;
+
 /* Lenis smoothing now lives in site-scroll.js (SCROLL_LERP 0.065,
    the house value) — ONE source of truth for every native-scroll
    page (Oscar's uniform-feel mandate, 2026-08-08). */
@@ -429,6 +442,12 @@ export function initLandingHeroScroll() {
      same reason. */
   const isMob = isMobileViewport();
 
+  /* Regime-resolved geometry (mobile constants block above). Desktop
+     resolves to the shipped values — bit-identical behaviour. */
+  const bandFrac = isMob ? VIDEO_BAND_TOP_FRACTION_M : VIDEO_BAND_TOP_FRACTION;
+  const vMargin = isMob ? VIDEO_MARGIN_PX_M : VIDEO_MARGIN_PX;
+  const headlineLeft = isMob ? HEADLINE_LEFT_MARGIN_M : HEADLINE_LEFT_MARGIN;
+
   /* EVERYTHING below measures rendered text — the headline's travel is
      the distance from its laid-out left edge, and the copy's reveal
      clips are grouped by each word's offsetTop. Both are wrong if they
@@ -459,7 +478,7 @@ export function initLandingHeroScroll() {
         lines.forEach((line) => {
           if (!(line instanceof HTMLElement)) return;
           gsap.set(line, { x: 0 });
-          gsap.set(line, { x: HEADLINE_LEFT_MARGIN - line.getBoundingClientRect().left });
+          gsap.set(line, { x: headlineLeft - line.getBoundingClientRect().left });
         });
       }
       intro?.classList.add('is-armed');
@@ -498,7 +517,7 @@ export function initLandingHeroScroll() {
 
       lines.forEach((line) => gsap.set(line, { x: 0 }));
       const deltas = lines.map(
-        (line) => HEADLINE_LEFT_MARGIN - line.getBoundingClientRect().left,
+        (line) => headlineLeft - line.getBoundingClientRect().left,
       );
 
       const tl = gsap.timeline({
@@ -524,7 +543,11 @@ export function initLandingHeroScroll() {
        exactly this. */
     let revealEnd = sequenceEnd;
 
-    if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
+    /* MOBILE: the 402 frame has NO intro copy — the element is
+       display:none (landing.css .landing-home) and Beat 2 is skipped
+       whole: wrapping/revealing a hidden block would measure zero
+       rects and pad the runway with dead scroll. */
+    if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
       if (!isMob) introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
 
       const introLines = wrapIntroLines(introText);
@@ -584,13 +607,13 @@ export function initLandingHeroScroll() {
     let videoEnd = revealEnd;
 
     if (video instanceof HTMLElement) {
-      const bandTop = Math.round(vh * VIDEO_BAND_TOP_FRACTION);
+      const bandTop = Math.round(vh * bandFrac);
       const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
       videoEnd = videoStart + VIDEO_EXPAND_PX;
 
       const tween = gsap.fromTo(
         video,
-        { clipPath: insetPx(bandTop, VIDEO_MARGIN_PX, 0, VIDEO_MARGIN_PX) },
+        { clipPath: insetPx(bandTop, vMargin, 0, vMargin) },
         {
           clipPath: insetPx(0, 0, 0, 0),
           ease: 'power1.inOut',
@@ -621,7 +644,7 @@ export function initLandingHeroScroll() {
        filters' stacking contexts sit on plain-ink lines inside the
        hero stage. */
     if (video instanceof HTMLElement) {
-      const bandTop = Math.round(vh * VIDEO_BAND_TOP_FRACTION);
+      const bandTop = Math.round(vh * bandFrac);
       const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
 
       const invertPower1InOut = (e) =>
@@ -671,7 +694,7 @@ export function initLandingHeroScroll() {
         ).reverse();
         buildExitWipe(headlineLines, headlineText.getBoundingClientRect());
       }
-      if (introText instanceof HTMLElement) {
+      if (!isMob && introText instanceof HTMLElement) {
         const introClips = Array.from(introText.querySelectorAll('.lr-clip')).reverse();
         buildExitWipe(introClips, introText.getBoundingClientRect());
       }
@@ -712,7 +735,7 @@ export function initLandingHeroScroll() {
         derived: (() => {
           const topbar = document.querySelector('.home__topbar');
           const navBottom = topbar ? topbar.getBoundingClientRect().bottom : 0;
-          const videoTop = Math.round(vh * VIDEO_BAND_TOP_FRACTION);
+          const videoTop = Math.round(vh * bandFrac);
           return {
             navBottom,
             videoTop,

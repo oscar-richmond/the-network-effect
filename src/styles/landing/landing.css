@@ -3448,3 +3448,334 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		margin-bottom: -14px;
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LANDING-HOME MOBILE — the Figma 402-frame rebuild, PART 1 (file
+   5cEi5ABu06aABOVemHVoAy frame 0:12; 2026-08-13). Scoped to
+   .landing-home so only this page takes the new 16px grammar; the
+   earlier <=1024 blocks above remain the base and these override by
+   source order. Sections covered: hero, founders band, services
+   cards. Featured-onward keeps the interim mobile form until Part 2.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+	/* The frame's grammar: 16px fixed side margins (was 24). */
+	.landing-v2.landing-home {
+		--m-margin: 16px;
+		--landing-video-margin: 16px;
+	}
+
+	/* ── HERO (file 0:13/0:16) ────────────────────────────────────
+	   Tagline 26px pair, centred, 28px pitch; NO intro copy on this
+	   frame — the desktop intro element hides and its reveal beat is
+	   skipped in JS (landing-hero-scroll.js mobile branch). The
+	   video's rest band: 16px sides, band-top fraction 0.5 (the file
+	   shows only the EXPANDED 402×874 keyframe — the fraction is the
+	   build's call, flagged); expansion to inset 0 = full bleed at
+	   full viewport height, the desktop clip mechanic verbatim. */
+	.landing-v2.landing-home .landing-hero__headline-text {
+		margin-top: 118px; /* file: tagline centre band under the nav */
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-line {
+		font-size: 26px;
+		line-height: 28px;
+	}
+
+	.landing-v2.landing-home .landing-hero__intro { display: none; }
+
+	.landing-v2.landing-home .landing-hero__video {
+		clip-path: inset(50% var(--landing-video-margin) 0px var(--landing-video-margin));
+	}
+
+	/* ── FOUNDERS BAND (file 0:19/0:56/0:39/0:20/0:58) ──────────── */
+	.landing-v2.landing-home .landing-founders {
+		padding: 96px 0 64px; /* side padding moves onto children — the
+		   photo must reach the true viewport edge at full expansion */
+	}
+
+	/* The file KEEPS the editorial lead indent (20 spaces at 26px);
+	   the interim mobile stripped it. Scaled from the desktop atom
+	   (200px at 40px -> 130px at 26px). On the BLOCK, not the span:
+	   the lines flow inline on mobile, and text-indent is inert on
+	   an inline element — the h2's first formatted line is the one
+	   the file indents. */
+	.landing-v2.landing-home .landing-founders__headline {
+		margin: 0 var(--m-margin, 16px);
+		font-size: 26px;
+		line-height: 26px;
+		color: #eeeef0;
+		text-indent: 130px;
+	}
+
+	.landing-v2.landing-home .landing-founders__ctas {
+		margin: 40px var(--m-margin, 16px) 0;
+		gap: 12px;
+	}
+
+	/* CTA face per file: 38px dark pills, 12px labels, 9px arrows —
+	   the existing dark variant with the file's mobile label scale. */
+	.landing-v2.landing-home .landing-founders__btn {
+		height: 38px;
+		font-size: 12px;
+	}
+
+	.landing-v2.landing-home .landing-founders__btn-arrow {
+		width: 9px;
+		height: 9px;
+	}
+
+	/* THE GRID (0:20): portraits stacked left (110×150 ×2, 6px gap),
+	   the sofa photo right (rest 254×306 at 402). Absolute geometry
+	   inside a full-width wrapper so the photo can expand to the true
+	   edge; the container's height is the scrub's push (306 -> 400,
+	   landing-founders.js mobile branch drives it). Fluid: the left
+	   column is fixed 110, the photo takes the remainder. */
+	.landing-v2.landing-home .landing-founders__grid-space {
+		position: relative;
+		margin-top: 64px;
+		height: 306px; /* JS animates to 400 */
+	}
+
+	.landing-v2.landing-home .landing-founders__portrait {
+		position: absolute;
+		float: none;
+		width: 110px;
+		height: 150px;
+		margin: 0;
+		left: var(--m-margin, 16px);
+	}
+
+	.landing-v2.landing-home .landing-founders__portrait--robbo { top: 0; }
+	.landing-v2.landing-home .landing-founders__portrait--ashley { top: 156px; }
+
+	.landing-v2.landing-home .landing-founders__portrait-crop {
+		aspect-ratio: auto;
+		height: 100%;
+	}
+
+	/* Names are a desktop hover read; the 110px tiles are portraits
+	   only in the file. */
+	.landing-v2.landing-home .landing-founders__portrait-name { display: none; }
+
+	/* The photo = the expansion subject. Rest: right edge 16px in,
+	   width = all but the portrait column. JS lerps right/width/
+	   height + the inner img's scale toward the 402×400 full-bleed
+	   keyframe. Pre-JS/RM = the rest state exactly. */
+	.landing-v2.landing-home .landing-founders__photo {
+		position: absolute;
+		top: 0;
+		right: var(--m-margin, 16px);
+		left: calc(var(--m-margin, 16px) + 110px + 6px); /* portrait col + gap → x132 at 402 */
+		width: auto;
+		height: 306px;
+		margin: 0;
+		aspect-ratio: auto;
+		overflow: hidden;
+	}
+
+	/* File 0:25: img 460w at x-120 inside the 254 window -> 181.1%
+	   at -47.25%. JS animates toward 151.2% / -29.6% (the 0:62
+	   expanded crop). */
+	.landing-v2.landing-home .landing-founders__photo img {
+		position: absolute;
+		top: 0;
+		left: -47.25%;
+		width: 181.1%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* ── SERVICES (file 0:403 + cards) ────────────────────────────── */
+	.landing-v2.landing-home .landing-outro { padding-top: 96px; }
+
+	/* Heading 30/30, white + DIFFERENCE (renders dark over the light
+	   ground — the file's treatment); one flowing paragraph with the
+	   7-space lead indent. Blend walk: stage/center are static, no
+	   transform/filter ancestors on mobile. */
+	.landing-v2.landing-home .landing-services__title {
+		font-size: 30px;
+		line-height: 30px;
+		color: #fff;
+		mix-blend-mode: difference;
+		text-indent: 56px;
+		width: auto; /* the desktop measure is a px width — it overflows 402 */
+		/* Desktop stacks the lines as a flex column — flex items
+		   BLOCKIFY display:inline on the spans (computed stays block
+		   whatever the spans declare), which re-broke the lines at the
+		   desktop points and double-applied the indent. Block flow
+		   restores one flowing paragraph. */
+		display: block;
+	}
+
+	.landing-v2.landing-home .landing-services__line {
+		display: inline;
+		/* The desktop spans are authored nowrap line-breaks at the 1728
+		   measure; at 370 the copy reflows naturally (the founders-weld
+		   pattern — ::after restores the inter-span space). */
+		white-space: normal;
+	}
+
+	.landing-v2.landing-home .landing-services__line + .landing-services__line::before {
+		content: ' ';
+	}
+
+	/* Card: 2px #E0E0E7 divider; 24 to the title row; 32 rhythm
+	   between blocks; 64 into the next card. */
+	.landing-v2.landing-home .landing-svc-card {
+		margin: 64px 0 0;
+		padding: 0 var(--m-margin, 16px) 0;
+		/* Desktop's morph hint isolates the card as a compositor group,
+		   which strands the title/index difference blends against a
+		   transparent backdrop (they rendered white-on-white). No morph
+		   runs on mobile — drop the hint, the blends composite against
+		   the section's painted ground again. */
+		will-change: auto;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__dividerwrap {
+		height: 2px;
+		margin-bottom: 24px;
+		/* The desktop base's absolute inset (left 24 / 100%−48) would
+		   otherwise survive as a width on the static box — the file's
+		   divider is the full 370 measure. */
+		left: auto;
+		width: 100%;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__divider {
+		height: 2px;
+		background: #e0e0e7;
+	}
+
+	/* Title 22px + /0N 10px tucked at its shoulder, both white +
+	   difference (file 0:64) — the card has no transformed ancestors
+	   on mobile and no opaque layer of its own, so they composite
+	   against the page ground and the image as they pass. */
+	.landing-v2.landing-home .landing-svc-card__titlerow {
+		display: flex;
+		justify-content: flex-start;
+		align-items: flex-start;
+		gap: 5px;
+		color: #fff;
+		mix-blend-mode: normal; /* blend rides the children */
+		font-size: 22px;
+		line-height: 18px;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__title {
+		font-size: 22px;
+		line-height: 18px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__index {
+		font-size: 10px;
+		line-height: 10px;
+		margin-top: 1px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	/* Desktop internals give way to the file's mobile set. */
+	.landing-v2.landing-home .landing-svc-card__img,
+	.landing-v2.landing-home .landing-svc-card__listhead,
+	.landing-v2.landing-home .landing-svc-card__lists { display: none; }
+
+	.landing-v2.landing-home .landing-svc-card__m-img {
+		margin-top: 26px;
+		width: 100%;
+		aspect-ratio: 740 / 440;
+		overflow: hidden;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-img img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__desc {
+		position: static;
+		transform: none;
+		width: auto;
+		max-width: 100%;
+		margin-top: 32px;
+		font-size: 16px;
+		line-height: 18px;
+	}
+
+	/* ── The list block: label + indicator row, then the swipe strip
+	   (file 0:375; columns at their file widths; 64px gaps; items
+	   Serrif 14 on a 25px pitch). The strip clips its own overflow —
+	   the page never scrolls sideways. */
+	.landing-v2.landing-home .landing-svc-card__m-listblock {
+		display: block;
+		margin-top: 32px;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-listtop {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-listhead {
+		margin: 0;
+		font-weight: 700;
+		font-size: 12px;
+		line-height: 14px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-strip {
+		margin-top: 16px;
+		display: flex;
+		gap: 64px;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		-webkit-overflow-scrolling: touch;
+		scroll-snap-type: x proximity;
+		scrollbar-width: none;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-strip::-webkit-scrollbar { display: none; }
+
+	.landing-v2.landing-home .landing-svc-card__m-col {
+		flex: none;
+		width: var(--m-col-w, 200px);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		scroll-snap-align: start;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 19px;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__m-col li + li { margin-top: 6px; }
+
+	/* MORE INFO — file 0:94: 118×38 fill, 12px blue label, 9px arrow. */
+	.landing-v2.landing-home .landing-svc-card__btnclip { margin-top: 32px; }
+
+	.landing-v2.landing-home .landing-svc-card__btn {
+		height: 38px;
+		font-size: 12px;
+	}
+
+	.landing-v2.landing-home .landing-svc-card__btn img {
+		width: 9px;
+		height: 9px;
+	}
+}
+
+/* The mobile-only service internals must not exist above the seam. */
+@media (min-width: 1025px) {
+	.landing-v2 .landing-svc-card__m-listblock,
+	.landing-v2 .landing-svc-card__m-img { display: none; }
+}

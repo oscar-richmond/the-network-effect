@@ -98,6 +98,25 @@ const EXIT_BLUR_CTAS_PX = 550;
 const EXIT_BLUR_ROBBO_PX = 650;
 const EXIT_BLUR_ASHLEY_PX = 700;
 
+/**
+ * MOBILE expansion (the Figma 402-frame rebuild, 2026-08-13): the
+ * sofa photo scrubs from its rest crop (file 0:25 — the 254×306
+ * window at 402) to the full-bleed 402×400 keyframe (0:58/0:62),
+ * reversible, as the grid scrolls through the lower viewport. The
+ * grid-space's height is the push: it grows 306→400 in step, so the
+ * services heading below rides down rather than being overlapped.
+ * The inner img counter-zooms between the file's two crops (460w →
+ * 608w source widths, expressed as %-of-window so the tween is fluid
+ * across 360–430). Portraits fade + drift left over the first 60% —
+ * the file's expanded keyframe shows the photo alone. Scroll px are
+ * the scrub's denominator (the page's grammar; ease:none).
+ */
+const FD_M_EXPAND_PX = 340;
+const FD_M_TARGET_H = 400;
+const FD_M_IMG_FROM = { left: '-47.25%', width: '181.1%' };
+const FD_M_IMG_TO = { left: '-29.6%', width: '151.2%' };
+const FD_M_FADE_PORTION = 0.6;
+
 export function initLandingFounders() {
   const section = document.querySelector('[data-landing-founders]');
   if (!(section instanceof HTMLElement)) return () => {};
@@ -231,6 +250,72 @@ export function initLandingFounders() {
         exitPx: FOUNDERS_EXIT_PX,
         timelineTotal: entryPx + FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX,
       };
+    }
+  } else {
+    /* ── MOBILE: the in-place photo expansion (constants block above).
+       Anchors animate as left/right px — width stays `auto`, so the
+       full-bleed end state is exact at ANY viewport width without a
+       resize rebuild (only ScrollTrigger's own refresh re-measures).
+       The rest anchors are MEASURED from the computed style (the CSS
+       calc resolved), not re-derived, so CSS stays the one source of
+       the rest geometry. immediateRender is left on: the from-state
+       equals the CSS rest state byte-for-byte, so the seed writes are
+       no-ops. Portraits tween opacity/x — their difference-blended
+       hover names are display:none on mobile, so the blend-isolation
+       rule doesn't bind here. */
+    const grid = section.querySelector('[data-fd-grid]');
+    const photo = section.querySelector('.landing-founders__photo');
+    const photoImg = photo?.querySelector('img');
+    /* The fade targets the CROP SPANS, not the figures: the entrance's
+       .is-visible fade owns the figures' opacity, and a scrub tween on
+       the same element+property records whatever opacity it first
+       renders against (0 if the entrance timeout hasn't landed) and
+       then pins it — the collision class this codebase keeps meeting.
+       Separate elements, the two fades multiply cleanly. */
+    const portraits = [
+      section.querySelector('.landing-founders__portrait--robbo .landing-founders__portrait-crop'),
+      section.querySelector('.landing-founders__portrait--ashley .landing-founders__portrait-crop'),
+    ].filter((el) => el instanceof HTMLElement);
+
+    if (grid instanceof HTMLElement && photo instanceof HTMLElement && photoImg) {
+      const cs = getComputedStyle(photo);
+      const baseLeft = parseFloat(cs.left) || 0;
+      const baseRight = parseFloat(cs.right) || 0;
+      const baseH = photo.offsetHeight || 306;
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: grid,
+          start: 'top 75%',
+          end: `+=${FD_M_EXPAND_PX}`,
+          scrub: true,
+        },
+      });
+
+      tl.fromTo(
+        photo,
+        { left: baseLeft, right: baseRight, height: baseH },
+        { left: 0, right: 0, height: FD_M_TARGET_H, duration: 1, ease: 'none' },
+        0,
+      );
+      tl.fromTo(
+        photoImg,
+        { ...FD_M_IMG_FROM },
+        { ...FD_M_IMG_TO, duration: 1, ease: 'none' },
+        0,
+      );
+      tl.to(grid, { height: FD_M_TARGET_H, duration: 1, ease: 'none' }, 0);
+      if (portraits.length) {
+        /* immediateRender:false — the entrance's .is-visible fade owns
+           opacity until the scrub's first real update. */
+        tl.to(
+          portraits,
+          { opacity: 0, x: -24, duration: FD_M_FADE_PORTION, ease: 'none', immediateRender: false },
+          0,
+        );
+      }
+
+      driftTweens.push(tl);
     }
   }
 

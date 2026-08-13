@@ -93,7 +93,17 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
   </div>
 
   {/* Exact Figma crops: window = mask rect, image = source layer at the
-      file's dimensions/offsets. PENDING SIGN-OFF (placeholder photos). */}
+      file's dimensions/offsets. PENDING SIGN-OFF (placeholder photos).
+
+      grid-space (mobile rebuild 2026-08-13): a STATIC, unstyled-on-
+      desktop wrapper — the three figures keep the section as their
+      absolute containing block, and the wrapper collapses to zero
+      height, so the desktop render is untouched. On mobile it is the
+      Figma grid (file 0:20): portraits stacked left, the photo right,
+      and the positioning context for the scrubbed expansion toward
+      the 402×400 keyframe (0:58); its height is the push the scrub
+      applies to everything below. */}
+  <div class="landing-founders__grid-space" data-fd-grid>
   <figure class="landing-founders__photo" data-landing-founders-img>
     <img src={foundersPhoto} alt="" loading="lazy" decoding="async" />
   </figure>
@@ -130,5 +140,6 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
       >Ashley Walters</span
     >
   </figure>
+  </div>
   </section>
 </div>

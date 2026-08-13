@@ -60,6 +60,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isMobileViewport } from './viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -181,9 +182,12 @@ export function initLandingServices() {
   /* MOBILE (the viewport.js seam): no pin, no morph, no parking — the
      cards render as sequential full-width sections (landing.css) with
      every internal visible. Gated BEFORE the non-RM parking below, or
-     the cards would be thrown a stage-height down and never recalled. */
+     the cards would be thrown a stage-height down and never recalled.
+     The one mobile behaviour is the list carousels' swipe-progress
+     indicators (the 402-frame rebuild) — observation only, the strips
+     scroll natively. */
   if (isMobileViewport()) {
-    return () => {};
+    return initCarouselIndicators(section);
   }
 
   let disposed = false;

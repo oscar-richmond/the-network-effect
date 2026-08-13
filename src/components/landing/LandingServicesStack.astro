@@ -106,6 +106,46 @@ const cards = [
    edge, the list 24px below the header (19px box), and MORE INFO
    80px below the list's bottom. Derived per row from line/item
    counts so the rhythm holds whatever the copy does. */
+/* ── MOBILE layer (Figma 5cEi5ABu06aABOVemHVoAy frame 0:12, mobile
+   rebuild 2026-08-13). Everything below renders ONLY at <=1024 (the
+   desktop card internals hide there); nothing desktop keys on it.
+
+   LIST COPY IS THE FILE'S, VERBATIM (the brief's rule), which
+   diverges from the desktop data in three flagged ways:
+   - IMMERSE col 3 repeats "Industry-leading Events" (the desktop
+     carries Oscar's approved substitution "Exceptional Culinary
+     Experiences" for exactly this file slip — one-line flip if the
+     substitution should win here too);
+   - AMPLIFY repeats "Brand Storytelling" and "Podcasts" at column
+     boundaries — reads as deliberate carousel-page overlap;
+   - CONNECT lists 4 rows x 2 cols (desktop has 6 x 2).
+   Column widths are the file's own (they drive the swipe width). */
+const mobileCards = {
+  immerse: {
+    img: asset('/assets/landing/mobile/svc-immerse-m.jpg'),
+    cols: [
+      { w: 167, items: ['Talent-Led Experiences', 'Immersive Brand Worlds', 'Brand Launches', 'Fashion & Media Events'] },
+      { w: 274, items: ['Industry-leading Events', 'Cultural Programming', 'Brand Collaborations', 'Leadership Summits & Conferences'] },
+      { w: 215, items: ['Experiential Campaigns', 'Music & Food Festivals', 'Industry-leading Events', 'Health & Wellbeing Retreats'] },
+    ],
+  },
+  connect: {
+    img: asset('/assets/landing/mobile/svc-connect-m.jpg'),
+    cols: [
+      { w: 263, items: ['Strategic Brand Partnerships', 'Celebrity & Talent Partnerships', 'Cultural Introductions', 'Commercial Relationship Development'] },
+      { w: 270, items: ['Long-term Partnership Strategy', 'Story-led Collaborations', 'Sponsorship Strategy & Acquisition', 'Brand-to-brand Collaborations'] },
+    ],
+  },
+  amplify: {
+    img: asset('/assets/landing/mobile/svc-amplify-m.jpg'),
+    cols: [
+      { w: 212, items: ['Social-first Content', 'Photography & Film Production', 'Design Systems & Brand Assets', 'Brand Storytelling'] },
+      { w: 128, items: ['Brand Storytelling', 'Campaign Creative', 'Creative Direction', 'Podcasts'] },
+      { w: 157, items: ['Podcasts', 'Documentary Formats', 'Original Content Series'] },
+    ],
+  },
+};
+
 const DESC_CENTER_Y = 80;
 const DESC_LINE_H = 30;
 const HEAD_GAP = 64;
@@ -173,6 +213,34 @@ const rhythm = (card) => {
           ))}
         </ul>
       ))}
+    </div>
+    {/* MOBILE list block (file 0:375/0:80/0:119): label + the shared
+        carousel indicator on one row, then the file-verbatim columns
+        as a native swipe strip. display:none above the seam; the
+        desktop lists above hide below it. aria-hidden on the
+        indicator (decoration); the list itself is real content. */}
+    <div class="landing-svc-card__m-listblock" data-svc-m-carousel>
+      <div class="landing-svc-card__m-listtop">
+        <p class="landing-svc-card__m-listhead">{card.listHead}</p>
+        <span class="m-carousel-ind" data-carousel-ind aria-hidden="true">
+          <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
+        </span>
+      </div>
+      <div class="landing-svc-card__m-strip" data-carousel-strip>
+        {mobileCards[card.id].cols.map((col) => (
+          <ul class="landing-svc-card__m-col" style={`--m-col-w:${col.w}px`}>
+            {col.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </div>
+    {/* MOBILE card image (file crops, exported @2x sRGB) — the
+        desktop 424x515 window hides on mobile. Same founder/imagery
+        sign-off caveat as every visual asset. */}
+    <div class="landing-svc-card__m-img" aria-hidden="true">
+      <img src={mobileCards[card.id].img} alt="" loading="lazy" decoding="async" width="740" height="440" />
     </div>
     {/* Deep-links to this service's own section on /services
         (Oscar's rev): the pillar id there is this card's id, and

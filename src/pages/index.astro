@@ -37,7 +37,11 @@ import '../styles/landing/landing.css';
 import '../styles/fonts.css';
 ---
 
-<SiteShell title="The Network Effect" bodyClass="landing-v2">
+{/* landing-home (mobile rebuild, 2026-08-13): scopes the Figma
+    402-frame mobile grammar — 16px margins etc. — to THIS page while
+    the other pages keep the 24px interim mobile layout until their
+    own redesigns land. No desktop rule keys on it. */}
+<SiteShell title="The Network Effect" bodyClass="landing-v2 landing-home">
   {/* Entry sequence — first visit only, pre-paint decision inside. */}
   <LandingSplash />
 

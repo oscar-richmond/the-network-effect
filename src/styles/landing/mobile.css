@@ -174,3 +174,113 @@
 	clip-path: inset(50%);
 	white-space: nowrap;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE NAV — the Figma 402-frame chrome (frame 0:12, rebuild
+   2026-08-13), applied SITE-WIDE on mobile: the nav is SiteShell
+   chrome shared by every new-build page, and forking it per page
+   would split the site's one topbar. Wordmark centred in Dazzed
+   Heavy 12/0.36px; the toggle's face is the 16×2-bar burger (text
+   labels hidden — menu.js's label choreography still runs, unseen);
+   LET'S CHAT leaves the mobile topbar per the frame.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+	/* Wordmark: the file sets Dazzed Heavy (800), not the desktop's
+	   Arial Black — a deliberate mobile-only face change, flagged in
+	   the build report. */
+	.landing-v2 .home__logo,
+	.landing-v2 .home__logo-link {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 800;
+		font-synthesis: none;
+		font-size: 12px;
+		letter-spacing: 0.36px;
+	}
+
+	/* (0,3,1): landing.css's `--about` base styles this link at (0,3,0)
+	   and sits later in the bundle — the element qualifier wins the tie. */
+	.landing-v2 header.home__topbar .home__topbar-email { display: none; }
+
+	.landing-v2 [data-menu-label-menu],
+	.landing-v2 .home__menu-toggle-label--close { display: none !important; }
+
+	/* Burger — file 0:405: three 16×2 bars, tops 69.5/74.5/79.5 (5px
+	   pitch), white + difference (the toggle already carries the
+	   difference treatment; the bars inherit its context). Open state
+	   (aria-expanded) folds the outer bars into an X — the file only
+	   draws the closed state; the X is the standard reading of it. */
+	.landing-v2 .home__menu-burger {
+		display: block;
+		position: relative;
+		width: 16px;
+		height: 12px;
+	}
+
+	.landing-v2 .home__menu-burger-bar {
+		position: absolute;
+		left: 0;
+		width: 16px;
+		height: 2px;
+		background: currentColor;
+		transition: transform 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			opacity 0.3s ease-out;
+	}
+
+	.landing-v2 .home__menu-burger-bar:nth-child(1) { top: 0; }
+	.landing-v2 .home__menu-burger-bar:nth-child(2) { top: 5px; }
+	.landing-v2 .home__menu-burger-bar:nth-child(3) { top: 10px; }
+
+	.landing-v2 .home__menu-toggle[aria-expanded='true'] .home__menu-burger-bar:nth-child(1) {
+		transform: translateY(5px) rotate(45deg);
+	}
+	.landing-v2 .home__menu-toggle[aria-expanded='true'] .home__menu-burger-bar:nth-child(2) {
+		opacity: 0;
+	}
+	.landing-v2 .home__menu-toggle[aria-expanded='true'] .home__menu-burger-bar:nth-child(3) {
+		transform: translateY(-5px) rotate(-45deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2 .home__menu-burger-bar { transition: none; }
+	}
+}
+
+/* Desktop must never see the burger. */
+@media (min-width: 1025px) {
+	.landing-v2 .home__menu-burger { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CAROUSEL INDICATOR — the shared component (file Groups 355-358):
+   1px track, #E4E4EA, radius 2, 100px wide; a 32px #232A89 thumb
+   whose x tracks swipe progress (carousel-indicator.js writes
+   --ci-x). Used by every mobile carousel on the landing (services
+   lists now; featured work + tiles in Part 2).
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+	.landing-v2 .m-carousel-ind {
+		display: block;
+		position: relative;
+		width: 100px;
+		height: 1px;
+		border-radius: 2px;
+		background: #e4e4ea;
+		flex: none;
+	}
+
+	.landing-v2 .m-carousel-ind__thumb {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 32px;
+		height: 1px;
+		border-radius: 2px;
+		background: #232a89;
+		transform: translateX(var(--ci-x, 0px));
+		will-change: transform;
+	}
+}
+
+@media (min-width: 1025px) {
+	.landing-v2 .m-carousel-ind { display: none; }
+}
