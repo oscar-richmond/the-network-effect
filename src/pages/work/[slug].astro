@@ -25,6 +25,7 @@
  */
 import SiteShell from '../../layouts/SiteShell.astro';
 import LandingFooter from '../../components/landing/LandingFooter.astro';
+import { asset } from '../../utils/asset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
@@ -78,14 +79,21 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
 
     {/* ── C. WHAT WE DID — pillar columns from the data (services-
         taxonomy strings only). */}
-    <section class="cs-did" aria-label="What we did" data-cs-did>
+    {/* data-m-carousel / data-carousel-strip / the indicator (mobile
+        rebuild 2026-08-13): the columns swipe horizontally on mobile
+        with the shared 100px indicator (carousel-indicator.js).
+        Attributes + the hidden-above-the-seam span are desktop-inert. */}
+    <section class="cs-did" aria-label="What we did" data-cs-did data-m-carousel>
       <h2 class="cs-did__label" data-cs-did-line>WHAT WE DID</h2>
+      <span class="m-carousel-ind" data-carousel-ind aria-hidden="true">
+        <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
+      </span>
       {/* A real flex ROW (Oscar's rev): the columns used to be three
           absolutely-positioned lefts (1083/1292/1515), so any item
           wider than the gap between them overlapped its neighbour —
           "Health & Wellbeing Retreats" into "Commercial Management".
           Now they share the row with a guaranteed 24px gutter. */}
-      <div class="cs-did__cols">
+      <div class="cs-did__cols" data-carousel-strip>
       {['immerse', 'connect', 'amplify'].map((pillar, c) => (
         <div class={`cs-did__col cs-did__col--${c + 1}`}>
           <h3 class="cs-did__pillar" data-cs-did-line data-cs-col={String(c)}>{pillar.toUpperCase()}</h3>
@@ -177,10 +185,19 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
         point left/right, rippling on hover when active
         (case-study.js). */}
     <div class="cs-divider" aria-hidden="true"></div>
-    <section class="cs-more" aria-label="More work" data-cs-more>
+    <section class="cs-more" aria-label="More work" data-cs-more data-m-carousel>
       {/* Mixed faces (Oscar's rev): WORK in Serrif Medium, same size
-          — the OUR WORK / KEY IMPACT rail treatment. */}
-      <h2 class="cs-more__title" data-cs-more-title>MORE <span class="cs-serrif">WORK</span></h2>
+          — the OUR WORK / KEY IMPACT rail treatment. The MORE span
+          (mobile rebuild) is inline and byte-neutral on desktop; on
+          mobile the file stacks the words (MORE indented 37, the
+          landing stacked-header grammar mirrored). */}
+      <h2 class="cs-more__title" data-cs-more-title><span class="cs-more__t1">MORE</span> <span class="cs-serrif">WORK</span></h2>
+      {/* Mobile-only VIEW ALL chip (file 7:121) — the /work page's
+          own affordance replaces the desktop pager below the seam. */}
+      <a class="cs-more__viewall" href="/work" data-char-ripple-trigger>
+        <span data-char-ripple>VIEW ALL</span>
+        <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="9" height="9" data-char-ripple-arrow />
+      </a>
       <div class="cs-more__pager">
         <button type="button" class="cs-more__arrow" data-cs-pager="prev" aria-label="Previous projects" disabled>
           <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
@@ -193,7 +210,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           </svg>
         </button>
       </div>
-      <div class="cs-more__viewport" data-cs-more-viewport>
+      <div class="cs-more__viewport" data-cs-more-viewport data-carousel-strip>
         <div class="cs-more__track" data-cs-more-track>
           {moreWork.map((m) => (
             <a
@@ -216,6 +233,10 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
         </div>
       </div>
       <div class="cs-more__fade" aria-hidden="true"></div>
+      {/* Mobile swipe indicator — the file's 200×1 (7:118). */}
+      <span class="m-carousel-ind m-carousel-ind--wide" data-carousel-ind aria-hidden="true">
+        <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
+      </span>
     </section>
   </main>
 

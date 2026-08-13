@@ -39,6 +39,7 @@ import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '.
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -58,6 +59,14 @@ export function initCaseStudy() {
   const timeouts = [];
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* MOBILE swipe indicators (the 402-frame rebuild): the what-we-did
+     columns and the more-work cards are native carousels below the
+     seam — the shared component observes them. Above the RM gate:
+     the thumb follows the user's own swipe (feedback, not motion). */
+  if (isMobileViewport()) {
+    cleanups.push(initCarouselIndicators(page));
+  }
 
   /* Live-slug gating for the more-work cards. On the PAGE element,
      not document: it must preventDefault BEFORE page-transition's
