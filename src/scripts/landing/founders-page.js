@@ -45,6 +45,7 @@
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { initMobileEntrance } from './m-entrance.js';
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 
 const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
@@ -65,7 +66,28 @@ export function initFoundersPage() {
   const cleanups = [];
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const narrow = window.matchMedia('(max-width: 1024px)').matches;
-  if (narrow) return () => {}; /* the static stacked fallback (CSS) */
+  if (narrow) {
+    /* MOBILE (the 402-frame rebuild, 2026-08-14): normal document
+       scroll — none of the driver below engages. Only the shared
+       section entrances mount (the m-entrance vocabulary: blended
+       lines word-reveal, media fade-rise; per-section trigger). */
+    const mediaSel = '.fd-slide__m-portrait, .fd-slide__listlabel, .fd-slide__list, .fd-slide__btn';
+    if (reduced) {
+      /* The hidden states are no-preference-gated, but the class
+         keeps the DOM state coherent for both (the /work rule). */
+      stage.querySelectorAll(mediaSel).forEach((el) => el.classList.add('is-visible'));
+      return () => {};
+    }
+    const entranceCleanups = Array.from(stage.querySelectorAll('[data-fd-slide]')).map((slide) =>
+      initMobileEntrance(/** @type {HTMLElement} */ (slide), {
+        lines: ['.fd-slide__m-label', '.fd-slide__bio-text--bold', '.fd-slide__m-serif']
+          .map((sel) => slide.querySelector(sel))
+          .filter((el) => el instanceof HTMLElement),
+        media: Array.from(slide.querySelectorAll(mediaSel)),
+      }),
+    );
+    return () => entranceCleanups.forEach((fn) => fn());
+  }
 
   const content = stage.querySelector('[data-fd-content]');
   const portrait = stage.querySelector('[data-fd-portrait]');

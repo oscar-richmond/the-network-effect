@@ -294,6 +294,12 @@ body.founders-page {
 	white-space: pre; /* the authored DOUBLE spaces either side survive */
 }
 
+/* The mobile-only separator twin (rendered where the desktop takes
+   an authored <br>) — never exists above the seam. */
+.landing-v2 .fd-slide__list-sep--m {
+	display: none;
+}
+
 /* The travelling name — Serrif 56 (Oscar's rev 4: the file's 80
    less 24), #F9F9F9 + DIFFERENCE; `top` is driven by JS between the
    live clamps. LEFT: the authored 913 is the FALLBACK only — for
@@ -349,75 +355,269 @@ body.founders-page {
 	height: 811px;
 }
 
-/* ── Sub-1024 fallback — static stacked slides (desktop-first
-   staging; the scale shell carries 14/15"). */
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE FOUNDERS — the 402-frame rebuild (Figma cqJWAceQKUmyuhF1ZxYXLI
+   frame 6:10 "The Founders - iPhone 16 & 17 Pro - 4", extracted
+   2026-08-14; 49px status chrome subtracted). REPLACES the 2026-08-10
+   interim stacked fallback wholesale.
+
+   ARCHITECTURE: normal document scroll — the desktop two-slide driver
+   never engages (founders-page.js narrow branch mounts entrances
+   only): no crossfade, no name travel, no thumbs, no phase snap, no
+   release. Both founders stack per the file — ASHLEY FIRST (the
+   file's section order; done with flex order so the DOM keeps the
+   desktop's data order), the 2px divider between (file y1281), and
+   the SECOND section renders Robbo's OWN copy from the data (the
+   file's known error — its Robbo section carries Ashley's Serrif
+   line and list verbatim; single source of truth wins).
+
+   16px margin grammar page-scoped (--m-margin override); all fixed
+   px are the file's values less the 49px status bar; widths fluid
+   (100% − margins) across 360–430.
+
+   BLEND WALK (mobile): label/bio/serif are white + difference over
+   the fd-content ground — the chain (content > slide > text) carries
+   no transform/opacity/filter (stage + content will-change/transform
+   neutralised below); the word-reveal animates INNER spans only. */
 @media (max-width: 1024px) {
+	.landing-v2.founders-page { --m-margin: 16px; }
 	body.founders-page { overflow: auto; }
-	.landing-v2 .fd-stage { height: auto; overflow: visible; padding: 160px 24px 64px; will-change: auto; transform: none !important; }
-	.landing-v2 .fd-content { position: static; transform: none !important; will-change: auto; }
-	.landing-v2 .fd-ind { display: none; }
-	.landing-v2 .fd-portrait { position: static; width: 100%; height: auto; aspect-ratio: 640 / 922; margin-bottom: 32px; }
-	.landing-v2 .fd-portrait__img { position: static; }
-	.landing-v2 .fd-portrait__img--over { display: none; }
-	.landing-v2 .fd-slide { position: static; visibility: visible !important; }
-	.landing-v2 .fd-slide__bio,
-	.landing-v2 .fd-slide__btn,
-	.landing-v2 .fd-slide__listlabel,
-	.landing-v2 .fd-slide__list,
-	.landing-v2 .fd-slide__name { position: static; width: auto; margin: 16px 0; }
-	.landing-v2 .fd-slide__name { mix-blend-mode: normal; color: #161616; font-size: 48px; line-height: 48px; }
-	.landing-v2.founders-page .fd-footer-wrap { position: static; height: auto; }
-}
 
-/* ── MOBILE refinements (mobile brief, 2026-08-10) over the fallback
-   block above. ──────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
-	/* The desktop crossfade pair shows one founder statically (and
-	   the wrong pairing) — each slide carries its own portrait now. */
-	.landing-v2 .fd-portrait { display: none; }
-
-	.landing-v2 .fd-slide__m-portrait {
-		display: block;
-		margin: 0 0 24px;
-		width: 100%;
+	/* ── Driver-off ground: everything flows. */
+	.landing-v2 .fd-stage {
+		height: auto;
+		overflow: visible;
+		padding: 0;
+		will-change: auto;
+		transform: none !important;
 	}
 
-	/* Ratio on the IMG, not the figure — the name heading lives in
-	   the figure's flow above it and must never be clipped. */
+	.landing-v2 .fd-content {
+		position: static;
+		transform: none !important;
+		will-change: auto;
+		display: flex;
+		flex-direction: column;
+		/* 119 = the file's first label box top (174 − 49 status −
+		   the 16/24 line-box's 6px half-leading); 100 = the file's
+		   last-CTA → footer gap. */
+		padding: 119px 0 100px;
+	}
+
+	/* Desktop machinery out. */
+	.landing-v2 .fd-ind { display: none; }
+	.landing-v2 .fd-portrait { display: none; }
+	.landing-v2 [data-fd-name] { display: none; }
+
+	/* ── The file's section order: Ashley (data slide 1) → divider →
+	   Robbo (data slide 0). One flip = swap these two orders. */
+	.landing-v2 .fd-slide[data-slide='1'] { order: 1; }
+	.landing-v2 .fd-m-divider { order: 2; }
+	.landing-v2 .fd-slide[data-slide='0'] { order: 3; margin-top: 75px; }
+
+	/* ── Section shell: flow column, both slides visible (the
+	   desktop hides the inactive one), file element order via
+	   `order`, taps/selection restored (desktop pointer-events:none
+	   is transition machinery). */
+	.landing-v2 .fd-slide {
+		position: static;
+		visibility: visible !important;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 0 var(--m-margin-safe-r, 16px) 0 var(--m-margin-safe-l, 16px);
+		pointer-events: auto;
+	}
+
+	/* ── a. Centred name label — Profile Title (file: Serrif Medium
+	   16/24, uppercase, centred, #F9F9F9 + difference; y174/y1364). */
+	.landing-v2 .fd-slide__m-label {
+		display: block;
+		order: 1;
+		align-self: stretch;
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 24px;
+		text-align: center;
+		text-transform: uppercase;
+		color: #f9f9f9;
+		mix-blend-mode: difference;
+	}
+
+	/* ── b. Bio — Dazzed Bold 26/26 uppercase, white + difference
+	   (file y202/y1392; 10px under the label box). The desktop's
+	   Serrif close hides here — the file renders it as its own
+	   block after the portrait (fd-slide__m-serif). */
+	.landing-v2 .fd-slide__bio {
+		position: static;
+		width: auto;
+		align-self: stretch;
+		order: 2;
+		margin: 10px 0 0;
+	}
+
+	.landing-v2 .fd-slide__bio-text--bold {
+		font-size: 26px;
+		line-height: 26px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	/* The file's lead run — 9 Dazzed-Bold-26 spaces, MEASURED via
+	   canvas in the loaded face (50.31px; the desktop's 200px is
+	   the 40px-scale run). */
+	.landing-v2 .fd-slide__bio-indent { width: 50px; }
+
+	.landing-v2 .fd-slide__bio-text--serrif { display: none; }
+
+	/* ── c. Portrait — 370×500 at 402 (fluid: full column width,
+	   the file's ratio; square corners per the file's mask). */
+	.landing-v2 .fd-slide__m-portrait {
+		display: block;
+		order: 3;
+		align-self: stretch;
+		width: auto;
+		margin: 64px 0 0;
+	}
+
 	.landing-v2 .fd-slide__m-portrait img {
 		width: 100%;
 		height: auto;
-		aspect-ratio: 640 / 922;
-		max-height: 70svh;
+		aspect-ratio: 370 / 500;
 		object-fit: cover;
 		display: block;
 	}
 
-	.landing-v2 .fd-slide + .fd-slide { margin-top: 64px; }
-
-	/* The travelling names are desktop machinery (they follow the
-	   crossfade); each mobile figure carries its own name heading. */
-	.landing-v2 [data-fd-name] { display: none; }
-
-	.landing-v2 .fd-slide__m-name {
+	/* ── d. Serrif statement — the founder's Serrif close as its own
+	   block (file y930/y2146: Serrif Medium 22/30, uppercase, white
+	   + difference, 32px under the portrait, same lead-run grammar). */
+	.landing-v2 .fd-slide__m-serif {
 		display: block;
-		margin: 0 0 16px;
-		font-weight: 700;
-		font-size: 34px;
-		line-height: 38px;
+		order: 4;
+		align-self: stretch;
+		margin: 32px 0 0;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 22px;
+		line-height: 30px;
 		text-transform: uppercase;
-		color: #161616;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.landing-v2 .fd-slide__m-serif-indent {
+		display: inline-block;
+		width: 46px; /* the file's 9-space Serrif-22 run (measured 45.74) */
+		height: 1px;
+	}
+
+	/* ── e. Slash-list — label Serrif Medium 14/18 (file y1021),
+	   items Dazzed Bold 14 on the file's 22px row pitch, NATURAL
+	   wrap (no authored breaks: the <br>s hide, the --m separator
+	   twins show), indexes 6px ink-top-aligned. */
+	.landing-v2 .fd-slide__listlabel {
+		position: static;
+		order: 5;
+		margin: 32px 0 0;
+		font-size: 14px;
+		line-height: 18px;
+	}
+
+	.landing-v2 .fd-slide__list {
+		position: static;
+		width: auto;
+		align-self: stretch;
+		order: 6;
+		/* 14 = the file's 16px label→items gap less the pitch's
+		   2px half-leading each side (glyph rows land on the
+		   file's 22px grid). */
+		margin: 14px 0 0;
+		font-size: 14px;
+		line-height: 22px;
+	}
+
+	.landing-v2 .fd-slide__list br { display: none; }
+	.landing-v2 .fd-slide__list-sep--m { display: inline; }
+
+	/* The sep's final char is a NORMAL space — with pre lifted the
+	   line may break after it (the file's trailing-slash line
+	   ends); the leading NBSPs still forbid a line-start slash. */
+	.landing-v2 .fd-slide__list-sep { white-space: normal; }
+
+	/* Index ink-top alignment at the mobile pair (cap "T" ascent at
+	   14px = 10.47, digit at 6px = 4.56 — the desktop rule's canvas
+	   measurements scaled; file: 2px clear of the word). */
+	.landing-v2 .fd-slide__list-index {
+		font-size: 6px;
+		margin-left: 2px;
+		top: -5.91px;
+	}
+
+	/* ── f. CTA — the More-Info family at the file's 154×38 (Dazzed
+	   Bold 12, 9px arrow, 16px insets; 38px under the list, real
+	   /work link as on desktop). */
+	.landing-v2 .fd-slide__btn {
+		position: static;
+		order: 7;
+		width: 154px;
+		height: 38px;
+		margin: 38px 0 0;
+		padding: 0 16px;
+		font-size: 12px;
+		line-height: 13px;
+	}
+
+	.landing-v2 .fd-slide__btn img {
+		width: 9px;
+		height: 9px;
+	}
+
+	/* ── The divider (file y1281: 370×2 #E0E0E7, 64px under the
+	   first section's CTA). */
+	.landing-v2 .fd-m-divider {
+		display: block;
+		flex: none;
+		height: 2px;
+		margin: 64px var(--m-margin-safe-r, 16px) 0 var(--m-margin-safe-l, 16px);
+		background: #e0e0e7;
+	}
+
+	/* Flow footer (the fixed reveal wrap is desktop machinery). */
+	.landing-v2.founders-page .fd-footer-wrap { position: static; height: auto; }
+}
+
+/* Entrance hidden states (no-preference; founders-page.js's mobile
+   branch adds .is-visible via the shared m-entrance) — media only:
+   the blended text lines are hidden by the word-reveal clip
+   mechanism itself, never by opacity (the blend-isolation rule). */
+@media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+	.landing-v2 .fd-slide__m-portrait,
+	.landing-v2 .fd-slide__listlabel,
+	.landing-v2 .fd-slide__list,
+	.landing-v2 .fd-slide__btn {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .fd-slide__m-portrait.is-visible,
+	.landing-v2 .fd-slide__listlabel.is-visible,
+	.landing-v2 .fd-slide__list.is-visible,
+	.landing-v2 .fd-slide__btn.is-visible {
+		opacity: 1;
+		transform: none;
 	}
 }
 
-/* Desktop keeps the crossfade pair; the per-slide figures must not
-   exist above the seam. */
+/* The mobile-only internals must not exist above the seam. */
 @media (min-width: 1025px) {
-	.landing-v2 .fd-slide__m-portrait { display: none; }
-}
-
-@media (max-width: 1024px) {
-	/* Type floor (Phase C): the list index superscripts rendered 10px.
-	   Desktop keeps Oscar's tuned size — this floors mobile only. */
-	.landing-v2 .fd-slide__list-index { font-size: 12px; }
+	.landing-v2 .fd-slide__m-label,
+	.landing-v2 .fd-slide__m-portrait,
+	.landing-v2 .fd-slide__m-serif,
+	.landing-v2 .fd-m-divider { display: none; }
 }

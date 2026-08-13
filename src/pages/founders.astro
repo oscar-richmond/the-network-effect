@@ -23,6 +23,13 @@
  * them, never an ancestor). The stage is the /work fixed-viewport
  * shape.
  *
+ * MOBILE (≤1024, the 402-frame rebuild — Figma cqJWAceQKUmyuhF1ZxYXLI
+ * frame 6:10, 2026-08-14): NONE of the above exists — normal
+ * document scroll, both founders as stacked sections (Ashley first
+ * per the file, via flex order) with mobile-only anatomy elements
+ * (label/portrait/Serrif statement/divider, desktop-hidden); see
+ * founders.css's mobile block + founders-page.js's narrow branch.
+ *
  * IMAGERY pending founder sign-off. STAGING ONLY.
  */
 import SiteShell from '../layouts/SiteShell.astro';
@@ -85,15 +92,17 @@ import '../styles/fonts.css';
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
     {FOUNDERS_SLIDES.map((slide, i) => (
       <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'}>
-        {/* MOBILE portrait (mobile brief, 2026-08-10): the desktop
-            crossfade pair (.fd-portrait) can only show ONE founder
-            statically — and its base is Ashley, so the linear stack
-            paired her photo with Robbo's text. Each slide leads with
-            its own portrait instead; display:none above the seam
-            (founders.css), where the crossfade pair still owns the
-            imagery. Same asset, same sign-off caveat. */}
+        {/* MOBILE-ONLY anatomy (the 402-frame rebuild, Figma
+            cqJWAceQKUmyuhF1ZxYXLI frame 6:10, 2026-08-14): the
+            centred name label, the per-slide portrait, and the
+            Serrif statement are mobile elements — display:none
+            above the seam (founders.css), no data-fd-el, so the
+            desktop driver and its stagger order never see them.
+            Mobile sequences them with flex order (label → bio →
+            portrait → statement → list → CTA); the DOM keeps the
+            desktop's order. */}
+        <h2 class="fd-slide__m-label">{slide.name}</h2>
         <figure class="fd-slide__m-portrait" aria-hidden="true">
-          <span class="fd-slide__m-name">{slide.name}</span>
           <img src={asset(slide.img)} alt="" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
         </figure>
         {/* Bio — bold block + Serrif block with the 24px gap
@@ -112,24 +121,55 @@ import '../styles/fonts.css';
         <p class="fd-slide__list" data-fd-el>
           {slide.list.map((item, j) => (
             <Fragment>
-              {j > 0 && slide.list[j - 1].breakAfter && <br />}
+              {/* Mobile wraps the list NATURALLY (the file's wrap
+                  grammar) — the desktop's authored breaks become
+                  plain separators there: the --m sep is desktop-
+                  hidden (base CSS), the <br>s are mobile-hidden. */}
+              {/* The sep's LEADING spaces are no-break (a line may
+                  END with a slash — the file's line 2 — but never
+                  START with one); the FINAL char is a normal space
+                  so mobile (white-space lifted) can break after it.
+                  NBSP advances = space advances and desktop keeps
+                  pre, so the desktop render is untouched. */}
+              {j > 0 && slide.list[j - 1].breakAfter && (
+                <Fragment>
+                  <span class="fd-slide__list-sep fd-slide__list-sep--m" aria-hidden="true">{'\u00A0\u00A0/\u00A0 '}</span>
+                  <br />
+                </Fragment>
+              )}
               {j > 0 && !slide.list[j - 1].breakAfter && (
-                <span class="fd-slide__list-sep" aria-hidden="true">{'  /  '}</span>
+                <span class="fd-slide__list-sep" aria-hidden="true">{'\u00A0\u00A0/\u00A0 '}</span>
               )}
               {/* An item's text may carry its OWN break (\n) — one
                   item, one index, split across two lines with the
                   index after the last word (Oscar's rev 5:
-                  "INDUSTRY / RELATIONSHIPS /03"). */}
+                  "INDUSTRY / RELATIONSHIPS /03"). The space after
+                  the <br> is the words' separator once mobile hides
+                  the break (line-start spaces collapse on desktop). */}
               <span class="fd-slide__list-item"
                 >{item.text.split('\n').map((part, k) => (
-                  <Fragment>{k > 0 && <br />}{part}</Fragment>
+                  <Fragment>{k > 0 && <Fragment><br />{' '}</Fragment>}{part}</Fragment>
                 ))}<sup class="fd-slide__list-index">{item.index}</sup></span
               >
             </Fragment>
           ))}
         </p>
+        {/* MOBILE Serrif statement — the file places the founder's
+            Serrif close AFTER the portrait as its own block (y930/
+            y2146); same data field the desktop bio renders (the
+            bio's Serrif line hides on mobile — one shown per
+            breakpoint, never both). The leading spacer mirrors the
+            bio-indent grammar (the file's lead run). */}
+        <p class="fd-slide__m-serif"
+          ><span class="fd-slide__m-serif-indent" aria-hidden="true"></span>{slide.bioSerrif}</p
+        >
       </div>
     ))}
+
+    {/* MOBILE divider — the file's 2px #E0E0E7 rule between the two
+        founder sections (y1281); desktop-hidden, positioned between
+        the sections by flex order. */}
+    <div class="fd-m-divider" aria-hidden="true"></div>
 
     {/* The travelling names — OUTSIDE the slide containers (their
         z/position stacking contexts isolated the difference — the
