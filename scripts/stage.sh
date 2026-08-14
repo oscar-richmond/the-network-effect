@@ -39,7 +39,7 @@ if [ -z "$DEPLOY_URL" ]; then
 fi
 
 echo "→ Deployed: $DEPLOY_URL"
-echo "→ Aliasing to $ALIAS…"
+echo "→ Aliasing to ${ALIAS}…"
 vercel alias set "$DEPLOY_URL" "$ALIAS"
 
 echo

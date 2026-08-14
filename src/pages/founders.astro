@@ -23,12 +23,19 @@
  * them, never an ancestor). The stage is the /work fixed-viewport
  * shape.
  *
- * MOBILE (≤1024, the 402-frame rebuild — Figma cqJWAceQKUmyuhF1ZxYXLI
- * frame 6:10, 2026-08-14): NONE of the above exists — normal
- * document scroll, both founders as stacked sections (Ashley first
- * per the file, via flex order) with mobile-only anatomy elements
- * (label/portrait/Serrif statement/divider, desktop-hidden); see
- * founders.css's mobile block + founders-page.js's narrow branch.
+ * MOBILE (≤1024 — Figma cqJWAceQKUmyuhF1ZxYXLI frame 13:948
+ * "iPhone 16 & 17 Pro - 5", 2026-08-14 rev 2; supersedes the 6:10
+ * stacked build): NONE of the above exists — normal document
+ * scroll, ONE founder profile shown at a time (Ashley lands first,
+ * per the file). Switching happens via the thumb band riding a
+ * sticky rail inside the first portrait (the images ARE the CTAs;
+ * active carries the desktop indicator's 3px #232A89 stroke — see
+ * the band comment in the markup for the pin grammar) or the name
+ * chip beside FEATURED WORK — each swap replays the entrance
+ * vocabulary. Mobile-only
+ * anatomy (label/portrait/Serrif statement/second image/swap chip)
+ * is desktop-hidden; see founders.css's mobile block +
+ * founders-page.js's narrow branch.
  *
  * IMAGERY pending founder sign-off. STAGING ONLY.
  */
@@ -91,19 +98,58 @@ import '../styles/fonts.css';
 
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
     {FOUNDERS_SLIDES.map((slide, i) => (
-      <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'}>
-        {/* MOBILE-ONLY anatomy (the 402-frame rebuild, Figma
-            cqJWAceQKUmyuhF1ZxYXLI frame 6:10, 2026-08-14): the
-            centred name label, the per-slide portrait, and the
-            Serrif statement are mobile elements — display:none
-            above the seam (founders.css), no data-fd-el, so the
-            desktop driver and its stagger order never see them.
-            Mobile sequences them with flex order (label → bio →
-            portrait → statement → list → CTA); the DOM keeps the
-            desktop's order. */}
+      <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'} data-m-active={i === 1 ? 'true' : 'false'}>
+        {/* MOBILE-ONLY anatomy (Figma cqJWAceQKUmyuhF1ZxYXLI frame
+            13:948, 2026-08-14 rev 2): the centred name label, the
+            per-slide portrait, the Serrif statement, the second
+            image and the swap chip are mobile elements —
+            display:none above the seam (founders.css), no
+            data-fd-el, so the desktop driver and its stagger order
+            never see them. Mobile shows ONE slide at a time
+            (data-m-active — desktop ignores it; SSR lands Ashley,
+            the file's landing state) and sequences elements with
+            flex order (label → bio → portrait → statement → image
+            2 → list → CTA row); the DOM keeps the desktop's order. */}
         <h2 class="fd-slide__m-label">{slide.name}</h2>
-        <figure class="fd-slide__m-portrait" aria-hidden="true">
-          <img src={asset(slide.img)} alt="" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+        {/* Portrait + the SWITCH BAND (Oscar's rev 3, 2026-08-14):
+            the name/thumbs band is no longer viewport-fixed — it
+            lives INSIDE the portrait and rides a sticky rail: it
+            starts 64px under the image top, PINS at the viewport
+            middle while scrolling through, and parks 32px above the
+            image bottom — fully reversible, native position:sticky
+            (no scroll JS). Labels are BAKED per slide: the founder's
+            NAME always left, "Founder 0N" (the data numbering —
+            Robbo 01, Ashley 02; resolves the earlier row-position
+            flag) always right. THREE separate rails so each
+            difference-blended label carries sticky+blend on ITSELF
+            (an isolating wrapper would white them out — but note the
+            img shares any ancestor group, so entrance isolation is
+            harmless: the blend backdrop is the img either way). */}
+        <figure class="fd-slide__m-portrait">
+          <img src={asset(slide.img)} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+          <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
+            <span class="fd-m-switch-label fd-m-switch-label--l">{slide.name}</span>
+          </div>
+          <div class="fd-m-rail fd-m-rail--thumbs">
+            <div class="fd-m-switch" data-fd-m-switch>
+              {[1, 0].map((idx) => (
+                <button
+                  type="button"
+                  class="fd-m-switch__thumb"
+                  data-fd-m-thumb
+                  data-slide={String(idx)}
+                  data-founder={FOUNDERS_SLIDES[idx].id}
+                  aria-current={idx === i ? 'true' : 'false'}
+                  aria-label={`View founder: ${FOUNDERS_SLIDES[idx].name}`}
+                >
+                  <img src={asset(FOUNDERS_SLIDES[idx].img)} alt="" loading={i === 1 ? 'eager' : 'lazy'} decoding="async" />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
+            <span class="fd-m-switch-label fd-m-switch-label--r">Founder {slide.number}</span>
+          </div>
         </figure>
         {/* Bio — bold block + Serrif block with the 24px gap
             (Oscar's rev 2; was a continuous flow). */}
@@ -113,10 +159,27 @@ import '../styles/fonts.css';
           >
           <p class="fd-slide__bio-text fd-slide__bio-text--serrif">{slide.bioSerrif}</p>
         </div>
-        <a class="fd-slide__btn" data-fd-el href={FOUNDERS_CTA.href} data-char-ripple-trigger tabindex={i === 0 ? undefined : -1}>
-          <span data-char-ripple>{FOUNDERS_CTA.label}</span>
-          <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-        </a>
+        {/* CTA row — desktop renders the wrapper as display:contents
+            (the button's absolute anchoring is untouched); mobile
+            lays FEATURED WORK + the swap chip as the file's 16px-gap
+            row. The chip carries the OTHER founder's name and swaps
+            the profile (founders-page.js narrow branch). */}
+        <div class="fd-slide__m-ctarow">
+          <a class="fd-slide__btn" data-fd-el href={FOUNDERS_CTA.href} data-char-ripple-trigger tabindex={i === 0 ? undefined : -1}>
+            <span data-char-ripple>{FOUNDERS_CTA.label}</span>
+            <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+          </a>
+          <button
+            type="button"
+            class="fd-slide__m-swapbtn"
+            data-fd-m-swap
+            data-target={String((i + 1) % FOUNDERS_SLIDES.length)}
+            aria-label={`View founder: ${FOUNDERS_SLIDES[(i + 1) % FOUNDERS_SLIDES.length].name}`}
+          >
+            <span>{FOUNDERS_SLIDES[(i + 1) % FOUNDERS_SLIDES.length].name}</span>
+            <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="9" height="9" />
+          </button>
+        </div>
         <p class="fd-slide__listlabel" data-fd-el>{slide.listLabel}</p>
         <p class="fd-slide__list" data-fd-el>
           {slide.list.map((item, j) => (
@@ -155,21 +218,23 @@ import '../styles/fonts.css';
           ))}
         </p>
         {/* MOBILE Serrif statement — the file places the founder's
-            Serrif close AFTER the portrait as its own block (y930/
-            y2146); same data field the desktop bio renders (the
-            bio's Serrif line hides on mobile — one shown per
-            breakpoint, never both). The leading spacer mirrors the
-            bio-indent grammar (the file's lead run). */}
+            Serrif close AFTER the portrait as its own block (13:948
+            y930, now RIGHT-ALIGNED); same data field the desktop bio
+            renders (the bio's Serrif line hides on mobile — one
+            shown per breakpoint, never both). The leading spacer
+            mirrors the bio-indent grammar (the file keeps the lead
+            run). */}
         <p class="fd-slide__m-serif"
           ><span class="fd-slide__m-serif-indent" aria-hidden="true"></span>{slide.bioSerrif}</p
         >
+        {/* MOBILE second image — the file's 370×370 slot under the
+            statement (13:1002). Ashley's is the file's new shot;
+            Robbo's is a flagged placeholder (see the data). */}
+        <figure class="fd-slide__m-img2" aria-hidden="true">
+          <img src={asset(slide.img2)} alt="" loading="lazy" decoding="async" />
+        </figure>
       </div>
     ))}
-
-    {/* MOBILE divider — the file's 2px #E0E0E7 rule between the two
-        founder sections (y1281); desktop-hidden, positioned between
-        the sections by flex order. */}
-    <div class="fd-m-divider" aria-hidden="true"></div>
 
     {/* The travelling names — OUTSIDE the slide containers (their
         z/position stacking contexts isolated the difference — the

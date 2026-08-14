@@ -356,29 +356,41 @@ body.founders-page {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MOBILE FOUNDERS — the 402-frame rebuild (Figma cqJWAceQKUmyuhF1ZxYXLI
-   frame 6:10 "The Founders - iPhone 16 & 17 Pro - 4", extracted
-   2026-08-14; 49px status chrome subtracted). REPLACES the 2026-08-10
-   interim stacked fallback wholesale.
+   MOBILE FOUNDERS — the 402-frame rebuild, rev 2 (Figma
+   cqJWAceQKUmyuhF1ZxYXLI frame 13:948 "iPhone 16 & 17 Pro - 5",
+   extracted 2026-08-14; 49px status chrome subtracted). SUPERSEDES
+   the 6:10 stacked build: one founder profile at a time, swapped in
+   place.
 
    ARCHITECTURE: normal document scroll — the desktop two-slide driver
-   never engages (founders-page.js narrow branch mounts entrances
-   only): no crossfade, no name travel, no thumbs, no phase snap, no
-   release. Both founders stack per the file — ASHLEY FIRST (the
-   file's section order; done with flex order so the DOM keeps the
-   desktop's data order), the 2px divider between (file y1281), and
-   the SECOND section renders Robbo's OWN copy from the data (the
-   file's known error — its Robbo section carries Ashley's Serrif
-   line and list verbatim; single source of truth wins).
+   never engages (founders-page.js narrow branch owns the swap +
+   entrances): no crossfade, no name travel, no phase snap, no
+   release. ONE slide visible (data-m-active; Ashley lands, the
+   file's state), the other display:none; switching happens via the
+   thumb band riding a sticky rail inside the first portrait (the
+   images are the CTAs; active = the desktop indicator's 3px
+   #232A89 stroke — see the SWITCH BAND section) or the name chip
+   in the CTA row — each swap scrolls home and replays the entrance
+   vocabulary.
 
-   16px margin grammar page-scoped (--m-margin override); all fixed
-   px are the file's values less the 49px status bar; widths fluid
-   (100% − margins) across 360–430.
+   REV-2 SPACING (frame y less 49): bio→portrait 48 (was 64),
+   portrait→Serrif 48 (was 32), Serrif RIGHT-ALIGNED, then the new
+   370×370 second image at 48, list at 48, CTA row at 40, footer
+   at 100.
+
+   16px margin grammar page-scoped (--m-margin override); widths
+   fluid (100% − margins) across 360–430.
 
    BLEND WALK (mobile): label/bio/serif are white + difference over
    the fd-content ground — the chain (content > slide > text) carries
    no transform/opacity/filter (stage + content will-change/transform
-   neutralised below); the word-reveal animates INNER spans only. */
+   neutralised below); the word-reveal animates INNER spans only.
+   The switch-band labels blend too: sticky + difference sit TOGETHER
+   on each label (a stacking context on the blended element itself
+   never isolates its own blend — an isolating wrapper would, the
+   white-name bug); their rails/figure stay z-index-free, and any
+   entrance-transform isolation is harmless because the blend
+   backdrop (the portrait img) shares the group. */
 @media (max-width: 1024px) {
 	.landing-v2.founders-page { --m-margin: 16px; }
 	body.founders-page { overflow: auto; }
@@ -409,14 +421,7 @@ body.founders-page {
 	.landing-v2 .fd-portrait { display: none; }
 	.landing-v2 [data-fd-name] { display: none; }
 
-	/* ── The file's section order: Ashley (data slide 1) → divider →
-	   Robbo (data slide 0). One flip = swap these two orders. */
-	.landing-v2 .fd-slide[data-slide='1'] { order: 1; }
-	.landing-v2 .fd-m-divider { order: 2; }
-	.landing-v2 .fd-slide[data-slide='0'] { order: 3; margin-top: 75px; }
-
-	/* ── Section shell: flow column, both slides visible (the
-	   desktop hides the inactive one), file element order via
+	/* ── Section shell: flow column, file element order via
 	   `order`, taps/selection restored (desktop pointer-events:none
 	   is transition machinery). */
 	.landing-v2 .fd-slide {
@@ -428,6 +433,11 @@ body.founders-page {
 		padding: 0 var(--m-margin-safe-r, 16px) 0 var(--m-margin-safe-l, 16px);
 		pointer-events: auto;
 	}
+
+	/* ONE profile at a time (rev 2): data-m-active drives it — SSR
+	   lands Ashley (slide 1); the desktop's data-active/visibility
+	   machinery is overridden above and ignored here. */
+	.landing-v2 .fd-slide[data-m-active='false'] { display: none; }
 
 	/* ── a. Centred name label — Profile Title (file: Serrif Medium
 	   16/24, uppercase, centred, #F9F9F9 + difference; y174/y1364). */
@@ -474,16 +484,20 @@ body.founders-page {
 	.landing-v2 .fd-slide__bio-text--serrif { display: none; }
 
 	/* ── c. Portrait — 370×500 at 402 (fluid: full column width,
-	   the file's ratio; square corners per the file's mask). */
+	   the file's ratio; square corners per the file's mask). Rev 2
+	   tightens the bio gap 64 → 48 (13:997 y382). Relative: it
+	   hosts the switch band's sticky rails (no z-index — a
+	   stacking context here would trap the page blends). */
 	.landing-v2 .fd-slide__m-portrait {
 		display: block;
+		position: relative;
 		order: 3;
 		align-self: stretch;
 		width: auto;
-		margin: 64px 0 0;
+		margin: 48px 0 0;
 	}
 
-	.landing-v2 .fd-slide__m-portrait img {
+	.landing-v2 .fd-slide__m-portrait > img {
 		width: 100%;
 		height: auto;
 		aspect-ratio: 370 / 500;
@@ -492,18 +506,20 @@ body.founders-page {
 	}
 
 	/* ── d. Serrif statement — the founder's Serrif close as its own
-	   block (file y930/y2146: Serrif Medium 22/30, uppercase, white
-	   + difference, 32px under the portrait, same lead-run grammar). */
+	   block (rev 2, 13:985 y930: Serrif Medium 22/30, uppercase,
+	   white + difference, now RIGHT-ALIGNED with the portrait gap
+	   opened 32 → 48; the file keeps the lead-run grammar). */
 	.landing-v2 .fd-slide__m-serif {
 		display: block;
 		order: 4;
 		align-self: stretch;
-		margin: 32px 0 0;
+		margin: 48px 0 0;
 		font-family: 'Serrif', serif;
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 22px;
 		line-height: 30px;
+		text-align: right;
 		text-transform: uppercase;
 		color: #ffffff;
 		mix-blend-mode: difference;
@@ -515,14 +531,34 @@ body.founders-page {
 		height: 1px;
 	}
 
+	/* ── d2. Second image — rev 2's new 370×370 slot under the
+	   statement (13:1002; 48px gaps both sides; the file's crop is
+	   baked into Ashley's asset — Robbo's is a flagged placeholder,
+	   see the data). */
+	.landing-v2 .fd-slide__m-img2 {
+		display: block;
+		order: 5;
+		align-self: stretch;
+		width: auto;
+		margin: 48px 0 0;
+	}
+
+	.landing-v2 .fd-slide__m-img2 img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1 / 1;
+		object-fit: cover;
+		display: block;
+	}
+
 	/* ── e. Slash-list — label Serrif Medium 14/18 (file y1021),
 	   items Dazzed Bold 14 on the file's 22px row pitch, NATURAL
 	   wrap (no authored breaks: the <br>s hide, the --m separator
 	   twins show), indexes 6px ink-top-aligned. */
 	.landing-v2 .fd-slide__listlabel {
 		position: static;
-		order: 5;
-		margin: 32px 0 0;
+		order: 6;
+		margin: 48px 0 0; /* rev 2: under the second image (13:1009 y1455) */
 		font-size: 14px;
 		line-height: 18px;
 	}
@@ -531,7 +567,7 @@ body.founders-page {
 		position: static;
 		width: auto;
 		align-self: stretch;
-		order: 6;
+		order: 7;
 		/* 14 = the file's 16px label→items gap less the pitch's
 		   2px half-leading each side (glyph rows land on the
 		   file's 22px grid). */
@@ -557,15 +593,23 @@ body.founders-page {
 		top: -5.91px;
 	}
 
-	/* ── f. CTA — the More-Info family at the file's 154×38 (Dazzed
-	   Bold 12, 9px arrow, 16px insets; 38px under the list, real
-	   /work link as on desktop). */
+	/* ── f. CTA row — rev 2 pairs FEATURED WORK with the swap chip
+	   (13:986: 16px gap, both the More-Info family — Dazzed Bold
+	   12, 9px arrow, 16px insets, 38px chips; row 40px under the
+	   list). */
+	.landing-v2 .fd-slide__m-ctarow {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		order: 8;
+		margin: 38px 0 0;
+	}
+
 	.landing-v2 .fd-slide__btn {
 		position: static;
-		order: 7;
 		width: 154px;
 		height: 38px;
-		margin: 38px 0 0;
+		margin: 0;
 		padding: 0 16px;
 		font-size: 12px;
 		line-height: 13px;
@@ -576,15 +620,120 @@ body.founders-page {
 		height: 9px;
 	}
 
-	/* ── The divider (file y1281: 370×2 #E0E0E7, 64px under the
-	   first section's CTA). */
-	.landing-v2 .fd-m-divider {
-		display: block;
-		flex: none;
-		height: 2px;
-		margin: 64px var(--m-margin-safe-r, 16px) 0 var(--m-margin-safe-l, 16px);
-		background: #e0e0e7;
+	/* The swap chip — the OTHER founder's name (13:992; natural
+	   width, the file's 6px text→arrow gap). A button, not a link:
+	   it swaps the profile in place. */
+	.landing-v2 .fd-slide__m-swapbtn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 38px;
+		padding: 0 16px;
+		border: 0;
+		cursor: pointer;
+		background: var(--landing-svc-btn-fill, #e4e4ea);
+		color: var(--landing-accent-blue, #232a89);
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-size: 12px;
+		line-height: 13px;
+		text-transform: uppercase;
 	}
+
+	.landing-v2 .fd-slide__m-swapbtn img {
+		width: 9px;
+		height: 9px;
+		display: block;
+	}
+
+	.landing-v2 .fd-slide__m-swapbtn:focus-visible {
+		outline: 2px solid #232a89;
+		outline-offset: 2px;
+	}
+
+	/* ── The SWITCH BAND (Oscar's rev 3): thumbs + flanking labels
+	   ride sticky rails INSIDE the first portrait — the band starts
+	   64px under the image top, PINS with its centre at the
+	   viewport middle while scrolling through, and parks 32px above
+	   the image bottom; native sticky makes it reversible for free.
+	   THREE rails (absolute, no z-index — never a stacking context
+	   over the blends): the thumbs' spans 64/32; the labels' spans
+	   53/67 so the label line stays centred 1px under the thumbs'
+	   top (the file's registration) at BOTH parked states, with the
+	   matching -35px in the sticky offset. Labels: name LEFT,
+	   "Founder 0N" RIGHT (the data numbering — Robbo 01, Ashley
+	   02), baked per slide. sticky+blend sit together ON the label
+	   (self-blend is never isolated by the element's own stacking
+	   context). Insets: the file's x24 = 8px inside the image. */
+	.landing-v2 .fd-m-rail {
+		position: absolute;
+		left: 0;
+		right: 0;
+		pointer-events: none;
+	}
+
+	.landing-v2 .fd-m-rail--thumbs { top: 64px; bottom: 32px; }
+	.landing-v2 .fd-m-rail--label { top: 53px; bottom: 67px; }
+
+	.landing-v2 .fd-m-switch {
+		position: sticky;
+		top: calc(50dvh - 24px);
+		display: flex;
+		gap: 16px;
+		width: fit-content;
+		margin: 0 auto;
+		pointer-events: auto;
+	}
+
+	.landing-v2 .fd-m-switch__thumb {
+		width: 64px;
+		height: 48px;
+		padding: 0;
+		border: 0;
+		background: #161616;
+		overflow: hidden;
+		cursor: pointer;
+	}
+
+	.landing-v2 .fd-m-switch__thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* The file's per-thumb crops (mask offsets scaled). */
+	.landing-v2 .fd-m-switch__thumb[data-founder='ashley'] img { object-position: 50% 20%; }
+	.landing-v2 .fd-m-switch__thumb[data-founder='robbo'] img { object-position: 50% 25%; }
+
+	.landing-v2 .fd-m-switch__thumb[aria-current='true'] {
+		outline: 3px solid #232a89;
+		outline-offset: -3px;
+	}
+
+	.landing-v2 .fd-m-switch__thumb:focus-visible {
+		outline: 3px solid #232a89;
+		outline-offset: 2px;
+	}
+
+	.landing-v2 .fd-m-switch-label {
+		position: sticky;
+		top: calc(50dvh - 35px);
+		display: block;
+		width: fit-content;
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 24px;
+		white-space: nowrap;
+		color: #f9f9f9;
+		mix-blend-mode: difference;
+	}
+
+	.landing-v2 .fd-m-switch-label--l { margin-left: 8px; }
+	.landing-v2 .fd-m-switch-label--r { margin-left: auto; margin-right: 8px; }
 
 	/* Flow footer (the fixed reveal wrap is desktop machinery). */
 	.landing-v2.founders-page .fd-footer-wrap { position: static; height: auto; }
@@ -596,9 +745,12 @@ body.founders-page {
    mechanism itself, never by opacity (the blend-isolation rule). */
 @media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
 	.landing-v2 .fd-slide__m-portrait,
+	.landing-v2 .fd-slide__m-img2,
 	.landing-v2 .fd-slide__listlabel,
 	.landing-v2 .fd-slide__list,
-	.landing-v2 .fd-slide__btn {
+	.landing-v2 .fd-slide__m-ctarow,
+	.landing-v2 .fd-m-switch,
+	.landing-v2 .fd-m-switch-label {
 		opacity: 0;
 		transform: translateY(16px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
@@ -606,18 +758,28 @@ body.founders-page {
 	}
 
 	.landing-v2 .fd-slide__m-portrait.is-visible,
+	.landing-v2 .fd-slide__m-img2.is-visible,
 	.landing-v2 .fd-slide__listlabel.is-visible,
 	.landing-v2 .fd-slide__list.is-visible,
-	.landing-v2 .fd-slide__btn.is-visible {
+	.landing-v2 .fd-slide__m-ctarow.is-visible,
+	.landing-v2 .fd-m-switch.is-visible,
+	.landing-v2 .fd-m-switch-label.is-visible {
 		opacity: 1;
 		transform: none;
 	}
 }
 
-/* The mobile-only internals must not exist above the seam. */
+/* The mobile-only internals must not exist above the seam (the
+   switch band's rails live inside the portrait — hidden with it). */
 @media (min-width: 1025px) {
 	.landing-v2 .fd-slide__m-label,
 	.landing-v2 .fd-slide__m-portrait,
 	.landing-v2 .fd-slide__m-serif,
-	.landing-v2 .fd-m-divider { display: none; }
+	.landing-v2 .fd-slide__m-img2,
+	.landing-v2 .fd-slide__m-swapbtn { display: none; }
+
+	/* The CTA row wrapper dissolves — the button's absolute
+	   anchoring resolves against the slide exactly as before the
+	   wrapper existed. */
+	.landing-v2 .fd-slide__m-ctarow { display: contents; }
 }

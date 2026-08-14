@@ -30,6 +30,10 @@ export const FOUNDERS_SLIDES = [
     number: '01',
     name: 'Robbo McCallum',
     img: '/assets/landing/founders-page/robbo.png',
+    /* MOBILE second image (frame 13:948's slot under the Serrif
+       statement) — Oscar's sofa shot (supplied 2026-08-14, replaces
+       the interim portrait-reuse placeholder). */
+    img2: '/assets/landing/founders-page/robbo-2.jpg',
     /* PLACEHOLDER (see header): the landing founders line, split
        into the slide-2 bio grammar (Dazzed statement + Serrif
        close). */
@@ -57,6 +61,9 @@ export const FOUNDERS_SLIDES = [
     number: '02',
     name: 'Ashley Walters',
     img: '/assets/landing/founders-page/ashley.png',
+    /* MOBILE second image — frame 13:948's "023A7036" shot, the
+       file's exact square crop baked into the asset (2026-08-14). */
+    img2: '/assets/landing/founders-page/ashley-2.jpg',
     bioBold: 'ONE OF THE UK’S MOST RESPECTED CULTURAL VOICES WITH OVER 30 YEARS ACROSS MUSIC, FILM AND TELEVISION.',
     /* Forced break (Oscar's rev 3): "culture" drops to the last
        line — rendered via white-space:pre-line on the Serrif block. */

@@ -45,7 +45,7 @@
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
-import { initMobileEntrance } from './m-entrance.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 
 const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
@@ -67,26 +67,10 @@ export function initFoundersPage() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const narrow = window.matchMedia('(max-width: 1024px)').matches;
   if (narrow) {
-    /* MOBILE (the 402-frame rebuild, 2026-08-14): normal document
-       scroll — none of the driver below engages. Only the shared
-       section entrances mount (the m-entrance vocabulary: blended
-       lines word-reveal, media fade-rise; per-section trigger). */
-    const mediaSel = '.fd-slide__m-portrait, .fd-slide__listlabel, .fd-slide__list, .fd-slide__btn';
-    if (reduced) {
-      /* The hidden states are no-preference-gated, but the class
-         keeps the DOM state coherent for both (the /work rule). */
-      stage.querySelectorAll(mediaSel).forEach((el) => el.classList.add('is-visible'));
-      return () => {};
-    }
-    const entranceCleanups = Array.from(stage.querySelectorAll('[data-fd-slide]')).map((slide) =>
-      initMobileEntrance(/** @type {HTMLElement} */ (slide), {
-        lines: ['.fd-slide__m-label', '.fd-slide__bio-text--bold', '.fd-slide__m-serif']
-          .map((sel) => slide.querySelector(sel))
-          .filter((el) => el instanceof HTMLElement),
-        media: Array.from(slide.querySelectorAll(mediaSel)),
-      }),
-    );
-    return () => entranceCleanups.forEach((fn) => fn());
+    /* MOBILE (frame 13:948 rev 2, 2026-08-14): normal document
+       scroll — none of the driver below engages. One profile at a
+       time; the narrow branch owns the swap + entrance replay. */
+    return initFoundersMobile(stage, reduced);
   }
 
   const content = stage.querySelector('[data-fd-content]');
@@ -442,5 +426,197 @@ export function initFoundersPage() {
     timeouts.forEach(clearTimeout);
     cleanups.forEach((fn) => fn());
     setNav(false);
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE (≤1024) — frame 13:948 rev 3 (2026-08-14): one founder
+   profile shown at a time (data-m-active; Ashley lands), swapped via
+   the portrait's sticky switch band or the CTA-row name chip. Every
+   swap scrolls home and REPLAYS the entrance vocabulary (word-reveal
+   on the blended lines, staggered fade-rise on the media) — the same
+   grammar the m-entrance one-shot used, owned here because replays
+   need resets.
+
+   The band's pin behaviour and its labels (name LEFT, "Founder 0N"
+   RIGHT, the data numbering) are pure CSS/markup — baked per slide,
+   nothing here manages them; this controller only toggles slides
+   and wires every thumb + chip to swapTo.
+
+   WRAP TIMING: the word wrap groups lines from live offsetTop, so a
+   display:none slide can't be wrapped — each slide wraps lazily the
+   first time it is shown (post fonts.ready, pre-play). A swap that
+   lands before fonts resolve shows that slide statically (media
+   forced visible, lines never wrapped) rather than risking
+   fallback-metric grouping. */
+
+const M_LINE_STAGGER_S = 0.12; /* = m-entrance LINE_STAGGER_S */
+const M_MEDIA_AT_MS = 400; /* = m-entrance MEDIA_AT_MS */
+const M_MEDIA_STAGGER_MS = 120; /* = m-entrance MEDIA_STAGGER_MS */
+
+/**
+ * @param {HTMLElement} stage
+ * @param {boolean} reduced
+ * @returns {() => void}
+ */
+function initFoundersMobile(stage, reduced) {
+  const slides = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-slide]')));
+  const thumbs = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-m-thumb]')));
+  const swapBtns = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-m-swap]')));
+  const live = stage.querySelector('[data-fd-live]');
+
+  /* The desktop SSR gives the inactive slide's link tabindex=-1 —
+     meaningless here (the inactive slide is display:none, out of the
+     tab order by itself) and it would lock Ashley's landing CTA out
+     of keyboard reach. */
+  stage.querySelectorAll('.fd-slide__btn').forEach((btn) => btn.removeAttribute('tabindex'));
+
+  const lineSels = ['.fd-slide__m-label', '.fd-slide__bio-text--bold', '.fd-slide__m-serif'];
+  /* VISUAL top-to-bottom order (the CTA row sits after the list in
+     flex order but before it in the DOM) — the stagger reads down
+     the page. The switch band's pieces ride with the portrait. */
+  const mediaSels = [
+    '.fd-slide__m-portrait',
+    '.fd-m-switch-label--l',
+    '.fd-m-switch',
+    '.fd-m-switch-label--r',
+    '.fd-slide__m-img2',
+    '.fd-slide__listlabel',
+    '.fd-slide__list',
+    '.fd-slide__m-ctarow',
+  ];
+  const parts = slides.map((slide) => ({
+    lines: /** @type {HTMLElement[]} */ (
+      lineSels.map((sel) => slide.querySelector(sel)).filter((el) => el instanceof HTMLElement)
+    ),
+    media: /** @type {HTMLElement[]} */ (
+      mediaSels.map((sel) => slide.querySelector(sel)).filter((el) => el instanceof HTMLElement)
+    ),
+  }));
+
+  let active = 1; /* Ashley lands (the file's state; SSR matches) */
+  let disposed = false;
+  let fontsDone = false;
+  /** @type {ReturnType<typeof setTimeout>[]} */
+  const timeouts = [];
+  /** @type {(() => void)[]} */
+  const cleanups = [];
+  const wrappedSlides = new Set();
+  const staticSlides = new Set();
+
+  const applyActive = (idx) => {
+    active = idx;
+    slides.forEach((s) => {
+      s.dataset.mActive = s.dataset.slide === String(idx) ? 'true' : 'false';
+    });
+    if (live instanceof HTMLElement) {
+      live.textContent = `Founder: ${FOUNDERS_SLIDES[idx].name}`;
+    }
+  };
+
+  const ensureWrapped = (idx) => {
+    if (wrappedSlides.has(idx) || staticSlides.has(idx)) return;
+    wrappedSlides.add(idx);
+    parts[idx].lines.forEach((line, i) => {
+      line.dataset.revealDelay = String(i * M_LINE_STAGGER_S);
+      wrapWordRevealElement(line);
+    });
+  };
+
+  /* Rewind a slide's revealed state without animating: the inner
+     transitions (which carry the wrap's per-word delays) are
+     suppressed for the flip and restored verbatim. Runs in the same
+     task as the show — no paintable revealed frame. */
+  const resetSlide = (idx) => {
+    parts[idx].lines.forEach((line) => {
+      line.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
+        const inner = clip.querySelector('.lr-inner');
+        if (inner instanceof HTMLElement) {
+          const t = inner.style.transition;
+          inner.style.transition = 'none';
+          clip.classList.remove('lr-visible');
+          void inner.offsetHeight;
+          inner.style.transition = t;
+        } else {
+          clip.classList.remove('lr-visible');
+        }
+      });
+    });
+    parts[idx].media.forEach((el) => {
+      el.style.transition = 'none';
+      el.classList.remove('is-visible');
+      void el.offsetHeight;
+      el.style.transition = '';
+    });
+  };
+
+  /* SYNCHRONOUS play — the pre-reveal state is committed with a
+     forced reflow first, so the class flips transition from it.
+     Deliberately NOT rAF-scheduled: throttled/embedded contexts
+     starve rAF entirely (caught live — the replay silently never
+     ran), while a reflow is deterministic everywhere. */
+  const playSlide = (idx) => {
+    void stage.offsetHeight;
+    parts[idx].lines.forEach((line) => playLineRevealElement(line));
+    parts[idx].media.forEach((el, i) => {
+      timeouts.push(
+        setTimeout(() => el.classList.add('is-visible'), M_MEDIA_AT_MS + i * M_MEDIA_STAGGER_MS),
+      );
+    });
+  };
+
+  const swapTo = (idx) => {
+    if (disposed || idx === active || !slides[idx]) return;
+    applyActive(idx);
+    window.scrollTo(0, 0);
+    if (reduced) return;
+    if (!fontsDone) {
+      /* Pre-fonts tap (sub-100ms window): show statically rather
+         than wrap against fallback metrics. */
+      staticSlides.add(idx);
+      parts[idx].media.forEach((el) => el.classList.add('is-visible'));
+      return;
+    }
+    ensureWrapped(idx); /* needs the slide VISIBLE — after applyActive */
+    resetSlide(idx);
+    playSlide(idx);
+  };
+
+  /* ── Wire the CTAs (the thumbs ARE the CTAs, plus the name chip). */
+  thumbs.forEach((t) => {
+    const onClick = () => swapTo(Number(t.dataset.slide));
+    t.addEventListener('click', onClick);
+    cleanups.push(() => t.removeEventListener('click', onClick));
+  });
+  swapBtns.forEach((b) => {
+    const onClick = () => swapTo(Number(b.dataset.target));
+    b.addEventListener('click', onClick);
+    cleanups.push(() => b.removeEventListener('click', onClick));
+  });
+
+  applyActive(active);
+
+  if (reduced) {
+    /* Hidden states are no-preference-gated; the classes keep the
+       DOM state coherent (the /work rule). Swaps still work — they
+       just cut, no theatre. */
+    parts.forEach((p) => p.media.forEach((el) => el.classList.add('is-visible')));
+  } else {
+    /* Landing entrance: the section owns the first viewport, so it
+       plays on arrival (fonts-gated wrap first — the established
+       order). */
+    const fontsReady = document.fonts?.ready ?? Promise.resolve();
+    fontsReady.then(() => {
+      if (disposed) return;
+      fontsDone = true;
+      if (!staticSlides.has(active)) ensureWrapped(active);
+      playSlide(active);
+    });
+  }
+
+  return () => {
+    disposed = true;
+    timeouts.forEach(clearTimeout);
+    cleanups.forEach((fn) => fn());
   };
 }
