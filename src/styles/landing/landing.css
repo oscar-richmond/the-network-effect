@@ -3616,17 +3616,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #e0e0e7;
 	}
 
-	/* Title 22px + /0N 10px tucked at its shoulder, both white +
-	   difference (file 0:64) — the card has no transformed ancestors
-	   on mobile and no opaque layer of its own, so they composite
-	   against the page ground and the image as they pass. */
+	/* Title 22px + /0N 10px tucked at its shoulder (file 0:64). PLAIN
+	   INK, not white + difference (Oscar's report: they rendered
+	   white): the card is a z-indexed flex item, which forms a
+	   stacking context and isolates the blend, so the white resolved
+	   against a transparent backdrop instead of the ground. Mobile
+	   never passes the titles over the image (it sits below them in
+	   the stack), so the blend has no work to do here — ink matches
+	   the rest of the card's copy. Desktop keeps the blend. */
 	.landing-v2.landing-home .landing-svc-card__titlerow {
 		display: flex;
 		justify-content: flex-start;
 		align-items: flex-start;
 		gap: 5px;
-		color: #fff;
-		mix-blend-mode: normal; /* blend rides the children */
+		color: #161616;
+		mix-blend-mode: normal;
 		font-size: 22px;
 		line-height: 18px;
 	}
@@ -3634,16 +3638,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svc-card__title {
 		font-size: 22px;
 		line-height: 18px;
-		color: #fff;
-		mix-blend-mode: difference;
+		color: #161616;
+		mix-blend-mode: normal;
 	}
 
 	.landing-v2.landing-home .landing-svc-card__index {
 		font-size: 10px;
 		line-height: 10px;
 		margin-top: 1px;
-		color: #fff;
-		mix-blend-mode: difference;
+		color: #161616;
+		mix-blend-mode: normal;
 	}
 
 	/* Desktop internals give way to the file's mobile set. */
@@ -3699,14 +3703,26 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		color: #161616;
 	}
 
+	/* FULL BLEED (Oscar's report: the columns stopped at the card's
+	   16px gutter, leaving a grey block at the edge). The strip
+	   breaks out of the card's padding with negative margins and
+	   carries the margin as its OWN padding — so the first column
+	   still starts on the 16px grid and the last rests on it, while
+	   mid-swipe the copy runs clean off both viewport edges. The
+	   house carousel pattern (featured/closing strips), which are
+	   children of unpadded parents and so need no break-out. */
 	.landing-v2.landing-home .landing-svc-card__m-strip {
 		margin-top: 16px;
+		margin-left: calc(-1 * var(--m-margin, 16px));
+		margin-right: calc(-1 * var(--m-margin, 16px));
+		padding: 0 var(--m-margin, 16px);
 		display: flex;
 		gap: 64px;
 		overflow-x: auto;
 		overscroll-behavior-x: contain;
 		-webkit-overflow-scrolling: touch;
 		scroll-snap-type: x proximity;
+		scroll-padding-left: var(--m-margin, 16px);
 		scrollbar-width: none;
 	}
 
