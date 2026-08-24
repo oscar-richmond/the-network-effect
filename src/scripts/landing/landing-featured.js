@@ -218,12 +218,15 @@ export function initLandingFeatured() {
   hls.forEach((hl, i) => {
     tl.to(hl, { top: () => hlTops[i] - stageH(), duration: stageH() }, exitAt());
   });
-  /* NUMERIC position (a function here is silently coerced to 0 —
-     caught in verification: the fade ran at the travel's start). */
-  tl.to(stage, {
-    backgroundColor: GROUND_DARK,
-    duration: TRANSITION_GROUND_FADE_PX,
-  }, runway() - TRANSITION_GROUND_FADE_PX);
+  /* FADE-TO-BLACK RETIRED (frame 16:113 reorder, 2026-08-13): Our
+     Network moved up after the founders band, and no light→dark
+     boundary follows this section any more (We Create Access is
+     light-on-light). The beat is REMOVED, not relocated — recorded
+     verbatim for its next home:
+       tl.to(stage, { backgroundColor: GROUND_DARK,      // '#161616'
+         duration: TRANSITION_GROUND_FADE_PX },          // 500
+         runway() - TRANSITION_GROUND_FADE_PX);
+     (NUMERIC position — a function there is coerced to 0.) */
   /* Blur-band dissolve over the final card pitch (see BAND_FADE_PX):
      radii drain to 0 with the scrub; reversal rebuilds them. */
   const blurLayers = Array.from(section.querySelectorAll('[data-gradual-blur-layer]'));

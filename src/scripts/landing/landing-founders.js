@@ -174,6 +174,9 @@ export function initLandingFounders() {
     const holdEnd = entryPx + FOUNDERS_HOLD_PX;
     const photo = section.querySelector('.landing-founders__photo');
     const driftSpec = [
+      /* The WHO WE ARE label (frame 16:204) rides the headline's own
+         drift amplitude — the established vocabulary, nothing new. */
+      { el: section.querySelector('[data-landing-founders-label]'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: section.querySelector('[data-landing-founders-label]'), blurDur: EXIT_BLUR_HEADLINE_PX },
       { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__headline'), blurDur: EXIT_BLUR_HEADLINE_PX },
       { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, exit: EXIT_CTAS_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__ctas'), blurDur: EXIT_BLUR_CTAS_PX },
       { el: photo, px: DRIFT_PHOTO_PX, exit: 0, mode: 'y' },

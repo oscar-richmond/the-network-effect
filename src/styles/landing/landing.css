@@ -4718,3 +4718,325 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		transform: none;
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE ORDER RESTORE (frame 16:113 desktop reorder, 2026-08-13).
+   The DOM now carries the NEW desktop order (network directly after
+   founders); the shipped mobile page keeps ITS approved order via
+   flex `order` on the body's in-flow children. Fixed layers (hero
+   stage, topbar, menu, grain, cover, splash) are out of flow and
+   unaffected; mobile sections carry no colliding margins (verified
+   against the pre-change rect baseline — byte-identical).
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+	body.landing-v2.landing-home {
+		display: flex;
+		flex-direction: column;
+	}
+
+	body.landing-v2.landing-home > .landing-hero-spacer { order: 1; }
+	body.landing-v2.landing-home > .landing-founders-track { order: 2; }
+	body.landing-v2.landing-home > .landing-outro { order: 3; }
+	body.landing-v2.landing-home > .landing-featured { order: 4; }
+	body.landing-v2.landing-home > .landing-network { order: 5; }
+	body.landing-v2.landing-home > .landing-access { order: 6; }
+	body.landing-v2.landing-home > .landing-closing { order: 7; }
+	body.landing-v2.landing-home > .landing-footer { order: 8; }
+	body.landing-v2.landing-home > .landing-footer-spacer { order: 9; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FRAME 16:113 DESKTOP RESPEC (file NgsyYiyjKRFhtPHyjc0aL4,
+   2026-08-13) — hero, WHO WE ARE, OUR NETWORK. Everything below is
+   >=1025-scoped so the shipped mobile pages are byte-inert by
+   construction, AND .landing-home-scoped so pages sharing these
+   components (/services embeds LandingNetwork and this stylesheet)
+   keep their shipped geometry — the respec is the landing page's
+   alone. Guide: TNE_Font_Style_Guide (Figma % tracking → em).
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1025px) {
+	/* ── HERO (16:889): the offset two-part composition replaces the
+	   centred stack. Headline block at x553, centre 0.2318·vh (frame
+	   341−118 chrome of the 962 design viewport); travel/settle
+	   mechanics unchanged — the module measures the new rest and
+	   converges to the 24px margin exactly as before. */
+	.landing-v2.landing-home .landing-hero__headline {
+		justify-content: flex-start;
+		padding: 0;
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-text {
+		align-items: flex-start;
+		text-align: left;
+		margin: 0 0 0 553px;
+		margin-top: 23.18dvh;
+		transform: translateY(-50%);
+	}
+
+	/* Type: frame 72/64/−4% — the guide's 02 Display L numbers on
+	   SERRIF for BOTH lines (the frame abandons the Dazzed line-1).
+	   Weights per frame: Medium + Bold — Serrif Bold is NOT a loaded
+	   face (no licence file), so the pair steps down one weight
+	   (Regular 400 / Medium 500) to keep the drawn contrast with real
+	   glyphs. FLAGGED in the build report. */
+	.landing-v2.landing-home .landing-hero__headline-line {
+		font-size: 72px;
+		line-height: 64px;
+		letter-spacing: -0.04em; /* Figma −4% */
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-line--dazzed {
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-synthesis: none;
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-line--serrif {
+		font-weight: 500;
+		/* Frame: the second line leads with an 8-space run — authored
+		   as margin so the travel's measured convergence still lands
+		   both lines flush at the 24px rest (rects exclude margins). */
+		margin-left: 144px;
+	}
+
+	/* Intro (16:816): ONE paragraph, Serrif Medium 30/34/−1.5% (the
+	   guide's 06 Body / Serif exactly), 452px measure at x225, centre
+	   0.4345·vh, WHITE + DIFFERENCE (the frame blends it — the block
+	   overlaps the video's clip edge during expansion). Blend walk:
+	   the blend rides intro-text (static abs); only its lr descendants
+	   transform/filter; the fixed stage paints bg+video beneath. */
+	.landing-v2.landing-home .landing-hero__intro-text {
+		top: 43.45dvh;
+		right: auto;
+		left: 225px;
+		width: 452px;
+		font-size: 30px;
+		line-height: 34px;
+		letter-spacing: -0.015em;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	/* ── WHO WE ARE (16:201-16:240): section 1014 tall (was 1049). */
+	.landing-v2.landing-home .landing-founders-track {
+		height: calc(1014px + 250px + 900px);
+	}
+
+	.landing-v2.landing-home .landing-founders {
+		top: min(0px, calc(100dvh - 1014px));
+		height: 1014px;
+	}
+
+	/* NEW label — guide 08 Label / Sans at the frame's −1.5%. */
+	.landing-v2.landing-home .landing-founders__label {
+		display: block;
+		position: absolute;
+		top: 80px;
+		left: 24px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: -0.015em;
+		text-transform: uppercase;
+		color: #eeeef0;
+	}
+
+	/* Headline (16:203): Dazzed Bold 40/40/−1.5% (frame; the guide's
+	   04 Heading size at the frame's own tracking), 727 measure at
+	   x601, WELDED inline flow — the 4 authored spans re-break
+	   naturally to the frame's 3 lines; the 20-space lead indent is
+	   the 200px atom, now as block text-indent. */
+	.landing-v2.landing-home .landing-founders__headline {
+		top: 200px;
+		left: 601px;
+		width: 727px;
+		letter-spacing: -0.015em;
+		text-indent: 200px;
+	}
+
+	.landing-v2.landing-home .landing-founders__headline .landing-founders__line {
+		display: inline;
+		white-space: normal;
+	}
+
+	.landing-v2.landing-home .landing-founders__headline .landing-founders__line + .landing-founders__line::before {
+		content: ' ';
+	}
+
+	.landing-v2.landing-home .landing-founders__line--indent {
+		text-indent: 0; /* the block indent owns it now */
+	}
+
+	/* CTAs (16:224): x601 y420, 38px chips, 16px labels (the frame
+	   re-draws 16 — reverses the earlier 14px rev); second chip goes
+	   #232326 per the frame. */
+	.landing-v2.landing-home .landing-founders__ctas {
+		top: 420px;
+		left: 601px;
+	}
+
+	.landing-v2.landing-home .landing-founders__btn {
+		height: 38px;
+		font-size: 16px;
+	}
+
+	.landing-v2.landing-home .landing-founders__btn:nth-of-type(2) {
+		background: #232326;
+	}
+
+	/* Photo (16:205): 600×370 at right 24 / top 620. Cover with the
+	   frame's crop centre (layer 619×413 at −10.5/−21.6 → 55%/50% —
+	   the sanctioned cover approximation, same device as before).
+	   The exit expansion re-measures this box at runtime — the
+	   mechanic survives unchanged. */
+	.landing-v2.landing-home .landing-founders__photo {
+		top: 620px;
+		right: 24px;
+		width: 600px;
+		height: 370px;
+	}
+
+	.landing-v2.landing-home .landing-founders__photo img {
+		object-position: 55% 50%;
+	}
+
+	/* Portraits (16:210): 180×260 at x24 / x236, y690; frame crops. */
+	.landing-v2.landing-home .landing-founders__portrait {
+		top: 690px;
+		width: 180px;
+		height: 260px;
+	}
+
+	.landing-v2.landing-home .landing-founders__portrait--robbo { left: 24px; }
+	.landing-v2.landing-home .landing-founders__portrait--ashley { left: 236px; }
+
+	.landing-v2.landing-home .landing-founders__portrait--robbo img {
+		top: -6.89px;
+		left: -6.05px;
+		width: 196.15px;
+		height: 273.26px;
+	}
+
+	.landing-v2.landing-home .landing-founders__portrait--ashley img {
+		top: -4.02px;
+		left: -8.49px;
+		width: 197.41px;
+		height: 275.02px;
+	}
+
+	/* Hover names (16:223): Serrif LIGHT 32/24 (Light is loaded),
+	   overhanging 18px left of the image, centred 131.5 down —
+	   the frame draws the hover state; the interaction stays. */
+	.landing-v2.landing-home .landing-founders__portrait-name {
+		font-weight: 300;
+		font-size: 32px;
+		line-height: 24px;
+		left: -18px;
+		right: auto;
+		bottom: auto;
+		top: 119.5px;
+	}
+
+	/* ── OUR NETWORK (16:603-16:733): stage 1118 (was 1097); the big
+	   title retires for the 12px label; subtitle + sector list move
+	   to the centred region; strip drops BELOW the rows with the
+	   frame's 48px gap. Internal behaviour untouched. */
+	.landing-v2.landing-home .landing-network {
+		height: calc(1118px + 900px);
+	}
+
+	.landing-v2.landing-home .landing-network__stage {
+		top: calc(100vh - 1118px);
+		top: calc(100dvh - 1118px);
+		height: 1118px;
+	}
+
+	.landing-v2.landing-home .landing-network__title { display: none; }
+
+	.landing-v2.landing-home .landing-network__label {
+		display: block;
+		position: absolute;
+		top: 100px;
+		left: 24px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: -0.015em;
+		text-transform: uppercase;
+		color: #eeeef0;
+	}
+
+	/* Subtitle (16:605): centred 12/14 Dazzed Bold caps. */
+	.landing-v2.landing-home .landing-network__subtitle {
+		top: 242px;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+		width: auto;
+		text-align: center;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 14px;
+		text-transform: uppercase;
+	}
+
+	/* Sector list (16:622): centred Serrif Medium 36/48 — NOT a named
+	   guide style (flagged); the frame is the authority. Terms keep
+	   their hover wiring; only geometry/type move. */
+	.landing-v2.landing-home .landing-network__body {
+		top: 294px;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+		width: 840px;
+		text-align: center;
+		font-size: 36px;
+		line-height: 48px;
+	}
+
+	/* Rows re-seat: 538 / 670 (32px between, as before). */
+	.landing-v2.landing-home .landing-network__marquee--top { top: 538px; }
+	.landing-v2.landing-home .landing-network__marquee--bottom { top: 670px; }
+
+	/* The rows→strip overlap is gone (48px clear gap) — the melt
+	   band retires; the edge fade re-covers rows→strip. */
+	.landing-v2.landing-home .landing-network__row-fade { display: none; }
+
+	.landing-v2.landing-home .landing-network__edge-fade {
+		top: 518px;
+		height: 600px;
+	}
+
+	/* Strip (16:606): below the rows at y818, 300 tall (was 301). */
+	.landing-v2.landing-home .landing-network__strip {
+		top: 818px;
+		height: 300px;
+	}
+
+	.landing-v2.landing-home .landing-network__strip-win { height: 300px; }
+
+	/* ── ACCESS: inherits the −100dvh overlap the reorder freed from
+	   Our Network — the featured departure stays overlapped exactly
+	   as it was (light over light; access's own top blur band leads). */
+	.landing-v2.landing-home .landing-access {
+		margin-top: calc(-1 * 100vh);
+		margin-top: calc(-1 * 100dvh);
+	}
+}
+
+/* The new labels exist ONLY on the landing page's >=1025 respec
+   (rules above out-rank this by specificity). Base state is hidden
+   everywhere else: the shipped mobile pages (byte-identity — the
+   approved frames carry no labels) AND /services, which embeds the
+   shared LandingNetwork component and must not inherit the landing
+   frame's additions. */
+.landing-v2 .landing-founders__label,
+.landing-v2 .landing-network__label { display: none; }

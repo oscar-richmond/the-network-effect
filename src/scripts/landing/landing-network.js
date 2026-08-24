@@ -332,7 +332,10 @@ export function initLandingNetwork() {
   /* The stage pins BOTTOM-ALIGNED (sticky top 100dvh - 1097, so the
      strip's bottom kisses the viewport bottom — Oscar's rev 2); the
      pin therefore starts this many px after the section top. */
-  const pinOffset = () => Math.max(1097 - window.innerHeight, 0);
+  /* MEASURED, not hardcoded: the stage is 1118px on /landing (frame
+     16:113 respec) but keeps the shipped 1097px on /services, which
+     embeds this same component — the CSS owns the number per page. */
+  const pinOffset = () => Math.max(stageH() - window.innerHeight, 0);
 
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {

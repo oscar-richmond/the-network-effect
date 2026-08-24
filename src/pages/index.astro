@@ -51,6 +51,14 @@ import '../styles/fonts.css';
       video; see the arrival note in landing.css. */}
   <LandingFounders />
 
+  {/* Our Network — REORDERED here (frame 16:113, 2026-08-13): dark
+      follows dark straight out of the founders band. The -100dvh
+      overlap + transparent-until-pin arrival machinery is untouched
+      — it now rides the founders track's exit window instead of the
+      featured fade. Internal behaviour (carousels, speeds,
+      industry-hover) byte-unchanged. */}
+  <LandingNetwork />
+
   {/* Services — doubles as the departure runway (the grey ground the
       full-screen founders photo scrolls off against) and now carries
       the full stacked-services sequence (Figma 13:1729/13:2066):
@@ -77,15 +85,15 @@ import '../styles/fonts.css';
   </section>
 
   {/* Featured Work — horizontal gallery; overlaps the services
-      trailing viewport (light-on-light continuous scroll) and
-      carries the relocated fade-to-black into Our Network. */}
+      trailing viewport (light-on-light continuous scroll). Its old
+      fade-to-black is RETIRED (frame 16:113 reorder — no light→dark
+      boundary follows it any more; constants recorded in
+      landing-featured.js). */}
   <LandingFeatured />
 
-  {/* Our Network — arrives on the black Featured Work fades to. */}
-  <LandingNetwork />
-
-  {/* We Create Access — light returns on a plain document boundary;
-      the section's own top fade softens the dark→light cut. */}
+  {/* We Create Access — light-on-light after Featured Work; the
+      -100dvh overlap (moved here from Our Network in the reorder)
+      keeps the featured departure overlapped exactly as before. */}
   <LandingAccess />
 
   {/* Closing section + footer — plain document flow, no runway

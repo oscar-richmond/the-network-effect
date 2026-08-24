@@ -94,6 +94,13 @@ const sectorLines = [
     ))}
   </p>
 
+  {/* OUR NETWORK label (frame 16:733, 2026-08-13) — desktop only;
+      replaces the big title above the seam (the title keeps mobile).
+      Placed AFTER the body in DOM so the title/subtitle/body reveal
+      stagger indexes are untouched; the label takes the next slot in
+      the same line-reveal set. */}
+  <p class="landing-network__label" aria-hidden="false"><span class="landing-network__line">OUR NETWORK</span></p>
+
   {/* Marquees — aria-hidden: an infinite ambient logo drift is noise
       to AT; the brand claims read from the (pending) copy instead. */}
   <div

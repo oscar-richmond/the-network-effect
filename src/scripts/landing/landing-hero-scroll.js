@@ -478,12 +478,14 @@ export function initLandingHeroScroll() {
     let disposed = false;
     fontsReady.then(() => {
       if (disposed) return;
-      refineHeadlineCentring(
-        headlineText,
-        bandFrac,
-        isMob ? (hero.clientHeight || window.innerHeight) : window.innerHeight,
-        isMob,
-      );
+      if (isMob) {
+        refineHeadlineCentring(
+          headlineText,
+          bandFrac,
+          hero.clientHeight || window.innerHeight,
+          true,
+        );
+      }
       if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
         introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
         deriveIntroLineHeight(headlineText, introText);
@@ -530,7 +532,11 @@ export function initLandingHeroScroll() {
          measured nav bottom and the band top — live-derived, so it
          holds across widths and dvh (the stage's svh height is the
          band's own denominator). Desktop keeps its exact call. */
-      refineHeadlineCentring(headlineText, bandFrac, vh, isMob);
+      /* Frame 16:113 (2026-08-13): the DESKTOP rest composition is
+         CSS-owned (x553 / 23.18dvh — no band centring); only MOBILE
+         keeps the wordmark-anchored derivation. The travel still
+         measures whatever the rest is, so convergence is unchanged. */
+      if (isMob) refineHeadlineCentring(headlineText, bandFrac, vh, isMob);
       const lines = Array.from(
         headlineText.querySelectorAll('.landing-hero__headline-line'),
       ).filter((el) => el instanceof HTMLElement);
@@ -568,14 +574,12 @@ export function initLandingHeroScroll() {
        whole: wrapping/revealing a hidden block would measure zero
        rects and pad the runway with dead scroll. */
     if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
-      if (!isMob) introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
-
+      /* Frame 16:113: the intro is its own fixed 452px block at x225
+         (CSS) — the old width-match + derived leading + alignment trio
+         encoded the retired side-by-side composition and no longer
+         runs. (deriveIntroLineHeight / alignIntroToHeadline /
+         correctIntroTop retained above, unreferenced, for history.) */
       const introLines = wrapIntroLines(introText);
-      if (!isMob) {
-        deriveIntroLineHeight(headlineText, introText);
-        alignIntroToHeadline(headlineText, introText);
-        correctIntroTop(headlineText, introText);
-      }
       /* wrapLineRevealElement leaves an inline `transition: transform`
          intended for its own class-toggle reveal; that fights a
          continuous scrub, so GSAP takes sole control of the transform. */
