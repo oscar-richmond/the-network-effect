@@ -130,7 +130,10 @@ const STACK_PX = CARD_START_PX + CARD_COUNT * CARD_PX; // 2525 — snap ceiling
 const EXIT_PX = PARKED_Y[CARD_COUNT - 1] + CARD_H; // 1104
 const RUNWAY_PX = STACK_PX + BAND_SETTLE_PX + EXIT_PX; // 4077
 /* Keep landing.css's .landing-outro height (100dvh + RUNWAY_PX) in step. */
-const SMALL_SCALE = 16 / 40; // large 40px -> small 16px
+/* The corner scale is MEASURED in measureMorph (small font-size /
+   title font-size) — the type-system pass (2026-08-24) took the
+   title to 72px on the landing page, so a hardcoded 16/40 landed the
+   morph at the wrong size and offset. */
 
 /* Beat A choreography fractions (of MORPH_PX). SINGLE INSTANCE
    (Oscar's rev 3): no cross-resolve at all — the Serrif OUR
@@ -316,7 +319,7 @@ export function initLandingServices() {
        run's top-left within the title block (so the scale pins that
        corner), delta = small box top-left minus that corner. Re-run
        on every refresh with the transform cleared. */
-    const morph = { dx: 0, dy: 0 };
+    const morph = { dx: 0, dy: 0, scale: 16 / 72 };
     const measureMorph = () => {
       const saved = title.style.transform;
       title.style.transform = 'none';
@@ -324,15 +327,29 @@ export function initLandingServices() {
          lr-inners sit at translateY(110%) inside their clips, which
          would leak ~44px into the serrif rect. */
       const inners = Array.from(title.querySelectorAll('.lr-inner'));
-      const savedInners = inners.map((el) => el.style.transform);
+      const savedInners = inners.map((el) => [el.style.transition, el.style.transform]);
+      /* transition:none FIRST, with a reflow — the inners' transform
+         is transitioned, so a bare translateY(0) measures MID-FLIGHT
+         (still at ~110%) and bakes the leak into origin/dy (caught
+         2026-08-24: origin.y read 61.6 where the true offset is −11,
+         landing the corner morph 16px high). */
+      inners.forEach((el) => { el.style.transition = 'none'; });
       inners.forEach((el) => { el.style.transform = 'translateY(0)'; });
+      void title.offsetWidth;
       const titleRect = title.getBoundingClientRect();
       const srcRect = (serrifSpan ?? title).getBoundingClientRect();
       const smallRect = small.getBoundingClientRect();
       title.style.transformOrigin = `${(srcRect.left - titleRect.left).toFixed(2)}px ${(srcRect.top - titleRect.top).toFixed(2)}px`;
+      morph.scale =
+        parseFloat(getComputedStyle(small).fontSize) /
+        parseFloat(getComputedStyle(title).fontSize);
       morph.dx = smallRect.left - srcRect.left;
-      morph.dy = smallRect.top + smallRect.height / 2 - (srcRect.top + (srcRect.height * SMALL_SCALE) / 2);
-      inners.forEach((el, i) => { el.style.transform = savedInners[i]; });
+      morph.dy = smallRect.top + smallRect.height / 2 - (srcRect.top + (srcRect.height * morph.scale) / 2);
+      inners.forEach((el, i) => {
+        el.style.transform = savedInners[i][1];
+        void el.offsetWidth; /* commit the state before the transition returns */
+        el.style.transition = savedInners[i][0];
+      });
       title.style.transform = saved;
     };
     measureMorph();
@@ -384,7 +401,7 @@ export function initLandingServices() {
     tl.to(title, {
       x: () => morph.dx,
       y: () => morph.dy,
-      scale: SMALL_SCALE,
+      scale: () => morph.scale,
       duration: MORPH_PX,
     }, 0);
     /* The exit text (". FROM" + line 2) leaves LEFT-TO-RIGHT per

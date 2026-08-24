@@ -5153,3 +5153,148 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		margin-right: 8px;
 	}
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TYPE SYSTEM PASS (TNE Font Style Guide — Oscar's application list,
+   2026-08-24). Landing page only (.landing-home), desktop only
+   (>=1025): the shipped mobile pages keep their approved type.
+   Faces: Serif = Serrif, Sans = Dazzed; Figma % tracking → em.
+
+   Applied here:
+   · HERO           BUILT ON TRUST = Serif Regular 100/88/−4%;
+                    POWERED BY ACCESS = Sans Bold 100/88/−5%.
+                    The 8-space lead scales with the type: 144px at
+                    72px → 200px at 100px (0.25em·8 spaces = 2em).
+   · MIXED DISPLAY  OUR SERVICES. FROM ACCESS. TO IMPACT. →
+                    72/64, serif runs −4%, sans −4.5%. (The FLIP
+                    corner morph and the O-over-S line-1 margin are
+                    measured at runtime and re-derive.)
+   · LARGE SANS     founders 20-years statement + access WE CREATE
+                    ACCESS → 56/50/−3.5%. Access keeps its DRAWN
+                    mixed serif/sans faces at the new metrics —
+                    flattening to all-sans would redesign an
+                    approved composition (flagged in the report).
+   · SERIF COPY     hero intro → Intro 48/50/−2%; pillar supporting
+                    descriptions → Body Small 25/29/−1%, serif,
+                    sentence case (the doc's own example casing —
+                    the sans-uppercase treatment retires).
+   · PILLARS        IMMERSE/CONNECT/AMPLIFY 40/40/−2.5%.
+   · LABELS         WHO WE ARE / OUR NETWORK → 12/14/0% (were
+                    −1.5%). WHAT WE DO does not exist on the built
+                    landing (no label element in the outro) — noted,
+                    not built. FEATURED WORK exists only as the big
+                    mixed display heading, not as a label — left
+                    untouched, flagged.
+   · MICRO          card indexes /01… → 10/12/0. */
+@media (min-width: 1025px) {
+	/* ── HERO 100/88 ── At 100px the 72px-drawn block (950w at x553)
+	   grows past the canvas, so the GEOMETRY keeps the frame's
+	   OPTICAL CENTRE instead of its left edge: block centre x1028
+	   (= 553 + 950/2), centred by margin+translate. The headline is
+	   plain ink (no blend) — transform is safe here; the blended
+	   intro is a separate sibling. Lines never wrap: the composition
+	   is two locked lines (the guide's "one typographic
+	   composition"). */
+	.landing-v2.landing-home .landing-hero__headline-text {
+		margin-left: 1028px;
+		transform: translate(-50%, -50%);
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-line {
+		font-size: 100px;
+		line-height: 88px;
+		white-space: nowrap;
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-line--dazzed {
+		font-weight: 400; /* Serif REGULAR (guide; was Medium) */
+		letter-spacing: -0.04em;
+	}
+
+	.landing-v2.landing-home .landing-hero__headline-line--serrif {
+		letter-spacing: -0.05em;
+		margin-left: 200px; /* the 8-space lead at 100px (was 144 at 72) */
+	}
+
+	/* ── SERIF COPY / Intro 48/50/−2% ── The 452px column was drawn
+	   for the 30px intro; at 48 it wrapped to 7 lines and collided
+	   with the headline above AND the video band below. The measure
+	   scales with the type (452 × 48/30 ≈ 723) and the block centres
+	   in the window between the headline's bottom (23.18dvh + 88px)
+	   and the video band's top (62.5dvh): centre = 42.84dvh + 44px. */
+	.landing-v2.landing-home .landing-hero__intro-text {
+		top: calc(42.84dvh + 44px);
+		width: 723px;
+		font-size: 48px;
+		line-height: 50px;
+		letter-spacing: -0.02em;
+	}
+
+	/* ── LARGE SANS 56/50/−3.5% ── */
+	.landing-v2.landing-home .landing-founders__headline {
+		font-size: 56px;
+		line-height: 50px;
+		letter-spacing: -0.035em;
+	}
+
+	/* Founders CTAs follow the grown statement down, keeping the
+	   drawn 60px gap (headline 200..500 at 56/50 → CTAs 560; still
+	   22px clear of the photo at 620). */
+	.landing-v2.landing-home .landing-founders__ctas {
+		top: 560px;
+	}
+
+	.landing-v2.landing-home .landing-access__headline {
+		font-size: 56px;
+		line-height: 50px;
+		letter-spacing: -0.035em;
+	}
+
+	/* ── LABELS 12/14/0% ── */
+	.landing-v2.landing-home .landing-founders__label,
+	.landing-v2.landing-home .landing-network__label {
+		letter-spacing: 0;
+	}
+
+	/* ── MIXED DISPLAY 72/64 ── */
+	.landing-v2.landing-home .landing-services__title {
+		font-size: 72px;
+		line-height: 64px;
+		letter-spacing: -0.045em; /* sans runs */
+	}
+
+	.landing-v2.landing-home .landing-services__serrif {
+		letter-spacing: -0.04em; /* serif runs */
+	}
+
+	/* ── PILLAR HEADINGS 40/40/−2.5% ── */
+	.landing-v2.landing-home .landing-svc-card__title {
+		letter-spacing: -0.025em;
+	}
+
+	/* ── MICRO 10/12/0 ── */
+	.landing-v2.landing-home .landing-svc-card__index {
+		font-size: 10px;
+		line-height: 12px;
+		margin-top: 4px; /* keeps the index centre on the title cap (was 2 at 16px) */
+	}
+
+	.landing-v2.landing-home .landing-featured__index {
+		line-height: 12px; /* Micro leading (was 10) */
+	}
+
+	/* ── SERIF COPY / Body Small 25/29/−1% — pillar descriptions
+	   return to serif sentence case per the guide ("Supporting
+	   descriptions remain serif"; the doc's own example is
+	   sentence-cased). */
+	.landing-v2.landing-home .landing-svc-card__desc {
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 25px;
+		line-height: 29px;
+		letter-spacing: -0.01em;
+		text-transform: none;
+	}
+}
