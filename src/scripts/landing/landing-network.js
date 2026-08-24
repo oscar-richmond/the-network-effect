@@ -319,8 +319,16 @@ export function initLandingNetwork() {
      fixed hero video showed through. The CONTENT toggles at the pin
      with a REAL reversed exit (below): the exited state IS the
      initial parked state, so no visibility hack is needed at all. */
-  section.style.background = 'transparent';
-  if (stage instanceof HTMLElement) stage.style.background = 'transparent';
+  /* R2 (Oscar, 2026-08-24): on the LANDING page the section now
+     follows WHO WE ARE and rolls over its held full-screen photo as
+     a SOLID panel — the CSS black stands from first paint; no
+     transparent phase, no ground toggle. /services keeps the shipped
+     transparent-until-pin (black-over-black behind featured). */
+  const opaqueEntry = document.body.classList.contains('landing-home');
+  if (!opaqueEntry) {
+    section.style.background = 'transparent';
+    if (stage instanceof HTMLElement) stage.style.background = 'transparent';
+  }
   const onEntryResize = () => {
     if (!shown) {
       media.forEach((el) => { el.style.transition = ''; });
@@ -400,8 +408,9 @@ export function initLandingNetwork() {
       parkMedia();
     };
 
-    /* Ground cover — at the section top (= the services scrub end). */
-    groundTrigger = ScrollTrigger.create({
+    /* Ground cover — at the section top (= the services scrub end).
+       Skipped on the landing page (opaque from first paint, above). */
+    if (!opaqueEntry) groundTrigger = ScrollTrigger.create({
       trigger: section,
       start: 'top top',
       end: 'max',

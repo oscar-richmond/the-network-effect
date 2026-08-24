@@ -527,16 +527,17 @@ export function initLandingHeroScroll() {
        edge (x reset first), so the end state is exact at any width. */
     let sequenceEnd = 0;
 
-    if (headlineText instanceof HTMLElement) {
+    /* R2 (Oscar, 2026-08-24): the DESKTOP headline no longer moves —
+       the frame's offset composition IS the resting state, start to
+       finish (Beat 1 skipped whole, sequenceEnd stays 0 so the intro
+       reveal begins with the first scroll). MOBILE keeps the shipped
+       travel to the 16px margin. */
+    if (headlineText instanceof HTMLElement && isMob) {
       /* MOBILE too (R1 item 1): centre the tagline between the
          measured nav bottom and the band top — live-derived, so it
          holds across widths and dvh (the stage's svh height is the
-         band's own denominator). Desktop keeps its exact call. */
-      /* Frame 16:113 (2026-08-13): the DESKTOP rest composition is
-         CSS-owned (x553 / 23.18dvh — no band centring); only MOBILE
-         keeps the wordmark-anchored derivation. The travel still
-         measures whatever the rest is, so convergence is unchanged. */
-      if (isMob) refineHeadlineCentring(headlineText, bandFrac, vh, isMob);
+         band's own denominator). */
+      refineHeadlineCentring(headlineText, bandFrac, vh, isMob);
       const lines = Array.from(
         headlineText.querySelectorAll('.landing-hero__headline-line'),
       ).filter((el) => el instanceof HTMLElement);
