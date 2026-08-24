@@ -48,8 +48,8 @@ gsap.registerPlugin(ScrollTrigger);
    the ground falls to #161616 over the final 500px. The services
    departure treatment, here. */
 const TRANSITION_DWELL_PX = 250;
-const TRANSITION_GROUND_FADE_PX = 500;
-const GROUND_DARK = '#161616';
+/* TRANSITION_GROUND_FADE_PX / GROUND_DARK moved WITH the fade to
+   landing-services.js (2026-08-24) — never duplicated. */
 /* Header geometry (Oscar's rev): WORK's bottom and VIEW ALL's
    bottom sit HEADER_GAP above the image tops; FEATURED sits one
    line above WORK; WORK's W aligns under FEATURED's A. All derived
@@ -152,36 +152,40 @@ export function initLandingFeatured() {
      FEATURED a line above WORK). */
   const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
   const hlTops = [0, 0];
+  /* Frame 18:1694 (2026-08-24): STATIC layout — header (the welded
+     FEATURED WORK line + VIEW ALL) at y89, strip at y191, straight
+     off the frame; the old bottom-anchored derivation retires with
+     the light-ground design. The 191 stays clip-GUARDED against
+     short viewports (the tallest column is ~785 — image 450 + meta). */
+  const HEADER_TOP_PX = 89;
+  const STRIP_TOP_PX = 191;
   const place = () => {
     const maxBottom = Math.max(...cards.map((c) => {
       const d = c.querySelector('.landing-featured__desc');
       return d instanceof HTMLElement ? d.offsetTop + d.offsetHeight : 0;
     }), 0);
-    const stripTop = Math.min(352, stageH() - maxBottom - DESC_CLEAR_PX);
+    const stripTop = Math.min(STRIP_TOP_PX, stageH() - maxBottom - DESC_CLEAR_PX);
     strip.style.top = `${stripTop.toFixed(0)}px`;
-    hlTops[1] = stripTop - HEADER_GAP_PX - HL_LINE_PX; // WORK
-    hlTops[0] = hlTops[1] - HL_LINE_PX; // FEATURED, one line above
+    hlTops[0] = HEADER_TOP_PX;
+    hlTops[1] = HEADER_TOP_PX; // the pair sits on ONE line now
     hls.forEach((hl, i) => { hl.style.top = `${hlTops[i]}px`; });
     if (viewall instanceof HTMLElement) {
-      viewall.style.top = `${stripTop - HEADER_GAP_PX - VIEWALL_H_PX}px`;
+      viewall.style.top = `${HEADER_TOP_PX}px`;
     }
   };
 
-  /* W-under-A (the O-over-S mechanism): Range around FEATURED's A —
-     runs pre-wrap (needs the raw text node). */
+  /* The WELD (supersedes W-under-A): WORK follows FEATURED on the
+     same line at one word-space — measured from FEATURED's live box
+     so the pair reads as a single headline. */
   const alignWork = () => {
     const featured = hls[0];
     const work = hls[1];
     if (!(featured instanceof HTMLElement) || !(work instanceof HTMLElement)) return;
-    const tn = featured.firstChild;
-    if (!tn || tn.nodeType !== Node.TEXT_NODE) return;
-    const range = document.createRange();
-    range.setStart(tn, 2); // FE[A]TURED
-    range.setEnd(tn, 3);
-    const aRect = range.getBoundingClientRect();
-    if (aRect.width === 0) return;
     const stageRect = stage.getBoundingClientRect();
-    work.style.left = `${(aRect.left - stageRect.left).toFixed(2)}px`;
+    const fRect = featured.getBoundingClientRect();
+    if (fRect.width === 0) return;
+    const wordSpace = parseFloat(getComputedStyle(featured).fontSize) * 0.25;
+    work.style.left = `${(fRect.right - stageRect.left + wordSpace).toFixed(2)}px`;
   };
 
   const timeouts = [];
@@ -218,15 +222,11 @@ export function initLandingFeatured() {
   hls.forEach((hl, i) => {
     tl.to(hl, { top: () => hlTops[i] - stageH(), duration: stageH() }, exitAt());
   });
-  /* FADE-TO-BLACK RETIRED (frame 16:113 reorder, 2026-08-13): Our
-     Network moved up after the founders band, and no light→dark
-     boundary follows this section any more (We Create Access is
-     light-on-light). The beat is REMOVED, not relocated — recorded
-     verbatim for its next home:
-       tl.to(stage, { backgroundColor: GROUND_DARK,      // '#161616'
-         duration: TRANSITION_GROUND_FADE_PX },          // 500
-         runway() - TRANSITION_GROUND_FADE_PX);
-     (NUMERIC position — a function there is coerced to 0.) */
+  /* THE FADE-TO-BLACK moved on again (2026-08-24, its third home):
+     it now rides the SERVICES section's tail — the one light→dark
+     boundary in the current order — in landing-services.js,
+     constants verbatim. This section is DARK now (frame 18:1694)
+     and arrives black-over-black behind that fade. */
   /* Blur-band dissolve over the final card pitch (see BAND_FADE_PX):
      radii drain to 0 with the scrub; reversal rebuilds them. */
   const blurLayers = Array.from(section.querySelectorAll('[data-gradual-blur-layer]'));

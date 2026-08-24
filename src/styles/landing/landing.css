@@ -5298,3 +5298,435 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		text-transform: none;
 	}
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   SERVICES + FEATURED REDESIGN (file NgsyYiyjKRFhtPHyjc0aL4 frame
+   18:1694, 2026-08-24) — LANDING PAGE ONLY (.landing-home), desktop
+   only (>=1025): the shipped mobile keeps the old stack/carousel
+   markup and styles untouched, and /services + /work never match
+   these selectors.
+
+   SERVICES: normal flow — the pinned stack retires. Frame geometry
+   (section-top coords): label (24,113) · statement left 566 top 298
+   (72/64 pair) · pillars note (220,490) 30/34 white+difference ·
+   pillar dividers at 830/1954/3102 · rows at x446, 1258 wide, pitch
+   69 (IMMERSE, 24-gaps) / 71 (CONNECT+AMPLIFY, 25-gaps), text
+   Dazzed Bold 22 on 26/27px below each divider · content ends 3957,
+   100px tail → the section is ≈4057 tall and its own ground carries
+   the relocated fade-to-black (landing-services.js).
+
+   BLEND WALK: the difference carriers here are the pillars note and
+   each pillar's name/number (white → ink over the light ground).
+   All sit in static flow — the section animates only
+   background-color (not transform/opacity/filter), so no ancestor
+   ever isolates them. The sv-rows fills/marquees carry no blends. */
+.landing-v2 .landing-svcrows {
+	display: none;
+}
+
+@media (min-width: 1025px) {
+	.landing-v2.landing-home .landing-outro {
+		height: auto;
+		/* Tail = one DEPARTURE VIEWPORT + the frame's 100px: the rows
+		   scroll off against their own light ground BEFORE the tail
+		   fades to black (caught in verification: with the bare 100px
+		   the whole AMPLIFY list sat onscreen at full dark — ink on
+		   ink). By the fade's completion the content is past the
+		   viewport top — the old featured-fade read, kept. */
+		padding: 0 24px calc(100dvh + 100px);
+		background: #eeeef0; /* the fade's light origin */
+	}
+
+	/* The OLD stacked build hides whole (mobile keeps it). */
+	.landing-v2.landing-home .landing-services__stage {
+		display: none;
+	}
+
+	.landing-v2.landing-home .landing-svcrows {
+		display: block;
+		position: relative;
+		padding-top: 830px; /* the header zone — children absolute below */
+	}
+
+	.landing-v2.landing-home .landing-svcrows__label {
+		position: absolute;
+		left: 0;
+		top: 113px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: -0.015em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__statement {
+		position: absolute;
+		left: 542px; /* frame x566 − the 24 inset */
+		top: 298px;
+		margin: 0;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__st-line {
+		display: block;
+		font-size: 72px;
+		line-height: 64px;
+		white-space: nowrap;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__st-serif {
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		letter-spacing: -0.04em;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__st-sans {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		letter-spacing: -0.045em;
+		/* The frame's 13-space Serrif lead, authored as margin
+		   (wrap-safe): ≈13 × 0.25em × 72px. */
+		margin-left: 234px;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__note {
+		position: absolute;
+		left: 196px; /* frame x220 − 24 */
+		top: 490px;
+		width: 740px;
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 30px;
+		line-height: 34px;
+		letter-spacing: -0.015em;
+		color: #ffffff;
+		mix-blend-mode: difference; /* the frame's own treatment */
+	}
+
+	/* ── Pillars ── */
+	.landing-v2.landing-home .landing-svcrows__pillar {
+		position: relative;
+		padding-top: 214px; /* divider → rows top (frame 830→1044) */
+	}
+
+	.landing-v2.landing-home .landing-svcrows__pillar + .landing-svcrows__pillar {
+		margin-top: 80px; /* rows end → next divider, both seams */
+	}
+
+	.landing-v2.landing-home .landing-svcrows__topline {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		height: 2px;
+		background: #e0e0e7;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__name {
+		position: absolute;
+		left: 0;
+		top: 44px; /* title centre y68 below the divider (56/48 box) */
+		margin: 0;
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__pname {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 56px;
+		line-height: 48px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+		white-space: nowrap;
+	}
+
+	/* /0N — the Micro-family number at the title's cap (frame: tops
+	   aligned, centres 12px apart). */
+	.landing-v2.landing-home .landing-svcrows__pnum {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 24px;
+		line-height: 24px;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__desc {
+		position: absolute;
+		left: 422px; /* frame x446 − 24 */
+		top: 38px;   /* centre y72 (two 34px lines) */
+		width: 350px;
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 32px; /* frame (guide Body is 30 — frame wins, flagged) */
+		line-height: 34px;
+		color: #161616;
+	}
+
+	/* MORE INFO — the established button recipe (147×38 falls out of
+	   16px pads + 8 gap at the 16px label). */
+	.landing-v2.landing-home .landing-svcrows__btn {
+		position: absolute;
+		right: 0;
+		top: 64px;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: 38px;
+		padding: 0 16px;
+		background: #e4e4ea;
+		color: #232a89;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 16px;
+		text-transform: uppercase;
+		text-decoration: none;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__btn-arrow {
+		display: block;
+		width: 12px;
+		height: 12px;
+		flex-shrink: 0;
+	}
+
+	.landing-v2.landing-home .landing-svcrows__btn:focus-visible {
+		outline: 2px solid #232a89;
+		outline-offset: 2px;
+	}
+
+	/* ── sv-rows OVERRIDES — landing geometry over the /services
+	   stylesheet (which travels with the shared machinery). The
+	   hover states/transitions themselves are untouched. ── */
+	.landing-v2.landing-home .landing-svcrows .sv-rows {
+		margin: 0 0 0 422px; /* list at frame x446 */
+	}
+
+	.landing-v2.landing-home .landing-svcrows .sv-rows__label {
+		left: 0;
+		top: -43px; /* frame y171 below the divider (rows start 214) */
+		font-size: 22px;
+		line-height: 19px;
+		text-transform: uppercase;
+	}
+
+	.landing-v2.landing-home .landing-svcrows .sv-rows__list,
+	.landing-v2.landing-home .landing-svcrows .sv-rows__endline {
+		margin: 0;
+		width: 1258px;
+	}
+
+	.landing-v2.landing-home .landing-svcrows .sv-rows__row {
+		height: var(--svcrow-pitch, 69px);
+	}
+
+	.landing-v2.landing-home .landing-svcrows .sv-rows__divider {
+		height: 2px;
+		background: #e0e0e7; /* the frame's solid divider */
+	}
+
+	/* Text 26/27px below each divider: (pitch + 2 − 19) / 2. */
+	.landing-v2.landing-home .landing-svcrows .sv-rows__inner {
+		top: calc((var(--svcrow-pitch, 69px) + 2px - 19px) / 2);
+		height: 19px;
+		gap: 0;
+	}
+
+	.landing-v2.landing-home .landing-svcrows .sv-rows__text {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 22px;
+		line-height: 19px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	/* The hover band covers the row through the NEXT divider (frame:
+	   71 = 69 + 2 on IMMERSE). */
+	.landing-v2.landing-home .landing-svcrows .sv-rows__fill,
+	.landing-v2.landing-home .landing-svcrows .sv-rows__marq,
+	.landing-v2.landing-home .landing-svcrows .sv-rows__edges {
+		height: calc(var(--svcrow-pitch, 69px) + 2px);
+	}
+
+	.landing-v2.landing-home .landing-svcrows .sv-rows__marq-unit {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 22px;
+		text-transform: uppercase;
+	}
+
+	/* The glide frame — the frame's 380×480 window, centred-ish over
+	   the 1258 list (frame x1064 → 618 within it). */
+	.landing-v2.landing-home .landing-svcrows .sv-rows__img {
+		left: 618px;
+		width: 380px;
+		height: 480px;
+	}
+
+	/* Entrance states (no-preference; the pillar's own pieces — the
+	   rows/endline reuse the /services .is-visible machinery from
+	   services-v2.css verbatim). */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-home .landing-svcrows__topline {
+			transform: scaleX(0);
+			transform-origin: 0 50%;
+			transition: transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+		}
+
+		.landing-v2.landing-home .landing-svcrows__pillar.is-entered .landing-svcrows__topline {
+			transform: scaleX(1);
+		}
+
+		.landing-v2.landing-home .landing-svcrows__btn,
+		.landing-v2.landing-home .landing-svcrows .sv-rows__label {
+			opacity: 0;
+			translate: 0 12px;
+			transition: opacity 0.6s ease-out, translate 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+		}
+
+		.landing-v2.landing-home .landing-svcrows__pillar.is-entered .landing-svcrows__btn,
+		.landing-v2.landing-home .landing-svcrows__pillar.is-entered .sv-rows__label {
+			opacity: 1;
+			translate: 0 0;
+		}
+	}
+
+	/* ══ FEATURED WORK — dark ground, irregular top-aligned carousel
+	   (frame 18:1694). The travel/dwell/departure machinery is
+	   untouched (landing-featured.js re-derives from the new strip);
+	   the −100dvh overlap onto services RETIRES — the section
+	   follows in flow and arrives black-over-black behind the
+	   relocated fade. ══ */
+	.landing-v2.landing-home .landing-featured {
+		margin-top: 0;
+	}
+
+	.landing-v2.landing-home .landing-featured__stage {
+		background: #161616;
+	}
+
+	/* Header: ONE line — FEATURED WORK, Dazzed Bold 40/50/−2%,
+	   #EEEEF0, PLAIN (the difference treatment retires with the
+	   light ground); the two shipped line elements weld side by side
+	   (mobile markup untouched), WORK's serif face joins the sans. */
+	.landing-v2.landing-home .landing-featured__hl {
+		position: absolute;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 40px;
+		line-height: 50px;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+		color: #eeeef0;
+		mix-blend-mode: normal;
+	}
+
+	.landing-v2.landing-home .landing-featured__hl--featured {
+		left: 24px;
+	}
+
+	/* VIEW ALL — the frame's filled #343439 pill, white 16 Bold. */
+	.landing-v2.landing-home .landing-featured__viewall {
+		right: 24px;
+		background: #343439;
+		color: #ffffff;
+		font-size: 16px;
+		font-weight: 700;
+		height: 38px;
+		padding: 0 16px;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	/* ── Cards: uniform 380 width on 8px gaps, top-aligned; heights
+	   cycle [249, 450, 320, 400] (the frame's own four, repeated
+	   across the eight projects — considered alternation, no two
+	   identical neighbours; reported). ── */
+	.landing-v2.landing-home .landing-featured__strip {
+		gap: 8px;
+	}
+
+	.landing-v2.landing-home .landing-featured__card {
+		width: 380px;
+	}
+
+	.landing-v2.landing-home .landing-featured__imgwin {
+		position: relative;
+		width: 380px;
+		height: 249px;
+	}
+
+	.landing-v2.landing-home .landing-featured__card:nth-of-type(4n + 2) .landing-featured__imgwin { height: 450px; }
+	.landing-v2.landing-home .landing-featured__card:nth-of-type(4n + 3) .landing-featured__imgwin { height: 320px; }
+	.landing-v2.landing-home .landing-featured__card:nth-of-type(4n + 4) .landing-featured__imgwin { height: 400px; }
+
+	/* The windows re-shape per card, so every image covers — the
+	   shipped inline crop styles (mobile's) are overridden here. */
+	.landing-v2.landing-home .landing-featured__imgwin img {
+		position: static !important;
+		width: 100% !important;
+		height: 100% !important;
+		object-fit: cover;
+	}
+
+	/* Meta in FLOW below the image (the shipped absolute tops — incl.
+	   the inline desc top — go inert with position:static). */
+	.landing-v2.landing-home .landing-featured__titleblock {
+		position: static;
+		margin: 24px 0 0;
+		width: 380px;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 48px;
+		line-height: 50px;
+		letter-spacing: normal;
+		text-transform: uppercase;
+		color: #eeeef0;
+	}
+
+	.landing-v2.landing-home .landing-featured__titleline {
+		display: block;
+		white-space: normal;
+	}
+
+	.landing-v2.landing-home .landing-featured__desc {
+		position: static;
+		margin: 16px 0 0;
+		width: 380px;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 25px;
+		line-height: 29px;
+		letter-spacing: -0.015em; /* frame −0.375px (guide Body-Small −1% — frame wins) */
+		color: #eeeef0;
+	}
+
+	/* Right-edge diffusion re-inked for the dark ground. */
+	.landing-v2.landing-home .landing-featured__edge-tint {
+		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, rgba(22, 22, 22, 0.85) 100%);
+	}
+}

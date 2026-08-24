@@ -34,7 +34,15 @@ import LandingClosing from '../components/landing/LandingClosing.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
+/* The /services page's stylesheet rides along for the SHARED sv-rows
+   hover machinery (all selectors are .landing-v2 .sv-* namespaced —
+   nothing else on this page matches them; /services itself is
+   untouched). Landing-specific row geometry overrides live in
+   landing.css. */
+import '../styles/landing/services-v2.css';
 import '../styles/fonts.css';
+import { asset } from '../utils/asset.js';
+import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
 ---
 
 {/* landing-home (mobile rebuild, 2026-08-13): scopes the Figma
@@ -59,17 +67,16 @@ import '../styles/fonts.css';
       industry-hover) byte-unchanged. */}
   <LandingNetwork />
 
-  {/* Services — doubles as the departure runway (the grey ground the
-      full-screen founders photo scrolls off against) and now carries
-      the full stacked-services sequence (Figma 13:1729/13:2066):
-      centred intro line → title rise + morph to the small OUR
-      SERVICES → three pillar cards rise and stack at 150px offsets →
-      the fade-to-black (re-anchored, constants verbatim) into Our
-      Network. All beats in landing-services.js. Line 1 mixes faces;
-      its left edge aligns the O of OUR onto the first S of ACCESS
-      below (runtime glyph derivation, unchanged). FROM sits in its
-      own span so Beat A can exit it separately (the wrap keeps
-      element children whole). */}
+  {/* Services — the ROW-LIST redesign (frame 18:1694, 2026-08-24):
+      normal flow now — header (WHAT WE DO / FROM ACCESS–TO IMPACT /
+      the pillars note) + three pillar row lists riding the /services
+      page's own sv-rows hover machinery (shared module). The OLD
+      stacked-cards markup below survives UNTOUCHED for MOBILE (the
+      shipped build) and hides ≥1025; the new block is desktop-only.
+      THE FADE-TO-BLACK lives on this section's tail now (its third
+      home — landing-services.js, constants verbatim): services is
+      the one light→dark boundary in the current order, and Featured
+      Work arrives black-over-black. */}
   <section class="landing-outro" aria-label="Our services" data-landing-services>
     <div class="landing-services__stage" data-services-stage>
       <div class="landing-services__center" data-services-center>
@@ -82,13 +89,92 @@ import '../styles/fonts.css';
       </div>
       <LandingServicesStack />
     </div>
+
+    {/* NEW desktop build (display:none ≤1024 — mobile keeps the
+        stack above). Row markup follows the /services sv-rows
+        contract exactly so the shared machinery and stylesheet
+        apply verbatim; landing rows carry NO index (the frame draws
+        text only — sv-rows.js handles index-less marquees). Row
+        images: the frame's single reference image as placeholder on
+        every row, awaiting Oscar's per-row content drop
+        (services-rows.js). */}
+    <div class="landing-svcrows" data-svcrows>
+      <p class="landing-svcrows__label" data-svcrows-line>WHAT WE DO</p>
+      {/* FROM ACCESS / TO IMPACT — the frame draws line 2 in the
+          unlicensed Serrif Bold; the guide names this exact pair
+          MIXED DISPLAY (Serif 72/64/−4% + SANS Bold 72/64/−4.5%),
+          so the sans carries line 2 (flagged in the report). The
+          drawn 13-space lead is authored as margin (wrap-safe). */}
+      <h2 class="landing-svcrows__statement">
+        <span class="landing-svcrows__st-line landing-svcrows__st-serif" data-svcrows-line
+          >FROM ACCESS</span
+        >
+        <span class="landing-svcrows__st-line landing-svcrows__st-sans" data-svcrows-line
+          >TO IMPACT</span
+        >
+      </h2>
+      <p class="landing-svcrows__note" data-svcrows-line
+        >Our work is structured across three connected pillars: Immerse / Connect / Amplify.</p
+      >
+      {LANDING_SERVICE_PILLARS.map((p) => (
+        <div class="landing-svcrows__pillar">
+          <span class="landing-svcrows__topline" aria-hidden="true"></span>
+          <h3 class="landing-svcrows__name">
+            <span class="landing-svcrows__pname" data-svcrows-pline>{p.name}</span>
+            <span class="landing-svcrows__pnum" data-svcrows-pline>{p.num}</span>
+          </h3>
+          <p class="landing-svcrows__desc" data-svcrows-pline>{p.desc[0]}<br />{p.desc[1]}</p>
+          {/* MORE INFO → /services (the established family/recipe). */}
+          <a class="landing-svcrows__btn" href="/services" data-char-ripple-trigger>
+            <span data-char-ripple>MORE INFO</span>
+            <svg class="landing-svcrows__btn-arrow" viewBox="0 0 12 12" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" />
+            </svg>
+          </a>
+          <section
+            class="sv-rows"
+            data-sv-rows
+            style={`--sv-accent:${p.accent};--svcrow-pitch:${p.pitch}px`}
+            aria-label={`${p.name} services`}
+          >
+            <p class="sv-rows__label">{p.label}</p>
+            <ul class="sv-rows__list" data-sv-rows-list>
+              {p.rows.map((text) => (
+                <li
+                  class="sv-rows__row"
+                  data-sv-row
+                  data-text={text}
+                  data-img={asset(p.hoverImg)}
+                  tabindex="0"
+                >
+                  <span class="sv-rows__divider" aria-hidden="true"></span>
+                  <span class="sv-rows__inner">
+                    <span class="sv-rows__text">{text}</span>
+                  </span>
+                  <span class="sv-rows__fill" aria-hidden="true"></span>
+                  <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
+                  <span class="sv-rows__edges" aria-hidden="true"></span>
+                </li>
+              ))}
+            </ul>
+            <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
+              <span class="sv-rows__divider"></span>
+            </div>
+            <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
+              <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
+              <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
+            </div>
+          </section>
+        </div>
+      ))}
+    </div>
   </section>
 
-  {/* Featured Work — horizontal gallery; overlaps the services
-      trailing viewport (light-on-light continuous scroll). Its old
-      fade-to-black is RETIRED (frame 16:113 reorder — no light→dark
-      boundary follows it any more; constants recorded in
-      landing-featured.js). */}
+  {/* Featured Work — horizontal gallery on the DARK ground (frame
+      18:1694): follows services IN FLOW now — the −100dvh overlap is
+      retired ≥1025 (landing.css) because the services tail carries
+      the fade-to-black and this section arrives black-over-black
+      (landing-services.js, constants verbatim). */}
   <LandingFeatured />
 
   {/* We Create Access — light-on-light after Featured Work; the
