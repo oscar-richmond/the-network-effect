@@ -66,16 +66,46 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
         sweep element (and /landing's only h1); the anchor inside is
         the click surface — nav-motion builds the entrance chars
         INSIDE it so the link survives the char wrap. */}
+    {/* NAV RESPEC (frame 17:1637, 2026-08-24): the SSR text is the
+        MOBILE wordmark; on desktop ensureLogoChars() swaps it to
+        "TheNetworkEffect" (Serrif Medium 24 — landing.css) before
+        any wrap or reveal, so the mobile DOM stays byte-identical. */}
     <h1 class="home__logo"><a class="home__logo-link" href="/">THE NETWORK EFFECT</a></h1>
-    {/* "LET'S CHAT" replaces the visible address (Oscar's rev) — the
-        mailto target is UNCHANGED. The arrow is Oscar's supplied SVG
+    {/* FOUR DIRECT LINKS (frame 17:1638) — on desktop these replace
+        the MENU toggle (no toggle exists anywhere in frame 17:899);
+        hidden <=1024 where the burger + overlay stay the shipped
+        mobile nav. OUR NETWORK: the file carries no destination and
+        no page exists — an inert, focusable placeholder (the
+        founders-CTA precedent), flagged for Oscar. */}
+    <nav class="home__nav-links" aria-label="Primary">
+      <a class="home__nav-link" href="/work" data-char-ripple-trigger
+        ><span data-char-ripple>WORK</span></a
+      >
+      <a class="home__nav-link" href="/services" data-char-ripple-trigger
+        ><span data-char-ripple>SERVICES</span></a
+      >
+      <a class="home__nav-link" href="/founders" data-char-ripple-trigger
+        ><span data-char-ripple>FOUNDERS</span></a
+      >
+      <a
+        class="home__nav-link"
+        role="link"
+        aria-disabled="true"
+        tabindex="0"
+        data-char-ripple-trigger
+        ><span data-char-ripple>OUR NETWORK</span></a
+      >
+    </nav>
+    {/* "LET'S CHAT" replaces the visible address (Oscar's rev); the
+        mailto now points at the CONFIRMED address (nav respec
+        2026-08-24 — was networkeffectagency.co.uk). The arrow is Oscar's supplied SVG
         inlined per his spec: fill="currentColor" (the asset's
         hardcoded white fill stripped, its no-op full-rect clipPath
         dropped) so text + arrow are ONE blended element that can
         never desync under the nav's per-item difference treatment. */}
     <a
       class="home__topbar-email"
-      href="mailto:hello@networkeffectagency.co.uk"
+      href="mailto:hello@thenetworkeffect.co.uk"
       data-char-ripple-trigger
     >
       <span data-char-ripple>LET’S CHAT</span>

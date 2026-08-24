@@ -315,6 +315,24 @@
 
 .landing-v2 .ct-modal__logo[hidden] { display: none !important; }
 
+/* NAV RESPEC (frame 17:1637, 2026-08-24), desktop only: the twin
+   mirrors the new wordmark — "TheNetworkEffect" Serrif Medium 24 at
+   left 24 on the 64px bar (contact.js swaps the text and skips the
+   centring margin above the seam). Mobile keeps the shipped centred
+   18px twin untouched. */
+@media (min-width: 1025px) {
+	.landing-v2 .ct-modal__logo {
+		left: 24px;
+		height: 64px;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 24px;
+		line-height: 27px;
+		letter-spacing: 0.03em;
+	}
+}
+
 .landing-v2 .ct-modal__logo.is-open { opacity: 1; }
 
 /* ── Entrance hidden states (no-preference; the pills' fade+rise

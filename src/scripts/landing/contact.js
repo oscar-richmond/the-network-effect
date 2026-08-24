@@ -76,6 +76,13 @@ export function initContactPage() {
   const centreTwin = () => {
     if (twinCentred || !(logoTwin instanceof HTMLElement)) return;
     twinCentred = true;
+    /* NAV RESPEC (2026-08-24): the desktop wordmark is
+       "TheNetworkEffect" at left 24 (contact.css) — no centring
+       margin. Mobile keeps the shipped centred twin unchanged. */
+    if (!isMobileViewport()) {
+      logoTwin.textContent = 'TheNetworkEffect';
+      return;
+    }
     logoTwin.style.marginLeft = `${(-logoTwin.offsetWidth / 2).toFixed(1)}px`;
   };
 

@@ -5053,3 +5053,103 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    frame's additions. */
 .landing-v2 .landing-founders__label,
 .landing-v2 .landing-network__label { display: none; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   NAV RESPEC (file NgsyYiyjKRFhtPHyjc0aL4 frame 17:899, node
+   17:1637, 2026-08-24; page origin = frame y118 — Top bar −5..35 +
+   Chrome mockup 35..118 are both browser furniture). The row sits
+   18.5..45.5 with every item's optical centre on y=32: wordmark
+   "TheNetworkEffect" Serrif Medium 24/+0.03em at x24 (220×27), four
+   Dazzed Bold 12 links on 32px gaps centred on the page, LET'S CHAT
+   12 Bold right with its arrow ending x1696 (32 right margin vs the
+   bar's 24 — the frame's own asymmetry, carried by the email's 8px
+   margin). All >=1025: the shipped mobile nav (centred wordmark +
+   burger + overlay) is untouched — the links row's base state is
+   display:none and the wordmark's SSR text stays the mobile one
+   (nav-motion.js swaps it on desktop before any reveal).
+
+   BLEND WALK (the fragile area): each item carries its OWN
+   mix-blend-mode: difference; the bar stays background:transparent
+   with no transform/opacity/filter — a grid, nothing more — so every
+   blended box composites straight against the page ground (light
+   services grey, the dark hero video, the blue footer). The links
+   nav wrapper is never transformed (grid-column centring, NOT a
+   translate — a transformed wrapper would become a stacking context
+   and isolate its children's blends). Entrance/sweep filters ride
+   the .cr-char descendants, never the blended elements. */
+.landing-v2 .home__nav-links {
+	display: none;
+}
+
+@media (min-width: 1025px) {
+	/* 64px bar centres the row's content on y=32 (frame 18.5..45.5). */
+	.landing-v2 .home__topbar--about {
+		height: 64px;
+		padding: 0 24px;
+		align-items: center;
+	}
+
+	/* The MENU toggle is gone from DESKTOP (no toggle exists anywhere
+	   in frame 17:899 — the four direct links replace it). The button
+	   itself survives as the mobile burger below the seam; the
+	   overlay + menu.js stay whole. */
+	.landing-v2 .home__topbar--about .home__menu-cta {
+		display: none;
+	}
+
+	/* Wordmark: "TheNetworkEffect" Serrif Medium 24/27/+3%, left. */
+	.landing-v2 .home__topbar--about .home__logo {
+		grid-column: 1;
+		justify-self: start;
+		margin-inline: 0;
+		top: 0;
+		text-align: left;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 24px;
+		line-height: 27px;
+		letter-spacing: 0.03em;
+	}
+
+	.landing-v2 .home__nav-links {
+		grid-column: 2;
+		justify-self: center;
+		display: flex;
+		align-items: center;
+		gap: 32px; /* frame: 73−41 = 167−135 = 268−236 = 32 exactly */
+		pointer-events: auto;
+	}
+
+	.landing-v2 .home__nav-link {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 1;
+		letter-spacing: normal;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: #ffffff;
+		mix-blend-mode: difference;
+		cursor: pointer;
+	}
+
+	/* The house ring, in the blend system's own ink (the three-ink
+	   currentColor treatment — a fixed colour inverts arbitrarily
+	   under difference and can vanish; see the topbar ring note). */
+	.landing-v2 .home__nav-link:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+
+	/* LET'S CHAT joins the links' type (frame: Dazzed Bold 12); the
+	   8px margin lands the arrow's right edge at x1696. The arrow
+	   keeps its glyph-exact 8.976px sizing (frame draws 9). */
+	.landing-v2 .home__topbar--about .home__topbar-email {
+		font-weight: 700;
+		font-size: 12px;
+		margin-right: 8px;
+	}
+}

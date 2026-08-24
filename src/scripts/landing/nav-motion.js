@@ -16,6 +16,8 @@
  * elements, the safe blend shape. Reduced motion: instant states.
  * Keyframes/classes (cr-nav-in / cr-nav-out) live in landing.css.
  */
+import { isMobileViewport } from './viewport.js';
+
 export const NAV_CHAR_STAGGER_S = 0.03;
 const ENTRANCE_AT_MS = 300;
 
@@ -23,6 +25,10 @@ export function getNavParts() {
   return [
     document.querySelector('[data-menu-label-menu]'),
     document.querySelector('.home__logo'),
+    /* The four direct links (nav respec 2026-08-24) ride every
+       sweep — entrance, closing exit — as their own parts. On
+       mobile they are display:none and the sweeps are no-ops. */
+    ...document.querySelectorAll('.home__nav-link'),
     document.querySelector('.home__topbar-email'),
   ].filter((el) => el instanceof HTMLElement);
 }
@@ -34,6 +40,11 @@ export function ensureLogoChars() {
      clickable-logo rev) — build the chars THERE so the anchor
      survives; the sweep still finds .cr-char under .home__logo. */
   const host = logo.querySelector('.home__logo-link') ?? logo;
+  /* NAV RESPEC (frame 17:1637): the DESKTOP wordmark is
+     "TheNetworkEffect" — swapped here, before the wrap and before
+     any reveal, so SSR keeps the mobile text and the mobile DOM
+     stays byte-identical. Load-time seam, like the section modules. */
+  if (!isMobileViewport()) host.textContent = 'TheNetworkEffect';
   const text = host.textContent;
   host.textContent = '';
   const sr = document.createElement('span');

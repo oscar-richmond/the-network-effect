@@ -186,6 +186,7 @@ export function initSplash(root) {
          would sweep all three parts). */
       [
         document.querySelector('[data-menu-label-menu]'),
+        ...document.querySelectorAll('.home__nav-link'),
         document.querySelector('.home__topbar-email'),
       ].forEach((part) => {
         if (!(part instanceof HTMLElement)) return;
