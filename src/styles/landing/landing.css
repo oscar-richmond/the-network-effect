@@ -5646,7 +5646,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		left: 24px;
 	}
 
-	/* VIEW ALL — the frame's filled #343439 pill, white 16 Bold. */
+	/* VIEW ALL — the frame's filled #343439 pill, white 16 Bold. The
+	   arrow asset is the MORE-INFO family's BAKED-BLUE svg (an <img>,
+	   no currentColor) — filtered to white here (R2, Oscar's report);
+	   mobile keeps the shipped blue. */
+	.landing-v2.landing-home .landing-featured__viewall img {
+		filter: brightness(0) invert(1);
+	}
+
 	.landing-v2.landing-home .landing-featured__viewall {
 		right: 24px;
 		background: #343439;
@@ -5674,7 +5681,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-featured__imgwin {
 		position: relative;
-		width: 380px;
+		width: 100%;
 		height: 249px;
 	}
 
@@ -5692,37 +5699,46 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	/* Meta in FLOW below the image (the shipped absolute tops — incl.
-	   the inline desc top — go inert with position:static). */
+	   the inline desc top — go inert with position:static).
+	   R2 (Oscar, 2026-08-24): SENTENCE CASE (the caps source is
+	   lowercased with the block's first letter restored — data and
+	   mobile untouched), ONE line per title (the shipped two line
+	   spans weld with a space), descriptions and /0N numbers GONE. */
 	.landing-v2.landing-home .landing-featured__titleblock {
 		position: static;
 		margin: 24px 0 0;
-		width: 380px;
+		width: 100%;
 		font-family: 'Serrif', serif;
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 48px;
 		line-height: 50px;
 		letter-spacing: normal;
-		text-transform: uppercase;
+		/* Sentence case: the TEXT is cased in landing-featured.js
+		   (desktop only — ::first-letter can't reach through the
+		   reveal wrap's inline-block atoms); the base rule's
+		   uppercase transform is switched OFF so the cased glyphs
+		   actually render. */
+		text-transform: none;
+		white-space: nowrap;
 		color: #eeeef0;
 	}
 
 	.landing-v2.landing-home .landing-featured__titleline {
-		display: block;
-		white-space: normal;
+		display: inline;
+		white-space: nowrap;
+	}
+
+	.landing-v2.landing-home .landing-featured__titleline + .landing-featured__titleline::before {
+		content: ' ';
+	}
+
+	.landing-v2.landing-home .landing-featured__index {
+		display: none;
 	}
 
 	.landing-v2.landing-home .landing-featured__desc {
-		position: static;
-		margin: 16px 0 0;
-		width: 380px;
-		font-family: 'Serrif', serif;
-		font-weight: 500;
-		font-synthesis: none;
-		font-size: 25px;
-		line-height: 29px;
-		letter-spacing: -0.015em; /* frame −0.375px (guide Body-Small −1% — frame wins) */
-		color: #eeeef0;
+		display: none;
 	}
 
 	/* Right-edge diffusion re-inked for the dark ground. */

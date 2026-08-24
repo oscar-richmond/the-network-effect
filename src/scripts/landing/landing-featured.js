@@ -125,6 +125,23 @@ export function initLandingFeatured() {
 
   const stage = section.querySelector('[data-featured-stage]');
   const strip = section.querySelector('[data-featured-strip]');
+  /* R2 (Oscar, 2026-08-24): SENTENCE-CASE the caps source text —
+     DESKTOP ONLY (the mobile path returned above; its DOM keeps the
+     shipped caps). Runs before any reveal wrap so the atoms carry
+     the cased glyphs. First line leads with the capital; following
+     lines (welded onto the same rendered line by CSS) run lower. */
+  section.querySelectorAll('[data-featured-card]').forEach((card) => {
+    Array.from(card.querySelectorAll('.landing-featured__titleline')).forEach((line, i) => {
+      const tn = Array.from(line.childNodes).find(
+        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
+      );
+      if (!tn) return;
+      const low = tn.textContent.toLowerCase();
+      tn.textContent = i === 0
+        ? low.replace(/[a-z]/i, (ch) => ch.toUpperCase())
+        : low;
+    });
+  });
   const lines = Array.from(section.querySelectorAll('[data-featured-line]'));
   const viewall = section.querySelector('[data-featured-viewall]');
   const cards = Array.from(section.querySelectorAll('[data-featured-card]'));
@@ -152,25 +169,44 @@ export function initLandingFeatured() {
      FEATURED a line above WORK). */
   const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
   const hlTops = [0, 0];
-  /* Frame 18:1694 (2026-08-24): STATIC layout — header (the welded
-     FEATURED WORK line + VIEW ALL) at y89, strip at y191, straight
-     off the frame; the old bottom-anchored derivation retires with
-     the light-ground design. The 191 stays clip-GUARDED against
-     short viewports (the tallest column is ~785 — image 450 + meta). */
-  const HEADER_TOP_PX = 89;
-  const STRIP_TOP_PX = 191;
+  /* R2 (Oscar, 2026-08-24): the whole composition — header + the
+     carousel block — centres VERTICALLY on the stage, with a fixed
+     64px between the header and the image tops (his call: the
+     frame's 89/191 put the header behind the tall images on short
+     viewports). With the descriptions gone the block is header 50 +
+     64 + tallest image 450 + 24 + one 50px title line = 638. */
+  const HL_H_PX = 50;
+  const HEADER_IMG_GAP_PX = 64;
+  const META_GAP_PX = 24;
+  const TITLE_H_PX = 50;
+  const MAX_IMG_H_PX = 450;
+  /* R2 fit rule (Oscar's Adolescence call, generalised): a card
+     whose single-line sentence-case title outgrows its cycle width
+     WIDENS to the title (image follows at width:100%) — measured
+     live, so copy changes self-maintain. Runs before the layout
+     derivations; the travel re-derives from the wider strip. */
+  const fitCards = () => {
+    cards.forEach((c) => {
+      const t = c.querySelector('.landing-featured__titleblock');
+      if (!(t instanceof HTMLElement)) return;
+      c.style.width = '';
+      /* scrollWidth ≥ clientWidth always — only STRICT overflow
+         widens, so in-cycle cards keep their exact cycle width. */
+      if (t.scrollWidth > t.clientWidth + 1) c.style.width = `${t.scrollWidth + 2}px`;
+    });
+  };
+
   const place = () => {
-    const maxBottom = Math.max(...cards.map((c) => {
-      const d = c.querySelector('.landing-featured__desc');
-      return d instanceof HTMLElement ? d.offsetTop + d.offsetHeight : 0;
-    }), 0);
-    const stripTop = Math.min(STRIP_TOP_PX, stageH() - maxBottom - DESC_CLEAR_PX);
+    fitCards();
+    const blockH = HL_H_PX + HEADER_IMG_GAP_PX + MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX;
+    const headerTop = Math.max(24, (stageH() - blockH) / 2);
+    const stripTop = headerTop + HL_H_PX + HEADER_IMG_GAP_PX;
     strip.style.top = `${stripTop.toFixed(0)}px`;
-    hlTops[0] = HEADER_TOP_PX;
-    hlTops[1] = HEADER_TOP_PX; // the pair sits on ONE line now
+    hlTops[0] = headerTop;
+    hlTops[1] = headerTop; // the pair sits on ONE line
     hls.forEach((hl, i) => { hl.style.top = `${hlTops[i]}px`; });
     if (viewall instanceof HTMLElement) {
-      viewall.style.top = `${HEADER_TOP_PX}px`;
+      viewall.style.top = `${headerTop.toFixed(0)}px`;
     }
   };
 
