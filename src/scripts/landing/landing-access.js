@@ -78,10 +78,18 @@ const BLUR_DEAD_FRACTION = 0.5;
 const VEIL_BLUR_PX = 10;
 const VEIL_RGB = '238,238,240';
 const VEIL_ALPHA = 0.4;
-/* Words: centred 344 in the cell (x148), fading over this fraction
-   of a pitch off the landed slot. */
+/* Words: centred 344 in the cell (x148). THE WINDOW (Oscar,
+   2026-08-26 — was a bare ramp to 0.35×pitch, full only at dead
+   centre): a TRAPEZOID of distance-from-the-landed-slot — solid
+   within WORD_FULL_PX, ramping out to WORD_WINDOW_PX. Adjacent
+   pair cells sit one 648 pitch apart, so two words share a row iff
+   the window exceeds HALF A PITCH (324) — the hard maximum. 290
+   keeps a guaranteed 68px word-free band between neighbours; both
+   rows read the same progress, so a pair's words stay in lockstep
+   at every position. Tune these two by feel. */
 const WORD_X_IN_CELL_PX = 148;
-const WORD_ZONE_FRACTION = 0.35;
+const WORD_WINDOW_PX = 290; // opacity reaches 0 here (max safe: 324)
+const WORD_FULL_PX = 140;   // fully solid within this distance
 const LINE_STAGGER_S = 0.12;
 const WORDS_AT_MS = 700;
 const ENTRY_CURVE = 'transform 1.2s cubic-bezier(0.42, 0, 0.24, 1)';
@@ -388,7 +396,6 @@ export function initLandingAccess() {
 
   const updateWords = (shiftTop, shiftBottom) => {
     const w = vw();
-    const zone = X_PITCH * WORD_ZONE_FRACTION;
     const exitFade = Math.max(0, 1 - state.exitT / EXIT_WORD_FADE_T);
     wordSlots.forEach((slot) => {
       const row = slot.dataset.row;
@@ -400,7 +407,11 @@ export function initLandingAccess() {
       slot.style.left = `${left.toFixed(1)}px`;
       const centre = left - WORD_X_IN_CELL_PX + CELL_W / 2;
       const dist = Math.abs(centre - landedCentre(row));
-      const near = Math.max(0, 1 - dist / zone);
+      const near = dist <= WORD_FULL_PX
+        ? 1
+        : dist >= WORD_WINDOW_PX
+          ? 0
+          : 1 - (dist - WORD_FULL_PX) / (WORD_WINDOW_PX - WORD_FULL_PX);
       slot.style.opacity = (near * exitFade * state.wordFactor).toFixed(3);
     });
   };
