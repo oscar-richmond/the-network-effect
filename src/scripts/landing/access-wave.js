@@ -52,7 +52,11 @@ export const GEOMETRY_SEGMENTS = 100;
 /* Shader pair — wave-shader.js verbatim (see its header for the full
  * provenance notes: cover UVs from the reference's utils.glsl, snoise
  * from Ashima/stegu webgl-noise, uVelocityRamp = the entry-warp fix). */
-const VERTEX_SHADER = /* glsl */ `
+/** Builds the vertex shader for a travel AXIS: 'y' (the shipped
+ *  vertical-column bow) or 'x' (the horizontal-rows rebuild,
+ *  2026-08-25) — the bow displaces along the travel axis, arched
+ *  across the perpendicular one. Same maths, transposed. */
+const vertexShaderFor = (axis) => /* glsl */ `
   precision highp float;
 
   attribute vec3 position;
@@ -83,7 +87,9 @@ const VERTEX_SHADER = /* glsl */ `
   }
 
   vec3 deformationCurve(vec3 position, vec2 uv) {
-    position.y = position.y - (sin(uv.x * PI) * min(abs(uScrollVelocity), 5.0) * uVelocityRamp * sign(uScrollVelocity) * -0.01);
+    ${axis === 'x'
+      ? 'position.x = position.x - (sin(uv.y * PI) * min(abs(uScrollVelocity), 5.0) * uVelocityRamp * sign(uScrollVelocity) * -0.01);'
+      : 'position.y = position.y - (sin(uv.x * PI) * min(abs(uScrollVelocity), 5.0) * uVelocityRamp * sign(uScrollVelocity) * -0.01);'}
 
     return position;
   }
@@ -185,7 +191,7 @@ export class WavePlane {
       depthTest: false,
       depthWrite: false,
       transparent: false,
-      vertex: VERTEX_SHADER,
+      vertex: vertexShaderFor(WAVE_AXIS),
       fragment: FRAGMENT_SHADER,
       uniforms: {
         uTexture: { value: texture },
@@ -262,7 +268,12 @@ export class WavePlane {
  *   differentiates per tick into Lenis-family px/frame velocities.
  * @returns {{ resize: () => void, tickOnce: () => void, debugState: () => object, destroy: () => void } | null}
  */
-export function createAccessWave(stage, canvas, sides, getPositions) {
+/* Module-level axis latch — set per createAccessWave call before any
+   plane compiles its program (one live instance per page). */
+let WAVE_AXIS = 'y';
+
+export function createAccessWave(stage, canvas, sides, getPositions, { axis = 'y' } = {}) {
+  WAVE_AXIS = axis;
   const canHover =
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');

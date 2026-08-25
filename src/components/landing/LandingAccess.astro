@@ -33,14 +33,39 @@ import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 
-/* Left column travels UP: top→bottom = pad, pair 1..6, pad. */
-const leftStack = [a(9), a(7), a(2), a(1), a(6), a(13), a(3), a(10)];
-/* Right column travels DOWN: top→bottom = pad, pair 6..1, pad. */
-const rightStack = [a(10), a(4), a(14), a(12), a(5), a(11), a(8), a(9)];
+/* HORIZONTAL ROWS (frame 0:91, 2026-08-25 — the vertical columns
+   retire). SAME imagery, SAME pair order, no swaps: the old left
+   column's pair images become the TOP row (pairs 1→6 left-to-right,
+   travelling LEFT); the old right column's become the BOTTOM row —
+   its shipped top→bottom order (pairs 6→1) IS the bottom row's
+   left-to-right order (travelling RIGHT), so the matched pair lands
+   together BY CONSTRUCTION off one clock (the mobile rows' device).
+   Pads bookend for edge coverage and never land. Cell = index into
+   the strip; `pair` marks landable cells (0-based pair index). */
+const topStrip = [
+  { src: a(9) }, // lead pad
+  { src: a(7), pair: 0 },
+  { src: a(2), pair: 1 },
+  { src: a(1), pair: 2 },
+  { src: a(6), pair: 3 },
+  { src: a(13), pair: 4 },
+  { src: a(3), pair: 5 },
+  { src: a(10) }, { src: a(9) }, { src: a(10) }, // tail pads (p=1 coverage)
+];
+const bottomStrip = [
+  { src: a(10) }, { src: a(9) }, // lead pads (p=1 coverage)
+  { src: a(4), pair: 5 },
+  { src: a(14), pair: 4 },
+  { src: a(12), pair: 3 },
+  { src: a(5), pair: 2 },
+  { src: a(11), pair: 1 },
+  { src: a(8), pair: 0 },
+  { src: a(9) }, // tail pad
+];
 
-/* Index of the image that is centred at rest (pair 1). */
-const PRIME_LEFT = 1;
-const PRIME_RIGHT = 6;
+/* MOBILE (unchanged markup below) still reads these: */
+const leftStack = [a(9), a(7), a(2), a(1), a(6), a(13), a(3), a(10)];
+const rightStack = [a(10), a(4), a(14), a(12), a(5), a(11), a(8), a(9)];
 ---
 
 <section class="landing-access" data-landing-access aria-label="We create access">
@@ -48,67 +73,102 @@ const PRIME_RIGHT = 6;
     {/* Image columns — masked static wrapper (the section's top/bottom
         fade) around the travelling flex column. aria-hidden: ambient
         imagery; the words + headline carry the meaning. */}
-    <div class="landing-access__colmask landing-access__colmask--left" aria-hidden="true">
-      <div class="landing-access__col" data-access-col="left">
-        {leftStack.map((src, i) => (
-          <figure class={`landing-access__item${i === PRIME_LEFT ? ' is-prime' : ''}`} data-carousel-slide>
-            <img src={src} alt="" loading="eager" decoding="async" />
+    {/* ── THE ROWS (frame 0:91): two 640×340 strips on a 648 pitch,
+        top at stage y718 travelling LEFT, bottom at y1066 travelling
+        RIGHT, base positions = the frame's landed pair-1 state (the
+        RM/no-JS frame). The wrappers park offscreen sideways for the
+        entrance; landing-access.js drives everything from one
+        progress. */}
+    <div class="landing-access__rowwrap landing-access__rowwrap--top" aria-hidden="true">
+      <div class="landing-access__row landing-access__row--top" data-access-row="top">
+        {topStrip.map((cell) => (
+          <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`}>
+            <img src={cell.src} alt="" loading="eager" decoding="async" />
           </figure>
         ))}
       </div>
     </div>
-    <div class="landing-access__colmask landing-access__colmask--right" aria-hidden="true">
-      <div class="landing-access__col" data-access-col="right">
-        {rightStack.map((src, i) => (
-          <figure class={`landing-access__item${i === PRIME_RIGHT ? ' is-prime' : ''}`} data-carousel-slide>
-            <img src={src} alt="" loading="eager" decoding="async" />
+    <div class="landing-access__rowwrap landing-access__rowwrap--bottom" aria-hidden="true">
+      <div class="landing-access__row landing-access__row--bottom" data-access-row="bottom">
+        {bottomStrip.map((cell) => (
+          <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`}>
+            <img src={cell.src} alt="" loading="eager" decoding="async" />
           </figure>
         ))}
       </div>
     </div>
 
-    {/* Media shader canvas — ONE static full-stage canvas for both
-        columns (access-wave.js, the about-3 wave treatment; planes
-        track the image rects, each with its column's own velocity
-        sign). Replaces the old two-canvas curve-media warp. */}
+    {/* Media shader — the same one-canvas wave, bow axis X. */}
     <canvas class="landing-access__canvas" data-access-canvas aria-hidden="true"></canvas>
 
-    {/* Dim veils — a second pair of travelling columns carrying ONLY
-        the white/backdrop-blur overlays, mirrored 1:1 with the image
-        columns and driven by the same progress value. They must sit
-        ABOVE the canvases (backdrop-filter samples what's painted
-        below), so they can't live inside the image columns; their
-        wrappers are NOT masked — a mask would become a backdrop root
-        and cut the veils off from the canvas pixels beneath. */}
-    <div class="landing-access__veilwrap landing-access__veilwrap--left" aria-hidden="true">
-      <div class="landing-access__veilcol landing-access__veilcol--left" data-access-veils="left">
-        {leftStack.map(() => (
-          <span class="landing-access__veil"></span>
+    {/* Dim veils — strips mirroring the rows 1:1 above the canvas
+        (backdrop-filter samples beneath; wrappers unmasked — the
+        backdrop-root rule). The frame's off-centre treatment: 60%
+        opacity over the ground ≡ a ground-coloured 0.4 veil + the
+        drawn 10px blur — implemented on the veil so the GL planes
+        stay untouched. */}
+    <div class="landing-access__veilwrap landing-access__veilwrap--top" aria-hidden="true">
+      <div class="landing-access__veilrow" data-access-veils="top">
+        {topStrip.map((cell) => (
+          <span class={`landing-access__veil${cell.pair === 0 ? ' is-prime' : ''}`}></span>
         ))}
       </div>
     </div>
-    <div class="landing-access__veilwrap landing-access__veilwrap--right" aria-hidden="true">
-      <div class="landing-access__veilcol landing-access__veilcol--right" data-access-veils="right">
-        {rightStack.map(() => (
-          <span class="landing-access__veil"></span>
+    <div class="landing-access__veilwrap landing-access__veilwrap--bottom" aria-hidden="true">
+      <div class="landing-access__veilrow" data-access-veils="bottom">
+        {bottomStrip.map((cell) => (
+          <span class={`landing-access__veil${cell.pair === 0 ? ' is-prime' : ''}`}></span>
         ))}
       </div>
     </div>
 
-    {/* Word overlays — Serrif Regular, difference, centred on each
-        column's centre band; text swaps per pair (sentence case per
-        the Figma). Static markup = pair 1, the reduced-motion frame. */}
-    <p class="landing-access__word landing-access__word--left" data-access-word="left">
-      <span class="landing-access__word-inner">Talent</span>
-    </p>
-    <p class="landing-access__word landing-access__word--right" data-access-word="right">
-      <span class="landing-access__word-inner">Brands</span>
-    </p>
+    {/* WORD LAYER — one slot per pair per row, Serrif Regular 56
+        white DIFFERENCE, centred 344×61 on the landed cell (frame
+        x148/y139 inside the 640×340 mask = dead centre). The slots
+        move by layout `left` (landing-access.js), NEVER transform:
+        their ancestor chain stays section > stage, so the blend
+        composites against the canvas/imagery beneath (the shipped
+        blend map, kept). Pair-1 slots are on for the RM frame. */}
+    <div class="landing-access__words" aria-hidden="true">
+      {ACCESS_PAIRS.map((pair, k) => (
+        <>
+          <span
+            class={`landing-access__wordslot landing-access__wordslot--top${k === 0 ? ' is-on' : ''}`}
+            data-access-wordslot
+            data-row="top"
+            data-pair={k}
+          >{pair[0]}</span>
+          <span
+            class={`landing-access__wordslot landing-access__wordslot--bottom${k === 0 ? ' is-on' : ''}`}
+            data-access-wordslot
+            data-row="bottom"
+            data-pair={k}
+          >{pair[1]}</span>
+        </>
+      ))}
+    </div>
 
-    {/* Centre headline — mixed faces per the file: WE + the tail in
-        Dazzed Bold, the middle clause in Serrif Medium. Authored as
-        the file's own four rendered lines (mixed faces INSIDE lines,
-        so the reveal uses the child-preserving exact wrap). */}
+    {/* DESKTOP headline (frame 0:91) — the FRAGMENTED composition:
+        WHAT WE DO label + seven Dazzed Bold 100/88/−4% lines, each
+        at its own x (hierarchy from position per the type guide —
+        every line one size). Hidden ≤1024; the welded block below
+        stays as the MOBILE headline. */}
+    <div class="landing-access__dheadline" aria-hidden="false">
+      <p class="landing-access__dlabel" data-access-dline>WHAT WE DO</p>
+      <h2 class="landing-access__dlines">
+        <span class="landing-access__dline landing-access__dline--1" data-access-dline>WE</span>
+        <span class="landing-access__dline landing-access__dline--2" data-access-dline>CREATE</span>
+        <span class="landing-access__dline landing-access__dline--3" data-access-dline>ACCESS</span>
+        <span class="landing-access__dline landing-access__dline--4" data-access-dline>BETWEEN</span>
+        <span class="landing-access__dline landing-access__dline--5" data-access-dline>WORLDS</span>
+        <span class="landing-access__dline landing-access__dline--6" data-access-dline>THAT DON’T</span>
+        <span class="landing-access__dline landing-access__dline--7" data-access-dline>NORMALLY CONNECT</span>
+      </h2>
+    </div>
+
+    {/* MOBILE headline — the shipped welded mixed-face block (hidden
+        ≥1025 now; the fragmented composition above replaces it on
+        desktop). */}
     <h2 class="landing-access__headline" data-access-headline>
       <span class="landing-access__hl-line" data-access-line
         ><span class="landing-access__hl-dazzed">{'WE '}</span><span class="landing-access__hl-serrif">CREATE ACCESS</span></span
@@ -195,20 +255,9 @@ const PRIME_RIGHT = 6;
     {/* Page-edge treatment — the /services GradualBlur bands over a
         same-colour gradient tint (see landing.css). */}
     <div class="landing-access__edge-tint landing-access__edge-tint--top" aria-hidden="true"></div>
-    <div class="landing-access__edge-tint landing-access__edge-tint--bottom" aria-hidden="true"></div>
     <GradualBlur
       target="parent"
       position="top"
-      strength={3}
-      height="12rem"
-      divCount={2}
-      exponential={true}
-      opacity={0.8}
-      zIndex={6}
-    />
-    <GradualBlur
-      target="parent"
-      position="bottom"
       strength={3}
       height="12rem"
       divCount={2}

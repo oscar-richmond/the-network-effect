@@ -5857,3 +5857,220 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #232326;
 	}
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   WE CREATE ACCESS — HORIZONTAL ROWS (file CpGcHLnIKga7iufELZpYQ5
+   frame 0:91, 2026-08-25; page origin = frame −118). The vertical
+   columns retire; the mobile subtree and its styles are untouched.
+
+   STAGE: the frame's content is 1446 tall — taller than real
+   viewports — so the stage takes the network's bottom-anchored
+   sticky (top: 100dvh − 1446): rows fully in view, the headline's
+   lower lines above them, the frame's own window.
+
+   BLEND WALK (known-fragile, mapped): the difference word slots
+   live in .landing-access__words — ancestors section > stage only,
+   NO transform/filter/opacity/mask; they move by layout `left`
+   (landing-access.js). The translated rows, the canvas and the
+   translated veil strips are all EARLIER SIBLINGS — backdrop, never
+   blend ancestors. Veil strips are unmasked (a mask would form a
+   backdrop root and cut their blur off from the canvas beneath).
+
+   GUIDE MAPPING: headline = Display XL 100/88 (frame −4% vs the
+   guide's sans −5% — frame wins, flagged); every line one size,
+   hierarchy from position only ✓ the fragmented-statement rule.
+   Words = Serrif Regular 56/50/−3.5% (no named guide style —
+   flagged); label = the 12/14 label family at the frame's −1.5%. */
+@media (min-width: 1025px) {
+	/* Section = stage + the pinned runway (5×400 pair steps + the
+	   1900 side exit). Sticky releases at the section bottom. */
+	.landing-v2.landing-home .landing-access {
+		height: calc(1446px + 3900px);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2.landing-home .landing-access {
+			height: 1446px; /* the static pair-1 frame, no runway */
+		}
+	}
+
+	.landing-v2.landing-home .landing-access__stage {
+		position: sticky;
+		top: calc(100vh - 1446px);
+		top: calc(100dvh - 1446px);
+		height: 1446px;
+	}
+
+	/* The OLD centre headline is the MOBILE composition now. */
+	.landing-v2.landing-home .landing-access__headline {
+		display: none;
+	}
+
+	/* ── Fragmented headline (label + seven Display XL lines). */
+	.landing-v2.landing-home .landing-access__dlabel {
+		position: absolute;
+		left: 24px;
+		top: 100px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: -0.015em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-access__dline {
+		position: absolute;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 100px;
+		line-height: 88px;
+		letter-spacing: -0.04em; /* frame −4px (guide sans display −5% — frame wins) */
+		white-space: nowrap;
+		color: #161616;
+	}
+
+	/* Frame x / (frame y − 118 − half the 88 box): 90px pitch. */
+	.landing-v2.landing-home .landing-access__dline--1 { left: 522px; top: 100px; }
+	.landing-v2.landing-home .landing-access__dline--2 { left: 522px; top: 190px; }
+	.landing-v2.landing-home .landing-access__dline--3 { left: 247px; top: 280px; }
+	.landing-v2.landing-home .landing-access__dline--4 { left: 764px; top: 280px; }
+	.landing-v2.landing-home .landing-access__dline--5 { left: 764px; top: 370px; }
+	.landing-v2.landing-home .landing-access__dline--6 { left: 278px; top: 460px; }
+	.landing-v2.landing-home .landing-access__dline--7 { left: 498px; top: 550px; }
+
+	/* ── Rows: 640×340 cells, 8px gaps (pitch 648). Base positions =
+	   the frame's landed PAIR-1 state (RM/no-JS frame): top strip's
+	   lead pad at 50% − 1238 puts pair 1's cell centre at 50% − 270;
+	   the bottom strip's base puts its pair-1 cell centre at
+	   50% + 272 (frame: −374 / −480 wrappers at 1728). */
+	.landing-v2.landing-home .landing-access__rowwrap {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 340px;
+	}
+
+	.landing-v2.landing-home .landing-access__rowwrap--top { top: 718px; }
+	.landing-v2.landing-home .landing-access__rowwrap--bottom { top: 1066px; }
+
+	.landing-v2.landing-home .landing-access__row {
+		position: absolute;
+		top: 0;
+		display: flex;
+		gap: 8px;
+	}
+
+	.landing-v2.landing-home .landing-access__row--top { left: calc(50% - 1238px); }
+	.landing-v2.landing-home .landing-access__row--bottom { left: calc(50% - 4584px); }
+
+	.landing-v2.landing-home .landing-access__cell {
+		flex: none;
+		width: 640px;
+		height: 340px;
+		margin: 0;
+		overflow: hidden;
+	}
+
+	.landing-v2.landing-home .landing-access__cell img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* ── Veil strips (mirror geometry; JS drives live values, these
+	   are the RM/no-JS defaults: off-centre = the frame's 60%-over-
+	   ground dim + 10px blur; the prime pair sharp). */
+	.landing-v2.landing-home .landing-access__veilwrap {
+		position: absolute;
+		left: 0;
+		right: 0;
+		/* The retired vertical build's base rule pins width:344 (its
+		   column width) — caught in verification: the veil rows' 50%
+		   resolved against that box, landing every veil 692px off its
+		   cell. Full-bleed here. */
+		width: auto;
+		top: auto;
+		bottom: auto;
+		transform: none;
+		height: 340px;
+		pointer-events: none;
+	}
+
+	.landing-v2.landing-home .landing-access__veilwrap--top { top: 718px; }
+	.landing-v2.landing-home .landing-access__veilwrap--bottom { top: 1066px; }
+
+	.landing-v2.landing-home .landing-access__veilrow {
+		position: absolute;
+		top: 0;
+		display: flex;
+		gap: 8px;
+	}
+
+	.landing-v2.landing-home .landing-access__veilwrap--top .landing-access__veilrow { left: calc(50% - 1238px); }
+	.landing-v2.landing-home .landing-access__veilwrap--bottom .landing-access__veilrow { left: calc(50% - 4584px); }
+
+	.landing-v2.landing-home .landing-access__veil {
+		flex: none;
+		width: 640px;
+		height: 340px;
+		background: rgba(238, 238, 240, 0.4);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+	}
+
+	.landing-v2.landing-home .landing-access__veil.is-prime {
+		background: transparent;
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
+
+	/* ── Word layer (see the blend walk above). */
+	.landing-v2.landing-home .landing-access__words {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 4;
+	}
+
+	.landing-v2.landing-home .landing-access__wordslot {
+		position: absolute;
+		width: 344px;
+		text-align: center;
+		font-family: 'Serrif', serif;
+		font-weight: 400;
+		font-synthesis: none;
+		font-size: 56px;
+		line-height: 50px;
+		letter-spacing: -0.035em; /* frame −1.96px */
+		color: #ffffff;
+		mix-blend-mode: difference;
+		opacity: 0;
+	}
+
+	/* Frame: word box y139 in the 340 cell → row top + 139 (61-box
+	   centre ≈ the cell centre). */
+	.landing-v2.landing-home .landing-access__wordslot--top { top: calc(718px + 139px); }
+	.landing-v2.landing-home .landing-access__wordslot--bottom { top: calc(1066px + 139px); }
+
+	/* RM/no-JS: pair 1's words on, at the landed slots. */
+	.landing-v2.landing-home .landing-access__wordslot.is-on { opacity: 1; }
+	.landing-v2.landing-home .landing-access__wordslot--top.is-on { left: calc(50% - 270px - 172px); }
+	.landing-v2.landing-home .landing-access__wordslot--bottom.is-on { left: calc(50% + 272px - 172px); }
+}
+
+/* The new desktop subtree must not exist below the seam (mobile is
+   the shipped rows build, byte-identical). */
+@media (max-width: 1024px) {
+	.landing-v2 .landing-access__rowwrap,
+	.landing-v2 .landing-access__words,
+	.landing-v2 .landing-access__dheadline {
+		display: none;
+	}
+}
