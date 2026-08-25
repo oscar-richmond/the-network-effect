@@ -71,29 +71,17 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
         "TheNetworkEffect" (Serrif Medium 24 — landing.css) before
         any wrap or reveal, so the mobile DOM stays byte-identical. */}
     <h1 class="home__logo"><a class="home__logo-link" href="/">THE NETWORK EFFECT</a></h1>
-    {/* FOUR DIRECT LINKS (frame 17:1638) — on desktop these replace
-        the MENU toggle (no toggle exists anywhere in frame 17:899);
-        hidden <=1024 where the burger + overlay stay the shipped
-        mobile nav. OUR NETWORK: the file carries no destination and
-        no page exists — an inert, focusable placeholder (the
-        founders-CTA precedent), flagged for Oscar. */}
+    {/* TWO DIRECT LINKS (frame 1:643, 2026-08-26 — supersedes the
+        17:1638 four-link build): WORK and SERVICES only, 18px on the
+        32px gap; FOUNDERS and the inert OUR NETWORK placeholder are
+        DROPPED by the file. Hidden <=1024 where the burger + overlay
+        stay the shipped mobile nav. */}
     <nav class="home__nav-links" aria-label="Primary">
       <a class="home__nav-link" href="/work" data-char-ripple-trigger
         ><span data-char-ripple>WORK</span></a
       >
       <a class="home__nav-link" href="/services" data-char-ripple-trigger
         ><span data-char-ripple>SERVICES</span></a
-      >
-      <a class="home__nav-link" href="/founders" data-char-ripple-trigger
-        ><span data-char-ripple>FOUNDERS</span></a
-      >
-      <a
-        class="home__nav-link"
-        role="link"
-        aria-disabled="true"
-        tabindex="0"
-        data-char-ripple-trigger
-        ><span data-char-ripple>OUR NETWORK</span></a
       >
     </nav>
     {/* "LET'S CHAT" replaces the visible address (Oscar's rev); the

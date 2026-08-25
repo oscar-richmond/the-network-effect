@@ -4957,17 +4957,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   to the centred region; strip drops BELOW the rows with the
 	   frame's 48px gap. Internal behaviour untouched. */
 	.landing-v2.landing-home .landing-network {
-		height: calc(1118px + 900px + 1014px); /* R3: + the founders
-		   release distance — the pin runway is consumed INVISIBLY
-		   beneath the held photo (z261 above), so the extra keeps a
-		   full dwell after the reveal (caught in verification: the
-		   stage was already departing as the photo cleared). */
+		/* Frame 1:339 (2026-08-26): 966 stage (was 1118) + the 900
+		   dwell + the R3 founders-release allowance (unchanged — the
+		   pin runway is consumed invisibly beneath the held photo). */
+		height: calc(966px + 900px + 1014px);
 	}
 
 	.landing-v2.landing-home .landing-network__stage {
-		top: calc(100vh - 1118px);
-		top: calc(100dvh - 1118px);
-		height: 1118px;
+		top: calc(100vh - 966px);
+		top: calc(100dvh - 966px);
+		height: 966px;
 	}
 
 	.landing-v2.landing-home .landing-network__title { display: none; }
@@ -4975,7 +4974,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-network__label {
 		display: block;
 		position: absolute;
-		top: 100px;
+		top: 110px; /* frame 1:469 (was 100) */
 		left: 24px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -4988,61 +4987,75 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		color: #eeeef0;
 	}
 
-	/* Subtitle (16:605): centred 12/14 Dazzed Bold caps. */
-	/* R2 (Oscar, 2026-08-24): subtitle+list group (196px tall, 52px
-	   internal offset) centred between the nav's bottom (49px) and
-	   row-1's viewport top (stage 538 + sticky top 100dvh−1118 =
-	   100dvh−580): group centre = (49 + 100dvh − 580)/2, so subtitle
-	   stage-top = 24.5 + 730 − 50dvh. */
+	/* Subtitle (frame 1:341, 2026-08-26 — supersedes the R2
+	   nav-window centring calc): centred 410w at y168, Dazzed Bold
+	   18/18/−2% (no named 18px guide style — flagged). */
 	.landing-v2.landing-home .landing-network__subtitle {
-		top: calc(754.5px - 50dvh);
+		top: 168px;
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
-		width: auto;
+		width: 410px;
 		text-align: center;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: 18px;
+		line-height: 18px;
+		letter-spacing: -0.02em;
 		text-transform: uppercase;
 	}
 
 	/* Sector list (16:622): centred Serrif Medium 36/48 — NOT a named
 	   guide style (flagged); the frame is the authority. Terms keep
 	   their hover wiring; only geometry/type move. */
+	/* Sector list (frame 1:468): centred 1014w at y236, Serrif
+	   Medium 48/48/−3% — the same three rendered lines, larger
+	   (36→48; still no named guide style, flagged). Terms keep
+	   their hover wiring. */
 	.landing-v2.landing-home .landing-network__body {
-		top: calc(806.5px - 50dvh); /* subtitle + the 52px internal offset */
+		top: 236px;
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
-		width: 840px;
+		width: 1014px;
 		text-align: center;
-		font-size: 36px;
+		font-size: 48px;
 		line-height: 48px;
+		letter-spacing: -0.03em;
 	}
 
-	/* Rows re-seat: 538 / 670 (32px between, as before). */
-	.landing-v2.landing-home .landing-network__marquee--top { top: 538px; }
-	.landing-v2.landing-home .landing-network__marquee--bottom { top: 670px; }
+	/* Rows re-seat: 438 / 570 (frame 1:413/1:358; 32px between). */
+	.landing-v2.landing-home .landing-network__marquee--top { top: 438px; }
+	.landing-v2.landing-home .landing-network__marquee--bottom { top: 570px; }
 
 	/* The rows→strip overlap is gone (48px clear gap) — the melt
 	   band retires; the edge fade re-covers rows→strip. */
 	.landing-v2.landing-home .landing-network__row-fade { display: none; }
 
+	/* The band backdrop (frame 1:467): the same edge gradient,
+	   narrowed to the carousel band alone. */
 	.landing-v2.landing-home .landing-network__edge-fade {
-		top: 518px;
-		height: 600px;
+		top: 437px;
+		height: 234px;
 	}
 
-	/* Strip (16:606): below the rows at y818, 300 tall (was 301). */
+	/* Strip (frame 1:342): y702, 264 tall, flush to the stage bottom
+	   (32px clear of row 2). Same five windows and images; the
+	   re-centred y-crops override the inline values (which the
+	   MOBILE strip shares and must keep). */
 	.landing-v2.landing-home .landing-network__strip {
-		top: 818px;
-		height: 300px;
+		top: 702px;
+		height: 264px;
 	}
 
-	.landing-v2.landing-home .landing-network__strip-win { height: 300px; }
+	.landing-v2.landing-home .landing-network__strip-win { height: 264px; }
+
+	.landing-v2.landing-home .landing-network__strip-win:nth-child(1) img { top: -10.04px !important; }
+	.landing-v2.landing-home .landing-network__strip-win:nth-child(2) img { top: -71.5px !important; }
+	.landing-v2.landing-home .landing-network__strip-win:nth-child(3) img { top: -77.5px !important; }
+	.landing-v2.landing-home .landing-network__strip-win:nth-child(4) img { top: -77.5px !important; }
+	.landing-v2.landing-home .landing-network__strip-win:nth-child(5) img { top: -112.24px !important; }
 
 	/* ── ACCESS: inherits the −100dvh overlap the reorder freed from
 	   Our Network — the featured departure stays overlapped exactly
@@ -5091,9 +5104,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 @media (min-width: 1025px) {
-	/* 64px bar centres the row's content on y=32 (frame 18.5..45.5). */
+	/* 71px bar centres the row's content on y=35.5 (frame 1:643,
+	   2026-08-26 — supersedes the 64/32 build). */
 	.landing-v2 .home__topbar--about {
-		height: 64px;
+		height: 71px;
 		padding: 0 24px;
 		align-items: center;
 	}
@@ -5106,7 +5120,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		display: none;
 	}
 
-	/* Wordmark: "TheNetworkEffect" Serrif Medium 24/27/+3%, left. */
+	/* Wordmark: "TheNetworkEffect" Serrif Medium 34/39/−3% (frame
+	   1:647, 2026-08-26 — the tracking flips sign from the
+	   superseded +3%). */
 	.landing-v2 .home__topbar--about .home__logo {
 		grid-column: 1;
 		justify-self: start;
@@ -5116,9 +5132,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Serrif', serif;
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 24px;
-		line-height: 27px;
-		letter-spacing: 0.03em;
+		font-size: 34px;
+		line-height: 39px;
+		letter-spacing: -0.03em;
 	}
 
 	.landing-v2 .home__nav-links {
@@ -5134,9 +5150,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 1;
-		letter-spacing: normal;
+		font-size: 18px; /* frame 1:644 (was 12) */
+		line-height: 18px;
+		letter-spacing: -0.02em;
 		text-transform: uppercase;
 		text-decoration: none;
 		color: #ffffff;
@@ -5152,13 +5168,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		outline-offset: 2px;
 	}
 
-	/* LET'S CHAT joins the links' type (frame: Dazzed Bold 12); the
-	   8px margin lands the arrow's right edge at x1696. The arrow
-	   keeps its glyph-exact 8.976px sizing (frame draws 9). */
+	/* LET'S CHAT at the links' 18 (frame 1:649); the arrow scales on
+	   the established glyph-exact ratio (0.748em → 13.5 at 18, the
+	   frame's own 13.5) and its right edge returns to the 24 margin
+	   (the superseded design's 32 retires with its 8px offset). */
 	.landing-v2 .home__topbar--about .home__topbar-email {
 		font-weight: 700;
-		font-size: 12px;
-		margin-right: 8px;
+		font-size: 18px;
+		letter-spacing: -0.02em;
+		margin-right: 0;
+	}
+
+	.landing-v2 .home__topbar-email-arrow {
+		width: 13.5px;
+		height: 13.5px;
+		top: -0.72px; /* the −0.48 optical nudge, scaled ×1.5 */
 	}
 }
 
