@@ -223,19 +223,20 @@ export function initLandingServices() {
           const winfade = pillar.querySelector('.landing-svcrows__winfade');
           const winH = win instanceof HTMLElement ? win.clientHeight : 0;
           const contentH = scroll instanceof HTMLElement ? scroll.scrollHeight : 0;
-          /* R2 (Oscar): the list scrolls FURTHER than bare fit — it
-             keeps riding under the band until the LAST row sits
-             where the 4th-from-last began (his IMMERSE spec:
-             Industry-leading Events up to Experiential Campaigns'
-             starting place — three row-slots past the top), unless
-             a short window already forces more. */
+          /* R4 (Oscar, clarified): the list does NOT stop with its
+             last row at the window bottom — it keeps riding until
+             about FOUR row-heights of clear space sit below the
+             last row, THEN the next pillar arrives. travel = fit +
+             4×pitch, clamped so the last row never disappears under
+             the band gradient on short windows. */
           const rows = Array.from(pillar.querySelectorAll('[data-sv-row]'));
           const pitch = rows.length > 1 ? rows[1].offsetTop - rows[0].offsetTop : 0;
           const fitTravel = Math.max(0, contentH - winH);
-          const throughTravel = rows.length > 3 && pitch > 0
-            ? Math.max(0, contentH - (rows.length - 3) * pitch)
-            : 0;
-          return { pillar, scroll, winfade, pin, travel: Math.max(fitTravel, throughTravel) };
+          const travel = Math.min(
+            fitTravel + 4 * pitch,
+            Math.max(fitTravel, contentH - 72 - pitch), /* keep the last row visible */
+          );
+          return { pillar, scroll, winfade, pin, travel };
         });
         /* Park the arrivals below the stage (transform — the panels
            are opaque, see the CSS blend note). */

@@ -5442,19 +5442,22 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows__name {
 		position: absolute;
 		left: 0;
-		top: 44px; /* title centre y68 below the divider (56/48 box) */
+		top: 48px; /* centre y68 held through the R4 resize (40/40 box) */
 		margin: 0;
 		display: flex;
 		align-items: flex-start;
 		gap: 8px;
 	}
 
+	/* R4 (Oscar, 2026-08-25): the guide's PILLAR HEADING style —
+	   Sans Bold 40/40/−2.5% (was the frame's 56/48). */
 	.landing-v2.landing-home .landing-svcrows__pname {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 56px;
-		line-height: 48px;
+		font-size: 40px;
+		line-height: 40px;
+		letter-spacing: -0.025em;
 		color: #ffffff;
 		mix-blend-mode: difference;
 		white-space: nowrap;
@@ -5462,12 +5465,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	/* /0N — the Micro-family number at the title's cap (frame: tops
 	   aligned, centres 12px apart). */
+	/* /0N follows the heading down (24 → 16 with the 56 → 40 title;
+	   the old svc-card pairing), tops still aligned. */
 	.landing-v2.landing-home .landing-svcrows__pnum {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 24px;
-		line-height: 24px;
+		font-size: 16px;
+		line-height: 16px;
 		color: #ffffff;
 		mix-blend-mode: difference;
 	}
@@ -5542,7 +5547,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2.landing-home .landing-svcrows .sv-rows__row {
-		height: var(--svcrow-pitch, 69px);
+		height: var(--svcrow-pitch, 66px);
 	}
 
 	.landing-v2.landing-home .landing-svcrows .sv-rows__divider {
@@ -5550,19 +5555,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #e0e0e7; /* the frame's solid divider */
 	}
 
-	/* Text 26/27px below each divider: (pitch + 2 − 19) / 2. */
+	/* Text 26/27px below each divider: (pitch + 2 − 16) / 2. */
 	.landing-v2.landing-home .landing-svcrows .sv-rows__inner {
-		top: calc((var(--svcrow-pitch, 69px) + 2px - 19px) / 2);
-		height: 19px;
+		top: calc((var(--svcrow-pitch, 66px) + 2px - 16px) / 2);
+		height: 16px;
 		gap: 0;
 	}
 
+	/* R4 (Oscar): rows at 18 (was the frame's 22); the divider rhythm
+	   follows through the per-pillar --svcrow-pitch (66/68). */
 	.landing-v2.landing-home .landing-svcrows .sv-rows__text {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 22px;
-		line-height: 19px;
+		font-size: 18px;
+		line-height: 16px;
 		text-transform: uppercase;
 		color: #161616;
 	}
@@ -5572,14 +5579,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows .sv-rows__fill,
 	.landing-v2.landing-home .landing-svcrows .sv-rows__marq,
 	.landing-v2.landing-home .landing-svcrows .sv-rows__edges {
-		height: calc(var(--svcrow-pitch, 69px) + 2px);
+		height: calc(var(--svcrow-pitch, 66px) + 2px);
 	}
 
 	.landing-v2.landing-home .landing-svcrows .sv-rows__marq-unit {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 22px;
+		font-size: 18px; /* rides the rows' R4 resize */
 		text-transform: uppercase;
 	}
 

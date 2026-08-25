@@ -26,7 +26,7 @@ export const LANDING_SERVICE_PILLARS = [
     desc: ['Activate Experiences', '& Cultural Moments'],
     label: 'WE BUILD',
     accent: '#c1250e',
-    pitch: 69, // frame: 24px flex gaps (2+24+19+24)
+    pitch: 66, // 24px gaps around the 18px text's 16 box (R4; was 69/19)
     hoverImg: PLACEHOLDER_IMG,
     rows: [
       'Talent-Led Experiences',
@@ -51,7 +51,7 @@ export const LANDING_SERVICE_PILLARS = [
        SHAPE — file drift, reported). */
     label: 'WE CREATE',
     accent: '#232a89',
-    pitch: 71, // frame: 25px flex gaps
+    pitch: 68, // 25px gaps, 16 box (R4; was 71/19)
     hoverImg: PLACEHOLDER_IMG,
     rows: [
       'Strategic Brand Partnerships',
@@ -74,7 +74,7 @@ export const LANDING_SERVICE_PILLARS = [
     desc: ['Create Narratives', '& Media'],
     label: 'WE CREATE',
     accent: '#c1250e',
-    pitch: 71,
+    pitch: 68,
     hoverImg: PLACEHOLDER_IMG,
     rows: [
       'Podcasts',
