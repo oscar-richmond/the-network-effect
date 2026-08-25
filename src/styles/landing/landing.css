@@ -5746,3 +5746,69 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, rgba(22, 22, 22, 0.85) 100%);
 	}
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   WHAT WE DO — THE STACK (Oscar's rev, 2026-08-25): the old
+   card-stack grammar applied to the row-list redesign. Non-RM
+   desktop only — landing-services.js adds .is-stacked and drives
+   the scrub; WITHOUT the class this block is inert and the shipped
+   normal-flow layout stands (the RM fallback by construction).
+
+   Geometry: pins at 120 / 280 / 440 (160px band offsets — the band
+   keeps topline + name + /0N + desc + MORE INFO visible, btn bottom
+   102; the WE BUILD label at 171 slides under the next panel —
+   Oscar's "just over the WE BUILD"). Windows are viewport-derived:
+   win = 100dvh − pin − 214 (the band-to-rows offset).
+
+   BLEND WALK: the pillar names//0N carry mix-blend-mode:difference
+   and now sit inside TRANSLATED panels (a transform isolates their
+   blend) — safe HERE because each panel is an OPAQUE uniform
+   #EEEEF0: difference against the panel is pixel-identical to
+   difference against the page ground. The header note (difference,
+   untransformed flow) is untouched. */
+@media (min-width: 1025px) {
+	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__stage {
+		position: sticky;
+		top: 0;
+		height: 100vh;
+		height: 100dvh;
+		overflow: hidden;
+	}
+
+	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__pillar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: var(--pillar-pin, 120px);
+		height: calc(100dvh - var(--pillar-pin, 120px));
+		margin-top: 0; /* the flow layout's 80px inter-pillar gap */
+		background: #eeeef0; /* OPAQUE — the panel covers the stack below */
+	}
+
+	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__win {
+		position: relative;
+		overflow: hidden;
+		height: calc(100dvh - var(--pillar-pin, 120px) - 214px);
+		min-height: 160px;
+	}
+
+	/* Rows dissolve under the band (top) — the network edge-fade
+	   family. Above the rows AND the glide frame. */
+	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__winfade {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		height: 72px;
+		background: linear-gradient(180deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	/* Parked arrivals compose ready — no draw-in re-run mid-ride. */
+	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__pillar.is-composed .sv-rows__divider,
+	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__pillar.is-composed .sv-rows__inner {
+		transition: none;
+	}
+}

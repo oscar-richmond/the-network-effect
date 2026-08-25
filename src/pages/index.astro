@@ -116,8 +116,20 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
       <p class="landing-svcrows__note" data-svcrows-line
         >Our work is structured across three connected pillars: Immerse / Connect / Amplify.</p
       >
+      {/* THE STACK (Oscar's rev, 2026-08-25 — the old card-stack
+          grammar on the new row lists): a sticky 100dvh stage inside
+          a JS-sized runway. IMMERSE sits at top 120 and pins with the
+          stage; its list scrolls up through a clipped window under a
+          gradient; CONNECT then AMPLIFY ride up as OPAQUE panels at
+          1:1 and pin at 160px band offsets — each stacked band keeps
+          its name //0N/desc/MORE INFO visible and covers the WE
+          BUILD label below it. All driven by landing-services.js
+          (.is-stacked, non-RM only — RM keeps this same markup as
+          the normal-flow layout). */}
+      <div class="landing-svcrows__stagewrap" data-svcrows-stagewrap>
+        <div class="landing-svcrows__stage" data-svcrows-stage>
       {LANDING_SERVICE_PILLARS.map((p) => (
-        <div class="landing-svcrows__pillar">
+        <div class="landing-svcrows__pillar" data-svcrows-pillar>
           <span class="landing-svcrows__topline" aria-hidden="true"></span>
           <h3 class="landing-svcrows__name">
             <span class="landing-svcrows__pname" data-svcrows-pline>{p.name}</span>
@@ -138,6 +150,12 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
             aria-label={`${p.name} services`}
           >
             <p class="sv-rows__label">{p.label}</p>
+            {/* The scroll WINDOW (clip) and its translated content —
+                list + endline + the glide frame move as one, so the
+                hover image's offset math stays coherent (a transform
+                on the wrapper makes it the img's containing block). */}
+            <div class="landing-svcrows__win" data-svcrows-win>
+              <div class="landing-svcrows__scroll" data-svcrows-scroll>
             <ul class="sv-rows__list" data-sv-rows-list>
               {p.rows.map((text) => (
                 <li
@@ -164,9 +182,17 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
               <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
               <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
             </div>
+              </div>
+              {/* Rows dissolve under the band as they scroll through
+                  (the network edge-fade family — an overlay, ground
+                  colour to clear). */}
+              <div class="landing-svcrows__winfade" aria-hidden="true"></div>
+            </div>
           </section>
         </div>
       ))}
+        </div>
+      </div>
     </div>
   </section>
 

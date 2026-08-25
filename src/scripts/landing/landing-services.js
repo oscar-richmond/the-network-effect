@@ -39,6 +39,19 @@ gsap.registerPlugin(ScrollTrigger);
 const LINE_STAGGER_S = 0.12; // the house line-reveal stagger
 const ROW_STAGGER_MS = 60;   // the /services rows entrance rhythm
 
+/* ── THE STACK (Oscar's rev, 2026-08-25) — the old card-stack
+   grammar on the row lists. Pins: IMMERSE lands 120 from the top
+   and fixes with the stage; each later pillar rides up OPAQUE at
+   1:1 and fixes a BAND below the one before — 160px keeps topline +
+   name + /0N + desc + MORE INFO visible (btn bottom 102) and slides
+   the WE BUILD label (171) under the arriving panel. The list
+   scrolls through its clipped window between arrivals; window =
+   100dvh − pin − 214 (CSS), travel = content − window. A 250px
+   settle closes the runway (the old stack's dwell). */
+const STACK_PIN_PX = [120, 280, 440]; // 120 + n×160
+const STACK_BAND_TO_ROWS_PX = 214;    // divider → rows top (the band)
+const STACK_SETTLE_PX = 250;
+
 /* THE FADE-TO-BLACK — constants verbatim through every relocation. */
 const TRANSITION_DWELL_PX = 250;
 const TRANSITION_GROUND_FADE_PX = 500;
@@ -145,7 +158,13 @@ export function initLandingServices() {
       });
       cleanups.push(() => headerTrig.kill());
 
-      rowsRoot.querySelectorAll('.landing-svcrows__pillar').forEach((pillar) => {
+      /* Pillar entrances: IMMERSE (pinned with the stage from the
+         start) keeps the /services draw-in, anchored to the STAGE
+         RUNWAY's approach; CONNECT and AMPLIFY arrive as COMPOSED
+         panels — the old cards rode up fully drawn, and a draw-in
+         mid-ride would read as a glitch. */
+      const pillars = Array.from(rowsRoot.querySelectorAll('[data-svcrows-pillar]'));
+      pillars.forEach((pillar, pi) => {
         if (!(pillar instanceof HTMLElement)) return;
         const pLines = Array.from(pillar.querySelectorAll('[data-svcrows-pline]'));
         pLines.forEach((line, i) => {
@@ -155,22 +174,112 @@ export function initLandingServices() {
         });
         const rows = Array.from(pillar.querySelectorAll('[data-sv-row]'));
         const endline = pillar.querySelector('[data-sv-rows-end]');
-        const trig = ScrollTrigger.create({
-          trigger: pillar,
-          start: 'top 65%',
-          once: true,
-          onEnter: () => {
-            pillar.classList.add('is-entered');
-            pLines.forEach((l) => { if (l instanceof HTMLElement) playLineRevealElement(l); });
-            rows.forEach((row, i) => schedule(() => row.classList.add('is-visible'), i * ROW_STAGGER_MS));
-            if (endline instanceof HTMLElement) {
-              schedule(() => endline.classList.add('is-visible'), rows.length * ROW_STAGGER_MS);
-            }
-          },
-        });
-        cleanups.push(() => trig.kill());
+        const compose = () => {
+          pillar.classList.add('is-entered');
+          pLines.forEach((l) => { if (l instanceof HTMLElement) playLineRevealElement(l); });
+          rows.forEach((row, i) => schedule(() => row.classList.add('is-visible'), i * ROW_STAGGER_MS));
+          if (endline instanceof HTMLElement) {
+            schedule(() => endline.classList.add('is-visible'), rows.length * ROW_STAGGER_MS);
+          }
+        };
+        if (pi === 0) {
+          const trig = ScrollTrigger.create({
+            trigger: rowsRoot.querySelector('[data-svcrows-stagewrap]') ?? pillar,
+            start: 'top 65%',
+            once: true,
+            onEnter: compose,
+          });
+          cleanups.push(() => trig.kill());
+        } else {
+          pillar.classList.add('is-composed');
+          compose();
+        }
       });
     });
+  }
+
+  /* ── 4 — THE STACK (see the constants above). Built after fonts
+     (the windows measure real row heights); rebuilt whole on resize
+     — the hero's discipline. Without it (RM) the flow layout
+     stands: .is-stacked never lands and the CSS block is inert. */
+  if (!reduced) {
+    const stagewrap = rowsRoot.querySelector('[data-svcrows-stagewrap]');
+    const stage = rowsRoot.querySelector('[data-svcrows-stage]');
+    const stackPillars = Array.from(rowsRoot.querySelectorAll('[data-svcrows-pillar]'));
+    if (stagewrap instanceof HTMLElement && stage instanceof HTMLElement && stackPillars.length) {
+      rowsRoot.classList.add('is-stacked');
+      const vh = () => window.innerHeight;
+      let stackTl = null;
+
+      const buildStack = () => {
+        stackTl?.scrollTrigger?.kill();
+        stackTl?.kill();
+        const H = vh();
+        const parts = stackPillars.map((pillar, i) => {
+          const pin = STACK_PIN_PX[i] ?? STACK_PIN_PX[STACK_PIN_PX.length - 1];
+          pillar.style.setProperty('--pillar-pin', `${pin}px`);
+          const scroll = pillar.querySelector('[data-svcrows-scroll]');
+          const win = pillar.querySelector('[data-svcrows-win]');
+          const winH = win instanceof HTMLElement ? win.clientHeight : 0;
+          const contentH = scroll instanceof HTMLElement ? scroll.scrollHeight : 0;
+          return { pillar, scroll, pin, travel: Math.max(0, contentH - winH) };
+        });
+        /* Park the arrivals below the stage (transform — the panels
+           are opaque, see the CSS blend note). */
+        parts.forEach((pt, i) => {
+          if (pt.scroll instanceof HTMLElement) gsap.set(pt.scroll, { y: 0 });
+          if (i > 0) gsap.set(pt.pillar, { y: H - pt.pin });
+          else gsap.set(pt.pillar, { y: 0 });
+        });
+        /* The runway: list1 → arrival2 → list2 → arrival3 → list3 →
+           settle, all 1:1. */
+        let at = 0;
+        const tl = gsap.timeline({ defaults: { ease: 'none' } });
+        parts.forEach((pt, i) => {
+          if (i > 0) {
+            const ride = H - pt.pin;
+            tl.to(pt.pillar, { y: 0, duration: ride }, at);
+            at += ride;
+          }
+          if (pt.travel > 0 && pt.scroll instanceof HTMLElement) {
+            tl.to(pt.scroll, { y: -pt.travel, duration: pt.travel }, at);
+            at += pt.travel;
+          }
+        });
+        const runway = at + STACK_SETTLE_PX;
+        stagewrap.style.height = `${H + runway}px`;
+        tl.to({}, { duration: STACK_SETTLE_PX }, at); /* the dwell */
+        tl.scrollTrigger = ScrollTrigger.create({
+          trigger: stagewrap,
+          start: 'top top',
+          end: `+=${Math.round(runway)}`,
+          scrub: true,
+          animation: tl,
+        });
+        stackTl = tl;
+      };
+      fontsReady.then(() => {
+        if (disposed) return;
+        buildStack();
+        ScrollTrigger.refresh();
+      });
+      let resizeT = 0;
+      const onResize = () => {
+        window.clearTimeout(resizeT);
+        resizeT = window.setTimeout(() => {
+          if (disposed) return;
+          buildStack();
+          ScrollTrigger.refresh();
+        }, 150);
+      };
+      window.addEventListener('resize', onResize);
+      cleanups.push(() => {
+        window.removeEventListener('resize', onResize);
+        window.clearTimeout(resizeT);
+        stackTl?.scrollTrigger?.kill();
+        stackTl?.kill();
+      });
+    }
   }
 
   return () => {
