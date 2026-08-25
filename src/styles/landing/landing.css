@@ -5057,12 +5057,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-network__strip-win:nth-child(4) img { top: -77.5px !important; }
 	.landing-v2.landing-home .landing-network__strip-win:nth-child(5) img { top: -112.24px !important; }
 
-	/* ── ACCESS: inherits the −100dvh overlap the reorder freed from
-	   Our Network — the featured departure stays overlapped exactly
-	   as it was (light over light; access's own top blur band leads). */
+	/* ── ACCESS follows featured IN FLOW now (Oscar, 2026-08-26): the
+	   −100dvh overlap dates from the light-featured era — over the
+	   DARK stage its light ground rode up as a hard edge. Featured's
+	   tail now fades the ground to light first (landing-featured.js)
+	   and this section arrives light-on-light, invisibly. */
 	.landing-v2.landing-home .landing-access {
-		margin-top: calc(-1 * 100vh);
-		margin-top: calc(-1 * 100dvh);
+		margin-top: 0;
 	}
 }
 

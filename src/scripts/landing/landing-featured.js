@@ -50,6 +50,16 @@ gsap.registerPlugin(ScrollTrigger);
 const TRANSITION_DWELL_PX = 250;
 /* TRANSITION_GROUND_FADE_PX / GROUND_DARK moved WITH the fade to
    landing-services.js (2026-08-24) — never duplicated. */
+/* THE FADE-TO-LIGHT (Oscar, 2026-08-26) — the MIRROR of that beat,
+   on THIS section's tail: featured's dark ground falls to the page
+   grey over the final 500px, completing exactly as What We Do's top
+   crosses the viewport bottom (the same contract, inverted), so the
+   light section arrives light-on-light with no hard line. The tail
+   gives the fade an EMPTY ground — the gallery has departed (the
+   services-fade lesson: never fade under live content). */
+const TAIL_LIGHT_FADE_PX = 500;
+const TAIL_CLEAR_PX = 100;
+const GROUND_LIGHT = '#eeeef0';
 /* Header geometry (Oscar's rev): WORK's bottom and VIEW ALL's
    bottom sit HEADER_GAP above the image tops; FEATURED sits one
    line above WORK; WORK's W aligns under FEATURED's A. All derived
@@ -157,7 +167,9 @@ export function initLandingFeatured() {
   /* The section's own height carries the runway (content-derived, so
      it can't live in static CSS). Set before triggers measure. */
   const applyHeight = () => {
-    section.style.height = `calc(100dvh + ${Math.round(runway())}px)`;
+    /* + the fade tail (see TAIL_LIGHT_FADE_PX): the sticky stage
+       holds through it, empty and dark, while the ground lightens. */
+    section.style.height = `calc(100dvh + ${Math.round(runway() + TAIL_LIGHT_FADE_PX + TAIL_CLEAR_PX)}px)`;
   };
   applyHeight();
 
@@ -169,6 +181,7 @@ export function initLandingFeatured() {
      FEATURED a line above WORK). */
   const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
   const hlTops = [0, 0];
+  let viewallTop = 0;
   /* R2 (Oscar, 2026-08-24): the whole composition — header + the
      carousel block — centres VERTICALLY on the stage, with a fixed
      64px between the header and the image tops (his call: the
@@ -206,6 +219,7 @@ export function initLandingFeatured() {
     hlTops[1] = headerTop; // the pair sits on ONE line
     hls.forEach((hl, i) => { hl.style.top = `${hlTops[i]}px`; });
     if (viewall instanceof HTMLElement) {
+      viewallTop = headerTop;
       viewall.style.top = `${headerTop.toFixed(0)}px`;
     }
   };
@@ -253,11 +267,32 @@ export function initLandingFeatured() {
   const exitAt = () => (travel() || 1) + TRANSITION_DWELL_PX;
   tl.to(strip, { y: () => -stageH(), duration: stageH() }, exitAt());
   if (viewall instanceof HTMLElement) {
-    tl.to(viewall, { y: () => -stageH(), duration: stageH() }, exitAt());
+    /* Departure by layout TOP (the hls' own pattern): the entrance
+       owns viewall's y transform (its little rise) — a second tween
+       on the same property left the button behind during the
+       departure (caught on the fade-to-light pass: the lone element
+       on the emptying ground). Disjoint properties, no contest. */
+    tl.to(viewall, { top: () => `${(viewallTop - stageH()).toFixed(0)}px`, duration: stageH() }, exitAt());
   }
   hls.forEach((hl, i) => {
     tl.to(hl, { top: () => hlTops[i] - stageH(), duration: stageH() }, exitAt());
   });
+  /* THE FADE-TO-LIGHT (constants above): its own trigger on the
+     section's bottom edge — start 500 below the viewport bottom,
+     end exactly there — so it scrubs symmetrically and completes
+     before any What We Do pixel can show. */
+  const lightFade = gsap.fromTo(stage,
+    { backgroundColor: '#161616' },
+    {
+      backgroundColor: GROUND_LIGHT,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: section,
+        start: `bottom bottom+=${TAIL_LIGHT_FADE_PX}`,
+        end: 'bottom bottom',
+        scrub: true,
+      },
+    });
   /* THE FADE-TO-BLACK moved on again (2026-08-24, its third home):
      it now rides the SERVICES section's tail — the one light→dark
      boundary in the current order — in landing-services.js,
@@ -392,6 +427,8 @@ export function initLandingFeatured() {
     timeouts.forEach(clearTimeout);
     window.removeEventListener('resize', onResize);
     revealTrigger?.kill();
+    lightFade.scrollTrigger?.kill();
+    lightFade.kill();
     masterTl?.scrollTrigger?.kill();
     masterTl?.kill();
   };
