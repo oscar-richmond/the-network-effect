@@ -123,6 +123,18 @@ export function initFoundersPage() {
     colRollMax = Math.max(0, colTrack.offsetHeight - portBottom);
   };
   measureCol();
+  /* ── Indicator anchor (Oscar, 2026-08-26): bottom edge 32px above
+     the PORTRAIT'S measured bottom, derived live (offset box — the
+     shared containing block, so release/reveal transforms cancel).
+     A fixed top would drift with viewport height and in-shell. */
+  const FD_IND_GAP_PX = 32;
+  const indWrap = stage.querySelector('[data-fd-ind]');
+  const placeIndicator = () => {
+    if (!(indWrap instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return;
+    const portBottom = portrait.offsetTop + portrait.offsetHeight;
+    indWrap.style.top = `${portBottom - FD_IND_GAP_PX - indWrap.offsetHeight}px`;
+  };
+  placeIndicator();
 
   /* ── State. */
   let pos = 0;
@@ -343,6 +355,7 @@ export function initFoundersPage() {
 
   const onResize = () => {
     measureCol();
+    placeIndicator();
     frame();
   };
   window.addEventListener('resize', onResize);

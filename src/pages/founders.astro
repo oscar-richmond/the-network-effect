@@ -59,10 +59,30 @@ import '../styles/fonts.css';
         fix). The release rides THIS up (white gap grows below the
         portrait); only the footer reveal rides the stage. */}
     <div class="fd-content" data-fd-content>
-    {/* ── Indicator — thumbs 80×48 (16 gap) at (40,144); the label
-        + divider travel beside the active thumb (founders-page.js
-        scrubs the 64px); active thumb carries the 3px #232A89
-        stroke. Thumbs drive the slides. */}
+    {/* ── Portrait (frame 6:67, 2026-08-26): 630×841 flush to the
+        LEFT viewport edge at y80. The crossfade pair became a WIPE
+        pair — the case-study lightbox's two-phase L→R wipe, ported
+        scrub-natively (founders-page.js applyWipe): A wipes OUT to
+        the bare ground over the transition's first half, B wipes IN
+        over the second. Slot 0 of the five-image sync group. */}
+    {/* R2 (2026-08-26): REVEAL-BEHIND — Ashley sits fully opaque
+        beneath and Robbo's layer wipes L→R off him (the two-phase
+        lightbox port cleared to bare ground mid-swap, which read as
+        a WHITE FLASH on this surface — Oscar's defect report).
+        Combined coverage never drops below full. */}
+    <div class="fd-portrait" data-fd-portrait aria-hidden="true">
+      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
+    </div>
+
+    {/* ── Indicator — repositioned (Oscar, 2026-08-26): 24 from the
+        left edge, its bottom 32 above the PORTRAIT'S measured bottom
+        (founders-page.js placeIndicator derives the top live). Sits
+        AFTER the portrait so DOM order paints it above WITHOUT a
+        z-index — the old z4 stacking context would have isolated the
+        label's difference blend from the portrait beneath. Label +
+        divider travel beside the active thumb (JS scrubs the 64px);
+        active thumb keeps the 3px #232A89 stroke. */}
     <div class="fd-ind" data-fd-ind>
       <div class="fd-ind__thumbs">
         {FOUNDERS_SLIDES.map((slide, i) => (
@@ -85,22 +105,6 @@ import '../styles/fonts.css';
           <span class="fd-ind__label-line" data-fd-label-b aria-hidden="true">/ 02 Founder</span>
         </span>
       </div>
-    </div>
-
-    {/* ── Portrait (frame 6:67, 2026-08-26): 630×841 flush to the
-        LEFT viewport edge at y80. The crossfade pair became a WIPE
-        pair — the case-study lightbox's two-phase L→R wipe, ported
-        scrub-natively (founders-page.js applyWipe): A wipes OUT to
-        the bare ground over the transition's first half, B wipes IN
-        over the second. Slot 0 of the five-image sync group. */}
-    {/* R2 (2026-08-26): REVEAL-BEHIND — Ashley sits fully opaque
-        beneath and Robbo's layer wipes L→R off him (the two-phase
-        lightbox port cleared to bare ground mid-swap, which read as
-        a WHITE FLASH on this surface — Oscar's defect report).
-        Combined coverage never drops below full. */}
-    <div class="fd-portrait" data-fd-portrait aria-hidden="true">
-      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
-      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
     </div>
 
     {/* ── RIGHT IMAGE COLUMN → SCROLL-DRIVEN ROLLING CAROUSEL (R2,

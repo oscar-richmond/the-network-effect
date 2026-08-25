@@ -39,13 +39,19 @@ body.founders-page {
 	will-change: transform;
 }
 
-/* ── Indicator (file: thumbs (40,144) 80×48, gap 16; label row
-   beside the active thumb — JS scrubs its 64px travel). */
+/* ── Indicator (repositioned 2026-08-26): 24 from the left edge,
+   bottom 32 above the portrait's bottom. JS (placeIndicator) sets
+   the top from the PORTRAIT'S MEASURED bottom so it holds at any
+   viewport height and in-shell; the calc below is the no-JS
+   fallback mirroring the portrait's own height formula
+   (80 + min(841, 100dvh − 104) − 32 − the 112 thumb column).
+   NO z-index: DOM order (after the portrait) paints it above —
+   a z-index stacking context here would isolate the label's
+   difference blend from the portrait beneath. */
 .landing-v2 .fd-ind {
 	position: absolute;
-	left: 40px;
-	top: 144px;
-	z-index: 4;
+	left: 24px;
+	top: calc(80px + min(841px, 100dvh - 104px) - 144px);
 }
 
 .landing-v2 .fd-ind__thumbs {
@@ -112,13 +118,18 @@ body.founders-page {
 .landing-v2 .fd-ind__label {
 	display: block;
 	height: 18px;
-	overflow: hidden;
+	overflow: hidden; /* self-clip — safe with the blend */
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 12px;
 	line-height: 18px;
-	color: #161616;
+	/* White-on-difference — the access-word / ct-modal__logo pattern
+	   (Oscar, 2026-08-26). The chain to the content group is bare
+	   (labelrow: layout-top travel only; fd-ind: absolute, z auto);
+	   the divider + thumbs stay inked. */
+	color: #ffffff;
+	mix-blend-mode: difference;
 }
 
 .landing-v2 .fd-ind__label-line {
