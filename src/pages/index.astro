@@ -157,17 +157,17 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
             <div class="landing-svcrows__win" data-svcrows-win>
               <div class="landing-svcrows__scroll" data-svcrows-scroll>
             <ul class="sv-rows__list" data-sv-rows-list>
-              {p.rows.map((text) => (
+              {p.rows.map((row) => (
                 <li
                   class="sv-rows__row"
                   data-sv-row
-                  data-text={text}
-                  data-img={asset(p.hoverImg)}
+                  data-text={row.text}
+                  data-img={asset(row.img ?? p.hoverImg)}
                   tabindex="0"
                 >
                   <span class="sv-rows__divider" aria-hidden="true"></span>
                   <span class="sv-rows__inner">
-                    <span class="sv-rows__text">{text}</span>
+                    <span class="sv-rows__text">{row.text}</span>
                   </span>
                   <span class="sv-rows__fill" aria-hidden="true"></span>
                   <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
@@ -178,15 +178,20 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
             <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
               <span class="sv-rows__divider"></span>
             </div>
-            <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
-              <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
-              <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
-            </div>
               </div>
               {/* Rows dissolve under the band as they scroll through
                   (the network edge-fade family — an overlay, ground
                   colour to clear). */}
               <div class="landing-svcrows__winfade" aria-hidden="true"></div>
+            </div>
+            {/* The glide frame lives OUTSIDE the clip (Oscar R5: the
+                image must never be cut by the window edge or sit
+                under the gradient — z10 over the winfade's 5). The
+                shared placeAt is rect-based, so it tracks the
+                translated rows from out here. */}
+            <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
+              <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
+              <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
             </div>
           </section>
         </div>

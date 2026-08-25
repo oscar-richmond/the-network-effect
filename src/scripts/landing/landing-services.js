@@ -118,18 +118,26 @@ export function initLandingServices() {
      bottom meets the viewport bottom, ends exactly there — fully
      dark before any Featured pixel can show. */
   if (!reduced) {
-    const fade = gsap.fromTo(section,
+    /* R5 (Oscar): the STACK PANELS fade with the section — their
+       opaque #EEEEF0 grounds otherwise read as a light content
+       block on the darkening page while the released stage scrolls
+       off through the fade window. The window gradients drain too
+       (a light smear otherwise). One scrub, everything falls
+       together. */
+    const fadeTargets = [section, ...rowsRoot.querySelectorAll('[data-svcrows-pillar]')];
+    const winfades = Array.from(rowsRoot.querySelectorAll('.landing-svcrows__winfade'));
+    const fade = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: `bottom bottom+=${TRANSITION_GROUND_FADE_PX}`,
+        end: 'bottom bottom',
+        scrub: true,
+      },
+    });
+    fade.fromTo(fadeTargets,
       { backgroundColor: GROUND_LIGHT },
-      {
-        backgroundColor: GROUND_DARK,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: `bottom bottom+=${TRANSITION_GROUND_FADE_PX}`,
-          end: 'bottom bottom',
-          scrub: true,
-        },
-      });
+      { backgroundColor: GROUND_DARK, ease: 'none', duration: 1 }, 0);
+    if (winfades.length) fade.to(winfades, { autoAlpha: 0, ease: 'none', duration: 0.3 }, 0);
     cleanups.push(() => { fade.scrollTrigger?.kill(); fade.kill(); });
   }
 

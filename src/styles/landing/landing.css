@@ -5596,6 +5596,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		left: 618px;
 		width: 380px;
 		height: 480px;
+		z-index: 10; /* R5: above the winfade (5) and the rows — the
+		   frame sits outside the clip and must never be cut */
 	}
 
 	/* Entrance states (no-preference; the pillar's own pieces — the

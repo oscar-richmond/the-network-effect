@@ -111,7 +111,16 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
       if (isMob) return;
       if (imgWrap instanceof HTMLElement) {
         const half = (imgWrap.offsetHeight || HOVER_IMG_HALF_PX * 2) / 2;
-        imgWrap.style.top = `${row.offsetTop + ROW_BAND_CENTRE_PX - half}px`;
+        /* RECT-based (2026-08-25): the landing hosts the rows inside
+           a translated scroll wrapper with the frame OUTSIDE it, so
+           the row's live rect — not offsetTop — is the truth. On
+           /services nothing is transformed and this is byte-identical
+           to the old offsetTop math. */
+        const parent = imgWrap.offsetParent;
+        const rowTop = parent instanceof HTMLElement
+          ? row.getBoundingClientRect().top - parent.getBoundingClientRect().top
+          : row.offsetTop;
+        imgWrap.style.top = `${(rowTop + ROW_BAND_CENTRE_PX - half).toFixed(1)}px`;
       }
     };
     const runSwapSequence = () => {
