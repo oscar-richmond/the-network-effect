@@ -86,7 +86,15 @@ const END_GAP_PX = 163; /* ground below the last image before the
   page only (Oscar's rev 2026-08-07: the /work bottom read tighter
   than asked; other pages stay at 139). */
 const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
-const TILE_LOGO_GAP_PX = 8; // left edge 8px left of the logo's T
+/* Tile left edge (regression fix, 2026-08-26): originally DERIVED as
+   "8px left of the nav logo's T" — authored against the old CENTRED
+   wordmark (logo left 768.3 → tiles at 760.3). The nav respec
+   (976b83f) moved the wordmark to the LEFT edge (x24), which dragged
+   the tiles to x16 / full-bleed and broke the row layout. The nav is
+   no longer a stable anchor, so the left edge is now the stage
+   literal the derivation used to produce (the site's 1728 px-literal
+   grammar; the shell keeps the inner viewport at 1728). */
+const TILE_LEFT_PX = 760;
 const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
 const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
@@ -247,13 +255,11 @@ export function initWorkPage() {
     hlWork.style.left = `${(aRect.left - stage.getBoundingClientRect().left).toFixed(2)}px`;
   };
 
-  /* Tile geometry is DERIVED (Oscar's rev): left edge 8px left of
-     the nav logo's T, right edge held at stage-16. Set as CSS vars
-     (carousel + tiles read them); re-derived on fonts/resize. */
+  /* Tile geometry: left edge at the stage literal (TILE_LEFT_PX —
+     see the note on the constant), right edge held at stage-16. Set
+     as CSS vars (carousel + tiles read them); re-derived on resize. */
   const deriveTileWidth = () => {
-    const logo = document.querySelector('.home__logo');
-    if (!(logo instanceof HTMLElement)) return;
-    const left = logo.getBoundingClientRect().left - TILE_LOGO_GAP_PX;
+    const left = TILE_LEFT_PX;
     const width = (stage.clientWidth || window.innerWidth) - TILE_RIGHT_MARGIN_PX - left;
     stage.style.setProperty('--work-tile-left', `${left.toFixed(1)}px`);
     stage.style.setProperty('--work-tile-w', `${width.toFixed(1)}px`);
