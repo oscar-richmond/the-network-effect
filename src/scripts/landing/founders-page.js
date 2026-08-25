@@ -49,12 +49,38 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 
 const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
-const TRANSITION_PX = 600;
+/* ── R2 PHASE MAP (Oscar, 2026-08-26 — the travelling names and
+   their derived clamps are GONE; every anchor is a named constant
+   now, no longer keyed to the name travel):
+     ENTRY   [0, FD_ENTRY_PX)          the whole composition
+                                       (portrait + text + column)
+                                       rides up into rest as ONE
+                                       movement.
+     TEXT    [.., + FD_TEXT_PX)        the portrait FIXES; Robbo's
+                                       block rides up and out
+                                       (FD_TEXT_EXIT_PX), Ashley's
+                                       rides up from below (one
+                                       viewport) into the SAME
+                                       slot; the portrait reveal
+                                       runs over the tail
+                                       (FD_REVEAL_*). The carousel
+                                       rolls through everything at
+                                       FD_CAROUSEL_RATE.
+     RELEASE [.., +96+811]             unchanged grammar.
+   The old boundary SNAP is REMOVED — a half-travelled text state
+   is ordinary mid-scroll content under the normal-scroll grammar
+   (reported; the access-pairs precedent no longer applies). */
+const FD_ENTRY_PX = 360;
+const FD_TEXT_PX = 900;
+const FD_TEXT_EXIT_PX = 800; /* clears the text block's 245..752 span */
+const FD_REVEAL_START_T = 0.55; /* of the text phase */
+const FD_REVEAL_END_T = 0.95;   /* Ashley fully there as his text lands */
+const FD_REVEAL_BLUR_PX = 6;    /* the lightbox edge blur, kept */
+const FD_CAROUSEL_RATE = 0.5;   /* carousel px per scroll px */
+const FD_CAROUSEL_PITCH_PX = 212.4; /* 204.4 cell + 8 gap */
+const FD_CAROUSEL_SET = 4;      /* images per set (×4 sets rendered) */
 const RELEASE_RISE_PX = 96; /* the 120px white gap − the 24 rest (rev 2) */
 const FOOTER_REVEAL_PX = 811;
-const NAME_END_GAP_PX = 40;
-const SNAP_IDLE_MS = 600;
-const STAGGER_STEP = 0.15; /* per-element transition offset */
 const NAV_EXIT_EPSILON_PX = 2;
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
@@ -75,76 +101,24 @@ export function initFoundersPage() {
 
   const content = stage.querySelector('[data-fd-content]');
   const portrait = stage.querySelector('[data-fd-portrait]');
-  /* THE WIPE SLOTS (frame 6:67): portrait + the four column images,
-     each an A/B pair — see applyWipe below. */
-  const wipeSlots = Array.from(stage.querySelectorAll('[data-fd-wipe]'))
-    .map((slot) => ({
-      i: Number(slot.dataset.wipeI) || 0,
-      a: slot.querySelector('.fd-wipe__img--a'),
-      b: slot.querySelector('.fd-wipe__img--b'),
-    }))
-    .filter((w) => w.a instanceof HTMLElement && w.b instanceof HTMLElement);
+  const imgOver = stage.querySelector('[data-fd-img-over]'); /* Robbo, above; Ashley full beneath */
+  const colWrap = stage.querySelector('.fd-col');
+  const colTrack = stage.querySelector('[data-fd-coltrack]');
   const slides = Array.from(stage.querySelectorAll('[data-fd-slide]'));
-  const names = slides.map((_, i) => stage.querySelector(`[data-fd-name][data-slide="${i}"]`));
-  const elsPerSlide = slides.map((s) => Array.from(s.querySelectorAll('[data-fd-el]')));
   const thumbs = Array.from(stage.querySelectorAll('[data-fd-thumb]'));
   const labelRow = stage.querySelector('[data-fd-labelrow]');
   const label = stage.querySelector('[data-fd-label]');
   const live = stage.querySelector('[data-fd-live]');
   const footerWrap = document.querySelector('[data-fd-footer]');
 
-  /* ── Geometry (LIVE — re-derived on resize so 1470/1512 heights
-     clamp correctly). */
-  let nameStartTop = 0;
-  let nameTravel = 1;
-  /* Robbo's name (slide 0) is placed so the PORTRAIT'S LEFT EDGE
-     runs through the middle of the first "b" (Oscar's rev 4).
-     Derived from the live glyph box — a Range over that single
-     character — so it holds at any name size, after the webfont
-     swaps, and at every viewport (the shell's interior included).
-     Ashley's name has no "b" and keeps the authored left. */
-  const alignNameToPortrait = () => {
-    /* RE-DERIVED for frame 6:67 (2026-08-26): the portrait is flush
-       to the LEFT viewport edge now — the b-through-the-left-edge
-       rule would push the name offscreen. The authored CSS anchor
-       stands; the machinery is kept for the day the portrait moves
-       again. */
-    return;
-    // eslint-disable-next-line no-unreachable
-    const el = names[0];
-    if (!(el instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return;
-    const textNode = Array.from(el.childNodes).find((n) => n.nodeType === Node.TEXT_NODE);
-    if (!textNode) return;
-    const i = (textNode.textContent || '').toLowerCase().indexOf('b');
-    if (i < 0) return;
-    el.style.left = ''; /* measure from the CSS anchor, never a prior result */
-    const range = document.createRange();
-    range.setStart(textNode, i);
-    range.setEnd(textNode, i + 1);
-    const glyph = range.getBoundingClientRect();
-    if (!glyph.width) return; /* font not ready — the fonts hook re-runs this */
-    const offsetToGlyphCentre = glyph.left + glyph.width / 2 - el.getBoundingClientRect().left;
-    el.style.left = `${(portrait.getBoundingClientRect().left - offsetToGlyphCentre).toFixed(1)}px`;
-  };
-
-  const measure = () => {
-    const pr = portrait instanceof HTMLElement ? portrait.getBoundingClientRect() : null;
-    const imgTop = pr ? pr.top : 88;
-    const imgBottom = pr ? pr.bottom : window.innerHeight - 24;
-    const nameH = names[0] instanceof HTMLElement ? names[0].offsetHeight : 56;
-    nameStartTop = imgTop + (imgBottom - imgTop) / 2;
-    const nameEndTop = imgBottom - NAME_END_GAP_PX - nameH;
-    nameTravel = Math.max(nameEndTop - nameStartTop, 1);
-    alignNameToPortrait();
-  };
-  measure();
-
-  const T = () => nameTravel; /* the 1:1 travel window */
-  const transStart = () => T();
-  const p3Start = () => T() + TRANSITION_PX;
-  const releaseStart = () => p3Start() + T();
+  /* ── R2 anchors — named constants, nothing derived from names. */
+  const textStart = () => FD_ENTRY_PX;
+  const textEnd = () => FD_ENTRY_PX + FD_TEXT_PX;
+  const releaseStart = () => textEnd();
   const footerStart = () => releaseStart() + RELEASE_RISE_PX;
   const maxPos = () => footerStart() + FOOTER_REVEAL_PX;
+  const setH = FD_CAROUSEL_PITCH_PX * FD_CAROUSEL_SET; /* 849.6 */
+  const mod = (v, m) => ((v % m) + m) % m;
 
   /* ── State. */
   let pos = 0;
@@ -179,106 +153,71 @@ export function initFoundersPage() {
     announce(i);
   };
 
-  const FD_WIPE_STAGGER_T = 0.045; /* per-slot lead, in t2 space */
-  const FD_WIPE_BLUR_PX = 6; /* the lightbox edge blur */
-  const wipeSpan = 1 + Math.max(0, wipeSlots.length - 1) * FD_WIPE_STAGGER_T;
-  const applyWipe = (t2e) => {
-    wipeSlots.forEach((w) => {
-      const t = clamp(t2e * wipeSpan - w.i * FD_WIPE_STAGGER_T, 0, 1);
-      if (t <= 0.5) {
-        const pOut = t * 2;
-        w.a.style.visibility = pOut >= 1 ? 'hidden' : '';
-        w.a.style.clipPath = pOut > 0 ? `inset(0 0 0 ${(pOut * 100).toFixed(2)}%)` : '';
-        w.a.style.filter = pOut > 0.001 && pOut < 0.999 ? `blur(${(FD_WIPE_BLUR_PX * pOut).toFixed(2)}px)` : '';
-        w.b.style.visibility = 'hidden';
-        w.b.style.clipPath = 'inset(0 100% 0 0)';
-      } else {
-        const pIn = (t - 0.5) * 2;
-        w.a.style.visibility = 'hidden';
-        /* EXPLICIT visible — the CSS base parks B hidden, so an
-           empty inline value falls back to invisible (caught in
-           verification: Ashley's images never appeared). */
-        w.b.style.visibility = 'visible';
-        w.b.style.clipPath = pIn >= 1 ? 'inset(0 0 0 0)' : `inset(0 ${((1 - pIn) * 100).toFixed(2)}% 0 0)`;
-        w.b.style.filter = pIn < 0.999 ? `blur(${(FD_WIPE_BLUR_PX * (1 - pIn)).toFixed(2)}px)` : '';
-      }
-    });
-  };
-
   /* ── The frame — every visual is a pure function of pos. */
   const frame = () => {
-    const t2 = clamp((pos - transStart()) / TRANSITION_PX, 0, 1);
-    const p1t = reduced ? 1 : clamp(pos / T(), 0, 1);
-    const p3t = reduced ? 1 : clamp((pos - p3Start()) / T(), 0, 1);
+    const entryT = reduced ? 1 : clamp(pos / FD_ENTRY_PX, 0, 1);
+    const textT = clamp((pos - textStart()) / FD_TEXT_PX, 0, 1);
+    const textTe = reduced ? (textT < 0.5 ? 0 : 1) : textT;
     const rise = clamp(pos - releaseStart(), 0, RELEASE_RISE_PX);
     const reveal = clamp(pos - footerStart(), 0, FOOTER_REVEAL_PX);
-    const t2e = reduced ? (t2 < 0.5 ? 0 : 1) : t2;
+    const vh = window.innerHeight || 1080;
 
-    /* Names — layout top between the live clamps (each slide's own
-       phase; the outgoing holds its terminus through P2). */
-    if (names[0] instanceof HTMLElement) {
-      names[0].style.top = `${(nameStartTop + nameTravel * p1t).toFixed(1)}px`;
+    /* ENTRY — one movement: portrait, column and Robbo's block ride
+       up into rest together; the portrait then FIXES (groupY 0). */
+    const groupY = (1 - entryT) * FD_ENTRY_PX;
+    if (portrait instanceof HTMLElement) {
+      portrait.style.transform = groupY > 0.01 ? `translate3d(0, ${groupY.toFixed(1)}px, 0)` : '';
     }
-    if (names[1] instanceof HTMLElement) {
-      names[1].style.top = `${(nameStartTop + nameTravel * p3t).toFixed(1)}px`;
+    if (colWrap instanceof HTMLElement) {
+      colWrap.style.transform = groupY > 0.01 ? `translate3d(0, ${groupY.toFixed(1)}px, 0)` : '';
     }
 
-    /* Transition — staggered out (first half) / in (second half);
-       the names join their slide's group. Opacity+blur only (the
-       names are blend roots — self-filters safe, transforms not). */
-    slides.forEach((slide, i) => {
-      const els = [...elsPerSlide[i], names[i]].filter((el) => el instanceof HTMLElement);
-      /* NORMALISED stagger (rev 2 root-cause fix: without the span
-         term the last elements only ever reached 1 − j×step —
-         Ashley's name/button/list sat permanently dimmed+blurred):
-         each half-window is stretched by the total stagger span so
-         element j completes at (1 + span) − j×step ≥ 1. */
-      const span = (els.length - 1) * STAGGER_STEP;
-      els.forEach((el, j) => {
-        let p; /* 1 = fully hidden */
-        if (i === 0) {
-          p = clamp(t2e * 2 * (1 + span) - j * STAGGER_STEP, 0, 1);
-        } else {
-          p = 1 - clamp((t2e - 0.5) * 2 * (1 + span) - j * STAGGER_STEP, 0, 1);
-        }
-        el.style.opacity = String(1 - p);
-        el.style.filter = p > 0.001 ? `blur(${(6 * p).toFixed(2)}px)` : '';
-      });
-      slide.style.visibility = (i === 0 ? t2e >= 1 : t2e <= 0) ? 'hidden' : '';
-    });
+    /* TEXT TRAVEL — Robbo up and out; Ashley up and in, landing on
+       the identical CSS slot (translate 0). */
+    if (slides[0] instanceof HTMLElement) {
+      const y = groupY - FD_TEXT_EXIT_PX * textTe;
+      slides[0].style.transform = Math.abs(y) > 0.01 ? `translate3d(0, ${y.toFixed(1)}px, 0)` : '';
+      slides[0].style.visibility = textTe >= 1 ? 'hidden' : '';
+    }
+    if (slides[1] instanceof HTMLElement) {
+      const y = vh * (1 - textTe);
+      slides[1].style.transform = y > 0.01 ? `translate3d(0, ${y.toFixed(1)}px, 0)` : '';
+      slides[1].style.visibility = textTe <= 0 ? 'hidden' : '';
+    }
 
-    /* THE WIPE (ported from the case-study lightbox, 2026-08-26 —
-       replaces the blur-crossfade): the same two-phase sequential
-       L→R read as a pure function of the transition scrub. Phase 1
-       (first half): the A image wipes OUT left-to-right to the bare
-       ground, blur rising to 6 at the edge. Phase 2: B wipes IN
-       left-to-right, blur settling 6→0. Never both visible; the
-       boundary snap's 0.8s glide reproduces the lightbox's ~900ms
-       sequential timing. STAGGER: the portrait (slot 0) leads and
-       the column cascades (FD_WIPE_STAGGER_T per index), the window
-       normalised so every slot completes inside the phase. */
-    applyWipe(t2e);
+    /* PORTRAIT REVEAL-BEHIND over the travel's tail: Ashley is fully
+       opaque beneath at all times; Robbo's layer wipes L→R off him —
+       combined coverage never below full (the white-flash fix). */
+    const rT = reduced
+      ? (textTe >= 1 ? 1 : 0)
+      : clamp((textT - FD_REVEAL_START_T) / (FD_REVEAL_END_T - FD_REVEAL_START_T), 0, 1);
+    if (imgOver instanceof HTMLElement) {
+      imgOver.style.clipPath = rT <= 0 ? '' : `inset(0 0 0 ${(rT * 100).toFixed(2)}%)`;
+      imgOver.style.visibility = rT >= 1 ? 'hidden' : '';
+      imgOver.style.filter = rT > 0.001 && rT < 0.999
+        ? `blur(${(FD_REVEAL_BLUR_PX * Math.sin(Math.PI * rT)).toFixed(2)}px)`
+        : '';
+    }
 
-    /* Indicator — the label row rides its 64px with the scrub. */
+    /* THE ROLLING CAROUSEL — scroll-driven, seamless modulo wrap;
+       rolls through every phase, stops with the scroll, reverses. */
+    if (colTrack instanceof HTMLElement) {
+      const roll = reduced ? 0 : pos * FD_CAROUSEL_RATE;
+      colTrack.style.transform = `translate3d(0, ${(-setH - mod(roll, setH)).toFixed(2)}px, 0)`;
+    }
+
+    /* Indicator — the label row rides its 64px with the text travel. */
     if (labelRow instanceof HTMLElement) {
-      labelRow.style.top = `${(19 + 64 * t2e).toFixed(1)}px`;
+      labelRow.style.top = `${(19 + 64 * textTe).toFixed(1)}px`;
     }
-    setActiveSlide(t2e >= 0.5 ? 1 : 0);
+    setActiveSlide(textTe >= 0.5 ? 1 : 0);
 
-    /* Release (rev 2): the CONTENT rides up leaving the white gap
-       below the portrait (24 rest + 96 = 120 at full rise) — the
-       stage ground stays put beneath it; ONLY the footer reveal
-       rides the stage (the /work uncover), so the gap reads as
-       part of the slide, not as the reveal. */
+    /* Release + footer reveal — the unchanged grammar. */
     if (content instanceof HTMLElement) {
       content.style.transform = `translate3d(0, ${(-rise).toFixed(1)}px, 0)`;
     }
     stage.style.transform = `translate3d(0, ${(-reveal).toFixed(1)}px, 0)`;
-
-    /* Bottom nav sweep at the very end (the landing pair). */
     setNav(reveal >= FOOTER_REVEAL_PX - NAV_EXIT_EPSILON_PX);
-
-    /* Footer reveal choreography once the uncover is underway. */
     maybePlayFooter();
   };
 
@@ -351,20 +290,12 @@ export function initFoundersPage() {
     inputRegion.removeEventListener('touchend', onTouchEnd);
   });
 
-  /* ── The boundary snap (P2 only): idle inside the window glides
-     the TARGET to the nearest edge — a half-transitioned text
-     state reads broken (the access-pairs precedent). */
-  let snapTimer = 0;
-  const markInput = () => {
-    window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(trySnap, SNAP_IDLE_MS);
-  };
+  /* R2: the boundary snap is REMOVED — under the normal-scroll
+     grammar a half-travelled text state is ordinary mid-scroll
+     content (reported). glideTo survives for the indicator thumbs. */
+  const markInput = () => {};
   const glideTo = (to, duration = 0.8) => {
     snapTween?.kill();
-    /* A pending idle-snap must not fire mid-glide and yank the
-       target back (caught in verification: a wheel tick ≤600ms
-       before a thumb click armed exactly that). */
-    window.clearTimeout(snapTimer);
     const proxy = { p: targetPos };
     snapTween = gsap.to(proxy, {
       p: to,
@@ -373,22 +304,14 @@ export function initFoundersPage() {
       onUpdate: () => { setPosClamped(proxy.p); },
     });
   };
-  const trySnap = () => {
-    if (reduced) return;
-    const t2 = (targetPos - transStart()) / TRANSITION_PX;
-    if (t2 > 0.02 && t2 < 0.98 && Math.abs(flickVel) < 20) {
-      glideTo(t2 < 0.5 ? transStart() : p3Start());
-    }
-  };
   cleanups.push(() => {
-    window.clearTimeout(snapTimer);
     snapTween?.kill();
   });
 
   /* ── Thumbs — glide the driver to the slide's rest position. */
   thumbs.forEach((thumb, i) => {
     const onClick = () => {
-      glideTo(i === 0 ? transStart() : p3Start(), 1.0);
+      glideTo(i === 0 ? textStart() : textEnd(), 1.0);
     };
     thumb.addEventListener('click', onClick);
     cleanups.push(() => thumb.removeEventListener('click', onClick));
@@ -423,7 +346,6 @@ export function initFoundersPage() {
   cleanups.push(() => window.cancelAnimationFrame(rafId));
 
   const onResize = () => {
-    measure();
     frame();
   };
   window.addEventListener('resize', onResize);
@@ -438,9 +360,6 @@ export function initFoundersPage() {
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
-    /* The webfont changes the glyph advances the name alignment and
-       the travel clamps are derived from — re-derive once it lands. */
-    measure();
     frame();
     if (!(footerEl instanceof HTMLElement)) return;
     wrappedFooter = wrapFooterReveals(footerEl);
@@ -461,9 +380,9 @@ export function initFoundersPage() {
       tick: (dt) => stepScroll(dt ?? 16.7),
       setPos: (p) => { setPosClamped(p); },
       state: () => ({
-        pos, targetPos, T: T(), transStart: transStart(), p3Start: p3Start(),
+        pos, targetPos, textStart: textStart(), textEnd: textEnd(),
         releaseStart: releaseStart(), footerStart: footerStart(), maxPos: maxPos(),
-        nameStartTop, nameTravel, activeSlide,
+        activeSlide,
       }),
     };
   }

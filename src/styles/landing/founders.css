@@ -840,47 +840,43 @@ body.founders-page {
 		height: min(841px, calc(100dvh - 104px));
 	}
 
-	/* The wipe slots: stacked pair, cover-fit; clip/filter driven by
-	   founders-page.js (self-filters only — never ancestors). */
-	.founders-page .fd-wipe {
-		position: absolute;
-		inset: 0;
-	}
-
-	.founders-page .fd-wipe__img {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.founders-page .fd-wipe__img--b {
-		clip-path: inset(0 100% 0 0);
-		visibility: hidden;
-	}
-
-	/* Right column (6:102): 240×841 at (1464, 80), four 204.4 slots
-	   on 8px gaps. */
+	/* R2 (2026-08-26): the column is a FULL-VIEWPORT rolling window —
+	   bleeds off both edges, no visible start or end. The track holds
+	   the four images ×4 sets (coverage: window 100dvh + one set of
+	   headroom under the −setH baseline); founders-page.js rolls it
+	   by scroll (FD_CAROUSEL_RATE), seamless by modulo. */
 	.founders-page .fd-col {
 		position: absolute;
 		left: 1464px;
-		top: 80px;
+		top: 0;
 		width: 240px;
-		height: min(841px, calc(100dvh - 104px));
+		height: 100vh;
+		height: 100dvh;
+		overflow: hidden;
+	}
+
+	.founders-page .fd-col__track {
+		position: absolute;
+		left: 0;
+		top: 0;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		overflow: hidden;
+		transform: translate3d(0, -849.6px, 0); /* the JS baseline (RM frame) */
 	}
 
 	.founders-page .fd-col__slot {
 		position: relative;
-		inset: auto;
 		flex: none;
 		width: 240px;
 		height: 204.4px;
 		overflow: hidden;
+	}
+
+	.founders-page .fd-col__slot img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 
 	/* ── Text block (guide mapping flagged in the report). */

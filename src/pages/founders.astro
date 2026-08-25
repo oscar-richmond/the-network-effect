@@ -93,25 +93,34 @@ import '../styles/fonts.css';
         scrub-natively (founders-page.js applyWipe): A wipes OUT to
         the bare ground over the transition's first half, B wipes IN
         over the second. Slot 0 of the five-image sync group. */}
+    {/* R2 (2026-08-26): REVEAL-BEHIND — Ashley sits fully opaque
+        beneath and Robbo's layer wipes L→R off him (the two-phase
+        lightbox port cleared to bare ground mid-swap, which read as
+        a WHITE FLASH on this surface — Oscar's defect report).
+        Combined coverage never drops below full. */}
     <div class="fd-portrait" data-fd-portrait aria-hidden="true">
-      <div class="fd-wipe" data-fd-wipe data-wipe-i="0">
-        <img class="fd-wipe__img fd-wipe__img--a" src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
-        <img class="fd-wipe__img fd-wipe__img--b" src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
-      </div>
+      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
     </div>
 
-    {/* ── RIGHT IMAGE COLUMN (frame 6:102): four 240×204.4 windows
-        on 8px gaps at (1464, 80). Each is a wipe slot in the same
-        sync group (stagger indexes 1..4 — the portrait leads, the
-        column cascades). Per-founder image ORDER comes from data
-        (Ashley = reversed, flagged). */}
+    {/* ── RIGHT IMAGE COLUMN → SCROLL-DRIVEN ROLLING CAROUSEL (R2,
+        2026-08-26): the 240-wide strip now bleeds off BOTH viewport
+        edges — a full-height window rolling the SAME four images in
+        their existing order, repeated ×3 for the seamless modulo
+        wrap (founders-page.js: translateY = −(pos·FD_CAROUSEL_RATE)
+        mod setH). Scroll-driven only — advances, stops and reverses
+        with input; no autoplay. The per-founder wipe pairs retire
+        with it (one shared roll). */}
     <div class="fd-col" aria-hidden="true">
-      {FOUNDERS_SLIDES[0].colImgs.map((src, i) => (
-        <div class="fd-col__slot fd-wipe" data-fd-wipe data-wipe-i={String(i + 1)}>
-          <img class="fd-wipe__img fd-wipe__img--a" src={asset(src)} alt="" loading="eager" decoding="async" />
-          <img class="fd-wipe__img fd-wipe__img--b" src={asset(FOUNDERS_SLIDES[1].colImgs[i])} alt="" loading="eager" decoding="async" />
-        </div>
-      ))}
+      <div class="fd-col__track" data-fd-coltrack>
+        {[0, 1, 2, 3].map(() => (
+          FOUNDERS_SLIDES[0].colImgs.map((src) => (
+            <div class="fd-col__slot">
+              <img src={asset(src)} alt="" loading="eager" decoding="async" />
+            </div>
+          ))
+        ))}
+      </div>
     </div>
 
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
@@ -171,7 +180,11 @@ import '../styles/fonts.css';
           {slide.relRows.map((row) => (
             <p class="fd-slide__rel-row">
               {row.map((item) => (
-                <Fragment><span class="fd-slide__rel-item">{item}</span><span class="fd-slide__rel-sep" aria-hidden="true">{' / '}</span></Fragment>
+                <Fragment><span class="fd-slide__rel-item"
+                  >{item.split('\n').map((part, k) => (
+                    <Fragment>{k > 0 && <br />}{part}</Fragment>
+                  ))}</span
+                ><span class="fd-slide__rel-sep" aria-hidden="true">{' / '}</span></Fragment>
               ))}
             </p>
           ))}
@@ -266,15 +279,11 @@ import '../styles/fonts.css';
       </div>
     ))}
 
-    {/* The travelling names — OUTSIDE the slide containers (their
-        z/position stacking contexts isolated the difference — the
-        white-name bug): direct wrapper children, chain kept bare,
-        blending against the wrapper's opaque ground + the portrait.
-        founders-page.js drives `top` (layout, the blend rule) and
-        groups each with its slide's transition. */}
-    {FOUNDERS_SLIDES.map((slide, i) => (
-      <h2 class="fd-slide__name" data-fd-name data-slide={String(i)}>{slide.name}</h2>
-    ))}
+    {/* The travelling names are REMOVED (R2, Oscar 2026-08-26) —
+        the frame's static name in the text block is the name
+        treatment; the travel machinery went with them
+        (founders-page.js: phases re-anchored to named constants,
+        no derived name clamps remain). */}
     </div>
 
     {/* MOBILE thumb dock (rev 4): the face CTAs sit fixed 32px from

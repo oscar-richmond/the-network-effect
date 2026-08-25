@@ -106,10 +106,16 @@ export const FOUNDERS_SLIDES = [
       'Decades inside rooms where culture was built.',
     ],
     relLabel: 'THE NETWORK ADVANTAGE',
+    /* R2 (Oscar, 2026-08-26): the wrap breaks INSIDE the third item
+       — "Authenticity Within" ends its line, "Culture /" opens the
+       next (an explicit \n break in the item; deterministic where a
+       width-tuned wrap would drift with font metrics). Rendered:
+         Cultural Credibility / Trusted Access to Talent /
+         Industry Relationships / Authenticity Within
+         Culture / Creative Influence /                     */
     relRows: [
       ['Cultural Credibility', 'Trusted Access to Talent'],
-      ['Industry Relationships', 'Authenticity Within Culture'],
-      ['Creative Influence'],
+      ['Industry Relationships', 'Authenticity Within\nCulture', 'Creative Influence'],
     ],
     colImgs: [
       '/assets/landing/founders-page/col-4.png',
