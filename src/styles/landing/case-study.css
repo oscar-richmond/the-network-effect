@@ -47,11 +47,12 @@ body.case-page {
 .landing-v2 .cs-hero__subtitle {
 	margin: 14px 0 0 24px;
 	width: 725px;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 20px; /* Oscar's rev — was 24 */
-	line-height: 32px;
+	font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% (was 20/32) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
 	color: #fff;
 	mix-blend-mode: difference;
 }
@@ -179,7 +180,7 @@ body.case-page {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -282,7 +283,7 @@ body.case-page {
 }
 
 .landing-v2 .cs-serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -290,7 +291,7 @@ body.case-page {
 .landing-v2 .cs-rail__desc {
 	margin: 24px 0 0;
 	width: 485px;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -303,7 +304,7 @@ body.case-page {
 	padding: 0 0 0 24px;
 	width: 485px;
 	list-style: disc;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -456,7 +457,7 @@ body.case-page {
 	/* OPTICAL 16 (7.5 box = 16 - descender 4.5 - Serrif cap 3.96). */
 	margin-top: 7.5px;
 	width: 557px;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;

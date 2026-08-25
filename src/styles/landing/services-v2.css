@@ -94,11 +94,12 @@
 	width: 724px;
 	top: calc(50% + 63px - 24px);
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 20px; /* Oscar's rev — was 22 */
-	line-height: 24px;
+	font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% (was 20/24) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
 	text-align: center;
 	color: #fff;
 }
@@ -171,7 +172,7 @@
 .landing-v2 .sv-pillar__sub {
 	width: 382px;
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px; /* Oscar's rev 7 — was the file's 22; house 16/22 */
@@ -211,7 +212,7 @@
    Serrif 16/22 pairing; was the file's 24/48). 40 gap kept. */
 .landing-v2 .sv-intro__sub {
 	margin: 40px 0 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -312,7 +313,7 @@
 }
 
 .landing-v2 .sv-rows__text {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px; /* Oscar's rev 6 — was the file's 24 */
@@ -535,7 +536,7 @@
 }
 
 .landing-v2 .sv-galhead__note-serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -637,7 +638,7 @@
 	top: 0;
 	width: 340px;
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;

@@ -341,13 +341,13 @@ const base = import.meta.env.BASE_URL;
        now ALSO 24px, so the travel is near-parity — a pure
        centre-to-top-left move, no shrink. Colour is the site ground
        grey (Oscar's rev 3 — was #fff), matching the loading line. */
-    font-family: 'Serrif', serif;
+    font-family: var(--font-serif-cond);
     font-weight: 500;
     font-synthesis: none;
-    font-size: 34px; /* frame 1:647 (2026-08-26) — parity with the
-       34px nav wordmark: the handoff is a pure glide again */
-    line-height: 39px;
-    letter-spacing: -0.03em;
+    font-size: var(--ts-serif-section-size); /* parity with the 34px
+       nav wordmark: the handoff is a pure glide */
+    line-height: var(--ts-serif-section-lh); /* 38 (guide; frame 39 — guide wins) */
+    letter-spacing: var(--ts-serif-section-track);
     text-transform: none;
     color: #eeeef0;
     mix-blend-mode: difference;

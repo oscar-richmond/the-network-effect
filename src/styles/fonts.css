@@ -9,6 +9,11 @@
 }
 
 @font-face {
+  /* NOTE (font migration, 2026-08-25): this maps 'Network Effect' w500
+     to the OLD Serrif Medium. It only renders if Dazzed fails to load
+     ('Network Effect' is a fallback in the --font-display/--font-sans
+     stacks). Left as-is per Oscar — the live serif is Serrif Condensed
+     via --font-serif-cond below. */
   font-family: 'Network Effect';
   src: url('../assets/fonts/Serrif-TRIAL-Medium.otf') format('opentype');
   font-weight: 500;
@@ -72,6 +77,43 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
+}
+
+/* ── SERRIF CONDENSED — the live serif (DESKTOP TYPE STYLES guide,
+   1440–1920). Medium is the only cut. The five guide styles are
+   tokenised below; map new work to the tokens, not literals. */
+@font-face {
+  font-family: 'Serrif Condensed';
+  src:
+    url('../assets/fonts/SerrifCondensed-Medium-subset.woff2') format('woff2'),
+    url('../assets/fonts/SerrifCondensed-Medium-subset.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-serif-cond: 'Serrif Condensed', 'Serrif', serif;
+  /* Display / Serif L — 100/92/−4%, UPPERCASE, 8–10 cols */
+  --ts-serif-display-size: 100px;
+  --ts-serif-display-lh: 92px;
+  --ts-serif-display-track: -0.04em;
+  /* Heading / Editorial — 48/48/−2%, sentence, 6–9 cols */
+  --ts-serif-editorial-size: 48px;
+  --ts-serif-editorial-lh: 48px;
+  --ts-serif-editorial-track: -0.02em;
+  /* Heading / Section — 34/38/−3%, sentence, 5 cols */
+  --ts-serif-section-size: 34px;
+  --ts-serif-section-lh: 38px;
+  --ts-serif-section-track: -0.03em;
+  /* Body / Lead — 26/32/−2%, sentence, max 560px */
+  --ts-serif-lead-size: 26px;
+  --ts-serif-lead-lh: 32px;
+  --ts-serif-lead-track: -0.02em;
+  /* Body / Default — 21/28/−1.5%, sentence, max 620px */
+  --ts-serif-body-size: 21px;
+  --ts-serif-body-lh: 28px;
+  --ts-serif-body-track: -0.015em;
 }
 
 /* Dazzed — primary brand sans */

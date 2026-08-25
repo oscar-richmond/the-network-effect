@@ -352,7 +352,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    the inherited Dazzed 12. Scoped to the new build — /old's menu
    footer keeps its own treatment. */
 .landing-v2 .site-menu__footer-link {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 14px;
@@ -564,7 +564,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 .landing-v2 .landing-hero__headline-line--serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -593,7 +593,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	transform: translateY(-50%);
 	margin: 0;
 	/* Oscar's spec: Serrif Medium 16px. */
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -924,7 +924,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 .landing-v2 .landing-services__serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -951,7 +951,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	top: 114px;
 	height: 20px;
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -1159,7 +1159,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: flex;
 	align-items: center;
 	white-space: nowrap;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -1295,7 +1295,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 .landing-v2 .landing-network__title-serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -1321,7 +1321,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	left: 864px;
 	width: 840px;
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	/* 32px (Oscar's rev — was the file's 36); authored 48px leading
@@ -1579,9 +1579,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	position: absolute;
 	left: 24px;
 	bottom: 24px;
-	font-family: 'Serrif', serif;
-	/* Light 300 (Oscar's rev — was Medium 500). */
-	font-weight: 300;
+	font-family: var(--font-serif-cond);
+	/* Condensed Medium (font migration — was Light 300; the condensed
+	   face is Medium-only and Oscar chose one family over two). */
+	font-weight: 500;
 	font-synthesis: none;
 	font-size: 32px;
 	line-height: 1;
@@ -1867,8 +1868,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	text-align: center;
 	white-space: nowrap;
 	pointer-events: none;
-	font-family: 'Serrif', serif;
-	font-weight: 400;
+	font-family: var(--font-serif-cond);
+	font-weight: 500; /* condensed Medium (was 400 — W1) */
 	font-synthesis: none;
 	font-size: 48px;
 	line-height: 48px;
@@ -1947,7 +1948,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 .landing-v2 .landing-access__hl-serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -2033,7 +2034,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-closing__hl--3 { left: 24px; top: 272px; }
 
 .landing-v2 .landing-closing__hl--serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	letter-spacing: -1.44px;
@@ -2049,7 +2050,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	width: 330px;
 	margin: 0;
 	text-align: right;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -2121,7 +2122,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	top: 36.5px;
 	width: 100%;
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -2280,7 +2281,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 .landing-v2 .landing-footer__st-serrif {
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
+	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
 	font-weight: 500;
 	font-synthesis: none;
 	color: #a6a6a8;
@@ -2521,7 +2523,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-featured__hl--work {
 	left: 76px;
 	top: 197px;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 }
@@ -2640,7 +2642,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	top: 541px; /* fallback (2-line title); per-card inline overrides */
 	width: 324px; /* the file's 350 scaled with the 405.93 -> 376 card */
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -3735,7 +3737,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		padding: 0;
 		list-style: none;
 		scroll-snap-align: start;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 14px;
@@ -3794,7 +3796,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* WORK: the file sets Serrif Medium (a mobile-only face change
 	   from the desktop's Dazzed pair) with a 37px stagger indent. */
 	.landing-v2.landing-home .landing-featured__hl--work {
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		margin-left: 37px;
@@ -4206,8 +4208,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		margin: 0;
 		z-index: 3;
 		transform: translate(-50%, -50%);
-		font-family: 'Serrif', serif;
-		font-weight: 400;
+		font-family: var(--font-serif-cond);
+		font-weight: 500; /* condensed Medium (was 400 — W1) */
 		font-synthesis: none;
 		font-size: 30px;
 		color: #fff;
@@ -4372,7 +4374,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-closing__m-line {
 		margin: 8px 0 0;
 		max-width: 300px;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 14px;
@@ -4789,7 +4791,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   POWERED BY ACCESS. = Dazzed Bold. (The --dazzed/--serrif class
 	   names are the OLD hero's assignment, now historical.) */
 	.landing-v2.landing-home .landing-hero__headline-line--dazzed {
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 	}
@@ -4939,11 +4941,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		height: 275.02px;
 	}
 
-	/* Hover names (16:223): Serrif LIGHT 32/24 (Light is loaded),
-	   overhanging 18px left of the image, centred 131.5 down —
-	   the frame draws the hover state; the interaction stays. */
+	/* Hover names (16:223 drew Serrif LIGHT 32/24; font migration
+	   2026-08-25: condensed Medium is the only cut — W1, Oscar). */
 	.landing-v2.landing-home .landing-founders__portrait-name {
-		font-weight: 300;
+		font-weight: 500;
 		font-size: 32px;
 		line-height: 24px;
 		left: -18px;
@@ -5020,9 +5021,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		transform: translateX(-50%);
 		width: 1014px;
 		text-align: center;
-		font-size: 48px;
-		line-height: 48px;
-		letter-spacing: -0.03em;
+		font-size: var(--ts-serif-editorial-size);
+		line-height: var(--ts-serif-editorial-lh);
+		letter-spacing: var(--ts-serif-editorial-track); /* guide −2% (frame −3% — guide wins, Oscar) */
 	}
 
 	/* Rows re-seat: 438 / 570 (frame 1:413/1:358; 32px between). */
@@ -5130,12 +5131,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		margin-inline: 0;
 		top: 0;
 		text-align: left;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 34px;
-		line-height: 39px;
-		letter-spacing: -0.03em;
+		font-size: var(--ts-serif-section-size);
+		line-height: var(--ts-serif-section-lh); /* 38 (guide; frame 39 — guide wins) */
+		letter-spacing: var(--ts-serif-section-track);
 	}
 
 	.landing-v2 .home__nav-links {
@@ -5240,9 +5241,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		white-space: nowrap;
 	}
 
+	/* NAMING WARNING (font migration): the class names are INVERTED —
+	   after an earlier respec, `--dazzed` is the SERIF line ("BUILT ON
+	   TRUST.") and `--serrif` is the DAZZED line ("POWERED BY ACCESS.").
+	   deriveIntroLineHeight in landing-hero-scroll.js queries them by
+	   these names, so they stay; read them by role, not by name. */
 	.landing-v2.landing-home .landing-hero__headline-line--dazzed {
-		font-weight: 400; /* Serif REGULAR (guide; was Medium) */
-		letter-spacing: -0.04em;
+		font-weight: 500; /* condensed Medium — Display / Serif L (was 400) */
+		line-height: var(--ts-serif-display-lh); /* 92 (guide; was 88) */
+		letter-spacing: var(--ts-serif-display-track);
 	}
 
 	.landing-v2.landing-home .landing-hero__headline-line--serrif {
@@ -5322,12 +5329,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   descriptions remain serif"; the doc's own example is
 	   sentence-cased). */
 	.landing-v2.landing-home .landing-svc-card__desc {
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 25px;
-		line-height: 29px;
-		letter-spacing: -0.01em;
+		font-size: var(--ts-serif-lead-size); /* Lead 26/32/−2% (was 25/29/−1%) */
+		line-height: var(--ts-serif-lead-lh);
+		letter-spacing: var(--ts-serif-lead-track);
 		text-transform: none;
 	}
 }
@@ -5413,7 +5420,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2.landing-home .landing-svcrows__st-serif {
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		letter-spacing: -0.04em;
@@ -5435,7 +5442,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 490px;
 		width: 740px;
 		margin: 0;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 30px;
@@ -5508,7 +5515,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 38px;   /* centre y72 (two 34px lines) */
 		width: 350px;
 		margin: 0;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 32px; /* frame (guide Body is 30 — frame wins, flagged) */
@@ -5750,12 +5757,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		position: static;
 		margin: 24px 0 0;
 		width: 100%;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 48px;
-		line-height: 50px;
-		letter-spacing: normal;
+		font-size: var(--ts-serif-editorial-size);
+		line-height: var(--ts-serif-editorial-lh); /* 48 (guide; was 50) */
+		letter-spacing: var(--ts-serif-editorial-track);
 		/* Sentence case: the TEXT is cased in landing-featured.js
 		   (desktop only — ::first-letter can't reach through the
 		   reveal wrap's inline-block atoms); the base rule's
@@ -6068,8 +6075,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		position: absolute;
 		width: 344px;
 		text-align: center;
-		font-family: 'Serrif', serif;
-		font-weight: 400;
+		font-family: var(--font-serif-cond);
+		font-weight: 500; /* condensed Medium (was 400 — W1) */
 		font-synthesis: none;
 		font-size: 56px;
 		line-height: 50px;

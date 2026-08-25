@@ -104,9 +104,10 @@ body.work-page {
 
 .landing-v2 .work-page__hl--work {
 	top: 176px; /* one 48px line below FEATURED */
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
+	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
 }
 
 /* ── Filter pills (48px below WORK — Oscar's rev: WORK bottoms at
@@ -215,7 +216,7 @@ body.work-page {
 	top: 48px;
 	width: 540px;
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -437,7 +438,7 @@ body.work-page {
 	.landing-v2 .work-m__desc {
 		margin: 8px var(--m-margin, 16px) 0;
 		max-width: 340px;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 14px;

@@ -113,7 +113,7 @@ body.founders-page {
 	display: block;
 	height: 18px;
 	overflow: hidden;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 12px;
@@ -198,7 +198,7 @@ body.founders-page {
 
 .landing-v2 .fd-slide__bio-text--serrif {
 	margin-top: 24px; /* the bold→Serrif gap (Oscar's rev 2) */
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	white-space: pre-line; /* honours forced \n breaks in the data
@@ -252,7 +252,7 @@ body.founders-page {
 	left: 25px;
 	bottom: 142px; /* clears the taller 2-line list below (rev 4) */
 	margin: 0;
-	font-family: 'Serrif', serif;
+	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	font-size: 16px;
@@ -300,27 +300,8 @@ body.founders-page {
 	display: none;
 }
 
-/* The travelling name — Serrif 56 (Oscar's rev 4: the file's 80
-   less 24), #F9F9F9 + DIFFERENCE; `top` is driven by JS between the
-   live clamps. LEFT: the authored 913 is the FALLBACK only — for
-   Robbo (slide 0) founders-page.js overrides it so the portrait's
-   left edge runs through the middle of the first "b" (Oscar's rev
-   4), measured from the live glyph box. Ashley keeps 913. */
-.landing-v2 .fd-slide__name {
-	position: absolute;
-	left: 913px;
-	top: 0; /* JS-driven */
-	width: 723px;
-	margin: 0;
-	font-family: 'Serrif', serif;
-	font-weight: 500;
-	font-synthesis: none;
-	font-size: 56px;
-	line-height: 56px;
-	color: #f9f9f9;
-	mix-blend-mode: difference;
-	pointer-events: none;
-}
+/* (.fd-slide__name rules deleted — the travelling names were removed
+   in founders R2; the element no longer exists.) */
 
 .landing-v2 .fd-sr-live {
 	position: absolute;
@@ -446,7 +427,7 @@ body.founders-page {
 		order: 1;
 		align-self: stretch;
 		margin: 0;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 16px;
@@ -514,7 +495,7 @@ body.founders-page {
 		order: 4;
 		align-self: stretch;
 		margin: 48px 0 0;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 22px;
@@ -743,7 +724,7 @@ body.founders-page {
 		display: block;
 		width: fit-content;
 		margin: 0;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
 		font-size: 16px;
@@ -914,12 +895,14 @@ body.founders-page {
 		top: 361px;
 		width: 615px;
 		margin: 0;
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 21px;
-		line-height: 28px;
-		letter-spacing: 0.015em; /* the frame's +0.315px */
+		font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% */
+		line-height: var(--ts-serif-body-lh);
+		/* Guide −1.5%; frame 6:67 authored +1.5% — probable Figma sign
+		   error (flagged for Oscar to raise). Guide wins. */
+		letter-spacing: var(--ts-serif-body-track);
 		color: #161616;
 	}
 
@@ -953,25 +936,17 @@ body.founders-page {
 	.founders-page .fd-slide__rel-row {
 		margin: 0;
 		height: 36px; /* 32 line on the 36 pitch (644/680/716) */
-		font-family: 'Serrif', serif;
+		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 26px;
-		line-height: 32px;
-		letter-spacing: -0.02em;
+		font-size: var(--ts-serif-lead-size); /* Body / Lead — exact match */
+		line-height: var(--ts-serif-lead-lh);
+		letter-spacing: var(--ts-serif-lead-track);
 		white-space: nowrap;
 	}
 
 	.founders-page .fd-slide__rel-sep {
 		padding: 0 4px; /* the frame's 4px gaps around the 13px slash */
-	}
-
-	/* The travelling names re-anchor over the NEW flush-left
-	   portrait (their authored anchor sat over the old right-side
-	   image; at x913 they collided with the frame's text block).
-	   The vertical clamps already derive from the live rect. */
-	.founders-page .fd-slide__name {
-		left: 40px;
 	}
 
 	/* The pre-6:67 desktop text + CTA retire (mobile keeps them all;
