@@ -220,14 +220,31 @@ export function initLandingServices() {
           pillar.style.setProperty('--pillar-pin', `${pin}px`);
           const scroll = pillar.querySelector('[data-svcrows-scroll]');
           const win = pillar.querySelector('[data-svcrows-win]');
+          const winfade = pillar.querySelector('.landing-svcrows__winfade');
           const winH = win instanceof HTMLElement ? win.clientHeight : 0;
           const contentH = scroll instanceof HTMLElement ? scroll.scrollHeight : 0;
-          return { pillar, scroll, pin, travel: Math.max(0, contentH - winH) };
+          /* R2 (Oscar): the list scrolls FURTHER than bare fit — it
+             keeps riding under the band until the LAST row sits
+             where the 4th-from-last began (his IMMERSE spec:
+             Industry-leading Events up to Experiential Campaigns'
+             starting place — three row-slots past the top), unless
+             a short window already forces more. */
+          const rows = Array.from(pillar.querySelectorAll('[data-sv-row]'));
+          const pitch = rows.length > 1 ? rows[1].offsetTop - rows[0].offsetTop : 0;
+          const fitTravel = Math.max(0, contentH - winH);
+          const throughTravel = rows.length > 3 && pitch > 0
+            ? Math.max(0, contentH - (rows.length - 3) * pitch)
+            : 0;
+          return { pillar, scroll, winfade, pin, travel: Math.max(fitTravel, throughTravel) };
         });
         /* Park the arrivals below the stage (transform — the panels
            are opaque, see the CSS blend note). */
         parts.forEach((pt, i) => {
           if (pt.scroll instanceof HTMLElement) gsap.set(pt.scroll, { y: 0 });
+          /* The gradient is INVISIBLE at rest (Oscar: the first row
+             must not sit dimmed) — it fades in with the first px of
+             the list's travel, scrubbed both ways. */
+          if (pt.winfade instanceof HTMLElement) gsap.set(pt.winfade, { autoAlpha: 0 });
           if (i > 0) gsap.set(pt.pillar, { y: H - pt.pin });
           else gsap.set(pt.pillar, { y: 0 });
         });
@@ -242,6 +259,9 @@ export function initLandingServices() {
             at += ride;
           }
           if (pt.travel > 0 && pt.scroll instanceof HTMLElement) {
+            if (pt.winfade instanceof HTMLElement) {
+              tl.to(pt.winfade, { autoAlpha: 1, duration: Math.min(60, pt.travel) }, at);
+            }
             tl.to(pt.scroll, { y: -pt.travel, duration: pt.travel }, at);
             at += pt.travel;
           }

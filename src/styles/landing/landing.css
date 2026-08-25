@@ -4821,13 +4821,17 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	/* ── WHO WE ARE (16:201-16:240): section 1014 tall (was 1049). */
-	/* R2 (Oscar, 2026-08-24): + a 250px full-bleed dwell + one
-	   viewport of hold — the expanded photo STAYS full-screen while
-	   OUR NETWORK (opaque, −100dvh overlap) rolls up over it. The
-	   founders timeline still ends at entry+hold+exit; the extra
-	   track just keeps the section pinned under the roll-over. */
+	/* R3 (Oscar, 2026-08-25 — supersedes the R2 roll-over): the
+	   expanded photo holds full-bleed for a 350px dwell, then the
+	   SECTION SCROLLS UP revealing Our Network BENEATH it — the
+	   track sits at z261 over network's 260, and network (opaque
+	   from entry, −100dvh overlap) is already pinned under the photo
+	   by release (invariant: its top reaches the viewport top 66px
+	   before the sticky lets go, both track-derived). The extra
+	   track height is just the dwell now. */
 	.landing-v2.landing-home .landing-founders-track {
-		height: calc(1014px + 250px + 900px + 250px + 100dvh);
+		z-index: 261;
+		height: calc(1014px + 250px + 900px + 350px);
 	}
 
 	.landing-v2.landing-home .landing-founders {
@@ -4953,7 +4957,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   to the centred region; strip drops BELOW the rows with the
 	   frame's 48px gap. Internal behaviour untouched. */
 	.landing-v2.landing-home .landing-network {
-		height: calc(1118px + 900px);
+		height: calc(1118px + 900px + 1014px); /* R3: + the founders
+		   release distance — the pin runway is consumed INVISIBLY
+		   beneath the held photo (z261 above), so the extra keeps a
+		   full dwell after the reveal (caught in verification: the
+		   stage was already departing as the photo cleared). */
 	}
 
 	.landing-v2.landing-home .landing-network__stage {
@@ -5810,5 +5818,33 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__pillar.is-composed .sv-rows__divider,
 	.landing-v2.landing-home .landing-svcrows.is-stacked .landing-svcrows__pillar.is-composed .sv-rows__inner {
 		transition: none;
+	}
+}
+
+
+/* ── FOUNDERS R3 (Oscar, 2026-08-25) ─────────────────────────────
+   Headline box widened so BUILDING joins line 1 (measured: the line
+   needs 200 indent + 754.6 text = 954.6 at the 56/50/−3.5% face);
+   the rest re-wraps naturally at the new measure. Buttons: BOTH
+   rest on THE FOUNDERS' container ink (#343439) and darken to the
+   old FEATURED WORK fill (#232326) on hover/focus — plain :hover
+   (no hover-media gate: Oscar's machine reports hover:none
+   system-wide). Desktop only; mobile keeps the shipped states. */
+@media (min-width: 1025px) {
+	.landing-v2.landing-home .landing-founders__headline {
+		width: 980px;
+	}
+
+	.landing-v2.landing-home .landing-founders__btn,
+	.landing-v2.landing-home .landing-founders__btn:nth-of-type(2) {
+		background: #343439;
+		transition: background-color 0.25s ease-out;
+	}
+
+	.landing-v2.landing-home .landing-founders__btn:hover,
+	.landing-v2.landing-home .landing-founders__btn:focus-visible,
+	.landing-v2.landing-home .landing-founders__btn:nth-of-type(2):hover,
+	.landing-v2.landing-home .landing-founders__btn:nth-of-type(2):focus-visible {
+		background: #232326;
 	}
 }

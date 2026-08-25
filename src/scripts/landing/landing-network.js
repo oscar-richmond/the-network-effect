@@ -319,11 +319,11 @@ export function initLandingNetwork() {
      fixed hero video showed through. The CONTENT toggles at the pin
      with a REAL reversed exit (below): the exited state IS the
      initial parked state, so no visibility hack is needed at all. */
-  /* R2 (Oscar, 2026-08-24): on the LANDING page the section now
-     follows WHO WE ARE and rolls over its held full-screen photo as
-     a SOLID panel — the CSS black stands from first paint; no
-     transparent phase, no ground toggle. /services keeps the shipped
-     transparent-until-pin (black-over-black behind featured). */
+  /* R2/R3 (Oscar, 2026-08-24/25): on the LANDING page the section
+     sits BENEATH the founders track (z260 vs 261) as solid black
+     from first paint — the held full-screen photo scrolls up to
+     REVEAL it (no transparent phase, no ground toggle). /services
+     keeps the shipped transparent-until-pin. */
   const opaqueEntry = document.body.classList.contains('landing-home');
   if (!opaqueEntry) {
     section.style.background = 'transparent';
