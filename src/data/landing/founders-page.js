@@ -42,6 +42,31 @@ export const FOUNDERS_SLIDES = [
     /* APPROVED COPY (Oscar's attachment, 2026-08-08) — replaces the
        placeholder list: "Relationships across:" + the seven sectors
        on two lines (break after FOOD & BEVERAGE, per the visual). */
+    /* ── FRAME 6:67 DESKTOP FIELDS (2026-08-26). The frame carries
+       REAL new Robbo copy (role line, two bio paragraphs) and a TEN-
+       sector relationships list — sentence case, NO /0N indexes,
+       label reworded — which DIVERGES from the approved 7-item
+       indexed list below (kept: mobile still renders it). Flagged
+       in the report for Oscar's ruling. */
+    roleLine: 'FOUNDER: PARTNERSHIPS, STRATEGY & EXPERIENCES',
+    bioParas: [
+      '20 years operating at the intersection of luxury hospitality, entertainment, brands, talent and live experiences.',
+      'Rob has built a career creating partnerships, communities and experiences by connecting people and opportunities that wouldn\u2019t ordinarily come together.',
+    ],
+    relLabel: 'A STRATEGIC OPERATOR WITH A GLOBAL NETWORK SPANNING',
+    relRows: [
+      ['Talent', 'Hospitality', 'TV & Film', 'Music'],
+      ['Luxury', 'Fashion', 'Food & Beverage'],
+      ['Sports', 'Production', 'Founders'],
+    ],
+    /* The frame's four right-column shots (downloaded 2026-08-26,
+       resized; PENDING FOUNDER SIGN-OFF like all founder imagery). */
+    colImgs: [
+      '/assets/landing/founders-page/col-1.png',
+      '/assets/landing/founders-page/col-2.png',
+      '/assets/landing/founders-page/col-3.png',
+      '/assets/landing/founders-page/col-4.png',
+    ],
     listLabel: 'Relationships across:',
     /* Oscar's rev 5: BRANDS moves UP to line 1 (so a slash divider
        now falls between FOOD & BEVERAGE and BRANDS); the break
@@ -68,6 +93,30 @@ export const FOUNDERS_SLIDES = [
     /* Forced break (Oscar's rev 3): "culture" drops to the last
        line — rendered via white-space:pre-line on the Serrif block. */
     bioSerrif: 'Decades inside rooms where\nculture was built.',
+    /* ── FRAME 6:67 DESKTOP FIELDS — Ashley has no frame; his
+       APPROVED copy maps into the same grammar. roleLine is an
+       INVENTED PLACEHOLDER (from his approved bio) — flagged.
+       Column images: the same four shots in REVERSE order (Oscar:
+       "the images on the right just need to change order" —
+       interpreted as reversed, no image in the same slot; flagged
+       for correction). */
+    roleLine: 'FOUNDER: MUSIC, FILM & TELEVISION',
+    bioParas: [
+      'One of the UK\u2019s most respected cultural voices with over 30 years across music, film and television.',
+      'Decades inside rooms where culture was built.',
+    ],
+    relLabel: 'THE NETWORK ADVANTAGE',
+    relRows: [
+      ['Cultural Credibility', 'Trusted Access to Talent'],
+      ['Industry Relationships', 'Authenticity Within Culture'],
+      ['Creative Influence'],
+    ],
+    colImgs: [
+      '/assets/landing/founders-page/col-4.png',
+      '/assets/landing/founders-page/col-3.png',
+      '/assets/landing/founders-page/col-2.png',
+      '/assets/landing/founders-page/col-1.png',
+    ],
     listLabel: 'The network advantage:',
     /* Oscar's rev 5 — the deck's double-index quirk is RESOLVED, not
        preserved: "INDUSTRY RELATIONSHIPS" is ONE item carrying ONE

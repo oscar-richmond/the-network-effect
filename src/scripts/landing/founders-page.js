@@ -75,7 +75,15 @@ export function initFoundersPage() {
 
   const content = stage.querySelector('[data-fd-content]');
   const portrait = stage.querySelector('[data-fd-portrait]');
-  const imgOver = stage.querySelector('[data-fd-img-over]');
+  /* THE WIPE SLOTS (frame 6:67): portrait + the four column images,
+     each an A/B pair — see applyWipe below. */
+  const wipeSlots = Array.from(stage.querySelectorAll('[data-fd-wipe]'))
+    .map((slot) => ({
+      i: Number(slot.dataset.wipeI) || 0,
+      a: slot.querySelector('.fd-wipe__img--a'),
+      b: slot.querySelector('.fd-wipe__img--b'),
+    }))
+    .filter((w) => w.a instanceof HTMLElement && w.b instanceof HTMLElement);
   const slides = Array.from(stage.querySelectorAll('[data-fd-slide]'));
   const names = slides.map((_, i) => stage.querySelector(`[data-fd-name][data-slide="${i}"]`));
   const elsPerSlide = slides.map((s) => Array.from(s.querySelectorAll('[data-fd-el]')));
@@ -96,6 +104,13 @@ export function initFoundersPage() {
      swaps, and at every viewport (the shell's interior included).
      Ashley's name has no "b" and keeps the authored left. */
   const alignNameToPortrait = () => {
+    /* RE-DERIVED for frame 6:67 (2026-08-26): the portrait is flush
+       to the LEFT viewport edge now — the b-through-the-left-edge
+       rule would push the name offscreen. The authored CSS anchor
+       stands; the machinery is kept for the day the portrait moves
+       again. */
+    return;
+    // eslint-disable-next-line no-unreachable
     const el = names[0];
     if (!(el instanceof HTMLElement) || !(portrait instanceof HTMLElement)) return;
     const textNode = Array.from(el.childNodes).find((n) => n.nodeType === Node.TEXT_NODE);
@@ -164,6 +179,32 @@ export function initFoundersPage() {
     announce(i);
   };
 
+  const FD_WIPE_STAGGER_T = 0.045; /* per-slot lead, in t2 space */
+  const FD_WIPE_BLUR_PX = 6; /* the lightbox edge blur */
+  const wipeSpan = 1 + Math.max(0, wipeSlots.length - 1) * FD_WIPE_STAGGER_T;
+  const applyWipe = (t2e) => {
+    wipeSlots.forEach((w) => {
+      const t = clamp(t2e * wipeSpan - w.i * FD_WIPE_STAGGER_T, 0, 1);
+      if (t <= 0.5) {
+        const pOut = t * 2;
+        w.a.style.visibility = pOut >= 1 ? 'hidden' : '';
+        w.a.style.clipPath = pOut > 0 ? `inset(0 0 0 ${(pOut * 100).toFixed(2)}%)` : '';
+        w.a.style.filter = pOut > 0.001 && pOut < 0.999 ? `blur(${(FD_WIPE_BLUR_PX * pOut).toFixed(2)}px)` : '';
+        w.b.style.visibility = 'hidden';
+        w.b.style.clipPath = 'inset(0 100% 0 0)';
+      } else {
+        const pIn = (t - 0.5) * 2;
+        w.a.style.visibility = 'hidden';
+        /* EXPLICIT visible — the CSS base parks B hidden, so an
+           empty inline value falls back to invisible (caught in
+           verification: Ashley's images never appeared). */
+        w.b.style.visibility = 'visible';
+        w.b.style.clipPath = pIn >= 1 ? 'inset(0 0 0 0)' : `inset(0 ${((1 - pIn) * 100).toFixed(2)}% 0 0)`;
+        w.b.style.filter = pIn < 0.999 ? `blur(${(FD_WIPE_BLUR_PX * (1 - pIn)).toFixed(2)}px)` : '';
+      }
+    });
+  };
+
   /* ── The frame — every visual is a pure function of pos. */
   const frame = () => {
     const t2 = clamp((pos - transStart()) / TRANSITION_PX, 0, 1);
@@ -206,11 +247,17 @@ export function initFoundersPage() {
       slide.style.visibility = (i === 0 ? t2e >= 1 : t2e <= 0) ? 'hidden' : '';
     });
 
-    /* Portrait crossfade — the outgoing (Robbo) layer on top. */
-    if (imgOver instanceof HTMLElement) {
-      imgOver.style.opacity = String(1 - t2e);
-      imgOver.style.filter = t2e > 0.001 && t2e < 0.999 ? `blur(${(6 * Math.sin(Math.PI * t2e)).toFixed(2)}px)` : '';
-    }
+    /* THE WIPE (ported from the case-study lightbox, 2026-08-26 —
+       replaces the blur-crossfade): the same two-phase sequential
+       L→R read as a pure function of the transition scrub. Phase 1
+       (first half): the A image wipes OUT left-to-right to the bare
+       ground, blur rising to 6 at the edge. Phase 2: B wipes IN
+       left-to-right, blur settling 6→0. Never both visible; the
+       boundary snap's 0.8s glide reproduces the lightbox's ~900ms
+       sequential timing. STAGGER: the portrait (slot 0) leads and
+       the column cascades (FD_WIPE_STAGGER_T per index), the window
+       normalised so every slot completes inside the phase. */
+    applyWipe(t2e);
 
     /* Indicator — the label row rides its 64px with the scrub. */
     if (labelRow instanceof HTMLElement) {
@@ -430,18 +477,20 @@ export function initFoundersPage() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MOBILE (≤1024) — frame 13:948 rev 3 (2026-08-14): one founder
+   MOBILE (≤1024) — frame 13:948 rev 4 (2026-08-14): one founder
    profile shown at a time (data-m-active; Ashley lands), swapped via
-   the portrait's sticky switch band or the CTA-row name chip. Every
-   swap scrolls home and REPLAYS the entrance vocabulary (word-reveal
-   on the blended lines, staggered fade-rise on the media) — the same
+   the fixed thumb dock or the CTA-row name chip. Every swap scrolls
+   home and REPLAYS the entrance vocabulary (word-reveal on the
+   blended lines, staggered fade-rise on the media) — the same
    grammar the m-entrance one-shot used, owned here because replays
    need resets.
 
-   The band's pin behaviour and its labels (name LEFT, "Founder 0N"
-   RIGHT, the data numbering) are pure CSS/markup — baked per slide,
-   nothing here manages them; this controller only toggles slides
-   and wires every thumb + chip to swapTo.
+   The name labels' pin behaviour (24px under the image top → pinned
+   at the viewport middle → parked 24px above the image bottom) and
+   their copy (name LEFT, "Founder 0N" RIGHT, the data numbering)
+   are pure CSS/markup — baked per slide. This controller toggles
+   slides, follows the dock's active stroke, wires thumbs + chips to
+   swapTo, and blurs the dock out over the footer (IO below).
 
    WRAP TIMING: the word wrap groups lines from live offsetTop, so a
    display:none slide can't be wrapped — each slide wraps lazily the
@@ -462,6 +511,8 @@ const M_MEDIA_STAGGER_MS = 120; /* = m-entrance MEDIA_STAGGER_MS */
 function initFoundersMobile(stage, reduced) {
   const slides = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-slide]')));
   const thumbs = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-m-thumb]')));
+  const dock = stage.querySelector('[data-fd-m-dock]');
+  const cluster = stage.querySelector('[data-fd-m-switch]');
   const swapBtns = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-m-swap]')));
   const live = stage.querySelector('[data-fd-live]');
 
@@ -474,11 +525,11 @@ function initFoundersMobile(stage, reduced) {
   const lineSels = ['.fd-slide__m-label', '.fd-slide__bio-text--bold', '.fd-slide__m-serif'];
   /* VISUAL top-to-bottom order (the CTA row sits after the list in
      flex order but before it in the DOM) — the stagger reads down
-     the page. The switch band's pieces ride with the portrait. */
+     the page. The name labels ride with the portrait; the thumb
+     dock is NOT here — it's shared, enters once, persists. */
   const mediaSels = [
     '.fd-slide__m-portrait',
     '.fd-m-switch-label--l',
-    '.fd-m-switch',
     '.fd-m-switch-label--r',
     '.fd-slide__m-img2',
     '.fd-slide__listlabel',
@@ -508,6 +559,10 @@ function initFoundersMobile(stage, reduced) {
     active = idx;
     slides.forEach((s) => {
       s.dataset.mActive = s.dataset.slide === String(idx) ? 'true' : 'false';
+    });
+    /* The dock is shared across slides — the stroke follows here. */
+    thumbs.forEach((t) => {
+      t.setAttribute('aria-current', t.dataset.slide === String(idx) ? 'true' : 'false');
     });
     if (live instanceof HTMLElement) {
       live.textContent = `Founder: ${FOUNDERS_SLIDES[idx].name}`;
@@ -596,21 +651,52 @@ function initFoundersMobile(stage, reduced) {
 
   applyActive(active);
 
+  /* ── Footer clearance: the dock blurs out (the site's exit
+     vocabulary) as soon as the footer enters the viewport, and
+     blurs back in when it leaves on the way up — it must never
+     block the footer. Applies under reduced motion too (it's an
+     occlusion fix, not theatre). */
+  if (dock instanceof HTMLElement) {
+    const footer = document.querySelector('[data-landing-footer]');
+    if (footer && typeof IntersectionObserver === 'function') {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            dock.classList.toggle('is-footer-hidden', entry.isIntersecting);
+          });
+        },
+        { threshold: 0 },
+      );
+      io.observe(footer);
+      cleanups.push(() => io.disconnect());
+    }
+  }
+
   if (reduced) {
     /* Hidden states are no-preference-gated; the classes keep the
        DOM state coherent (the /work rule). Swaps still work — they
        just cut, no theatre. */
     parts.forEach((p) => p.media.forEach((el) => el.classList.add('is-visible')));
+    if (cluster instanceof HTMLElement) cluster.classList.add('is-visible');
   } else {
     /* Landing entrance: the section owns the first viewport, so it
        plays on arrival (fonts-gated wrap first — the established
-       order). */
+       order). The dock enters ONCE at the media stagger's tail and
+       persists across swaps. */
     const fontsReady = document.fonts?.ready ?? Promise.resolve();
     fontsReady.then(() => {
       if (disposed) return;
       fontsDone = true;
       if (!staticSlides.has(active)) ensureWrapped(active);
       playSlide(active);
+      if (cluster instanceof HTMLElement) {
+        timeouts.push(
+          setTimeout(
+            () => cluster.classList.add('is-visible'),
+            M_MEDIA_AT_MS + parts[active].media.length * M_MEDIA_STAGGER_MS,
+          ),
+        );
+      }
     });
   }
 

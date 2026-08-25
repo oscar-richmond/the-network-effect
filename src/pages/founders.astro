@@ -87,13 +87,31 @@ import '../styles/fonts.css';
       </div>
     </div>
 
-    {/* ── Portrait — anchored top 88 / right 24 / bottom 24 (height
-        flexes with the viewport; the name clamps derive from the
-        LIVE rect). Robbo ON TOP for the crossfade (opacity+blur
-        out reveals Ashley beneath). */}
+    {/* ── Portrait (frame 6:67, 2026-08-26): 630×841 flush to the
+        LEFT viewport edge at y80. The crossfade pair became a WIPE
+        pair — the case-study lightbox's two-phase L→R wipe, ported
+        scrub-natively (founders-page.js applyWipe): A wipes OUT to
+        the bare ground over the transition's first half, B wipes IN
+        over the second. Slot 0 of the five-image sync group. */}
     <div class="fd-portrait" data-fd-portrait aria-hidden="true">
-      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
-      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
+      <div class="fd-wipe" data-fd-wipe data-wipe-i="0">
+        <img class="fd-wipe__img fd-wipe__img--a" src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
+        <img class="fd-wipe__img fd-wipe__img--b" src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
+      </div>
+    </div>
+
+    {/* ── RIGHT IMAGE COLUMN (frame 6:102): four 240×204.4 windows
+        on 8px gaps at (1464, 80). Each is a wipe slot in the same
+        sync group (stagger indexes 1..4 — the portrait leads, the
+        column cascades). Per-founder image ORDER comes from data
+        (Ashley = reversed, flagged). */}
+    <div class="fd-col" aria-hidden="true">
+      {FOUNDERS_SLIDES[0].colImgs.map((src, i) => (
+        <div class="fd-col__slot fd-wipe" data-fd-wipe data-wipe-i={String(i + 1)}>
+          <img class="fd-wipe__img fd-wipe__img--a" src={asset(src)} alt="" loading="eager" decoding="async" />
+          <img class="fd-wipe__img fd-wipe__img--b" src={asset(FOUNDERS_SLIDES[1].colImgs[i])} alt="" loading="eager" decoding="async" />
+        </div>
+      ))}
     </div>
 
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
@@ -111,49 +129,58 @@ import '../styles/fonts.css';
             flex order (label → bio → portrait → statement → image
             2 → list → CTA row); the DOM keeps the desktop's order. */}
         <h2 class="fd-slide__m-label">{slide.name}</h2>
-        {/* Portrait + the SWITCH BAND (Oscar's rev 3, 2026-08-14):
-            the name/thumbs band is no longer viewport-fixed — it
-            lives INSIDE the portrait and rides a sticky rail: it
-            starts 64px under the image top, PINS at the viewport
-            middle while scrolling through, and parks 32px above the
-            image bottom — fully reversible, native position:sticky
-            (no scroll JS). Labels are BAKED per slide: the founder's
-            NAME always left, "Founder 0N" (the data numbering —
-            Robbo 01, Ashley 02; resolves the earlier row-position
-            flag) always right. THREE separate rails so each
-            difference-blended label carries sticky+blend on ITSELF
-            (an isolating wrapper would white them out — but note the
-            img shares any ancestor group, so entrance isolation is
-            harmless: the blend backdrop is the img either way). */}
+        {/* Portrait + the NAME LABELS (Oscar's rev 4, 2026-08-14):
+            the difference labels live INSIDE the portrait and ride
+            sticky rails — starting 24px under the image top,
+            PINNING at the viewport middle while scrolling through,
+            and parking 24px above the image bottom — fully
+            reversible, native position:sticky (no scroll JS).
+            BAKED per slide: the founder's NAME always left,
+            "Founder 0N" (the data numbering — Robbo 01, Ashley 02)
+            always right. Separate rails so each blended label
+            carries sticky+blend on ITSELF (an isolating wrapper
+            would white them out — but note the img shares any
+            ancestor group, so entrance isolation is harmless: the
+            blend backdrop is the img either way). The face thumbs
+            are SEPARATE — the fixed dock below the slides. */}
         <figure class="fd-slide__m-portrait">
           <img src={asset(slide.img)} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
           <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
             <span class="fd-m-switch-label fd-m-switch-label--l">{slide.name}</span>
           </div>
-          <div class="fd-m-rail fd-m-rail--thumbs">
-            <div class="fd-m-switch" data-fd-m-switch>
-              {[1, 0].map((idx) => (
-                <button
-                  type="button"
-                  class="fd-m-switch__thumb"
-                  data-fd-m-thumb
-                  data-slide={String(idx)}
-                  data-founder={FOUNDERS_SLIDES[idx].id}
-                  aria-current={idx === i ? 'true' : 'false'}
-                  aria-label={`View founder: ${FOUNDERS_SLIDES[idx].name}`}
-                >
-                  <img src={asset(FOUNDERS_SLIDES[idx].img)} alt="" loading={i === 1 ? 'eager' : 'lazy'} decoding="async" />
-                </button>
-              ))}
-            </div>
-          </div>
           <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
             <span class="fd-m-switch-label fd-m-switch-label--r">Founder {slide.number}</span>
           </div>
         </figure>
+        {/* ── FRAME 6:67 DESKTOP TEXT BLOCK (2026-08-26): role line
+            (710,245), STATIC name 48/50 (710,287 — the frame's
+            treatment; the travelling difference name still runs,
+            flagged as a duplicate pending Oscar's ruling), bio
+            paragraphs (710,361), relationships label + three
+            sentence-case rows (790,608..). All join the slide
+            transition stagger (data-fd-el); hidden ≤1024. */}
+        <p class="fd-slide__role" data-fd-el>{slide.roleLine}</p>
+        <h3 class="fd-slide__staticname" data-fd-el>{slide.name}</h3>
+        <div class="fd-slide__bio2" data-fd-el>
+          {slide.bioParas.map((para) => (
+            <p class="fd-slide__bio2-para">{para}</p>
+          ))}
+        </div>
+        <div class="fd-slide__rel" data-fd-el>
+          <p class="fd-slide__rel-label">{slide.relLabel}</p>
+          {slide.relRows.map((row) => (
+            <p class="fd-slide__rel-row">
+              {row.map((item) => (
+                <Fragment><span class="fd-slide__rel-item">{item}</span><span class="fd-slide__rel-sep" aria-hidden="true">{' / '}</span></Fragment>
+              ))}
+            </p>
+          ))}
+        </div>
         {/* Bio — bold block + Serrif block with the 24px gap
-            (Oscar's rev 2; was a continuous flow). */}
-        <div class="fd-slide__bio" data-fd-el>
+            (Oscar's rev 2; was a continuous flow). MOBILE-ONLY now
+            (frame 6:67 replaced the desktop bio; ≥1025 hidden, no
+            data-fd-el so the desktop stagger never sees it). */}
+        <div class="fd-slide__bio">
           <p class="fd-slide__bio-text fd-slide__bio-text--bold"
             ><span class="fd-slide__bio-indent" aria-hidden="true"></span>{slide.bioBold}</p
           >
@@ -180,8 +207,11 @@ import '../styles/fonts.css';
             <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="9" height="9" />
           </button>
         </div>
-        <p class="fd-slide__listlabel" data-fd-el>{slide.listLabel}</p>
-        <p class="fd-slide__list" data-fd-el>
+        {/* MOBILE-ONLY now (≥1025 hidden — the frame's relationships
+            rows replace these on desktop; the approved indexed list
+            stays the mobile rendering). */}
+        <p class="fd-slide__listlabel">{slide.listLabel}</p>
+        <p class="fd-slide__list">
           {slide.list.map((item, j) => (
             <Fragment>
               {/* Mobile wraps the list NATURALLY (the file's wrap
@@ -245,6 +275,32 @@ import '../styles/fonts.css';
     {FOUNDERS_SLIDES.map((slide, i) => (
       <h2 class="fd-slide__name" data-fd-name data-slide={String(i)}>{slide.name}</h2>
     ))}
+    </div>
+
+    {/* MOBILE thumb dock (rev 4): the face CTAs sit fixed 32px from
+        the viewport bottom at all times — EXCEPT over the footer,
+        where the dock takes the site's blurred exit (opacity 0 +
+        blur 6, footer-page-js IO toggle) so it never blocks the
+        footer, re-entering in place on the way back up. The dock
+        wrapper owns fixed + blur (no blends inside — the labels
+        live in the portraits); the inner cluster owns the entrance.
+        Active stroke = JS (shared across both slides; Ashley lands). */}
+    <div class="fd-m-switchdock" data-fd-m-dock>
+      <nav class="fd-m-switch" data-fd-m-switch aria-label="Founder profiles">
+        {[1, 0].map((idx) => (
+          <button
+            type="button"
+            class="fd-m-switch__thumb"
+            data-fd-m-thumb
+            data-slide={String(idx)}
+            data-founder={FOUNDERS_SLIDES[idx].id}
+            aria-current={idx === 1 ? 'true' : 'false'}
+            aria-label={`View founder: ${FOUNDERS_SLIDES[idx].name}`}
+          >
+            <img src={asset(FOUNDERS_SLIDES[idx].img)} alt="" loading="eager" decoding="async" />
+          </button>
+        ))}
+      </nav>
     </div>
 
     <p class="fd-sr-live" data-fd-live aria-live="polite"></p>

@@ -651,20 +651,17 @@ body.founders-page {
 		outline-offset: 2px;
 	}
 
-	/* ── The SWITCH BAND (Oscar's rev 3): thumbs + flanking labels
-	   ride sticky rails INSIDE the first portrait — the band starts
-	   64px under the image top, PINS with its centre at the
-	   viewport middle while scrolling through, and parks 32px above
-	   the image bottom; native sticky makes it reversible for free.
-	   THREE rails (absolute, no z-index — never a stacking context
-	   over the blends): the thumbs' spans 64/32; the labels' spans
-	   53/67 so the label line stays centred 1px under the thumbs'
-	   top (the file's registration) at BOTH parked states, with the
-	   matching -35px in the sticky offset. Labels: name LEFT,
-	   "Founder 0N" RIGHT (the data numbering — Robbo 01, Ashley
-	   02), baked per slide. sticky+blend sit together ON the label
-	   (self-blend is never isolated by the element's own stacking
-	   context). Insets: the file's x24 = 8px inside the image. */
+	/* ── The NAME LABELS (Oscar's rev 4): the difference labels ride
+	   sticky rails INSIDE the first portrait — starting 24px under
+	   the image top, PINNING at the viewport middle while scrolling
+	   through, and parking 24px above the image bottom; native
+	   sticky makes it reversible for free. Rails are absolute with
+	   no z-index (never a stacking context over the blends).
+	   Labels: name LEFT, "Founder 0N" RIGHT (the data numbering —
+	   Robbo 01, Ashley 02), baked per slide. sticky+blend sit
+	   together ON the label (self-blend is never isolated by the
+	   element's own stacking context). Insets: the file's x24 = 8px
+	   inside the image. */
 	.landing-v2 .fd-m-rail {
 		position: absolute;
 		left: 0;
@@ -672,17 +669,41 @@ body.founders-page {
 		pointer-events: none;
 	}
 
-	.landing-v2 .fd-m-rail--thumbs { top: 64px; bottom: 32px; }
-	.landing-v2 .fd-m-rail--label { top: 53px; bottom: 67px; }
+	.landing-v2 .fd-m-rail--label { top: 24px; bottom: 24px; }
+
+	/* ── The THUMB DOCK (rev 4): the face CTAs are separate from the
+	   labels — fixed 32px off the viewport bottom at all times,
+	   except over the footer where the dock takes the site's
+	   blurred exit (opacity 0 / blur 6 — the established leave
+	   vocabulary) via founders-page.js's footer observer, and
+	   re-enters in place on the way back up. The DOCK owns fixed +
+	   blur (nothing blended inside, so the wrapper is safe); the
+	   inner cluster owns the entrance rise. */
+	.landing-v2 .fd-m-switchdock {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: calc(32px + var(--safe-bottom, 0px));
+		z-index: 60;
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
+		transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+	}
+
+	.landing-v2 .fd-m-switchdock.is-footer-hidden {
+		opacity: 0;
+		filter: blur(6px);
+	}
 
 	.landing-v2 .fd-m-switch {
-		position: sticky;
-		top: calc(50dvh - 24px);
 		display: flex;
 		gap: 16px;
-		width: fit-content;
-		margin: 0 auto;
 		pointer-events: auto;
+	}
+
+	.landing-v2 .fd-m-switchdock.is-footer-hidden .fd-m-switch {
+		pointer-events: none;
 	}
 
 	.landing-v2 .fd-m-switch__thumb {
@@ -718,7 +739,7 @@ body.founders-page {
 
 	.landing-v2 .fd-m-switch-label {
 		position: sticky;
-		top: calc(50dvh - 35px);
+		top: calc(50dvh - 12px); /* the 24px line centred at the pin */
 		display: block;
 		width: fit-content;
 		margin: 0;
@@ -735,8 +756,18 @@ body.founders-page {
 	.landing-v2 .fd-m-switch-label--l { margin-left: 8px; }
 	.landing-v2 .fd-m-switch-label--r { margin-left: auto; margin-right: 8px; }
 
-	/* Flow footer (the fixed reveal wrap is desktop machinery). */
+	/* Flow footer (the fixed reveal wrap is desktop machinery). The
+	   811px clamp is desktop machinery too — un-clamped here the
+	   blue covers the full mobile stack (the copyright lines were
+	   spilling out below it, Oscar's report), and the bottom pad
+	   drops to 64 (his gap under "site by SELFHOOD STUDIOS";
+	   founders-scoped — other pages keep the shared 100). */
 	.landing-v2.founders-page .fd-footer-wrap { position: static; height: auto; }
+
+	.landing-v2.founders-page .fd-footer-wrap .landing-footer {
+		height: auto;
+		padding-bottom: max(64px, var(--safe-bottom, 0px));
+	}
 }
 
 /* Entrance hidden states (no-preference; founders-page.js's mobile
@@ -770,16 +801,201 @@ body.founders-page {
 }
 
 /* The mobile-only internals must not exist above the seam (the
-   switch band's rails live inside the portrait — hidden with it). */
+   label rails live inside the portrait — hidden with it; the thumb
+   dock is top-level, so it's listed). */
 @media (min-width: 1025px) {
 	.landing-v2 .fd-slide__m-label,
 	.landing-v2 .fd-slide__m-portrait,
 	.landing-v2 .fd-slide__m-serif,
 	.landing-v2 .fd-slide__m-img2,
-	.landing-v2 .fd-slide__m-swapbtn { display: none; }
+	.landing-v2 .fd-slide__m-swapbtn,
+	.landing-v2 .fd-m-switchdock { display: none; }
 
 	/* The CTA row wrapper dissolves — the button's absolute
 	   anchoring resolves against the slide exactly as before the
 	   wrapper existed. */
 	.landing-v2 .fd-slide__m-ctarow { display: contents; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   FRAME 6:67 RESPEC (file q30umfI8zabtFWBtRL3FTt, 2026-08-26; page
+   origin = frame −116; the Background Shape is browser furniture).
+   Desktop only — the mobile build below 1025 is untouched. The old
+   desktop bio/list/CTA hide here (mobile keeps them); the indicator
+   and travelling names KEEP RUNNING (not removed unilaterally —
+   flagged: the frame draws neither, and the static name below
+   duplicates the travelling one; Oscar rules). */
+@media (min-width: 1025px) {
+	/* Portrait: 630×841 flush left at y80 (was top88/right24/bottom
+	   24 right-anchored). Height clamps on short interiors; the name
+	   clamps re-derive from the LIVE rect either way. */
+	.founders-page .fd-portrait {
+		left: 0;
+		right: auto;
+		top: 80px;
+		bottom: auto;
+		width: 630px;
+		height: min(841px, calc(100vh - 104px));
+		height: min(841px, calc(100dvh - 104px));
+	}
+
+	/* The wipe slots: stacked pair, cover-fit; clip/filter driven by
+	   founders-page.js (self-filters only — never ancestors). */
+	.founders-page .fd-wipe {
+		position: absolute;
+		inset: 0;
+	}
+
+	.founders-page .fd-wipe__img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.founders-page .fd-wipe__img--b {
+		clip-path: inset(0 100% 0 0);
+		visibility: hidden;
+	}
+
+	/* Right column (6:102): 240×841 at (1464, 80), four 204.4 slots
+	   on 8px gaps. */
+	.founders-page .fd-col {
+		position: absolute;
+		left: 1464px;
+		top: 80px;
+		width: 240px;
+		height: min(841px, calc(100dvh - 104px));
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		overflow: hidden;
+	}
+
+	.founders-page .fd-col__slot {
+		position: relative;
+		inset: auto;
+		flex: none;
+		width: 240px;
+		height: 204.4px;
+		overflow: hidden;
+	}
+
+	/* ── Text block (guide mapping flagged in the report). */
+	.founders-page .fd-slide__role {
+		position: absolute;
+		left: 710px;
+		top: 245px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 18px;
+		line-height: 18px;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.founders-page .fd-slide__staticname {
+		position: absolute;
+		left: 710px;
+		top: 287px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 48px;
+		line-height: 50px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.founders-page .fd-slide__bio2 {
+		position: absolute;
+		left: 710px;
+		top: 361px;
+		width: 615px;
+		margin: 0;
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 21px;
+		line-height: 28px;
+		letter-spacing: 0.015em; /* the frame's +0.315px */
+		color: #161616;
+	}
+
+	.founders-page .fd-slide__bio2-para {
+		margin: 0;
+	}
+
+	.founders-page .fd-slide__bio2-para + .fd-slide__bio2-para {
+		margin-top: 28px; /* the frame's blank line */
+	}
+
+	.founders-page .fd-slide__rel {
+		position: absolute;
+		left: 790px;
+		top: 608px;
+		margin: 0;
+		color: #161616;
+	}
+
+	.founders-page .fd-slide__rel-label {
+		margin: 0 0 24px; /* label y608 → row 1 y644 (12 box + 24) */
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 12px;
+		letter-spacing: 0.01em; /* the frame's +0.12px */
+		text-transform: uppercase;
+	}
+
+	.founders-page .fd-slide__rel-row {
+		margin: 0;
+		height: 36px; /* 32 line on the 36 pitch (644/680/716) */
+		font-family: 'Serrif', serif;
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 26px;
+		line-height: 32px;
+		letter-spacing: -0.02em;
+		white-space: nowrap;
+	}
+
+	.founders-page .fd-slide__rel-sep {
+		padding: 0 4px; /* the frame's 4px gaps around the 13px slash */
+	}
+
+	/* The travelling names re-anchor over the NEW flush-left
+	   portrait (their authored anchor sat over the old right-side
+	   image; at x913 they collided with the frame's text block).
+	   The vertical clamps already derive from the live rect. */
+	.founders-page .fd-slide__name {
+		left: 40px;
+	}
+
+	/* The pre-6:67 desktop text + CTA retire (mobile keeps them all;
+	   the CTA is absent from the frame — flagged, not deleted). */
+	.founders-page .fd-slide__bio,
+	.founders-page .fd-slide__listlabel,
+	.founders-page .fd-slide__list,
+	.founders-page .fd-slide__btn {
+		display: none;
+	}
+}
+
+/* The new desktop elements must not exist below the seam. */
+@media (max-width: 1024px) {
+	.founders-page .fd-slide__role,
+	.founders-page .fd-slide__staticname,
+	.founders-page .fd-slide__bio2,
+	.founders-page .fd-slide__rel,
+	.founders-page .fd-col {
+		display: none;
+	}
 }
