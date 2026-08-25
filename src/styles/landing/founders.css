@@ -840,11 +840,11 @@ body.founders-page {
 		height: min(841px, calc(100dvh - 104px));
 	}
 
-	/* R2 (2026-08-26): the column is a FULL-VIEWPORT rolling window —
-	   bleeds off both edges, no visible start or end. The track holds
-	   the four images ×4 sets (coverage: window 100dvh + one set of
-	   headroom under the −setH baseline); founders-page.js rolls it
-	   by scroll (FD_CAROUSEL_RATE), seamless by modulo. */
+	/* R2b (2026-08-26): BOUNDED roll — the strip STARTS flush with the
+	   top of the page (Robbo at rest from load) and ENDS with its
+	   bottom on the portrait's bottom edge at Ashley's rest; the four
+	   images ×2 sets, rolled by scroll between those two anchors
+	   (founders-page.js derives the travel from the geometry). */
 	.founders-page .fd-col {
 		position: absolute;
 		left: 1464px;
@@ -862,7 +862,6 @@ body.founders-page {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		transform: translate3d(0, -849.6px, 0); /* the JS baseline (RM frame) */
 	}
 
 	.founders-page .fd-col__slot {

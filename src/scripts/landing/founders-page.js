@@ -49,36 +49,30 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 
 const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
-/* ── R2 PHASE MAP (Oscar, 2026-08-26 — the travelling names and
-   their derived clamps are GONE; every anchor is a named constant
-   now, no longer keyed to the name travel):
-     ENTRY   [0, FD_ENTRY_PX)          the whole composition
-                                       (portrait + text + column)
-                                       rides up into rest as ONE
-                                       movement.
-     TEXT    [.., + FD_TEXT_PX)        the portrait FIXES; Robbo's
-                                       block rides up and out
-                                       (FD_TEXT_EXIT_PX), Ashley's
-                                       rides up from below (one
-                                       viewport) into the SAME
+/* ── R2b PHASE MAP (Oscar, 2026-08-26 — the page now STARTS at
+   Robbo's rest: no entry travel; the carousel strip begins flush
+   with the top of the page):
+     HOLD    [0, FD_HOLD_PX)           the composition rests; only
+                                       the carousel rolls.
+     TEXT    [.., + FD_TEXT_PX)        Robbo's block rides up and
+                                       out (FD_TEXT_EXIT_PX),
+                                       Ashley's rides up from below
+                                       (one viewport) into the SAME
                                        slot; the portrait reveal
                                        runs over the tail
-                                       (FD_REVEAL_*). The carousel
-                                       rolls through everything at
-                                       FD_CAROUSEL_RATE.
+                                       (FD_REVEAL_*).
      RELEASE [.., +96+811]             unchanged grammar.
-   The old boundary SNAP is REMOVED — a half-travelled text state
-   is ordinary mid-scroll content under the normal-scroll grammar
-   (reported; the access-pairs precedent no longer applies). */
-const FD_ENTRY_PX = 360;
+   THE CAROUSEL is a BOUNDED roll over [0, textEnd]: track top at
+   page top at pos 0, track bottom on the PORTRAIT'S BOTTOM edge at
+   Ashley's rest — travel = trackH − portraitBottom, derived from
+   the live geometry (rate = travel / textEnd, no longer a fixed
+   constant). Scroll-driven, reversible; holds through the release. */
+const FD_HOLD_PX = 360;
 const FD_TEXT_PX = 900;
 const FD_TEXT_EXIT_PX = 800; /* clears the text block's 245..752 span */
 const FD_REVEAL_START_T = 0.55; /* of the text phase */
 const FD_REVEAL_END_T = 0.95;   /* Ashley fully there as his text lands */
 const FD_REVEAL_BLUR_PX = 6;    /* the lightbox edge blur, kept */
-const FD_CAROUSEL_RATE = 0.5;   /* carousel px per scroll px */
-const FD_CAROUSEL_PITCH_PX = 212.4; /* 204.4 cell + 8 gap */
-const FD_CAROUSEL_SET = 4;      /* images per set (×4 sets rendered) */
 const RELEASE_RISE_PX = 96; /* the 120px white gap − the 24 rest (rev 2) */
 const FOOTER_REVEAL_PX = 811;
 const NAV_EXIT_EPSILON_PX = 2;
@@ -112,13 +106,23 @@ export function initFoundersPage() {
   const footerWrap = document.querySelector('[data-fd-footer]');
 
   /* ── R2 anchors — named constants, nothing derived from names. */
-  const textStart = () => FD_ENTRY_PX;
-  const textEnd = () => FD_ENTRY_PX + FD_TEXT_PX;
+  const textStart = () => FD_HOLD_PX;
+  const textEnd = () => FD_HOLD_PX + FD_TEXT_PX;
   const releaseStart = () => textEnd();
   const footerStart = () => releaseStart() + RELEASE_RISE_PX;
   const maxPos = () => footerStart() + FOOTER_REVEAL_PX;
-  const setH = FD_CAROUSEL_PITCH_PX * FD_CAROUSEL_SET; /* 849.6 */
-  const mod = (v, m) => ((v % m) + m) % m;
+  /* Carousel travel: track bottom lands on the portrait's bottom at
+     Ashley's rest. Both boxes share the containing block, so the
+     rect difference cancels any shared (stage/content) transform. */
+  let colRollMax = 0;
+  const measureCol = () => {
+    if (!(colWrap instanceof HTMLElement) || !(colTrack instanceof HTMLElement)
+      || !(portrait instanceof HTMLElement)) return;
+    const portBottom = portrait.getBoundingClientRect().bottom
+      - colWrap.getBoundingClientRect().top;
+    colRollMax = Math.max(0, colTrack.offsetHeight - portBottom);
+  };
+  measureCol();
 
   /* ── State. */
   let pos = 0;
@@ -155,28 +159,18 @@ export function initFoundersPage() {
 
   /* ── The frame — every visual is a pure function of pos. */
   const frame = () => {
-    const entryT = reduced ? 1 : clamp(pos / FD_ENTRY_PX, 0, 1);
     const textT = clamp((pos - textStart()) / FD_TEXT_PX, 0, 1);
     const textTe = reduced ? (textT < 0.5 ? 0 : 1) : textT;
     const rise = clamp(pos - releaseStart(), 0, RELEASE_RISE_PX);
     const reveal = clamp(pos - footerStart(), 0, FOOTER_REVEAL_PX);
     const vh = window.innerHeight || 1080;
 
-    /* ENTRY — one movement: portrait, column and Robbo's block ride
-       up into rest together; the portrait then FIXES (groupY 0). */
-    const groupY = (1 - entryT) * FD_ENTRY_PX;
-    if (portrait instanceof HTMLElement) {
-      portrait.style.transform = groupY > 0.01 ? `translate3d(0, ${groupY.toFixed(1)}px, 0)` : '';
-    }
-    if (colWrap instanceof HTMLElement) {
-      colWrap.style.transform = groupY > 0.01 ? `translate3d(0, ${groupY.toFixed(1)}px, 0)` : '';
-    }
-
     /* TEXT TRAVEL — Robbo up and out; Ashley up and in, landing on
-       the identical CSS slot (translate 0). */
+       the identical CSS slot (translate 0). The portrait and column
+       never travel: the page starts at Robbo's rest. */
     if (slides[0] instanceof HTMLElement) {
-      const y = groupY - FD_TEXT_EXIT_PX * textTe;
-      slides[0].style.transform = Math.abs(y) > 0.01 ? `translate3d(0, ${y.toFixed(1)}px, 0)` : '';
+      const y = -FD_TEXT_EXIT_PX * textTe;
+      slides[0].style.transform = y < -0.01 ? `translate3d(0, ${y.toFixed(1)}px, 0)` : '';
       slides[0].style.visibility = textTe >= 1 ? 'hidden' : '';
     }
     if (slides[1] instanceof HTMLElement) {
@@ -199,11 +193,13 @@ export function initFoundersPage() {
         : '';
     }
 
-    /* THE ROLLING CAROUSEL — scroll-driven, seamless modulo wrap;
-       rolls through every phase, stops with the scroll, reverses. */
+    /* THE ROLLING CAROUSEL — bounded, scroll-driven: top of the strip
+       at the page top at pos 0, bottom on the portrait's bottom edge
+       from Ashley's rest on; stops with the scroll, reverses. */
     if (colTrack instanceof HTMLElement) {
-      const roll = reduced ? 0 : pos * FD_CAROUSEL_RATE;
-      colTrack.style.transform = `translate3d(0, ${(-setH - mod(roll, setH)).toFixed(2)}px, 0)`;
+      const rollT = reduced ? (textTe >= 1 ? 1 : 0) : clamp(pos / textEnd(), 0, 1);
+      const roll = colRollMax * rollT;
+      colTrack.style.transform = roll > 0.01 ? `translate3d(0, ${(-roll).toFixed(2)}px, 0)` : '';
     }
 
     /* Indicator — the label row rides its 64px with the text travel. */
@@ -346,6 +342,7 @@ export function initFoundersPage() {
   cleanups.push(() => window.cancelAnimationFrame(rafId));
 
   const onResize = () => {
+    measureCol();
     frame();
   };
   window.addEventListener('resize', onResize);
