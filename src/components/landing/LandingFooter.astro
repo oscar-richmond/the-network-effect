@@ -139,9 +139,18 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     </nav>
     {/* START A PROJECT — the frame gives no destination; wired to the
         CONFIRMED address (the shipped START A PROJECT behaviour). */}
+    {/* Arrow (Oscar 2026-08-26): INLINE SVG on currentColor — it can
+        never desync from the label's ink again (theme variants
+        inherit automatically). Sized to the label's measured ink
+        span (Dazzed Bold 16 caps: ascent 12.2 + descent 0.2 ≈
+        12.4px); gaps 8 (label→arrow) / 16 (arrow→chip edge). The
+        site's other arrows are separate asset-file instances with
+        deliberate per-theme variants — untouched. */}
     <a class="landing-footer__dchip" data-footer-col href="mailto:hello@thenetworkeffect.co.uk" data-char-ripple-trigger>
       <span data-char-ripple>START A PROJECT</span>
-      <img src={arrowNe} alt="" width="12" height="12" data-char-ripple-arrow />
+      <svg class="landing-footer__dchip-arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow>
+        <path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" />
+      </svg>
     </a>
     <div class="landing-footer__dgroup landing-footer__dgroup--email" data-footer-col>
       {/* The frame's "Email adress" typo corrected (reported). */}
@@ -161,21 +170,27 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     <p class="landing-footer__dst-line" data-footer-st-line
       ><span class="landing-footer__dst-indent" aria-hidden="true"></span>Culture rarely moves in public first.</p
     >
+    {/* EXPLICIT break (Oscar 2026-08-26): "Through people. Through"
+        completes line 2 after "quietly."; "relationships." holds
+        line 3 alone — authored, so 1512-in-shell can't re-break it.
+        The grey span carries the break; the colour split is
+        unchanged. */}
     <p class="landing-footer__dst-line" data-footer-st-line
-      >It moves quietly. <span class="landing-footer__dst-grey">Through people. Through relationships.</span></p
+      >It moves quietly. <span class="landing-footer__dst-grey">Through people. Through<br />relationships.</span></p
     >
   </div>
 
   <div class="landing-footer__drow" data-footer-desktop>
     {/* Inert legal placeholder (frame 13:392/13:398) — no page yet. */}
     <span class="landing-footer__ritem landing-footer__ritem--terms is-placeholder" data-footer-col data-hover data-char-ripple-trigger><span data-char-ripple>Terms &amp; Conditions</span></span>
-    {/* FLAGGED: the frame node is NAMED "Back to top link" but its
-        placeholder copy reads "Privacy Policy" — per Oscar's brief
-        the slot IS back-to-top and keeps the smooth scroll. */}
-    <button type="button" class="landing-footer__ritem landing-footer__ritem--top" data-footer-col data-footer-top data-char-ripple-trigger>
-      <span data-char-ripple>Back To Top</span>
-      <img src={arrowUp} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
-    </button>
+    {/* PRIVACY POLICY (Oscar 2026-08-26, resolves the earlier flag):
+        the frame's copy wins. Inert placeholder — no privacy page
+        exists yet. NOTE: desktop now has NO back-to-top anywhere
+        (the mobile legacy footer keeps its own) — flagged in the
+        build report, deliberately not re-added elsewhere. */}
+    <span class="landing-footer__ritem landing-footer__ritem--top is-placeholder" data-footer-col data-hover data-char-ripple-trigger>
+      <span data-char-ripple>Privacy Policy</span>
+    </span>
     <p class="landing-footer__ritem landing-footer__ritem--copy" data-footer-col>©2026 All rights reserved</p>
     <p class="landing-footer__ritem landing-footer__ritem--siteby" data-footer-col>Site By Selfhood Studios</p>
   </div>

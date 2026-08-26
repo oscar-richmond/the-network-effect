@@ -118,6 +118,12 @@ const ACCESS_READ_HOLD_PX = 600;
    and imgs shrink WITH the wraps so the GL wave planes (which track
    img rects) collapse in lockstep. */
 const ACCESS_COLLAPSE_TRAVEL_PX = 600; /* exit px over which 340 → 0 */
+/* HEADLINE EXIT (Oscar 2026-08-26): the label + fragmented lines
+   blur-and-fade on EXACTLY the collapse's progress (same cT — they
+   can never desync): opacity 1−cT, blur ramping to the site's exit
+   blur. Self filters/opacity on plain-ink lines — no blend in this
+   text (the difference word slots are a separate layer). */
+const ACCESS_HEADLINE_EXIT_BLUR_PX = 12;
 const ROW_H_PX = 340;
 const collapseStartExitPx = (vw) => Math.min(
   vw / 2 + LAND_OFFSET_TOP_PX - CELL_W / 2,   /* top: vw/2 − 590 */
@@ -472,12 +478,23 @@ export function initLandingAccess() {
   const collapseCells = [...cells.top, ...cells.bottom].filter((c) => c instanceof HTMLElement);
   const collapseImgs = collapseCells.map((c) => c.querySelector('img')).filter((el) => el instanceof HTMLElement);
   const collapseVeils = [...veils.top, ...veils.bottom].filter((v) => v instanceof HTMLElement);
+  const headlineEls = [
+    section.querySelector('.landing-access__dlabel'),
+    ...section.querySelectorAll('[data-access-dline]'),
+  ].filter((el) => el instanceof HTMLElement);
   let lastCollapseH = ROW_H_PX;
   const applyCollapse = (exitShiftPx) => {
     const cT = Math.min(Math.max((exitShiftPx - collapseStartExitPx(vw())) / ACCESS_COLLAPSE_TRAVEL_PX, 0), 1);
     const h = ROW_H_PX * (1 - cT);
     if (Math.abs(h - lastCollapseH) < 0.05) return;
     lastCollapseH = h;
+    /* Headline exit — the same cT (starts and finishes with the
+       collapse; reversible). */
+    headlineEls.forEach((el) => {
+      el.style.opacity = cT <= 0 ? '' : (1 - cT).toFixed(3);
+      el.style.filter = cT <= 0 ? '' : `blur(${(ACCESS_HEADLINE_EXIT_BLUR_PX * cT).toFixed(2)}px)`;
+      el.style.visibility = cT >= 1 ? 'hidden' : '';
+    });
     const px = h <= 0.05 ? '0px' : `${h.toFixed(1)}px`;
     const clear = h >= ROW_H_PX - 0.05;
     collapseEls.forEach((el) => { el.style.height = clear ? '' : px; });

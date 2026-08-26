@@ -2048,9 +2048,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		text-align: right;
 	}
 
-	.landing-v2 .landing-closing__hl--1 { left: 134px; top: 135px; width: 432px; }
-	.landing-v2 .landing-closing__hl--2 { left: 238px; top: 189px; width: 653px; }
-	.landing-v2 .landing-closing__hl--3 { left: 24px; top: 243px; width: 762px; }
+	.landing-v2 .landing-closing__hl--1 { left: 134px; top: 103px; width: 432px; } /* −32 (Oscar 2026-08-26) */
+	.landing-v2 .landing-closing__hl--2 { left: 238px; top: 157px; width: 653px; }
+	.landing-v2 .landing-closing__hl--3 { left: 24px; top: 211px; width: 762px; }
 
 	.landing-v2 .landing-closing__hl--serrif {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -2084,7 +2084,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-closing__tiles {
 	position: absolute;
 	left: 24px;
-	top: 345px; /* frame y463 − 118 (2026-08-26; was 392) */
+	top: 313px; /* frame y463 − 118, −32 (Oscar 2026-08-26) */
 	display: flex;
 	gap: 8px;
 }
@@ -2106,7 +2106,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-closing__kw {
 	position: absolute;
-	top: 819px; /* frame y937 − 118 (2026-08-26) */
+	top: 787px; /* frame y937 − 118, −32 (Oscar 2026-08-26) */
 }
 
 .landing-v2 .landing-closing__kw-row {
@@ -2164,10 +2164,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    250 — the exit gate holds. */
 /* ── THE FRAGMENTED STATEMENT (frame 13:277) — the access-dline
    grammar: Dazzed Bold 100/88/−4% UPPERCASE ink, authored positions.
-   Desktop only (≤1024 keeps the shipped mobile closing). Pulled up
-   into the closing hold's empty tail (−214) so the read gap from the
-   descriptions is the frame's 225: stage leaves 139 + 300 hold below
-   the descs; 139 + 300 − 214 = 225. */
+   Desktop only (≤1024 keeps the shipped mobile closing).
+   MARGIN +54 (Oscar 2026-08-26, the overlap-bug fix — was −214,
+   which rode this opaque section over the PINNED closing stage and
+   cut the keywords): the sticky stage settles BOTTOM-FLUSH with its
+   section, so the flow gap must be derived from THERE — descriptions
+   bottom rests at section-relative 300 + 889; first statement line at
+   section bottom (1360) + margin; 1360 + 54 − 1189 = the frame's 225.
+   The same margin keeps the statement ≥54 clear of the pinned stage
+   through the whole hold. Flow-relative throughout — holds at any
+   viewport height (1512-in-shell included). */
 .landing-v2 .landing-closing-st {
 	display: none;
 }
@@ -2177,7 +2183,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		display: block;
 		position: relative;
 		z-index: 260; /* the closing tier — over the sticky footer (259) */
-		margin-top: -214px;
+		margin-top: 54px;
 		height: calc(727px + 180px); /* the lines + the frame's 180 gap to the footer */
 		background: #eeeef0;
 	}
@@ -2305,7 +2311,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 0;
 		display: flex;
 		align-items: center;
-		width: 198px;
+		/* Width DERIVES from the arrow rhythm (Oscar 2026-08-26): 16 +
+		   label + 8 + arrow-ink 12.4 + 16 — the frame's fixed 198
+		   over-constrained against the label's real advance and pushed
+		   the label→arrow gap to 14. */
+		width: max-content;
 		height: 38px;
 		padding: 0 16px;
 		box-sizing: border-box;
@@ -2322,7 +2332,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		cursor: pointer;
 	}
 
-	.landing-v2 .landing-footer__dchip img { margin-left: auto; }
+	/* Arrow rhythm: 8 after the label's final glyph, 16 to the chip's
+	   right inner edge (the chip's own padding); ink-height sizing on
+	   the inline SVG (currentColor — inherits the blue label ink and
+	   the light theme's swap automatically). */
+	.landing-v2 .landing-footer__dchip { gap: 8px; }
+	.landing-v2 .landing-footer__dchip-arrow { flex: none; }
 
 	/* STATEMENT — y472, 1542w: Dazzed Bold 56/54/−3.5% UPPER; the
 	   first line's authored leading indent; the second line's back
