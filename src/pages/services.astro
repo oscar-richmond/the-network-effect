@@ -1,65 +1,189 @@
 ---
 /**
- * /services — the NEW BUILD's services page (Figma 60:3648
- * "Services Page - Option 1 Hero", extracted 2026-08-08; 83px
- * chrome subtracted; hidden layers + the frame's invisible founder
- * debris ignored). The OLD standalone partners-wheel page moved to
- * /old/services in the same change.
+ * /services — "Services Page - Option 6" (Figma q30umfI8zabtFWBtRL3FTt
+ * frame 38:2420, extracted 2026-08-26; 118px chrome subtracted; hidden
+ * layers + Chrome mockups ignored; nav verified current and untouched).
  *
- * ANATOMY (all geometry from the extraction — see services-v2.css):
- *  1. HERO — fixed centred title/subtitle (white + difference) over
- *     four images that travel UP AND PAST behind the text: the /old
- *     01-IMMERSE pillar-hero mechanic ported wholesale (same images,
- *     same speeds, same track+drift maths — services-v2.js), slotted
- *     into THIS file's hero geometry. NON-CLICKABLE (no links, no
- *     hover affordances — Oscar's spec).
- *  2. PILLARS ×3 (IMMERSE/CONNECT/AMPLIFY) — each a full-viewport
- *     image starting exactly as the hero wave's last image exits,
- *     then statement (+#C1250E bar — the case-study intro pattern),
- *     hover rows (the page's one NEW mechanic), gallery + flow rows.
- *  3. GROUND FADE — #EEEEF0 → #161616 scrubbed over the 500px
- *     runway (the landing TRANSITION_GROUND_FADE_PX grammar) into
- *  4. WE CREATE ACCESS + dark gallery + toggles, then the landing's
- *     OUR NETWORK component verbatim (shared already — zero landing
- *     change), then
- *  5. FOOTER — shared component, the LIGHT colourway (second
- *     official theme: #EEEEF0 ground / #161616 ink / #A6A6A8 muted).
+ * DESKTOP (≥1025) — the .sv6 build below:
+ *  1. HERO — FROM ACCESS. TO IMPACT. (serif+sans 100/88 pair) +
+ *     the relationship-led description (built as ink — the frame
+ *     draws white+difference over flat ground, the ink-equivalent;
+ *     flagged).
+ *  2. PILLARS ×3 — full-bleed 1728×1006 image, title/subtitle white
+ *     + difference at the frame's +200/+264; then the 56/54
+ *     statement + #C1250E bar; then WE BUILD/SHAPE/CREATE + the
+ *     928px hover TABLE at x776 (the sv-rows machinery, reused
+ *     wholesale — RED accent per Oscar; the frame's own hover mock
+ *     is #232A89 blue, reported).
+ *  3. GALLERIES ×2 — 6×273×320 strips with label chains, the
+ *     landing featured-work vocabulary: header reveal, boxes
+ *     staggered L→R, then the sticky pin + horizontal travel
+ *     (travel derived live from the strip width — the frame's six
+ *     boxes fit the viewport, so the derived travel is 0 until
+ *     more images land in the data; reported).
+ *  4. FRAGMENTED STATEMENTS ×2 — the landing closing-statement
+ *     treatment wholesale: 100/88/−4 lines at authored positions +
+ *     the shared centred dwell (statement-dwell.js).
+ *  5. THE DARK BAND (38:2501, #161616) — from the CONNECT header
+ *     image's bottom edge to the AMPLIFY header image's top
+ *     (statement 2, table 2, gallery 2 and fragment 2 sit on it).
+ *  6. FOOTER — the standard BLUE theme (the light variant retired
+ *     from use here; see the build report).
  *
- * BLEND WALK: difference elements are the hero + pillar overlay
- * texts. Chains kept bare (section > sticky stage > text; the
- *  transformed wave track is an earlier SIBLING, never an ancestor).
- * The scrubbed main background can't break the fixed nav's blend —
- * difference composites against whatever is beneath.
+ * MOBILE (≤1024) — NOT IN SCOPE: the entire previous build renders
+ * unchanged inside the .sv-legacy wrapper below (display:contents
+ * under the seam — geometry-invisible; display:none above it). Its
+ * driver (services-v2.js) initialises only below the seam.
  *
- * CONTENT: all copy verbatim from the file (deck-sourced); rights
- * flags + placeholder standing in services-v2.js (data).
+ * BLEND WALK: difference lives on the pillar overlay texts only
+ * (bare chains: section > text wrap > text). Everything else is
+ * plain ink/white. RIGHTS: see services-6.js — the Depp and
+ * Lagerfeld/Pharrell gallery images carry the elevated flags.
+ *
  * STAGING ONLY — nothing promoted anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { SERVICES_HERO, SERVICES_PILLARS, SERVICES_ACCESS } from '../data/landing/services-v2.js';
+import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER } from '../data/landing/services-6.js';
 import { asset } from '../utils/asset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/services-v2.css';
+import '../styles/landing/services-6.css';
 import '../styles/fonts.css';
 ---
 
-<SiteShell title="Services — The Network Effect" bodyClass="landing-v2 services-v2">
-  <main class="sv" data-services-v2>
-    {/* ── 1. HERO — sticky stage; the wave track scrubs up past the
-        fixed text (services-v2.js sets the runway + travel). The
-        shader canvas (the access-wave treatment, Oscar's rev) sits
-        over the track, pointer-events none so the item frames keep
-        the hover-grain events. THE TEXT WRAP is a SIBLING sticky
-        element AFTER the stage carrying difference ITSELF (the
-        nav-bar shape): sticky creates a stacking context, so a
-        blend INSIDE the stage could only see the stage's own
-        content — never the page ground. As its own sticky blend
-        root the wrap composites against ground + images both, and
-        the white ink reads BLACK over the grey exactly like the
-        main navigation (Oscar's rev — was white-in-stage). */}
+<SiteShell title="Services — The Network Effect" bodyClass="landing-v2 services-v2 services-6">
+  {/* ═════════ THE OPTION-6 DESKTOP BUILD ═════════ */}
+  <main class="sv6" data-services-6 aria-label="Services">
+    {/* 1 — HERO (38:2596/2595). */}
+    <header class="sv6-hero">
+      <h1 class="sv6-hero__title" data-sv6-hero-title>
+        <span class="sv6-hero__t-serif">{SV6_HERO.titleSerif}</span><span class="sv6-hero__t-sans">{SV6_HERO.titleSans}</span>
+      </h1>
+      <p class="sv6-hero__desc" data-sv6-hero-desc>{SV6_HERO.desc}</p>
+    </header>
+
+    {SV6_PILLARS.map((p, pi) => (
+      <Fragment>
+        {/* Pillar header — full-bleed image + difference texts at the
+            frame's +200/+264. id keeps the landing MORE INFO deep
+            links working. */}
+        <section class={`sv6-pillar${p.dark ? ' sv6-on-dark' : ''}`} id={p.key} aria-label={p.title}>
+          <img class="sv6-pillar__img" src={asset(p.headerImg)} alt="" loading={pi === 0 ? 'eager' : 'lazy'} decoding="async" />
+          <h2 class="sv6-pillar__title" data-sv6-line>{p.title}</h2>
+          <p class="sv6-pillar__sub" data-sv6-line>{p.subtitle}</p>
+        </section>
+
+        {/* Statement + bar (the case-study intro pattern). */}
+        <div class={`sv6-st${p.dark ? ' sv6-st--dark' : ''}`} data-sv6-st>
+          <p class="sv6-st__text" data-sv6-statement
+            ><span class="sv6-st__indent" aria-hidden="true"></span>{p.statement}</p
+          >
+          <div class="sv6-st__bar" data-sv6-bar aria-hidden="true" style={`height:${p.barH}px`}></div>
+        </div>
+
+        {/* Label + the 928 hover table — the sv-rows machinery
+            markup contract verbatim (index-less rows; every row's
+            hover image is the frame's placeholder pending Oscar's
+            per-row drop — see services-6.js). */}
+        <section
+          class={`sv-rows sv6-table${p.dark ? ' sv6-table--dark' : ''}`}
+          data-sv-rows
+          style={`--sv-accent:${p.accent}`}
+          aria-label={`${p.title} services`}
+        >
+          <p class="sv-rows__label sv6-table__label">{p.label}</p>
+          <ul class="sv-rows__list" data-sv-rows-list>
+            {p.rows.map((row) => (
+              <li
+                class="sv-rows__row"
+                data-sv-row
+                data-text={row}
+                data-img={asset(SV6_HOVER_PLACEHOLDER)}
+                tabindex="0"
+              >
+                <span class="sv-rows__divider" aria-hidden="true"></span>
+                <span class="sv-rows__inner">
+                  <span class="sv-rows__text">{row}</span>
+                </span>
+                <span class="sv-rows__fill" aria-hidden="true"></span>
+                <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
+                <span class="sv-rows__edges" aria-hidden="true"></span>
+              </li>
+            ))}
+          </ul>
+          <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
+            <span class="sv-rows__divider"></span>
+          </div>
+          <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
+            <img data-sv-img-base src={asset(SV6_HOVER_PLACEHOLDER)} alt="" loading="lazy" decoding="async" />
+            <img data-sv-img-over src={asset(SV6_HOVER_PLACEHOLDER)} alt="" loading="lazy" decoding="async" hidden />
+          </div>
+        </section>
+
+        {/* After IMMERSE: gallery 1 + fragment 1. After CONNECT:
+            gallery 2 + fragment 2 (on the dark band). */}
+        {pi < 2 && (
+          <Fragment>
+            <section class={`sv6-gal${SV6_GALLERIES[pi].dark ? ' sv6-on-dark' : ''}`} data-sv6-gal aria-label={SV6_GALLERIES[pi].headerLines.join(' ')}>
+              <div class="sv6-gal__stage" data-sv6-gal-stage>
+                <h3 class="sv6-gal__title" data-sv6-gal-title>
+                  {SV6_GALLERIES[pi].headerLines.map((line) => (
+                    <span class="sv6-gal__titleline">{line}</span>
+                  ))}
+                </h3>
+                <div class="sv6-gal__strip" data-sv6-gal-strip>
+                  {SV6_GALLERIES[pi].imgs.map((src, bi) => (
+                    <figure class="sv6-gal__box" data-sv6-gal-box>
+                      <img src={asset(src)} alt="" loading="lazy" decoding="async" />
+                      <figcaption class="sv6-gal__label">{SV6_GALLERIES[pi].labels[bi]}</figcaption>
+                      {bi < SV6_GALLERIES[pi].imgs.length - 1 && (
+                        <span class="sv6-gal__arrow" aria-hidden="true">
+                          <img src={asset('/assets/landing/services-6/arrow.svg')} alt="" width="32" height="16" />
+                        </span>
+                      )}
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section class={`sv6-frag${SV6_FRAGMENTS[pi].dark ? ' sv6-frag--dark sv6-on-dark' : ''}`} data-sv6-frag aria-label="Statement">
+              <div class="sv6-frag__stage" data-sv6-frag-stage>
+                {SV6_FRAGMENTS[pi].lines.map((line, li) => (
+                  <Fragment>
+                    <p class="sv6-frag__line" data-sv6-frag-line style={`left:${line.x}px;top:${li * 90}px`}>{line.t}</p>
+                    {line.pair && (
+                      <p class="sv6-frag__line" data-sv6-frag-line style={`left:${line.pair.x}px;top:${li * 90}px`}>{line.pair.t}</p>
+                    )}
+                  </Fragment>
+                ))}
+              </div>
+            </section>
+          </Fragment>
+        )}
+      </Fragment>
+    ))}
+
+    {/* The dark band (38:2501) is painted by .sv6-darkband — a
+        wrapper is impossible without reordering the flow, so the
+        band is an absolutely-positioned ground layer sized by the
+        driver from the CONNECT image's bottom to the AMPLIFY
+        image's top (the frame's own edges; its 25px tuck under the
+        CONNECT image is hidden by the opaque image either way). */}
+    <div class="sv6-darkband" data-sv6-darkband aria-hidden="true"></div>
+  </main>
+
+  {/* ═════════ THE LEGACY BUILD — MOBILE ONLY (≤1024) ═════════
+      The previous page, byte-identical for the out-of-scope mobile
+      build: display:contents under the seam (geometry-invisible
+      wrapper), display:none above it. services-v2.js initialises
+      only below the seam. */}
+  <div class="sv-legacy" data-sv-legacy>
+  <div class="sv" data-services-v2>
     <section class="sv-hero" data-sv-hero aria-label="From access to impact">
       <div class="sv-hero__stage" data-sv-hero-stage>
         <div class="sv-hero__track" data-sv-hero-track aria-hidden="true">
@@ -76,11 +200,6 @@ import '../styles/fonts.css';
         <canvas class="sv-hero__canvas" data-sv-hero-canvas aria-hidden="true"></canvas>
       </div>
       <div class="sv-hero__textwrap" data-sv-hero-text>
-        {/* HERO SCALE (Oscar 2026-08-26): the guide's mixed-face rule —
-            serif line + sans line share 100/92; contrast is typeface
-            only. Authored as two block spans (the word-reveal wrap
-            handles nested atoms; the data string stays the source of
-            the page title elsewhere). */}
         <h1 class="sv-hero__title" data-sv-hero-title>
           <span class="sv-hero__title-serif">FROM ACCESS</span>
           <span class="sv-hero__title-sans">TO IMPACT.</span>
@@ -89,40 +208,18 @@ import '../styles/fonts.css';
       </div>
     </section>
 
-    {/* ── 2. PILLARS */}
     {SERVICES_PILLARS.map((p) => (
       <Fragment>
-        {/* Full-viewport image + difference overlay texts. The frame/
-            img split carries the landing hero video treatment
-            (Oscar's rev): 24px band -> full-bleed clip on the FRAME,
-            parallax y on the oversized IMG (services-v2.js). */}
-        {/* id = the deep-link target for /landing's MORE INFO
-            buttons: the section top IS the full-bleed moment (the
-            clip expansion ends at 'top top'), so an anchor landing
-            here shows the image with its title. */}
-        <section class="sv-pillar" id={p.id} aria-label={`${p.num} — ${p.name}`}>
+        <section class="sv-pillar" id={`m-${p.id}`} aria-label={`${p.num} — ${p.name}`}>
           <div class="sv-pillar__frame" data-sv-pillar-frame>
             <img class="sv-pillar__img" data-sv-pillar-img src={asset(p.fullImg)} alt="" loading="lazy" decoding="async" />
           </div>
-          {/* Title + subtitle VERTICALLY CENTRED as a cluster
-              (Oscar's rev — was the file's top-200 placement): a
-              flex-centring wrapper, NO transform (a transformed
-              ancestor would isolate the difference texts — the
-              hero's white-text lesson); each text keeps its own
-              blend. */}
           <div class="sv-pillar__text" aria-hidden="false">
             <h2 class="sv-pillar__title" data-sv-pillar-title>{p.num} — {p.name}</h2>
             <p class="sv-pillar__sub" data-sv-pillar-sub>{p.sub}</p>
           </div>
         </section>
 
-        {/* Statement + accent bar — the case-study intro pattern
-            (indent spacer atom inside the reveal wrap; the bar
-            draws top-to-bottom on the same trigger).
-            R4 (Oscar, 2026-08-26): the block sits in a DWELL STAGE
-            (statement-dwell.js — the shared centred sticky hold).
-            The stage is display:contents below the seam, so the
-            mobile build's layout is byte-identical. */}
         <div class="sv-intro" data-sv-intro data-sv-dwell>
           <div class="sv-st-stage" data-sv-dwell-stage>
             <p class="sv-intro__statement" data-sv-statement
@@ -133,13 +230,6 @@ import '../styles/fonts.css';
           </div>
         </div>
 
-        {/* HOVER ROWS — resting 2px dividers + /0N + Serrif item;
-            hover = accent fill + white SemiBold marquee + the
-            280×380 image centred on the row (services-v2.js; the
-            marquee tracks are built there after fonts settle).
-            Rows carry their own img field — the file's per-pillar
-            image is the placeholder for every row, awaiting
-            Oscar's per-row content drop. */}
         <section
           class="sv-rows"
           data-sv-rows
@@ -147,11 +237,6 @@ import '../styles/fonts.css';
           aria-label={`${p.name} services`}
         >
           <p class="sv-rows__label">{p.label}</p>
-          {/* Dividers are DRAWABLE elements (Oscar's rev 5 — they
-              draw left-to-right one by one on entry, so borders are
-              out); the endline below the list is the LAST divider,
-              drawn last in the stagger (it was a static border
-              before — the appeared-first bug). */}
           <ul class="sv-rows__list" data-sv-rows-list>
             {p.rows.map((row) => (
               <li
@@ -176,18 +261,12 @@ import '../styles/fonts.css';
           <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
             <span class="sv-rows__divider"></span>
           </div>
-          {/* Two stacked imgs (Oscar's rev 4): BASE shows the current
-              row's image; OVER is the swap layer — the NEW image
-              wipes in on top, then base adopts it and over hides
-              (services-v2.js runner). */}
           <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
             <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
             <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
           </div>
         </section>
 
-        {/* Gallery header + tiles + flow (Immerse/Connect only —
-            Amplify's gallery lives in the dark region below). */}
         {p.gallery && (
           <Fragment>
             <div class="sv-galhead" data-sv-galhead>
@@ -230,16 +309,9 @@ import '../styles/fonts.css';
       </Fragment>
     ))}
 
-    {/* ── 3. GROUND-FADE RUNWAY — 500px, the landing constant; the
-        scrub completes exactly as the access statement's top
-        reaches the viewport bottom (services-v2.js). */}
     <div class="sv-fade-runway" data-sv-fade-runway aria-hidden="true"></div>
 
-    {/* ── 4. WE CREATE ACCESS (dark) + Amplify's gallery + toggles */}
     <div class="sv-access" data-sv-access>
-      {/* R4: the access statement + note dwell together (the note is
-          part of the block); the wrapper section carries the slack
-          + clear-space pads over the region's own dark ground. */}
       <div class="sv-st-dwell" data-sv-dwell>
         <div class="sv-st-stage" data-sv-dwell-stage>
           <p class="sv-access__statement" data-sv-access-statement
@@ -266,19 +338,21 @@ import '../styles/fonts.css';
       </div>
     </div>
 
-    {/* ── OUR NETWORK — the landing component (shared; landing
-        untouched — no prop there). entry="prev-exit" fires its
-        entrance THE MOMENT the access block above is fully out of
-        the viewport (Oscar's rev 6), measured, not hardcoded. */}
     <LandingNetwork entry="prev-exit" />
-  </main>
+  </div>
 
-  {/* ── 5. FOOTER — shared structure/behaviour, the LIGHT theme
-      (the page's extracted colourway). The landing sticky-reveal
-      schema applies (landing-v2, not work-page); main carries the
-      z260 content gate. */}
   <LandingFooter theme="light" />
   <div class="landing-footer-spacer" aria-hidden="true"></div>
+  </div>
+
+  {/* Desktop footer — the standard BLUE theme (38:2562/#232A89).
+      AFTER the legacy block so the legacy driver's unscoped
+      .landing-footer queries keep finding ITS footer first on
+      mobile; services-6.js queries its own scoped wrapper. */}
+  <div class="sv6-footwrap" data-sv6-footwrap>
+    <LandingFooter />
+  </div>
+  <div class="landing-footer-spacer sv6-footspacer" aria-hidden="true"></div>
 </SiteShell>
 
 <script>
@@ -286,23 +360,21 @@ import '../styles/fonts.css';
   import { initNavEntrance } from '../scripts/landing/nav-motion.js';
   import { initLandingNetwork } from '../scripts/landing/landing-network.js';
   import { initServicesV2 } from '../scripts/landing/services-v2.js';
+  import { initServices6 } from '../scripts/landing/services-6.js';
+  import { isMobileViewport } from '../scripts/landing/viewport.js';
 
-  let cleanupCharRipple = initCharRipple();
-  let cleanupNavEntrance = initNavEntrance();
-  let cleanupServices = initServicesV2();
-  let cleanupNetwork = initLandingNetwork();
+  const boot = () => {
+    const fns = [initCharRipple(), initNavEntrance()];
+    if (isMobileViewport()) {
+      /* The legacy build (mobile only) — its own driver + network. */
+      fns.push(initServicesV2(), initLandingNetwork());
+    } else {
+      fns.push(initServices6());
+    }
+    return () => fns.forEach((fn) => fn());
+  };
 
-  document.addEventListener('astro:before-swap', () => {
-    cleanupCharRipple();
-    cleanupNavEntrance();
-    cleanupServices();
-    cleanupNetwork();
-  });
-
-  document.addEventListener('astro:after-swap', () => {
-    cleanupCharRipple = initCharRipple();
-    cleanupNavEntrance = initNavEntrance();
-    cleanupServices = initServicesV2();
-    cleanupNetwork = initLandingNetwork();
-  });
+  let cleanup = boot();
+  document.addEventListener('astro:before-swap', () => cleanup());
+  document.addEventListener('astro:after-swap', () => { cleanup = boot(); });
 </script>

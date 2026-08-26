@@ -1,0 +1,404 @@
+/*
+ * /services — "Services Page - Option 6" (frame 38:2420, extracted
+ * 2026-08-26; page y = frame y − 118). DESKTOP ONLY: the whole .sv6
+ * build renders ≥1025; the .sv-legacy wrapper carries the previous
+ * page for the out-of-scope mobile build (display:contents under
+ * the seam — geometry-invisible — and display:none above it).
+ *
+ * The hover tables reuse the sv-rows machinery + its stylesheet
+ * (services-v2.css, still imported); the .sv6-table overrides below
+ * carry only the new frame's geometry/type. The accent is the
+ * #C1250E red per Oscar (the frame's own hover mock is #232A89
+ * blue — reported); it rides the existing --sv-accent var, so the
+ * landing's blue default is untouched.
+ */
+
+/* ── The seam ─────────────────────────────────────────────────── */
+.landing-v2 .sv6,
+.landing-v2 .sv6-footwrap,
+.landing-v2 .sv6-footspacer { display: none; }
+.landing-v2 .sv-legacy { display: contents; }
+
+@media (min-width: 1025px) {
+	.landing-v2 .sv6 { display: block; }
+	.landing-v2 .sv6-footwrap { display: contents; }
+	.landing-v2 .sv6-footspacer { display: block; }
+	.landing-v2 .sv-legacy { display: none; }
+
+	.landing-v2 .sv6 {
+		position: relative;
+		z-index: 260; /* the content tier — over the sticky footer (259) */
+		background: #eeeef0;
+		color: #161616;
+	}
+
+	/* ── 1. HERO (38:2596/2595): title y175 — Serrif Condensed
+	   Medium 100/88/−4% + Dazzed Bold 100/88/−0.8px (the frame's
+	   own sans tracking — FLAGGED vs the guide's −5%; frame wins).
+	   Description y287, 1429 measure, Serrif Medium 48/50/−1.5% —
+	   drawn white+difference in the frame, built as INK (the
+	   difference-on-flat house rule, flagged). */
+	.landing-v2 .sv6-hero { padding: 175px 24px 0; }
+
+	.landing-v2 .sv6-hero__title {
+		margin: 0;
+		white-space: nowrap;
+		font-size: 100px;
+		line-height: 88px;
+	}
+
+	.landing-v2 .sv6-hero__t-serif {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		letter-spacing: -0.04em;
+		white-space: pre; /* the frame's trailing space survives */
+	}
+
+	.landing-v2 .sv6-hero__t-sans {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		letter-spacing: -0.008em; /* frame −0.8px at 100 (flagged) */
+	}
+
+	.landing-v2 .sv6-hero__desc {
+		margin: 21px 0 0; /* frame gap 112: the mixed-face line box
+		   renders 91 tall (the serif span's ascent), so 112 − 91 */
+		width: 1429px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 48px;
+		line-height: 50px;
+		letter-spacing: -0.015em;
+		color: #161616;
+	}
+
+	/* ── 2. PILLAR HEADERS: full-bleed 1728×1006 (hero→pillar1 gap
+	   120; the later gaps are authored per section below). Texts at
+	   the frame's +200 (title, 48 box) / +264 (subtitle) — WHITE +
+	   DIFFERENCE over the image (the real blend use on this page;
+	   chain: section(relative) > text — no transformed/opacity
+	   ancestors). */
+	.landing-v2 .sv6-pillar {
+		position: relative;
+		margin-top: 120px;
+		height: 1006px;
+		overflow: hidden;
+	}
+
+	.landing-v2 .sv6-pillar__img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.landing-v2 .sv6-pillar__title {
+		position: absolute;
+		left: 24px;
+		top: 200px;
+		margin: 0;
+		width: 660px;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 48px;
+		line-height: 48px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	.landing-v2 .sv6-pillar__sub {
+		position: absolute;
+		left: 24px;
+		top: 264px;
+		margin: 0;
+		width: 382px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 22px;
+		line-height: 22px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	/* ── 3. STATEMENTS (38:2597/98/2600): Dazzed Bold 56/54/−3.5%
+	   uppercase, 1630 measure, the 26-space indent (313 at 56 — the
+	   established scale) + the #C1250E bar at the right edge (top-
+	   aligned, height per instance from the data). +120 after the
+	   pillar image (AMPLIFY's frame gap is 147 — authored below). */
+	.landing-v2 .sv6-st {
+		position: relative;
+		margin: 120px 24px 0;
+	}
+
+	/* The frame's one irregular gap: AMPLIFY image → statement 147. */
+	.landing-v2 .sv6-pillar#amplify + .sv6-st { margin-top: 147px; }
+
+	.landing-v2 .sv6-st__text {
+		margin: 0;
+		max-width: 1630px;
+		font-weight: 700;
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.landing-v2 .sv6-st--dark .sv6-st__text { color: #eeeef0; }
+
+	.landing-v2 .sv6-st__indent {
+		display: inline-block;
+		width: 313px;
+		height: 1px;
+	}
+
+	.landing-v2 .sv6-st__bar {
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 10px;
+		background: #c1250e;
+	}
+
+	/* ── 4. THE TABLES (sv-rows reused; frame geometry): label at
+	   x551 top-aligned with the table; list x776, 928 wide; row
+	   pitch 69 (2px divider + text 26 below, 26/32/−2% Serrif
+	   Condensed Medium); the hover band spans 71 (divider + row).
+	   The image frame keeps the machinery's 280×380 — only its x
+	   moves to the frame's 1304. Accent = the page's red. */
+	.landing-v2 .sv6-table { margin-top: 120px; }
+
+	.landing-v2 .sv6-table .sv-rows__label {
+		left: 551px;
+		font-size: 16px;
+		line-height: 19px; /* the frame's 19 box (its 32 leading would
+		   drop the cap 6 below the divider top) — no flex: a flex
+		   label collapses the word gap between the reveal's word
+		   clips ("WEBUILD") */
+		text-transform: uppercase;
+	}
+
+	.landing-v2 .sv6-table .sv-rows__list { margin: 0 0 0 776px; width: 928px; }
+	.landing-v2 .sv6-table .sv-rows__endline { margin: 0 0 0 776px; width: 928px; height: 2px; }
+
+	.landing-v2 .sv6-table .sv-rows__row { height: 69px; }
+
+	.landing-v2 .sv6-table .sv-rows__divider {
+		height: 2px;
+		background: #e0e0e7; /* the frame's rule (was the .15 ink) */
+	}
+
+	.landing-v2 .sv6-table .sv-rows__inner {
+		top: 26px;
+		height: 19px;
+	}
+
+	.landing-v2 .sv6-table .sv-rows__text {
+		font-size: 26px;
+		line-height: 32px;
+		letter-spacing: -0.02em;
+	}
+
+	.landing-v2 .sv6-table .sv-rows__fill,
+	.landing-v2 .sv6-table .sv-rows__marq,
+	.landing-v2 .sv6-table .sv-rows__edges { height: 71px; }
+
+	/* The hover marquee at the frame's own face — the resting item's
+	   Serrif 26 rolling white (the old build's Dazzed 22 was ITS
+	   file's spec). Loop gap stays the machinery's 80 (shared shift
+	   constant); the frame's 48 is a static-mock artifact, reported. */
+	.landing-v2 .sv6-table .sv-rows__marq-unit {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 26px;
+		line-height: 32px;
+		letter-spacing: -0.02em;
+		text-transform: none;
+	}
+
+	.landing-v2 .sv6-table .sv-rows__img { left: 1304px; }
+
+	/* Blue-highlight audit (Oscar): the machinery's remaining blue
+	   on this page is the keyboard focus ring — accent-red here. */
+	.landing-v2 .sv6-table .sv-rows__row:focus-visible {
+		outline-color: var(--sv-accent, #c1250e);
+	}
+
+	/* Dark-band variant (CONNECT): the frame's #2f2f2f rules, white
+	   text/label; the active divider still whitens over the fill. */
+	.landing-v2 .sv6-table--dark .sv-rows__divider { background: #2f2f2f; }
+	.landing-v2 .sv6-table--dark .sv-rows__row.is-active .sv-rows__divider { background-color: #fff; }
+	.landing-v2 .sv6-table--dark .sv-rows__text,
+	.landing-v2 .sv6-table--dark .sv-rows__label { color: #eeeef0; }
+
+	/* ── 5. GALLERIES (38:2693/2531): sticky stage + horizontal
+	   travel (the landing featured pattern — travel derived live in
+	   services-6.js; the section height carries the runway var).
+	   Strip at x25 (the frame's own inset), 273×320 boxes on 8px
+	   gaps; labels 40 below, centred in 281-wide slots; arrows
+	   between. +120 after the table; header → strip 80. */
+	.landing-v2 .sv6-gal {
+		margin-top: 120px;
+		height: calc(100dvh + var(--sv6-gal-runway, 0px));
+	}
+
+	.landing-v2 .sv6-gal__stage {
+		position: sticky;
+		top: 0;
+		height: 100dvh;
+		overflow: hidden;
+		box-sizing: border-box;
+		padding-top: 175px; /* the pinned frame's breathing (nav-clear) */
+	}
+
+	.landing-v2 .sv6-gal__title {
+		margin: 0;
+		padding: 0 24px;
+		font-weight: 700;
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
+		color: #161616; /* frame: white+difference over flat ground →
+		   ink (the house rule, flagged) */
+	}
+
+	.landing-v2 .sv6-on-dark .sv6-gal__title,
+	.landing-v2 .sv6-gal--dark .sv6-gal__title { color: #eeeef0; }
+
+	.landing-v2 .sv6-gal__titleline { display: block; }
+
+	.landing-v2 .sv6-gal__strip {
+		display: flex;
+		gap: 8px;
+		margin: 80px 0 0 25px;
+		width: max-content;
+		will-change: transform;
+	}
+
+	.landing-v2 .sv6-gal__box {
+		position: relative;
+		margin: 0;
+		width: 273px;
+		flex: none;
+	}
+
+	.landing-v2 .sv6-gal__box img {
+		width: 273px;
+		height: 320px;
+		object-fit: cover;
+		display: block;
+	}
+
+	.landing-v2 .sv6-gal__label {
+		display: block;
+		margin: 40px auto 0;
+		width: 160px;
+		font-weight: 700;
+		font-size: 18px;
+		line-height: 22px;
+		text-align: center;
+		text-transform: uppercase;
+		color: inherit;
+	}
+
+	/* The step arrow between labels (frame: arrow left = box right
+	   + 19, vertically centred on the label row — 22-tall labels in
+	   gallery 1, 44-tall in gallery 2). */
+	.landing-v2 .sv6-gal__arrow {
+		position: absolute;
+		left: calc(100% + 19px);
+		top: 363px; /* img 320 + 40 + (22 − 16) / 2 */
+		width: 32px;
+		height: 16px;
+	}
+
+	.landing-v2 .sv6-on-dark .sv6-gal__arrow { top: 374px; } /* (44 − 16) / 2 */
+
+	.landing-v2 .sv6-gal__arrow img { display: block; width: 32px; height: 16px; }
+
+	/* ── 6. FRAGMENTED STATEMENTS (38:2725/2794): the landing
+	   closing-statement treatment — 100/88/−4 Dazzed lines at the
+	   authored x on the 90px pitch, ONE size (hierarchy from
+	   position only); the shared centred dwell drives the stage
+	   inline (statement-dwell.js). The stage height is the lines'
+	   span (set by the driver from the line count). */
+	.landing-v2 .sv6-frag { position: relative; }
+
+	/* Height from the driver via the var (a plain style.height would
+	   be cleared by the dwell helper's measure pass). */
+	.landing-v2 .sv6-frag__stage { position: relative; height: var(--sv6-frag-h, auto); }
+
+	.landing-v2 .sv6-frag__line {
+		position: absolute;
+		margin: 0;
+		font-weight: 700;
+		font-size: 100px;
+		line-height: 88px;
+		letter-spacing: -0.04em;
+		white-space: pre;
+		color: #161616;
+	}
+
+	.landing-v2 .sv6-frag--dark .sv6-frag__line { color: #fff; }
+
+	/* ── 7. THE DARK BAND (38:2501, #161616): an absolute ground
+	   layer under the content (z −1 of the flow), sized by the
+	   driver from the CONNECT image bottom to the AMPLIFY image
+	   top. Content on it uses the sv6-on-dark / --dark variants. */
+	.landing-v2 .sv6-darkband {
+		position: absolute;
+		left: 0;
+		width: 100%;
+		background: #161616;
+		z-index: 0;
+	}
+
+	/* Flow content paints above the band (the band keeps its own
+	   absolute positioning). */
+	.landing-v2 .sv6 > :not(.sv6-darkband) { position: relative; z-index: 1; }
+
+	/* Footer gap: table 3 bottom → footer 120 (the frame's 10502 →
+	   10622). */
+	.landing-v2 .sv6 { padding-bottom: 120px; }
+
+	/* ── Entrances (no-preference; live vocabulary — word reveals
+	   are wrapped by the driver; the media below get the house
+	   rise+fade / draw states). */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2 .sv6-gal__box {
+			opacity: 0;
+			transform: translateY(24px);
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+
+		.landing-v2 .sv6-gal__box.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+
+		.landing-v2 .sv6-st__bar {
+			transform: scaleY(0);
+			transform-origin: top;
+			transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+
+		.landing-v2 .sv6-st__bar.is-visible { transform: none; }
+
+		.landing-v2 .sv6-pillar__img {
+			opacity: 0;
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+
+		.landing-v2 .sv6-pillar__img.is-visible { opacity: 1; }
+	}
+}
