@@ -34,12 +34,38 @@ const tiles = [
   { src: asset('/assets/landing/closing/tile-4.jpg'), w: 425, h: 597, x: -6, y: -25 },
 ];
 
+/* Frame 13:184 (2026-08-26): keyword columns are FULL-WIDTH (414 =
+   the tile width; was 323/406); the /0N indexes no longer exist in
+   the design; description 3 takes the frame's longer copy (replaces
+   the shortened approved variant — frames are the authority). The
+   line widths 323/323/406/406 are the frame's own per-column
+   measures, applied as --kw-line-w. */
+/* `index` survives for the MOBILE carousel only (its /0N chips are
+   part of the untouched mobile build); the desktop keyword markup no
+   longer renders it. */
 const keywords = [
-  { x: 24, w: 323, word: 'Trust', index: '/01', line: 'Audiences trust people more than institutions.' },
-  { x: 446, w: 323, word: 'Behaviour', index: '/02', line: 'Communities shape behaviour.' },
-  /* Shortened approved variant — see the header note. */
-  { x: 868, w: 406, word: 'Influence', index: '/03', line: 'Traditional campaigns build awareness. Relationships build influence.' },
-  { x: 1290, w: 406, word: 'Credibility', index: '/04', line: 'Brands need access, credibility and participation.' },
+  { x: 24, w: 414, lw: 323, word: 'Trust', index: '/01', line: 'Audiences trust people more than institutions.' },
+  { x: 446, w: 414, lw: 323, word: 'Behaviour', index: '/02', line: 'Communities shape behaviour.' },
+  { x: 868, w: 414, lw: 406, word: 'Influence', index: '/03', line: 'Traditional campaigns create awareness, relationships create influence.' },
+  { x: 1290, w: 414, lw: 406, word: 'Credibility', index: '/04', line: 'Brands need access, credibility and participation.' },
+];
+
+/* ── FRAGMENTED STATEMENT (frame 13:277, x88 y1264, 1616×727) — the
+   We Create Access dline grammar verbatim: Dazzed Bold 100/88/−4%
+   UPPERCASE ink, absolutely positioned lines, authored x/y (the
+   pitch is deliberately irregular: 90/88/101/90...). Supersedes the
+   old right-hand intro paragraph on desktop (mobile keeps its own).
+   Line 3's wide word-gap is AUTHORED SPACES (white-space: pre). */
+const ST_LINES = [
+  { x: 374, y: 0, t: 'The' },
+  { x: 295, y: 90, t: 'network effect' },
+  { x: 88, y: 178, t: 'exists            to connect people,' },
+  { x: 565, y: 279, t: 'brands and talent' },
+  { x: 201, y: 369, t: 'in ways that create' },
+  { x: 228, y: 459, t: 'long-term' },
+  { x: 1037, y: 459, t: 'cultural' },
+  { x: 410, y: 549, t: 'and commercial' },
+  { x: 1007, y: 639, t: 'value.' },
 ];
 ---
 
@@ -50,9 +76,11 @@ const keywords = [
       track carries the hold; the section's overlap margin grows by
       the same amount so the post-release flow is unchanged. */}
   <div class="landing-closing__stage" data-closing-stage>
-  {/* Right-anchored ragged headline — right edges per the file
-      (493/748/713 from the left at 1728). Difference over the light
-      ground and the tiles' top edge. */}
+  {/* Headline (frame 13:377, 2026-08-26): three staggered left-region
+      boxes at 56/54, ONE face — the serif accent is retired ≥1025
+      (the class stays for the untouched mobile build; the desktop
+      block neutralises it). Difference over the light ground and the
+      tiles' top edge. */}
   <h2 class="landing-closing__headline">
     <span class="landing-closing__hl landing-closing__hl--1" data-closing-line>MOST BRANDS</span>
     <span class="landing-closing__hl landing-closing__hl--2" data-closing-line>STRUGGLE TO ACCESS</span>
@@ -83,9 +111,8 @@ const keywords = [
     <div class="landing-closing__kw" data-closing-kw style={`left:${k.x}px;width:${k.w}px`}>
       <p class="landing-closing__kw-row">
         <span class="landing-closing__kw-word">{k.word}</span>
-        <span class="landing-closing__kw-index">{k.index}</span>
       </p>
-      <p class="landing-closing__kw-line">{k.line}</p>
+      <p class="landing-closing__kw-line" style={`max-width:${k.lw}px`}>{k.line}</p>
     </div>
   ))}
 
@@ -118,4 +145,14 @@ const keywords = [
     </span>
   </div>
   </div>
+</section>
+
+{/* ── THE FRAGMENTED STATEMENT — its own full-width flow section
+    (desktop only; ≤1024 keeps the shipped mobile closing untouched).
+    Pulled up into the closing hold's empty tail so the read gap
+    from the descriptions matches the frame's 225px. */}
+<section class="landing-closing-st" data-closing-st aria-label="The network effect">
+  {ST_LINES.map((l) => (
+    <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y}px`}>{l.t}</p>
+  ))}
 </section>

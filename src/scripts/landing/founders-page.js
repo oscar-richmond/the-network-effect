@@ -74,7 +74,7 @@ const FD_REVEAL_START_T = 0.55; /* of the text phase */
 const FD_REVEAL_END_T = 0.95;   /* Ashley fully there as his text lands */
 const FD_REVEAL_BLUR_PX = 6;    /* the lightbox edge blur, kept */
 const RELEASE_RISE_PX = 96; /* the 120px white gap − the 24 rest (rev 2) */
-const FOOTER_REVEAL_PX = 811;
+const FOOTER_REVEAL_PX = 830; /* frame 13:381 (was 811) */
 const NAV_EXIT_EPSILON_PX = 2;
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);

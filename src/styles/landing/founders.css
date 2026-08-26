@@ -333,7 +333,7 @@ body.founders-page {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	height: 811px;
+	height: 830px; /* frame 13:381 (was 811) */
 	z-index: 0;
 }
 
@@ -344,7 +344,7 @@ body.founders-page {
 	   "less tall" report); the schema now excludes founders-page in
 	   landing.css, this pins it if that ever regresses */
 	margin-top: 0;
-	height: 811px;
+	height: 830px; /* frame 13:381 (was 811) */
 }
 
 /* ═══════════════════════════════════════════════════════════════════

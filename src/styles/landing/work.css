@@ -264,7 +264,7 @@ body.work-page {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	height: 811px;
+	height: 830px; /* frame 13:381 (was 811) */
 	z-index: 0;
 }
 
@@ -273,7 +273,7 @@ body.work-page {
 	   absolute children (the displaced-content lesson). */
 	position: relative;
 	margin-top: 0;
-	height: 811px;
+	height: 830px; /* frame 13:381 (was 811) */
 }
 
 /* ── Entrance hidden states (no-preference; pills fade like the

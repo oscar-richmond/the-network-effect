@@ -104,7 +104,7 @@ const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
    completes by the moment the incoming docks. */
 const META_WIPE_SPAN_PX = 60;
 const META_WIPE_LEAD_PX = 40;
-const FOOTER_REVEAL_PX = 811; // the landing footer's full height
+const FOOTER_REVEAL_PX = 830; // the landing footer's full height (13:381)
 const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
 /* The case-page scroll RESISTANCE (Oscar's rev): the render
    position lerps toward the input target at the Lenis value the

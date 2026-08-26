@@ -17,10 +17,11 @@
  *   matching the file, flagged for later resolution.
  * - START A PROJECT -> the established mailto
  *   (hello@networkeffectagency.co.uk).
- * - Bottom-row email: hello@networkeffectagency.co.uk. The file's
- *   copy said hello@thenetworkeffect.co.uk; Oscar confirmed
- *   (2026-08-10) that address is WRONG — the agency domain is the
- *   only correct one, site-wide. Flag resolved.
+ * - Email (RE-RESOLVED 2026-08-26, supersedes the 2026-08-10 note):
+ *   hello@thenetworkeffect.co.uk is the CONFIRMED address (Oscar's
+ *   footer-rebuild brief) — the new desktop structure uses it; the
+ *   legacy mobile markup keeps its shipped agency-domain mailto
+ *   untouched pending the mobile pass.
  * - LINKEDIN / INSTAGRAM: placeholder hrefs pending real profile
  *   URLs. (File's "INSTATGRAM" typo fixed.)
  *
@@ -50,7 +51,7 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
   aria-label="Site footer"
 >
   {/* Index columns */}
-  <div class="landing-footer__cols">
+  <div class="landing-footer__cols" data-footer-legacy>
     <nav class="landing-footer__col" data-footer-col aria-label="Site index">
       <p class="landing-footer__label">SITE INDEX</p>
       <a class="landing-footer__link" href="/" data-footer-top data-char-ripple-trigger><span data-char-ripple>HOME</span></a>
@@ -77,7 +78,7 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
   </div>
 
   {/* Masked image — topmost visible layer, exact crop. */}
-  <figure class="landing-footer__img" data-footer-img aria-hidden="true">
+  <figure class="landing-footer__img" data-footer-img data-footer-legacy aria-hidden="true">
     <img
       src={asset('/assets/landing/closing/footer-image.jpg')}
       alt=""
@@ -91,7 +92,7 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
       indent, reproduced as an inline spacer element (text-indent
       breaks the reveal wrap's line grouping; the spacer rides inside
       line 1's clip as an atom, and works identically un-wrapped). */}
-  <div class="landing-footer__statement" data-footer-statement>
+  <div class="landing-footer__statement" data-footer-statement data-footer-legacy>
     <p class="landing-footer__st-line" data-footer-st-line
       ><span class="landing-footer__st-indent" aria-hidden="true"></span>Culture rarely moves in public first.</p
     >
@@ -106,7 +107,7 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
   </div>
 
   {/* Bottom row — absolute lefts per the file. */}
-  <div class="landing-footer__row" data-footer-row>
+  <div class="landing-footer__row" data-footer-row data-footer-legacy>
     {/* File copy, mailto'd as written — differs from the site's
         established address; see header. */}
     <a class="landing-footer__rowitem landing-footer__rowitem--email" href="mailto:hello@networkeffectagency.co.uk" data-char-ripple-trigger><span data-char-ripple>HELLO@NETWORKEFFECTAGENCY.CO.UK</span></a>
@@ -121,5 +122,61 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     </button>
     <p class="landing-footer__rowitem landing-footer__rowitem--copyright">©2026 All rights reserved</p>
     <p class="landing-footer__rowitem landing-footer__rowitem--siteby">site by  <span>SELFHOOD STUDIOS</span></p>
+  </div>
+
+  {/* ══ THE NEW DESKTOP FOOTER (frame 13:381, 2026-08-26) — the
+      global structure; the legacy blocks above keep the untouched
+      MOBILE footer and hide ≥1025. Small text: serif 14/16
+      capitalize. Reveal attrs reuse the shipped machinery
+      (footer-motion.js walks data-footer-col + data-footer-st-line). */}
+  <div class="landing-footer__dtop" data-footer-desktop>
+    <nav class="landing-footer__dgroup landing-footer__dgroup--index" data-footer-col aria-label="Site index">
+      <p class="landing-footer__dlabel">Site Index</p>
+      <a class="landing-footer__dlink" href="/" data-footer-top data-char-ripple-trigger><span data-char-ripple>Home</span></a>
+      <a class="landing-footer__dlink" href="/services" data-char-ripple-trigger><span data-char-ripple>Services</span></a>
+      <a class="landing-footer__dlink" href="/founders" data-char-ripple-trigger><span data-char-ripple>The Founders</span></a>
+      <a class="landing-footer__dlink" href="/work" data-char-ripple-trigger><span data-char-ripple>Selected Work</span></a>
+    </nav>
+    {/* START A PROJECT — the frame gives no destination; wired to the
+        CONFIRMED address (the shipped START A PROJECT behaviour). */}
+    <a class="landing-footer__dchip" data-footer-col href="mailto:hello@thenetworkeffect.co.uk" data-char-ripple-trigger>
+      <span data-char-ripple>START A PROJECT</span>
+      <img src={arrowNe} alt="" width="12" height="12" data-char-ripple-arrow />
+    </a>
+    <div class="landing-footer__dgroup landing-footer__dgroup--email" data-footer-col>
+      {/* The frame's "Email adress" typo corrected (reported). */}
+      <p class="landing-footer__dlabel">Email address</p>
+      <a class="landing-footer__dlink" href="mailto:hello@thenetworkeffect.co.uk" data-char-ripple-trigger><span data-char-ripple>Hello@thenetworkeffect.co.uk</span></a>
+    </div>
+    <div class="landing-footer__dgroup landing-footer__dgroup--social" data-footer-col>
+      <p class="landing-footer__dlabel">Social media</p>
+      {/* Placeholder hrefs pending real profile URLs (standing flag);
+          the frame's "Instatgram" typo corrected (reported). */}
+      <span class="landing-footer__dlink is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Linkedin</span></span>
+      <span class="landing-footer__dlink is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Instagram</span></span>
+    </div>
+  </div>
+
+  <div class="landing-footer__dstatement" data-footer-desktop>
+    <p class="landing-footer__dst-line" data-footer-st-line
+      ><span class="landing-footer__dst-indent" aria-hidden="true"></span>Culture rarely moves in public first.</p
+    >
+    <p class="landing-footer__dst-line" data-footer-st-line
+      >It moves quietly. <span class="landing-footer__dst-grey">Through people. Through relationships.</span></p
+    >
+  </div>
+
+  <div class="landing-footer__drow" data-footer-desktop>
+    {/* Inert legal placeholder (frame 13:392/13:398) — no page yet. */}
+    <span class="landing-footer__ritem landing-footer__ritem--terms is-placeholder" data-footer-col data-hover data-char-ripple-trigger><span data-char-ripple>Terms &amp; Conditions</span></span>
+    {/* FLAGGED: the frame node is NAMED "Back to top link" but its
+        placeholder copy reads "Privacy Policy" — per Oscar's brief
+        the slot IS back-to-top and keeps the smooth scroll. */}
+    <button type="button" class="landing-footer__ritem landing-footer__ritem--top" data-footer-col data-footer-top data-char-ripple-trigger>
+      <span data-char-ripple>Back To Top</span>
+      <img src={arrowUp} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
+    </button>
+    <p class="landing-footer__ritem landing-footer__ritem--copy" data-footer-col>©2026 All rights reserved</p>
+    <p class="landing-footer__ritem landing-footer__ritem--siteby" data-footer-col>Site By Selfhood Studios</p>
   </div>
 </footer>

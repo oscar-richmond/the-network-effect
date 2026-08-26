@@ -73,7 +73,7 @@ const PILLAR_EXPAND_PX = 700; // = VIDEO_EXPAND_PX
 const PILLAR_TEXT_LEAD_PX = 120;
 const PILLAR_PARALLAX_PX = 80;
 /* Bottom behaviours — the landing constants. */
-const FOOTER_H_PX = 811;
+const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
 const BOTTOM_SNAP_IDLE_MS = 2000;
 const BOTTOM_EPSILON_PX = 2;
 const NAV_SHOW_HYSTERESIS_PX = 64;

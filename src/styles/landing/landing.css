@@ -1976,7 +1976,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	margin-top: calc(-1 * (50dvh + 300px));
 	/* Stage 1074 (file 1050 + 48 extra ground - 24, Oscar's revs:
 	   uniform 139px pre-footer whitespace on every page) + 300 hold. */
-	height: calc(1074px + 300px);
+	height: calc(1060px + 300px); /* frame 13:184 retune (2026-08-26) */
 	background: #eeeef0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: var(--landing-ink);
@@ -1988,13 +1988,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    300px, releases. */
 .landing-v2 .landing-closing__stage {
 	position: sticky;
-	top: calc(100vh - 986px);
-	top: calc(100dvh - 986px);
-	/* 1074 = the uniform 139px whitespace below the keyword
-	   descriptions (Oscar's rev) — the pin maths (sticky top +
-	   in-stage content) and the 300px hold (section - stage) are
+	/* Frame 13:184 (2026-08-26): the descriptions' bottoms (921 in
+	   the stage) keep Oscar's 16px-above-viewport-bottom pin rule. */
+	top: calc(100vh - 937px);
+	top: calc(100dvh - 937px);
+	/* 1060 = desc bottom 921 + the uniform 139px whitespace — the
+	   pin maths and the 300px hold (section − stage) are
 	   height-independent. */
-	height: 1074px;
+	height: 1060px;
 	background: #eeeef0;
 }
 
@@ -2035,6 +2036,35 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	letter-spacing: -1.44px;
 }
 
+/* Frame 13:377 (2026-08-26): 56/54/−0.35%, three staggered left-region
+   boxes (right-ragged within), ONE face — the serif accent
+   neutralised here; hierarchy is position only (the guide's
+   fragmented-statement rule). Mobile keeps the shipped 40 boxes and
+   accent above. */
+@media (min-width: 1025px) {
+	.landing-v2 .landing-closing__hl {
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.0035em; /* the frame's −0.196px */
+		text-align: right;
+	}
+
+	.landing-v2 .landing-closing__hl--1 { left: 134px; top: 135px; width: 432px; }
+	.landing-v2 .landing-closing__hl--2 { left: 238px; top: 189px; width: 653px; }
+	.landing-v2 .landing-closing__hl--3 { left: 24px; top: 243px; width: 762px; }
+
+	.landing-v2 .landing-closing__hl--serrif {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		letter-spacing: -0.0035em; /* explicit — inherit would take the
+		   parent headline's normal, not the hl rule's own value */
+	}
+
+	/* The old right-hand intro is SUPERSEDED by the fragmented
+	   statement section (frame 13:277); mobile keeps its copy. */
+	.landing-v2 .landing-closing__intro { display: none; }
+}
+
 .landing-v2 .landing-closing__intro {
 	position: absolute;
 	right: 24px;
@@ -2055,7 +2085,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-closing__tiles {
 	position: absolute;
 	left: 24px;
-	top: 392px;
+	top: 345px; /* frame y463 − 118 (2026-08-26; was 392) */
 	display: flex;
 	gap: 8px;
 }
@@ -2077,9 +2107,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-closing__kw {
 	position: absolute;
-	/* OPTICAL 24 below the tiles, re-derived for serif 34/38 (cap
-	   offset ~6.1, was Dazzed 28's 3.56): 24 − 6.1 ≈ 17.9 box. */
-	top: 860px;
+	top: 819px; /* frame y937 − 118 (2026-08-26) */
 }
 
 .landing-v2 .landing-closing__kw-row {
@@ -2098,35 +2126,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	line-height: 28px;
 }
 
-/* Index TOP-aligned with the keyword (Oscar's rev — was the file's
-   baseline-zone drop): cap-top optics, the featured-card treatment
-   (28px caps ~3.5 into box, 10px caps ~1.3; margin-top 2 lines the
-   cap tops up). */
-.landing-v2 .landing-closing__kw-index {
-	/* display:block keeps the cap-top margin working inside the word
-	   reveal's clip/inner (an inline span would baseline-sit in the
-	   row's 28px line box and ignore margin-top); identical unwrapped
-	   — flex items are blockified anyway. */
-	display: block;
-	font-weight: 600;
-	font-size: 10px;
-	line-height: 10px;
-	margin-top: 2px;
-}
+/* (.landing-closing__kw-index retired — the /0N indexes do not exist
+   in frame 13:184.) */
 
 .landing-v2 .landing-closing__kw-line {
 	position: absolute;
 	left: 0;
-	/* 34/38 keyword + OPTICAL 16 (4.5 box = 16 − serif-34 descender
-	   ~7.6 − the line's serif-16 cap 3.96). */
-	top: 42.5px;
+	top: 46px; /* frame: desc y983 − kw y937 */
 	width: 100%;
 	margin: 0;
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 16px;
-	line-height: 18px;
+	font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% (frame 13:373-376; was 16/18) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
 }
 
 /* Desktop keyword scale — Heading / Section (mobile keeps the 28 box
@@ -2138,11 +2152,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		letter-spacing: var(--ts-serif-section-track);
 	}
 
-	.landing-v2 .landing-closing__kw-index {
-		/* Cap-top optics re-derived: serif-34 cap ~6.1 into the 38 box,
-		   index 10px caps ~1.3 → 6.1 − 1.3 ≈ 5 (was 2 for Dazzed 28). */
-		margin-top: 5px;
-	}
 }
 
 /* ── Footer ─────────────────────────────────────────────────────── */
@@ -2154,6 +2163,41 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    landing.astro) restores the document height; the page's max
    scroll lands exactly at full reveal. Still z > the hero stage's
    250 — the exit gate holds. */
+/* ── THE FRAGMENTED STATEMENT (frame 13:277) — the access-dline
+   grammar: Dazzed Bold 100/88/−4% UPPERCASE ink, authored positions.
+   Desktop only (≤1024 keeps the shipped mobile closing). Pulled up
+   into the closing hold's empty tail (−214) so the read gap from the
+   descriptions is the frame's 225: stage leaves 139 + 300 hold below
+   the descs; 139 + 300 − 214 = 225. */
+.landing-v2 .landing-closing-st {
+	display: none;
+}
+
+@media (min-width: 1025px) {
+	.landing-v2 .landing-closing-st {
+		display: block;
+		position: relative;
+		z-index: 260; /* the closing tier — over the sticky footer (259) */
+		margin-top: -214px;
+		height: calc(727px + 180px); /* the lines + the frame's 180 gap to the footer */
+		background: #eeeef0;
+	}
+
+	.landing-v2 .landing-closing-st__line {
+		position: absolute;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 100px;
+		line-height: 88px;
+		letter-spacing: -0.04em;
+		text-transform: uppercase;
+		white-space: pre; /* line 3's wide gap is authored spaces */
+		color: #161616;
+	}
+}
+
 .landing-v2 .landing-footer {
 	/* RELATIVE always: every child is absolutely positioned (cols
 	   40/40, row 736...) and the footer must be their containing
@@ -2161,7 +2205,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   document root and render over the hero (Oscar's report: the
 	   footer content appearing at the page top after the reveal). */
 	position: relative;
-	height: 811px;
+	height: 830px; /* frame 13:381 (2026-08-26; was 811) */
 	background: var(--landing-accent-blue);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: #fff;
@@ -2180,9 +2224,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    panel. */
 .landing-v2:not(.work-page):not(.founders-page) .landing-footer {
 	position: sticky;
-	top: calc(100vh - 811px);
-	top: calc(100dvh - 811px);
-	margin-top: -811px;
+	top: calc(100vh - 830px);
+	top: calc(100dvh - 830px);
+	margin-top: -830px;
 	z-index: 259;
 }
 
@@ -2196,8 +2240,173 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	background: #eeeef0;
 }
 
+/* ── FOOTER REBUILD (frame 13:381, 2026-08-26): desktop renders the
+   NEW structure; the shipped markup stays for the mobile footer (its
+   own recent design — untouched) and hides ≥1025. */
+@media (min-width: 1025px) {
+	.landing-v2 .landing-footer [data-footer-legacy] { display: none; }
+}
+
+.landing-v2 [data-footer-desktop] { display: none; }
+
+@media (min-width: 1025px) {
+	.landing-v2 [data-footer-desktop] { display: block; }
+
+	/* TOP ROW — y40, groups at the frame's x offsets. */
+	.landing-v2 .landing-footer__dtop {
+		position: absolute;
+		left: 24px;
+		top: 40px;
+		width: 1680px;
+		height: 92px;
+	}
+
+	.landing-v2 .landing-footer__dgroup {
+		position: absolute;
+		top: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		margin: 0;
+	}
+
+	.landing-v2 .landing-footer__dgroup--index { left: 0; }
+	.landing-v2 .landing-footer__dgroup--email { left: 1028.32px; }
+	.landing-v2 .landing-footer__dgroup--social { left: 1593.98px; }
+
+	.landing-v2 .landing-footer__dlabel,
+	.landing-v2 .landing-footer__dlink {
+		margin: 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 16px;
+		/* FINAL CASE IS AUTHORED in the markup — text-transform:capitalize
+		   would capitalise every reveal-wrap char atom (the featured-title
+		   ::first-letter lesson). */
+		text-align: left;
+		color: #fff;
+		background: none;
+		border: 0;
+		padding: 0;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.landing-v2 .landing-footer__dlabel { color: #a6a6a8; }
+	.landing-v2 .landing-footer__dlink { cursor: pointer; }
+	.landing-v2 .landing-footer__dlink.is-placeholder { cursor: default; }
+
+	/* START A PROJECT — the More Info button family at the frame's
+	   198×38 (chip #EEEEF0, Dazzed Bold 16, ink #232A89, 12 arrow). */
+	.landing-v2 .landing-footer__dchip {
+		position: absolute;
+		left: 463.66px;
+		top: 0;
+		display: flex;
+		align-items: center;
+		width: 198px;
+		height: 38px;
+		padding: 0 16px;
+		box-sizing: border-box;
+		background: #eeeef0;
+		border: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 1;
+		text-transform: uppercase;
+		color: var(--landing-accent-blue, #232a89);
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	.landing-v2 .landing-footer__dchip img { margin-left: auto; }
+
+	/* STATEMENT — y472, 1542w: Dazzed Bold 56/54/−3.5% UPPER; the
+	   first line's authored leading indent; the second line's back
+	   half muted. The serif accents are retired in this frame. */
+	.landing-v2 .landing-footer__dstatement {
+		position: absolute;
+		left: 24px;
+		top: 472px;
+		width: 1542px;
+	}
+
+	.landing-v2 .landing-footer__dst-line {
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.035em; /* the frame's −1.96px */
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	.landing-v2 .landing-footer__dst-indent {
+		display: inline-block;
+		width: 355px; /* the frame's authored leading indent at 56px */
+		height: 1px;
+	}
+
+	.landing-v2 .landing-footer__dst-grey { color: #a6a6a8; }
+
+	/* BOTTOM ROW — y774, items at the frame's x offsets. */
+	.landing-v2 .landing-footer__drow {
+		position: absolute;
+		left: 24px;
+		top: 774px;
+		width: 1680px;
+		height: 16px;
+	}
+
+	.landing-v2 .landing-footer__drow .landing-footer__ritem {
+		position: absolute;
+		top: 0;
+		margin: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 16px;
+		/* FINAL CASE IS AUTHORED in the markup — text-transform:capitalize
+		   would capitalise every reveal-wrap char atom (the featured-title
+		   ::first-letter lesson). */
+		color: #fff;
+		background: none;
+		border: 0;
+		padding: 0;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.landing-v2 .landing-footer__ritem--terms { left: 0; }
+	.landing-v2 .landing-footer__ritem--top { left: 491.66px; cursor: pointer; }
+	.landing-v2 .landing-footer__ritem--copy { left: 960.32px; }
+	.landing-v2 .landing-footer__ritem--siteby { left: 1516.98px; }
+
+	/* LIGHT THEME (the /services colourway — structure global; the
+	   colour question is flagged for Oscar, colours unchanged per
+	   page meanwhile). */
+	.landing-v2 .landing-footer--light .landing-footer__dlabel { color: #a6a6a8; }
+	.landing-v2 .landing-footer--light .landing-footer__dlink,
+	.landing-v2 .landing-footer--light .landing-footer__dst-line,
+	.landing-v2 .landing-footer--light .landing-footer__drow .landing-footer__ritem { color: #161616; }
+	.landing-v2 .landing-footer--light .landing-footer__dchip {
+		background: #161616;
+		color: #eeeef0;
+	}
+}
+
 .landing-v2 .landing-footer-spacer {
-	height: 811px;
+	height: 830px;
 	pointer-events: none;
 }
 

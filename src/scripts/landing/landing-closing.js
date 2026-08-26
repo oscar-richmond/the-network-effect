@@ -77,6 +77,35 @@ export function initLandingClosing() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* ── Fragmented statement entrance (frame 13:277) — the network
+     section's vocabulary: per-line word reveal on a 120ms DOM-order
+     stagger, one-shot at 65% viewport. RM: static, visible, no
+     trigger. Desktop only (the section is display:none ≤1024). */
+  const fragLines = Array.from(document.querySelectorAll('[data-closing-st-line]'));
+  let fragTrigger = null;
+  if (!reduced && fragLines.length && window.matchMedia('(min-width: 1025px)').matches) {
+    const stFonts = document.fonts?.ready ?? Promise.resolve();
+    stFonts.then(() => {
+      fragLines.forEach((line, i) => {
+        if (!(line instanceof HTMLElement)) return;
+        line.dataset.revealDelay = String(i * 0.12);
+        wrapWordRevealElement(line);
+      });
+      const stSection = document.querySelector('[data-closing-st]');
+      if (!stSection) return;
+      fragTrigger = ScrollTrigger.create({
+        trigger: stSection,
+        start: 'top 65%',
+        once: true,
+        onEnter: () => {
+          fragLines.forEach((line) => {
+            if (line instanceof HTMLElement) playLineRevealElement(line);
+          });
+        },
+      });
+    });
+  }
+
   /* ── Nav-at-bottom + auto-snap (all modes; RM = instant toggle,
      no auto-snap). Char wrap + sweep applier are shared with the
      load entrance (nav-motion.js). */
@@ -274,6 +303,7 @@ export function initLandingClosing() {
   });
 
   return () => {
+    fragTrigger?.kill();
     disposed = true;
     cleanupBase();
     timeouts.forEach(clearTimeout);
