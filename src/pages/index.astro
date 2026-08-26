@@ -42,7 +42,7 @@ import '../styles/landing/landing.css';
 import '../styles/landing/services-v2.css';
 import '../styles/fonts.css';
 import { asset } from '../utils/asset.js';
-import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
+import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
 ---
 
 {/* landing-home (mobile rebuild, 2026-08-13): scopes the Figma
@@ -90,113 +90,57 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
       <LandingServicesStack />
     </div>
 
-    {/* NEW desktop build (display:none ≤1024 — mobile keeps the
-        stack above). Row markup follows the /services sv-rows
-        contract exactly so the shared machinery and stylesheet
-        apply verbatim; landing rows carry NO index (the frame draws
-        text only — sv-rows.js handles index-less marquees). Row
-        images: the frame's single reference image as placeholder on
-        every row, awaiting Oscar's per-row content drop
-        (services-rows.js). */}
-    <div class="landing-svcrows" data-svcrows>
-      <p class="landing-svcrows__label" data-svcrows-line>WHAT WE DO</p>
-      {/* FROM ACCESS / TO IMPACT — the frame draws line 2 in the
-          unlicensed Serrif Bold; the guide names this exact pair
-          MIXED DISPLAY (Serif 72/64/−4% + SANS Bold 72/64/−4.5%),
-          so the sans carries line 2 (flagged in the report). The
-          drawn 13-space lead is authored as margin (wrap-safe). */}
-      <h2 class="landing-svcrows__statement">
-        <span class="landing-svcrows__st-line landing-svcrows__st-serif" data-svcrows-line
-          >FROM ACCESS</span
-        >
-        <span class="landing-svcrows__st-line landing-svcrows__st-sans" data-svcrows-line
-          >TO IMPACT</span
-        >
-      </h2>
-      <p class="landing-svcrows__note" data-svcrows-line
-        >Our work is structured across three connected pillars: Immerse / Connect / Amplify.</p
-      >
-      {/* THE STACK (Oscar's rev, 2026-08-25 — the old card-stack
-          grammar on the new row lists): a sticky 100dvh stage inside
-          a JS-sized runway. IMMERSE sits at top 120 and pins with the
-          stage; its list scrolls up through a clipped window under a
-          gradient; CONNECT then AMPLIFY ride up as OPAQUE panels at
-          1:1 and pin at 160px band offsets — each stacked band keeps
-          its name //0N/desc/MORE INFO visible and covers the WE
-          BUILD label below it. All driven by landing-services.js
-          (.is-stacked, non-RM only — RM keeps this same markup as
-          the normal-flow layout). */}
-      <div class="landing-svcrows__stagewrap" data-svcrows-stagewrap>
-        <div class="landing-svcrows__stage" data-svcrows-stage>
-      {LANDING_SERVICE_PILLARS.map((p) => (
-        <div class="landing-svcrows__pillar" data-svcrows-pillar>
-          <span class="landing-svcrows__topline" aria-hidden="true"></span>
-          <h3 class="landing-svcrows__name">
-            <span class="landing-svcrows__pname" data-svcrows-pline>{p.name}</span>
-            <span class="landing-svcrows__pnum" data-svcrows-pline>{p.num}</span>
-          </h3>
-          <p class="landing-svcrows__desc" data-svcrows-pline>{p.desc[0]}<br />{p.desc[1]}</p>
-          {/* MORE INFO → /services (the established family/recipe). */}
-          <a class="landing-svcrows__btn" href="/services" data-char-ripple-trigger>
-            <span data-char-ripple>MORE INFO</span>
-            <svg class="landing-svcrows__btn-arrow" viewBox="0 0 12 12" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
-              <path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" />
-            </svg>
-          </a>
-          <section
-            class="sv-rows"
-            data-sv-rows
-            style={`--sv-accent:${p.accent};--svcrow-pitch:${p.pitch}px`}
-            aria-label={`${p.name} services`}
-          >
-            <p class="sv-rows__label">{p.label}</p>
-            {/* The scroll WINDOW (clip) and its translated content —
-                list + endline + the glide frame move as one, so the
-                hover image's offset math stays coherent (a transform
-                on the wrapper makes it the img's containing block). */}
-            <div class="landing-svcrows__win" data-svcrows-win>
-              <div class="landing-svcrows__scroll" data-svcrows-scroll>
-            <ul class="sv-rows__list" data-sv-rows-list>
-              {p.rows.map((row) => (
-                <li
-                  class="sv-rows__row"
-                  data-sv-row
-                  data-text={row.text}
-                  data-img={asset(row.img ?? p.hoverImg)}
-                  tabindex="0"
-                >
-                  <span class="sv-rows__divider" aria-hidden="true"></span>
-                  <span class="sv-rows__inner">
-                    <span class="sv-rows__text">{row.text}</span>
-                  </span>
-                  <span class="sv-rows__fill" aria-hidden="true"></span>
-                  <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
-                  <span class="sv-rows__edges" aria-hidden="true"></span>
-                </li>
-              ))}
-            </ul>
-            <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
-              <span class="sv-rows__divider"></span>
-            </div>
+    {/* ══ THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26) —
+        desktop only (display:none ≤1024; mobile keeps the stack
+        above, untouched). The STAGING (8ec705a) stack mechanics are
+        the base — rise, fix, divider-fill progress, roll-over wipes,
+        band compaction, opaque-panel occlusion — with the NEW REEL
+        between each pillar's fix and the next rise: the services
+        list scrolls behind a gradient blur, the active row (level
+        with the WE BUILD label) drives the image via the
+        case-study gallery wipe. landing-services-reel.js drives it;
+        RM keeps this markup as the static expanded layout.
+        NOTE (flagged): the FROM ACCESS TO IMPACT statement is NOT
+        in the new frame — it retires from the landing desktop here. */}
+    <div class="landing-sreel" data-sreel>
+      <div class="landing-sreel__stage" data-sreel-stage>
+        <p class="landing-sreel__wwd" data-sreel-wwd>WHAT WE DO</p>
+        {SERVICES_REEL_PILLARS.map((p, i) => (
+          <div class="landing-sreel__pillar" data-sreel-pillar data-i={String(i)}>
+            <div class="landing-sreel__divider" aria-hidden="true"><span class="landing-sreel__fill" data-sreel-fill></span></div>
+            <h3 class="landing-sreel__titlerow" data-sreel-titlerow>
+              <span class="landing-sreel__title" data-sreel-text>{p.name}</span>
+              <span class="landing-sreel__num" data-sreel-text>{p.num}</span>
+            </h3>
+            <p class="landing-sreel__desc" data-sreel-desc data-sreel-text>{p.desc[0]}<br />{p.desc[1]}</p>
+            <p class="landing-sreel__wlabel" data-sreel-wlabel data-sreel-text>{p.label}</p>
+            <div class="landing-sreel__listwin" data-sreel-listwin>
+              <div class="landing-sreel__list" data-sreel-list>
+                {p.services.map((svc) => (
+                  <div class="landing-sreel__row">
+                    <span class="landing-sreel__rowline" aria-hidden="true"></span>
+                    <span class="landing-sreel__svc" data-sreel-text>{svc.t}</span>
+                  </div>
+                ))}
+                <span class="landing-sreel__rowline landing-sreel__rowline--end" aria-hidden="true"></span>
               </div>
-              {/* Rows dissolve under the band as they scroll through
-                  (the network edge-fade family — an overlay, ground
-                  colour to clear). */}
-              <div class="landing-svcrows__winfade" aria-hidden="true"></div>
+              {/* THE REEL FADE — gradient-masked backdrop blur, top
+                  edge on the pillar title's top: rows dissolve out
+                  through it, never a bare clip. */}
+              <div class="landing-sreel__listfade" aria-hidden="true"></div>
             </div>
-            {/* The glide frame lives OUTSIDE the clip (Oscar R5: the
-                image must never be cut by the window edge or sit
-                under the gradient — z10 over the winfade's 5). The
-                shared placeAt is rect-based, so it tracks the
-                translated rows from out here. */}
-            <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
-              <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
-              <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
-            </div>
-          </section>
-        </div>
-      ))}
-        </div>
+            {/* MORE INFO → /services (the established chip family). */}
+            <a class="landing-sreel__btn" href="/services" data-sreel-btn data-char-ripple-trigger>
+              <span data-char-ripple>MORE INFO</span>
+              <svg class="landing-sreel__btn-arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" data-char-ripple-arrow>
+                <path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" />
+              </svg>
+            </a>
+            <figure class="landing-sreel__img" data-sreel-imgwin aria-hidden="true">
+              <img data-sreel-img src={asset(p.img)} alt="" loading="lazy" decoding="async" />
+            </figure>
+          </div>
+        ))}
       </div>
     </div>
   </section>
@@ -230,6 +174,7 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
   import { initLandingFounders } from '../scripts/landing/landing-founders.js';
   import { initCharRipple } from '../scripts/char-ripple.js';
   import { initLandingServices } from '../scripts/landing/landing-services.js';
+  import { initLandingServicesReel } from '../scripts/landing/landing-services-reel.js';
   import { initLandingNetwork } from '../scripts/landing/landing-network.js';
   import { initLandingFeatured } from '../scripts/landing/landing-featured.js';
   import { initLandingAccess } from '../scripts/landing/landing-access.js';
@@ -250,6 +195,7 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
   let cleanupLandingFounders = initLandingFounders();
   let cleanupCharRipple = initCharRipple();
   let cleanupLandingServices = initLandingServices();
+  let cleanupLandingReel = initLandingServicesReel();
   let cleanupLandingNetwork = initLandingNetwork();
   let cleanupLandingFeatured = initLandingFeatured();
   let cleanupLandingAccess = initLandingAccess();
@@ -261,6 +207,7 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
     cleanupLandingFounders();
     cleanupCharRipple();
     cleanupLandingServices();
+    cleanupLandingReel();
     cleanupLandingNetwork();
     cleanupLandingFeatured();
     cleanupLandingAccess();
@@ -273,6 +220,7 @@ import { LANDING_SERVICE_PILLARS } from '../data/landing/services-rows.js';
     cleanupLandingFounders = initLandingFounders();
     cleanupCharRipple = initCharRipple();
     cleanupLandingServices = initLandingServices();
+    cleanupLandingReel = initLandingServicesReel();
     cleanupLandingNetwork = initLandingNetwork();
     cleanupLandingFeatured = initLandingFeatured();
     cleanupLandingAccess = initLandingAccess();

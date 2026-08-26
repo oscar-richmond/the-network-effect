@@ -5616,15 +5616,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 @media (min-width: 1025px) {
+	/* THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26): the
+	   section = the 100dvh sticky stage + the JS runway
+	   (--sreel-runway, set by landing-services-reel.js) + the
+	   fade-to-black tail's departure viewport. */
 	.landing-v2.landing-home .landing-outro {
 		height: auto;
-		/* Tail = one DEPARTURE VIEWPORT + the frame's 100px: the rows
-		   scroll off against their own light ground BEFORE the tail
-		   fades to black (caught in verification: with the bare 100px
-		   the whole AMPLIFY list sat onscreen at full dark — ink on
-		   ink). By the fade's completion the content is past the
-		   viewport top — the old featured-fade read, kept. */
-		padding: 0 24px calc(100dvh + 100px);
+		/* Departure viewport + the frame's 100 for the fade tail (the
+		   shipped read); the REEL RUNWAY lives on .landing-sreel below
+		   — the sticky stage needs its slack on its OWN parent. */
+		padding: 0 0 calc(100dvh + 100px);
 		background: #eeeef0; /* the fade's light origin */
 	}
 
@@ -5633,10 +5634,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		display: none;
 	}
 
+	/* (SVCROWS RETIRED, 2026-08-26 — the reel rebuild, frames
+	   29:859/30:1191, replaced the row-list build; this block and the
+	   rules after it are dead: the markup is gone from index.astro.
+	   The FROM ACCESS TO IMPACT statement retired with it — flagged
+	   in the build report.) */
 	.landing-v2.landing-home .landing-svcrows {
 		display: block;
 		position: relative;
-		padding-top: 815px; /* header zone −71 (Oscar 2026-08-26: FROM ACCESS sits 100 below WHAT WE DO — was a 171 gap; everything below rides up together) */
+		padding-top: 815px;
 	}
 
 	.landing-v2.landing-home .landing-svcrows__label {
@@ -6354,5 +6360,283 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2 .landing-access__words,
 	.landing-v2 .landing-access__dheadline {
 		display: none;
+	}
+}
+
+
+/* ═══ THE SERVICES REEL (frames 29:859 expanded / 30:1191 stacked,
+   2026-08-26) — desktop only; ≤1024 keeps the shipped mobile stack.
+   Layout literals are the frames' (−118 chrome; pillar-local offsets
+   from each pillar's divider). Panels are OPAQUE (the staging
+   occlusion contract). RM (.is-reduced or no-JS): the expanded
+   Option-11 layout in normal flow. ═══ */
+.landing-v2 .landing-sreel {
+	display: none;
+}
+
+@media (min-width: 1025px) {
+	.landing-v2.landing-home .landing-sreel {
+		display: block;
+		position: relative;
+		/* stage + the JS runway — the sticky's travel slack. */
+		height: calc(100vh + var(--sreel-runway, 0px));
+		height: calc(100dvh + var(--sreel-runway, 0px));
+	}
+
+	.landing-v2.landing-home .landing-sreel:not(.is-live) { height: auto; }
+
+	.landing-v2.landing-home .landing-sreel__stage {
+		position: sticky;
+		top: 0;
+		height: 100vh;
+		height: 100dvh;
+		overflow: hidden;
+	}
+
+	/* RM / no-JS: normal flow, fully expanded (Option 11). */
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__stage {
+		position: static;
+		height: auto;
+		overflow: visible;
+	}
+
+	.landing-v2.landing-home .landing-sreel__wwd {
+		position: absolute;
+		left: 24px;
+		top: 146px; /* Option 11; JS rides it to 100 with the compaction */
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: -0.015em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-sreel__pillar {
+		position: absolute;
+		left: 0;
+		top: 0; /* JS-driven y */
+		width: 100%;
+		height: 908px; /* the frame's pillar pitch — the opaque panel */
+		background: #eeeef0;
+	}
+
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__pillar {
+		position: relative;
+		height: 908px;
+	}
+
+	.landing-v2.landing-home .landing-sreel__divider {
+		position: absolute;
+		left: 24px;
+		top: 0;
+		width: 1680px;
+		height: 2px;
+		background: #e0e0e7;
+	}
+
+	/* The PROGRESS FILL — drains scaleX 1→0 across the rise (the
+	   staging divider-fill, kept). Ink over the base line. */
+	.landing-v2.landing-home .landing-sreel__fill {
+		position: absolute;
+		inset: 0;
+		background: #161616;
+		transform-origin: left center;
+	}
+
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__fill { display: none; }
+
+	.landing-v2.landing-home .landing-sreel__titlerow {
+		position: absolute;
+		left: 24px;
+		top: 68px; /* JS closes to 44 when stacked */
+		margin: 0;
+		white-space: nowrap;
+	}
+
+	.landing-v2.landing-home .landing-sreel__title {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
+		color: #fff;
+		mix-blend-mode: difference; /* against the panel's own opaque ground */
+	}
+
+	.landing-v2.landing-home .landing-sreel__num {
+		display: inline-block;
+		margin-left: 8px;
+		vertical-align: 14px; /* the frame's cap-zone ride */
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 24px;
+		line-height: 24px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	.landing-v2.landing-home .landing-sreel__desc {
+		position: absolute;
+		left: 428px;
+		top: 66px; /* JS closes to 42 when stacked */
+		width: 300px;
+		margin: 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: var(--ts-serif-section-size); /* Heading / Section */
+		line-height: var(--ts-serif-section-lh);
+		letter-spacing: var(--ts-serif-section-track);
+		text-transform: capitalize;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-sreel__wlabel {
+		position: absolute;
+		left: 428px;
+		top: 190px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 19px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-sreel__listwin {
+		position: absolute;
+		left: 776px;
+		top: 0;
+		width: 484px;
+		height: 908px;
+		overflow: hidden; /* belt — rows are fully dissolved before it */
+	}
+
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__listwin {
+		height: auto;
+		overflow: visible;
+		top: 190px;
+	}
+
+	.landing-v2.landing-home .landing-sreel__list {
+		position: absolute;
+		left: 0;
+		top: 190px; /* JS translates for the reel */
+		width: 484px;
+	}
+
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__list {
+		position: static;
+	}
+
+	.landing-v2.landing-home .landing-sreel__row {
+		position: relative;
+		height: 53px; /* the frame's row pitch */
+	}
+
+	.landing-v2.landing-home .landing-sreel__rowline {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 484px;
+		height: 2px;
+		background: #e0e0e7;
+	}
+
+	.landing-v2.landing-home .landing-sreel__rowline--end {
+		position: relative;
+		display: block;
+	}
+
+	.landing-v2.landing-home .landing-sreel__svc {
+		position: absolute;
+		left: 0;
+		top: 18px;
+		width: 342px;
+		margin: 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: var(--ts-serif-body-size); /* Body / Default */
+		line-height: var(--ts-serif-body-lh);
+		letter-spacing: var(--ts-serif-body-track);
+		white-space: nowrap;
+		color: #161616;
+	}
+
+	/* THE REEL FADE (REEL_FADE_* constants in the JS): solid ground
+	   above the title top (68), dissolving to clear at the list top
+	   (190) — rows blur+fade THROUGH it, never a bare clip. The
+	   backdrop blur is masked to the same ramp. */
+	.landing-v2.landing-home .landing-sreel__listfade {
+		position: absolute;
+		left: -12px;
+		top: 0;
+		width: calc(100% + 24px);
+		height: 190px;
+		pointer-events: none;
+		background: linear-gradient(to bottom, #eeeef0 0, #eeeef0 68px, rgba(238, 238, 240, 0) 190px);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+		-webkit-mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 190px);
+		mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 190px);
+	}
+
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__listfade { display: none; }
+
+	/* MORE INFO — the established chip family at the frame's 147×38. */
+	.landing-v2.landing-home .landing-sreel__btn {
+		position: absolute;
+		left: 428px;
+		top: 507px;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		width: 147px;
+		height: 38px;
+		padding: 0 16px;
+		box-sizing: border-box;
+		background: var(--landing-svc-btn-fill, #e4e4ea);
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 1;
+		text-transform: uppercase;
+		color: var(--landing-accent-blue, #232a89);
+		text-decoration: none;
+	}
+
+	.landing-v2.landing-home .landing-sreel__btn-arrow { margin-left: auto; flex: none; }
+
+	.landing-v2.landing-home .landing-sreel__btn:focus-visible {
+		outline: 2px solid var(--landing-accent-blue, #232a89);
+		outline-offset: 2px;
+	}
+
+	.landing-v2.landing-home .landing-sreel__img {
+		position: absolute;
+		left: 1324px;
+		top: 72px;
+		width: 380px;
+		height: 480px;
+		margin: 0;
+		overflow: hidden;
+	}
+
+	.landing-v2.landing-home .landing-sreel__img img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
 	}
 }
