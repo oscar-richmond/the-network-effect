@@ -40,7 +40,7 @@ const wp = (n) => asset(`/assets/landing/work/work-page-${n}.jpg`);
 export const FEATURED_CARDS = [
   {
     index: '/01',
-    title: ['WILDERNESS', 'RESERVE'],
+    title: ['Wilderness', 'Reserve'],
     slug: 'wilderness-reserve',
     /* PROVISIONAL pillar tags — final tagging is a founder/content
        decision (destination experiences + partnerships). */
@@ -52,7 +52,7 @@ export const FEATURED_CARDS = [
   {
     /* RIGHTS: recognizable cast, TV key-art class — see header. */
     index: '/02',
-    title: ['TOP BOY'],
+    title: ['Top Boy'],
     slug: 'top-boy',
     tags: ['amplify'], // PROVISIONAL
     workImg: wp(4), // /work carousel image (b/w promotional still)
@@ -62,7 +62,7 @@ export const FEATURED_CARDS = [
   {
     /* RIGHTS: see the named-person flag in the header. */
     index: '/03',
-    title: ['PAVILION', 'CLUB'],
+    title: ['Pavilion', 'Club'],
     slug: 'pavilion-club',
     tags: ['connect', 'immerse'], // PROVISIONAL
     /* Trimmed one line ("high-profile" dropped) so "experiences."
@@ -72,7 +72,7 @@ export const FEATURED_CARDS = [
   },
   {
     index: '/04',
-    title: ['PAVILION', 'SUMMIT'],
+    title: ['Pavilion', 'Summit'],
     slug: 'pavilion-summit',
     tags: ['immerse', 'connect'], // PROVISIONAL
     desc: 'A 24-hour immersive leadership experience, delivered from ideation to execution, bringing CEOs, founders and cultural voices together.',
@@ -81,7 +81,7 @@ export const FEATURED_CARDS = [
   {
     /* RIGHTS: recognizable cast, TV key-art class — see header. */
     index: '/05',
-    title: ['ADOLESCENCE'],
+    title: ['Adolescence'],
     slug: 'adolescence',
     tags: ['amplify'], // PROVISIONAL
     workImg: wp(7), // /work carousel image (series key art)
@@ -90,7 +90,7 @@ export const FEATURED_CARDS = [
   },
   {
     index: '/06',
-    title: ['YOXMAN FOOD', 'FESTIVAL'],
+    title: ['Yoxman Food', 'Festival'],
     slug: 'yoxman-food-festival',
     tags: ['immerse'], // PROVISIONAL
     /* Trimmed one line ("guest journey" dropped) so "experience."
@@ -100,7 +100,7 @@ export const FEATURED_CARDS = [
   },
   {
     index: '/07',
-    title: ['THUNDER', 'AVIATION'],
+    title: ['Thunder', 'Aviation'],
     slug: 'thunder-aviation',
     tags: ['connect'], // PROVISIONAL
     desc: 'Developed luxury aviation positioning and partnership strategy across private travel, premium hospitality and high-net-worth experiences.',
@@ -109,6 +109,8 @@ export const FEATURED_CARDS = [
   {
     /* RIGHTS: Ashley on set — see header. */
     index: '/08',
+    /* CASING HELD (2026-08-26): brand casing unknown — 'Animol' vs
+       'ANIMOL'; flagged for Oscar, stays caps until confirmed. */
     title: ['ANIMOL'],
     slug: 'animol',
     tags: ['amplify'], // PROVISIONAL

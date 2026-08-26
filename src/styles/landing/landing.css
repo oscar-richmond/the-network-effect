@@ -2082,8 +2082,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-closing__kw {
 	position: absolute;
-	/* OPTICAL 24 below the tiles: 20.5 box (24 - cap offset 3.56). */
-	top: 862.5px;
+	/* OPTICAL 24 below the tiles, re-derived for serif 34/38 (cap
+	   offset ~6.1, was Dazzed 28's 3.56): 24 − 6.1 ≈ 17.9 box. */
+	top: 860px;
 }
 
 .landing-v2 .landing-closing__kw-row {
@@ -2091,11 +2092,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	align-items: flex-start;
 	gap: 12px;
 	margin: 0;
-	font-weight: 700;
-	/* 28px (Oscar's rev — was 32). */
+	/* Heading / Section (Oscar 2026-08-26): condensed serif, natural
+	   case (was Dazzed 700 28 uppercase; the words are natural-cased
+	   in the component data). Base keeps the 28 box for mobile — the
+	   34/38 desktop size lands in the ≥1025 block. */
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
 	font-size: 28px;
 	line-height: 28px;
-	text-transform: uppercase;
 }
 
 /* Index TOP-aligned with the keyword (Oscar's rev — was the file's
@@ -2117,9 +2122,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-closing__kw-line {
 	position: absolute;
 	left: 0;
-	/* 28px keyword + OPTICAL 16 (8.5 box = 16 - descender 3.5 -
-	   Serrif cap 3.96). */
-	top: 36.5px;
+	/* 34/38 keyword + OPTICAL 16 (4.5 box = 16 − serif-34 descender
+	   ~7.6 − the line's serif-16 cap 3.96). */
+	top: 42.5px;
 	width: 100%;
 	margin: 0;
 	font-family: var(--font-serif-cond);
@@ -2127,6 +2132,22 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	font-synthesis: none;
 	font-size: 16px;
 	line-height: 18px;
+}
+
+/* Desktop keyword scale — Heading / Section (mobile keeps the 28 box
+   above; family/case swap applies everywhere the element renders). */
+@media (min-width: 1025px) {
+	.landing-v2 .landing-closing__kw-row {
+		font-size: var(--ts-serif-section-size);
+		line-height: var(--ts-serif-section-lh);
+		letter-spacing: var(--ts-serif-section-track);
+	}
+
+	.landing-v2 .landing-closing__kw-index {
+		/* Cap-top optics re-derived: serif-34 cap ~6.1 into the 38 box,
+		   index 10px caps ~1.3 → 6.1 − 1.3 ≈ 5 (was 2 for Dazzed 28). */
+		margin-top: 5px;
+	}
 }
 
 /* ── Footer ─────────────────────────────────────────────────────── */
@@ -2611,13 +2632,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   the GLYPHS: box gap = 24 - the 28px Dazzed cap offset 3.56;
 	   the desc follows the title's real height + 8.5 box = 16
 	   visual, per-card inline in LandingFeatured.astro). */
-	top: 461.5px;
+	/* Optical 24 below the image re-derived for serif 34/38 (cap sits
+	   ~6.1 into the box vs the old 28 Dazzed 3.56): 441 + 24 − 6.1. */
+	top: 459px;
 	margin: 0;
-	font-weight: 700;
+	/* Card-title family + NATURAL case live in the base so mobile
+	   follows (Oscar 2026-08-26); sizes stay per-breakpoint — the
+	   ≥1025 respec carries the Section 34/38 box, mobile keeps 22. */
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
 	/* 28px (Oscar's rev — was 32). */
 	font-size: 28px;
 	line-height: 28px;
-	text-transform: uppercase;
 }
 
 /* Index TOP-aligned with the last title word (Oscar's rev): cap-top
@@ -5386,7 +5413,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows {
 		display: block;
 		position: relative;
-		padding-top: 830px; /* the header zone — children absolute below */
+		padding-top: 886px; /* the header zone (+56 — the statement's two lines grew 64→92 each) */
 	}
 
 	.landing-v2.landing-home .landing-svcrows__label {
@@ -5414,8 +5441,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-svcrows__st-line {
 		display: block;
-		font-size: 72px;
-		line-height: 64px;
+		font-size: var(--ts-serif-display-size); /* HERO SCALE 100/92 (Oscar 2026-08-26; was 72/64) */
+		line-height: var(--ts-serif-display-lh);
 		white-space: nowrap;
 	}
 
@@ -5430,16 +5457,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		letter-spacing: -0.045em;
+		letter-spacing: -0.05em; /* the hero sans track (was −4.5%) */
 		/* The frame's 13-space Serrif lead, authored as margin
-		   (wrap-safe): ≈13 × 0.25em × 72px. */
-		margin-left: 234px;
+		   (wrap-safe): ≈13 × 0.25em, rescaled to the 100px line. */
+		margin-left: 325px;
 	}
 
 	.landing-v2.landing-home .landing-svcrows__note {
 		position: absolute;
 		left: 196px; /* frame x220 − 24 */
-		top: 490px;
+		top: 546px; /* +56 with the statement's hero scale */
 		width: 740px;
 		margin: 0;
 		font-family: var(--font-serif-cond);
@@ -5760,9 +5787,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: var(--ts-serif-editorial-size);
-		line-height: var(--ts-serif-editorial-lh); /* 48 (guide; was 50) */
-		letter-spacing: var(--ts-serif-editorial-track);
+		font-size: var(--ts-serif-section-size); /* Heading / Section 34/38/-3% (Oscar 2026-08-26; was Editorial 48) */
+		line-height: var(--ts-serif-section-lh);
+		letter-spacing: var(--ts-serif-section-track);
 		/* Sentence case: the TEXT is cased in landing-featured.js
 		   (desktop only — ::first-letter can't reach through the
 		   reveal wrap's inline-block atoms); the base rule's

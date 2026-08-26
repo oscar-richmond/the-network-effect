@@ -191,10 +191,14 @@ body.work-page {
 	   rendered right edge per unit. */
 	white-space: nowrap;
 	margin: 0;
-	font-weight: 700;
-	font-size: 32px;
-	line-height: 32px;
-	text-transform: uppercase;
+	/* Heading / Section (Oscar 2026-08-26): condensed serif, natural
+	   case from the data (was Dazzed 700 32/32 uppercase). */
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: var(--ts-serif-section-size);
+	line-height: var(--ts-serif-section-lh);
+	letter-spacing: var(--ts-serif-section-track);
 	color: #161616; /* brand black (Oscar's rev) */
 }
 
@@ -213,14 +217,19 @@ body.work-page {
 .landing-v2 .work-page__meta-desc {
 	position: absolute;
 	left: 24px;
-	top: 48px;
+	/* 54 = the title's 38 line + the same 16 box gap the old 48 gave
+	   the 32 title (Oscar 2026-08-26). */
+	top: 54px;
+	/* 540 kept — under the guide's 620 Body/Default cap and authored
+	   to the file's meta column. */
 	width: 540px;
 	margin: 0;
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 16px;
-	line-height: 22px;
+	font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% (was 16/22) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
 	color: #161616; /* brand black (Oscar's rev) */
 }
 
@@ -419,10 +428,13 @@ body.work-page {
 
 	.landing-v2 .work-m__title {
 		margin: 24px var(--m-margin, 16px) 0;
-		font-weight: 700;
+		/* Family + natural case follow the desktop card titles (Oscar
+		   2026-08-26); SIZE stays — no mobile guide yet. */
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
 		font-size: 22px;
 		line-height: 22px;
-		text-transform: uppercase;
 		color: #161616;
 	}
 

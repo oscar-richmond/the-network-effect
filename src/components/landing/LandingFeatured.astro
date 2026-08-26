@@ -85,9 +85,11 @@ import GradualBlur from '../GradualBlur.astro';
               </span>
             ))}
           </h3>
-          {/* 16px below the title's real height (image 24 / title 16 —
+          {/* 16px below the SINGLE welded 38px title line (the old
+              per-entry ×28 formula predates the welded single-line R2;
+              titles are one rendered line at Section 34/38 now). (image 24 / title 16 —
               the closing-keywords rhythm). */}
-          <p class="landing-featured__desc" style={`top:${461.5 + card.title.length * 28 + 8.5}px`}>{card.desc}</p>
+          <p class="landing-featured__desc" style={`top:${459 + 38 + 8.5}px`}>{card.desc}</p>
         </a>
       ))}
     </div>

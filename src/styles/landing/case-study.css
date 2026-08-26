@@ -183,6 +183,9 @@ body.case-page {
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
+	/* Base keeps the shipped 16/19 for MOBILE (no ≤1024 size override
+	   exists for this list); the Body/Default box lands in the ≥1025
+	   spacing block below. */
 	font-size: 16px;
 	line-height: 19px;
 	color: #161616;
@@ -290,12 +293,15 @@ body.case-page {
 
 .landing-v2 .cs-rail__desc {
 	margin: 24px 0 0;
+	/* 485 kept — the rail column's authored measure, under the 620
+	   Body/Default cap. */
 	width: 485px;
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 16px;
-	line-height: 18px;
+	font-size: var(--ts-serif-body-size); /* Body / Default (was 16/18) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
 	color: #161616;
 }
 
@@ -307,8 +313,9 @@ body.case-page {
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 16px;
-	line-height: 18px;
+	font-size: var(--ts-serif-body-size); /* Body / Default (was 16/18) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
 	color: #161616;
 }
 
@@ -435,10 +442,15 @@ body.case-page {
 
 .landing-v2 .cs-more__cardtitle {
 	display: inline-block;
-	font-weight: 700;
-	font-size: 32px;
-	line-height: 32px;
-	text-transform: uppercase;
+	/* Heading / Section (Oscar 2026-08-26): condensed serif, natural
+	   case from the data (was Dazzed 700 32/32 uppercase). The ≤1024
+	   block keeps its 22 box (family/case still apply there). */
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: var(--ts-serif-section-size);
+	line-height: var(--ts-serif-section-lh);
+	letter-spacing: var(--ts-serif-section-track);
 }
 
 .landing-v2 .cs-more__cardindex {
@@ -454,14 +466,39 @@ body.case-page {
 
 .landing-v2 .cs-more__carddesc {
 	display: block;
-	/* OPTICAL 16 (7.5 box = 16 - descender 4.5 - Serrif cap 3.96). */
 	margin-top: 7.5px;
+	/* 557 kept — under the guide's 620 Body/Default cap. */
 	width: 557px;
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
-	font-size: 16px;
-	line-height: 18px;
+	font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% (was 16/18) */
+	line-height: var(--ts-serif-body-lh);
+	letter-spacing: var(--ts-serif-body-track);
+}
+
+/* ── Body/Default spacing re-derivation — DESKTOP ONLY (Oscar
+   2026-08-26; mobile keeps its own boxes, no mobile guide yet).
+   Rationale per value:
+   · did/rail margins 24→26: the 21px cap sits ~1.5px deeper in its
+     box than the 16px cap did — +2 holds the visual label→block gap.
+   · bullets indent 24→28: the disc marker scales with the 21px type;
+     28 puts markers + hanging lines on the 28 line grid.
+   · carddesc margin 7.5→2.5: optical 16 re-derived (16 − serif-34
+     title descender ~7.6 − 21px body cap ~6.1).
+   · did min-height 148→212: the worst column set (Yoxman) bottoms at
+     209 with 21/28 items; 212 keeps the divider clear on all four. */
+@media (min-width: 1025px) {
+	.landing-v2 .cs-did { min-height: 212px; }
+	.landing-v2 .cs-did__list {
+		margin-top: 26px;
+		font-size: var(--ts-serif-body-size); /* Body / Default (was 16/19) */
+		line-height: var(--ts-serif-body-lh);
+		letter-spacing: var(--ts-serif-body-track);
+	}
+	.landing-v2 .cs-rail__desc { margin-top: 26px; }
+	.landing-v2 .cs-rail__bullets { margin-top: 26px; padding-left: 28px; }
+	.landing-v2 .cs-more__carddesc { margin-top: 2.5px; }
 }
 
 /* Right-edge fade over the card images (the file's 24px ramp). */

@@ -135,23 +135,10 @@ export function initLandingFeatured() {
 
   const stage = section.querySelector('[data-featured-stage]');
   const strip = section.querySelector('[data-featured-strip]');
-  /* R2 (Oscar, 2026-08-24): SENTENCE-CASE the caps source text —
-     DESKTOP ONLY (the mobile path returned above; its DOM keeps the
-     shipped caps). Runs before any reveal wrap so the atoms carry
-     the cased glyphs. First line leads with the capital; following
-     lines (welded onto the same rendered line by CSS) run lower. */
-  section.querySelectorAll('[data-featured-card]').forEach((card) => {
-    Array.from(card.querySelectorAll('.landing-featured__titleline')).forEach((line, i) => {
-      const tn = Array.from(line.childNodes).find(
-        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
-      );
-      if (!tn) return;
-      const low = tn.textContent.toLowerCase();
-      tn.textContent = i === 0
-        ? low.replace(/[a-z]/i, (ch) => ch.toUpperCase())
-        : low;
-    });
-  });
+  /* (The R2 sentence-caser is GONE — card titles now carry their
+     NATURAL capitalisation in the data itself; guide Heading/Section
+     is not-uppercase and 'Wilderness Reserve' beats 'Wilderness
+     reserve'. Data is rendered verbatim.) */
   const lines = Array.from(section.querySelectorAll('[data-featured-line]'));
   const viewall = section.querySelector('[data-featured-viewall]');
   const cards = Array.from(section.querySelectorAll('[data-featured-card]'));

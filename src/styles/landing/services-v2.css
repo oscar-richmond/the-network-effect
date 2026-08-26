@@ -78,21 +78,50 @@
 	position: absolute;
 	left: 0;
 	right: 0;
-	top: calc(50% + 3px - 24px);
+	/* Two 92px lines centred where the old single 48 line sat
+	   (centre + 3 optical): 50% − 184/2 + 3. */
+	top: calc(50% - 89px);
 	margin: 0;
 	font-weight: 700;
-	font-size: 48px;
-	line-height: 48px;
+	font-size: var(--ts-serif-display-size); /* HERO SCALE 100/92 (Oscar 2026-08-26; was 48/48) */
+	line-height: var(--ts-serif-display-lh);
 	text-align: center;
 	text-transform: uppercase;
 	color: #fff;
+}
+
+/* The mixed-face pair (the landing hero treatment): serif Display L
+   over Dazzed Bold, same size/line — typeface is the only contrast.
+   Family/tracking are unscoped so the mobile 32/34 box keeps them.
+   The word-reveal wrap treats each line-span as ONE atom inside an
+   inline-block clip — block the title's DIRECT clips so the two
+   lines stack (the reveal machinery is untouched). */
+.landing-v2 .sv-hero__title > .lr-clip {
+	display: block;
+}
+
+.landing-v2 .sv-hero__title-serif {
+	display: block;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	letter-spacing: var(--ts-serif-display-track); /* −4% */
+}
+
+.landing-v2 .sv-hero__title-sans {
+	display: block;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 700;
+	font-synthesis: none;
+	letter-spacing: -0.05em; /* the hero sans track */
 }
 
 .landing-v2 .sv-hero__subtitle {
 	position: absolute;
 	left: calc(50% - 362px);
 	width: 724px;
-	top: calc(50% + 63px - 24px);
+	/* Below the two-line title (bottom 50%+95) + the old 12px gap. */
+	top: calc(50% + 107px);
 	margin: 0;
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
@@ -836,8 +865,11 @@
 /* ── MOBILE refinements (mobile brief, 2026-08-10) over the fallback
    block above. ──────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-	.landing-v2 .sv-hero__title { font-size: 32px; line-height: 34px; }
-	.landing-v2 .sv-hero__subtitle { margin-top: 12px; font-size: 17px; line-height: 26px; }
+	/* The mixed-face split renders as TWO 34px lines here (family/case
+	   follow desktop; sizes stay). Re-centre for the 68px box and keep
+	   the old 12px title→subtitle gap. */
+	.landing-v2 .sv-hero__title { font-size: 32px; line-height: 34px; top: calc(50% - 31px); }
+	.landing-v2 .sv-hero__subtitle { margin-top: 12px; font-size: 17px; line-height: 26px; top: calc(50% + 49px); }
 	.landing-v2 .sv-intro__statement { font-size: 26px; line-height: 30px; }
 
 	/* Pillar overlay text at the static aspect box. */

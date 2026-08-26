@@ -76,7 +76,15 @@ import '../styles/fonts.css';
         <canvas class="sv-hero__canvas" data-sv-hero-canvas aria-hidden="true"></canvas>
       </div>
       <div class="sv-hero__textwrap" data-sv-hero-text>
-        <h1 class="sv-hero__title" data-sv-hero-title>{SERVICES_HERO.title}</h1>
+        {/* HERO SCALE (Oscar 2026-08-26): the guide's mixed-face rule —
+            serif line + sans line share 100/92; contrast is typeface
+            only. Authored as two block spans (the word-reveal wrap
+            handles nested atoms; the data string stays the source of
+            the page title elsewhere). */}
+        <h1 class="sv-hero__title" data-sv-hero-title>
+          <span class="sv-hero__title-serif">FROM ACCESS</span>
+          <span class="sv-hero__title-sans">TO IMPACT.</span>
+        </h1>
         <p class="sv-hero__subtitle" data-sv-hero-subtitle>{SERVICES_HERO.subtitle}</p>
       </div>
     </section>
