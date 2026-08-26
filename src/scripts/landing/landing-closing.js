@@ -23,6 +23,7 @@
  * landing.css).
  */
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { initStatementDwell } from './statement-dwell.js';
 import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
@@ -76,6 +77,21 @@ export function initLandingClosing() {
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── THE STATEMENT DWELL (R4, 2026-08-26): the shared centred
+     sticky hold (statement-dwell.js — one mechanism with the
+     /services statements). Layout, not motion — runs under RM;
+     desktop-gated inside the helper; fonts-gated so the measured
+     height sees real glyphs. */
+  const stDwellSection = document.querySelector('[data-closing-st]');
+  const stDwellStage = document.querySelector('[data-closing-st-stage]');
+  let cleanupDwell = () => {};
+  if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement) {
+    (document.fonts?.ready ?? Promise.resolve()).then(() => {
+      cleanupDwell = initStatementDwell(stDwellSection, stDwellStage);
+      ScrollTrigger.refresh();
+    });
+  }
 
   /* ── Fragmented statement entrance (frame 13:277) — the network
      section's vocabulary: per-line word reveal on a 120ms DOM-order
@@ -304,6 +320,7 @@ export function initLandingClosing() {
 
   return () => {
     fragTrigger?.kill();
+    cleanupDwell();
     disposed = true;
     cleanupBase();
     timeouts.forEach(clearTimeout);

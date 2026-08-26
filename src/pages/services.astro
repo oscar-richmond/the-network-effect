@@ -118,13 +118,19 @@ import '../styles/fonts.css';
 
         {/* Statement + accent bar — the case-study intro pattern
             (indent spacer atom inside the reveal wrap; the bar
-            draws top-to-bottom on the same trigger). */}
-        <div class="sv-intro" data-sv-intro>
-          <p class="sv-intro__statement" data-sv-statement
-            ><span class="sv-intro__indent" aria-hidden="true"></span>{p.statement}</p
-          >
-          {p.statementSub && <p class="sv-intro__sub" data-sv-statement-sub>{p.statementSub}</p>}
-          <div class="sv-intro__bar" data-sv-bar aria-hidden="true"></div>
+            draws top-to-bottom on the same trigger).
+            R4 (Oscar, 2026-08-26): the block sits in a DWELL STAGE
+            (statement-dwell.js — the shared centred sticky hold).
+            The stage is display:contents below the seam, so the
+            mobile build's layout is byte-identical. */}
+        <div class="sv-intro" data-sv-intro data-sv-dwell>
+          <div class="sv-st-stage" data-sv-dwell-stage>
+            <p class="sv-intro__statement" data-sv-statement
+              ><span class="sv-intro__indent" aria-hidden="true"></span>{p.statement}</p
+            >
+            {p.statementSub && <p class="sv-intro__sub" data-sv-statement-sub>{p.statementSub}</p>}
+            <div class="sv-intro__bar" data-sv-bar aria-hidden="true"></div>
+          </div>
         </div>
 
         {/* HOVER ROWS — resting 2px dividers + /0N + Serrif item;
@@ -231,10 +237,17 @@ import '../styles/fonts.css';
 
     {/* ── 4. WE CREATE ACCESS (dark) + Amplify's gallery + toggles */}
     <div class="sv-access" data-sv-access>
-      <p class="sv-access__statement" data-sv-access-statement
-        ><span class="sv-intro__indent" aria-hidden="true"></span>{SERVICES_ACCESS.statement}</p
-      >
-      <p class="sv-access__note" data-sv-access-note>{SERVICES_ACCESS.note}</p>
+      {/* R4: the access statement + note dwell together (the note is
+          part of the block); the wrapper section carries the slack
+          + clear-space pads over the region's own dark ground. */}
+      <div class="sv-st-dwell" data-sv-dwell>
+        <div class="sv-st-stage" data-sv-dwell-stage>
+          <p class="sv-access__statement" data-sv-access-statement
+            ><span class="sv-intro__indent" aria-hidden="true"></span>{SERVICES_ACCESS.statement}</p
+          >
+          <p class="sv-access__note" data-sv-access-note>{SERVICES_ACCESS.note}</p>
+        </div>
+      </div>
       <div class="sv-gallery sv-gallery--dark" data-sv-gallery>
         {SERVICES_ACCESS.gallery.map((src) => (
           <figure class="sv-gallery__tile" data-sv-tile>

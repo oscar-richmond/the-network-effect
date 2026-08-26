@@ -47,6 +47,7 @@ import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { createServicesHeroWave } from './services-hero-wave.js';
 import { isMobileViewport } from './viewport.js';
+import { initStatementDwell } from './statement-dwell.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -155,6 +156,24 @@ export function initServicesV2() {
   cleanups.push(() => {
     window.removeEventListener('scroll', onBottomScroll);
     window.clearTimeout(snapTimer);
+  });
+
+  /* ── THE STATEMENT DWELLS (R4, Oscar 2026-08-26): every statement
+     block on this page — the three pillar intros and the access
+     statement+note — gets the shared centred sticky hold
+     (statement-dwell.js; one mechanism with the landing's
+     fragmented statement). Layout, not motion: runs under RM,
+     desktop-gated inside the helper, fonts-gated for real metrics.
+     ScrollTrigger refreshes after so every element-anchored beat
+     re-derives around the added slack. */
+  (document.fonts?.ready ?? Promise.resolve()).then(() => {
+    document.querySelectorAll('[data-sv-dwell]').forEach((sec) => {
+      const stage = sec.querySelector('[data-sv-dwell-stage]');
+      if (sec instanceof HTMLElement && stage instanceof HTMLElement) {
+        cleanups.push(initStatementDwell(sec, stage));
+      }
+    });
+    ScrollTrigger.refresh();
   });
 
   if (reduced) {

@@ -221,6 +221,22 @@
 	margin: 120px 24px 0;
 }
 
+/* ── THE STATEMENT DWELL wrappers (R4, Oscar 2026-08-26): the
+   shared centred sticky hold (statement-dwell.js sets the derived
+   geometry inline, ≥1025 only). display:contents below the seam —
+   layout-inert, so the mobile build is byte-identical. The access
+   instance's wrapper section needs relative positioning for its
+   absolute note; grounds come from the surrounding region (light
+   page / dark access), so the clear-space pads read as clear
+   ground on both. */
+.landing-v2 .sv-st-stage,
+.landing-v2 .sv-st-dwell { display: contents; }
+
+@media (min-width: 1025px) {
+	.landing-v2 .sv-st-dwell { display: block; position: relative; }
+	.landing-v2 .sv-st-stage { display: block; position: relative; }
+}
+
 .landing-v2 .sv-intro__statement {
 	margin: 0;
 	max-width: 1680px;

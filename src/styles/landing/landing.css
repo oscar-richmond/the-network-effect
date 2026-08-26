@@ -2189,24 +2189,24 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   TRANSPARENT strip between two z260 sections, and the fixed
 		   hero video (z250, never torn down) showed through (Oscar's
 		   strip report, 2026-08-26). Flush top, opaque ground.
-		   R3 (Oscar): + the CENTRE DWELL's slack — the closing's own
-		   sticky-hold mechanism reused (see the stage below). The hold
-		   length matches the closing's 300. */
-		--closing-st-hold: 300px; /* CLOSING_ST_HOLD_PX */
+		   R4 (Oscar, 2026-08-26): the CENTRE DWELL is now driven by
+		   the SHARED helper (statement-dwell.js — sticky stage +
+		   slack + the symmetric clear-space paddings, all derived
+		   from the measured block height), consolidated with the
+		   /services statements onto one mechanism. The CSS keeps
+		   only the ground + the no-JS flow fallback (statement in
+		   flow, no dwell). */
 		margin-top: 0;
-		height: calc(54px + 727px + 180px + var(--closing-st-hold));
 		background: #eeeef0; /* stays opaque under the stage's travel */
 	}
 
-	/* The dwell stage: sticky top = 50dvh − half the stage height
-	   (961/2), so the pin engages EXACTLY as the statement's centre
-	   crosses the viewport centre — at any viewport height. Carries
-	   its own opaque ground (the fixed-hero-video strip lesson). The
-	   lines are plain ink: sticky adds no transform, blend-inert. */
+	/* The dwell stage — geometry inline from statement-dwell.js; the
+	   opaque ground stays here (the fixed-hero-video strip lesson).
+	   The lines are plain ink: sticky adds no transform,
+	   blend-inert. The explicit height is the no-JS fallback (the
+	   lines are absolutely positioned, so the box needs it). */
 	.landing-v2 .landing-closing-st__stage {
-		position: sticky;
-		top: calc(50vh - 480.5px);
-		top: calc(50dvh - 480.5px);
+		position: relative;
 		height: calc(54px + 727px + 180px);
 		background: #eeeef0;
 	}
@@ -5671,7 +5671,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   viewport bottom (the contract, verbatim). The REEL RUNWAY
 		   lives on .landing-sreel below — the sticky stage needs its
 		   slack on its OWN parent. */
-		padding: 0 0 250px;
+		/* R4 (Oscar, 2026-08-26): the departure pad is JS-DERIVED —
+		   AMPLIFY's measured clearing point + the 500 ground fade
+		   (--sreel-outro-pad, set by the reel driver) — so the
+		   element-anchored fade window begins exactly as AMPLIFY's
+		   bottom edge clears the viewport top. 250 = the pre-JS/no-JS
+		   resting value. */
+		padding: 0 0 var(--sreel-outro-pad, 250px);
 		background: #eeeef0; /* the fade's light origin */
 	}
 

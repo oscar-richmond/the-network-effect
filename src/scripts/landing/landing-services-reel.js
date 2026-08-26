@@ -117,11 +117,19 @@ const WIPE_BLUR_PX = 6;
    timeline; reversal restores. */
 const FILL_TAIL_FADE_T = 0.1;
 
-/* ── AMPLIFY exit (Oscar R3): as the ground fades to black, pillar
-   3's image + MORE INFO blur-fade out ON THE SAME TIMELINE (same
-   progress — desync impossible). The established blur-fade exit
-   vocabulary. */
-const AMPLIFY_EXIT_BLUR_PX = 12;
+/* ── THE DEPARTURE EXIT CASCADE (Oscar R4, 2026-08-26 — supersedes
+   the R3 image+CTA-only exit, extended to EVERY section element;
+   see the departure timeline below). All positions are scroll px
+   after the stage unpins; every element completes by
+   SREEL_EXIT_HEADS_AT + SPAN = 600, far ahead of the ground fade's
+   measured start (≥ the AMPLIFY clearing point, ~922). */
+const SREEL_EXIT_BLUR_PX = 12;        /* the house blur-fade exit */
+const SREEL_EXIT_SPAN_PX = 180;       /* one element's fade length */
+const SREEL_EXIT_ROW_STAGGER_PX = 24; /* per-row cascade offset */
+const SREEL_EXIT_ROWS_END_PX = 360;   /* rows all gone by here */
+const SREEL_EXIT_FURNITURE_AT_PX = 240; /* descs/label/image/CTA */
+const SREEL_EXIT_HEADS_AT_PX = 420;   /* titles//0N/dividers/WWD last */
+const SREEL_EXIT_PX = 600;            /* the cascade's total span */
 
 const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
@@ -503,33 +511,105 @@ export function initLandingServicesReel() {
      scrub squeezes every beat by cursor/RUNWAY). */
   tl.to({}, { duration: TRANSITION_DWELL_PX }, cursor);
 
-  /* THE FADE-TO-BLACK — contract verbatim (see header). */
-  const fade = gsap.timeline({
+  /* ═══ THE DEPARTURE (Oscar R4, 2026-08-26 — replaces the old
+     fade-to-black window, which darkened the ground while the reel's
+     text was still visible: the inverse-contrast defect). ONE
+     timeline scrubbed over the whole departure phase (unpin →
+     Featured's entry), so ordering and reversal are STRUCTURAL:
+
+       [0 … SREEL_EXIT_PX]            every section element blur-
+                                      fades out (the cascade below);
+       [exitClear … exitClear + 500]  the ground fades to black —
+                                      exitClear is AMPLIFY's MEASURED
+                                      deepest content edge (pillar y +
+                                      image bottom, clamped to the
+                                      stage height), i.e. the scroll
+                                      at which its bottom edge clears
+                                      the viewport top during the
+                                      scroll-off. The outro's bottom
+                                      pad is exitClear + 500, so the
+                                      element-anchored window starts
+                                      AT the clearing point and
+                                      completes exactly as Featured's
+                                      top crosses the viewport bottom
+                                      (the contract, verbatim).
+
+     The ground fade starts long after the cascade's end on the same
+     scrub — the "gate" is numeric ordering on one progress value, so
+     the two can never desync, and scrolling back runs the exact
+     inverse (ground lightens fully before any element returns).
+
+     CASCADE CHOREOGRAPHY (the considered stagger): the reel rows +
+     their dividers cascade first in list order, then the supporting
+     furniture (descriptions, WE CREATE label, image, MORE INFO),
+     then the section's skeleton last (pillar titles + /0N indexes,
+     the full-width dividers, WHAT WE DO). BLEND SAFETY: the titles
+     and indexes carry mix-blend-mode difference — they are faded as
+     DIRECT tween targets (self-opacity on a blend element keeps its
+     blend while it fades); a wrapper-level fade would isolate the
+     blend mid-fade and flash the exact inverse-contrast this task
+     removes. The progress fill is already autoAlpha 0 from its
+     drain-tail belt and rides its divider; the travelled intro is
+     clipped out of the stage (positionally gone). */
+  const exitClear = (() => {
+    const imgwin = pillars[2].querySelector('[data-sreel-imgwin]');
+    const deepest = ACTIVE_Y[2]
+      + (imgwin instanceof HTMLElement ? imgwin.offsetTop + imgwin.offsetHeight : 528);
+    return Math.min(deepest, stageH());
+  })();
+  const departPad = exitClear + TRANSITION_GROUND_FADE_PX;
+  section.style.setProperty('--sreel-outro-pad', `${departPad}px`);
+
+  const depart = gsap.timeline({
     scrollTrigger: {
       trigger: section,
-      start: `bottom bottom+=${TRANSITION_GROUND_FADE_PX}`,
+      start: () => `bottom bottom+=${departPad}`,
       end: 'bottom bottom',
       scrub: true,
+      invalidateOnRefresh: true,
     },
   });
-  fade.fromTo([section, ...pillars],
-    { backgroundColor: GROUND_LIGHT },
-    { backgroundColor: GROUND_DARK, ease: 'none' }, 0);
-  const fades = Array.from(root.querySelectorAll('.landing-sreel__listfade'));
-  if (fades.length) fade.to(fades, { autoAlpha: 0, ease: 'none', duration: 0.3 }, 0);
-  /* AMPLIFY exit (AMPLIFY_EXIT_BLUR_PX): image + CTA blur-fade over
-     the full fade window — same timeline, same progress. Siblings of
-     the difference title (never its ancestors): blend-safe. */
-  const amplifyBits = [
+  const exitTween = (els, at, dur = SREEL_EXIT_SPAN_PX) => {
+    const list = (Array.isArray(els) ? els : [els]).filter((el) => el instanceof HTMLElement);
+    if (list.length) {
+      depart.fromTo(list,
+        { autoAlpha: 1, filter: 'blur(0px)' },
+        { autoAlpha: 0, filter: `blur(${SREEL_EXIT_BLUR_PX}px)`, ease: 'none', duration: dur, immediateRender: false },
+        at);
+    }
+  };
+  /* 1 — rows + the reel fade band, cascading in list order. */
+  const exitRows = Array.from(pillars[2].querySelectorAll('.landing-sreel__row, .landing-sreel__rowline--end'));
+  exitRows.forEach((row, i) => {
+    exitTween(row, Math.min(i * SREEL_EXIT_ROW_STAGGER_PX, SREEL_EXIT_ROWS_END_PX - SREEL_EXIT_SPAN_PX));
+  });
+  exitTween(pillars[2].querySelector('.landing-sreel__listfade'), 0);
+  /* 2 — furniture. */
+  exitTween([
+    pillars[2].querySelector('[data-sreel-desc]'),
+    pillars[2].querySelector('[data-sreel-wlabel]'),
     pillars[2].querySelector('[data-sreel-imgwin]'),
     pillars[2].querySelector('[data-sreel-btn]'),
-  ].filter((el) => el instanceof HTMLElement);
-  if (amplifyBits.length) {
-    fade.fromTo(amplifyBits,
-      { autoAlpha: 1, filter: 'blur(0px)' },
-      { autoAlpha: 0, filter: `blur(${AMPLIFY_EXIT_BLUR_PX}px)`, ease: 'none', duration: 1 }, 0);
-  }
-  cleanups.push(() => { fade.scrollTrigger?.kill(); fade.kill(); });
+    pillars[0].querySelector('[data-sreel-desc]'),
+    pillars[1].querySelector('[data-sreel-desc]'),
+  ], SREEL_EXIT_FURNITURE_AT_PX);
+  /* 3 — the skeleton: titles + indexes (DIRECT blend targets),
+     full-width dividers, WHAT WE DO. */
+  exitTween([
+    ...pillars.flatMap((p2) => [
+      p2.querySelector('.landing-sreel__title'),
+      p2.querySelector('.landing-sreel__num'),
+      p2.querySelector('.landing-sreel__divider'),
+    ]),
+    wwd,
+  ], SREEL_EXIT_HEADS_AT_PX);
+  /* THE GROUND — light → dark over the final 500, starting exactly
+     at the measured clearing point (see the header). */
+  depart.fromTo([section, ...pillars],
+    { backgroundColor: GROUND_LIGHT },
+    { backgroundColor: GROUND_DARK, ease: 'none', duration: TRANSITION_GROUND_FADE_PX, immediateRender: false },
+    exitClear);
+  cleanups.push(() => { depart.scrollTrigger?.kill(); depart.kill(); });
 
   masterTl = tl;
   trigger = tl.scrollTrigger ?? null;
