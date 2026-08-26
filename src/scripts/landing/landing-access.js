@@ -71,10 +71,15 @@ const TOP_PAIR_INDEX = (k) => 1 + k;
 const BOTTOM_PAIR_INDEX = (k) => 5 - k;
 const baseTop = (vw) => vw / 2 - 1238;
 const baseBottom = (vw) => vw / 2 - 3288;
-/* THE EXIT — sideways at 1:1 until the widest visible span clears
-   (1858 at 1728) + margin. */
-const EXIT_PX = 1900;
-const TOTAL_RUNWAY_PX = RUNWAY_PX + EXIT_PX; // 3900
+/* THE EXIT — sideways at 1:1. 1650 (Oscar 2026-08-26, was 1900):
+   with the row collapse finishing at exit-shift ~872, the old tail
+   was dead scroll over an empty stage; 1650 brings the CLOSING
+   section's arrival to when the final pair sits ~100px from fully
+   leaving the viewport sides (arrival exit-shift = EXIT_PX − the
+   closing's 50dvh+300 overlap ≈ 810 at 1080vh vs full exit at 914).
+   Everything below rides up by the trimmed 250. */
+const EXIT_PX = 1650;
+const TOTAL_RUNWAY_PX = RUNWAY_PX + EXIT_PX; // 3650
 const EXIT_WORD_FADE_T = 0.15; // words gone by 15% of the exit (kept)
 /* Off-centre treatment (frame): 60%-over-ground dim ≡ ground veil at
    0.4 + the drawn 10px blur; dead zone as shipped. */

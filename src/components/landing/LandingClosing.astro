@@ -149,10 +149,13 @@ const ST_LINES = [
 
 {/* ── THE FRAGMENTED STATEMENT — its own full-width flow section
     (desktop only; ≤1024 keeps the shipped mobile closing untouched).
-    Pulled up into the closing hold's empty tail so the read gap
-    from the descriptions matches the frame's 225px. */}
+    The 54px breathing space to the closing above lives INSIDE the
+    section (+54 on every line top) so the box sits flush against the
+    closing — a margin here was a transparent strip that exposed the
+    fixed hero video. The read gap from the descriptions stays the
+    frame's 225. */}
 <section class="landing-closing-st" data-closing-st aria-label="The network effect">
   {ST_LINES.map((l) => (
-    <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y}px`}>{l.t}</p>
+    <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y + 54}px`}>{l.t}</p>
   ))}
 </section>

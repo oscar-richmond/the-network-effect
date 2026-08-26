@@ -2183,8 +2183,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		display: block;
 		position: relative;
 		z-index: 260; /* the closing tier — over the sticky footer (259) */
-		margin-top: 54px;
-		height: calc(727px + 180px); /* the lines + the frame's 180 gap to the footer */
+		/* The 54 breathing space lives INSIDE the section now (the line
+		   tops carry +54 in the component) — as a margin it was a
+		   TRANSPARENT strip between two z260 sections, and the fixed
+		   hero video (z250, never torn down) showed through (Oscar's
+		   strip report, 2026-08-26). Flush top, opaque ground. */
+		margin-top: 0;
+		height: calc(54px + 727px + 180px);
 		background: #eeeef0;
 	}
 
@@ -6163,7 +6168,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* Section = stage + the pinned runway (5×400 pair steps + the
 	   1900 side exit). Sticky releases at the section bottom. */
 	.landing-v2.landing-home .landing-access {
-		height: calc(1446px + 600px + 3900px); /* stage + ACCESS_READ_HOLD_PX + runway (Oscar 2026-08-26) */
+		height: calc(1446px + 600px + 3650px); /* stage + ACCESS_READ_HOLD_PX + runway (EXIT_PX 1650, Oscar 2026-08-26) */
 	}
 
 	@media (prefers-reduced-motion: reduce) {
