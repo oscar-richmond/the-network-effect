@@ -27,13 +27,17 @@
 
 export const NETWORK_STRIP_SLOTS = 5;
 
-/* The resting strip — the shipped five (exact Figma crops). */
+/* The resting strip — the shipped five. The y values are the LIVE
+   desktop crops (the 1:339 respec's per-slot 264-band tops, folded in
+   here 2026-08-26 rev 2 from landing.css's retired !important
+   overrides — inline styles own the crops so the hover swap's cover
+   entries can't be dragged out of their windows). */
 export const NETWORK_STRIP_DEFAULT = [
-  { src: '/assets/landing/network/strip-1.jpg', win: 345, w: 351.73, h: 439.92, x: -1.28, y: -1.54 },
-  { src: '/assets/landing/network/strip-2.jpg', win: 346, w: 346, h: 429, x: 0, y: -63 },
-  { src: '/assets/landing/network/strip-3.jpg', win: 345, w: 355, h: 438, x: -10, y: -69 },
-  { src: '/assets/landing/network/strip-4.jpg', win: 346, w: 367, h: 459, x: -18, y: -69 },
-  { src: '/assets/landing/network/strip-5.jpg', win: 346, w: 349.01, h: 448.3, x: -2.01, y: -104.3 },
+  { src: '/assets/landing/network/strip-1.jpg', win: 345, w: 351.73, h: 439.92, x: -1.28, y: -10.04 },
+  { src: '/assets/landing/network/strip-2.jpg', win: 346, w: 346, h: 429, x: 0, y: -71.5 },
+  { src: '/assets/landing/network/strip-3.jpg', win: 345, w: 355, h: 438, x: -10, y: -77.5 },
+  { src: '/assets/landing/network/strip-4.jpg', win: 346, w: 367, h: 459, x: -18, y: -77.5 },
+  { src: '/assets/landing/network/strip-5.jpg', win: 346, w: 349.01, h: 448.3, x: -2.01, y: -112.24 },
 ];
 
 const pc = (n) => ({ src: `/assets/landing/case/pavilion-club/stream-${n}.jpg` });

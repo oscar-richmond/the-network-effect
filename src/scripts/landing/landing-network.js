@@ -45,8 +45,16 @@ const ENTRY_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; // house reveal curve
    transitions, no half-swapped strips. Hover-out returns to
    NETWORK_STRIP_DEFAULT symmetrically. Slot geometry (window widths,
    the 264 band) never changes — only the imgs inside. */
-const NETWORK_STRIP_RIPPLE_MS = 600; /* one slot's blur pulse */
-const NETWORK_STRIP_SWEEP_MS = 400;  /* crest travel across the strip */
+/* THE TRANSITION (Oscar's rev, 2026-08-26): the FOUNDERS PORTRAIT
+   swap — reveal-behind. The incoming image sits FULLY OPAQUE beneath
+   (decode-gated, so ground can never show mid-wipe); the outgoing
+   layer clips away left→right on the house curve with the 6px
+   moving-edge blur. Slots stagger left→right across the sweep. */
+const NETWORK_STRIP_WIPE_MS = 450;  /* one slot's L→R wipe (the lightbox/founders beat) */
+const NETWORK_STRIP_SWEEP_MS = 400; /* stagger travel across the strip */
+const NETWORK_STRIP_EDGE_BLUR_PX = 6;
+const NETWORK_STRIP_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; /* house curve */
+const NETWORK_STRIP_DECODE_TIMEOUT_MS = 1500;
 
 /* SET-SIZE CONTRACT (Oscar's preference): exactly NETWORK_STRIP_SLOTS
    entries per industry. Dev THROWS (a bad content drop must be
@@ -74,7 +82,9 @@ function normalisedSet(key) {
 
 /** Applies one set entry to a strip img: authored crop when the entry
     carries one (the DEFAULT set), cover-fit otherwise (placeholder
-    industry sets — and any future entry authored without a crop). */
+    industry sets — and any future entry authored without a crop).
+    Every branch COVERS the slot window — the authored crops do so by
+    their Figma geometry, cover-fit by definition. */
 function applyStripEntry(img, entry) {
   img.src = asset(entry.src);
   if (typeof entry.w === 'number') {
@@ -90,6 +100,17 @@ function applyStripEntry(img, entry) {
     img.style.top = '0px';
     img.style.objectFit = 'cover';
   }
+}
+
+/** Waits for a strip img to be decodable so the wipe never reveals a
+    half-painted frame (the founders white-flash lesson, time-domain).
+    Bounded — a slow network degrades to a plain swap, never a hang. */
+function decodeWithin(img, ms) {
+  const decode = img.decode ? img.decode() : Promise.resolve();
+  return Promise.race([
+    decode.catch(() => {}),
+    new Promise((resolve) => { setTimeout(resolve, ms); }),
+  ]);
 }
 
 export function initLandingNetwork() {
@@ -108,10 +129,23 @@ export function initLandingNetwork() {
     new URLSearchParams(window.location.search).has('forcehover');
   const body = section.querySelector('[data-landing-network-body]');
   const strip = section.querySelector('[data-landing-network-strip]');
-  const stripImgs = strip instanceof HTMLElement
+  /* The authored imgs become the OVER layers; an UNDER img is cloned
+     beneath each at init (same slot, same default entry), mirroring
+     the founders portrait pair — the wipe clips the over layer off
+     the always-full under layer. DESKTOP HOVER ONLY: the mobile
+     build has no strip swap, so its DOM stays exactly as shipped
+     (width-gated as well as hover-gated). */
+  const stripOvers = canHover && !isMobileViewport() && strip instanceof HTMLElement
     ? Array.from(strip.querySelectorAll('img'))
     : [];
+  const stripUnders = stripOvers.map((over) => {
+    const under = over.cloneNode(false);
+    under.classList.add('landing-network__strip-img--under');
+    over.parentElement?.insertBefore(under, over);
+    return under;
+  });
   const swapTimeouts = [];
+  const wipeAnims = [];
   assertStripSets();
 
   let currentKey = 'all';
@@ -120,30 +154,49 @@ export function initLandingNetwork() {
 
   const pumpSwap = () => {
     if (swapBusy || targetKey === currentKey) return;
-    if (!(strip instanceof HTMLElement) || !stripImgs.length) return;
+    if (!(strip instanceof HTMLElement) || !stripOvers.length) return;
     swapBusy = true;
     const key = targetKey;
     const set = normalisedSet(key);
     const vw = window.innerWidth || 1728;
-    stripImgs.forEach((img, i) => {
-      /* Pin this slot in the crest from its on-screen x... */
-      const win = img.parentElement ?? img;
-      const x = Math.min(Math.max(win.getBoundingClientRect().left, 0), vw);
-      const delay = Math.round((x / vw) * NETWORK_STRIP_SWEEP_MS);
-      img.style.setProperty('--cell-ripple-delay', `${delay}ms`);
-      /* ...and exchange its image at its own pulse peak (changing
-         src does not restart a running CSS animation). */
-      swapTimeouts.push(setTimeout(() => {
-        applyStripEntry(img, set[i]);
-      }, delay + NETWORK_STRIP_RIPPLE_MS / 2));
+    /* Stage every UNDER layer first and wait for its decode — the
+       wipe must never reveal ground or a half-painted frame. */
+    const staged = stripUnders.map((under, i) => {
+      applyStripEntry(under, set[i]);
+      return decodeWithin(under, NETWORK_STRIP_DECODE_TIMEOUT_MS);
     });
-    strip.classList.add('is-swapping');
-    swapTimeouts.push(setTimeout(() => {
-      strip.classList.remove('is-swapping');
-      currentKey = key;
-      swapBusy = false;
-      pumpSwap();
-    }, NETWORK_STRIP_SWEEP_MS + NETWORK_STRIP_RIPPLE_MS));
+    Promise.all(staged).then(() => {
+      stripOvers.forEach((over, i) => {
+        const win = over.parentElement ?? over;
+        const x = Math.min(Math.max(win.getBoundingClientRect().left, 0), vw);
+        const delay = Math.round((x / vw) * NETWORK_STRIP_SWEEP_MS);
+        /* The founders reveal-behind, time-domain: clip the over
+           layer off left→right on the house curve; the 6px edge
+           blur rides the moving edge (a SELF-filter — blend-safe). */
+        const anim = over.animate(
+          [
+            { clipPath: 'inset(0 0 0 0%)', filter: 'blur(0px)' },
+            { clipPath: 'inset(0 0 0 50%)', filter: `blur(${NETWORK_STRIP_EDGE_BLUR_PX}px)`, offset: 0.5 },
+            { clipPath: 'inset(0 0 0 100%)', filter: 'blur(0px)' },
+          ],
+          { duration: NETWORK_STRIP_WIPE_MS, delay, easing: NETWORK_STRIP_CURVE, fill: 'forwards' },
+        );
+        wipeAnims.push(anim);
+        /* Promote once THIS slot's wipe lands: the over becomes the
+           new image again (full, unclipped — its own animation
+           cancelled), ready for the next cycle; identical to the
+           founders pair's reset. */
+        swapTimeouts.push(setTimeout(() => {
+          applyStripEntry(over, set[i]);
+          anim.cancel();
+        }, delay + NETWORK_STRIP_WIPE_MS + 30));
+      });
+      swapTimeouts.push(setTimeout(() => {
+        currentKey = key;
+        swapBusy = false;
+        pumpSwap();
+      }, NETWORK_STRIP_SWEEP_MS + NETWORK_STRIP_WIPE_MS + 60));
+    });
   };
 
   const activate = (term, withSwap = true) => {
@@ -254,6 +307,7 @@ export function initLandingNetwork() {
     });
     return () => {
       swapTimeouts.forEach(clearTimeout);
+      wipeAnims.forEach((a) => a.cancel());
       cleanupHover.forEach((fn) => fn());
       cleanupEnt();
     };
@@ -432,6 +486,7 @@ export function initLandingNetwork() {
     disposed = true;
     timeouts.forEach(clearTimeout);
     swapTimeouts.forEach(clearTimeout);
+    wipeAnims.forEach((a) => a.cancel());
     cleanupHover.forEach((fn) => fn());
     window.removeEventListener('resize', onEntryResize);
     section.style.background = '';

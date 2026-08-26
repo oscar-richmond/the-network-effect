@@ -1396,18 +1396,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    position (--cell-ripple-delay, set per-img by landing-network.js).
    The logo is swapped at its own pulse peak, so the crest reveals
    the new set as it travels. Panels, rows and motion untouched. */
-@keyframes landing-cell-ripple {
-	0% { filter: blur(0); }
-	50% { filter: blur(12px); }
-	100% { filter: blur(0); }
-}
-
-/* Repointed 2026-08-26: the crest now rides THE PHOTO STRIP (the
-   industry hover no longer touches the logo carousels). */
-.landing-v2 .landing-network__strip.is-swapping .landing-network__strip-win img {
-	animation: landing-cell-ripple 600ms ease-in-out both;
-	animation-delay: var(--cell-ripple-delay, 0ms);
-}
+/* (The blur-pulse crest is retired, 2026-08-26 rev 2: the strip swap
+   now uses the FOUNDERS PORTRAIT transition — reveal-behind, an
+   opaque under layer + an L→R clip wipe on the over layer with the
+   6px moving-edge blur — driven per-slot by landing-network.js via
+   the Web Animations API; no CSS animation hook needed.) */
 
 .landing-v2 .landing-network__track {
 	display: flex;
@@ -5081,11 +5074,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-network__strip-win { height: 264px; }
 
-	.landing-v2.landing-home .landing-network__strip-win:nth-child(1) img { top: -10.04px !important; }
-	.landing-v2.landing-home .landing-network__strip-win:nth-child(2) img { top: -71.5px !important; }
-	.landing-v2.landing-home .landing-network__strip-win:nth-child(3) img { top: -77.5px !important; }
-	.landing-v2.landing-home .landing-network__strip-win:nth-child(4) img { top: -77.5px !important; }
-	.landing-v2.landing-home .landing-network__strip-win:nth-child(5) img { top: -112.24px !important; }
+	/* (The per-slot crop overrides moved into NETWORK_STRIP_DEFAULT's
+	   y values, 2026-08-26 rev 2 — the !important tops here were
+	   beating the hover swap's inline cover geometry and dragging
+	   swapped images out of their windows. Inline styles own the
+	   crops now.) */
 
 	/* ── ACCESS follows featured IN FLOW now (Oscar, 2026-08-26): the
 	   −100dvh overlap dates from the light-featured era — over the
