@@ -79,14 +79,15 @@ const VIDEO_HOLD_PX = 300;
  * exactly (625px), so the video's opening state is unchanged there.
  *
  * R3 (Oscar, 2026-08-26): the DESKTOP band top is now PX-ANCHORED —
- * the foot of the rest chain (wordmark bottom 54.5 → +100 to the
- * headline cap → +48 to the intro → +100 below the intro's bottom,
- * 519.6) — so the three authored gaps hold at ANY viewport height,
- * including the scale shell's short interiors. The fraction remains
- * for MOBILE only (its own 0.5 constant below).
+ * the foot of the rest chain (wordmark bottom 54.5 → +120 to the
+ * headline cap → +48 to the intro → +120 below the intro's bottom,
+ * 539.6; the two 100s became 120 in R4) — so the authored gaps hold
+ * at ANY viewport height, including the scale shell's short
+ * interiors. The fraction remains for MOBILE only (its own 0.5
+ * constant below).
  */
 const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
-const VIDEO_BAND_TOP_PX = 619.6;
+const VIDEO_BAND_TOP_PX = 659.6;
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;

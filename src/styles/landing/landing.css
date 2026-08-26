@@ -659,10 +659,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	pointer-events: none;
 	/* Opening band: full width less the 24px side margins, running off
 	   the bottom edge. R3 (Oscar, 2026-08-26): PX-ANCHORED — the band
-	   top is the rest chain's foot (intro bottom 519.6 + 100), matching
-	   VIDEO_BAND_TOP_PX in the module, so the 100px gap holds at any
-	   viewport height. (Mobile keeps its 50% override.) */
-	clip-path: inset(619.6px var(--landing-video-margin) 0px var(--landing-video-margin));
+	   top is the rest chain's foot (intro bottom 539.6 + 120 after the
+	   R4 +20s), matching VIDEO_BAND_TOP_PX in the module, so the gap
+	   holds at any viewport height. (Mobile keeps its 50% override.) */
+	clip-path: inset(659.6px var(--landing-video-margin) 0px var(--landing-video-margin));
 }
 
 /* ── Film grain ──────────────────────────────────────────────────────
@@ -2188,8 +2188,25 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   tops carry +54 in the component) — as a margin it was a
 		   TRANSPARENT strip between two z260 sections, and the fixed
 		   hero video (z250, never torn down) showed through (Oscar's
-		   strip report, 2026-08-26). Flush top, opaque ground. */
+		   strip report, 2026-08-26). Flush top, opaque ground.
+		   R3 (Oscar): + the CENTRE DWELL's slack — the closing's own
+		   sticky-hold mechanism reused (see the stage below). The hold
+		   length matches the closing's 300. */
+		--closing-st-hold: 300px; /* CLOSING_ST_HOLD_PX */
 		margin-top: 0;
+		height: calc(54px + 727px + 180px + var(--closing-st-hold));
+		background: #eeeef0; /* stays opaque under the stage's travel */
+	}
+
+	/* The dwell stage: sticky top = 50dvh − half the stage height
+	   (961/2), so the pin engages EXACTLY as the statement's centre
+	   crosses the viewport centre — at any viewport height. Carries
+	   its own opaque ground (the fixed-hero-video strip lesson). The
+	   lines are plain ink: sticky adds no transform, blend-inert. */
+	.landing-v2 .landing-closing-st__stage {
+		position: sticky;
+		top: calc(50vh - 480.5px);
+		top: calc(50dvh - 480.5px);
 		height: calc(54px + 727px + 180px);
 		background: #eeeef0;
 	}
@@ -5023,12 +5040,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		text-align: left;
 		margin: 0 0 0 553px;
 		/* R3 (Oscar, 2026-08-26): TOP-ANCHORED from the nav wordmark —
-		   cap top of BUILT ON TRUST. sits 100 below the wordmark's
-		   bottom (54.5), replacing the band-centring derivation. The
-		   cap sits 12.9 below the box top (canvas font metrics), so
-		   box top = 54.5 + 100 − 12.9. (The type-pass rule below keeps
-		   the optical-centre translateX; Y translate is dropped there.) */
-		margin-top: 141.6px;
+		   cap top of BUILT ON TRUST. sits 120 below the wordmark's
+		   bottom (54.5; was 100 — R4 +20). The cap sits 12.9 below the
+		   box top (canvas font metrics), so box top = 54.5 + 120 −
+		   12.9. (The type-pass rule below keeps the optical-centre
+		   translateX; Y translate is dropped there.) */
+		margin-top: 161.6px;
 	}
 
 	/* Type: frame 72/64/−4% — the guide's 02 Display L numbers on
@@ -5526,11 +5543,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   in the window between the headline's bottom (23.18dvh + 88px)
 	   and the video band's top (62.5dvh): centre = 42.84dvh + 44px.
 	   R3 (Oscar, 2026-08-26): the centring calc is RETIRED — the block
-	   is top-anchored 48 below the headline's bottom (321.6), the
-	   middle link of the px rest chain (see the base rule + the module
-	   header). */
+	   is top-anchored 48 below the headline's bottom (341.6 after the
+	   R4 +20), the middle link of the px rest chain (see the base
+	   rule + the module header). */
 	.landing-v2.landing-home .landing-hero__intro-text {
-		top: 369.6px;
+		top: 389.6px;
 		width: 723px;
 		font-size: 48px;
 		line-height: 50px;
@@ -5548,7 +5565,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   drawn 60px gap (headline 200..500 at 56/50 → CTAs 560; still
 	   22px clear of the photo at 620). */
 	.landing-v2.landing-home .landing-founders__ctas {
-		top: 420px; /* 64 below the statement block (Oscar 2026-08-26; was 560 — a 204 gap) */
+		/* 64 below the statement block AT THE FIXED MOMENT (Oscar R2,
+		   2026-08-26): the earlier 420 measured 64 only at page-load
+		   rest, where the scrub-drift entrance holds the text 60 lower
+		   than settled — at the pin the settled block bottom is 406,
+		   so 406 + 64. */
+		top: 470px;
 	}
 
 	.landing-v2.landing-home .landing-access__headline {
@@ -5638,10 +5660,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   fade-to-black tail's departure viewport. */
 	.landing-v2.landing-home .landing-outro {
 		height: auto;
-		/* Departure viewport + the frame's 100 for the fade tail (the
-		   shipped read); the REEL RUNWAY lives on .landing-sreel below
-		   — the sticky stage needs its slack on its OWN parent. */
-		padding: 0 0 calc(100dvh + 100px);
+		/* R3 (Oscar, 2026-08-26): the departure viewport is CUT —
+		   Featured follows 250px (= the reel's dwell) behind the
+		   stage's flow end, so the handoff reads continuous. The fade
+		   window is anchored to this section's bottom, so it retimes
+		   itself: it now spans exactly the dwell + the first 250 of
+		   departure, still completing as Featured's top crosses the
+		   viewport bottom (the contract, verbatim). The REEL RUNWAY
+		   lives on .landing-sreel below — the sticky stage needs its
+		   slack on its OWN parent. */
+		padding: 0 0 250px;
 		background: #eeeef0; /* the fade's light origin */
 	}
 
@@ -6752,8 +6780,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	/* The img keeps its 380×480 cover render, top-anchored: the
 	   previous composition survives exactly, minus the clipped bottom
-	   24 — no recrop, no squash. */
+	   24 — no recrop, no squash. ABSOLUTE (R3): the swap is now
+	   reveal-behind — the JS clones an under layer beneath the over
+	   img, so the two must stack, not flow. */
 	.landing-v2.landing-home .landing-sreel__img img {
+		position: absolute;
+		top: 0;
+		left: 0;
 		width: 100%;
 		height: 480px;
 		object-fit: cover;

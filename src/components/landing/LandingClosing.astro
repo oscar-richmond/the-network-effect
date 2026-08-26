@@ -155,7 +155,15 @@ const ST_LINES = [
     fixed hero video. The read gap from the descriptions stays the
     frame's 225. */}
 <section class="landing-closing-st" data-closing-st aria-label="The network effect">
-  {ST_LINES.map((l) => (
-    <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y + 54}px`}>{l.t}</p>
-  ))}
+  {/* The DWELL stage (Oscar R3, 2026-08-26): sticky slack — the
+      closing's own hold mechanism reused. The stage pins when the
+      statement's centre crosses the viewport centre (sticky top =
+      50dvh − half the stage) and holds for the section's extra
+      --closing-st-hold of scroll. Pure CSS: scrub-native,
+      reversible, and the RM static equivalent for free. */}
+  <div class="landing-closing-st__stage" data-closing-st-stage>
+    {ST_LINES.map((l) => (
+      <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y + 54}px`}>{l.t}</p>
+    ))}
+  </div>
 </section>

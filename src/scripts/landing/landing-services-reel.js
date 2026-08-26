@@ -109,6 +109,20 @@ const WIPE_LEAD_PX = 40;
 const WIPE_SPAN_PX = 120;
 const WIPE_BLUR_PX = 6;
 
+/* ── Divider-fill endpoint (Oscar R3, 2026-08-26): the fill's
+   autoAlpha fades to 0 over the drain's final fraction, so the end
+   state is exactly the grey track BY CONSTRUCTION — a 0-opacity,
+   visibility-hidden layer cannot rasterise the near-zero-scaleX
+   hairline some engines leave behind. Scrubbed on the same
+   timeline; reversal restores. */
+const FILL_TAIL_FADE_T = 0.1;
+
+/* ── AMPLIFY exit (Oscar R3): as the ground fades to black, pillar
+   3's image + MORE INFO blur-fade out ON THE SAME TIMELINE (same
+   progress — desync impossible). The established blur-fade exit
+   vocabulary. */
+const AMPLIFY_EXIT_BLUR_PX = 12;
+
 const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
 const LINE_STAGGER_S = 0.12;
@@ -167,14 +181,33 @@ export function initLandingServicesReel() {
   const stageH = () => stage.clientHeight || window.innerHeight;
   pillars.forEach((p2) => gsap.set(p2, { y: stageH() }));
 
-  /* ── The image swap — the case-study gallery two-phase wipe with a
-     pending-index latch (rapid retargets settle on the LATEST). ── */
-  const imgState = pillars.map((pillar, i) => ({
-    el: pillar.querySelector('[data-sreel-img]'),
-    current: -1,       /* -1 = the pillar default */
-    pending: null,
-    busy: false,
-  }));
+  /* ── The image swap — REVEAL-BEHIND (Oscar R3, 2026-08-26): the
+     FOUNDERS main-portrait mechanism, shared not diverged. The old
+     two-phase wipe clipped the only img fully away before swapping —
+     the ground showed mid-transition. Now an UNDER layer is cloned
+     beneath each img at init: the incoming image loads there FULLY
+     OPAQUE (decode-gated, the white-flash lesson), and the outgoing
+     over layer clips away L→R with the travelling edge blur —
+     combined coverage never below full, the ground can never show.
+     Pending-index latch kept (rapid retargets settle on the LATEST). */
+  const imgState = pillars.map((pillar, i) => {
+    const over = pillar.querySelector('[data-sreel-img]');
+    let under = null;
+    if (over instanceof HTMLElement) {
+      under = over.cloneNode(false);
+      under.removeAttribute('data-sreel-img');
+      under.classList.add('landing-sreel__img-under');
+      under.setAttribute('aria-hidden', 'true');
+      over.parentElement?.insertBefore(under, over);
+    }
+    return {
+      el: over,
+      under,
+      current: -1,       /* -1 = the pillar default */
+      pending: null,
+      busy: false,
+    };
+  });
   const srcFor = (i, idx) => {
     const base = idx < 0 ? P[i].img : P[i].services[idx].img;
     const el = imgState[i].el;
@@ -184,40 +217,37 @@ export function initLandingServicesReel() {
   };
   const playWipe = (i) => {
     const st = imgState[i];
-    if (!(st.el instanceof HTMLElement) || st.busy || st.pending === null) return;
+    if (!(st.el instanceof HTMLElement) || !(st.under instanceof HTMLElement) || st.busy || st.pending === null) return;
     const target = st.pending;
     st.pending = null;
     if (target === st.current) return;
     st.busy = true;
-    const out = st.el.animate(
-      [
-        { clipPath: 'inset(0 0 0 0%)', filter: 'blur(0px)' },
-        { clipPath: 'inset(0 0 0 50%)', filter: `blur(${IMG_WIPE_EDGE_BLUR_PX}px)`, offset: 0.5 },
-        { clipPath: 'inset(0 0 0 100%)', filter: 'blur(0px)' },
-      ],
-      { duration: IMG_WIPE_MS, easing: IMG_WIPE_CURVE, fill: 'forwards' },
-    );
-    out.onfinish = () => {
-      st.el.src = srcFor(i, target);
-      const ready = st.el.decode ? st.el.decode().catch(() => {}) : Promise.resolve();
-      Promise.race([ready, new Promise((r) => setTimeout(r, 600))]).then(() => {
-        const inn = st.el.animate(
-          [
-            { clipPath: 'inset(0 100% 0 0)', filter: 'blur(0px)' },
-            { clipPath: 'inset(0 50% 0 0)', filter: `blur(${IMG_WIPE_EDGE_BLUR_PX}px)`, offset: 0.5 },
-            { clipPath: 'inset(0 0 0 0)', filter: 'blur(0px)' },
-          ],
-          { duration: IMG_WIPE_MS, easing: IMG_WIPE_CURVE, fill: 'forwards' },
-        );
-        inn.onfinish = () => {
+    /* The incoming image sits fully opaque BENEATH first — decode-
+       gated (bounded: a slow network degrades to a plain swap). */
+    st.under.src = srcFor(i, target);
+    const ready = st.under.decode ? st.under.decode().catch(() => {}) : Promise.resolve();
+    Promise.race([ready, new Promise((r) => setTimeout(r, 600))]).then(() => {
+      const out = st.el.animate(
+        [
+          { clipPath: 'inset(0 0 0 0%)', filter: 'blur(0px)' },
+          { clipPath: 'inset(0 0 0 50%)', filter: `blur(${IMG_WIPE_EDGE_BLUR_PX}px)`, offset: 0.5 },
+          { clipPath: 'inset(0 0 0 100%)', filter: 'blur(0px)' },
+        ],
+        { duration: IMG_WIPE_MS, easing: IMG_WIPE_CURVE, fill: 'forwards' },
+      );
+      out.onfinish = () => {
+        /* The over layer adopts the settled image before its clip is
+           released — full coverage throughout. */
+        st.el.src = srcFor(i, target);
+        const overReady = st.el.decode ? st.el.decode().catch(() => {}) : Promise.resolve();
+        Promise.race([overReady, new Promise((r) => setTimeout(r, 600))]).then(() => {
           out.cancel();
-          inn.cancel();
           st.current = target;
           st.busy = false;
           playWipe(i); /* chase the latest latched target */
-        };
-      });
-    };
+        });
+      };
+    });
   };
   const requestImage = (i, idx) => {
     const st = imgState[i];
@@ -380,6 +410,10 @@ export function initLandingServicesReel() {
     const fill = pillar.querySelector('[data-sreel-fill]');
     if (fill instanceof HTMLElement) {
       tl.fromTo(fill, { scaleX: 1 }, { scaleX: 0, duration: RISE_PX, immediateRender: false }, riseStart[i]);
+      /* Endpoint belt (FILL_TAIL_FADE_T): see the constant. */
+      tl.fromTo(fill, { autoAlpha: 1 },
+        { autoAlpha: 0, duration: RISE_PX * FILL_TAIL_FADE_T, immediateRender: false },
+        riseStart[i] + RISE_PX * (1 - FILL_TAIL_FADE_T));
     }
     /* THE REEL — list translate with active-row tracking. */
     const list = pillar.querySelector('[data-sreel-list]');
@@ -483,6 +517,18 @@ export function initLandingServicesReel() {
     { backgroundColor: GROUND_DARK, ease: 'none' }, 0);
   const fades = Array.from(root.querySelectorAll('.landing-sreel__listfade'));
   if (fades.length) fade.to(fades, { autoAlpha: 0, ease: 'none', duration: 0.3 }, 0);
+  /* AMPLIFY exit (AMPLIFY_EXIT_BLUR_PX): image + CTA blur-fade over
+     the full fade window — same timeline, same progress. Siblings of
+     the difference title (never its ancestors): blend-safe. */
+  const amplifyBits = [
+    pillars[2].querySelector('[data-sreel-imgwin]'),
+    pillars[2].querySelector('[data-sreel-btn]'),
+  ].filter((el) => el instanceof HTMLElement);
+  if (amplifyBits.length) {
+    fade.fromTo(amplifyBits,
+      { autoAlpha: 1, filter: 'blur(0px)' },
+      { autoAlpha: 0, filter: `blur(${AMPLIFY_EXIT_BLUR_PX}px)`, ease: 'none', duration: 1 }, 0);
+  }
   cleanups.push(() => { fade.scrollTrigger?.kill(); fade.kill(); });
 
   masterTl = tl;
