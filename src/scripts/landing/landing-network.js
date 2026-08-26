@@ -11,7 +11,12 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
-import { NETWORK_BRAND_SETS } from '../../data/landing/network-brands.js';
+import {
+  NETWORK_STRIP_DEFAULT,
+  NETWORK_STRIP_SETS,
+  NETWORK_STRIP_SLOTS,
+} from '../../data/landing/network-strip-sets.js';
+import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isTouchPrimary } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 
@@ -21,77 +26,69 @@ const LINE_STAGGER_S = 0.12;
 const LINE_REVEAL_S = 1.2; // the reveal transition's own duration
 const ENTRY_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; // house reveal curve
 
-/* ── Industry hover / logo swap (Oscar's rev) ─────────────────────
-   Hovering (or keyboard-focusing) a sector term dims the rest of the
-   list to 10% and swaps the carousels' logo set under the CTAs'
-   ripple, scaled up: each cell's logo runs ONE blur pulse (0 ->
-   12px -> 0, 600ms, CSS keyframes) staggered left-to-right by its
-   on-screen x (0..SWAP_SWEEP_MS across the viewport), and the img's
-   src is exchanged at that cell's own pulse peak — a travelling
-   crest that reveals the new set as it passes. Same-length sets
-   swap in place (no DOM rebuild, animations undisturbed); if a
-   future real set changes length, geometry is normalised by a
-   rebuild AFTER the ripple (instant — revisit the choreography when
-   such a set actually lands). Delays pin at ripple start; marquee
-   drift (~30px/s) over one ripple is invisible. ONE persistent driver chases the LATEST target,
-   so rapid hovers retarget cleanly — a new target simply becomes
-   where the next (or current, on completion) cycle settles; no
-   stacked transitions, no half-swapped states. Set sizes may differ
-   per industry: each rebuild re-derives the wrap (set width = 192px
-   pitch x count, copies = enough to cover the widest viewport + 1,
-   --marquee-set-w = the translate distance), so the seamless loop
-   holds for any length. Carousels keep animating throughout — the
-   var/DOM change lands mid-flight but under full blur. */
-const SWAP_RIPPLE_MS = 600;
-const SWAP_SWEEP_MS = 400;
-const CELL_PITCH_PX = 192;
-/* MOBILE pitch (the 402-frame rebuild, 2026-08-13): 102.4px cells +
-   8px gaps per file 0:180/0:235 — the CSS mirrors it (cell width +
-   margin) and seeds the static tracks' --marquee-set-w fallback;
-   this constant keeps the SWAP path's rebuilt tracks on the same
-   geometry, so the seamless wrap holds through industry swaps. */
-const CELL_PITCH_PX_M = 110.4;
-const cellPitch = () => (isMobileViewport() ? CELL_PITCH_PX_M : CELL_PITCH_PX);
+/* ── Industry hover / PHOTO-STRIP swap (Oscar's rev, repointed
+   2026-08-26 — the LOGO CAROUSELS no longer respond to hover at all:
+   they keep their pure-CSS roll untouched; the old cell-swap
+   machinery — shuffled(), buildCell(), applySetToTrack(), the cell
+   pitch constants and the marquee is-swapping arming — is REMOVED,
+   not dormant).
+   Hovering (or keyboard-focusing) a sector term still dims the rest
+   of the list to 10% (unchanged treatment), and now swaps THE PHOTO
+   STRIP beneath the carousels to that industry's set under the same
+   travelling blur crest the logo swap used: each strip image runs ONE
+   blur pulse (0 → 12px → 0, NETWORK_STRIP_RIPPLE_MS, CSS keyframes)
+   staggered left-to-right by its on-screen x (0..SWEEP across the
+   viewport), and the img's src/crop is exchanged at that slot's own
+   pulse peak. ONE persistent driver chases the LATEST target, so
+   rapid hovers retarget cleanly — a new target simply becomes where
+   the next (or current, on completion) cycle settles; no stacked
+   transitions, no half-swapped strips. Hover-out returns to
+   NETWORK_STRIP_DEFAULT symmetrically. Slot geometry (window widths,
+   the 264 band) never changes — only the imgs inside. */
+const NETWORK_STRIP_RIPPLE_MS = 600; /* one slot's blur pulse */
+const NETWORK_STRIP_SWEEP_MS = 400;  /* crest travel across the strip */
 
-/**
- * PLACEHOLDER randomiser (Oscar's rev): until the real per-industry
- * sets land, each industry swap shows a random arrangement of the
- * full set so the change is VISIBLE; hover-out restores the
- * canonical order. Becomes dead weight (and removable) once
- * NETWORK_BRAND_SETS carries real per-industry arrays.
- */
-function shuffled(set) {
-  const out = [...set];
-  for (let i = out.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
+/* SET-SIZE CONTRACT (Oscar's preference): exactly NETWORK_STRIP_SLOTS
+   entries per industry. Dev THROWS (a bad content drop must be
+   loud); production normalises (truncate / repeat) with a console
+   error so the live strip degrades rather than breaks. */
+function assertStripSets() {
+  const bad = Object.entries(NETWORK_STRIP_SETS).filter(
+    ([, set]) => set.length !== NETWORK_STRIP_SLOTS,
+  );
+  if (!bad.length) return;
+  const msg = `network strip sets must have exactly ${NETWORK_STRIP_SLOTS} entries: ${bad
+    .map(([k, set]) => `${k}=${set.length}`)
+    .join(', ')}`;
+  if (import.meta.env.DEV) throw new Error(msg);
+  console.error(msg);
+}
+
+function normalisedSet(key) {
+  const base = key === 'all' ? NETWORK_STRIP_DEFAULT : NETWORK_STRIP_SETS[key];
+  if (!base) return NETWORK_STRIP_DEFAULT;
+  const out = [];
+  for (let i = 0; i < NETWORK_STRIP_SLOTS; i += 1) out.push(base[i % base.length]);
   return out;
 }
 
-/** Builds one cell's DOM for a brand entry (mirrors the Astro markup). */
-function buildCell(brand) {
-  const cell = document.createElement('span');
-  cell.className = 'landing-network__cell';
-  const img = document.createElement('img');
-  img.src = brand.src;
-  img.alt = '';
-  img.loading = 'lazy';
-  img.decoding = 'async';
-  img.style.width = `${brand.w}px`;
-  img.style.height = `${brand.h}px`;
-  cell.appendChild(img);
-  return cell;
-}
-
-/** Rebuilds a track for a set, re-deriving the seamless-wrap geometry. */
-function applySetToTrack(track, set) {
-  const setW = cellPitch() * set.length;
-  const copies = Math.max(2, Math.ceil((window.innerWidth || 1728) / setW) + 1);
-  track.style.setProperty('--marquee-set-w', `${setW}px`);
-  track.textContent = '';
-  for (let c = 0; c < copies; c += 1) {
-    set.forEach((brand) => track.appendChild(buildCell(brand)));
+/** Applies one set entry to a strip img: authored crop when the entry
+    carries one (the DEFAULT set), cover-fit otherwise (placeholder
+    industry sets — and any future entry authored without a crop). */
+function applyStripEntry(img, entry) {
+  img.src = asset(entry.src);
+  if (typeof entry.w === 'number') {
+    img.style.width = `${entry.w}px`;
+    img.style.height = `${entry.h}px`;
+    img.style.left = `${entry.x}px`;
+    img.style.top = `${entry.y}px`;
+    img.style.objectFit = '';
+  } else {
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.left = '0px';
+    img.style.top = '0px';
+    img.style.objectFit = 'cover';
   }
 }
 
@@ -110,70 +107,55 @@ export function initLandingNetwork() {
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');
   const body = section.querySelector('[data-landing-network-body]');
-  const rows = Array.from(section.querySelectorAll('[data-landing-network-row]'));
-  const tracks = Array.from(section.querySelectorAll('.landing-network__track'));
+  const strip = section.querySelector('[data-landing-network-strip]');
+  const stripImgs = strip instanceof HTMLElement
+    ? Array.from(strip.querySelectorAll('img'))
+    : [];
   const swapTimeouts = [];
+  assertStripSets();
 
   let currentKey = 'all';
   let targetKey = 'all';
   let swapBusy = false;
-  let currentSetLength = NETWORK_BRAND_SETS.all.length;
 
   const pumpSwap = () => {
     if (swapBusy || targetKey === currentKey) return;
+    if (!(strip instanceof HTMLElement) || !stripImgs.length) return;
     swapBusy = true;
     const key = targetKey;
-    const base = NETWORK_BRAND_SETS[key] ?? NETWORK_BRAND_SETS.all;
+    const set = normalisedSet(key);
     const vw = window.innerWidth || 1728;
-    tracks.forEach((track) => {
-      /* Random arrangement per industry swap (placeholder — see
-         shuffled()); the resting 'all' state restores canonical
-         order. Each track gets its own shuffle so the rows differ. */
-      const set = key === 'all' ? base : shuffled(base);
-      Array.from(track.children).forEach((cell, i) => {
-        const img = cell.querySelector('img');
-        if (!img) return;
-        /* Pin this cell's slot in the wave from its on-screen x
-           (offscreen copies ride the nearest edge)... */
-        const x = Math.min(Math.max(cell.getBoundingClientRect().left, 0), vw);
-        const delay = Math.round((x / vw) * SWAP_SWEEP_MS);
-        img.style.setProperty('--cell-ripple-delay', `${delay}ms`);
-        /* ...and exchange its logo at its own pulse peak. Changing
-           src does not restart a running CSS animation. */
-        const brand = set[i % set.length];
-        swapTimeouts.push(setTimeout(() => {
-          img.src = brand.src;
-          img.style.width = `${brand.w}px`;
-          img.style.height = `${brand.h}px`;
-        }, delay + SWAP_RIPPLE_MS / 2));
-      });
-      /* Same-length sets (all current ones) are now fully swapped
-         in place; a future different-length set needs its geometry
-         normalised once the ripple is over. */
-      if (set.length !== currentSetLength) {
-        swapTimeouts.push(setTimeout(() => {
-          applySetToTrack(track, set);
-        }, SWAP_SWEEP_MS + SWAP_RIPPLE_MS));
-      }
+    stripImgs.forEach((img, i) => {
+      /* Pin this slot in the crest from its on-screen x... */
+      const win = img.parentElement ?? img;
+      const x = Math.min(Math.max(win.getBoundingClientRect().left, 0), vw);
+      const delay = Math.round((x / vw) * NETWORK_STRIP_SWEEP_MS);
+      img.style.setProperty('--cell-ripple-delay', `${delay}ms`);
+      /* ...and exchange its image at its own pulse peak (changing
+         src does not restart a running CSS animation). */
+      swapTimeouts.push(setTimeout(() => {
+        applyStripEntry(img, set[i]);
+      }, delay + NETWORK_STRIP_RIPPLE_MS / 2));
     });
-    rows.forEach((r) => r.classList.add('is-swapping'));
+    strip.classList.add('is-swapping');
     swapTimeouts.push(setTimeout(() => {
-      rows.forEach((r) => r.classList.remove('is-swapping'));
-      currentSetLength = base.length;
+      strip.classList.remove('is-swapping');
       currentKey = key;
       swapBusy = false;
       pumpSwap();
-    }, SWAP_SWEEP_MS + SWAP_RIPPLE_MS));
+    }, NETWORK_STRIP_SWEEP_MS + NETWORK_STRIP_RIPPLE_MS));
   };
 
-  const activate = (term) => {
+  const activate = (term, withSwap = true) => {
     if (!(body instanceof HTMLElement)) return;
     body.classList.add('is-dimming');
     body.querySelectorAll('.landing-network__term').forEach((t) => {
       t.classList.toggle('is-active', t === term);
     });
-    targetKey = term.dataset.networkTerm ?? 'all';
-    pumpSwap();
+    if (withSwap) {
+      targetKey = term.dataset.networkTerm ?? 'all';
+      pumpSwap();
+    }
   };
 
   const deactivate = () => {
@@ -196,8 +178,10 @@ export function initLandingNetwork() {
     const onClick = (e) => {
       const term = e.target instanceof Element && e.target.closest('[data-network-term]');
       if (term instanceof HTMLElement) {
+        /* Dim-only on touch (2026-08-26): the logo shuffle this used
+           to drive is removed; the strip swap is hover/keyboard. */
         if (term.classList.contains('is-active')) deactivate();
-        else activate(term);
+        else activate(term, false);
       }
     };
     const onDocClick = (e) => {
@@ -245,11 +229,6 @@ export function initLandingNetwork() {
     window.__landingNetworkSwap = {
       state: () => ({ currentKey, targetKey, swapBusy }),
       request: (key) => { targetKey = key; pumpSwap(); },
-      applyTestSet: (n) => {
-        const set = NETWORK_BRAND_SETS.all.slice(0, n);
-        tracks.forEach((t) => applySetToTrack(t, set));
-        return { setW: CELL_PITCH_PX * n, cells: tracks[0].children.length };
-      },
     };
   }
 

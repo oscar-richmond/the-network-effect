@@ -1402,7 +1402,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	100% { filter: blur(0); }
 }
 
-.landing-v2 .landing-network__marquee.is-swapping .landing-network__cell img {
+/* Repointed 2026-08-26: the crest now rides THE PHOTO STRIP (the
+   industry hover no longer touches the logo carousels). */
+.landing-v2 .landing-network__strip.is-swapping .landing-network__strip-win img {
 	animation: landing-cell-ripple 600ms ease-in-out both;
 	animation-delay: var(--cell-ripple-delay, 0ms);
 }

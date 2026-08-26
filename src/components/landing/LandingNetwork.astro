@@ -37,13 +37,11 @@ interface Props {
 const { entry = 'pin' } = Astro.props;
 import { asset } from '../../utils/asset.js';
 
-const strip = [
-  { src: asset('/assets/landing/network/strip-1.jpg'), win: 345, w: 351.73, h: 439.92, x: -1.28, y: -1.54 },
-  { src: asset('/assets/landing/network/strip-2.jpg'), win: 346, w: 346, h: 429, x: 0, y: -63 },
-  { src: asset('/assets/landing/network/strip-3.jpg'), win: 345, w: 355, h: 438, x: -10, y: -69 },
-  { src: asset('/assets/landing/network/strip-4.jpg'), win: 346, w: 367, h: 459, x: -18, y: -69 },
-  { src: asset('/assets/landing/network/strip-5.jpg'), win: 346, w: 349.01, h: 448.3, x: -2.01, y: -104.3 },
-];
+/* The resting strip lives in network-strip-sets.js now (the industry
+   hover swaps these five — single source of truth for the default). */
+import { NETWORK_STRIP_DEFAULT } from '../../data/landing/network-strip-sets.js';
+
+const strip = NETWORK_STRIP_DEFAULT.map((s) => ({ ...s, src: asset(s.src) }));
 
 /** The set is rendered twice per row for the seamless wrap. */
 const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
