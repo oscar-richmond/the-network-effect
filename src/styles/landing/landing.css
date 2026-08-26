@@ -3415,7 +3415,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* Tap affordance — the desktop custom cursor's copy, resident on
 	   every card (A3: no pointer, so the card carries its own label). */
 	.landing-v2 .landing-featured__card::after {
-		content: '[ VIEW CASE STUDY + ]';
+		content: '( VIEW CASE STUDY + )'; /* keep in step with the three
+		   authored cursor strings (work.astro, LandingFeatured,
+		   work/[slug]) — round brackets, Oscar 2026-08-26 */
 		display: block;
 		margin-top: 12px;
 		font-weight: 700;

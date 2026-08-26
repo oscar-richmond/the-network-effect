@@ -110,50 +110,10 @@ body.work-page {
 	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
 }
 
-/* ── Filter pills (48px below WORK — Oscar's rev: WORK bottoms at
-   176+48=224, +48 = 272; 38px, 12px gaps, widths per file; 14px
-   type, his revved treatment). */
-.landing-v2 .work-page__filters {
-	position: absolute;
-	left: 24px;
-	top: 272px;
-	display: flex;
-	gap: 12px;
-	margin: 0;
-	padding: 0;
-	pointer-events: auto;
-}
-
-.landing-v2 .work-pill {
-	height: 32px; /* CTA height = the pager circles (Oscar's rev) */
-	border: 0;
-	padding: 0;
-	background: #e4e4ea;
-	color: #232a89;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
-	font-size: 14px;
-	line-height: 32px;
-	text-align: center;
-	text-transform: uppercase;
-	cursor: pointer;
-}
-
-.landing-v2 .work-pill[aria-pressed='true'] {
-	background: #232a89;
-	color: #eeeef0;
-}
-
-.landing-v2 .work-pill:focus-visible {
-	outline: 2px solid #232a89;
-	outline-offset: 2px;
-}
-
-/* Widths per the file. */
-.landing-v2 .work-pill--all { width: 64px; }
-.landing-v2 .work-pill--immerse { width: 112px; }
-.landing-v2 .work-pill--connect { width: 116px; }
-.landing-v2 .work-pill--amplify { width: 107px; }
+/* (The DESKTOP filter pills are REMOVED — Oscar, 2026-08-26: frame
+   35:1524 has no filter row. Every .work-pill rule now lives in the
+   <=1024 block only: the MOBILE chip row keeps its file treatment,
+   built by work-page.js's mobile branch.) */
 
 /* ── TRAVEL-AND-DOCK metas (Oscar's rev — replaces swap-in-place):
    the layer sits at z1 like the images and is CLIPPED above the
@@ -202,17 +162,9 @@ body.work-page {
 	color: #161616; /* brand black (Oscar's rev) */
 }
 
-.landing-v2 .work-page__meta-index {
-	position: absolute;
-	left: 407px; /* pre-JS fallback; derived title-right + 6 per unit */
-	top: 4px;
-	margin: 0;
-	font-weight: 700;
-	font-size: 10px;
-	line-height: 10px;
-	text-transform: uppercase;
-	color: #161616; /* brand black (Oscar's rev) */
-}
+/* (.work-page__meta-index retired — frame 35:1524 has no /0N by the
+   titles. The data field survives for the landing carousel, the
+   cs-more cards and the mobile list's .work-m__index.) */
 
 .landing-v2 .work-page__meta-desc {
 	position: absolute;
@@ -276,22 +228,9 @@ body.work-page {
 	height: 830px; /* frame 13:381 (was 811) */
 }
 
-/* ── Entrance hidden states (no-preference; pills fade like the
-   founders buttons — controls keep fades, text word-reveals). */
-@media (prefers-reduced-motion: no-preference) {
-	.landing-v2 .work-pill {
-		opacity: 0;
-		transform: translateY(12px);
-		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			background 0.2s ease, color 0.2s ease;
-	}
-
-	.landing-v2 .work-pill.is-visible {
-		opacity: 1;
-		transform: none;
-	}
-}
+/* (The desktop pill entrance is gone with the pills — the mobile
+   chips keep their own no-preference entrance inside the <=1024
+   block below.) */
 
 /* ── Sub-1024 fallback: sensible stacked scrolling list (the 15"
    scale shell remains the primary story). The stage un-fixes, tiles
@@ -373,15 +312,28 @@ body.work-page {
 		display: flex;
 		flex-wrap: nowrap;
 		gap: 8px;
+		padding: 0;
+		pointer-events: auto;
 	}
 
+	/* Self-contained since the desktop pill rules were removed
+	   (2026-08-26) — the declarations the chips used to inherit from
+	   the base .work-pill live here now, values unchanged. */
 	.landing-v2 .work-pill {
 		position: relative;
 		width: auto;
 		height: 38px;
+		border: 0;
 		padding: 0 16px;
+		background: #e4e4ea;
+		color: #232a89;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
 		font-size: 12px;
 		line-height: 38px;
+		text-align: center;
+		text-transform: uppercase;
+		cursor: pointer;
 	}
 
 	.landing-v2 .work-pill::after {
@@ -390,7 +342,15 @@ body.work-page {
 		inset: -3px 0;
 	}
 
-	.landing-v2 .work-pill[aria-pressed='true'] { color: #e4e4ea; }
+	.landing-v2 .work-pill[aria-pressed='true'] {
+		background: #232a89;
+		color: #e4e4ea;
+	}
+
+	.landing-v2 .work-pill:focus-visible {
+		outline: 2px solid #232a89;
+		outline-offset: 2px;
+	}
 
 	/* At 360 the 355px row + 32px margins can't fit — compress the
 	   pads (12px) and gaps (6px) under 380: 48+84+87+80+18 = 317,

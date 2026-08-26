@@ -95,7 +95,6 @@ const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
    literal the derivation used to produce (the site's 1728 px-literal
    grammar; the shell keeps the inner viewport at 1728). */
 const TILE_LEFT_PX = 760;
-const INDEX_GAP_PX = 6; // /0N sits this far right of the title (Oscar's rev)
 const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
 const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
 /* The in-place wipe window: each line wipes over SPAN px of the
@@ -111,8 +110,9 @@ const FOOTER_ENTRANCE_AT_PX = 200; // fire ~200px into the reveal (landing)
    case study uses (0.065) — wheel input lands with the same lag/
    ease instead of 1:1. Feel constant, one place. */
 const SCROLL_SMOOTH_LERP = 0.065;
-const PILL_STAGGER_MS = 80;
-const PILLS_AT_MS = 300;
+/* (PILLS_AT/STAGGER retired with the desktop filter row,
+   2026-08-26 — the mobile chips keep their own load-beat entrance
+   via initMobileEntrance below.) */
 const LINE_STAGGER_S = 0.12;
 /* Bottom behaviours — the landing constants (landing-closing.js). */
 const BOTTOM_SNAP_IDLE_MS = 2000;
@@ -156,6 +156,35 @@ export function initWorkPage() {
         pills on the load beat, then one once-only trigger per entry
         (image → meta stagger via the CSS delays). */
   if ((window.innerWidth || 1728) <= 1024) {
+    /* THE CHIP ROW (2026-08-26): the desktop filter pills are gone
+       from the page markup (frame 35:1524 has none), but the MOBILE
+       list keeps its working chips — so this branch now BUILDS the
+       row it used to share, same markup shape, same slot (after the
+       WORK headline in the left column). Desktop never renders any
+       filter markup. (Char-ripple is touch-gated site-wide, so the
+       chips never needed its wiring on this branch.) */
+    const leftCol = document.querySelector('.work-stage__left');
+    if (leftCol instanceof HTMLElement && !leftCol.querySelector('[data-work-filters]')) {
+      const row = document.createElement('div');
+      row.className = 'work-page__filters';
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', 'Filter projects');
+      row.setAttribute('data-work-filters', '');
+      [['all', 'ALL'], ['immerse', 'IMMERSE'], ['connect', 'CONNECT'], ['amplify', 'AMPLIFY']].forEach(([key, label]) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `work-pill work-pill--${key}`;
+        b.setAttribute('data-work-filter', key);
+        b.setAttribute('aria-pressed', key === 'all' ? 'true' : 'false');
+        b.setAttribute('data-char-ripple-trigger', '');
+        const span = document.createElement('span');
+        span.setAttribute('data-char-ripple', '');
+        span.textContent = label;
+        b.appendChild(span);
+        row.appendChild(b);
+      });
+      leftCol.appendChild(row);
+    }
     const pills = Array.from(document.querySelectorAll('[data-work-filter]'));
     const list = document.querySelector('[data-work-m]');
     const entries = Array.from(document.querySelectorAll('[data-work-m-entry]'));
@@ -267,8 +296,8 @@ export function initWorkPage() {
 
   /* ── The set + tiles + meta units (finite — no ring). Metas are
      rebuilt WITH the tiles (they belong to projects), so filtered
-     sets inherit the dock mechanism automatically. */
-  let set = WORK_PROJECTS;
+     — the single full set since the filters left. */
+  const set = WORK_PROJECTS;
   let tiles = [];
   let units = [];
 
@@ -276,8 +305,7 @@ export function initWorkPage() {
     units.forEach((u) => {
       const tRect = u.title.getBoundingClientRect();
       const uRect = u.el.getBoundingClientRect();
-      u.index.style.left = `${(tRect.right - uRect.left + INDEX_GAP_PX).toFixed(1)}px`;
-      /* Per-LINE wipe units (Oscar's rev): the title (+/0N) line
+      /* Per-LINE wipe units (Oscar's rev): the title line
          plus the desc's rendered lines (wrapStaticLines — rebuilt
          from the source text so font-load/resize re-derive the
          grouping), each with its bottom offset inside the unit,
@@ -286,7 +314,7 @@ export function initWorkPage() {
       u.desc.textContent = u.descText;
       const descLines = wrapStaticLines(u.desc);
       const lineUnits = [
-        { els: [u.title, u.index], bottom: tRect.bottom - uRect.top },
+        { els: [u.title], bottom: tRect.bottom - uRect.top },
         ...descLines.map((clip) => ({
           els: [clip],
           bottom: clip.getBoundingClientRect().bottom - uRect.top,
@@ -340,16 +368,15 @@ export function initWorkPage() {
         const title = document.createElement('h2');
         title.className = 'work-page__meta-title';
         title.textContent = p.title.join(' ');
-        const index = document.createElement('p');
-        index.className = 'work-page__meta-index';
-        index.textContent = p.index;
+        /* (No /0N index — frame 35:1524; the data field survives
+           for the other renders.) */
         const desc = document.createElement('p');
         desc.className = 'work-page__meta-desc';
         desc.textContent = p.desc;
-        u.append(title, index, desc);
+        u.append(title, desc);
         u.style.transform = `translate3d(0, ${(BASE_TOP_PX + i * PITCH_PX).toFixed(0)}px, 0)`;
         metasLayer.appendChild(u);
-        return { el: u, project: p, title, index, desc, descText: p.desc, blockH: 150, dockY: null, wipeLines: null, wiped: false };
+        return { el: u, project: p, title, desc, descText: p.desc, blockH: 150, dockY: null, wipeLines: null, wiped: false };
       });
       measureUnits();
     }
@@ -400,7 +427,7 @@ export function initWorkPage() {
     const p = units[idx]?.project;
     if (!p || p.slug === announcedSlug) return;
     announcedSlug = p.slug;
-    if (metaLive) metaLive.textContent = `${p.title.join(' ')} ${p.index}. ${p.desc}`;
+    if (metaLive) metaLive.textContent = `${p.title.join(' ')}. ${p.desc}`;
   };
 
   const dockedProbe = (p1) => {
@@ -622,64 +649,15 @@ export function initWorkPage() {
     });
   }
 
-  /* ── Filters — blur-out → set swap → blur-in (the network
-     industry-hover machinery pattern; bounds re-derive on rebuild). */
-  const pills = Array.from(document.querySelectorAll('[data-work-filter]'));
-  let currentFilter = 'all';
-  let filtering = false;
-
-  const applySet = (key) => {
-    const next = key === 'all'
-      ? WORK_PROJECTS
-      : WORK_PROJECTS.filter((p) => p.tags.includes(key));
-    if (!next.length) return false;
-    set = next;
-    buildTiles();
-    pos = 0;
-    targetPos = 0;
-    flickVel = 0;
-    dockedIdx = 0;
-    announcedSlug = null; /* the new set's first dock announces */
-    /* footerEntered stays as-is: the footer entrance is once-only. */
-    frame();
-    return true;
-  };
-
-  const onPill = (key) => {
-    if (filtering || key === currentFilter) return;
-    const previous = currentFilter;
-    currentFilter = key;
-    pills.forEach((p) => {
-      p.setAttribute('aria-pressed', p.getAttribute('data-work-filter') === key ? 'true' : 'false');
-    });
-    if (reduced) {
-      if (!applySet(key)) currentFilter = previous;
-      return;
-    }
-    filtering = true;
-    gsap.to(carousel, {
-      opacity: 0,
-      filter: 'blur(8px)',
-      duration: 0.25,
-      ease: 'power1.in',
-      onComplete: () => {
-        if (!applySet(key)) currentFilter = previous;
-        gsap.to(carousel, {
-          opacity: 1,
-          filter: 'blur(0px)',
-          duration: 0.35,
-          ease: 'power1.out',
-          onComplete: () => { filtering = false; },
-        });
-      },
-    });
-  };
-  const pillHandlers = pills.map((pill) => {
-    const fn = () => onPill(pill.getAttribute('data-work-filter') || 'all');
-    pill.addEventListener('click', fn);
-    return [pill, fn];
-  });
-  cleanups.push(() => pillHandlers.forEach(([pill, fn]) => pill.removeEventListener('click', fn)));
+  /* (The FILTERS are REMOVED — Oscar, 2026-08-26: frame 35:1524 has
+     no pill row. The old machinery here — applySet's rebuild +
+     bounds re-derive for filtered sets, the blur-out → swap →
+     blur-in, aria-pressed tracking — is gone with it: the set is
+     always the full WORK_PROJECTS and the travel bounds derive once
+     from it (plus resize). NOTE the driver was already FINITE (the
+     infinite loop was retired in an earlier rev), so no wrap logic
+     existed to simplify beyond this. The MOBILE chip row lives in
+     the <=1024 branch above, which now builds its own markup.) */
 
   /* ── Keyboard: focusing a tile brings it to the anchor. */
   const onFocusIn = (e) => {
@@ -788,8 +766,9 @@ export function initWorkPage() {
     snapTween?.kill();
   });
 
-  /* ── Entrances (non-RM): header word-reveals, pills stagger-fade —
-     after fonts (line grouping + Range + index derivation). */
+  /* ── Entrances (non-RM): header word-reveals — after fonts (line
+     grouping + Range derivation). The pills' beat left with the
+     filter row; the header reveal is the page's whole load beat. */
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   let disposed = false;
   fontsReady.then(() => {
@@ -805,9 +784,6 @@ export function initWorkPage() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
       playLineRevealElement(line);
-    });
-    pills.forEach((pill, i) => {
-      timeouts.push(setTimeout(() => pill.classList.add('is-visible'), PILLS_AT_MS + i * PILL_STAGGER_MS));
     });
   });
   cleanups.push(() => timeouts.forEach(clearTimeout));
@@ -848,7 +824,6 @@ export function initWorkPage() {
         footerEntered,
         dockedIdx,
         dockedSlug: units[dockedIdx]?.project.slug ?? null,
-        filter: currentFilter,
       }),
       setPos: (p) => {
         setPosClamped(p);

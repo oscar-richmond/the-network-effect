@@ -5,7 +5,8 @@
  * file's y107 nav ignored — the shared shell's nav position wins).
  *
  * Fixed-viewport page: left column static (FEATURED/WORK header,
- * filter pills, the active project's brand-black meta), right
+ * the active project's brand-black meta — filters retired
+ * 2026-08-26, frame 35:1524), right
  * carousel of 1024×640 images travelling vertically on wheel/touch
  * through the holding pages' proven single-velocity drift driver
  * (autoDrift 0 — scroll-driven only, the /holding-2 precedent).
@@ -21,8 +22,8 @@
  *
  * Tiles are REAL LINKS to /work/[slug] — routes that don't exist
  * yet, so navigation is prevented in JS (placeholders, commented
- * there). Keyboard: pills and tiles tabbable; focusing a tile
- * retargets the travel to bring it to the anchor.
+ * there). Keyboard: tiles tabbable; focusing a tile retargets the
+ * travel to bring it to the anchor.
  *
  * STAGING ONLY — same rule as /landing: nothing here is promoted
  * anywhere until Oscar says so.
@@ -69,9 +70,9 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
 
 <SiteShell title="Featured Work — The Network Effect" bodyClass="landing-v2 work-page">
   <main class="work-stage" data-work-stage aria-label="Featured work">
-    {/* Carousel — initial server-rendered set = ALL (work-page.js
-        rebuilds on filter with the same markup shape; the network
-        section's applySetToTrack rebuild pattern). */}
+    {/* Carousel — the full nine-project set (work-page.js rebuilds
+        the same markup shape at init; the filter machinery is
+        retired, 2026-08-26). */}
     <div class="work-stage__carousel" data-work-carousel>
       {WORK_PROJECTS.map((p, i) => (
         <a
@@ -148,26 +149,15 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
       })}
     </div>
 
-    {/* Left column — header, pills, active meta. */}
+    {/* Left column — header + the active meta (below). The FILTER
+        PILLS are REMOVED from the desktop page (Oscar, 2026-08-26 —
+        frame 35:1524 has none); the MOBILE chip row, which shared
+        these nodes, is now built by work-page.js's mobile branch at
+        init (same markup shape, same position — the desktop DOM
+        carries no filter markup at all). */}
     <div class="work-stage__left">
       <h1 class="work-page__hl work-page__hl--featured" data-work-hl-featured>FEATURED</h1>
       <p class="work-page__hl work-page__hl--work" data-work-hl-work aria-hidden="true">WORK</p>
-
-      <div class="work-page__filters" role="group" aria-label="Filter projects" data-work-filters>
-        <button type="button" class="work-pill work-pill--all" data-work-filter="all" aria-pressed="true" data-char-ripple-trigger>
-          <span data-char-ripple>ALL</span>
-        </button>
-        <button type="button" class="work-pill work-pill--immerse" data-work-filter="immerse" aria-pressed="false" data-char-ripple-trigger>
-          <span data-char-ripple>IMMERSE</span>
-        </button>
-        <button type="button" class="work-pill work-pill--connect" data-work-filter="connect" aria-pressed="false" data-char-ripple-trigger>
-          <span data-char-ripple>CONNECT</span>
-        </button>
-        <button type="button" class="work-pill work-pill--amplify" data-work-filter="amplify" aria-pressed="false" data-char-ripple-trigger>
-          <span data-char-ripple>AMPLIFY</span>
-        </button>
-      </div>
-
     </div>
 
     {/* TRAVEL-AND-DOCK metas (Oscar's rev): one unit per project,
@@ -188,8 +178,11 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
           data-slug={p.slug}
           style={`transform: translate3d(0, ${441 + i * 624}px, 0)`}
         >
+          {/* (The /0N index is retired on this page — frame 35:1524
+              has no numbering. The data field stays: the landing
+              carousel, the cs-more cards and the mobile list below
+              still render it.) */}
           <h2 class="work-page__meta-title">{p.title.join(' ')}</h2>
-          <p class="work-page__meta-index">{p.index}</p>
           <p class="work-page__meta-desc">{p.desc}</p>
         </div>
       ))}
@@ -215,7 +208,7 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
       transforms during the footer reveal, which would re-root fixed
       descendants. aria-hidden: decoration, the tiles are the real
       affordance. */}
-  <div class="work-cursor" data-work-cursor aria-hidden="true">[ VIEW CASE STUDY + ]</div>
+  <div class="work-cursor" data-work-cursor aria-hidden="true">( VIEW CASE STUDY + )</div>
 </SiteShell>
 
 <script>
