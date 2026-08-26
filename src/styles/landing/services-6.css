@@ -97,10 +97,24 @@
 		display: block;
 	}
 
-	.landing-v2 .sv6-pillar__title {
+	/* Item 1 (Oscar R2, 2026-08-26): the title cluster centres
+	   VERTICALLY against the image via the flex wrapper - derived
+	   from the section height by construction (the frame's +200
+	   retired). NO transform on the wrapper: each text keeps its own
+	   difference (the legacy pillar's blend-safe pattern). The 16px
+	   title-to-sub gap is the frame's own rhythm (248 -> 264). */
+	.landing-v2 .sv6-pillar__text {
 		position: absolute;
-		left: 24px;
-		top: 200px;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		padding-left: 24px;
+		pointer-events: none;
+	}
+
+	.landing-v2 .sv6-pillar__title {
 		margin: 0;
 		width: 660px;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -113,10 +127,7 @@
 	}
 
 	.landing-v2 .sv6-pillar__sub {
-		position: absolute;
-		left: 24px;
-		top: 264px;
-		margin: 0;
+		margin: 16px 0 0;
 		width: 382px;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
@@ -224,6 +235,26 @@
 		text-transform: none;
 	}
 
+	/* Item 3 (Oscar R2): the highlight occludes BOTH dividers. The
+	   band already spans them geometrically (top 0 -> 71 = own 2px
+	   divider through the next row's), but the NEXT row's divider
+	   painted ABOVE the fill (DOM order) - the active row z-lifts,
+	   and the next divider (and the endline after the last row)
+	   whitens on the same delayed beat as the row's own, so no grey
+	   fragment shows mid-transition. */
+	.landing-v2 .sv6-table .sv-rows__row.is-active { z-index: 1; }
+
+	.landing-v2 .sv6-table .sv-rows__row.is-active + .sv-rows__row .sv-rows__divider {
+		background-color: #fff;
+	}
+
+	.landing-v2 .sv6-table:has(.sv-rows__row:last-child.is-active) .sv-rows__endline .sv-rows__divider {
+		background-color: #fff;
+	}
+
+	/* Item 2: the marquee text centres in the 71px band. */
+	.landing-v2 .sv6-table .sv-rows__marq { align-items: center; }
+
 	.landing-v2 .sv6-table .sv-rows__img { left: 1304px; }
 
 	/* Blue-highlight audit (Oscar): the machinery's remaining blue
@@ -245,18 +276,22 @@
 	   Strip at x25 (the frame's own inset), 273×320 boxes on 8px
 	   gaps; labels 40 below, centred in 281-wide slots; arrows
 	   between. +120 after the table; header → strip 80. */
+	/* Items 7/8 (Oscar R2): 4.5 boxes per viewport - W = (1728 - 24
+	   - 4x8) / 4.5 = 371.56, H = W x 320/273 = 435.56; strip = 6W +
+	   5x8 = 2269.3; travel = 24 + strip + 24 - 1728 = 589.3 (derived
+	   live in services-6.js). The stage pins with its CONTENT
+	   CENTRED (sticky top = 50dvh - stageH/2, the dwell derivation),
+	   scrubs the strip 1:1, releases. */
 	.landing-v2 .sv6-gal {
 		margin-top: 120px;
-		height: calc(100dvh + var(--sv6-gal-runway, 0px));
+		height: calc(var(--sv6-gal-stage-h, 100dvh) + var(--sv6-gal-runway, 0px));
 	}
 
 	.landing-v2 .sv6-gal__stage {
 		position: sticky;
-		top: 0;
-		height: 100dvh;
+		top: calc(50dvh - var(--sv6-gal-stage-h, 100dvh) / 2);
+		height: var(--sv6-gal-stage-h, auto);
 		overflow: hidden;
-		box-sizing: border-box;
-		padding-top: 175px; /* the pinned frame's breathing (nav-clear) */
 	}
 
 	.landing-v2 .sv6-gal__title {
@@ -275,11 +310,13 @@
 	.landing-v2 .sv6-gal--dark .sv6-gal__title { color: #eeeef0; }
 
 	.landing-v2 .sv6-gal__titleline { display: block; }
+	/* Item 5: the explicit second line sits 80 below the first. */
+	.landing-v2 .sv6-gal__titleline + .sv6-gal__titleline { margin-top: 80px; }
 
 	.landing-v2 .sv6-gal__strip {
 		display: flex;
 		gap: 8px;
-		margin: 80px 0 0 25px;
+		margin: 80px 0 0 24px; /* item 7's 24 grammar (the frame drew x25 — 1px divergence, reported) */
 		width: max-content;
 		will-change: transform;
 	}
@@ -287,41 +324,53 @@
 	.landing-v2 .sv6-gal__box {
 		position: relative;
 		margin: 0;
-		width: 273px;
+		width: 371.56px;
 		flex: none;
 	}
 
 	.landing-v2 .sv6-gal__box img {
-		width: 273px;
-		height: 320px;
+		width: 371.56px;
+		height: 435.56px;
 		object-fit: cover;
 		display: block;
 	}
 
+	/* Item 6a: each label HORIZONTALLY CENTRED under its own image
+	   (full-slot width, centred text - the frame's label-centre =
+	   image-centre reading, confirmed). Explicit white on the dark
+	   band (the old inherit resolved dark-on-dark - the "missing"
+	   labels). */
 	.landing-v2 .sv6-gal__label {
 		display: block;
-		margin: 40px auto 0;
-		width: 160px;
+		margin: 40px 0 0;
+		width: 100%;
 		font-weight: 700;
 		font-size: 18px;
 		line-height: 22px;
 		text-align: center;
 		text-transform: uppercase;
-		color: inherit;
+		color: #161616;
 	}
 
-	/* The step arrow between labels (frame: arrow left = box right
-	   + 19, vertically centred on the label row — 22-tall labels in
-	   gallery 1, 44-tall in gallery 2). */
+	.landing-v2 .sv6-on-dark .sv6-gal__label { color: #eeeef0; }
+
+	/* Item 6b (Oscar's instruction - DELIBERATE divergence from the
+	   frame): each arrow centred EXACTLY in the image gap (centre =
+	   box right + 4), on the label row. The frame draws them ~31
+	   right of the gap centres (333/614/896/1177/1457 vs 302/583/
+	   864/1145/1426 at the frame's sizing) - Oscar's centring wins,
+	   delta reported. Vertically centred on the label row (22-tall
+	   in gallery 1, 44 in gallery 2); the dark gallery uses the
+	   light-stroke asset (the ink arrow was invisible on the band). */
 	.landing-v2 .sv6-gal__arrow {
 		position: absolute;
-		left: calc(100% + 19px);
-		top: 363px; /* img 320 + 40 + (22 − 16) / 2 */
+		left: calc(100% + 4px - 16px);
+		top: calc(435.56px + 40px + 3px);
 		width: 32px;
 		height: 16px;
 	}
 
-	.landing-v2 .sv6-on-dark .sv6-gal__arrow { top: 374px; } /* (44 − 16) / 2 */
+	.landing-v2 .sv6-on-dark .sv6-gal__arrow { top: calc(435.56px + 40px + 14px); }
 
 	.landing-v2 .sv6-gal__arrow img { display: block; width: 32px; height: 16px; }
 

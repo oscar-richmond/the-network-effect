@@ -98,13 +98,20 @@ export function initServices6() {
   const galTravel = (gal) => {
     const strip = gal.querySelector('[data-sv6-gal-strip]');
     if (!(strip instanceof HTMLElement)) return 0;
-    return Math.max(strip.scrollWidth + 25 + 24 - (window.innerWidth || 1728), 0);
+    return Math.max(strip.scrollWidth + 24 + 24 - (window.innerWidth || 1728), 0);
   };
   const galTweens = [];
   const buildGals = () => {
     gals.forEach((gal) => {
+      const stage = gal.querySelector('[data-sv6-gal-stage]');
       const strip = gal.querySelector('[data-sv6-gal-strip]');
-      if (!(strip instanceof HTMLElement)) return;
+      if (!(strip instanceof HTMLElement) || !(stage instanceof HTMLElement)) return;
+      /* Items 7/8 (Oscar R2): the stage's natural content height
+         feeds the CENTRE PIN (sticky top = 50dvh - h/2, the dwell
+         derivation); the scrub window starts exactly at the pin. */
+      gal.style.removeProperty('--sv6-gal-stage-h');
+      const h = stage.offsetHeight;
+      gal.style.setProperty('--sv6-gal-stage-h', `${h}px`);
       const t = galTravel(gal);
       gal.style.setProperty('--sv6-gal-runway', `${t.toFixed(0)}px`);
       if (t <= 0 || reduced) return;
@@ -113,7 +120,7 @@ export function initServices6() {
         ease: 'none',
         scrollTrigger: {
           trigger: gal,
-          start: 'top top',
+          start: () => `top ${Math.round(((window.innerHeight || 1080) - h) / 2)}px`,
           end: () => `+=${galTravel(gal)}`,
           scrub: true,
           invalidateOnRefresh: true,
@@ -167,7 +174,10 @@ export function initServices6() {
       playLineRevealElement(line);
     });
 
-    /* Pillar headers — texts reveal + image fade at 65% once. */
+    /* Pillar headers — item 1 (Oscar R2): titles animate ONLY on
+       scroll. 'top 40%' sits below pillar 1's load position (top
+       ~507 vs 40% of any target viewport), so nothing plays at
+       load; each pillar reveals once its image is well in view. */
     page.querySelectorAll('.sv6-pillar').forEach((sec) => {
       const lines = Array.from(sec.querySelectorAll('[data-sv6-line]'));
       lines.forEach((line, i) => {
@@ -177,7 +187,7 @@ export function initServices6() {
       });
       triggers.push(ScrollTrigger.create({
         trigger: sec,
-        start: 'top 65%',
+        start: 'top 40%',
         once: true,
         onEnter: () => {
           sec.querySelector('.sv6-pillar__img')?.classList.add('is-visible');
@@ -227,15 +237,21 @@ export function initServices6() {
     /* Galleries — title first, then the boxes one by one (the
        landing featured arrival: 100ms L→R). */
     gals.forEach((gal) => {
-      const title = gal.querySelector('[data-sv6-gal-title]');
+      /* Item 5: each title LINE wraps individually (wrapping the
+         whole h3 flattened the explicit two-line break). */
+      const titleLines = Array.from(gal.querySelectorAll('.sv6-gal__titleline'));
       const boxes = Array.from(gal.querySelectorAll('[data-sv6-gal-box]'));
-      if (title instanceof HTMLElement) wrapWordRevealElement(title);
+      titleLines.forEach((line, i) => {
+        if (!(line instanceof HTMLElement)) return;
+        line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+        wrapWordRevealElement(line);
+      });
       triggers.push(ScrollTrigger.create({
         trigger: gal,
         start: 'top 65%',
         once: true,
         onEnter: () => {
-          if (title instanceof HTMLElement) playLineRevealElement(title);
+          titleLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l));
           boxes.forEach((box, i) => schedule(() => box.classList.add('is-visible'), 300 + i * BOX_STAGGER_MS));
         },
       }));

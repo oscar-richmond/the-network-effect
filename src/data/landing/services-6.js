@@ -27,6 +27,27 @@
  */
 const A = (n) => `/assets/landing/services-6/${n}`;
 
+/* ═══ HOVER PLACEHOLDER POOL (Oscar item 4, 2026-08-26) ═══
+   Per-row hover imagery, VARIED so the swap visibly works —
+   PLACEHOLDER pending Oscar's real per-row drop. Drawn from the
+   reel's vetted 33-image pool (services-reel.js) which maps
+   pillar-for-pillar onto these tables (12/12/9), with the two
+   ELEVATED-CLASS entries substituted (the yoxman Instagram
+   streams → a closing tile and a network strip image): no Top
+   Boy / Adolescence / adidas / Depp / Lagerfeld / Louis Vuitton
+   anywhere in the set. */
+import { SERVICES_REEL_PILLARS } from './services-reel.js';
+const HOVER_SUBS = {
+  '/assets/landing/case/yoxman/stream-1.jpg': '/assets/landing/closing/tile-1.jpg',
+  '/assets/landing/case/yoxman/stream-2.jpg': '/assets/landing/network/strip-2.jpg',
+};
+const hoverImg = (pi, ri) => {
+  const src = SERVICES_REEL_PILLARS[pi]?.services?.[ri]?.img;
+  return (src && (HOVER_SUBS[src] || src)) || A('hover-placeholder.png');
+};
+export const SV6_HOVER_IMGS = [0, 1, 2].map((pi) =>
+  Array.from({ length: [12, 12, 9][pi] }, (_, ri) => hoverImg(pi, ri)));
+
 export const SV6_HERO = {
   /* 38:2596 — Serrif Condensed Medium 100/88/−4% + Dazzed Bold
      100/88 (the frame's sans span tracks −0.8px — flagged: the
@@ -126,7 +147,9 @@ export const SV6_GALLERIES = [
     /* 38:2690 — Dazzed Bold 56/54/−3.5%, two lines. Drawn white +
        difference over flat ground → built as ink (flagged, the
        house rule). */
-    headerLines: ['OUR SERVICES SPAN', 'END-TO-END:'],
+    /* Item 5 (Oscar): explicit two-line break — SPAN END-TO-END on
+       its own row (the space inside the line is authored text). */
+    headerLines: ['OUR SERVICES', 'SPAN END-TO-END:'],
     dark: false,
     imgs: [A('g1-1.png'), A('g1-2.png'), A('g1-3.png'), A('g1-4.png'), A('g1-5-depp.png'), A('g1-6.png')],
     /* 38:2713 — Dazzed Bold 18/22 uppercase centred, 160w. */

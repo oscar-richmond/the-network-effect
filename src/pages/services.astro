@@ -46,7 +46,7 @@ import SiteShell from '../layouts/SiteShell.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { SERVICES_HERO, SERVICES_PILLARS, SERVICES_ACCESS } from '../data/landing/services-v2.js';
-import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER } from '../data/landing/services-6.js';
+import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER, SV6_HOVER_IMGS } from '../data/landing/services-6.js';
 import { asset } from '../utils/asset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -73,8 +73,15 @@ import '../styles/fonts.css';
             links working. */}
         <section class={`sv6-pillar${p.dark ? ' sv6-on-dark' : ''}`} id={p.key} aria-label={p.title}>
           <img class="sv6-pillar__img" src={asset(p.headerImg)} alt="" loading={pi === 0 ? 'eager' : 'lazy'} decoding="async" />
-          <h2 class="sv6-pillar__title" data-sv6-line>{p.title}</h2>
-          <p class="sv6-pillar__sub" data-sv6-line>{p.subtitle}</p>
+          {/* Item 1 (Oscar): the block VERTICALLY CENTRES against the
+              image via a flex wrapper — derived from the section's
+              height by construction, no fixed offset, NO transform
+              (the legacy pillar's blend-safe centring pattern: each
+              text keeps its own difference). */}
+          <div class="sv6-pillar__text">
+            <h2 class="sv6-pillar__title" data-sv6-line>{p.title}</h2>
+            <p class="sv6-pillar__sub" data-sv6-line>{p.subtitle}</p>
+          </div>
         </section>
 
         {/* Statement + bar (the case-study intro pattern). */}
@@ -97,12 +104,12 @@ import '../styles/fonts.css';
         >
           <p class="sv-rows__label sv6-table__label">{p.label}</p>
           <ul class="sv-rows__list" data-sv-rows-list>
-            {p.rows.map((row) => (
+            {p.rows.map((row, ri) => (
               <li
                 class="sv-rows__row"
                 data-sv-row
                 data-text={row}
-                data-img={asset(SV6_HOVER_PLACEHOLDER)}
+                data-img={asset(SV6_HOVER_IMGS[pi][ri] ?? SV6_HOVER_PLACEHOLDER)}
                 tabindex="0"
               >
                 <span class="sv-rows__divider" aria-hidden="true"></span>
@@ -142,7 +149,7 @@ import '../styles/fonts.css';
                       <figcaption class="sv6-gal__label">{SV6_GALLERIES[pi].labels[bi]}</figcaption>
                       {bi < SV6_GALLERIES[pi].imgs.length - 1 && (
                         <span class="sv6-gal__arrow" aria-hidden="true">
-                          <img src={asset('/assets/landing/services-6/arrow.svg')} alt="" width="32" height="16" />
+                          <img src={asset(SV6_GALLERIES[pi].dark ? '/assets/landing/services-6/arrow-light.svg' : '/assets/landing/services-6/arrow.svg')} alt="" width="32" height="16" />
                         </span>
                       )}
                     </figure>
