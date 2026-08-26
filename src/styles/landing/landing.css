@@ -658,10 +658,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	z-index: 120;
 	pointer-events: none;
 	/* Opening band: full width less the 24px side margins, running off
-	   the bottom edge. 62.5dvh matches the module's independent band
-	   top (the headline now centres against the video, so the band can
-	   no longer be derived FROM the headline — that would be circular). */
-	clip-path: inset(62.5% var(--landing-video-margin) 0px var(--landing-video-margin));
+	   the bottom edge. R3 (Oscar, 2026-08-26): PX-ANCHORED — the band
+	   top is the rest chain's foot (intro bottom 519.6 + 100), matching
+	   VIDEO_BAND_TOP_PX in the module, so the 100px gap holds at any
+	   viewport height. (Mobile keeps its 50% override.) */
+	clip-path: inset(619.6px var(--landing-video-margin) 0px var(--landing-video-margin));
 }
 
 /* ── Film grain ──────────────────────────────────────────────────────
@@ -5021,8 +5022,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		align-items: flex-start;
 		text-align: left;
 		margin: 0 0 0 553px;
-		margin-top: 23.18dvh;
-		transform: translateY(-50%);
+		/* R3 (Oscar, 2026-08-26): TOP-ANCHORED from the nav wordmark —
+		   cap top of BUILT ON TRUST. sits 100 below the wordmark's
+		   bottom (54.5), replacing the band-centring derivation. The
+		   cap sits 12.9 below the box top (canvas font metrics), so
+		   box top = 54.5 + 100 − 12.9. (The type-pass rule below keeps
+		   the optical-centre translateX; Y translate is dropped there.) */
+		margin-top: 141.6px;
 	}
 
 	/* Type: frame 72/64/−4% — the guide's 02 Display L numbers on
@@ -5061,7 +5067,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   0.4345·vh. R2 (Oscar, 2026-08-24): BRAND BLACK, no blend — the
 	   frame's white+difference read as white in situ; ink it. */
 	.landing-v2.landing-home .landing-hero__intro-text {
-		top: 43.45dvh;
+		/* R3 (Oscar, 2026-08-26): 48 below the headline block's bottom
+		   (321.6), px-anchored with the rest of the chain. */
+		top: 369.6px;
+		transform: none;
 		right: auto;
 		left: 225px;
 		width: 452px;
@@ -5482,7 +5491,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   composition"). */
 	.landing-v2.landing-home .landing-hero__headline-text {
 		margin-left: 1028px;
-		transform: translate(-50%, -50%);
+		/* R3 (Oscar, 2026-08-26): Y is TOP-ANCHORED (margin-top 141.6px
+		   in the base .landing-home rule — cap 100 below the wordmark);
+		   only X keeps the optical-centre translate. */
+		transform: translate(-50%, 0);
 	}
 
 	.landing-v2.landing-home .landing-hero__headline-line {
@@ -5512,9 +5524,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   with the headline above AND the video band below. The measure
 	   scales with the type (452 × 48/30 ≈ 723) and the block centres
 	   in the window between the headline's bottom (23.18dvh + 88px)
-	   and the video band's top (62.5dvh): centre = 42.84dvh + 44px. */
+	   and the video band's top (62.5dvh): centre = 42.84dvh + 44px.
+	   R3 (Oscar, 2026-08-26): the centring calc is RETIRED — the block
+	   is top-anchored 48 below the headline's bottom (321.6), the
+	   middle link of the px rest chain (see the base rule + the module
+	   header). */
 	.landing-v2.landing-home .landing-hero__intro-text {
-		top: calc(42.84dvh + 44px);
+		top: 369.6px;
 		width: 723px;
 		font-size: 48px;
 		line-height: 50px;
@@ -6501,6 +6517,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		width: 1680px;
 		height: 2px;
 		background: #e0e0e7;
+		/* Above the listfade (whose solid 0–68 band otherwise paints
+		   over the line across the list column — the "break"). Safe:
+		   reel rows are fully dissolved by y68, so nothing can be seen
+		   crossing the raised line; the fill child rides along. */
+		z-index: 1;
 	}
 
 	/* The PROGRESS FILL — drains scaleX 1→0 across the rise (the
@@ -6692,7 +6713,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-sreel__btn {
 		position: absolute;
 		left: 428px;
-		top: 507px;
+		top: 483px; /* R2 (Oscar): rides the image bottom up 24. */
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
@@ -6723,14 +6744,18 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		left: 1324px;
 		top: 72px;
 		width: 380px;
-		height: 480px;
+		height: 456px; /* R2 (Oscar): −24 taken from the bottom — the
+		   top edge holds at 72. */
 		margin: 0;
 		overflow: hidden;
 	}
 
+	/* The img keeps its 380×480 cover render, top-anchored: the
+	   previous composition survives exactly, minus the clipped bottom
+	   24 — no recrop, no squash. */
 	.landing-v2.landing-home .landing-sreel__img img {
 		width: 100%;
-		height: 100%;
+		height: 480px;
 		object-fit: cover;
 		display: block;
 	}

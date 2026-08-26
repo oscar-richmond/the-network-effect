@@ -67,9 +67,14 @@ const WWD_Y = 146;                 /* WHAT WE DO (Option 11) */
 const WWD_Y_STACKED = 100;         /* … once pillar 1 compacts (Option 12) */
 /* ── THE INTRO (restored content, Oscar 2026-08-26): FROM ACCESS TO
    IMPACT + the pillars note rest 100 below the fixed WHAT WE DO
-   label, then travel UP AND OUT past it over the head of the scrub
-   before pillar 1 rises. */
-const INTRO_PX = 600;              /* the intro beat's scroll length */
+   label, then travel UP AND OUT past it over the head of the scrub.
+   R2 (Oscar): the exit runs CONCURRENT with pillar 1's rise — the
+   pin engages exactly as Our Network's bottom clears the viewport
+   top (measured 0px adjacency, element-anchored 'top top'), and
+   IMMERSE rises from that same scroll px: the statement exits
+   upward while the opaque panel rises from below, passing in
+   opposite directions (the panel paints over the intro). */
+const INTRO_PX = 600;              /* the intro exit's scroll length */
 const INTRO_EXIT_PX = 660;         /* clears the note past the stage top */
 /* ── CLOSED-STATE TYPE DROP (guide Editorial / Lead; scrubbed CSS
    custom properties — see the plan note: exact end metrics incl.
@@ -130,10 +135,11 @@ export function initLandingServicesReel() {
   };
   const reelPx = (i) => P[i].services.length * REEL_PX_PER_SERVICE;
 
-  /* Beat map. */
+  /* Beat map. Rise 1 begins at px 0 — the moment Our Network's
+     bottom crosses the viewport top (the pin start; see INTRO_PX). */
   const riseStart = [];
   const reelStart = [];
-  let cursor = INTRO_PX;
+  let cursor = 0;
   for (let i = 0; i < 3; i += 1) {
     riseStart[i] = cursor;
     cursor += RISE_PX;
@@ -259,10 +265,10 @@ export function initLandingServicesReel() {
         parts[i].push(btn);
       }
     });
-    if (wwd instanceof HTMLElement) {
-      wrapWordRevealElement(wwd);
-      parts[0].push(wwd);
-    }
+    /* WHAT WE DO reveals with the INTRO trigger below (Oscar R2:
+       present at its final top-left from section entry, animating in
+       there — not deferred to pillar 1's rise). */
+    if (wwd instanceof HTMLElement) wrapWordRevealElement(wwd);
   });
   const playTexts = (i) => {
     if (played[i]) return;
@@ -281,12 +287,13 @@ export function initLandingServicesReel() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
     });
-    if (!introLines.length) return;
+    if (!introLines.length && !(wwd instanceof HTMLElement)) return;
     introTrigger = ScrollTrigger.create({
       trigger: section,
       start: 'top 65%',
       once: true,
       onEnter: () => {
+        if (wwd instanceof HTMLElement) playLineRevealElement(wwd);
         introLines.forEach((line) => {
           if (line instanceof HTMLElement) playLineRevealElement(line);
         });

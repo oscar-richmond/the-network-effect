@@ -77,8 +77,16 @@ const VIDEO_HOLD_PX = 300;
  * centre against the video, so that derivation would be circular).
  * 0.625 reproduces the previous rendered geometry at 1728x1000
  * exactly (625px), so the video's opening state is unchanged there.
+ *
+ * R3 (Oscar, 2026-08-26): the DESKTOP band top is now PX-ANCHORED —
+ * the foot of the rest chain (wordmark bottom 54.5 → +100 to the
+ * headline cap → +48 to the intro → +100 below the intro's bottom,
+ * 519.6) — so the three authored gaps hold at ANY viewport height,
+ * including the scale shell's short interiors. The fraction remains
+ * for MOBILE only (its own 0.5 constant below).
  */
-const VIDEO_BAND_TOP_FRACTION = 0.625;
+const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
+const VIDEO_BAND_TOP_PX = 619.6;
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
@@ -456,6 +464,9 @@ export function initLandingHeroScroll() {
   /* Regime-resolved geometry (mobile constants block above). Desktop
      resolves to the shipped values — bit-identical behaviour. */
   const bandFrac = isMob ? VIDEO_BAND_TOP_FRACTION_M : VIDEO_BAND_TOP_FRACTION;
+  /* Desktop: the px-anchored band top (see VIDEO_BAND_TOP_PX);
+     mobile keeps its fraction of the stage height. */
+  const bandTopFor = (vh) => (isMob ? Math.round(vh * bandFrac) : VIDEO_BAND_TOP_PX);
   const vMargin = isMob ? VIDEO_MARGIN_PX_M : VIDEO_MARGIN_PX;
   const headlineLeft = isMob ? HEADLINE_LEFT_MARGIN_M : HEADLINE_LEFT_MARGIN;
 
@@ -647,7 +658,7 @@ export function initLandingHeroScroll() {
     let videoEnd = revealEnd;
 
     if (video instanceof HTMLElement) {
-      const bandTop = Math.round(vh * bandFrac);
+      const bandTop = bandTopFor(vh);
       const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
       videoEnd = videoStart + VIDEO_EXPAND_PX;
 
@@ -684,7 +695,7 @@ export function initLandingHeroScroll() {
        filters' stacking contexts sit on plain-ink lines inside the
        hero stage. */
     if (video instanceof HTMLElement) {
-      const bandTop = Math.round(vh * bandFrac);
+      const bandTop = bandTopFor(vh);
       const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
 
       const invertPower1InOut = (e) =>
@@ -775,7 +786,7 @@ export function initLandingHeroScroll() {
         derived: (() => {
           const topbar = document.querySelector('.home__topbar');
           const navBottom = topbar ? topbar.getBoundingClientRect().bottom : 0;
-          const videoTop = Math.round(vh * bandFrac);
+          const videoTop = bandTopFor(vh);
           return {
             navBottom,
             videoTop,

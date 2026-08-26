@@ -26,6 +26,17 @@ const LINE_STAGGER_S = 0.12;
 const LINE_REVEAL_S = 1.2; // the reveal transition's own duration
 const ENTRY_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; // house reveal curve
 
+/* R4 (Oscar, 2026-08-26): the OUR NETWORK title (the desktop label)
+   and the "Trusted by…" subtitle arrive LATER than the rest of the
+   entrance. Oscar asked for "a second or so", converted to SCROLL
+   DISTANCE (the page is scrubbed — a time delay would vary with
+   scroll speed): ≈700px/s is the relaxed house wheel pace under
+   Lenis, so 700px ≈ 1s, and it stays small against the section's
+   pinned dwell. Landing entry only — the /services prev-exit path
+   keeps the single-trigger entrance. The reveal animation itself is
+   untouched; only its trigger moves. */
+const NETWORK_TITLE_DELAY_PX = 700;
+
 /* ── Industry hover / PHOTO-STRIP swap (Oscar's rev, repointed
    2026-08-26 — the LOGO CAROUSELS no longer respond to hover at all:
    they keep their pure-CSS roll untouched; the old cell-swap
@@ -314,6 +325,19 @@ export function initLandingNetwork() {
   }
 
   const lines = Array.from(section.querySelectorAll('.landing-network__line'));
+  /* The delayed group (R4): title + subtitle + the desktop OUR
+     NETWORK label. Partitioned only on the landing entry — prev-exit
+     hosts (/services) keep every line on the main trigger. */
+  const delayParents = [
+    section.querySelector('[data-landing-network-title]'),
+    section.querySelector('[data-landing-network-subtitle]'),
+    section.querySelector('.landing-network__label'),
+  ].filter((el) => el instanceof HTMLElement);
+  const titleDelayPx = section.dataset.networkEntry === 'prev-exit' ? 0 : NETWORK_TITLE_DELAY_PX;
+  const delayedLines = titleDelayPx
+    ? lines.filter((line) => delayParents.some((p) => p.contains(line)))
+    : [];
+  const mainLines = lines.filter((line) => !delayedLines.includes(line));
   /* The rising group (Oscar's arrival rev): logo rows, both fade
      bands and the photo strip — parked below the stage until the
      entrance, so every overlay arrives ALREADY composed on its
@@ -328,6 +352,7 @@ export function initLandingNetwork() {
 
   const timeouts = [];
   let trigger = null;
+  let delayedTrigger = null;
   let groundTrigger = null;
   let disposed = false;
   let shown = false;
@@ -414,21 +439,16 @@ export function initLandingNetwork() {
         el.style.transition = `transform ${totalS.toFixed(2)}s ${ENTRY_CURVE}`;
       });
     };
-    const showContent = () => {
-      shown = true;
-      lines.forEach((line) => {
+    const playGroup = (group) => {
+      group.forEach((line) => {
         line.querySelectorAll('.lr-inner').forEach((inner) => {
           inner.style.transitionDelay = delayMap.get(inner) ?? '';
         });
         playLineRevealElement(line);
       });
-      setMediaTransition();
-      void section.offsetWidth; /* commit current state under the transition */
-      media.forEach((el) => { el.style.transform = 'translateY(0px)'; });
     };
-    const hideContent = () => {
-      shown = false;
-      lines.forEach((line) => {
+    const hideGroup = (group) => {
+      group.forEach((line) => {
         line.querySelectorAll('.lr-inner').forEach((inner) => {
           inner.style.transitionDelay = '0s';
         });
@@ -436,6 +456,17 @@ export function initLandingNetwork() {
           clip.classList.remove('lr-visible');
         });
       });
+    };
+    const showContent = () => {
+      shown = true;
+      playGroup(mainLines);
+      setMediaTransition();
+      void section.offsetWidth; /* commit current state under the transition */
+      media.forEach((el) => { el.style.transform = 'translateY(0px)'; });
+    };
+    const hideContent = () => {
+      shown = false;
+      hideGroup(mainLines);
       setMediaTransition();
       void section.offsetWidth;
       parkMedia();
@@ -480,6 +511,18 @@ export function initLandingNetwork() {
       onEnter: showContent,
       onLeaveBack: hideContent,
     });
+    /* R4: the delayed group's own trigger, NETWORK_TITLE_DELAY_PX of
+       scroll past the main entrance (landing entry only — the array
+       is empty on prev-exit hosts). Same reveal, later trigger. */
+    if (delayedLines.length) {
+      delayedTrigger = ScrollTrigger.create({
+        trigger: section,
+        start: () => `top+=${pinOffset() + titleDelayPx} top`,
+        end: 'max',
+        onEnter: () => playGroup(delayedLines),
+        onLeaveBack: () => hideGroup(delayedLines),
+      });
+    }
   });
 
   return () => {
@@ -493,5 +536,6 @@ export function initLandingNetwork() {
     if (stage instanceof HTMLElement) stage.style.background = '';
     groundTrigger?.kill();
     trigger?.kill();
+    delayedTrigger?.kill();
   };
 }
