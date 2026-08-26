@@ -49,15 +49,35 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ── Geometry (frames 29:859 / 30:1191, −118 chrome, pillar-local
    offsets from each pillar's divider). ─────────────────────────── */
-const ACTIVE_Y = [184, 280, 422];  /* fixed divider Y per pillar (viewport) */
+/* Stack geometry RE-DERIVED for the closed-state type drop (Oscar
+   2026-08-26): the dropped desc block is 2×32 = 64 tall; the closed
+   band equalises SYMMETRIC 32 above / 32 below (was 44 above, 24
+   below at the frame's 142 pitch) → stacked pitch 128, which is
+   what frees the vertical room AMPLIFY needed. */
+const STACK_PITCH = 128;           /* 32 + 64 + 32 (was the frame's 142) */
 const STACKED_Y1 = 138;            /* pillar 1's compacted Y (Option 12) */
+const ACTIVE_Y = [184, STACKED_Y1 + STACK_PITCH, STACKED_Y1 + 2 * STACK_PITCH]; /* 184/266/394 */
 const TITLE_TOP = 68;              /* title row below the divider (expanded) */
-const TITLE_TOP_STACKED = 44;      /* … compacted (Option 12) */
+const TITLE_TOP_STACKED = 34;      /* closed: block top 32 + the 2px optical */
+const DESC_TOP_STACKED = 32;       /* closed desc top — the block top */
 const LIST_TOP = 190;              /* list + label top below the divider */
 const ROW_PITCH = 53;              /* divider + text row pitch */
 const LABEL_H = 19;
 const WWD_Y = 146;                 /* WHAT WE DO (Option 11) */
 const WWD_Y_STACKED = 100;         /* … once pillar 1 compacts (Option 12) */
+/* ── THE INTRO (restored content, Oscar 2026-08-26): FROM ACCESS TO
+   IMPACT + the pillars note rest 100 below the fixed WHAT WE DO
+   label, then travel UP AND OUT past it over the head of the scrub
+   before pillar 1 rises. */
+const INTRO_PX = 600;              /* the intro beat's scroll length */
+const INTRO_EXIT_PX = 660;         /* clears the note past the stage top */
+/* ── CLOSED-STATE TYPE DROP (guide Editorial / Lead; scrubbed CSS
+   custom properties — see the plan note: exact end metrics incl.
+   tracking, no box desync, no endpoint snap). */
+const TTL_OPEN = { fs: 56, lh: 54, ls: -0.035 };
+const TTL_CLOSED = { fs: 48, lh: 48, ls: -0.02 };
+const DESC_OPEN = { fs: 34, lh: 38, ls: -0.03 };
+const DESC_CLOSED = { fs: 26, lh: 32, ls: -0.02 };
 
 /* ── Beats (scroll px). ────────────────────────────────────────── */
 const RISE_PX = 800;                    /* the staging card rise, kept */
@@ -113,7 +133,7 @@ export function initLandingServicesReel() {
   /* Beat map. */
   const riseStart = [];
   const reelStart = [];
-  let cursor = 0;
+  let cursor = INTRO_PX;
   for (let i = 0; i < 3; i += 1) {
     riseStart[i] = cursor;
     cursor += RISE_PX;
@@ -250,6 +270,30 @@ export function initLandingServicesReel() {
     parts[i].forEach((el) => playLineRevealElement(el));
   };
 
+  /* Restored-intro entrance — the house vocabulary: word reveals on
+     the 0.12 stagger, one-shot as the section approaches (65%). */
+  let introTrigger = null;
+  fontsReady.then(() => {
+    if (disposed) return;
+    const introLines = Array.from(root.querySelectorAll('[data-sreel-introline]'));
+    introLines.forEach((line, i) => {
+      if (!(line instanceof HTMLElement)) return;
+      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+      wrapWordRevealElement(line);
+    });
+    if (!introLines.length) return;
+    introTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: 'top 65%',
+      once: true,
+      onEnter: () => {
+        introLines.forEach((line) => {
+          if (line instanceof HTMLElement) playLineRevealElement(line);
+        });
+      },
+    });
+  });
+
   /* ── Snap — rise windows only (the reel stays free). ──────────── */
   const trySnap = () => {
     if (!trigger) return;
@@ -283,9 +327,42 @@ export function initLandingServicesReel() {
         for (let i = 0; i < 3; i += 1) {
           if (px >= riseStart[i]) playTexts(i);
         }
+        applyTypeDrop(px);
       },
     },
   });
+
+  /* ── THE TYPE DROP — pure f(scrub px), written every frame for the
+     two covered pillars on EXACTLY their incoming rise's window
+     (same progress; desync impossible; reversal is arithmetic). */
+  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t));
+  const lastDropT = [-1, -1];
+  const applyTypeDrop = (px) => {
+    for (let k = 0; k < 2; k += 1) {
+      const start = riseStart[k + 1];
+      const raw = Math.min(Math.max((px - start) / RISE_PX, 0), 1);
+      const t = easeInOut(raw);
+      if (Math.abs(t - lastDropT[k]) < 0.0005) continue;
+      lastDropT[k] = t;
+      const m = (a, b2) => a + (b2 - a) * t;
+      const st = pillars[k].style;
+      st.setProperty('--sreel-ttl-fs', `${m(TTL_OPEN.fs, TTL_CLOSED.fs).toFixed(2)}px`);
+      st.setProperty('--sreel-ttl-lh', `${m(TTL_OPEN.lh, TTL_CLOSED.lh).toFixed(2)}px`);
+      st.setProperty('--sreel-ttl-ls', `${m(TTL_OPEN.ls, TTL_CLOSED.ls).toFixed(4)}em`);
+      st.setProperty('--sreel-desc-fs', `${m(DESC_OPEN.fs, DESC_CLOSED.fs).toFixed(2)}px`);
+      st.setProperty('--sreel-desc-lh', `${m(DESC_OPEN.lh, DESC_CLOSED.lh).toFixed(2)}px`);
+      st.setProperty('--sreel-desc-ls', `${m(DESC_OPEN.ls, DESC_CLOSED.ls).toFixed(4)}em`);
+    }
+  };
+  applyTypeDrop(0);
+
+  /* THE INTRO — the restored statement + note travel up and out past
+     the fixed label over [0, INTRO_PX). Plain-ink elements (no
+     difference) — transform is safe. */
+  const intro = root.querySelector('[data-sreel-intro]');
+  if (intro instanceof HTMLElement) {
+    tl.fromTo(intro, { y: 0 }, { y: -INTRO_EXIT_PX, duration: INTRO_PX, immediateRender: false }, 0);
+  }
 
   /* RISES + FILLS + REELS per pillar. */
   pillars.forEach((pillar, i) => {
@@ -319,19 +396,20 @@ export function initLandingServicesReel() {
      but the title blends against the pillar's own opaque ground:
      the staging card contract, kept). */
   const compact = (i, at, dur, toY) => {
-    tl.to(pillars[i], { y: toY, duration: dur, ease: 'power1.inOut', immediateRender: false }, at);
+    if (toY !== null) tl.to(pillars[i], { y: toY, duration: dur, ease: 'power1.inOut', immediateRender: false }, at);
     const titlerow = pillars[i].querySelector('[data-sreel-titlerow]');
     const desc = pillars[i].querySelector('[data-sreel-desc]');
     if (titlerow instanceof HTMLElement) tl.to(titlerow, { top: TITLE_TOP_STACKED, duration: dur, ease: 'power1.inOut' }, at);
-    if (desc instanceof HTMLElement) tl.to(desc, { top: TITLE_TOP_STACKED - 2, duration: dur, ease: 'power1.inOut' }, at);
+    if (desc instanceof HTMLElement) tl.to(desc, { top: DESC_TOP_STACKED, duration: dur, ease: 'power1.inOut' }, at);
+    /* (The type drop is driven from the MASTER onUpdate below as a
+       pure function of the scrub position — the house single-progress
+       discipline. Tween-based variants — a proxy onUpdate and GSAP's
+       native var plugin — both misbehaved under backwards seeks.) */
   };
   compact(0, riseStart[1], RISE_PX, STACKED_Y1);
-  /* Pillar 2 keeps its 280 (Option 12 — its active Y IS its stacked
-     Y); only its band closes as pillar 3 rises. */
-  const t2 = pillars[1].querySelector('[data-sreel-titlerow]');
-  const d2 = pillars[1].querySelector('[data-sreel-desc]');
-  if (t2 instanceof HTMLElement) tl.to(t2, { top: TITLE_TOP_STACKED, duration: RISE_PX, ease: 'power1.inOut' }, riseStart[2]);
-  if (d2 instanceof HTMLElement) tl.to(d2, { top: TITLE_TOP_STACKED - 2, duration: RISE_PX, ease: 'power1.inOut' }, riseStart[2]);
+  /* Pillar 2's active Y IS its stacked Y (266); only its band closes
+     (type drop + offsets) as pillar 3 rises. */
+  compact(1, riseStart[2], RISE_PX, null);
   /* WHAT WE DO rides pillar 1's compaction (146 → 100). */
   if (wwd instanceof HTMLElement) {
     tl.to(wwd, { top: WWD_Y_STACKED, duration: RISE_PX, ease: 'power1.inOut' }, riseStart[1]);
@@ -416,6 +494,7 @@ export function initLandingServicesReel() {
     disposed = true;
     window.clearTimeout(snapTimer);
     cleanups.forEach((fn) => fn());
+    introTrigger?.kill();
     masterTl?.scrollTrigger?.kill();
     masterTl?.kill();
   };

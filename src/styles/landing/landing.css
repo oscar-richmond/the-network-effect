@@ -6415,6 +6415,71 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		color: #161616;
 	}
 
+	/* ── THE RESTORED INTRO (recovered from 07edb92^): the hero-scale
+	   mixed pair + the pillars note, resting 100 below the fixed
+	   WHAT WE DO label; the intro beat travels the block up and out.
+	   Faces/sizes/positions verbatim from the retired svcrows rules. */
+	.landing-v2.landing-home .landing-sreel__intro {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+
+	.landing-v2.landing-home .landing-sreel__st {
+		position: absolute;
+		left: 542px; /* frame x566 − the 24 inset (the svcrows literal) */
+		top: 260px;  /* WHAT WE DO bottom (160) + the 100 resting gap */
+		margin: 0;
+		color: #161616;
+	}
+
+	.landing-v2.landing-home .landing-sreel__st-line {
+		display: block;
+		font-size: var(--ts-serif-display-size);
+		line-height: var(--ts-serif-display-lh);
+		white-space: nowrap;
+		text-transform: uppercase;
+	}
+
+	.landing-v2.landing-home .landing-sreel__st-serif {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		letter-spacing: var(--ts-serif-display-track);
+	}
+
+	.landing-v2.landing-home .landing-sreel__st-sans {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		letter-spacing: -0.05em;
+		margin-left: 325px; /* the 13-space serif lead at 100px */
+	}
+
+	.landing-v2.landing-home .landing-sreel__note {
+		position: absolute;
+		left: 220px; /* the svcrows literal (196 + 24) */
+		top: 508px;  /* statement top + the historical 248 */
+		width: 740px;
+		margin: 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 30px;
+		line-height: 34px;
+		letter-spacing: -0.015em;
+		color: #161616;
+	}
+
+	/* RM / no-JS: the intro rests in flow above the pillars. */
+	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__intro {
+		position: relative;
+		height: 640px;
+	}
+
 	.landing-v2.landing-home .landing-sreel__pillar {
 		position: absolute;
 		left: 0;
@@ -6461,18 +6526,39 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 56px;
-		line-height: 54px;
-		letter-spacing: -0.035em;
+		/* Scrubbed by the closed-state type drop (guide Editorial at
+		   rest-closed: 48/48/−2%; open = the frame's 56/54/−3.5%). */
+		font-size: var(--sreel-ttl-fs, 56px);
+		line-height: var(--sreel-ttl-lh, 54px);
+		letter-spacing: var(--sreel-ttl-ls, -0.035em);
 		text-transform: uppercase;
 		color: #fff;
 		mix-blend-mode: difference; /* against the panel's own opaque ground */
 	}
 
+	/* /0N — TOP OF THE NUMBER ON THE TITLE'S CAP TOP (Oscar
+	   2026-08-26; the featured-meta cap-optic fix class, reapplied —
+	   reported: both are single-rule constants, a shared utility not
+	   warranted). Em-of-the-title offsets so the alignment rides the
+	   type drop: Dazzed cap sits ~0.135em into its box at lh≈0.96em;
+	   the 24px number's own cap ~0.06×24 ≈ 1.4 — top ≈ 0.11em. */
+	.landing-v2.landing-home .landing-sreel__titlerow {
+		font-size: var(--sreel-ttl-fs, 56px);
+		/* Pin the strut to the title's box — Dazzed's default 1.5
+		   line-height inflated the closed row to 72 and broke the
+		   band symmetry. */
+		line-height: var(--sreel-ttl-lh, 54px);
+	}
+
 	.landing-v2.landing-home .landing-sreel__num {
-		display: inline-block;
-		margin-left: 8px;
-		vertical-align: 14px; /* the frame's cap-zone ride */
+		position: absolute;
+		left: calc(100% + 8px);
+		/* Cap-top alignment (the featured-meta cap-optic class) solved
+		   from BOTH states' post-strut measurements: needed offsets
+		   2.84px at title 56, 3.34px at 48 — linear in the scrubbed
+		   title size (the px term is the 24px number's own fixed ink
+		   offset; em is unusable — it binds to the number's 24px). */
+		top: calc(var(--sreel-ttl-fs, 56px) * -0.0625 + 6.34px);
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
@@ -6482,18 +6568,27 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		mix-blend-mode: difference;
 	}
 
+	.landing-v2.landing-home .landing-sreel__titlerow .landing-sreel__title {
+		position: relative;
+		display: inline-block;
+	}
+
+
+
 	.landing-v2.landing-home .landing-sreel__desc {
 		position: absolute;
 		left: 428px;
-		top: 66px; /* JS closes to 42 when stacked */
+		top: 66px; /* JS closes to 32 when stacked */
 		width: 300px;
 		margin: 0;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: var(--ts-serif-section-size); /* Heading / Section */
-		line-height: var(--ts-serif-section-lh);
-		letter-spacing: var(--ts-serif-section-track);
+		/* Scrubbed by the type drop (open = Section 34/38/−3%; closed
+		   = Lead 26/32/−2%). */
+		font-size: var(--sreel-desc-fs, var(--ts-serif-section-size));
+		line-height: var(--sreel-desc-lh, var(--ts-serif-section-lh));
+		letter-spacing: var(--sreel-desc-ls, var(--ts-serif-section-track));
 		text-transform: capitalize;
 		color: #161616;
 	}

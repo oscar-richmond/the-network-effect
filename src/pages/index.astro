@@ -105,6 +105,22 @@ import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
     <div class="landing-sreel" data-sreel>
       <div class="landing-sreel__stage" data-sreel-stage>
         <p class="landing-sreel__wwd" data-sreel-wwd>WHAT WE DO</p>
+        {/* RESTORED (Oscar 2026-08-26; recovered from 07edb92^ where
+            the reel rebuild retired them — copy, faces and relations
+            verbatim): the hero-scale mixed pair 100/92 (−4% serif /
+            −5% sans, 325 lead) resting 100 below the WHAT WE DO
+            title, the pillars note 248 below it. The INTRO beat
+            travels both UP AND OUT past the fixed label before
+            pillar 1 rises (the resting rule and the exit reconcile:
+            one is arrival, the other is the scroll-through). */}
+        <div class="landing-sreel__intro" data-sreel-intro>
+          <h2 class="landing-sreel__st">
+            <span class="landing-sreel__st-line landing-sreel__st-serif" data-sreel-introline>FROM ACCESS</span>
+            <span class="landing-sreel__st-line landing-sreel__st-sans" data-sreel-introline>TO IMPACT</span>
+          </h2>
+          <p class="landing-sreel__note" data-sreel-introline
+            >Our work is structured across three connected pillars: Immerse / Connect / Amplify.</p>
+        </div>
         {SERVICES_REEL_PILLARS.map((p, i) => (
           <div class="landing-sreel__pillar" data-sreel-pillar data-i={String(i)}>
             <div class="landing-sreel__divider" aria-hidden="true"><span class="landing-sreel__fill" data-sreel-fill></span></div>
