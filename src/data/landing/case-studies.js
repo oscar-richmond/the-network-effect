@@ -30,6 +30,34 @@ const ref = (slug) => {
   return hit;
 };
 
+/* ═══ THE FACTS TABLE (frame 36:1827 rebuild, 2026-08-26) ═══
+   Four rows per study — a 16/19 label (≤240px) + Body 21/28 copy
+   (≤460px) at the frame's FIXED row heights: rows 1/3/4 are TWO
+   lines, row 2 is ONE line — every study's copy is authored to
+   exactly those line counts so the frame's divider offsets
+   (0/106/184/290/396) hold for all four by construction.
+   ═══ ALL DERIVED COPY IS PLACEHOLDER ═══ condensed from each
+   study's own existing brief / our-work / key-impact content
+   (preserved below in railBlocks + ourWork.desc, no longer
+   rendered on desktop but retained verbatim — the longer copy may
+   be wanted back, and the MOBILE build still renders it), pending
+   the client's real account. */
+
+/* ═══ STREAM ROW GRAMMAR (frame 36:1827) ═══ The vocabulary is
+   three row types — full (1679.57×981.67) · pair-narrow-left
+   (552.19 + 1115.11) · pair-wide-left (mirrored) — on a 12.27px
+   gap both axes (the frame's exact measures). The frame's 12-row
+   sequence is the RULE's canonical cycle: [full · pair-narrow-left
+   · full · full · pair-wide-left] repeating, closed by a full row.
+   Each study's data declares its own sequence in this vocabulary
+   (layout + narrowFirst below — the shipped fields ARE the
+   grammar); the per-study image arrays map onto the slots in
+   authored order. How the four resolve: Yoxman and Pavilion Club
+   run one full cycle + the closing full (6 rows); Pavilion Summit
+   is the cycle's 4-row prefix (its set has no wide-left pair);
+   Wilderness Reserve compresses the cycle (drops the second full),
+   reported as an authored deviation, not an error. */
+
 const yox = (n) => asset(`/assets/landing/case/yoxman/${n}`);
 const pcl = (n) => asset(`/assets/landing/case/pavilion-club/${n}`);
 const psu = (n) => asset(`/assets/landing/case/pavilion-summit/${n}`);
@@ -37,8 +65,9 @@ const wld = (n) => asset(`/assets/landing/case/wilderness-reserve/${n}`);
 
 /**
  * @typedef {{ layout: 'full' | 'pair', narrowFirst?: boolean, imgs: string[] }} StreamRow
- *   layout 'full' = one 1095-wide image; 'pair' = 360 + 727 (8px gap),
- *   narrowFirst controls which side the 360 sits.
+ *   The grammar's vocabulary (see the header): 'full' = one
+ *   1679.57-wide image; 'pair' = 552.19 + 1115.11 on the 12.27px
+ *   gap, narrowFirst controls which side the 552.19 sits.
  */
 
 export const CASE_STUDIES = [
@@ -87,6 +116,17 @@ export const CASE_STUDIES = [
       'Commercial sponsorship',
       'End-to-end event production',
     ] }],
+    /* THE FACTS TABLE — see the header block. PLACEHOLDER, derived
+       from the brief + key impact above. Themes chosen: the four
+       load-bearing halves of the story — created-from-nothing,
+       the chef programme (its headline draw), the commercial
+       partners, and the delivery. */
+    facts: [
+      { label: 'CONCEPT & POSITIONING', copy: 'Festival concept created from scratch and positioned as a premium culinary platform.' },
+      { label: 'PROGRAMMING', copy: 'Michelin-star chef programming, curated end to end.' },
+      { label: 'PARTNERSHIPS', copy: 'Premium partners and commercial sponsorship developed around the festival brand.' },
+      { label: 'PRODUCTION', copy: 'Guest experience, hospitality design and full event production delivered in-house.' },
+    ],
     /* MORE WORK derives in the template (Oscar's rev): every /work
        project except this study, in the landing order, with the
        /work page's images and descriptions — no per-study list. */
@@ -128,6 +168,15 @@ export const CASE_STUDIES = [
       'Secured strategic partnerships and commercial collaborations',
       'Positioned Pavilion as a destination for business, culture and community',
     ] }],
+    /* FACTS — PLACEHOLDER, condensed from Oscar's verbatim key
+       impact. Themes: the proposition itself, the programming, the
+       community it convenes, and the commercial layer. */
+    facts: [
+      { label: 'MEMBERSHIP', copy: 'Created Pavilion\u2019s private membership proposition and member journey from the ground up.' },
+      { label: 'PROGRAMMING', copy: 'Flagship founder and CEO programming, four clubs.' },
+      { label: 'COMMUNITY', copy: 'Curated conversations connecting founders, investors, creatives and cultural leaders.' },
+      { label: 'PARTNERSHIPS', copy: 'Strategic partnerships and commercial collaborations secured around the brand.' },
+    ],
   },
 
   /* ── PAVILION SUMMIT. TWO rail blocks (his copy gives Featured
@@ -173,6 +222,17 @@ export const CASE_STUDIES = [
       /* SCOPE removed at Oscar's request (2026-08-10) — his copy
          listed it, he has since cut it from this study. */
     ],
+    /* FACTS — PLACEHOLDER, condensed from the brief + the speaker
+       list (NAMED INDIVIDUALS — the elevated rights/consent flag on
+       railBlocks carries to row 2 verbatim). Themes: the concept,
+       the speakers (this study's centre of gravity), the curation
+       scope, and the conversations themselves. */
+    facts: [
+      { label: 'CONCEPT', copy: 'An immersive 24-hour leadership experience conceived and delivered from a blank page.' },
+      { label: 'SPEAKERS', copy: 'Ashley Walters, Stephen Graham, Joe Marler & more.' },
+      { label: 'CURATION', copy: 'Speakers, partnerships, hospitality and guest journey curated across every touchpoint.' },
+      { label: 'CONVERSATION', copy: 'Conversations beyond the boardroom between founders, athletes and cultural voices.' },
+    ],
   },
 
   /* ── WILDERNESS RESERVE. */
@@ -205,6 +265,15 @@ export const CASE_STUDIES = [
       'Curated celebrity stays, private events and brand experiences that elevated the estate\u2019s profile',
       'Supported the commercial growth that positioned Wilderness Reserve as one of the UK\u2019s premier luxury destinations',
     ] }],
+    /* FACTS — PLACEHOLDER, condensed from the key impact. Themes:
+       the four measurable arcs — estate growth, audience growth,
+       the revenue model, and the partnership layer. */
+    facts: [
+      { label: 'GROWTH', copy: 'From seven luxury residences to more than twenty-eight properties across three estates.' },
+      { label: 'AUDIENCE', copy: 'Digital audience grown from 10,000 to over 415,000.' },
+      { label: 'REVENUE', copy: 'Three core revenue pillars established: leisure, weddings and corporate retreats.' },
+      { label: 'PARTNERSHIPS', copy: 'Luxury brand, global business and cultural talent partnerships elevating the estate.' },
+    ],
   },
 ];
 

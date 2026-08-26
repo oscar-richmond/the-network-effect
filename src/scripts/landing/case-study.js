@@ -3,7 +3,8 @@
  *
  * SCROLL: native document scroll through Lenis — the landing's
  * config VERBATIM (lerp 0.065, smoothWheel; ScrollTrigger.update on
- * scroll; own rAF). The sticky rail is native position:sticky —
+ * scroll; own rAF). (The desktop sticky rail is RETIRED — frame
+ * 36:1827; the facts table replaced it, 2026-08-26.) —
  * proven under this exact Lenis by /landing's sticky stages (the
  * task's tripwire never fired: Lenis drives window scroll natively,
  * it never transforms a wrapper).
@@ -43,8 +44,8 @@ import { initCarouselIndicators } from './carousel-indicator.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const LINE_STAGGER_S = 0.12;
 const COL_STAGGER_S = 0.08;
+const LINE_STAGGER_S = 0.12;
 /* Bottom behaviours — the landing constants (landing-closing.js). */
 const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
 const BOTTOM_SNAP_IDLE_MS = 2000;
@@ -616,9 +617,13 @@ export function initCaseStudy() {
   fontsReady.then(() => {
     if (disposed) return;
 
-    /* Hero — word reveals at load, image rise behind. */
+    /* Hero — the title word-reveals at load, image rise behind.
+       (The subtitle is DESKTOP-hidden since the 36:1827 rebuild —
+       the mobile build keeps its shipped title+subtitle pair, so
+       its wiring is width-gated, not removed.) */
+    const isMob = isMobileViewport();
     const heroTitle = document.querySelector('[data-cs-hero-title]');
-    const heroSub = document.querySelector('[data-cs-hero-subtitle]');
+    const heroSub = isMob ? document.querySelector('[data-cs-hero-subtitle]') : null;
     [heroTitle, heroSub].forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -644,21 +649,44 @@ export function initCaseStudy() {
       }));
     }
 
-    /* What-we-did — lines word-reveal, columns staggered L->R. */
-    const didLines = Array.from(document.querySelectorAll('[data-cs-did-line]'));
-    didLines.forEach((line, i) => {
+    /* THE FACTS (36:1827): the label + paragraph word-reveal at the
+       label/para convention (65%, once); the TABLE ROWS reveal in
+       row order on the house 0.12 row stagger (the reel/access row
+       treatment), one-shot at 75%. */
+    const factLines = isMob ? [] : Array.from(document.querySelectorAll('[data-cs-facts-line]'));
+    factLines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
-      const col = Number(line.dataset.csCol ?? '-1');
-      const base = col >= 0 ? 0.12 + col * COL_STAGGER_S : 0;
-      wrapWordRevealElement(line, { baseDelay: base + (i % 5) * 0.04 });
+      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+      wrapWordRevealElement(line);
     });
-    const did = document.querySelector('[data-cs-did]');
-    if (did) {
+    const factsHead = document.querySelector('.cs-facts__head');
+    if (factsHead && factLines.length) {
       triggers.push(ScrollTrigger.create({
-        trigger: did,
-        start: 'top 70%',
+        trigger: factsHead,
+        start: 'top 65%',
         once: true,
-        onEnter: () => didLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l)),
+        onEnter: () => factLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l)),
+      }));
+    }
+    const factRows = isMob ? [] : Array.from(document.querySelectorAll('[data-cs-fact-row]'));
+    factRows.forEach((row, r) => {
+      row.querySelectorAll('[data-cs-fact-line]').forEach((el) => {
+        if (!(el instanceof HTMLElement)) return;
+        el.dataset.revealDelay = String(r * LINE_STAGGER_S);
+        wrapWordRevealElement(el);
+      });
+    });
+    const factsTable = document.querySelector('[data-cs-facts-table]');
+    if (factsTable && factRows.length) {
+      triggers.push(ScrollTrigger.create({
+        trigger: factsTable,
+        start: 'top 75%',
+        once: true,
+        onEnter: () => factRows.forEach((row) => {
+          row.querySelectorAll('[data-cs-fact-line]').forEach((el) => {
+            if (el instanceof HTMLElement) playLineRevealElement(el);
+          });
+        }),
       }));
     }
 
@@ -672,68 +700,51 @@ export function initCaseStudy() {
       }));
     });
 
-    /* Rail blocks — settle as each first pins; once settled, the
-       entrance's CSS transition is REMOVED (the house lesson: a CSS
-       transition on opacity would intercept the scrubbed cover
-       wipe's per-frame writes below). */
-    document.querySelectorAll('.cs-rail-seg').forEach((seg) => {
-      const block = seg.querySelector('[data-cs-rail]');
-      triggers.push(ScrollTrigger.create({
-        trigger: seg,
-        start: 'top 60%',
-        once: true,
-        onEnter: () => {
-          block?.classList.add('is-visible');
-          schedule(() => {
-            if (block instanceof HTMLElement) block.style.transition = 'none';
-          }, 700);
-        },
-      }));
-    });
-
-    /* THE COVER WIPE (Oscar's rev 2 — LINE BY LINE): as KEY
-       IMPACT's block rides up over the pinned OUR WORK, the
-       outgoing text wipes one line at a time, BOTTOM FIRST (the
-       incoming edge reaches the lower lines first), mirrored on
-       reversal — the hero exit-wipe structure, scrubbed over the
-       exact cover window. Lines = the label + the desc's rendered
-       lines (wrapStaticLines). Each line's tween sits at its
-       crossing offset within the window (blockH - lineBottom,
-       scaled so the last wipe completes inside the window) —
-       NUMERIC positions (the house lesson). KEEP 1944/120 in step
-       with the rail geometry. */
-    const seg1Block = document.querySelector('.cs-rail-seg--1 [data-cs-rail]');
-    const workSec = document.querySelector('[data-cs-work]');
-    if (seg1Block instanceof HTMLElement && workSec instanceof HTMLElement) {
-      const WIPE_SPAN_PX = 40;
-      const label = seg1Block.querySelector('.cs-rail__label');
-      const desc = seg1Block.querySelector('.cs-rail__desc');
-      const lines = [];
-      if (label instanceof HTMLElement) lines.push(label);
-      if (desc instanceof HTMLElement) lines.push(...wrapStaticLines(desc));
-      const blockRect = seg1Block.getBoundingClientRect();
-      const blockH = seg1Block.offsetHeight;
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: workSec,
-          start: () => `top+=${(1944 - 120 - blockH).toFixed(0)} top`,
-          end: () => `top+=${(1944 - 120).toFixed(0)} top`,
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
+    /* MOBILE-ONLY entrances (the shipped mobile build keeps its
+       what-we-did columns and static rail blocks — their wiring is
+       width-gated here since the 36:1827 desktop rebuild removed
+       those sections from the desktop render). The DESKTOP rail
+       machinery — the settle-at-pin scheduling for sticky segments
+       and the KEY-IMPACT scrubbed cover wipe — is REMOVED, not
+       gated. (Note: the cover wipe used to run below the seam too,
+       against desktop constants — a latent leak; it is gone on
+       both.) */
+    if (isMob) {
+      const didLines = Array.from(document.querySelectorAll('[data-cs-did-line]'));
+      didLines.forEach((line, i) => {
+        if (!(line instanceof HTMLElement)) return;
+        const col = Number(line.dataset.csCol ?? '-1');
+        const base = col >= 0 ? 0.12 + col * COL_STAGGER_S : 0;
+        wrapWordRevealElement(line, { baseDelay: base + (i % 5) * 0.04 });
       });
-      const scale = Math.max((blockH - WIPE_SPAN_PX) / blockH, 0);
-      lines.forEach((line) => {
-        const b = line.getBoundingClientRect().bottom - blockRect.top;
-        const pos = Math.max((blockH - b) * scale, 0); /* bottom lines first */
-        tl.fromTo(line,
-          { opacity: 1, filter: 'blur(0px)' },
-          { opacity: 0, filter: 'blur(6px)', duration: WIPE_SPAN_PX, ease: 'none', immediateRender: false },
-          pos);
-      });
-      cleanups.push(() => {
-        tl.scrollTrigger?.kill();
-        tl.kill();
+      const did = document.querySelector('[data-cs-did]');
+      if (did) {
+        triggers.push(ScrollTrigger.create({
+          trigger: did,
+          start: 'top 70%',
+          once: true,
+          onEnter: () => didLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l)),
+        }));
+      }
+      /* The seg1 desc keeps its static line boxes — the retired
+         cover wipe used to split it (wrapStaticLines) on every
+         width; the split is rendering-neutral and the shipped
+         mobile DOM carries it, so it stays. */
+      const seg1Desc = document.querySelector('.cs-rail-seg--1 .cs-rail__desc');
+      if (seg1Desc instanceof HTMLElement) wrapStaticLines(seg1Desc);
+      document.querySelectorAll('.cs-rail-seg').forEach((seg) => {
+        const block = seg.querySelector('[data-cs-rail]');
+        triggers.push(ScrollTrigger.create({
+          trigger: seg,
+          start: 'top 60%',
+          once: true,
+          onEnter: () => {
+            block?.classList.add('is-visible');
+            schedule(() => {
+              if (block instanceof HTMLElement) block.style.transition = 'none';
+            }, 700);
+          },
+        }));
       });
     }
 

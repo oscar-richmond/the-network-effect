@@ -55,9 +55,13 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
 
 <SiteShell title={`${title} — The Network Effect`} bodyClass="landing-v2 case-page">
   <main class="cs" data-case-study data-live-slugs={LIVE_CASE_SLUGS.join(',')}>
-    {/* ── A. HERO — title/subtitle white + difference over the bare
-        ground (blend walk: main/section ancestors carry no
-        transform/filter/opacity/z), then the full-width image. */}
+    {/* ── A. HERO (frame 36:1827, rebuilt 2026-08-26): the title is
+        plain ink at the display scale, above the 1680×980 margined
+        image — the frame carries NO SUBTITLE, so the subtitle is
+        MOBILE-ONLY now (the separate mobile build keeps its shipped
+        composition; the field stays in the data). The old white+
+        difference treatment is retired with the overlap that
+        motivated it — one less blended chain. */}
     <header class="cs-hero">
       <h1 class="cs-hero__title" data-cs-hero-title>{title}</h1>
       <p class="cs-hero__subtitle" data-cs-hero-subtitle>{study.subtitle}</p>
@@ -77,12 +81,41 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       <div class="cs-intro__bar" data-cs-bar aria-hidden="true"></div>
     </section>
 
-    {/* ── C. WHAT WE DID — pillar columns from the data (services-
-        taxonomy strings only). */}
+    {/* ── THE FACTS SECTION (frame 36:1827, 2026-08-26) — DESKTOP
+        ONLY (the mobile build keeps its shipped what-we-did/rail
+        composition below the seam). A 12/14 label + the our-work
+        paragraph on the 864 column, then the FOUR-ROW TABLE at the
+        frame's fixed geometry (dividers 0/106/184/290/396; labels
+        x840-rel, copy x1244-rel). Content per study from
+        study.facts — PLACEHOLDER, derived (see case-studies.js). */}
+    <section class="cs-facts" aria-label="Project summary" data-cs-facts>
+      <div class="cs-facts__head">
+        {/* FLAG: the frame's 121×14 label text is unextractable
+            (see the build report) — "OUR WORK" carries the section
+            identity, pending confirmation. */}
+        <h2 class="cs-facts__label" data-cs-facts-line>OUR WORK</h2>
+        <p class="cs-facts__para" data-cs-facts-line>{study.ourWork.desc}</p>
+      </div>
+      <div class="cs-facts__table" data-cs-facts-table>
+        {study.facts.map((row, ri) => (
+          <div class={`cs-facts__row cs-facts__row--${ri + 1}`} data-cs-fact-row>
+            <h3 class="cs-facts__rowlabel" data-cs-fact-line>{row.label}</h3>
+            <p class="cs-facts__rowcopy" data-cs-fact-line>{row.copy}</p>
+          </div>
+        ))}
+        {[0, 106, 184, 290, 396].map((y) => (
+          <div class="cs-facts__divider" style={`top:${y}px`} aria-hidden="true"></div>
+        ))}
+      </div>
+    </section>
+
+    {/* ── C. WHAT WE DID — MOBILE-ONLY since the 36:1827 rebuild
+        (the desktop frame replaces it with the facts table above;
+        display:none ≥1025 in case-study.css — the mobile build is a
+        separate composition, out of the rebuild's scope). */}
     {/* data-m-carousel / data-carousel-strip / the indicator (mobile
         rebuild 2026-08-13): the columns swipe horizontally on mobile
-        with the shared 100px indicator (carousel-indicator.js).
-        Attributes + the hidden-above-the-seam span are desktop-inert. */}
+        with the shared 100px indicator (carousel-indicator.js). */}
     <section class="cs-did" aria-label="What we did" data-cs-did data-m-carousel>
       <h2 class="cs-did__label" data-cs-did-line>WHAT WE DID</h2>
       <span class="m-carousel-ind" data-carousel-ind aria-hidden="true">
@@ -109,18 +142,15 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
 
     <div class="cs-divider" aria-hidden="true"></div>
 
-    {/* ── D. THE STICKY RAIL — native position:sticky inside two
-        OVERLAPPING absolute segments (the file's own encoding):
-        seg1 (OUR WORK) spans the whole stream, so its label stays
-        pinned at 120 while seg2's OPAQUE sticky block — starting at
-        the 4th row's offset — travels up OVER it (covering, not
-        pushing) and pins at the same 120. Seg2 ends at the stream's
-        end, so native sticky releases its block exactly as the last
-        image's bottom passes the bullets' bottom. Rows are plain
-        flow at margin-left 609 (8px gaps); sub-1024 the section
-        flexes and `order` interleaves rail blocks above their own
-        image groups. Rail text is plain #161616 on the opaque
-        backing — no blends (per the file). */}
+    {/* ── D. THE IMAGE STREAM (36:1827: full-measure rows on the
+        12.27 gap — the row grammar lives in the data). THE STICKY
+        RAIL IS RETIRED ON DESKTOP (the frame has no rail — the
+        facts section above carries its content): the two rail segs
+        below are MOBILE-ONLY markup now (display:none ≥1025; the
+        mobile build's flow-interleaved composition keeps rendering
+        railBlocks + ourWork.desc verbatim). The desktop pin/cover
+        machinery is REMOVED from case-study.js and the sticky
+        geometry from case-study.css — not hidden, gone. */}
     <section class="cs-work" aria-label="Our work" data-cs-work>
       <div class="cs-rail-seg cs-rail-seg--1">
         <div class="cs-rail-sticky" data-cs-rail>

@@ -1,21 +1,23 @@
 /*
- * /work/[slug] — CASE STUDY template (Figma 32:3306, extracted
- * 2026-08-07; 118px chrome subtracted). Native document scroll
- * (Lenis, the landing config); 1728-first, the 15" shell scales
- * below; sub-1024 stacks (bottom of file).
+ * /work/[slug] — CASE STUDY template. DESKTOP rebuilt to frame
+ * 36:1827 (2026-08-26; 118px chrome subtracted; geometry from the
+ * captured metadata + the task spec — the file became unreachable
+ * mid-extraction, so unverifiable type properties are mapped to
+ * the guide's named styles and flagged in the build report). The
+ * BASE rules below are the shared/mobile layer; the ≥1025 REBUILD
+ * block carries the new desktop composition. Sub-1024 is the
+ * SEPARATE shipped mobile build (bottom of file) — untouched.
  *
- * BLEND WALK: the hero title/subtitle are white + difference; their
- * ancestor chain (.cs-hero > .cs > body) carries no transform/
- * filter/opacity/z-index. The reveal animates their lr-inner
- * DESCENDANTS (house rule). Everything else is plain ink.
+ * BLEND WALK (post-rebuild): the page's only difference element is
+ * the gallery cursor (fixed, carries the blend itself). The hero
+ * title is plain ink on desktop now — the old white+difference
+ * treatment retired with the overlap that motivated it (mobile
+ * keeps its shipped treatment).
  *
- * THE STICKY RAIL: two OVERLAPPING absolute segments in .cs-work;
- * each holds a position:sticky block (top 120). Seg1 spans the
- * whole stream (its pinned label is COVERED, never pushed); seg2
- * starts at the 4th row (1944px = 3 x 648) with an opaque #EEEEF0
- * backing and ends at the stream's end — native sticky releases it
- * exactly as the last image's bottom passes the bullets. KEEP the
- * 648/1944 constants in step with the row pitch.
+ * THE STICKY RAIL IS RETIRED on desktop (frame 36:1827 has no rail
+ * — the FACTS table replaces it): the sticky/segment machinery is
+ * REMOVED below; the rail markup renders only in the mobile build,
+ * whose static-flow overrides are self-contained.
  */
 
 body.case-page {
@@ -103,6 +105,11 @@ body.case-page {
 	height: 180px;
 	background: #c1250e; /* the holding-page red */
 }
+
+/* ── THE FACTS (36:1827) — desktop-only; hidden below the seam
+   (the mobile build keeps its shipped what-we-did/rail
+   composition; the ≥1025 rebuild block shows + lays this out). */
+.landing-v2 .cs-facts { display: none; }
 
 /* ── C. What we did ─────────────────────────────────────────────── */
 .landing-v2 .cs-did {
@@ -203,7 +210,7 @@ body.case-page {
 	background: rgba(22, 22, 22, 0.15);
 }
 
-.landing-v2 .cs-work + .cs-divider { margin-top: 100px; }
+.landing-v2 .cs-work + .cs-divider { margin-top: 120px; } /* frame 36:2042: stream end + 120 */
 
 /* ── D. The sticky rail + image stream ──────────────────────────── */
 .landing-v2 .cs-work {
@@ -212,26 +219,30 @@ body.case-page {
 }
 
 .landing-v2 .cs-row {
-	margin-left: 609px;
-	width: 1095px;
+	/* Frame 36:1912: full-measure rows in the 24 margins on the
+	   12.27px gap (both axes — the frame's exact measure). The
+	   narrow slot is 552.19; the wide slot flexes to the margin
+	   (1115.54 at 1728 — the frame's 1115.11 + its 0.43 float
+	   residue, normalised; the GAP is the authored spec). */
+	margin: 0 24px;
 	display: flex;
-	gap: 8px;
+	gap: 12.27px;
 }
 
-.landing-v2 .cs-row + .cs-row { margin-top: 8px; }
+.landing-v2 .cs-row + .cs-row { margin-top: 12.27px; }
 
 .landing-v2 .cs-row__img {
 	margin: 0;
-	height: 640px;
+	height: 981.67px;
 	overflow: hidden;
 	flex: none;
 }
 
-.landing-v2 .cs-row--full .cs-row__img { width: 1095px; }
-.landing-v2 .cs-row--pair .cs-row__img:first-child { width: 360px; }
-.landing-v2 .cs-row--pair .cs-row__img:last-child { width: 727px; }
-.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:first-child { width: 727px; }
-.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:last-child { width: 360px; }
+.landing-v2 .cs-row--full .cs-row__img { width: 100%; }
+.landing-v2 .cs-row--pair .cs-row__img:first-child { width: 552.19px; }
+.landing-v2 .cs-row--pair .cs-row__img:last-child { width: auto; flex: 1 1 auto; }
+.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:first-child { width: auto; flex: 1 1 auto; }
+.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:last-child { width: 552.19px; flex: none; }
 
 .landing-v2 .cs-row__img img,
 .landing-v2 .cs-row__img video {
@@ -247,34 +258,9 @@ body.case-page {
 
 .landing-v2 .cs-row__img { cursor: pointer; /* opens the lightbox */ }
 
-.landing-v2 .cs-rail-seg {
-	position: absolute;
-	left: 0;
-	width: 609px;
-	pointer-events: none;
-}
-
-.landing-v2 .cs-rail-seg--1 {
-	top: 0;
-	height: 100%;
-}
-
-/* Seg2 begins at row 4 (3 x 648) and ends at the stream's end —
-   the release point (KEEP in step with the row pitch). */
-.landing-v2 .cs-rail-seg--2 {
-	top: 1944px;
-	height: calc(100% - 1944px);
-}
-
-.landing-v2 .cs-rail-sticky {
-	position: sticky;
-	top: 120px;
-	width: 609px;
-	padding: 0 100px 32px 24px;
-	box-sizing: border-box;
-	background: #eeeef0; /* the opaque cover block (the file's rail) */
-	pointer-events: auto;
-}
+/* (The rail's desktop sticky/segment geometry is REMOVED — frame
+   36:1827. The type rules below stay: the MOBILE build's static
+   rail flow inherits them; its own block re-declares the layout.) */
 
 .landing-v2 .cs-rail__label {
 	margin: 0;
@@ -477,28 +463,140 @@ body.case-page {
 	letter-spacing: var(--ts-serif-body-track);
 }
 
-/* ── Body/Default spacing re-derivation — DESKTOP ONLY (Oscar
-   2026-08-26; mobile keeps its own boxes, no mobile guide yet).
-   Rationale per value:
-   · did/rail margins 24→26: the 21px cap sits ~1.5px deeper in its
-     box than the 16px cap did — +2 holds the visual label→block gap.
-   · bullets indent 24→28: the disc marker scales with the 21px type;
-     28 puts markers + hanging lines on the 28 line grid.
-   · carddesc margin 7.5→2.5: optical 16 re-derived (16 − serif-34
-     title descender ~7.6 − 21px body cap ~6.1).
-   · did min-height 148→212: the worst column set (Yoxman) bottoms at
-     209 with 21/28 items; 212 keeps the divider clear on all four. */
+/* ═══ THE 36:1827 DESKTOP REBUILD (2026-08-26) ═══ Everything the
+   new frame changes, scoped ≥1025 so the separate mobile build is
+   untouched. Type notes: the file became unreachable mid-
+   extraction — properties marked INFERRED are mapped from the
+   frame's box geometry + style-named layers to the guide's named
+   styles, flagged in the build report, pending re-extraction. */
 @media (min-width: 1025px) {
-	.landing-v2 .cs-did { min-height: 212px; }
-	.landing-v2 .cs-did__list {
-		margin-top: 26px;
-		font-size: var(--ts-serif-body-size); /* Body / Default (was 16/19) */
+	/* Mobile-only sections off above the seam: the subtitle (the
+	   frame's hero has none), what-we-did + its divider and the two
+	   rail segments (replaced by the facts table), and the more-work
+	   cards' index/desc (the frame's cards carry titles only). */
+	.landing-v2 .cs-hero__subtitle,
+	.landing-v2 .cs-did,
+	.landing-v2 .cs-did + .cs-divider,
+	.landing-v2 .cs-rail-seg,
+	.landing-v2 .cs-more__cardindex,
+	.landing-v2 .cs-more__carddesc { display: none; }
+
+	/* HERO (36:1964/1909): title at y175, display sans 100/88/−5 —
+	   the −5% Display tracking is CONFIRMED by the frame's own
+	   1204×88 single-line box: YOXMAN FOOD FESTIVAL measures 1198 at
+	   −5% and 1218 (wrapping) at −4%. Plain ink — the difference
+	   treatment retired (no overlap; white-on-light rendered
+	   near-ink anyway). Image 1680×980 in the margins, 80 below the
+	   title box. */
+	.landing-v2 .cs-hero { padding-top: 175px; }
+	.landing-v2 .cs-hero__title {
+		max-width: 1204px;
+		font-size: 100px;
+		line-height: 88px;
+		letter-spacing: -0.05em;
+		color: #161616;
+		mix-blend-mode: normal;
+	}
+	.landing-v2 .cs-hero__img { margin: 80px 24px 0; width: auto; height: 980px; }
+
+	/* INTRO (36:1908/1963): 1630 measure; INFERRED 56/54/−3.5 (the
+	   216px box = 4 lines of 54 — the closing-headline scale). The
+	   leading indent scales with the size (268 × 56/48). Bar 10×204
+	   at +5 (frame exact). */
+	.landing-v2 .cs-intro { margin-top: 100px; }
+	.landing-v2 .cs-intro__statement {
+		max-width: 1630px;
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.035em;
+	}
+	.landing-v2 .cs-intro__indent { width: 313px; }
+	.landing-v2 .cs-intro__bar { top: 5px; height: 204px; }
+
+	/* THE FACTS (36:1966/1962/1967): label + paragraph on the 864
+	   column (frame: both tops at y1857), then the four-row table at
+	   the frame's FIXED geometry — dividers at 0/106/184/290/396
+	   (2px; colour INFERRED as the site's #E0E0E7 rule), row content
+	   at x840/x1220 with tops 26/132/210/316 and the single-line
+	   row's +4.5 label centring. Labels 16/19 Dazzed 700 (the row-
+	   label style); copy + paragraph Body/Default 21/28/−1.5. */
+	.landing-v2 .cs-facts { display: block; position: relative; margin: 100px 24px 0; }
+	.landing-v2 .cs-facts__head { position: relative; }
+	.landing-v2 .cs-facts__label {
+		position: absolute;
+		left: 0;
+		top: 0;
+		margin: 0;
+		font-weight: 700;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: 0;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .cs-facts__para {
+		margin: 0 0 0 840px;
+		width: 724px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: var(--ts-serif-body-size);
 		line-height: var(--ts-serif-body-lh);
 		letter-spacing: var(--ts-serif-body-track);
+		color: #161616;
 	}
-	.landing-v2 .cs-rail__desc { margin-top: 26px; }
-	.landing-v2 .cs-rail__bullets { margin-top: 26px; padding-left: 28px; }
-	.landing-v2 .cs-more__carddesc { margin-top: 2.5px; }
+	.landing-v2 .cs-facts__table { position: relative; margin-top: 100px; height: 398px; }
+	.landing-v2 .cs-facts__divider {
+		position: absolute;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: #e0e0e7;
+	}
+	.landing-v2 .cs-facts__row { position: absolute; left: 840px; width: 840px; }
+	.landing-v2 .cs-facts__row--1 { top: 26px; }
+	.landing-v2 .cs-facts__row--2 { top: 132px; }
+	.landing-v2 .cs-facts__row--3 { top: 210px; }
+	.landing-v2 .cs-facts__row--4 { top: 316px; }
+	.landing-v2 .cs-facts__rowlabel {
+		position: absolute;
+		left: 0;
+		top: 0;
+		margin: 0;
+		width: 240px;
+		font-weight: 700;
+		font-size: 16px;
+		line-height: 19px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .cs-facts__row--2 .cs-facts__rowlabel { top: 4.5px; }
+	.landing-v2 .cs-facts__rowcopy {
+		margin: 0 0 0 380px;
+		width: 460px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: var(--ts-serif-body-size);
+		line-height: var(--ts-serif-body-lh);
+		letter-spacing: var(--ts-serif-body-track);
+		color: #161616;
+	}
+
+	/* STREAM: 100 below the table (frame 2449). */
+	.landing-v2 .cs-work { margin-top: 100px; }
+
+	/* MORE WORK (36:2022/2043): title 142 into the section at the
+	   Section 34/38 box (the frame's 350×38 node; FACES kept as the
+	   shipped mixed pair — the single-node face is unextractable,
+	   flagged); pager on the title row (frame y +148, flush right at
+	   1704); card titles 24 BOX below the image (the serif title's
+	   own strut). Cards/gap/viewport already match the frame
+	   (836×520 on the 8px gap, cards top 260). */
+	.landing-v2 .cs-more { padding-top: 142px; }
+	.landing-v2 .cs-more__title { font-size: 34px; line-height: 38px; }
+	.landing-v2 .cs-more__pager { top: 148px; }
+	.landing-v2 .cs-more__cardrow { margin-top: 24px; }
 }
 
 /* Right-edge fade over the card images (the file's 24px ramp). */
@@ -772,6 +870,11 @@ body.case-page {
 	.landing-v2 .cs-did__col { position: static; margin-top: 24px; }
 
 	.landing-v2 .cs-divider { margin-top: 48px; }
+	/* The pre-more divider keeps the SHIPPED mobile 100 (the base
+	   rule moved to the frame's 120 for desktop; this compound
+	   selector out-specifies the blanket 48 above, so it needs its
+	   own mobile pin). */
+	.landing-v2 .cs-work + .cs-divider { margin-top: 100px; }
 
 	.landing-v2 .cs-work {
 		margin-top: 48px;
@@ -790,7 +893,9 @@ body.case-page {
 	.landing-v2 .cs-rail-seg--2 { order: 2; }
 	.landing-v2 .cs-row--s2 { order: 3; }
 
-	.landing-v2 .cs-row { margin: 0 24px; width: auto; flex-wrap: wrap; }
+	/* gap pinned at the shipped 8 — the ≥1025 rebuild moved the BASE
+	   gap to the frame's 12.27; mobile keeps its own build. */
+	.landing-v2 .cs-row { margin: 0 24px; width: auto; flex-wrap: wrap; gap: 8px; }
 	.landing-v2 .cs-row + .cs-row { margin-top: 0; }
 	.landing-v2 .cs-row__img { width: 100% !important; height: auto; aspect-ratio: 1095 / 640; }
 
