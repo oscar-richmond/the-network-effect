@@ -616,10 +616,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    the ink overhang, the negative margin cancels the layout growth —
    line spacing unchanged, ascenders/descenders never shaved by the
    clips' overflow:hidden. Inert (0) until the module sets the var. */
-.landing-v2 .landing-hero__intro-text .lr-clip {
-	padding: var(--landing-copy-clip-pad, 0px) 0;
-	margin: calc(-1 * var(--landing-copy-clip-pad, 0px)) 0;
-}
+/* (The hero-specific --landing-copy-clip-pad override is retired,
+   2026-08-26 — the shared line-reveal clip bounds now carry the ink
+   window globally; this more-specific rule was zeroing them.) */
 
 .landing-v2 .landing-hero__intro-text p + p {
 	margin-top: 24px;
@@ -5513,7 +5512,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   drawn 60px gap (headline 200..500 at 56/50 → CTAs 560; still
 	   22px clear of the photo at 620). */
 	.landing-v2.landing-home .landing-founders__ctas {
-		top: 560px;
+		top: 420px; /* 64 below the statement block (Oscar 2026-08-26; was 560 — a 204 gap) */
 	}
 
 	.landing-v2.landing-home .landing-access__headline {
@@ -5617,7 +5616,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows {
 		display: block;
 		position: relative;
-		padding-top: 886px; /* the header zone (+56 — the statement's two lines grew 64→92 each) */
+		padding-top: 815px; /* header zone −71 (Oscar 2026-08-26: FROM ACCESS sits 100 below WHAT WE DO — was a 171 gap; everything below rides up together) */
 	}
 
 	.landing-v2.landing-home .landing-svcrows__label {
@@ -5638,7 +5637,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows__statement {
 		position: absolute;
 		left: 542px; /* frame x566 − the 24 inset */
-		top: 298px;
+		top: 227px; /* label bottom + 100 (Oscar 2026-08-26; was 298) */
 		margin: 0;
 		color: #161616;
 	}
@@ -5670,7 +5669,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-svcrows__note {
 		position: absolute;
 		left: 196px; /* frame x220 − 24 */
-		top: 546px; /* +56 with the statement's hero scale */
+		top: 475px; /* rides the statement's −71 (was 546) */
 		width: 740px;
 		margin: 0;
 		font-family: var(--font-serif-cond);
@@ -6149,7 +6148,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* Section = stage + the pinned runway (5×400 pair steps + the
 	   1900 side exit). Sticky releases at the section bottom. */
 	.landing-v2.landing-home .landing-access {
-		height: calc(1446px + 3900px);
+		height: calc(1446px + 600px + 3900px); /* stage + ACCESS_READ_HOLD_PX + runway (Oscar 2026-08-26) */
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -6231,7 +6230,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2.landing-home .landing-access__row--top { left: calc(50% - 1238px); }
-	.landing-v2.landing-home .landing-access__row--bottom { left: calc(50% - 4584px); }
+	.landing-v2.landing-home .landing-access__row--bottom { left: calc(50% - 3288px); } /* −4584 + two removed lead pads */
 
 	.landing-v2.landing-home .landing-access__cell {
 		flex: none;
@@ -6277,7 +6276,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2.landing-home .landing-access__veilwrap--top .landing-access__veilrow { left: calc(50% - 1238px); }
-	.landing-v2.landing-home .landing-access__veilwrap--bottom .landing-access__veilrow { left: calc(50% - 4584px); }
+	.landing-v2.landing-home .landing-access__veilwrap--bottom .landing-access__veilrow { left: calc(50% - 3288px); } /* mirrors the row */
 
 	.landing-v2.landing-home .landing-access__veil {
 		flex: none;

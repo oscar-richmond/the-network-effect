@@ -145,10 +145,46 @@ function ensureLineRevealStyles() {
   if (lineRevealStylesInjected) return;
   lineRevealStylesInjected = true;
 
+  /* The lr-done release/re-arm hooks (see the stylesheet note):
+     transitionend on a revealed inner frees the clip; a stale lr-done
+     is cleared as the next transition starts while un-revealed. */
+  document.addEventListener('transitionend', (e) => {
+    const t = e.target;
+    if (e.propertyName !== 'transform' || !(t instanceof HTMLElement) || !t.classList.contains('lr-inner')) return;
+    const clip = t.parentElement;
+    if (!clip?.classList.contains('lr-clip')) return;
+    /* Release only when SETTLED AT IDENTITY — a transition that ended
+       elsewhere (an exit landing at its parked offset) keeps the clip. */
+    const tf = getComputedStyle(t).transform;
+    if (tf === 'none' || tf === 'matrix(1, 0, 0, 1, 0, 0)') {
+      clip.classList.add('lr-done');
+    }
+  }, true);
+  document.addEventListener('transitionstart', (e) => {
+    const t = e.target;
+    if (e.propertyName !== 'transform' || !(t instanceof HTMLElement) || !t.classList.contains('lr-inner')) return;
+    /* ANY starting motion re-arms the clip immediately. */
+    t.parentElement?.classList.remove('lr-done');
+  }, true);
+
   const css = document.createElement('style');
   css.id = 'line-reveal-styles';
   css.textContent = `
-    .lr-clip { overflow: hidden; display: block; }
+    /* CLIP BOUNDS (Oscar's clipping report, 2026-08-26):
+       — SIDES: the window extends 0.25em past each edge with
+         exactly-compensating negative margins (exact for both block
+         and inline-block clips — the margin box, and therefore all
+         layout, is byte-identical; vertical padding is NOT used: in
+         inline-block line-box contexts its negative-margin
+         compensation is unreliable and leaked height).
+       — VERTICALS: once a reveal's transition COMPLETES the clip
+         releases overflow entirely (lr-done, set on transitionend
+         below), so descender/ascender ink renders in full at rest.
+         The gate needs BOTH classes: the moment an un-reveal drops
+         lr-visible the clip re-engages for the exit motion. The
+         animation itself — timing, curve, character — is untouched;
+         only the at-rest window changes. */
+    .lr-clip { overflow: hidden; display: block; padding: 0 0.25em; margin: 0 -0.25em; }
     .lr-clip--word { display: inline-block; vertical-align: top; text-indent: 0; }
     .lr-inner {
       display: block;
@@ -158,6 +194,7 @@ function ensureLineRevealStyles() {
     .lr-clip.lr-visible .lr-inner {
       transform: translateY(0);
     }
+    .lr-clip.lr-done { overflow: visible; }
   `;
   document.head.appendChild(css);
 }
@@ -535,6 +572,7 @@ export function initLineReveal(options = {}) {
           target.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
             /** @type {HTMLElement} */ (clip).style.transition = 'none';
             clip.classList.add('lr-visible');
+            clip.classList.add('lr-done'); /* no transition => no transitionend */
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
                 /** @type {HTMLElement} */ (clip).style.transition = '';

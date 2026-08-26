@@ -28,7 +28,6 @@
  * centre and are repeats by design.
  */
 import { asset } from '../../utils/asset.js';
-import GradualBlur from '../GradualBlur.astro';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
@@ -42,25 +41,30 @@ const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
    together BY CONSTRUCTION off one clock (the mobile rows' device).
    Pads bookend for edge coverage and never land. Cell = index into
    the strip; `pair` marks landable cells (0-based pair index). */
+/* TRAILING CELLS REMOVED (Oscar 2026-08-26): the sequence ends CLEAN
+   on CORPORATE ↔ COMMUNITY — the top row's THREE tail pads and the
+   bottom row's TWO lead pads are gone (audited counts). Consequence
+   (reported): those cells also edge-filled the pair-4/5 rests, so
+   the runway now visibly runs out at the travel edges approaching
+   the final pair. `pad` cells are marked for the driver (the old
+   first/last-index inference broke once a prime became an edge). */
 const topStrip = [
-  { src: a(9) }, // lead pad
+  { src: a(9), pad: true }, // lead pad
   { src: a(7), pair: 0 },
   { src: a(2), pair: 1 },
   { src: a(1), pair: 2 },
   { src: a(6), pair: 3 },
   { src: a(13), pair: 4 },
   { src: a(3), pair: 5 },
-  { src: a(10) }, { src: a(9) }, { src: a(10) }, // tail pads (p=1 coverage)
 ];
 const bottomStrip = [
-  { src: a(10) }, { src: a(9) }, // lead pads (p=1 coverage)
   { src: a(4), pair: 5 },
   { src: a(14), pair: 4 },
   { src: a(12), pair: 3 },
   { src: a(5), pair: 2 },
   { src: a(11), pair: 1 },
   { src: a(8), pair: 0 },
-  { src: a(9) }, // tail pad
+  { src: a(9), pad: true }, // tail pad (pair-1 right fill)
 ];
 
 /* MOBILE (unchanged markup below) still reads these: */
@@ -82,7 +86,7 @@ const rightStack = [a(10), a(4), a(14), a(12), a(5), a(11), a(8), a(9)];
     <div class="landing-access__rowwrap landing-access__rowwrap--top" aria-hidden="true">
       <div class="landing-access__row landing-access__row--top" data-access-row="top">
         {topStrip.map((cell) => (
-          <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`}>
+          <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`} data-pad={cell.pad ? '' : undefined}>
             <img src={cell.src} alt="" loading="eager" decoding="async" />
           </figure>
         ))}
@@ -91,7 +95,7 @@ const rightStack = [a(10), a(4), a(14), a(12), a(5), a(11), a(8), a(9)];
     <div class="landing-access__rowwrap landing-access__rowwrap--bottom" aria-hidden="true">
       <div class="landing-access__row landing-access__row--bottom" data-access-row="bottom">
         {bottomStrip.map((cell) => (
-          <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`}>
+          <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`} data-pad={cell.pad ? '' : undefined}>
             <img src={cell.src} alt="" loading="eager" decoding="async" />
           </figure>
         ))}
@@ -252,18 +256,11 @@ const rightStack = [a(10), a(4), a(14), a(12), a(5), a(11), a(8), a(9)];
       </div>
     </div>
 
-    {/* Page-edge treatment — the /services GradualBlur bands over a
-        same-colour gradient tint (see landing.css). */}
-    <div class="landing-access__edge-tint landing-access__edge-tint--top" aria-hidden="true"></div>
-    <GradualBlur
-      target="parent"
-      position="top"
-      strength={3}
-      height="12rem"
-      divCount={2}
-      exponential={true}
-      opacity={0.8}
-      zIndex={6}
-    />
+    {/* (The top GradualBlur band + top edge-tint are REMOVED — Oscar's
+        2026-08-26 report: they sat full-width over the WHAT WE DO
+        label and the headline's upper lines, and nothing image-like
+        ever crosses this stage's TOP edge (the rows live at y718+).
+        The featured section keeps its own bands — separate instance,
+        untouched.) */}
   </div>
 </section>

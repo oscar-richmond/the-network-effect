@@ -609,6 +609,21 @@ export function initLandingHeroScroll() {
           { yPercent: 110, y: 0 },
           { yPercent: 0, y: 0, ease: 'none', duration: 1, stagger: 0.6 },
         );
+        /* Clip release at settle (the site-wide clipping fix,
+           2026-08-26): this reveal is a SCRUB — no transition events —
+           so the shared lr-done release is toggled here: a line's clip
+           frees its overflow exactly while the inner rests at
+           identity, and re-arms the moment the scrub moves it
+           (reverse-safe, pure f(progress)). */
+        const releaseAtSettle = () => {
+          introLines.forEach((el) => {
+            const clip = el.parentElement;
+            if (!clip?.classList.contains('lr-clip')) return;
+            clip.classList.toggle('lr-done', Math.abs(Number(gsap.getProperty(el, 'yPercent')) || 0) < 0.01);
+          });
+        };
+        tl.eventCallback('onUpdate', releaseAtSettle);
+        releaseAtSettle();
         tweens.push(tl);
         if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
       }

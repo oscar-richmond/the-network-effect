@@ -64,9 +64,13 @@ const LAND_OFFSET_BOTTOM_PX = 272;
 /* Strip bases (frame −374/−480 at 1728, centre-anchored): the top
    strip's pair k sits at DOM index 1+k, the bottom's at 7−k. */
 const TOP_PAIR_INDEX = (k) => 1 + k;
-const BOTTOM_PAIR_INDEX = (k) => 7 - k;
+/* Bottom indices re-derived after the trailing-cell removal (Oscar
+   2026-08-26): the two lead pads are gone, so pair k sits at 5−k and
+   the base moves right by exactly two pitches (−4584 + 1296) — every
+   pair still lands at shift 648·k, byte-identical scroll positions. */
+const BOTTOM_PAIR_INDEX = (k) => 5 - k;
 const baseTop = (vw) => vw / 2 - 1238;
-const baseBottom = (vw) => vw / 2 - 4584;
+const baseBottom = (vw) => vw / 2 - 3288;
 /* THE EXIT — sideways at 1:1 until the widest visible span clears
    (1858 at 1728) + margin. */
 const EXIT_PX = 1900;
@@ -95,6 +99,30 @@ const WORDS_AT_MS = 700;
 const ENTRY_CURVE = 'transform 1.2s cubic-bezier(0.42, 0, 0.24, 1)';
 const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
+/* ── THE READ-HOLD (Oscar 2026-08-26, scroll-past fix): the stage
+   pins TOP-anchored first — the label + headline fully visible —
+   for ACCESS_READ_HOLD_PX of scroll, then its sticky `top` SCRUBS
+   from 0 down to (vh − stage) over the stage overflow (identical
+   motion to the old un-pinned flow-through, now scrub-owned), and
+   the travel begins. Layout property only (sticky top) — the
+   difference words never gain a transformed ancestor. The section
+   is 600 taller (landing.css); the main trigger starts later by
+   the same amount. Reversible by construction. */
+const ACCESS_READ_HOLD_PX = 600;
+/* ── ROW COLLAPSE (Oscar 2026-08-26): BOTH rows' heights shrink
+   TOGETHER during the exit, starting the moment the first landed
+   cell's edge crosses a viewport edge — derived from geometry per
+   frame (min of: top cell's left edge → viewport left = vw/2 − 590;
+   bottom cell's right edge → viewport right = vw/2 − 592), never a
+   fixed scroll offset. Height is layout (no transforms); the cells
+   and imgs shrink WITH the wraps so the GL wave planes (which track
+   img rects) collapse in lockstep. */
+const ACCESS_COLLAPSE_TRAVEL_PX = 600; /* exit px over which 340 → 0 */
+const ROW_H_PX = 340;
+const collapseStartExitPx = (vw) => Math.min(
+  vw / 2 + LAND_OFFSET_TOP_PX - CELL_W / 2,   /* top: vw/2 − 590 */
+  vw / 2 - (LAND_OFFSET_BOTTOM_PX + CELL_W / 2), /* bottom: vw/2 − 592 */
+);
 
 /** Word pairs — shared source (mobile renders all six statically). */
 const PAIRS = ACCESS_PAIRS;
@@ -344,7 +372,7 @@ export function initLandingAccess() {
        clears the viewport. Bottom strip's rightmost cell ends at
        base + 8·pitch + cell; push left until clear. */
     const parkTop = w - baseTop(w) + pad;
-    const parkBottom = -(baseBottom(w) + 8 * X_PITCH + CELL_W + pad);
+    const parkBottom = -(baseBottom(w) + (cells.bottom.length - 1) * X_PITCH + CELL_W + pad);
     entryGroups.top.forEach((el) => { el.style.transform = `translateX(${parkTop.toFixed(1)}px)`; });
     entryGroups.bottom.forEach((el) => { el.style.transform = `translateX(${parkBottom.toFixed(1)}px)`; });
   };
@@ -381,7 +409,7 @@ export function initLandingAccess() {
     cells[row].forEach((cell, i) => {
       if (!(cell instanceof HTMLElement)) return;
       const centre = base + i * X_PITCH + CELL_W / 2 + shift;
-      const isPad = !cell.classList.contains('is-prime') && (i === 0 || i >= cells[row].length - 1);
+      const isPad = cell.hasAttribute('data-pad');
       const dist = Math.abs(centre - landed);
       const t = isPad ? 1 : Math.min(Math.max((dist - dead) / (X_PITCH - dead), 0), 1);
       const veil = veils[row][i];
@@ -433,6 +461,29 @@ export function initLandingAccess() {
     updateRow('top', shiftTop);
     updateRow('bottom', shiftBottom);
     updateWords(shiftTop, shiftBottom);
+    applyCollapse(exitT * EXIT_PX);
+  };
+
+  /* BOTH rows collapse together — see the constants block. Pure
+     f(progress): fully reversible on scroll-up. */
+  const collapseEls = [
+    ...Object.values(entryGroups).flat(),
+  ];
+  const collapseCells = [...cells.top, ...cells.bottom].filter((c) => c instanceof HTMLElement);
+  const collapseImgs = collapseCells.map((c) => c.querySelector('img')).filter((el) => el instanceof HTMLElement);
+  const collapseVeils = [...veils.top, ...veils.bottom].filter((v) => v instanceof HTMLElement);
+  let lastCollapseH = ROW_H_PX;
+  const applyCollapse = (exitShiftPx) => {
+    const cT = Math.min(Math.max((exitShiftPx - collapseStartExitPx(vw())) / ACCESS_COLLAPSE_TRAVEL_PX, 0), 1);
+    const h = ROW_H_PX * (1 - cT);
+    if (Math.abs(h - lastCollapseH) < 0.05) return;
+    lastCollapseH = h;
+    const px = h <= 0.05 ? '0px' : `${h.toFixed(1)}px`;
+    const clear = h >= ROW_H_PX - 0.05;
+    collapseEls.forEach((el) => { el.style.height = clear ? '' : px; });
+    collapseCells.forEach((el) => { el.style.height = clear ? '' : px; });
+    collapseImgs.forEach((el) => { el.style.height = clear ? '' : px; });
+    collapseVeils.forEach((el) => { el.style.height = clear ? '' : px; });
   };
 
   /* RM statics are CSS (.is-on / .is-prime); live values take over
@@ -461,7 +512,10 @@ export function initLandingAccess() {
      meets the viewport bottom — section top at (vh − STAGE_H). */
   const trigger = ScrollTrigger.create({
     trigger: section,
-    start: () => `top ${Math.round((window.innerHeight || 1080) - STAGE_H_PX)}px`,
+    /* +READ_HOLD: the travel begins after the read-hold has consumed
+       its extra section scroll (the stage reaches the bottom anchor
+       exactly then — see the hold trigger below). */
+    start: () => `top+=${ACCESS_READ_HOLD_PX} ${Math.round((window.innerHeight || 1080) - STAGE_H_PX)}px`,
     end: `+=${TOTAL_RUNWAY_PX}`,
     scrub: true,
     invalidateOnRefresh: true,
@@ -469,6 +523,29 @@ export function initLandingAccess() {
       applyProgress(self.progress);
       window.clearTimeout(snapTimer);
       snapTimer = window.setTimeout(trySnap, SNAP_IDLE_MS);
+    },
+  });
+
+  /* ── THE READ-HOLD DRIVER: scrubs the stage's sticky `top` from 0
+     (top-anchored — label + headline in full view) through the hold,
+     then down to (vh − stage) over the stage overflow so the stage
+     rises exactly as the old flow-through did. Set as layout, never
+     transform (the blend map holds). Cleared on dispose. */
+  const stageOverflow = () => Math.max(STAGE_H_PX - (window.innerHeight || 1080), 0);
+  const applyHold = (rel) => {
+    if (!(stage instanceof HTMLElement)) return;
+    const t = Math.min(Math.max((rel - ACCESS_READ_HOLD_PX) / stageOverflow(), 0), 1);
+    stage.style.top = `${(-t * stageOverflow()).toFixed(1)}px`;
+  };
+  applyHold(-1);
+  const holdTrigger = ScrollTrigger.create({
+    trigger: section,
+    start: 'top top',
+    end: () => `+=${ACCESS_READ_HOLD_PX + stageOverflow()}`,
+    scrub: true,
+    invalidateOnRefresh: true,
+    onUpdate: (self) => {
+      applyHold(self.progress * (ACCESS_READ_HOLD_PX + stageOverflow()));
     },
   });
 
@@ -498,6 +575,7 @@ export function initLandingAccess() {
   const dlines = Array.from(section.querySelectorAll('[data-access-dline]'));
   const timeouts = [];
   let revealTrigger = null;
+  let headlineTrigger = null;
   let disposed = false;
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
@@ -507,6 +585,21 @@ export function initLandingAccess() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
     });
+    /* SPLIT TRIGGERS (Oscar 2026-08-26, dead-space fix): the label +
+       headline arrive as soon as THEIR position (stage y100) meets
+       the viewport bottom — while the featured carousel is still
+       leaving — instead of waiting for the rows' y718. The rows keep
+       the shipped threshold and character. */
+    headlineTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: 'top+=100 bottom',
+      once: true,
+      onEnter: () => {
+        dlines.forEach((line) => {
+          if (line instanceof HTMLElement) playLineRevealElement(line);
+        });
+      },
+    });
     revealTrigger = ScrollTrigger.create({
       trigger: section,
       /* The rows' top edge (stage y718) reaching the viewport bottom
@@ -515,9 +608,6 @@ export function initLandingAccess() {
       once: true,
       onEnter: () => {
         playEntrance();
-        dlines.forEach((line) => {
-          if (line instanceof HTMLElement) playLineRevealElement(line);
-        });
         timeouts.push(setTimeout(() => {
           gsap.to(state, {
             wordFactor: 1,
@@ -554,7 +644,10 @@ export function initLandingAccess() {
     window.clearTimeout(snapTimer);
     window.removeEventListener('resize', onResize);
     trigger.kill();
+    holdTrigger.kill();
     revealTrigger?.kill();
+    headlineTrigger?.kill();
+    if (stage instanceof HTMLElement) stage.style.top = '';
     wave?.destroy();
     gsap.killTweensOf(state);
   };
