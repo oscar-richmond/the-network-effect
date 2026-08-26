@@ -379,7 +379,9 @@ body.case-page {
 .landing-v2 .cs-more__arrow-svg--left { transform: rotate(225deg); }
 
 .landing-v2 .cs-more__viewport {
-	margin: 80px 24px 0; /* cards top = 140 + 40 + 80 = the file's 260 */
+	margin: 68px 24px 0; /* cards top = 142 + 50 + 68 = the file's 260
+	   (re-derived 2026-08-26 for the 50px title box; mobile
+	   overrides its own margin) */
 	overflow: hidden;
 	cursor: grab; /* draggable (Oscar's rev) */
 }
@@ -594,7 +596,19 @@ body.case-page {
 	   own strut). Cards/gap/viewport already match the frame
 	   (836×520 on the 8px gap, cards top 260). */
 	.landing-v2 .cs-more { padding-top: 142px; }
-	.landing-v2 .cs-more__title { font-size: 34px; line-height: 38px; }
+	/* Frame 2001:389 (extracted 2026-08-26 — the face that was
+	   unextractable in the 36:1827 task, flagged then): ONE face,
+	   Dazzed Bold 40/50/−2% uppercase — no serif mix on desktop.
+	   The cs-serrif class stays in the markup because the MOBILE
+	   design stacks a Serrif WORK; here it inherits the title's
+	   face (a breakpoint-scoped correction, not specificity
+	   stacking — the serif belongs only below the seam). */
+	.landing-v2 .cs-more__title { font-size: 40px; line-height: 50px; letter-spacing: -0.02em; }
+	.landing-v2 .cs-more__title .cs-serrif {
+		font-family: inherit;
+		font-weight: inherit;
+		letter-spacing: inherit;
+	}
 	.landing-v2 .cs-more__pager { top: 148px; }
 	.landing-v2 .cs-more__cardrow { margin-top: 24px; }
 }

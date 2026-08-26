@@ -83,13 +83,22 @@ body.work-page {
 /* FEATURED / WORK — the landing treatment at 48px (Oscar's rev,
    this page only; mixed faces; W-under-A derived at runtime).
    Brand black. */
+/* Frame 2001:67 (extracted 2026-08-26 — the header spec that was
+   BLOCKED in the earlier 35:1524 task): BOTH lines Dazzed Bold
+   100/88/−5% brand-black ink, the block at y120 (frame 238 − 118
+   chrome), 505×176; WORK right-flush with FEATURED (the frame's
+   11-space lead — derived live in work-page.js, not authored
+   spaces). The old 48/48 pair with the Serrif WORK was the
+   original 27:3103 build; the serif face now lives ONLY in the
+   mobile block below (its own design keeps it). */
 .landing-v2 .work-page__hl {
 	position: absolute;
 	left: 24px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 48px;
-	line-height: 48px;
+	font-size: 100px;
+	line-height: 88px;
+	letter-spacing: -0.05em;
 	text-transform: uppercase;
 	/* Brand black, plain ink (Oscar's rev — was white + difference). */
 	color: #161616;
@@ -97,17 +106,11 @@ body.work-page {
 }
 
 .landing-v2 .work-page__hl--featured {
-	/* 80px below MENU (Oscar's rev): the menu label bottoms at
-	   --home-margin-y 32 + its 16px line = 48; 48 + 80 = 128. */
-	top: 128px;
+	top: 120px; /* frame y238 − the 118 chrome */
 }
 
 .landing-v2 .work-page__hl--work {
-	top: 176px; /* one 48px line below FEATURED */
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
+	top: 208px; /* the second 88px line (120 + 88) */
 }
 
 /* (The DESKTOP filter pills are REMOVED — Oscar, 2026-08-26: frame
@@ -291,6 +294,7 @@ body.work-page {
 		display: block;
 		font-size: 30px;
 		line-height: 30px;
+		letter-spacing: normal; /* the desktop −5% is the 100px spec */
 		/* Plain brand-black ink — the desktop page's own rev (was
 		   white+difference); over the flat mobile ground the render
 		   is identical and the blend's isolation traps don't apply. */
@@ -299,7 +303,15 @@ body.work-page {
 		white-space: nowrap;
 	}
 
-	.landing-v2 .work-page__hl--work { margin-left: 37px; }
+	/* WORK keeps ITS design's Serrif here — the declarations moved
+	   from the (now all-Dazzed) desktop base rule, values verbatim. */
+	.landing-v2 .work-page__hl--work {
+		margin-left: 37px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		letter-spacing: var(--ts-serif-editorial-track);
+	}
 
 	/* Pills — file Frame 48: 38px chips, natural widths (16px pads
 	   land the file's 56/92/95/88 exactly), 8px gaps, active = navy

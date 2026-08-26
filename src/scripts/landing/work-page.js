@@ -272,16 +272,17 @@ export function initWorkPage() {
   /* ── W-under-A (the featured section's Range mechanism). */
   const hlFeatured = document.querySelector('[data-work-hl-featured]');
   const hlWork = document.querySelector('[data-work-hl-work]');
+  /* Frame 2001:67 (2026-08-26): WORK sits RIGHT-FLUSH with
+     FEATURED (the frame's 11-space lead lands its right edge on the
+     block's right edge) — derived from the rendered rects so it
+     holds if either width changes. (Replaces the old W-under-A
+     Range derivation, which encoded the retired 48px pair.) */
   const alignWork = () => {
     if (!(hlFeatured instanceof HTMLElement) || !(hlWork instanceof HTMLElement)) return;
-    const tn = hlFeatured.firstChild;
-    if (!tn || tn.nodeType !== Node.TEXT_NODE) return;
-    const range = document.createRange();
-    range.setStart(tn, 2); // FE[A]TURED
-    range.setEnd(tn, 3);
-    const aRect = range.getBoundingClientRect();
-    if (aRect.width === 0) return;
-    hlWork.style.left = `${(aRect.left - stage.getBoundingClientRect().left).toFixed(2)}px`;
+    const fRect = hlFeatured.getBoundingClientRect();
+    const wRect = hlWork.getBoundingClientRect();
+    if (fRect.width === 0 || wRect.width === 0) return;
+    hlWork.style.left = `${(fRect.right - wRect.width - stage.getBoundingClientRect().left).toFixed(2)}px`;
   };
 
   /* Tile geometry: left edge at the stage literal (TILE_LEFT_PX —
