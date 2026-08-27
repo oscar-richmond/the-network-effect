@@ -6715,10 +6715,68 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		display: block;
 	}
 
+	/* ══ TWO-SOURCE ACTIVE ROWS (Oscar 2026-08-27) ══
+	   HOVER mode = the /services sv-rows treatment (fill/marquee/
+	   edges classes verbatim from services-v2.css); only the GEOMETRY
+	   is landing-scoped: the band is own 2px divider through the next
+	   (2 + 53 = 55, vs /services' 67), and the treated text/divider
+	   are the landing's own elements. SCROLL mode = the text slide
+	   (constants pushed as CSS vars by landing-services-reel.js:
+	   SREEL_SLIDE_PX / _S / _EASE). Only one mode is ever applied —
+	   the reel JS arbitrates. */
+	.landing-v2.landing-home .landing-sreel__row .sv-rows__fill,
+	.landing-v2.landing-home .landing-sreel__row .sv-rows__marq,
+	.landing-v2.landing-home .landing-sreel__row .sv-rows__edges {
+		height: 55px;
+	}
+
+	/* The active row lifts so its fill covers the NEXT row's divider
+	   (the sv6-table lesson: DOM order painted it above the fill),
+	   and both dividers whiten on the fill's delayed beat. */
+	.landing-v2.landing-home .landing-sreel__row.is-active { z-index: 1; }
+
+	.landing-v2.landing-home .landing-sreel__rowline {
+		transition: background-color 0.25s ease-out 0.15s;
+	}
+
+	.landing-v2.landing-home .landing-sreel__row.is-active .landing-sreel__rowline,
+	.landing-v2.landing-home .landing-sreel__row.is-active + .landing-sreel__row .landing-sreel__rowline {
+		background: #fff;
+	}
+
+	.landing-v2.landing-home .landing-sreel__list:has(> .landing-sreel__row:last-of-type.is-active) .landing-sreel__rowline--end {
+		background: #fff;
+	}
+
+	/* The hovered row's own text yields to the marquee (the
+	   sv-rows__inner treatment mapped onto the landing's text). */
+	.landing-v2.landing-home .landing-sreel__svc {
+		transition: opacity 0.25s ease-out, filter 0.25s ease-out,
+			transform var(--sreel-slide-s, 0.5s) var(--sreel-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2.landing-home .landing-sreel__row.is-active .landing-sreel__svc {
+		opacity: 0;
+		filter: blur(6px);
+		transform: none;
+		transition-duration: 0.175s, 0.175s, 0.175s;
+	}
+
+	/* SCROLL mode: the active row's text slides right; the outgoing
+	   row transitions back on the same curve, so the movement reads
+	   continuously down the list. */
+	.landing-v2.landing-home .landing-sreel__row.is-sactive .landing-sreel__svc {
+		transform: translateX(var(--sreel-slide-x, 40px));
+	}
+
 	.landing-v2.landing-home .landing-sreel__svc {
 		position: absolute;
 		left: 0;
-		top: 18px;
+		/* Centring fix (Oscar 2026-08-27, measured defect): the 28px
+		   line box sat at 18 -> ink centre 32 in a band whose centre is
+		   27.5 (own 2px divider bottom 2 .. next divider top 53) — 4.5
+		   low. (2 + 53 - 28) / 2 = 13.5 centres it exactly. */
+		top: 13.5px;
 		width: 342px;
 		margin: 0;
 		font-family: var(--font-serif-cond);

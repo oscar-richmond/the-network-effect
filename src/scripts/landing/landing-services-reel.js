@@ -41,6 +41,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { initSvRowsSections } from './sv-rows.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { isMobileViewport } from './viewport.js';
 import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
@@ -131,6 +132,14 @@ const SREEL_EXIT_FURNITURE_AT_PX = 240; /* descs/label/image/CTA */
 const SREEL_EXIT_HEADS_AT_PX = 420;   /* titles//0N/dividers/WWD last */
 const SREEL_EXIT_PX = 600;            /* the cascade's total span */
 
+/* ── SCROLL-MODE TEXT SLIDE (Oscar 2026-08-27) — the scroll-active
+   row's text slides right; tune here (pushed to CSS as
+   --sreel-slide-x / -s / -ease). Ease = the house state-transition
+   curve (the holding ease, same family as the sv-rows fill). */
+const SREEL_SLIDE_PX = 40;
+const SREEL_SLIDE_S = 0.5;
+const SREEL_SLIDE_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
 const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
 const LINE_STAGGER_S = 0.12;
@@ -184,6 +193,9 @@ export function initLandingServicesReel() {
 
   root.classList.add('is-live');
   root.style.setProperty('--sreel-runway', `${RUNWAY_PX}px`);
+  root.style.setProperty('--sreel-slide-x', `${SREEL_SLIDE_PX}px`);
+  root.style.setProperty('--sreel-slide-s', `${SREEL_SLIDE_S}s`);
+  root.style.setProperty('--sreel-slide-ease', SREEL_SLIDE_EASE);
 
   /* Park pillars below the stage before paint. */
   const stageH = () => stage.clientHeight || window.innerHeight;
@@ -268,6 +280,28 @@ export function initLandingServicesReel() {
      ±REEL_HYST_T of a row centre; between centres the previous
      active holds — no boundary flutter. */
   const activeIdx = pillars.map(() => 0);
+
+  /* ── TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27): scroll drives
+     the text slide; a pointer (or focus) over the list hands the
+     row treatment to the /services hover machinery instead. Only
+     one mode is applied at a time; activeIdx keeps updating
+     UNDERNEATH a hover so release always lands on the row the
+     current scroll position dictates. The pillar image follows the
+     TREATED row in both modes (one authority: requestImage's
+     latch), so the row and the image can never disagree. */
+  const rowEls = pillars.map((pillar) => Array.from(pillar.querySelectorAll('[data-sv-row]')));
+  const hoverMode = pillars.map(() => false);
+  const slideIdx = pillars.map(() => -1);
+  const setSlide = (i, idx) => {
+    if (slideIdx[i] === idx) return;
+    if (slideIdx[i] >= 0) rowEls[i][slideIdx[i]]?.classList.remove('is-sactive');
+    slideIdx[i] = idx;
+    if (idx >= 0) rowEls[i][idx]?.classList.add('is-sactive');
+  };
+  setSlide(0, 0);
+  setSlide(1, 0);
+  setSlide(2, 0);
+
   const updateActive = (i, translatePx) => {
     const n = P[i].services.length;
     const cand = Math.min(Math.max(Math.round(translatePx / ROW_PITCH), 0), n - 1);
@@ -280,9 +314,78 @@ export function initLandingServicesReel() {
     const dHeld = Math.abs(translatePx - activeIdx[i] * ROW_PITCH);
     if (dCand + ROW_PITCH * REEL_HYST_T < dHeld) {
       activeIdx[i] = cand;
-      requestImage(i, cand);
+      if (!hoverMode[i]) {
+        requestImage(i, cand);
+        setSlide(i, cand);
+      }
     }
   };
+
+  /* HOVER MODE — gated (hover:hover)/(pointer:fine) with the site's
+     ?forcehover escape (services-6's formula; Oscar's machine
+     reports the media query false). On touch nothing binds: the
+     scroll slide is the only behaviour. Keyboard rides the same
+     path (focus = hover, blur = release) — sv-rows' own focusin
+     parity supplies the treatment; these listeners supply the mode.
+     The /services machinery is reused UNMODIFIED: no
+     [data-sv-rows-img] frame exists here, so its image runner is
+     inert and the reel's big image stays the one image authority. */
+  const fineHover =
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
+    new URLSearchParams(window.location.search).has('forcehover');
+  if (fineHover) {
+    const hoverTimers = [];
+    cleanups.push(initSvRowsSections({
+      reduced: false,
+      isMob: false,
+      fineHover,
+      schedule: (fn, ms) => hoverTimers.push(window.setTimeout(fn, ms)),
+      root,
+    }));
+    cleanups.push(() => hoverTimers.forEach(window.clearTimeout));
+    pillars.forEach((pillar, i) => {
+      const list = pillar.querySelector('[data-sreel-list]');
+      if (!(list instanceof HTMLElement)) return;
+      const enterMode = () => {
+        hoverMode[i] = true;
+        setSlide(i, -1);
+      };
+      const releaseMode = () => {
+        hoverMode[i] = false;
+        setSlide(i, activeIdx[i]);
+        requestImage(i, activeIdx[i]);
+      };
+      const followRow = (target) => {
+        const row = target instanceof Element ? target.closest('[data-sv-row]') : null;
+        if (!(row instanceof HTMLElement) || !list.contains(row)) return;
+        const idx = rowEls[i].indexOf(row);
+        if (idx >= 0) requestImage(i, idx);
+      };
+      const onEnter = () => enterMode();
+      const onOver = (e) => followRow(e.target);
+      const onLeave = () => releaseMode();
+      const onFocusIn = (e) => {
+        enterMode();
+        followRow(e.target);
+      };
+      const onFocusOut = (e) => {
+        const next = e.relatedTarget instanceof Element ? e.relatedTarget.closest('[data-sv-row]') : null;
+        if (!next || !list.contains(next)) releaseMode();
+      };
+      list.addEventListener('pointerenter', onEnter);
+      list.addEventListener('pointerover', onOver);
+      list.addEventListener('pointerleave', onLeave);
+      list.addEventListener('focusin', onFocusIn);
+      list.addEventListener('focusout', onFocusOut);
+      cleanups.push(() => {
+        list.removeEventListener('pointerenter', onEnter);
+        list.removeEventListener('pointerover', onOver);
+        list.removeEventListener('pointerleave', onLeave);
+        list.removeEventListener('focusin', onFocusIn);
+        list.removeEventListener('focusout', onFocusOut);
+      });
+    });
+  }
 
   /* ── Entrances: pillar texts word-reveal as each rise begins (the
      staging playCardTexts pattern; live vocabulary only). ───────── */

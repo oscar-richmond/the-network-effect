@@ -131,11 +131,28 @@ import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
             <p class="landing-sreel__desc" data-sreel-desc data-sreel-text>{p.desc[0]}<br />{p.desc[1]}</p>
             <p class="landing-sreel__wlabel" data-sreel-wlabel data-sreel-text>{p.label}</p>
             <div class="landing-sreel__listwin" data-sreel-listwin>
-              <div class="landing-sreel__list" data-sreel-list>
+              {/* TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27): the list is
+                  also a [data-sv-rows] host so the /services hover
+                  machinery (sv-rows.js, reused UNMODIFIED) can treat a
+                  hovered/focused row — red fill + rolling marquee +
+                  edge gradient; no image frame here (the reel's big
+                  image is the single image authority). Scroll mode
+                  keeps the new text slide instead (landing-services-
+                  reel.js arbitrates; only one mode at a time). */}
+              <div
+                class="landing-sreel__list"
+                data-sreel-list
+                data-sv-rows
+                data-sv-rows-list
+                style="--sv-accent:#c1250e"
+              >
                 {p.services.map((svc) => (
-                  <div class="landing-sreel__row">
+                  <div class="landing-sreel__row sv-rows__row" data-sv-row data-text={svc.t} data-img={asset(svc.img)} tabindex="0">
                     <span class="landing-sreel__rowline" aria-hidden="true"></span>
                     <span class="landing-sreel__svc" data-sreel-text>{svc.t}</span>
+                    <span class="sv-rows__fill" aria-hidden="true"></span>
+                    <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
+                    <span class="sv-rows__edges" aria-hidden="true"></span>
                   </div>
                 ))}
                 <span class="landing-sreel__rowline landing-sreel__rowline--end" aria-hidden="true"></span>
