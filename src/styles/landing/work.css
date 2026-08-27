@@ -273,7 +273,6 @@ body.work-page {
 	/* Desktop machinery, retired under the seam. */
 	.landing-v2 .work-stage__carousel { display: none; }
 	.landing-v2 .work-page__metas { display: none; }
-	.landing-v2 .work-stage__band { display: none; }
 	.landing-v2 .work-cursor { display: none; }
 	.landing-v2 .work-footer-wrap { position: static; height: auto; }
 

@@ -1753,37 +1753,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	overflow: hidden;
 }
 
-/* No edge fade (Oscar's rev — the file's gradient mask is dropped):
-   off-centre images carry the white/blur veil and simply clip at the
-   stage edges. The wrapper survives as the columns' static anchor. */
-.landing-v2 .landing-access__colmask {
-	position: absolute;
-	top: 0;
-	height: 100%;
-	width: 344px;
-	z-index: 1;
-}
-
-.landing-v2 .landing-access__colmask--left { left: 200px; }
-.landing-v2 .landing-access__colmask--right { left: 1184px; }
-
-.landing-v2 .landing-access__col,
-.landing-v2 .landing-access__veilcol {
-	position: absolute;
-	left: 0;
-	width: 344px;
-	display: flex;
-	flex-direction: column;
-	gap: 24px;
-	will-change: transform;
-}
-
-/* Pair 1 landed: prime item (index 1 left / 6 right) centred. */
-.landing-v2 [data-access-col='left'],
-.landing-v2 [data-access-veils='left'] { top: calc(var(--access-center-y, 50dvh) - 774px); }
-.landing-v2 [data-access-col='right'],
-.landing-v2 [data-access-veils='right'] { top: calc(var(--access-center-y, 50dvh) - 3394px); }
-
 .landing-v2 .landing-access__item {
 	flex: none;
 	width: 344px;
@@ -1824,9 +1793,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	pointer-events: none;
 }
 
-.landing-v2 .landing-access__veilwrap--left { left: 200px; }
-.landing-v2 .landing-access__veilwrap--right { left: 1184px; }
-
 .landing-v2 .landing-access__veil {
 	flex: none;
 	width: 344px;
@@ -1837,44 +1803,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	background: rgba(255, 255, 255, 0.1);
 	-webkit-backdrop-filter: blur(30px);
 	backdrop-filter: blur(30px);
-}
-
-.landing-v2 [data-access-veils='left'] .landing-access__veil:nth-child(2),
-.landing-v2 [data-access-veils='right'] .landing-access__veil:nth-child(7) {
-	background: transparent;
-	-webkit-backdrop-filter: none;
-	backdrop-filter: none;
-}
-
-/* Word overlays — Serrif Regular, white, difference; centred on each
-   column, long words bleed symmetrically (founders-name vocabulary).
-   Positioned with left/top only: no transform on the blend element. */
-.landing-v2 .landing-access__word {
-	position: absolute;
-	z-index: 4;
-	width: 344px;
-	/* 48px (Oscar's rev 3 — 64 -> 32 -> 48). */
-	top: calc(var(--access-center-y, 50dvh) - 24px);
-	height: 48px;
-	margin: 0;
-	text-align: center;
-	white-space: nowrap;
-	pointer-events: none;
-	font-family: var(--font-serif-cond);
-	font-weight: 500; /* condensed Medium (was 400 — W1) */
-	font-synthesis: none;
-	font-size: 48px;
-	line-height: 48px;
-	color: #fff;
-	mix-blend-mode: difference;
-}
-
-.landing-v2 .landing-access__word--left { left: 200px; }
-.landing-v2 .landing-access__word--right { left: 1184px; }
-
-.landing-v2 .landing-access__word-inner {
-	display: inline-block;
-	will-change: filter;
 }
 
 /* Page-edge treatment (Oscar's rev 3): the /services GradualBlur
@@ -1894,25 +1822,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	z-index: 2;
 	pointer-events: none;
 	background: linear-gradient(90deg, rgba(238, 238, 240, 0) 0%, #eeeef0 100%);
-}
-
-.landing-v2 .landing-access__edge-tint {
-	position: absolute;
-	left: 0;
-	width: 100%;
-	height: 12rem;
-	z-index: 5;
-	pointer-events: none;
-}
-
-.landing-v2 .landing-access__edge-tint--top {
-	top: 0;
-	background: linear-gradient(180deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
-}
-
-.landing-v2 .landing-access__edge-tint--bottom {
-	bottom: 0;
-	background: linear-gradient(0deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
 }
 
 /* Centre headline — 32/32 #161616, 457px measure, mixed faces per
@@ -3526,11 +3435,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		padding: 96px var(--m-margin, 24px) 64px;
 	}
 
-	.landing-v2 .landing-access__colmask,
 	.landing-v2 .landing-access__veilwrap,
 	.landing-v2 .landing-access__canvas,
-	.landing-v2 .landing-access__word,
-	.landing-v2 .landing-access__edge-tint,
 	.landing-v2 .landing-access__stage > .gradual-blur {
 		display: none;
 	}
@@ -5813,7 +5719,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 
-/* ── FOUNDERS R3/* ── FOUNDERS R3 (Oscar, 2026-08-25) ─────────────────────────────
+/* ── FOUNDERS R3 (Oscar, 2026-08-25) ─────────────────────────────
    Headline box widened so BUILDING joins line 1 (measured: the line
    needs 200 indent + 754.6 text = 954.6 at the 56/50/−3.5% face);
    the rest re-wraps naturally at the new measure. Buttons: BOTH

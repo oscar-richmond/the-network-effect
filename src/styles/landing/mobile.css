@@ -267,10 +267,8 @@
 
 	/* Type floor: nothing under 12px effective (C-TYPE). */
 	.landing-v2 .home__topbar-email { font-size: 12px; }
-	.landing-v2 .landing-closing__kw-index,
 	.landing-v2 .landing-featured__index,
-	.landing-v2 .sv-rows__index,
-	.landing-v2 .work-tile__m-index { font-size: 12px; }
+	.landing-v2 .sv-rows__index { font-size: 12px; }
 }
 
 /* ── .cr-sr STATIC (Phase C finding — the CLOSECLOSE bug): char-

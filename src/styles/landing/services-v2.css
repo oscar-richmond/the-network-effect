@@ -574,12 +574,6 @@
 	color: #161616;
 }
 
-.landing-v2 .sv-galhead__note-indent {
-	display: inline-block;
-	width: 156.3px; /* the 26-space run rescaled to 28px (268 × 28/48) */
-	height: 1px;
-}
-
 .landing-v2 .sv-galhead__note-serrif {
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
