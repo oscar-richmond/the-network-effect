@@ -327,21 +327,53 @@ export function initServices6() {
         line.dataset.revealDelay = String(i * LINE_STAGGER_S);
         wrapWordRevealElement(line);
       });
-      /* The IMAGE's own earlier beat (unchanged): visible as soon as
-         its section is in view — at load for pillar 1. */
+      /* The IMAGE's own earlier beat: visible as soon as its section
+         is in view — at load for pillar 1. R4 (Oscar 2026-08-27,
+         symmetric reverse): no longer once — leaving back re-arms
+         the arrival fade, so re-entry plays it again (the section is
+         below the viewport at that point; nothing pops visibly). */
       triggers.push(ScrollTrigger.create({
         trigger: sec,
         start: 'top 95%',
-        once: true,
         onEnter: () => {
           sec.querySelector('.sv6-pillar__img')?.classList.add('is-visible');
         },
+        onLeaveBack: () => {
+          sec.querySelector('.sv6-pillar__img')?.classList.remove('is-visible');
+        },
       }));
+      /* R4 (Oscar 2026-08-27): the texts are a pure function of the
+         scrub — played when the image's edges MEET the viewport
+         sides (progress 1), RETIRED the moment they leave them going
+         up (the landing-network hideGroup grammar: clips re-clip
+         with no stagger, delays restored for the next play). The old
+         one-shot `played` flag never reset — scrolled back up, the
+         titles sat stuck over the contracted image (the asymmetric-
+         teardown class). */
       let played = false;
       const playTexts = () => {
         if (played) return;
         played = true;
-        lines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l));
+        lines.forEach((l) => {
+          if (!(l instanceof HTMLElement)) return;
+          l.querySelectorAll('.lr-inner').forEach((inner) => {
+            inner.style.transitionDelay = '';
+          });
+          playLineRevealElement(l);
+        });
+      };
+      const hideTexts = () => {
+        if (!played) return;
+        played = false;
+        lines.forEach((l) => {
+          if (!(l instanceof HTMLElement)) return;
+          l.querySelectorAll('.lr-inner').forEach((inner) => {
+            inner.style.transitionDelay = '0s';
+          });
+          l.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
+            clip.classList.remove('lr-visible');
+          });
+        });
       };
       const expand = gsap.fromTo(sec,
         { '--sv6-hero-inset': '24px' },
@@ -361,6 +393,7 @@ export function initServices6() {
             invalidateOnRefresh: true,
             onUpdate: (self) => {
               if (self.progress >= 0.999) playTexts();
+              else hideTexts();
             },
           },
         });
