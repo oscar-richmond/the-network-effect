@@ -808,5 +808,6 @@ export function initCaseStudy() {
     timeouts.forEach(clearTimeout);
     triggers.forEach((t) => t.kill());
     cleanups.forEach((fn) => fn());
+    document.body.style.overflow = ''; /* release the lightbox scroll lock if torn down open */
   };
 }

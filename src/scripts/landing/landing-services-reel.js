@@ -262,6 +262,7 @@ export function initLandingServicesReel() {
         st.el.src = srcFor(i, target);
         const overReady = st.el.decode ? st.el.decode().catch(() => {}) : Promise.resolve();
         Promise.race([overReady, new Promise((r) => setTimeout(r, 600))]).then(() => {
+          if (disposed) return; /* an in-flight wipe must not keep mutating srcs post-teardown */
           out.cancel();
           st.current = target;
           st.busy = false;

@@ -686,6 +686,7 @@ export function initWorkPage() {
   };
 
   const topLinks = footer ? Array.from(footer.querySelectorAll('[data-footer-top]')) : [];
+  let snapTween = null;
   const onTopClick = (e) => {
     const el = e.currentTarget;
     /* HOME is an anchor with a real destination (/landing) — let it
@@ -697,7 +698,10 @@ export function initWorkPage() {
       setPosClamped(0);
       return;
     }
-    gsap.to(proxy, {
+    snapTween?.kill();
+    /* Tracked as snapTween so teardown kills a glide in flight (it
+       used to run ~1.2s of setPosClamped against dead DOM). */
+    snapTween = gsap.to(proxy, {
       p: 0,
       duration: 1.2,
       ease: 'power3.out',
@@ -738,7 +742,6 @@ export function initWorkPage() {
   let snapTimer = 0;
   let lastPos = 0;
   let lastDirDown = false;
-  let snapTween = null;
   const trySnapToBottom = () => {
     if (reduced || !lastDirDown) return;
     if (pos <= carouselMax() || pos >= maxPos() - BOTTOM_EPSILON_PX) return;
@@ -834,6 +837,7 @@ export function initWorkPage() {
 
   return () => {
     disposed = true;
+    setNav(false); /* restore the nav chars if torn down mid-sweep */
     cleanups.forEach((fn) => fn());
   };
 }

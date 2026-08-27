@@ -177,6 +177,7 @@ export function initLandingNetwork() {
       return decodeWithin(under, NETWORK_STRIP_DECODE_TIMEOUT_MS);
     });
     Promise.all(staged).then(() => {
+      if (disposed) return; /* a hover-swap in flight must not animate torn-down DOM */
       stripOvers.forEach((over, i) => {
         const win = over.parentElement ?? over;
         const x = Math.min(Math.max(win.getBoundingClientRect().left, 0), vw);

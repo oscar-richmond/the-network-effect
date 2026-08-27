@@ -40,10 +40,11 @@ function updateBlurLayers(root, strengthMultiplier = 1) {
  * @param {HTMLElement} root
  */
 export function initGradualBlurElement(root) {
-  if (root.dataset.gradualBlurInitialized === 'true') return;
+  if (root.dataset.gradualBlurInitialized === 'true') return () => {};
   root.dataset.gradualBlurInitialized = 'true';
   const animated = root.dataset.gradualBlurAnimated;
   const hoverIntensity = Number(root.dataset.gradualBlurHoverIntensity);
+  const undo = [];
 
   if (animated === 'scroll') {
     const observer = new IntersectionObserver(
@@ -54,6 +55,7 @@ export function initGradualBlurElement(root) {
       { threshold: 0.1 },
     );
     observer.observe(root);
+    undo.push(() => observer.disconnect());
   } else if (animated === 'true') {
     root.classList.add('is-visible');
   }
@@ -61,14 +63,22 @@ export function initGradualBlurElement(root) {
   if (Number.isFinite(hoverIntensity) && hoverIntensity > 0) {
     root.style.pointerEvents = 'auto';
 
-    root.addEventListener('mouseenter', () => {
-      updateBlurLayers(root, hoverIntensity);
-    });
-
-    root.addEventListener('mouseleave', () => {
-      updateBlurLayers(root, 1);
+    const onEnter = () => updateBlurLayers(root, hoverIntensity);
+    const onLeave = () => updateBlurLayers(root, 1);
+    root.addEventListener('mouseenter', onEnter);
+    root.addEventListener('mouseleave', onLeave);
+    undo.push(() => {
+      root.removeEventListener('mouseenter', onEnter);
+      root.removeEventListener('mouseleave', onLeave);
     });
   }
+
+  /* A real cleanup (was none): the observer and hover listeners are
+     released, and the wired-guard resets so a future re-init works. */
+  return () => {
+    undo.forEach((fn) => fn());
+    delete root.dataset.gradualBlurInitialized;
+  };
 }
 
 /**
@@ -77,10 +87,11 @@ export function initGradualBlurElement(root) {
  */
 export function initGradualBlur(scope = document) {
   const elements = scope.querySelectorAll('[data-gradual-blur]');
+  const cleanups = [];
 
   elements.forEach((el) => {
-    if (el instanceof HTMLElement) initGradualBlurElement(el);
+    if (el instanceof HTMLElement) cleanups.push(initGradualBlurElement(el));
   });
 
-  return () => {};
+  return () => cleanups.forEach((fn) => fn());
 }

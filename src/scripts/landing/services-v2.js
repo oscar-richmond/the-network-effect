@@ -167,6 +167,7 @@ export function initServicesV2() {
      ScrollTrigger refreshes after so every element-anchored beat
      re-derives around the added slack. */
   (document.fonts?.ready ?? Promise.resolve()).then(() => {
+    if (disposed) return; /* teardown-before-fonts: don't install dwells into a dead page */
     document.querySelectorAll('[data-sv-dwell]').forEach((sec) => {
       const stage = sec.querySelector('[data-sv-dwell-stage]');
       if (sec instanceof HTMLElement && stage instanceof HTMLElement) {

@@ -86,8 +86,13 @@ export function initLandingClosing() {
   const stDwellSection = document.querySelector('[data-closing-st]');
   const stDwellStage = document.querySelector('[data-closing-st-stage]');
   let cleanupDwell = () => {};
+  /* Guards teardown-before-fonts: without it the dwell (and the
+     frag trigger below) would install AFTER dispose and leak its
+     resize listener / trigger. */
+  let earlyDisposed = false;
   if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement) {
     (document.fonts?.ready ?? Promise.resolve()).then(() => {
+      if (earlyDisposed) return;
       cleanupDwell = initStatementDwell(stDwellSection, stDwellStage);
       ScrollTrigger.refresh();
     });
@@ -102,6 +107,7 @@ export function initLandingClosing() {
   if (!reduced && fragLines.length && window.matchMedia('(min-width: 1025px)').matches) {
     const stFonts = document.fonts?.ready ?? Promise.resolve();
     stFonts.then(() => {
+      if (earlyDisposed) return;
       fragLines.forEach((line, i) => {
         if (!(line instanceof HTMLElement)) return;
         line.dataset.revealDelay = String(i * 0.12);
@@ -332,6 +338,7 @@ export function initLandingClosing() {
   });
 
   return () => {
+    earlyDisposed = true;
     fragTrigger?.kill();
     cleanupDwell();
     disposed = true;
