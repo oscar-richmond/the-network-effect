@@ -364,15 +364,33 @@ export function initLandingFeatured() {
   });
   const bandFade = { t: 0 };
   const edgeTint = section.querySelector('[data-featured-edge-tint]');
+  const bandEl = section.querySelector('.gradual-blur');
   tl.to(bandFade, {
     t: 1,
     duration: BAND_FADE_PX,
     onUpdate: () => {
+      /* R6 item 4 (Oscar 2026-08-27, the escaped-gradient class):
+         a fully-drained band previously kept blur(0rem) — two
+         stacked layers remaining ACTIVE BACKDROP ROOTS through the
+         whole departure/boundary, the window where Chrome's
+         backdrop sampling under sticky ancestors is known to paint
+         the blur detached from its element (the element itself
+         never moves — verified over randomised passes — and the
+         stage clips overflow; the artifact is compositing-level).
+         Drained now means NO backdrop root anywhere: filters go
+         'none' and the band goes visibility-hidden, both pure
+         functions of the same scrubbed value — reversal rebuilds
+         them exactly. */
+      const drained = bandFade.t >= 0.999;
       blurLayers.forEach((l, i) => {
-        const v = `blur(${(blurBases[i] * (1 - bandFade.t)).toFixed(3)}rem)`;
+        const r = blurBases[i] * (1 - bandFade.t);
+        const v = drained || r < 0.004 ? 'none' : `blur(${r.toFixed(3)}rem)`;
         l.style.backdropFilter = v;
         l.style.webkitBackdropFilter = v;
       });
+      if (bandEl instanceof HTMLElement) {
+        bandEl.style.visibility = drained ? 'hidden' : '';
+      }
       /* The tint drains with the radii (the access-exit pairing) —
          plain gradient div, opacity is safe (no backdrop root). */
       if (edgeTint instanceof HTMLElement) {
