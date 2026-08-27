@@ -1,0 +1,41 @@
+---
+/**
+ * 404 — built in the site's existing language only (A3, 2026-08-27):
+ * SiteShell chrome (nav, grain, wipe), the /contact page's centred
+ * one-viewport cluster + mixed-face intro pair + the established
+ * CTA family, the shared BLUE footer. No new design language, no
+ * new mechanics, no page script (the footer text is statically
+ * visible because the reveal machinery wraps-then-plays — unwrapped
+ * text simply shows; the wipe comes from BaseLayout's global boot).
+ *
+ * SERVING: Astro's static build emits dist/404.html, which Vercel
+ * serves automatically for unmatched routes on the vercel.app host.
+ * On the LAUNCH DOMAIN the middleware/vercel.json host rewrites
+ * currently send every path to /holding-3 with a 200 — this page
+ * only surfaces there once those are lifted at go-live.
+ */
+import SiteShell from '../layouts/SiteShell.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
+import '../styles/home.css';
+import '../styles/landing/landing.css';
+import '../styles/landing/contact.css';
+import '../styles/fonts.css';
+---
+
+<SiteShell title="Page not found — The Network Effect" bodyClass="landing-v2 contact-page">
+  <main class="ct">
+    <div class="ct__cluster">
+      <h1 class="ct__intro"
+        ><span class="ct__intro-indent" aria-hidden="true"></span>This page doesn't exist.<br /><span class="ct__intro-serrif">The work does — it lives back home.</span></h1
+      >
+      <div class="ct__ctas">
+        <a class="ct-cta" href="/" data-char-ripple-trigger>
+          <span data-char-ripple>BACK TO HOME</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <LandingFooter />
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
+</SiteShell>
