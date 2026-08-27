@@ -109,9 +109,10 @@ export const FEATURED_CARDS = [
   {
     /* RIGHTS: Ashley on set — see header. */
     index: '/08',
-    /* CASING HELD (2026-08-26): brand casing unknown — 'Animol' vs
-       'ANIMOL'; flagged for Oscar, stays caps until confirmed. */
-    title: ['ANIMOL'],
+    /* CASING RULED (Oscar, 2026-08-27): sentence case. Authored
+       final - surfaces must not re-transform (the natural-case
+       pattern). */
+    title: ['Animol'],
     slug: 'animol',
     tags: ['amplify'], // PROVISIONAL
     workImg: wp(9), // /work carousel image (Berlinale artwork)
