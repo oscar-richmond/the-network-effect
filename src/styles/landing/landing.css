@@ -171,16 +171,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	align-items: center;
 	height: 64px;
 	border: 0;
-	/* ARROW SPACING (Oscar's 16" design, 2026-08-10): text, 8px, the
-	   arrow, then 22px to the edge — the same on every CTA. It was
-	   space-between against a FIXED width, so the leftover decided
-	   the gap and each button got a different one (measured 20 / 4 /
-	   8px). Content-flow + an explicit gap is the only way to hold
-	   both numbers, so the widths below are the CONSEQUENCE of the
-	   spec rather than the file's boxes. Plain px: the scale shell
-	   renders these in design space, so they scale with everything
-	   else on 14"/15". */
-	padding: 0 22px 0 32px;
+	/* ARROW SPACING (Oscar's 16" design, 2026-08-10, edge REVISED
+	   2026-08-27): text, 8px, the arrow — unchanged — then EQUAL
+	   padding both sides: the right edge was 22 and now matches the
+	   left's 32 (text+arrow treated as one content unit, Oscar's
+	   ruling; the left side is the value). Content-flow + explicit
+	   gap still holds the internal numbers — the widths are the
+	   CONSEQUENCE of the spec, so each pill grew by the added 10.
+	   Plain px: the scale shell renders these in design space. */
+	padding: 0 32px;
 	gap: 8px;
 	justify-content: flex-start;
 	background: var(--landing-svc-btn-fill, #e4e4ea);
