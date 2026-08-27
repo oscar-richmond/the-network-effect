@@ -38,7 +38,11 @@
 	   Description y287, 1429 measure, Serrif Medium 48/50/−1.5% —
 	   drawn white+difference in the frame, built as INK (the
 	   difference-on-flat house rule, flagged). */
-	.landing-v2 .sv6-hero { padding: 175px 24px 0; }
+	/* R4 (Oscar, 2026-08-27): +100 above the title (175 -> 275) and
+	   +100 below the description — carried on the HERO's own
+	   padding-bottom, not the pillar margin, which all three pillars
+	   share (desc-bottom -> pillar-top now 120 + 100 = 220). */
+	.landing-v2 .sv6-hero { padding: 275px 24px 100px; }
 
 	.landing-v2 .sv6-hero__title {
 		margin: 0;
