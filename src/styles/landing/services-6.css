@@ -446,7 +446,12 @@
 
 	/* Footer gap: table 3 bottom → footer 120 (the frame's 10502 →
 	   10622). */
-	.landing-v2 .sv6 { padding-bottom: 120px; }
+	/* 139 = the site-wide pre-footer whitespace (the value the /work
+	   and case-study comment trails both name; /work's 163 is that
+	   +24, its one deliberate exception). This page shipped 120 —
+	   the sv6 module's own number — which was the audit's one
+	   genuine spacing drift. */
+	.landing-v2 .sv6 { padding-bottom: 139px; }
 
 	/* ── Entrances (no-preference; live vocabulary — word reveals
 	   are wrapped by the driver; the media below get the house
