@@ -38,7 +38,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
-import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
@@ -562,11 +562,15 @@ export function initCaseStudy() {
   cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
 
   /* ── Bottom behaviours (Oscar's rev — the landing pair, every
-     page): the nav ripples OUT at the very bottom and back in on
-     the way up; a 2s idle stop inside the footer reveal glides to
+     page): the two centred nav items ripple OUT at the very bottom
+     and back in on the way up (partial sweep, 2026-08-27 — wordmark
+     + LET'S CHAT stay); a 2s idle stop inside the footer reveal glides to
      the bottom (non-RM). All through the shared nav-motion applier
      and Lenis — the landing-closing.js shape verbatim. */
   ensureLogoChars();
+  /* The swept links' own chars — unconditional (char-ripple's wrap
+     is hover-gated; the WORK-doesn't-sweep cause). */
+  ensureNavLinkChars();
   const menuToggle = document.querySelector('[data-menu-toggle]');
   let navHidden = false;
   const setNav = (hidden) => {
@@ -574,7 +578,7 @@ export function initCaseStudy() {
     /* Never strand an open menu without its toggle. */
     if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
     navHidden = hidden;
-    applyNavSweep(hidden, { reduced });
+    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
   };
   const maxScroll = () =>
     (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);

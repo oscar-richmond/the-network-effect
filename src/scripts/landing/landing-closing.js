@@ -27,7 +27,7 @@ import { initStatementDwell } from './statement-dwell.js';
 import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
-import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 
@@ -39,11 +39,11 @@ const LINE_STAGGER_S = 0.12;
       closing tiles at least 2/3 off the top of the viewport (or any
       further down), and the last movement was DOWNWARD, glide to
       the very bottom (the footer's full reveal) through Lenis.
-   2. NAV EXIT: every time the page rests at the bottom, MENU / the
-      logo / LET'S CHAT ripple OUT (per-char blur, right-to-left —
-      the menu hover effect reversed) and ripple back in when
-      scrolling up. The logo gets the same char wrap at init (MENU
-      and LET'S CHAT already carry ripple chars). */
+   2. NAV EXIT (partial — Oscar's ruling, 2026-08-27): every time
+      the page rests at the bottom, the two CENTRED nav items (WORK,
+      SERVICES) ripple OUT (per-char blur, right-to-left — the menu
+      hover effect reversed) and back in when scrolling up. The
+      wordmark and LET'S CHAT remain present at all times. */
 const BOTTOM_SNAP_IDLE_MS = 2000;
 const SNAP_ZONE_TILE_BOTTOM_PX = 150; // 450px tiles, 2/3 off the top
 const BOTTOM_EPSILON_PX = 2;
@@ -141,6 +141,9 @@ export function initLandingClosing() {
      load entrance (nav-motion.js). */
   const menuToggle = document.querySelector('[data-menu-toggle]');
   ensureLogoChars();
+  /* The swept links' own chars — unconditional (char-ripple's wrap
+     is hover-gated; the WORK-doesn't-sweep cause). */
+  ensureNavLinkChars();
 
   let navHidden = false;
   const setNav = (hidden) => {
@@ -148,7 +151,7 @@ export function initLandingClosing() {
     /* Never strand an open menu without its toggle. */
     if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
     navHidden = hidden;
-    applyNavSweep(hidden, { reduced });
+    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
   };
 
   const maxScroll = () =>

@@ -72,7 +72,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
-import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
@@ -735,9 +735,13 @@ export function initWorkPage() {
   /* ── Bottom behaviours (Oscar's rev — the landing pair, ported):
      1. AUTO-SNAP: stopping (2s idle) part-way into the footer
         reveal, having moved DOWN, glides to the very bottom.
-     2. NAV EXIT: at the bottom, MENU / logo / LET'S CHAT ripple out
-        (the shared nav-motion applier) and back in on the way up. */
+     2. NAV EXIT (partial, 2026-08-27): at the bottom the two
+        centred nav items ripple out (the shared nav-motion applier)
+        and back in on the way up; wordmark + LET'S CHAT stay. */
   ensureLogoChars();
+  /* The swept links' own chars — unconditional (char-ripple's wrap
+     is hover-gated; the WORK-doesn't-sweep cause). */
+  ensureNavLinkChars();
   const menuToggle = document.querySelector('[data-menu-toggle]');
   let navHidden = false;
   const setNav = (hidden) => {
@@ -745,7 +749,7 @@ export function initWorkPage() {
     /* Never strand an open menu without its toggle. */
     if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
     navHidden = hidden;
-    applyNavSweep(hidden, { reduced });
+    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
   };
 
   let snapTimer = 0;

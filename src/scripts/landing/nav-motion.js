@@ -17,6 +17,7 @@
  * Keyframes/classes (cr-nav-in / cr-nav-out) live in landing.css.
  */
 import { isMobileViewport } from './viewport.js';
+import { ensureStyles as ensureCharRippleStyles } from '../char-ripple.js';
 
 export const NAV_CHAR_STAGGER_S = 0.03;
 const ENTRANCE_AT_MS = 300;
@@ -31,6 +32,55 @@ export function getNavParts() {
     ...document.querySelectorAll('.home__nav-link'),
     document.querySelector('.home__topbar-email'),
   ].filter((el) => el instanceof HTMLElement);
+}
+
+/** The parts the PAGE-BOTTOM exit sweeps (Oscar's partial-sweep
+ *  ruling, 2026-08-27): the two centred nav items ONLY — WORK and
+ *  SERVICES. The wordmark and LET'S CHAT remain present at all
+ *  times; the full list above still serves the load entrance. */
+export function getSweptNavParts() {
+  return Array.from(document.querySelectorAll('.home__nav-link')).filter(
+    (el) => el instanceof HTMLElement,
+  );
+}
+
+/** Char-wraps the centred nav links' labels when char-ripple hasn't
+ *  (its wiring is hover-gated — `hover: hover` machines only — so on
+ *  hover-less machines the labels reached the sweep unwrapped and
+ *  fell to sweepUnits' whole-element fallback: a single-block fade,
+ *  no ripple. THE "WORK doesn't sweep" CAUSE). Same DOM shape as
+ *  char-ripple's wrap (cr-sr + cr-chars/cr-char); the wired flag is
+ *  respected both ways, and char-ripple boots before the page
+ *  scripts, so a hover machine's wrap is never doubled. */
+export function ensureNavLinkChars() {
+  /* Mobile: the links are display:none and never sweep — leave the
+     served DOM untouched (the byte-identical baseline rule). */
+  if (isMobileViewport()) return;
+  getSweptNavParts().forEach((link) => {
+    const label = link.querySelector('[data-char-ripple]');
+    if (!(label instanceof HTMLElement)) return;
+    if (label.dataset.charRippleWired || label.querySelector('.cr-char')) return;
+    /* The .cr-sr/.cr-char styles normally arrive with char-ripple's
+       wiring — hover-gated, so inject here too (one flag, no-op when
+       char-ripple already has). */
+    ensureCharRippleStyles();
+    label.dataset.charRippleWired = '1';
+    const text = label.textContent ?? '';
+    const sr = document.createElement('span');
+    sr.className = 'cr-sr';
+    sr.textContent = text;
+    const box = document.createElement('span');
+    box.className = 'cr-chars';
+    box.setAttribute('aria-hidden', 'true');
+    for (const ch of text) {
+      const s = document.createElement('span');
+      s.className = 'cr-char';
+      s.textContent = ch === ' ' ? ' ' : ch;
+      box.appendChild(s);
+    }
+    label.textContent = '';
+    label.append(sr, box);
+  });
 }
 
 export function ensureLogoChars() {
@@ -71,9 +121,15 @@ export function sweepUnits(part) {
   return units;
 }
 
-/** Show/hide the nav with the char sweep. `hidden: true` = exit
- *  (right-to-left), false = entry (left-to-right). */
-export function applyNavSweep(hidden, { reduced = false } = {}) {
+/** Show/hide nav parts with the char sweep. `hidden: true` = exit
+ *  (right-to-left), false = entry (left-to-right). `parts` scopes
+ *  the sweep (Oscar's partial-sweep ruling, 2026-08-27): the load
+ *  entrance keeps the full default; the page-bottom exit passes
+ *  getSweptNavParts() so only WORK and SERVICES ever leave — the
+ *  wordmark and LET'S CHAT are simply not in its list. Each part
+ *  animates its OWN chars (descendants of the difference-blended
+ *  element — the safe blend shape; never an ancestor). */
+export function applyNavSweep(hidden, { reduced = false, parts = getNavParts() } = {}) {
   /* While the MENU OVERLAY is open, the toggle label, the logo AND
      LET'S CHAT belong to the menu's own swap/sweep (menu.js): a SHOW
      sweep landing late — the fonts-gated entrance timer racing a
@@ -81,7 +137,7 @@ export function applyNavSweep(hidden, { reduced = false } = {}) {
      logo/LET'S CHAT over the open panel (Oscar's overlaid-labels
      report; LET'S CHAT joined the menu's sweep 2026-08-10). */
   const menuOverlayOpen = document.querySelector('[data-menu]')?.classList.contains('is-open') ?? false;
-  getNavParts().forEach((part) => {
+  parts.forEach((part) => {
     if (!hidden && menuOverlayOpen
       && (part.matches('[data-menu-label-menu]')
         || part.matches('.home__logo')
@@ -113,8 +169,13 @@ export function applyNavSweep(hidden, { reduced = false } = {}) {
       u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
     });
   });
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  if (menuToggle instanceof HTMLElement) menuToggle.style.pointerEvents = hidden ? 'none' : '';
+  /* The toggle's hit-area rides its label's visibility — only when
+     the MENU part is actually in this sweep's scope (the entrance);
+     the partial bottom exit never touches it. */
+  if (parts.some((p) => p.matches('[data-menu-label-menu]'))) {
+    const menuToggle = document.querySelector('[data-menu-toggle]');
+    if (menuToggle instanceof HTMLElement) menuToggle.style.pointerEvents = hidden ? 'none' : '';
+  }
 }
 
 /** The load entrance: parts hidden immediately (no flash), then the

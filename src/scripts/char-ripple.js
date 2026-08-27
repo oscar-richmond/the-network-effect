@@ -62,7 +62,11 @@ const RIPPLE_STAGGER_S = 0.04;
 
 let stylesInjected = false;
 
-function ensureStyles() {
+/* Exported for nav-motion's ensureNavLinkChars (2026-08-27): on
+   hover-less machines initCharRipple returns before injecting, but
+   the nav sweep still wraps the centred links and needs .cr-sr /
+   .cr-char to style. One source, one flag. */
+export function ensureStyles() {
   if (stylesInjected) return;
   stylesInjected = true;
 

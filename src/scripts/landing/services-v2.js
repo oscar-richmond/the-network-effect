@@ -44,7 +44,7 @@ import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
-import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
+import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
 import { createServicesHeroWave } from './services-hero-wave.js';
 import { isMobileViewport } from './viewport.js';
 import { initStatementDwell } from './statement-dwell.js';
@@ -121,13 +121,16 @@ export function initServicesV2() {
      nav sweep out at the very bottom, 2s idle snap inside the
      footer reveal. */
   ensureLogoChars();
+  /* The swept links' own chars — unconditional (char-ripple's wrap
+     is hover-gated; the WORK-doesn't-sweep cause). */
+  ensureNavLinkChars();
   const menuToggle = document.querySelector('[data-menu-toggle]');
   let navHidden = false;
   const setNav = (hidden) => {
     if (navHidden === hidden) return;
     if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
     navHidden = hidden;
-    applyNavSweep(hidden, { reduced });
+    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
   };
   const maxScroll = () =>
     (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
