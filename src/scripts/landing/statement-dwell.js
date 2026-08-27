@@ -33,11 +33,22 @@ export const ST_DWELL_HOLD_PX = 300;
 /**
  * @param {HTMLElement} section the dwell box (pads + slack live here)
  * @param {HTMLElement} stage   the statement block wrapper (pins)
+ * @param {{ topBound?: number | (() => number) }} [opts]
+ *   topBound (R5, Oscar 2026-08-27): the centring REGION's top edge
+ *   in px from the viewport top — the block centres between it and
+ *   the viewport bottom (equal gaps to both). 0 (the default) is
+ *   the original full-viewport centring, so existing callers are
+ *   byte-identical. A function re-derives on every apply/resize
+ *   (the landing passes the measured nav bottom).
  * @returns {() => void} cleanup
  */
-export function initStatementDwell(section, stage) {
+export function initStatementDwell(section, stage, opts = {}) {
   if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement)) return () => {};
   if (isMobileViewport()) return () => {};
+  const topBoundOf = () => {
+    const tb = typeof opts.topBound === 'function' ? opts.topBound() : (opts.topBound || 0);
+    return Number.isFinite(tb) ? Math.max(0, tb) : 0;
+  };
 
   const apply = () => {
     /* Measure the natural block height with the dwell styles off. */
@@ -47,12 +58,16 @@ export function initStatementDwell(section, stage) {
     section.style.height = '';
     const h = stage.offsetHeight;
     const half = (h / 2).toFixed(1);
+    const tbHalf = (topBoundOf() / 2).toFixed(1);
+    /* Region [topBound, 100dvh]: sticky/pad-top = 50dvh + tb/2 −
+       h/2; pad-bottom = 50dvh − tb/2 − h/2 — at settle the gap
+       below the block equals the gap from topBound to its top. */
     stage.style.position = 'sticky';
-    stage.style.top = `calc(50dvh - ${half}px)`;
+    stage.style.top = `calc(50dvh + ${tbHalf}px - ${half}px)`;
     stage.style.height = `${h}px`;
     section.style.boxSizing = 'content-box';
-    section.style.paddingTop = `calc(50dvh - ${half}px)`;
-    section.style.paddingBottom = `calc(50dvh - ${half}px)`;
+    section.style.paddingTop = `calc(50dvh + ${tbHalf}px - ${half}px)`;
+    section.style.paddingBottom = `calc(50dvh - ${tbHalf}px - ${half}px)`;
     section.style.height = `${h + ST_DWELL_HOLD_PX}px`;
   };
   apply();

@@ -93,7 +93,15 @@ export function initLandingClosing() {
   if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement) {
     (document.fonts?.ready ?? Promise.resolve()).then(() => {
       if (earlyDisposed) return;
-      cleanupDwell = initStatementDwell(stDwellSection, stDwellStage);
+      /* R5 (Oscar 2026-08-27, supersedes full-viewport centring for
+         THIS block only): centred between the NAV'S measured bottom
+         and the viewport bottom — equal gaps both sides; derived
+         live so it holds at 1728 and in the 1512 shell. The
+         /services dwells keep the default. */
+      const topbar = document.querySelector('.home__topbar');
+      cleanupDwell = initStatementDwell(stDwellSection, stDwellStage, {
+        topBound: () => (topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0),
+      });
       ScrollTrigger.refresh();
     });
   }
