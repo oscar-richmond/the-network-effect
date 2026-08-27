@@ -88,6 +88,18 @@ export function applyNavSweep(hidden, { reduced = false } = {}) {
         || part.matches('.home__topbar-email'))) return;
     part.style.pointerEvents = hidden ? 'none' : '';
     part.style.opacity = ''; /* any boot-hide handled by the classes now */
+    /* A2c (2026-08-27): a swept-out part is invisible — it must also
+       leave the tab order, or keyboard focus lands on nothing (the
+       page-bottom nav exit made the topbar email an invisible stop).
+       Links/buttons only; restore by removing the override. */
+    if (part.matches('a, button')) {
+      if (hidden) part.setAttribute('tabindex', '-1');
+      else part.removeAttribute('tabindex');
+    }
+    part.querySelectorAll('a, button').forEach((el) => {
+      if (hidden) el.setAttribute('tabindex', '-1');
+      else el.removeAttribute('tabindex');
+    });
     const units = sweepUnits(part);
     const n = units.length;
     units.forEach((u, i) => {

@@ -296,6 +296,35 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	outline-color: #232a89;
 }
 
+/* RESTORED (A2a, 2026-08-27): the 13:381 footer rebuild introduced
+   the __dlink/__dchip/__ritem family without extending these rules,
+   so every desktop footer stop fell back to the UA ring — the
+   three-ink pattern applies identically: light ink on the blue
+   ground, house accent under the --light theme. */
+.landing-v2 .landing-footer__dlink:focus-visible,
+.landing-v2 .landing-footer__dchip:focus-visible,
+.landing-v2 .landing-footer__ritem:focus-visible {
+	outline: 2px solid #eeeef0;
+	outline-offset: 2px;
+}
+
+.landing-v2 .landing-footer--light .landing-footer__dlink:focus-visible,
+.landing-v2 .landing-footer--light .landing-footer__dchip:focus-visible,
+.landing-v2 .landing-footer--light .landing-footer__ritem:focus-visible {
+	outline-color: #232a89;
+}
+
+/* A2b: the featured carousel moved to the #161616 stage at >=1025
+   (the dark-carousel redesign) but kept the light-ground accent
+   rings — 1.5:1, effectively invisible. Dark ink there; the mobile
+   carousel stays on the light ground and keeps the accent above. */
+@media (min-width: 1025px) {
+	.landing-v2.landing-home .landing-featured__viewall:focus-visible,
+	.landing-v2.landing-home .landing-featured__card:focus-visible {
+		outline-color: #eeeef0;
+	}
+}
+
 /* The topbar carries mix-blend-mode: difference on the bar AND on
    each item, so ANY outline inside it composites against whatever is
    behind — a fixed colour would invert to an arbitrary hue and can go

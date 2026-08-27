@@ -260,6 +260,25 @@ export function initFoundersPage() {
   inputRegion.addEventListener('wheel', onWheel, { passive: false });
   cleanups.push(() => inputRegion.removeEventListener('wheel', onWheel));
 
+  /* A2c (2026-08-27): keyboard focus must never land on invisible
+     UI. The footer is a sibling fixed layer behind the stage — its
+     links are real, reachable tab stops while fully covered.
+     Native browsers scroll a focused element into view; this
+     fixed-viewport driver defeats that, so restore the semantic:
+     focusing INTO the footer drives the page to the footer reveal
+     (and the existing driver handles the rest). */
+  const fdFooterWrap = document.querySelector('[data-fd-footer]');
+  if (fdFooterWrap instanceof HTMLElement) {
+    const onFooterFocus = () => {
+      if (targetPos < maxPos() - 1) {
+        snapTween?.kill();
+        setPosClamped(maxPos());
+      }
+    };
+    fdFooterWrap.addEventListener('focusin', onFooterFocus);
+    cleanups.push(() => fdFooterWrap.removeEventListener('focusin', onFooterFocus));
+  }
+
   let touchY = 0;
   let touchT = 0;
   let touchVel = 0;
