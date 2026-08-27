@@ -342,13 +342,22 @@ export function initWorkPage() {
        re-render, re-derive the travel bounds. */
     carousel.textContent = '';
     tiles = set.map((p, i) => {
-      const a = document.createElement('a');
-      a.className = 'work-tile';
-      a.href = `/work/${p.slug}`; // placeholder — see onLinkClick
-      a.setAttribute('data-work-link', '');
+      /* A4 (2026-08-27): unbuilt case studies render as INERT
+         placeholders — no href, no data-work-link (the VIEW CASE
+         STUDY cursor hit-tests that attribute, so no affordance
+         promising navigation), out of the tab order by element
+         kind. The card content stays; only the dead navigation
+         goes. onLinkClick remains as the belt for live links. */
+      const live = LIVE_CASE_SLUGS.includes(p.slug);
+      const a = document.createElement(live ? 'a' : 'span');
+      a.className = live ? 'work-tile' : 'work-tile is-placeholder';
+      if (live && a instanceof HTMLAnchorElement) {
+        a.href = `/work/${p.slug}`;
+        a.setAttribute('data-work-link', '');
+        a.setAttribute('aria-label', `${p.title.join(' ')} — view project`);
+      }
       a.dataset.slug = p.slug;
       a.dataset.tileIndex = String(i);
-      a.setAttribute('aria-label', `${p.title.join(' ')} — view project`);
       const img = document.createElement('img');
       img.src = p.workImg;
       img.alt = '';

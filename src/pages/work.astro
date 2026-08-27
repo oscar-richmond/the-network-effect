@@ -75,6 +75,7 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
         retired, 2026-08-26). */}
     <div class="work-stage__carousel" data-work-carousel>
       {WORK_PROJECTS.map((p, i) => (
+        LIVE_CASE_SLUGS.includes(p.slug) ? (
         <a
           class="work-tile"
           href={`/work/${p.slug}`}
@@ -96,6 +97,24 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
               402-frame rebuild renders its own mobile list below;
               this carousel is display:none under the seam.) */}
         </a>
+        ) : (
+        <span
+          class="work-tile is-placeholder"
+          data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable"
+          data-slug={p.slug}
+          data-index={String(i)}
+          data-tags={p.tags.join(' ')}
+        >
+          <img
+            src={p.workImg}
+            alt=""
+            loading={i < 3 ? 'eager' : 'lazy'}
+            decoding="async"
+            width="1024"
+            height="616"
+          />
+        </span>
+        )
       ))}
     </div>
 

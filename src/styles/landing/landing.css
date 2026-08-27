@@ -267,6 +267,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 /* Image tile in a clipping stage — inset, matching .work-tile. */
+.landing-v2 .landing-featured__card.is-placeholder { cursor: default; }
+
 .landing-v2 .landing-featured__card:focus-visible {
 	outline: 2px solid #232a89;
 	outline-offset: -2px;

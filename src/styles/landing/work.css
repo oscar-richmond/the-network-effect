@@ -47,6 +47,9 @@ body.work-page {
 	z-index: 1;
 }
 
+/* A4: inert unbuilt-study tiles — no pointer affordance. */
+.landing-v2 .work-tile.is-placeholder { cursor: default; }
+
 .landing-v2 .work-tile {
 	position: absolute;
 	left: 0;

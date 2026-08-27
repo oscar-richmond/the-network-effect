@@ -243,12 +243,13 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       <div class="cs-more__viewport" data-cs-more-viewport data-carousel-strip>
         <div class="cs-more__track" data-cs-more-track>
           {moreWork.map((m) => (
+            m.live ? (
             <a
               class="cs-more__card"
               href={`/work/${m.slug}`}
               data-cs-more-card
               data-slug={m.slug}
-              data-live={m.live ? 'true' : 'false'}
+              data-live="true"
             >
               <figure class="cs-more__imgwin">
                 <img src={m.workImg} alt="" loading="lazy" decoding="async" />
@@ -259,6 +260,24 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               </span>
               <span class="cs-more__carddesc">{m.desc}</span>
             </a>
+            ) : (
+            <span
+              class="cs-more__card is-placeholder"
+              data-cs-more-card
+              data-slug={m.slug}
+              data-live="false"
+              data-a4-note="unbuilt study: inert placeholder — no href, unfocusable"
+            >
+              <figure class="cs-more__imgwin">
+                <img src={m.workImg} alt="" loading="lazy" decoding="async" />
+              </figure>
+              <span class="cs-more__cardrow">
+                <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
+                <span class="cs-more__cardindex">{m.index}</span>
+              </span>
+              <span class="cs-more__carddesc">{m.desc}</span>
+            </span>
+            )
           ))}
         </div>
       </div>

@@ -394,6 +394,9 @@ body.case-page {
 	will-change: transform;
 }
 
+/* A4: inert unbuilt-study cards. */
+.landing-v2 .cs-more__card.is-placeholder { cursor: default; }
+
 .landing-v2 .cs-more__card {
 	width: 836px;
 	flex: none;

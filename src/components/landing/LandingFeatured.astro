@@ -57,13 +57,14 @@ import GradualBlur from '../GradualBlur.astro';
           is what the shared VIEW CASE STUDY cursor hit-tests on, so
           the carousel reads like /work. */}
       {FEATURED_CARDS.map((card) => (
+        LIVE_CASE_SLUGS.includes(card.slug) ? (
         <a
           class="landing-featured__card"
           href={`/work/${card.slug}`}
           data-featured-card
           data-work-link
           data-slug={card.slug}
-          data-live={LIVE_CASE_SLUGS.includes(card.slug) ? 'true' : 'false'}
+          data-live="true"
         >
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
@@ -91,6 +92,41 @@ import GradualBlur from '../GradualBlur.astro';
               the closing-keywords rhythm). */}
           <p class="landing-featured__desc" style={`top:${459 + 38 + 8.5}px`}>{card.desc}</p>
         </a>
+        ) : (
+        <span
+          class="landing-featured__card is-placeholder"
+          data-featured-card
+          data-slug={card.slug}
+          data-live="false"
+          data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link, unfocusable"
+        >
+          <figure class="landing-featured__imgwin" aria-hidden="true">
+            <img
+              src={card.img.src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              class={card.img.cover ? 'is-cover' : ''}
+              style={card.img.cover ? '' : `width:${card.img.w}px;height:${card.img.h}px;left:${card.img.x}px;top:${card.img.y}px`}
+            />
+          </figure>
+          <h3 class="landing-featured__titleblock">
+            {card.title.map((line, i) => (
+              <span class="landing-featured__titleline">
+                {line}
+                {i === card.title.length - 1 && (
+                  <span class="landing-featured__index">{card.index}</span>
+                )}
+              </span>
+            ))}
+          </h3>
+          {/* 16px below the SINGLE welded 38px title line (the old
+              per-entry ×28 formula predates the welded single-line R2;
+              titles are one rendered line at Section 34/38 now). (image 24 / title 16 —
+              the closing-keywords rhythm). */}
+          <p class="landing-featured__desc" style={`top:${459 + 38 + 8.5}px`}>{card.desc}</p>
+        </span>
+        )
       ))}
     </div>
 
