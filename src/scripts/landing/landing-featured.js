@@ -322,19 +322,34 @@ export function initLandingFeatured() {
      (featuredTailFadeWindow — the same derivation landing-access
      anchors its arrival to). It completes inside the exit window,
      so the section no longer carries the fade's own 500px tail. */
-  const lightFade = gsap.fromTo(stage,
+  /* R6 item 2 (Oscar 2026-08-27): the CARD METAS (titleblocks +
+     descs — the light-ink text) fade out WITH the ground fade — a
+     second tween in the SAME timeline on the SAME trigger, so both
+     read one progress value and cannot desync (the standing
+     no-light-over-shifting-ground guarantee at this boundary).
+     Scrubbed and reversible: they return as the ground darkens on
+     the way back. Plain-ink elements — autoAlpha is blend-safe. */
+  const metaEls = cards.flatMap((c) => [
+    c.querySelector('.landing-featured__titleblock'),
+    c.querySelector('.landing-featured__desc'),
+  ]).filter((el) => el instanceof HTMLElement);
+  const lightFade = gsap.timeline({
+    scrollTrigger: {
+      trigger: section,
+      start: () => featuredTailFadeWindow()?.start ?? `bottom bottom+=${TAIL_LIGHT_FADE_PX}`,
+      end: () => `+=${TAIL_LIGHT_FADE_PX}`,
+      scrub: true,
+      invalidateOnRefresh: true,
+    },
+  });
+  lightFade.fromTo(stage,
     { backgroundColor: '#161616' },
-    {
-      backgroundColor: GROUND_LIGHT,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: section,
-        start: () => featuredTailFadeWindow()?.start ?? `bottom bottom+=${TAIL_LIGHT_FADE_PX}`,
-        end: () => `+=${TAIL_LIGHT_FADE_PX}`,
-        scrub: true,
-        invalidateOnRefresh: true,
-      },
-    });
+    { backgroundColor: GROUND_LIGHT, ease: 'none', duration: 1, immediateRender: false }, 0);
+  if (metaEls.length) {
+    lightFade.fromTo(metaEls,
+      { autoAlpha: 1 },
+      { autoAlpha: 0, ease: 'none', duration: 1, immediateRender: false }, 0);
+  }
   /* THE FADE-TO-BLACK moved on again (2026-08-24, its third home):
      it now rides the SERVICES section's tail — the one light→dark
      boundary in the current order — in landing-services.js,
