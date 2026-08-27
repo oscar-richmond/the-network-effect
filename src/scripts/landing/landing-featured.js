@@ -87,6 +87,26 @@ export function featuredTailFadeWindow() {
     span: TAIL_LIGHT_FADE_PX,
   };
 }
+/** R6 item 3 (Oscar 2026-08-27, supersedes the fade-50% arrival
+ *  gate): the scroll at which the departing carousel's measured TOP
+ *  edge crosses the NAV WORDMARK's measured bottom — the moment the
+ *  carousel starts leaving under the nav. landing-access anchors
+ *  its arrival here; same self-contained shape as the fade window
+ *  above, so the derivations share their measurements. Null outside
+ *  the desktop pinned regime. */
+export function featuredCarouselExitsNavAt() {
+  const section = document.querySelector('[data-landing-featured]');
+  const strip = document.querySelector('[data-featured-strip]');
+  if (!(section instanceof HTMLElement) || !(strip instanceof HTMLElement)) return null;
+  if (isMobileViewport()) return null;
+  const sectionTop = section.getBoundingClientRect().top + (window.scrollY || 0);
+  const travel = Math.max(strip.scrollWidth + RIGHT_MARGIN_PX - (window.innerWidth || 1728), 0);
+  const departAt = sectionTop + travel + TRANSITION_DWELL_PX;
+  const stripTop = parseFloat(strip.style.top) || strip.getBoundingClientRect().top;
+  const topbar = document.querySelector('.home__topbar');
+  const navBottom = topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0;
+  return Math.round(departAt + stripTop - navBottom);
+}
 const TAIL_CLEAR_PX = 100;
 const GROUND_LIGHT = '#eeeef0';
 /* Header geometry (Oscar's rev): WORK's bottom and VIEW ALL's

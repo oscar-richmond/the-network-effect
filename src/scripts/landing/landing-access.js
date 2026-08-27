@@ -46,7 +46,7 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
-import { featuredTailFadeWindow } from './landing-featured.js';
+import { featuredCarouselExitsNavAt } from './landing-featured.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -114,10 +114,8 @@ const SNAP_DURATION_S = 0.6;
    is 600 taller (landing.css); the main trigger starts later by
    the same amount. Reversible by construction. */
 const ACCESS_READ_HOLD_PX = 600;
-/* R5 (Oscar 2026-08-27): the fraction of the featured fade-to-light
-   at which this section's arrival (its first beat — label +
-   headline) begins. Anchored to featuredTailFadeWindow(). */
-const ACCESS_ARRIVAL_FADE_T = 0.5;
+/* (R5's ACCESS_ARRIVAL_FADE_T retired 2026-08-27 — the arrival now
+   anchors to featuredCarouselExitsNavAt; see the trigger below.) */
 /* ── ROW COLLAPSE (Oscar 2026-08-26): BOTH rows' heights shrink
    TOGETHER during the exit, starting the moment the first landed
    cell's edge crosses a viewport edge — derived from geometry per
@@ -599,22 +597,19 @@ export function initLandingAccess() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
     });
-    /* SPLIT TRIGGERS (Oscar 2026-08-26, dead-space fix), RE-ANCHORED
-       (R5, 2026-08-27): the label + headline now arrive when the
-       featured tail fade reaches ACCESS_ARRIVAL_FADE_T of its run —
-       the same featuredTailFadeWindow() derivation that drives the
-       fade itself, so the two can never desync (was the positional
-       'top+=100 bottom'). The rows keep the shipped positional
-       threshold and character — their y718 line meets the viewport
-       after this gate at every desktop target (verified), so the
-       arrival still BEGINS here. Fallback = the old anchor, for any
+    /* RE-ANCHORED AGAIN (R6, Oscar 2026-08-27 — supersedes the R5
+       fade-50% gate): the label + headline arrival begins AS THE
+       FEATURED CAROUSEL'S TOP CROSSES THE NAV WORDMARK'S BOTTOM —
+       the carousel starting to leave under the nav, derived from
+       its measured top edge against the measured nav bottom
+       (featuredCarouselExitsNavAt, the featured module's own
+       derivation — shared measurements, no desync). ~650px earlier
+       than the fade-50% gate. The rows keep the shipped positional
+       threshold; fallback = the pre-R5 positional anchor for any
        regime without the featured pin. */
     headlineTrigger = ScrollTrigger.create({
       trigger: section,
-      start: () => {
-        const w = featuredTailFadeWindow();
-        return w ? Math.round(w.start + w.span * ACCESS_ARRIVAL_FADE_T) : 'top+=100 bottom';
-      },
+      start: () => featuredCarouselExitsNavAt() ?? 'top+=100 bottom',
       once: true,
       onEnter: () => {
         dlines.forEach((line) => {
