@@ -5663,9 +5663,24 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		height: 249px;
 	}
 
-	.landing-v2.landing-home .landing-featured__card:nth-of-type(4n + 2) .landing-featured__imgwin { height: 450px; }
-	.landing-v2.landing-home .landing-featured__card:nth-of-type(4n + 3) .landing-featured__imgwin { height: 320px; }
-	.landing-v2.landing-home .landing-featured__card:nth-of-type(4n + 4) .landing-featured__imgwin { height: 400px; }
+	/* R3 (Oscar 2026-08-27): explicit per-position heights replace
+	   the 4n cycle. TWO reasons: (1) Wilderness Reserve takes
+	   Animol's 400 (it had landed identical to its Top Boy
+	   neighbour); (2) the old nth-of-type cycle SPLIT when the
+	   unbuilt-study cards became <span>s (nth-of-type counts
+	   anchors and spans separately - that reshuffle was the actual
+	   cause of the identical pair). nth-child is type-agnostic, so
+	   this survives live/placeholder flips. Sequence adjacency-
+	   audited: 400 249 450 320 450 400 320 400 - no two adjacent
+	   share a size; all values from the established set. */
+	.landing-v2.landing-home .landing-featured__card:nth-child(1) .landing-featured__imgwin { height: 400px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(2) .landing-featured__imgwin { height: 249px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(3) .landing-featured__imgwin { height: 450px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(4) .landing-featured__imgwin { height: 320px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(5) .landing-featured__imgwin { height: 450px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(6) .landing-featured__imgwin { height: 400px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(7) .landing-featured__imgwin { height: 320px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(8) .landing-featured__imgwin { height: 400px; }
 
 	/* The windows re-shape per card, so every image covers — the
 	   shipped inline crop styles (mobile's) are overridden here. */
