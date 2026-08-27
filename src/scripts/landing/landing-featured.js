@@ -58,6 +58,35 @@ const TRANSITION_DWELL_PX = 250;
    gives the fade an EMPTY ground — the gallery has departed (the
    services-fade lesson: never fade under live content). */
 const TAIL_LIGHT_FADE_PX = 500;
+/* R5 (Oscar 2026-08-27, the earlier fade): the fade-to-light BEGINS
+   when the departing carousel is this fraction off the top of the
+   viewport — its measured midpoint crossing the viewport top at
+   0.5. Derived from the strip's live top/height (never an offset);
+   featuredTailFadeWindow() below is the ONE derivation, consumed by
+   this module's fade AND landing-access's arrival gate so the two
+   can never desync. */
+const FEATURED_TAIL_FADE_AT_T = 0.5;
+
+/** The fade-to-light window, absolute scroll px — derived live from
+ *  the featured DOM (self-contained: callable from other modules).
+ *  start = the scroll where FEATURED_TAIL_FADE_AT_T of the carousel
+ *  has exited the viewport top; span = TAIL_LIGHT_FADE_PX. Null
+ *  when the section isn't in its desktop pinned regime. */
+export function featuredTailFadeWindow() {
+  const section = document.querySelector('[data-landing-featured]');
+  const strip = document.querySelector('[data-featured-strip]');
+  if (!(section instanceof HTMLElement) || !(strip instanceof HTMLElement)) return null;
+  if (isMobileViewport()) return null;
+  const sectionTop = section.getBoundingClientRect().top + (window.scrollY || 0);
+  const travel = Math.max(strip.scrollWidth + RIGHT_MARGIN_PX - (window.innerWidth || 1728), 0);
+  const departAt = sectionTop + travel + TRANSITION_DWELL_PX;
+  const stripTop = parseFloat(strip.style.top) || strip.getBoundingClientRect().top;
+  const stripH = strip.getBoundingClientRect().height;
+  return {
+    start: Math.round(departAt + stripTop + stripH * FEATURED_TAIL_FADE_AT_T),
+    span: TAIL_LIGHT_FADE_PX,
+  };
+}
 const TAIL_CLEAR_PX = 100;
 const GROUND_LIGHT = '#eeeef0';
 /* Header geometry (Oscar's rev): WORK's bottom and VIEW ALL's
@@ -150,9 +179,11 @@ export function initLandingFeatured() {
   /* The section's own height carries the runway (content-derived, so
      it can't live in static CSS). Set before triggers measure. */
   const applyHeight = () => {
-    /* + the fade tail (see TAIL_LIGHT_FADE_PX): the sticky stage
-       holds through it, empty and dark, while the ground lightens. */
-    section.style.height = `calc(100dvh + ${Math.round(runway() + TAIL_LIGHT_FADE_PX + TAIL_CLEAR_PX)}px)`;
+    /* R5: the fade now runs INSIDE the exit window (it begins at
+       the carousel's midpoint crossing the top and completes before
+       the departure ends), so the section no longer carries the
+       fade's own 500px tail — only TAIL_CLEAR_PX of light hold. */
+    section.style.height = `calc(100dvh + ${Math.round(runway() + TAIL_CLEAR_PX)}px)`;
   };
   applyHeight();
 
@@ -276,10 +307,12 @@ export function initLandingFeatured() {
   hls.forEach((hl, i) => {
     tl.to(hl, { top: () => hlTops[i] - stageH(), duration: stageH() }, exitAt());
   });
-  /* THE FADE-TO-LIGHT (constants above): its own trigger on the
-     section's bottom edge — start 500 below the viewport bottom,
-     end exactly there — so it scrubs symmetrically and completes
-     before any What We Do pixel can show. */
+  /* THE FADE-TO-LIGHT (R5, retimed — was `bottom bottom+=500` on
+     the section's empty tail): begins the moment the departing
+     carousel's midpoint crosses the viewport top, derived live
+     (featuredTailFadeWindow — the same derivation landing-access
+     anchors its arrival to). It completes inside the exit window,
+     so the section no longer carries the fade's own 500px tail. */
   const lightFade = gsap.fromTo(stage,
     { backgroundColor: '#161616' },
     {
@@ -287,9 +320,10 @@ export function initLandingFeatured() {
       ease: 'none',
       scrollTrigger: {
         trigger: section,
-        start: `bottom bottom+=${TAIL_LIGHT_FADE_PX}`,
-        end: 'bottom bottom',
+        start: () => featuredTailFadeWindow()?.start ?? `bottom bottom+=${TAIL_LIGHT_FADE_PX}`,
+        end: () => `+=${TAIL_LIGHT_FADE_PX}`,
         scrub: true,
+        invalidateOnRefresh: true,
       },
     });
   /* THE FADE-TO-BLACK moved on again (2026-08-24, its third home):
