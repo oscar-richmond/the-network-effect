@@ -5483,11 +5483,17 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   drawn 60px gap (headline 200..500 at 56/50 → CTAs 560; still
 	   22px clear of the photo at 620). */
 	.landing-v2.landing-home .landing-founders__ctas {
-		/* 64 below the statement block AT THE FIXED MOMENT (Oscar R2,
+		/* 64 below the statement AT THE FIXED MOMENT (Oscar R2,
 		   2026-08-26): the earlier 420 measured 64 only at page-load
 		   rest, where the scrub-drift entrance holds the text 60 lower
-		   than settled — at the pin the settled block bottom is 406,
-		   so 406 + 64. */
+		   than settled.
+		   THE ANCHOR, stated once so it stops being re-derived
+		   (2026-08-27): 406 is the LAST LINE's rendered bottom at the
+		   pin — the h2's own box bottom is 400, because the last line
+		   overflows the box by 6. Measured at the pin: last-line
+		   bottom 406 -> CTA top 470 = 64 (box bottom 400 -> 70). An
+		   audit reading the box instead of the line reported this as
+		   a 6px drift; it is the anchor, not an error. 406 + 64. */
 		top: 470px;
 	}
 
