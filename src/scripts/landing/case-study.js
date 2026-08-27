@@ -42,6 +42,7 @@ import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } 
 import { isMobileViewport } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
+import { initStatementBar } from './statement-bar.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -608,6 +609,16 @@ export function initCaseStudy() {
     window.removeEventListener('scroll', onBottomScroll);
     window.clearTimeout(snapTimer);
   });
+
+  /* ── The intro's accent bar — derived from the rendered ink
+     (statement-bar.js; Oscar's spanning rule, 2026-08-27 — the four
+     studies' copy lengths differ, which the derivation absorbs).
+     The CSS height/top remain only as the no-JS fallback. Layout,
+     not choreography — runs under RM too. */
+  cleanups.push(initStatementBar(
+    document.querySelector('[data-cs-bar]'),
+    document.querySelector('[data-cs-intro]'),
+  ));
 
   if (reduced) {
     /* RM: static page; sticky remains (it's layout). The hidden

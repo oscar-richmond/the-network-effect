@@ -34,6 +34,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
 import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
+import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
@@ -281,6 +282,18 @@ export function initServices6() {
 
   sizeBand();
   buildGals();
+
+  /* ── Statement accent bars — derived from the rendered ink
+     (statement-bar.js; Oscar's spanning rule, 2026-08-27). The SSR
+     barH inline heights remain only as the no-JS fallback. Layout,
+     not choreography — runs under RM too. */
+  page.querySelectorAll('[data-sv6-st]').forEach((sec) => {
+    cleanups.push(initStatementBar(
+      sec.querySelector('[data-sv6-bar]'),
+      sec.querySelector('[data-sv6-statement]'),
+    ));
+  });
+
   const onResize = () => { sizeBand(); };
   window.addEventListener('resize', onResize);
   cleanups.push(() => window.removeEventListener('resize', onResize));
