@@ -81,11 +81,26 @@
 	   DIFFERENCE over the image (the real blend use on this page;
 	   chain: section(relative) > text — no transformed/opacity
 	   ancestors). */
+	/* R3 (Oscar, 2026-08-27): 720px heroes (were 1006 full-viewport)
+	   that open from the 24px margins to full bleed on scroll - the
+	   landing hero video's clip-inset mechanic, ported (reused: the
+	   inset grammar, the 24 margin, power1.inOut, the 700px window;
+	   adapted: ONE scrubbed var drives both the image clip AND the
+	   text anchor below, so they can never desync; unpinned - the
+	   scrub rides the section's own arrival). services-6.js scrubs
+	   --sv6-hero-inset 24px -> 0. */
 	.landing-v2 .sv6-pillar {
 		position: relative;
 		margin-top: 120px;
-		height: 1006px;
+		height: 720px;
 		overflow: hidden;
+		--sv6-hero-inset: 24px;
+	}
+
+	/* RM: no expansion choreography — static full bleed, text
+	   visible (the reveal never wraps under reduce). */
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2 .sv6-pillar { --sv6-hero-inset: 0px; }
 	}
 
 	.landing-v2 .sv6-pillar__img {
@@ -95,6 +110,7 @@
 		height: 100%;
 		object-fit: cover;
 		display: block;
+		clip-path: inset(0 var(--sv6-hero-inset) 0 var(--sv6-hero-inset));
 	}
 
 	/* Item 1 (Oscar R2, 2026-08-26): the title cluster centres
@@ -103,6 +119,12 @@
 	   retired). NO transform on the wrapper: each text keeps its own
 	   difference (the legacy pillar's blend-safe pattern). The 16px
 	   title-to-sub gap is the frame's own rhythm (248 -> 264). */
+	/* The cluster stays vertically centred (flex, no transform - the
+	   texts keep their own difference) and 40px from the IMAGE'S
+	   left edge: padding-left = the scrubbed inset + 40, so it reads
+	   64 from the viewport at rest and travels to 40 at full bleed,
+	   tracking the edge through the expansion (Oscar's interpretation
+	   note, built as read). */
 	.landing-v2 .sv6-pillar__text {
 		position: absolute;
 		inset: 0;
@@ -110,30 +132,63 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: flex-start;
-		padding-left: 24px;
+		padding-left: calc(var(--sv6-hero-inset) + 40px);
 		pointer-events: none;
 	}
 
-	.landing-v2 .sv6-pillar__title {
+	/* The landing WHAT WE DO title grammar, matched exactly: name
+	   Dazzed Bold 56/54/-3.5; /0N 24/24 at the name's right, 8 gap,
+	   cap-top aligned via the reel's solved constant (56 x -0.0625 +
+	   6.34 = 2.84 - reused, not re-derived); white difference kept
+	   (the shipped treatment over these images). */
+	.landing-v2 .sv6-pillar__titlerow {
+		position: relative;
 		margin: 0;
-		width: 660px;
+		white-space: nowrap;
+		font-size: 56px;
+		line-height: 54px;
+	}
+
+	.landing-v2 .sv6-pillar__name {
+		position: relative;
+		display: inline-block;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 700;
 		font-synthesis: none;
-		font-size: 48px;
-		line-height: 48px;
+		font-size: 56px;
+		line-height: 54px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
 		color: #fff;
 		mix-blend-mode: difference;
 	}
 
+	.landing-v2 .sv6-pillar__num {
+		position: absolute;
+		left: calc(100% + 8px);
+		top: 2.84px; /* 56 x -0.0625 + 6.34 - the reel's cap-top fix */
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 700;
+		font-synthesis: none;
+		font-size: 24px;
+		line-height: 24px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	/* Subtitle: the landing 34/38/-3% tier - matched to its true
+	   WHAT WE DO equivalent (.landing-sreel__desc): Serrif Condensed
+	   Medium, the Section serif cut (also this subtitle's shipped
+	   face, one size up). One line; white difference kept. */
 	.landing-v2 .sv6-pillar__sub {
 		margin: 16px 0 0;
-		width: 382px;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 22px;
-		line-height: 22px;
+		font-size: 34px;
+		line-height: 38px;
+		letter-spacing: -0.03em;
+		white-space: nowrap;
 		color: #fff;
 		mix-blend-mode: difference;
 	}

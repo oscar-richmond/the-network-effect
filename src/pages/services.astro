@@ -79,7 +79,17 @@ import '../styles/fonts.css';
               (the legacy pillar's blend-safe centring pattern: each
               text keeps its own difference). */}
           <div class="sv6-pillar__text">
-            <h2 class="sv6-pillar__title" data-sv6-line>{p.title}</h2>
+            {/* R3 (Oscar, 2026-08-27): the landing WHAT WE DO title
+                grammar - name at 56/54/-3.5 with the /0N at its right,
+                cap-top aligned (the reel's alignment fix, reused);
+                the old number-left "0N — NAME" arrangement retires.
+                name/num wrapped separately so the num's absolute
+                anchor survives the reveal clips (the reel's own
+                structure). */}
+            <h2 class="sv6-pillar__titlerow">
+              <span class="sv6-pillar__name" data-sv6-line>{p.title.split(' — ')[1]}</span>
+              <span class="sv6-pillar__num" data-sv6-line>/{p.title.split(' — ')[0]}</span>
+            </h2>
             <p class="sv6-pillar__sub" data-sv6-line>{p.subtitle}</p>
           </div>
         </section>

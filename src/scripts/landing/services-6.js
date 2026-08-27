@@ -297,10 +297,20 @@ export function initServices6() {
       playLineRevealElement(line);
     });
 
-    /* Pillar headers — item 1 (Oscar R2): titles animate ONLY on
-       scroll. 'top 40%' sits below pillar 1's load position (top
-       ~507 vs 40% of any target viewport), so nothing plays at
-       load; each pillar reveals once its image is well in view. */
+    /* Pillar heroes — R3 (Oscar 2026-08-27): the landing hero
+       video's margins->full-bleed expansion, ported (power1.inOut
+       inside the scrub, the hero's 700px window; unpinned — the
+       scrub rides the section's own arrival). ONE var drives the
+       image clip AND the text anchor (services-6.css), scrubbed
+       and reversible. START is derived per pillar: 8px above its
+       load position when it sits in the first viewport (pillar 1 at
+       ~507 must SHOW the rest state at load and expand on the
+       first scroll — the R2 titles-only-on-scroll intent carried
+       forward), else at 85% for the pillars that arrive by scroll.
+       TEXT ENTRANCE (supersedes the R2 'top 40%' trigger): the
+       reveal fires when the image's edges MEET the viewport sides —
+       detected as the expansion scrub completing (inset 0), not a
+       scroll offset. Still scroll-only by construction. */
     page.querySelectorAll('.sv6-pillar').forEach((sec) => {
       const lines = Array.from(sec.querySelectorAll('[data-sv6-line]'));
       lines.forEach((line, i) => {
@@ -308,11 +318,8 @@ export function initServices6() {
         line.dataset.revealDelay = String(i * LINE_STAGGER_S);
         wrapWordRevealElement(line);
       });
-      /* The IMAGE has its own earlier beat (Oscar 2026-08-27: on
-         landing, the IMMERSE image must be there immediately, not
-         after a scroll) — it reveals as soon as its section is in
-         view, which for pillar 1 means at load. The TEXTS keep the
-         scroll-only 40% trigger below. */
+      /* The IMAGE's own earlier beat (unchanged): visible as soon as
+         its section is in view — at load for pillar 1. */
       triggers.push(ScrollTrigger.create({
         trigger: sec,
         start: 'top 95%',
@@ -321,14 +328,35 @@ export function initServices6() {
           sec.querySelector('.sv6-pillar__img')?.classList.add('is-visible');
         },
       }));
-      triggers.push(ScrollTrigger.create({
-        trigger: sec,
-        start: 'top 40%',
-        once: true,
-        onEnter: () => {
-          lines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l));
-        },
-      }));
+      let played = false;
+      const playTexts = () => {
+        if (played) return;
+        played = true;
+        lines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l));
+      };
+      const expand = gsap.fromTo(sec,
+        { '--sv6-hero-inset': '24px' },
+        {
+          '--sv6-hero-inset': '0px',
+          ease: 'power1.inOut',
+          scrollTrigger: {
+            trigger: sec,
+            start: () => {
+              const vh = window.innerHeight || 1080;
+              const docTop = sec.getBoundingClientRect().top + window.scrollY;
+              const entry = Math.min(vh * 0.85, docTop - 8);
+              return `top ${Math.round(entry)}px`;
+            },
+            end: '+=700', /* the hero's VIDEO_EXPAND_PX, reused */
+            scrub: true,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              if (self.progress >= 0.999) playTexts();
+            },
+          },
+        });
+      triggers.push(expand.scrollTrigger);
+      cleanups.push(() => expand.kill());
     });
 
     /* Statements — word reveal + the bar draw (the case-study intro
