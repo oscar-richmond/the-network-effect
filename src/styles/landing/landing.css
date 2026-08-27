@@ -1782,35 +1782,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	overflow: hidden;
 }
 
-.landing-v2 .landing-access__item {
-	flex: none;
-	width: 344px;
-	height: 500px;
-	margin: 0;
-	overflow: hidden;
-	/* No dim (Oscar's rev 3): full-strength imagery behind the veil —
-	   the Figma background-blur look. is-prime survives as the JS
-	   geometry anchor only. */
-}
-
-.landing-v2 .landing-access__item img {
-	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-/* One static full-stage shader canvas (access-wave.js) — planes
-   track the image rects through entrance + travel transforms. */
-.landing-v2 .landing-access__canvas {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	z-index: 2;
-	pointer-events: none;
-}
-
 /* Veil wrappers: NO mask — a mask forms a backdrop root and would
    cut the veils' backdrop-filter off from the canvas beneath. */
 .landing-v2 .landing-access__veilwrap {

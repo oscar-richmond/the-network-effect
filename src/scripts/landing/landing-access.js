@@ -43,7 +43,6 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
-import { createAccessWave } from './access-wave.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
@@ -344,7 +343,6 @@ export function initLandingAccess() {
     top: section.querySelector('[data-access-veils="top"]'),
     bottom: section.querySelector('[data-access-veils="bottom"]'),
   };
-  const canvas = section.querySelector('[data-access-canvas]');
   if (!(stage instanceof HTMLElement) || !rows.top || !rows.bottom) return () => {};
 
   const cells = {
@@ -571,24 +569,13 @@ export function initLandingAccess() {
     },
   });
 
-  /* ── Media shader — axis X (the transposed bow). */
-  let wave = null;
-  if (canvas instanceof HTMLCanvasElement) {
-    try {
-      wave = createAccessWave(
-        stage,
-        canvas,
-        {
-          left: cells.top.map((f) => f.querySelector('img')).filter(Boolean),
-          right: cells.bottom.map((f) => f.querySelector('img')).filter(Boolean),
-        },
-        () => ({ left: state.topVirtual, right: state.bottomVirtual }),
-        { axis: 'x' },
-      );
-    } catch (error) {
-      console.warn('[landing-access] access-wave init failed — DOM image fallback.', error);
-    }
-  }
+  /* ── Media shader: REMOVED (A5, 2026-08-27). Its plane query
+     targeted a class the rows rebuild retired, so the canvas
+     mounted a live GL context and rendered ZERO planes on every
+     load — the plain DOM images (the approved staging look) were
+     doing all the work. Restoring a warp is a design decision for
+     later, not a cleanup: see access-wave.js (kept — the mobile
+     /services legacy hero wave still imports from it). */
 
   /* ── Arrival: the fragmented headline lines on the house reveal
      (reading order, the established 0.12s stagger); rows slide in
@@ -654,7 +641,6 @@ export function initLandingAccess() {
   if (import.meta.env.DEV) {
     window.__landingAccess = {
       state: () => ({ ...state }),
-      wave: () => wave,
       lastSnapTarget: () => lastSnapTarget,
       trigger: () => trigger,
     };
@@ -670,7 +656,6 @@ export function initLandingAccess() {
     revealTrigger?.kill();
     headlineTrigger?.kill();
     if (stage instanceof HTMLElement) stage.style.top = '';
-    wave?.destroy();
     gsap.killTweensOf(state);
   };
 }
