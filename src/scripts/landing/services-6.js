@@ -217,7 +217,15 @@ export function initServices6() {
     let maxTop = 0;
     lines.forEach((l) => { maxTop = Math.max(maxTop, parseFloat(l.style.top) || 0); });
     stage.style.setProperty('--sv6-frag-h', `${maxTop + FRAG_LINE_H_PX}px`);
-    fragCleanups.push(initStatementDwell(sec, stage));
+    /* R4 (Oscar 2026-08-27, the landing closing precedent): centred
+       between the NAV WORDMARK's bottom and the viewport bottom —
+       the dwell's own topBound derivation, measured live. */
+    fragCleanups.push(initStatementDwell(sec, stage, {
+      topBound: () => {
+        const tb = document.querySelector('.home__topbar');
+        return tb instanceof HTMLElement ? tb.getBoundingClientRect().bottom : 0;
+      },
+    }));
   });
   cleanups.push(() => fragCleanups.forEach((fn) => fn()));
 
@@ -244,6 +252,14 @@ export function initServices6() {
       gal.style.removeProperty('--sv6-gal-stage-h');
       const h = stage.offsetHeight;
       gal.style.setProperty('--sv6-gal-stage-h', `${h}px`);
+      /* R4 (Oscar 2026-08-27, the landing closing precedent): the
+         pinned stage centres between the NAV WORDMARK's bottom and
+         the viewport bottom — sticky top gains tb/2 (the CSS calc
+         reads --sv6-gal-tb) and the scrub start shifts with it so
+         the travel window still begins exactly at the pin. */
+      const topBar = document.querySelector('.home__topbar');
+      const tb = topBar instanceof HTMLElement ? topBar.getBoundingClientRect().bottom : 0;
+      gal.style.setProperty('--sv6-gal-tb', `${tb.toFixed(1)}px`);
       const t = galTravel(gal);
       gal.style.setProperty('--sv6-gal-runway', `${t.toFixed(0)}px`);
       if (t <= 0 || reduced) return;
@@ -252,7 +268,7 @@ export function initServices6() {
         ease: 'none',
         scrollTrigger: {
           trigger: gal,
-          start: () => `top ${Math.round(((window.innerHeight || 1080) - h) / 2)}px`,
+          start: () => `top ${Math.round(((window.innerHeight || 1080) - h + tb) / 2)}px`,
           end: () => `+=${galTravel(gal)}`,
           scrub: true,
           invalidateOnRefresh: true,

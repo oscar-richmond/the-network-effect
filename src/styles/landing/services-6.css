@@ -376,7 +376,10 @@
 
 	.landing-v2 .sv6-gal__stage {
 		position: sticky;
-		top: calc(50dvh - var(--sv6-gal-stage-h, 100dvh) / 2);
+		/* Centred between the nav wordmark's bottom (--sv6-gal-tb,
+		   measured by the driver) and the viewport bottom — the
+		   landing closing dwell's derivation (R4, 2026-08-27). */
+		top: calc(50dvh + var(--sv6-gal-tb, 0px) / 2 - var(--sv6-gal-stage-h, 100dvh) / 2);
 		height: var(--sv6-gal-stage-h, auto);
 		overflow: hidden;
 	}
