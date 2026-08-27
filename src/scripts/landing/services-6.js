@@ -275,12 +275,24 @@ export function initServices6() {
         line.dataset.revealDelay = String(i * LINE_STAGGER_S);
         wrapWordRevealElement(line);
       });
+      /* The IMAGE has its own earlier beat (Oscar 2026-08-27: on
+         landing, the IMMERSE image must be there immediately, not
+         after a scroll) — it reveals as soon as its section is in
+         view, which for pillar 1 means at load. The TEXTS keep the
+         scroll-only 40% trigger below. */
+      triggers.push(ScrollTrigger.create({
+        trigger: sec,
+        start: 'top 95%',
+        once: true,
+        onEnter: () => {
+          sec.querySelector('.sv6-pillar__img')?.classList.add('is-visible');
+        },
+      }));
       triggers.push(ScrollTrigger.create({
         trigger: sec,
         start: 'top 40%',
         once: true,
         onEnter: () => {
-          sec.querySelector('.sv6-pillar__img')?.classList.add('is-visible');
           lines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l));
         },
       }));

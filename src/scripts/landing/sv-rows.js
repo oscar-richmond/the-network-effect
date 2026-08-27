@@ -25,6 +25,11 @@ import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 /* Hover-row marquee — the network-marquee family speed. */
 const MARQ_SPEED_PX_S = 35;
 const MARQ_GAP_PX = 80;
+/* Scroll-driven swaps (the R2 controllers) run a QUICK wipe so the
+   frame keeps pace with row-to-row scrolling (Oscar 2026-08-27: at
+   the hover wipe's 450ms the serialised swaps visibly lagged the
+   rows). Hover keeps the full luxury phase. */
+const FAST_SWAP_PHASE_MS = 180;
 const HOVER_IMG_HALF_PX = 190;
 const ROW_BAND_CENTRE_PX = 34;
 
@@ -97,6 +102,7 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
     const overEl = imgWrap instanceof HTMLElement ? imgWrap.querySelector('[data-sv-img-over]') : null;
     let shownRow = null;
     let pendingRow = null;
+    let pendingFast = false;
     let swapAnim = false;
     const swapTimers = [];
     const swapSchedule = (fn, ms) => swapTimers.push(window.setTimeout(fn, ms));
@@ -135,6 +141,7 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
       const target = pendingRow;
       if (!(target instanceof HTMLElement) || target === shownRow) return;
       swapAnim = true;
+      const phaseMs = pendingFast ? FAST_SWAP_PHASE_MS : SWAP_PHASE_MS;
       /* The NEW image wipes in over the old (blur 6→0) while the
          BASE blurs up 0→6 beneath it (.is-covering — the lightbox
          out-phase read, Oscar's rev 5: one-sided blur wasn't
@@ -147,7 +154,7 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
       overEl.style.clipPath = 'inset(0 100% 0 0)';
       overEl.style.filter = 'blur(6px)';
       void overEl.offsetWidth;
-      overEl.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
+      overEl.style.transition = `clip-path ${phaseMs / 1000}s ${SWAP_CURVE}, filter ${phaseMs / 1000}s ${SWAP_CURVE}`;
       overEl.style.clipPath = 'inset(0 0 0 0)';
       overEl.style.filter = 'blur(0px)';
       swapSchedule(() => {
@@ -167,11 +174,12 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
         shownRow = target;
         clearSwap();
         if (pendingRow !== shownRow && pendingRow instanceof HTMLElement) runSwapSequence();
-      }, SWAP_PHASE_MS + 30);
+      }, phaseMs + 30);
     };
-    const showImg = (row) => {
+    const showImg = (row, fast = false) => {
       if (reduced || !(imgWrap instanceof HTMLElement) || !(row instanceof HTMLElement)) return;
       pendingRow = row;
+      pendingFast = fast;
       if (!imgWrap.classList.contains('is-active')) {
         /* Fresh entrance: place + src directly, blur/fade in. */
         clearSwap();
@@ -205,7 +213,8 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
     };
     cleanups.push(clearSwap);
     if (Array.isArray(controllers)) {
-      controllers.push({ section, showImage: showImg, clearImage: clearImg });
+      /* Controller swaps are the scroll-driven kind — fast wipes. */
+      controllers.push({ section, showImage: (row) => showImg(row, true), clearImage: clearImg });
     }
 
     if (fineHover) {
