@@ -46,6 +46,7 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
+import { featuredTailFadeWindow } from './landing-featured.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -113,6 +114,10 @@ const SNAP_DURATION_S = 0.6;
    is 600 taller (landing.css); the main trigger starts later by
    the same amount. Reversible by construction. */
 const ACCESS_READ_HOLD_PX = 600;
+/* R5 (Oscar 2026-08-27): the fraction of the featured fade-to-light
+   at which this section's arrival (its first beat — label +
+   headline) begins. Anchored to featuredTailFadeWindow(). */
+const ACCESS_ARRIVAL_FADE_T = 0.5;
 /* ── ROW COLLAPSE (Oscar 2026-08-26): BOTH rows' heights shrink
    TOGETHER during the exit, starting the moment the first landed
    cell's edge crosses a viewport edge — derived from geometry per
@@ -594,14 +599,22 @@ export function initLandingAccess() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
     });
-    /* SPLIT TRIGGERS (Oscar 2026-08-26, dead-space fix): the label +
-       headline arrive as soon as THEIR position (stage y100) meets
-       the viewport bottom — while the featured carousel is still
-       leaving — instead of waiting for the rows' y718. The rows keep
-       the shipped threshold and character. */
+    /* SPLIT TRIGGERS (Oscar 2026-08-26, dead-space fix), RE-ANCHORED
+       (R5, 2026-08-27): the label + headline now arrive when the
+       featured tail fade reaches ACCESS_ARRIVAL_FADE_T of its run —
+       the same featuredTailFadeWindow() derivation that drives the
+       fade itself, so the two can never desync (was the positional
+       'top+=100 bottom'). The rows keep the shipped positional
+       threshold and character — their y718 line meets the viewport
+       after this gate at every desktop target (verified), so the
+       arrival still BEGINS here. Fallback = the old anchor, for any
+       regime without the featured pin. */
     headlineTrigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top+=100 bottom',
+      start: () => {
+        const w = featuredTailFadeWindow();
+        return w ? Math.round(w.start + w.span * ACCESS_ARRIVAL_FADE_T) : 'top+=100 bottom';
+      },
       once: true,
       onEnter: () => {
         dlines.forEach((line) => {
