@@ -35,6 +35,12 @@
  * than a filter). Structure, links, and animations are identical.
  */
 import { asset } from '../../utils/asset.js';
+import { SOCIAL_LINKS } from '../../data/landing/socials.js';
+
+/* The footer renders Linkedin before Instagram (frame order). */
+const FOOTER_SOCIALS = ['linkedin', 'instagram']
+  .map((k) => SOCIAL_LINKS.find((s) => s.key === k))
+  .filter(Boolean);
 
 interface Props {
   theme?: 'blue' | 'light';
@@ -112,9 +118,14 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
         established address; see header. */}
     <a class="landing-footer__rowitem landing-footer__rowitem--email" href="mailto:hello@networkeffectagency.co.uk" data-char-ripple-trigger><span data-char-ripple>HELLO@NETWORKEFFECTAGENCY.CO.UK</span></a>
     <div class="landing-footer__social">
-      {/* Placeholder hrefs pending real profile URLs. */}
-      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>LINKEDIN</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
-      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>INSTAGRAM</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+      {/* Hrefs from the shared source (data/landing/socials.js). */}
+      {FOOTER_SOCIALS.map((soc) => (
+        soc.href ? (
+          <a class="landing-footer__rowitem" href={soc.href} target="_blank" rel="noopener" data-char-ripple-trigger><span data-char-ripple>{soc.label.toUpperCase()}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></a>
+        ) : (
+          <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>{soc.label.toUpperCase()}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+        )
+      ))}
     </div>
     <button type="button" class="landing-footer__rowitem landing-footer__rowitem--top" data-footer-top data-char-ripple-trigger>
       <span data-char-ripple>BACK TO TOP</span>
@@ -159,10 +170,17 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     </div>
     <div class="landing-footer__dgroup landing-footer__dgroup--social" data-footer-col>
       <p class="landing-footer__dlabel">Social media</p>
-      {/* Placeholder hrefs pending real profile URLs (standing flag);
-          the frame's "Instatgram" typo corrected (reported). */}
-      <span class="landing-footer__dlink is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Linkedin</span></span>
-      <span class="landing-footer__dlink is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Instagram</span></span>
+      {/* Hrefs from the ONE shared source (data/landing/socials.js —
+          the /contact chips read the same file): empty = the
+          standing inert placeholder (the frame's "Instatgram" typo
+          stays corrected); a URL drop there goes live everywhere. */}
+      {FOOTER_SOCIALS.map((soc) => (
+        soc.href ? (
+          <a class="landing-footer__dlink" href={soc.href} target="_blank" rel="noopener" data-char-ripple-trigger><span data-char-ripple>{soc.label}</span></a>
+        ) : (
+          <span class="landing-footer__dlink is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>{soc.label}</span></span>
+        )
+      ))}
     </div>
   </div>
 

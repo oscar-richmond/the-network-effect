@@ -28,6 +28,7 @@
  * STAGING ONLY — nothing promoted anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
+import { SOCIAL_LINKS } from '../data/landing/socials.js';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { CONTACT_INTRO, CONTACT_EMAIL, CONTACT_MAILTO, CAL_FALLBACK } from '../data/landing/contact.js';
 import { asset } from '../utils/asset.js';
@@ -39,13 +40,17 @@ import '../styles/fonts.css';
 
 <SiteShell title="Contact — The Network Effect" bodyClass="landing-v2 contact-page">
   <main class="ct" data-contact>
-    {/* One viewport (Oscar's rev 2 — the page was too long): the
-        intro + CTA cluster and the media both VERTICALLY CENTRED;
-        the section's end IS the page's end, then the footer
-        reveals. */}
+    {/* Frame 51:2829 (2026-08-27, chrome −118): FIXED composition —
+        intro top 329, CTAs 585, socials 681, image (1295, 418),
+        footer at 1002; the centred-cluster layout retires. The
+        frame draws the intro box at x12 — a probable design slip
+        against the site-wide 24 margin (every other page anchors
+        24); BUILT AT 24, deviation reported. */}
     <div class="ct__cluster" data-ct-cluster>
-    {/* Intro — file: Dazzed Bold 48 with the leading indent, then
-        the Serrif line (the mixed-face pair). */}
+    {/* Intro — frame 51:2884: Dazzed Bold 100/88/−5% BOTH lines
+        (the serif second line retires); the file's leading-space
+        run as the established spacer atom (text-indent breaks the
+        reveal wrap's line grouping). */}
     <h1 class="ct__intro" data-ct-intro
       ><span class="ct__intro-indent" aria-hidden="true"></span>{CONTACT_INTRO.line1}<br /><span class="ct__intro-serrif">{CONTACT_INTRO.line2}</span></h1
     >
@@ -80,23 +85,42 @@ import '../styles/fonts.css';
       </a>
     </div>
 
+    {/* NEW — social icon chips (51:2862): 48px squares in the More
+        Info family fill, 16 apart. Hrefs come from the ONE shared
+        source (data/landing/socials.js — the footer reads the same
+        file), so the eventual URL drop lands everywhere at once;
+        while empty they are the established inert placeholders. */}
+    <div class="ct__socials" data-ct-socials>
+      {SOCIAL_LINKS.map((soc) => (
+        soc.href ? (
+          <a class="ct-social" href={soc.href} target="_blank" rel="noopener" aria-label={soc.label}>
+            <img src={asset(`/assets/landing/contact/social-${soc.key}.svg`)} alt="" width="24" height="24" />
+          </a>
+        ) : (
+          <span class="ct-social is-placeholder" data-hover aria-label={`${soc.label} — profile link coming soon`}>
+            <img src={asset(`/assets/landing/contact/social-${soc.key}.svg`)} alt="" width="24" height="24" />
+          </span>
+        )
+      ))}
     </div>
 
-    {/* Right-side media — THE HERO'S VIDEO (Oscar's rev 2; replaces
-        the LV-stack image). Same placeholder standing as the hero:
-        the asset is the established LV stand-in, pending licensed
-        finals. */}
-    <video
+    </div>
+
+    {/* Right-side media — frame 51:2877: the founders photograph
+        (asset 023A6940, the frame's TOPMOST visible layer — the LV
+        screenshot is fully covered beneath it, so the elevated
+        third-party-IP flag comes OFF this slot; this image carries
+        the STANDARD pending-sign-off + the standing founder-imagery
+        caveat instead). The hero-video stand-in retires with it. */}
+    <img
       class="ct__media"
       data-ct-media
-      src={asset('/assets/videos/louis-vuitton.mp4')}
-      autoplay
-      muted
-      loop
-      playsinline
-      preload="auto"
+      src={asset('/assets/landing/contact/contact-founders.jpg')}
+      alt=""
+      loading="eager"
+      decoding="async"
       aria-hidden="true"
-    ></video>
+    />
   </main>
 
   {/* Footer — the shared BLUE colourway, untouched. */}

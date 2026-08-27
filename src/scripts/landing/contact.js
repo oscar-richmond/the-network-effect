@@ -389,8 +389,9 @@ export function initContactPage() {
       playLineRevealElement(intro);
     }
 
-    /* CTAs — the pills' staggered fade, after the intro's beat. */
-    const ctas = Array.from(document.querySelectorAll('.ct-cta'));
+    /* CTAs — the pills' staggered fade, after the intro's beat; the
+       social chips (51:2862) join the same wave as beats 4 and 5. */
+    const ctas = Array.from(document.querySelectorAll('.ct-cta, .ct-social'));
     ctas.forEach((cta, i) => {
       schedule(() => cta.classList.add('is-visible'), 300 + i * 60);
     });

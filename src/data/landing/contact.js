@@ -3,12 +3,13 @@
  * 70:5009 (Contact) + 70:5172 (SCHEDULE A CALL - CONTACT, the
  * modal), extracted 2026-08-08. Copy verbatim from the file.
  *
- * RIGHTS — ELEVATED: contact-image.png is the file's topmost layer
- * of a stack whose siblings are named "Men's Spring-Summer 2026
- * Collection LOUIS VUITTON" — fashion-show / third-party-IP
- * imagery, NOTHING ships without explicit confirmation. The Robbo
- * profile crop carries the standing founder-imagery sign-off
- * caveat.
+ * RIGHTS (updated 2026-08-27, frame 51:2829): the page image is now
+ * contact-founders.jpg — the frame's TOPMOST visible layer (asset
+ * 023A6940, a founders photograph). The LV screenshot/video are
+ * fully retired from this page, so the ELEVATED third-party-IP
+ * flag comes OFF this slot; the founders photo carries the STANDARD
+ * pending-sign-off + the standing founder-imagery caveat, as does
+ * the Robbo profile crop on SCHEDULE A CALL.
  *
  * EMAIL: hello@networkeffectagency.co.uk — the ONE correct address
  * (Oscar, 2026-08-10). The Figma file's EMAIL US said
@@ -19,8 +20,10 @@
  */
 
 export const CONTACT_INTRO = {
-  line1: 'LET’S START A', // Dazzed Bold 48, the file's leading indent
-  line2: 'CONVERSATION.', // Serrif Medium 48
+  /* Frame 51:2884 (2026-08-27): Dazzed Bold 100/88/−5% BOTH lines —
+     the serif second line retired with the respec. */
+  line1: 'LET’S START A',
+  line2: 'CONVERSATION.',
 };
 
 export const CONTACT_EMAIL = 'hello@networkeffectagency.co.uk';

@@ -13,46 +13,68 @@
 
 .landing-v2 .ct {
 	position: relative;
-	/* ONE VIEWPORT (Oscar's rev 2 — the page ran long): the section
-	   ends with the viewport; the scroll below is exactly the footer
-	   reveal (spacer 830). */
-	height: 100dvh;
+	/* Frame 51:2829 (2026-08-27): FIXED 1002px composition — the
+	   footer begins at frame 1120 − 118 chrome; the one-viewport
+	   centred layout retires. Page total = 1002 + the 830 reveal. */
+	height: 1002px;
 }
 
-/* The intro + CTA cluster — vertically centred on landing (no
-   blend elements on this page, so the transform is safe). The 80px
-   intro-to-CTAs gap is the file's rhythm (493 → 573). */
+/* The intro + CTA + socials column — frame-fixed at top 329 (frame
+   447 − 118), flowing on the frame's own margins below (intro 176
+   tall → CTAs at 585 = +80; socials at 681 = +32). Built at the
+   site's x24 margin — the frame draws the intro box at x12, a
+   probable design slip (every other page anchors 24); deviation
+   reported. */
 .landing-v2 .ct__cluster {
 	position: absolute;
 	left: 24px;
-	top: 50%;
-	transform: translateY(-50%);
+	top: 329px;
 }
 
-/* Intro — 717w; Dazzed Bold 48 line + Serrif line; the file's
-   15-space lead as an inline spacer atom (the reveal-wrap
-   convention — text-indent breaks line grouping). */
+/* Intro — frame 51:2884: Dazzed Bold 100/88/−5% BOTH lines,
+   uppercase ink; the leading-space run as the spacer atom (the
+   reveal-wrap convention — text-indent breaks line grouping).
+   Maps to the guide's Display L / Sans tier (100/88/−5%). */
 .landing-v2 .ct__intro {
-	width: 717px;
+	/* 976: the frame's 971 box + 5px slack — the word-reveal wrap's
+	   inline-block clips round up and 969.6 of ink in a 971 box
+	   wrapped line 1. Ink positions unchanged. */
+	width: 976px;
 	margin: 0;
 	font-weight: 700;
-	font-size: 48px;
-	line-height: 48px;
+	font-size: 100px;
+	line-height: 88px;
+	letter-spacing: -0.05em;
 	text-transform: uppercase;
 	color: #161616;
 }
 
-.landing-v2 .ct__intro-indent {
-	display: inline-block;
-	width: 155px; /* the file's 15-space run at 48px */
-	height: 1px;
-}
-
+/* Line 2's serif face is the MOBILE build's shipped treatment (that
+   page is a separate pass, byte-identical here); the >=1025 respec
+   below neutralises it to the frame's all-Dazzed pair. */
 .landing-v2 .ct__intro-serrif {
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
 	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
+}
+
+@media (min-width: 1025px) {
+	.landing-v2 .ct__intro-serrif {
+		font-family: inherit;
+		font-weight: inherit;
+		font-synthesis: auto;
+		letter-spacing: inherit;
+	}
+}
+
+.landing-v2 .ct__intro-indent {
+	display: inline-block;
+	width: 301px; /* the frame's own ink: line 1 starts 301.2 in
+	   (measured from the 51:2884 export's pixel columns; our Dazzed
+	   render matches the frame's widths within 1px — 668 vs 667.8,
+	   800 vs 799.3) */
+	height: 1px;
 }
 
 /* ── The three 64px CTAs — the primary family's fill/ink at the
@@ -72,18 +94,65 @@
    so one definition serves both surfaces. Only this page's LAYOUT
    of them (.ct__ctas above) stays here. */
 
-/* Media — the HERO'S VIDEO (Oscar's rev 2), the file's 409×231
-   slot at x1295, vertically centred like the cluster. */
+/* Media — frame 51:2877: the founders photo in the 409×231 slot at
+   (1295, 418) — frame-fixed now (the centring retires). The frame's
+   internal crop is centre ±2%, so plain cover is faithful. */
 .landing-v2 .ct__media {
 	position: absolute;
 	left: 1295px;
-	top: 50%;
-	transform: translateY(-50%);
+	top: 418px;
 	width: 409px;
 	height: 231px;
 	object-fit: cover;
 	display: block;
 	overflow: hidden;
+}
+
+/* ── Social icon chips (51:2862) — 48px squares, the More Info
+   family fill, 16 apart, icons 24 centred. The family's hover is
+   the char-ripple, which cannot apply to icon-only chips: the
+   fill steps one grey darker instead (#e0e0e7 — the established
+   divider grey, the founders-buttons darken-on-hover precedent in
+   the light family). Focus ring = the light-ground accent (the
+   .ct-cta rule's ink). 48×48 meets the touch floor. */
+.landing-v2 .ct__socials {
+	margin-top: 32px;
+	display: flex;
+	gap: 16px;
+}
+
+/* The chips are the 51:2829 DESKTOP respec — mobile /contact is a
+   separate pass and stays byte-identical (frame not drawn there). */
+@media (max-width: 1024px) {
+	.landing-v2 .ct__socials { display: none; }
+}
+
+.landing-v2 .ct-social {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	transition: background-color 0.25s ease-out;
+}
+
+.landing-v2 .ct-social img {
+	display: block;
+	width: 24px;
+	height: 24px;
+}
+
+.landing-v2 .ct-social:hover,
+.landing-v2 .ct-social:active {
+	background: #e0e0e7;
+}
+
+.landing-v2 .ct-social.is-placeholder { cursor: default; }
+
+.landing-v2 .ct-social:focus-visible {
+	outline: 2px solid #232a89;
+	outline-offset: 2px;
 }
 
 /* ── SCHEDULE A CALL modal — the lightbox machinery, brand-black
@@ -342,14 +411,22 @@
    for the CTAs, the media rise for the image; intro word-reveals
    are wired in contact.js). */
 @media (prefers-reduced-motion: no-preference) {
-	.landing-v2 .ct-cta {
+	.landing-v2 .ct-cta,
+	.landing-v2 .ct-social {
 		opacity: 0;
 		transform: translateY(12px);
 		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
 			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	.landing-v2 .ct-cta.is-visible {
+	.landing-v2 .ct-social {
+		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			background-color 0.25s ease-out;
+	}
+
+	.landing-v2 .ct-cta.is-visible,
+	.landing-v2 .ct-social.is-visible {
 		opacity: 1;
 		transform: none;
 	}
@@ -453,6 +530,7 @@
 	.landing-v2 .ct__intro {
 		font-size: 30px;
 		line-height: 34px;
+		letter-spacing: normal; /* the desktop respec's −5% is 1728-only; mobile keeps its shipped tracking */
 	}
 
 	/* CTA rows: real tap targets. */
