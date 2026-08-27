@@ -255,7 +255,35 @@
 	/* Item 2: the marquee text centres in the 71px band. */
 	.landing-v2 .sv6-table .sv-rows__marq { align-items: center; }
 
-	.landing-v2 .sv6-table .sv-rows__img { left: 1304px; }
+	/* R3 (Oscar 2026-08-27): the hover/scroll image no longer glides
+	   beside the rows - it holds FIXED on screen, vertically centred
+	   and 100px off the right edge (280x380 frame -> top = 50dvh -
+	   190). The machinery runs with fixedImg (no per-row top), and
+	   the sv6 scroll driver feeds it the scroll-active row between
+	   hovers, so the frame always shows the row it correlates to. */
+	.landing-v2 .sv6-table .sv-rows__img {
+		position: fixed;
+		left: auto;
+		right: 100px;
+		top: calc(50dvh - 190px);
+		pointer-events: none; /* the frame is inside the section — it
+		   must never feed the section's hover arbitration */
+	}
+
+	/* The scroll-active row indents its text right - the landing
+	   reel's slide vocabulary on the sv6 tables (same constants,
+	   pushed as vars by services-6.js). Hover's is-active text-out
+	   overrides the transform. */
+	.landing-v2 .sv6-table .sv-rows__inner {
+		transition: opacity 0.25s ease-out, filter 0.25s ease-out,
+			transform var(--sv6-slide-s, 0.5s) var(--sv6-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+
+	.landing-v2 .sv6-table .sv-rows__row.is-sactive .sv-rows__inner {
+		transform: translateX(var(--sv6-slide-x, 40px));
+	}
+
+	.landing-v2 .sv6-table .sv-rows__row.is-active .sv-rows__inner { transform: none; }
 
 	/* Blue-highlight audit (Oscar): the machinery's remaining blue
 	   on this page is the keyboard focus ring — accent-red here. */
@@ -310,8 +338,10 @@
 	.landing-v2 .sv6-gal--dark .sv6-gal__title { color: #eeeef0; }
 
 	.landing-v2 .sv6-gal__titleline { display: block; }
-	/* Item 5: the explicit second line sits 80 below the first. */
-	.landing-v2 .sv6-gal__titleline + .sv6-gal__titleline { margin-top: 80px; }
+	/* R3 (Oscar 2026-08-27): the lines stack at the display face's
+	   own 54 leading (the 80 gap between them was far too large);
+	   the 80 below the title block - title -> strip - is unchanged
+	   (the strip's margin-top). */
 
 	.landing-v2 .sv6-gal__strip {
 		display: flex;

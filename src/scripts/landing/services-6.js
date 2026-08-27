@@ -59,8 +59,98 @@ export function initServices6() {
 
   if (!reduced) cleanups.push(initSiteScroll());
 
-  /* ── Hover tables — the shared machinery, wholesale. */
-  cleanups.push(initSvRowsSections({ reduced, isMob: false, fineHover, schedule, root: page }));
+  /* ── Hover tables — the shared machinery, wholesale. R3 (Oscar
+     2026-08-27): fixedImg — the frame holds at the CSS fixed
+     centre-right slot instead of gliding; controllers hand back
+     each table's image runner for the scroll driver below. */
+  const svImgCtl = [];
+  cleanups.push(initSvRowsSections({
+    reduced, isMob: false, fineHover, schedule, root: page,
+    fixedImg: true, controllers: svImgCtl,
+  }));
+
+  /* ── SCROLL-ACTIVE ROWS (R3): between hovers, the row under the
+     viewport centre is the table's active row — its text indents
+     (the landing reel's slide vocabulary, same constants) and the
+     fixed frame shows ITS image via the machinery's own swap
+     runner, so scroll and hover can never disagree about what the
+     frame shows. Hover (or keyboard focus) takes over exactly as
+     before; leaving releases to whatever the scroll position then
+     dictates. */
+  const SV6_SLIDE_X_PX = 40;
+  const SV6_SLIDE_S = 0.5;
+  const SV6_SLIDE_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+  if (!reduced) {
+    page.style.setProperty('--sv6-slide-x', `${SV6_SLIDE_X_PX}px`);
+    page.style.setProperty('--sv6-slide-s', `${SV6_SLIDE_S}s`);
+    page.style.setProperty('--sv6-slide-ease', SV6_SLIDE_EASE);
+    svImgCtl.forEach((ctl) => {
+      const { section } = ctl;
+      const rows = Array.from(section.querySelectorAll('[data-sv-row]'));
+      if (!rows.length) return;
+      let hoverOn = false;
+      let scrollCand = -1;
+      let cur = -1;
+      const setIndent = (idx) => {
+        if (cur === idx) return;
+        if (cur >= 0) rows[cur]?.classList.remove('is-sactive');
+        cur = idx;
+        if (idx >= 0) rows[idx]?.classList.add('is-sactive');
+      };
+      const applyState = () => {
+        if (hoverOn) return;
+        setIndent(scrollCand);
+        if (scrollCand >= 0) ctl.showImage(rows[scrollCand]);
+        else ctl.clearImage();
+      };
+      const measure = () => {
+        const centre = (window.innerHeight || 1080) / 2;
+        let cand = -1;
+        for (let i = 0; i < rows.length; i += 1) {
+          const r = rows[i].getBoundingClientRect();
+          if (centre >= r.top && centre < r.bottom) { cand = i; break; }
+        }
+        if (cand !== scrollCand) {
+          scrollCand = cand;
+          applyState();
+        }
+      };
+      let raf = 0;
+      const onScroll = () => {
+        if (!raf) raf = requestAnimationFrame(() => { raf = 0; measure(); });
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      schedule(measure, 600); /* initial state once layout settles */
+      const enter = () => {
+        hoverOn = true;
+        setIndent(-1);
+      };
+      const leave = () => {
+        hoverOn = false;
+        applyState();
+      };
+      if (fineHover) {
+        section.addEventListener('pointerenter', enter);
+        section.addEventListener('pointerleave', leave);
+        section.addEventListener('focusin', enter);
+        const onFocusOut = (e) => {
+          const next = e.relatedTarget instanceof Element ? e.relatedTarget.closest('[data-sv-row]') : null;
+          if (!next || !section.contains(next)) leave();
+        };
+        section.addEventListener('focusout', onFocusOut);
+        cleanups.push(() => {
+          section.removeEventListener('pointerenter', enter);
+          section.removeEventListener('pointerleave', leave);
+          section.removeEventListener('focusin', enter);
+          section.removeEventListener('focusout', onFocusOut);
+        });
+      }
+      cleanups.push(() => {
+        window.removeEventListener('scroll', onScroll);
+        window.cancelAnimationFrame(raf);
+      });
+    });
+  }
 
   /* ── The dark band — CONNECT image bottom → AMPLIFY image top. */
   const band = page.querySelector('[data-sv6-darkband]');

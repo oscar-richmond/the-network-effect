@@ -11,6 +11,13 @@
  * /services): index-less rows drop the "NN / " marquee prefix, and
  * the image-glide half-height is MEASURED from the frame element
  * (landing's overlay is 380x480 vs /services' 380-square constant).
+ *
+ * R2 (Oscar 2026-08-27, additive - existing hosts unchanged):
+ * opts.fixedImg skips the per-row glide placement (CSS owns the
+ * frame's position - the /services fixed centre-right read), and
+ * opts.controllers (an array) receives per-section image handles
+ * ({ section, showImage, clearImage }) so a host's own scroll
+ * driver can run the SAME swap machinery outside hover.
  */
 import { isTouchPrimary } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
@@ -27,7 +34,7 @@ const ROW_BAND_CENTRE_PX = 34;
  *   schedule: (fn: () => void, ms: number) => void,
  *   root?: ParentNode }} opts
  */
-export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document }) {
+export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null }) {
   const cleanups = [];
   const rowSections = Array.from(root.querySelectorAll('[data-sv-rows]'));
   rowSections.forEach((section) => {
@@ -108,7 +115,7 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
     const placeAt = (row) => {
       /* Mobile: the frame is CSS-docked at the section's bottom slot
          (services-v2.css) — the glide is a desktop read. */
-      if (isMob) return;
+      if (isMob || fixedImg) return;
       if (imgWrap instanceof HTMLElement) {
         const half = (imgWrap.offsetHeight || HOVER_IMG_HALF_PX * 2) / 2;
         /* RECT-based (2026-08-25): the landing hosts the rows inside
@@ -162,19 +169,8 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
         if (pendingRow !== shownRow && pendingRow instanceof HTMLElement) runSwapSequence();
       }, SWAP_PHASE_MS + 30);
     };
-    const setActive = (row) => {
-      if (row === active) return;
-      if (active) active.classList.remove('is-active');
-      active = row;
-      if (!(row instanceof HTMLElement)) {
-        pendingRow = null;
-        clearSwap();
-        imgWrap?.classList.remove('is-active');
-        shownRow = null;
-        return;
-      }
-      row.classList.add('is-active');
-      if (reduced || !(imgWrap instanceof HTMLElement)) return;
+    const showImg = (row) => {
+      if (reduced || !(imgWrap instanceof HTMLElement) || !(row instanceof HTMLElement)) return;
       pendingRow = row;
       if (!imgWrap.classList.contains('is-active')) {
         /* Fresh entrance: place + src directly, blur/fade in. */
@@ -190,7 +186,27 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
          in flight — it will pick pendingRow up at its boundary). */
       if (!swapAnim && row !== shownRow) runSwapSequence();
     };
+    const clearImg = () => {
+      pendingRow = null;
+      clearSwap();
+      imgWrap?.classList.remove('is-active');
+      shownRow = null;
+    };
+    const setActive = (row) => {
+      if (row === active) return;
+      if (active) active.classList.remove('is-active');
+      active = row;
+      if (!(row instanceof HTMLElement)) {
+        clearImg();
+        return;
+      }
+      row.classList.add('is-active');
+      showImg(row);
+    };
     cleanups.push(clearSwap);
+    if (Array.isArray(controllers)) {
+      controllers.push({ section, showImage: showImg, clearImage: clearImg });
+    }
 
     if (fineHover) {
       const onOver = (e) => {

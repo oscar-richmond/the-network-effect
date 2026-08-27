@@ -870,6 +870,24 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	background: var(--landing-ground);
 }
 
+/* SEAM TAIL (Oscar 2026-08-27): at the shell's fractional scale a
+   rounding hairline of body ground showed between this section's
+   bottom edge and the featured stage (visible as a thin light line
+   over the dark handover; absent at bare 1728). The tail extends
+   this section's own ANIMATED ground (background: inherit follows
+   the departure's light->dark inline colour) a few px past its box,
+   so the seam is painted in every phase. Zero layout impact. */
+.landing-v2 .landing-outro::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -3px;
+	height: 6px;
+	background: inherit;
+	pointer-events: none;
+}
+
 /* The sticky stage all beats play on. overflow hidden clips the
    below-viewport parked cards. The ground fade (Beat F) tweens THIS
    element's background. */
@@ -2747,7 +2765,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	margin-top: calc(-1 * 100dvh);
 	height: calc(100vh + 2634px); /* JS re-derives from content */
 	height: calc(100dvh + 2634px);
-	background: #eeeef0;
+	/* R2 (Oscar 2026-08-27): was #eeeef0 — identical to the body
+	   ground, so transparent is a visual no-op EXCEPT at the shell's
+	   fractional-scale seam above the stage, where the section's own
+	   light paint leaked through as a thin line over the dark
+	   handover. Transparent lets the outro's phase-matched seam tail
+	   (its ::after) own that pixel in every ground phase. */
+	background: transparent;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: var(--landing-ink);
 }
@@ -6762,6 +6786,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		transition-duration: 0.175s, 0.175s, 0.175s;
 	}
 
+	/* The hover marquee matches the /services face (Oscar 2026-08-27:
+	   the sv6 tables' Serrif 26/32/-2%, no uppercase - the machinery's
+	   base Dazzed 22 caps was the OLD file's spec). */
+	.landing-v2.landing-home .landing-sreel__row .sv-rows__marq-unit {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 26px;
+		line-height: 32px;
+		letter-spacing: -0.02em;
+		text-transform: none;
+	}
+
 	/* SCROLL mode: the active row's text slides right; the outgoing
 	   row transitions back on the same curve, so the movement reads
 	   continuously down the list. */
@@ -6793,19 +6830,35 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   above the title top (68), dissolving to clear at the list top
 	   (190) — rows blur+fade THROUGH it, never a bare clip. The
 	   backdrop blur is masked to the same ramp. */
+	/* R2 (Oscar 2026-08-27): the single masked backdrop strip ended
+	   in a HARD blur edge at its box bottom (Chromium masks the
+	   element's paint, not the backdrop effect). Rebuilt as the
+	   house gradual-blur ladder: stacked slices stepping 12 -> 0.5,
+	   extending to 240 - 50px PAST the old boundary, outside the
+	   ramp's box - so the blur feathers out instead of cutting. The
+	   ground gradient (the visual dissolve) is unchanged. */
 	.landing-v2.landing-home .landing-sreel__listfade {
 		position: absolute;
 		left: -12px;
 		top: 0;
 		width: calc(100% + 24px);
-		height: 190px;
+		height: 240px;
 		pointer-events: none;
 		background: linear-gradient(to bottom, #eeeef0 0, #eeeef0 68px, rgba(238, 238, 240, 0) 190px);
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
-		-webkit-mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 190px);
-		mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 190px);
 	}
+
+	.landing-v2.landing-home .landing-sreel__listfade span {
+		position: absolute;
+		left: 0;
+		right: 0;
+	}
+
+	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(1) { top: 0; height: 80px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(2) { top: 80px; height: 40px; -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px); }
+	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(3) { top: 120px; height: 40px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(4) { top: 160px; height: 40px; -webkit-backdrop-filter: blur(3.5px); backdrop-filter: blur(3.5px); }
+	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(5) { top: 200px; height: 20px; -webkit-backdrop-filter: blur(1.5px); backdrop-filter: blur(1.5px); }
+	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(6) { top: 220px; height: 20px; -webkit-backdrop-filter: blur(0.5px); backdrop-filter: blur(0.5px); }
 
 	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__listfade { display: none; }
 
