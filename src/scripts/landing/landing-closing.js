@@ -45,7 +45,13 @@ const LINE_STAGGER_S = 0.12;
       hover effect reversed) and back in when scrolling up. The
       wordmark and LET'S CHAT remain present at all times. */
 const BOTTOM_SNAP_IDLE_MS = 2000;
-const SNAP_ZONE_TILE_BOTTOM_PX = 150; // 450px tiles, 2/3 off the top
+/* R6 (Oscar 2026-08-27): the settle's gate — it may only advance
+   once this fraction of the statement section has exited the
+   viewport top, OR within this many px of the page bottom.
+   (Retires SNAP_ZONE_TILE_BOTTOM_PX, the tile-anchored zone that
+   armed long before the statement.) */
+const CLOSING_SNAP_EXIT_T = 0.5;
+const CLOSING_SNAP_NEAR_PX = 400;
 const BOTTOM_EPSILON_PX = 2;
 const NAV_SHOW_HYSTERESIS_PX = 64;
 const TILE_STAGGER_MS = 100;
@@ -165,20 +171,26 @@ export function initLandingClosing() {
   let snapTimer = 0;
   let lastScrollY = window.scrollY || 0;
   let lastDirDown = false;
-  /* The zone anchor must be a RENDERED tile: on mobile the desktop
-     tiles are display:none (zero rects — bottom 0 would read as
-     permanently in-zone and snap from anywhere), so fall through to
-     the mobile carousel's first slide. */
-  const tileEls = Array.from(
-    closing.querySelectorAll('[data-closing-tile], .landing-closing__m-slide'),
-  );
 
+  /* R6 (Oscar 2026-08-27, THE GATE — supersedes the tile-anchored
+     zone, which armed as soon as the tiles were 2/3 off the top:
+     long before the statement, so idling AT the centred dwell was
+     yanked to the footer — the eagerness). The settle may only
+     advance when EITHER at least CLOSING_SNAP_EXIT_T of the
+     statement section has exited the viewport top (its measured
+     midpoint above the top edge at 0.5) OR no more than
+     CLOSING_SNAP_NEAR_PX of scroll remains to the page bottom.
+     Below both, idling does nothing — the current machinery has no
+     back-settle at this boundary (the dwell is pure sticky) and
+     that behaviour is kept. Interruption stays the house Lenis
+     convention (user input takes the tween over). */
   const inSnapZone = () => {
-    const tileEl = tileEls.find(
-      (t) => t instanceof HTMLElement && t.getBoundingClientRect().height > 0,
-    );
-    if (!tileEl) return false;
-    return tileEl.getBoundingClientRect().bottom <= SNAP_ZONE_TILE_BOTTOM_PX;
+    const st = document.querySelector('[data-closing-st]');
+    if (st instanceof HTMLElement) {
+      const r = st.getBoundingClientRect();
+      if (r.top + r.height * CLOSING_SNAP_EXIT_T <= 0) return true;
+    }
+    return maxScroll() - (window.scrollY || 0) <= CLOSING_SNAP_NEAR_PX;
   };
 
   const trySnapToBottom = () => {
