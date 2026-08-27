@@ -24,7 +24,7 @@ body.founders-page {
 	height: 100dvh;
 	background: #eeeef0;
 	overflow: hidden;
-	will-change: transform; /* slides up 811 for the footer reveal */
+	will-change: transform; /* slides up 830 for the footer reveal */
 }
 
 /* The content wrapper — its OWN opaque ground (the difference
@@ -340,7 +340,7 @@ body.founders-page {
 .landing-v2.founders-page .fd-footer-wrap .landing-footer {
 	position: relative;
 	top: auto; /* belt — the sticky schema's `top` shifted even the
-	   relative box down 100vh−811, cutting the bottom row (Oscar's
+	   relative box down 100vh−830, cutting the bottom row (Oscar's
 	   "less tall" report); the schema now excludes founders-page in
 	   landing.css, this pins it if that ever regresses */
 	margin-top: 0;
@@ -749,7 +749,7 @@ body.founders-page {
 	.landing-v2 .fd-m-switch-label--r { margin-left: auto; margin-right: 8px; }
 
 	/* Flow footer (the fixed reveal wrap is desktop machinery). The
-	   811px clamp is desktop machinery too — un-clamped here the
+	   830px clamp is desktop machinery too — un-clamped here the
 	   blue covers the full mobile stack (the copyright lines were
 	   spilling out below it, Oscar's report), and the bottom pad
 	   drops to 64 (his gap under "site by SELFHOOD STUDIOS";

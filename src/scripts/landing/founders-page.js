@@ -29,11 +29,11 @@
  *                        nearest boundary (the access one-writer
  *                        lesson).
  *   P3 [.., +T)          Ashley's travel, same clamps.
- *   P4 [.., +156+811]    release: the stage rides up 156 (until
+ *   P4 [.., +156+830]    release: the stage rides up 156 (until
  *                        180px remains below the portrait — the
  *                        design rests at 24, so 156 more), then
  *                        the /work footer-reveal grammar: the
- *                        stage keeps riding up 811 over the fixed
+ *                        stage keeps riding up 830 over the fixed
  *                        footer wrap. Free (unsnapped), reversible.
  *
  * RM: the driver applies DISCRETE states — names pinned at their
@@ -61,7 +61,7 @@ const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
                                        slot; the portrait reveal
                                        runs over the tail
                                        (FD_REVEAL_*).
-     RELEASE [.., +96+811]             unchanged grammar.
+     RELEASE [.., +96+830]             unchanged grammar.
    THE CAROUSEL is a BOUNDED roll over [0, textEnd]: track top at
    page top at pos 0, track bottom on the PORTRAIT'S BOTTOM edge at
    Ashley's rest — travel = trackH − portraitBottom, derived from

@@ -64,7 +64,6 @@ const DESC_TOP_STACKED = 32;       /* closed desc top — the block top */
 const LIST_TOP = 190;              /* list + label top below the divider */
 const ROW_PITCH = 53;              /* divider + text row pitch */
 const LABEL_H = 19;
-const WWD_Y = 146;                 /* WHAT WE DO (Option 11) */
 const WWD_Y_STACKED = 100;         /* … once pillar 1 compacts (Option 12) */
 /* ── THE INTRO (restored content, Oscar 2026-08-26): FROM ACCESS TO
    IMPACT + the pillars note rest 100 below the fixed WHAT WE DO
@@ -95,9 +94,6 @@ const GROUND_LIGHT = '#eeeef0';
 
 /* ── The reel fade (item: gradient + blur, named): top edge at the
    title top; fully opaque by there, clear by the list top. ─────── */
-const REEL_FADE_TOP_PX = TITLE_TOP;              /* gradient top edge */
-const REEL_FADE_H_PX = LIST_TOP - TITLE_TOP;     /* 122 — dissolve span */
-const REEL_FADE_BLUR_PX = 12;                    /* backdrop blur */
 
 /* ── Image wipe — THE CASE-STUDY GALLERY TREATMENT, reused. ────── */
 const IMG_WIPE_MS = 450;              /* per phase (the lightbox beat) */
@@ -130,7 +126,6 @@ const SREEL_EXIT_ROW_STAGGER_PX = 24; /* per-row cascade offset */
 const SREEL_EXIT_ROWS_END_PX = 360;   /* rows all gone by here */
 const SREEL_EXIT_FURNITURE_AT_PX = 240; /* descs/label/image/CTA */
 const SREEL_EXIT_HEADS_AT_PX = 420;   /* titles//0N/dividers/WWD last */
-const SREEL_EXIT_PX = 600;            /* the cascade's total span */
 
 /* ── SCROLL-MODE TEXT SLIDE (Oscar 2026-08-27) — the scroll-active
    row's text slides right; tune here (pushed to CSS as
@@ -636,7 +631,7 @@ export function initLandingServicesReel() {
      timeline scrubbed over the whole departure phase (unpin →
      Featured's entry), so ordering and reversal are STRUCTURAL:
 
-       [0 … SREEL_EXIT_PX]            every section element blur-
+       [0 … 600]                      every section element blur-
                                       fades out (the cascade below);
        [exitClear … exitClear + 500]  the ground fades to black —
                                       exitClear is AMPLIFY's MEASURED

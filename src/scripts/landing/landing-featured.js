@@ -65,10 +65,6 @@ const GROUND_LIGHT = '#eeeef0';
    line above WORK; WORK's W aligns under FEATURED's A. All derived
    in place() since the strip top is itself content-derived. The
    difference-blend lines depart via layout `top`, never transform. */
-const HEADER_GAP_PX = 80;
-const HL_LINE_PX = 40;
-const VIEWALL_H_PX = 32; /* CTA height = the pager circles (Oscar's rev) */
-const DESC_CLEAR_PX = 40; // longest desc bottom above viewport bottom
 
 const RIGHT_MARGIN_PX = 24;
 /* Right-edge blur band fade (Oscar's rev): the band dissolves over
@@ -162,7 +158,7 @@ export function initLandingFeatured() {
 
   /* Clip-safe strip top, DERIVED from the tallest card's real
      content (the 324px desc width re-wraps some copy): keep the
-     lowest desc bottom DESC_CLEAR_PX above the viewport bottom,
+     lowest desc bottom clear of the viewport bottom,
      capped at the file's 352. The header hangs off the same
      derivation (WORK/VIEW ALL bottoms HEADER_GAP above the images,
      FEATURED a line above WORK). */

@@ -124,7 +124,6 @@ const FD_M_TARGET_H = 400;
    drains it to 0 while the height grows by the same 94, so the dark
    band's bottom NEVER moves and the fully-expanded image lands flush
    on it — no dark strip below, at any viewport height. */
-const FD_M_REST_MB_PX = FD_M_TARGET_H - 306;
 const FD_M_IMG_FROM = { left: '-47.25%', width: '181.1%' };
 const FD_M_IMG_TO = { left: '-29.6%', width: '151.2%' };
 const FD_M_FADE_PORTION = 0.6;

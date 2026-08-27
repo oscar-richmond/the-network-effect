@@ -40,6 +40,7 @@ import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '.
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
+import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -365,7 +366,6 @@ export function initCaseStudy() {
        rapid navigation retargets via pendingIdx — the sequence in
        flight picks up the LATEST target at its phase boundary
        (the meta-swap runner pattern, nothing stacks). */
-    const SWAP_PHASE_MS = 450;
     let pendingIdx = null;
     let swapAnim = false;
 
@@ -413,7 +413,7 @@ export function initCaseStudy() {
           el.style.clipPath = 'inset(0 100% 0 0)';
           el.style.filter = 'blur(6px)';
           void el.offsetWidth;
-          el.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s cubic-bezier(0.42, 0, 0.24, 1), filter ${SWAP_PHASE_MS / 1000}s cubic-bezier(0.42, 0, 0.24, 1)`;
+          el.style.transition = `clip-path ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}, filter ${SWAP_PHASE_MS / 1000}s ${SWAP_CURVE}`;
           el.style.clipPath = 'inset(0 0 0 0)';
           el.style.filter = 'blur(0px)';
         }

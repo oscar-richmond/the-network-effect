@@ -4,8 +4,9 @@
  * accent fill + seamless rolling marquee + the cover-swap image
  * frame gliding between rows, with the lightbox latch for rapid
  * hovers, tap-to-activate on touch, keyboard focus parity, and
- * RM = colour fill only (CSS gates the rest). One definition, two
- * hosts (/services and /landing) — behaviour can never drift.
+ * RM = colour fill only (CSS gates the rest). One definition, several
+ * hosts (the /services sv6 tables, the /services mobile legacy build,
+ * and the landing reel rows) — behaviour can never drift.
  *
  * Two guarded adaptations for the landing rows (both no-ops on
  * /services): index-less rows drop the "NN / " marquee prefix, and

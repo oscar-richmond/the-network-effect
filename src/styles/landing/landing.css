@@ -2331,7 +2331,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2 .landing-footer__ritem--terms { left: 0; }
-	.landing-v2 .landing-footer__ritem--top { left: 491.66px; cursor: pointer; }
+	.landing-v2 .landing-footer__ritem--privacy { left: 491.66px; cursor: pointer; }
 	.landing-v2 .landing-footer__ritem--copy { left: 960.32px; }
 	.landing-v2 .landing-footer__ritem--siteby { left: 1516.98px; }
 
@@ -6261,7 +6261,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   HOVER mode = the /services sv-rows treatment (fill/marquee/
 	   edges classes verbatim from services-v2.css); only the GEOMETRY
 	   is landing-scoped: the band is own 2px divider through the next
-	   (2 + 53 = 55, vs /services' 67), and the treated text/divider
+	   (2 + 53 = 55, vs the sv6 tables' 71), and the treated text/divider
 	   are the landing's own elements. SCROLL mode = the text slide
 	   (constants pushed as CSS vars by landing-services-reel.js:
 	   SREEL_SLIDE_PX / _S / _EASE). Only one mode is ever applied —
