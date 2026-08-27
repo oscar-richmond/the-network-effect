@@ -40,6 +40,10 @@ const LOGO_RIPPLE_AT_MS = 120;  // wordmark ripple starts
 const LINE_START_AT_MS = 420;   // the loading line begins after the ripple
 const LINE_SETTLE_MS = 420;     // the eased run-in to 100% when ready
 const HANDOFF_MS = 700;         // logo travel + cross-resolve
+const LINE_FADE_OUT_MS = 180;   // the finished line clears BEFORE any
+                                // exit motion (Oscar 2026-08-27: it was
+                                // riding the cover's sweep, reading
+                                // wrong over dark grounds)
 const COVER_EXIT_MS = 800;      // the black slides out downward
 const PAGE_ENTRANCE_LEAD_MS = 120; // page beats start as the cover leaves
 const NAV_AFTER_LOGO_MS = 200;  // MENU + LET'S CHAT follow the landed logo
@@ -277,6 +281,17 @@ export function initSplash(root) {
       line.style.transform = 'scaleX(1)';
     }
     await wait(LINE_SETTLE_MS);
+    if (disposed) return;
+
+    /* 2b — the line FADES OUT before anything exits (universal: this
+       path also serves the MAX_MS failsafe, which merges into the
+       same flow above). No line is visible during the handoff or
+       the cover's reveal sweep. */
+    if (line instanceof HTMLElement) {
+      line.style.transition = `opacity ${LINE_FADE_OUT_MS / 1000}s ease-out`;
+      line.style.opacity = '0';
+    }
+    await wait(LINE_FADE_OUT_MS);
     if (disposed) return;
 
     /* 3 — HANDOFF. Measure both instances and travel the splash logo
