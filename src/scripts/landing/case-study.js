@@ -614,11 +614,14 @@ export function initCaseStudy() {
      (statement-bar.js; Oscar's spanning rule, 2026-08-27 — the four
      studies' copy lengths differ, which the derivation absorbs).
      The CSS height/top remain only as the no-JS fallback. Layout,
-     not choreography — runs under RM too. */
-  cleanups.push(initStatementBar(
-    document.querySelector('[data-cs-bar]'),
-    document.querySelector('[data-cs-intro]'),
-  ));
+     not choreography — runs under RM too. Desktop only: the bar is
+     display:none under the seam and the mobile DOM keeps its bytes. */
+  if (!isMobileViewport()) {
+    cleanups.push(initStatementBar(
+      document.querySelector('[data-cs-bar]'),
+      document.querySelector('[data-cs-intro]'),
+    ));
+  }
 
   if (reduced) {
     /* RM: static page; sticky remains (it's layout). The hidden
