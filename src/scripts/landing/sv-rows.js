@@ -39,7 +39,7 @@ const ROW_BAND_CENTRE_PX = 34;
  *   schedule: (fn: () => void, ms: number) => void,
  *   root?: ParentNode }} opts
  */
-export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null }) {
+export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false }) {
   const cleanups = [];
   const rowSections = Array.from(root.querySelectorAll('[data-sv-rows]'));
   rowSections.forEach((section) => {
@@ -218,15 +218,41 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
     }
 
     if (fineHover) {
-      const onOver = (e) => {
+      /* moveGate (R3, Oscar 2026-08-27 — hosts whose rows TRANSLATE
+         under a stationary cursor while scrolling): Chromium
+         re-hit-tests on scroll and fires synthetic pointerover as
+         each row slides beneath the RESTING pointer (measured: 40
+         overs, 0 moves for a stationary wheel pass), which
+         retargeted the treatment chaotically mid-scroll. Scroll is
+         not hover intent: an over arriving without RECENT REAL
+         MOVEMENT (pointermove never fires synthetically — measured)
+         clears the treatment and leaves the row to the host's
+         scroll driver; any real movement engages hover, including
+         within a single row after a scroll. */
+      const MOVE_FRESH_MS = 150;
+      let lastMoveT = -1e9;
+      const engage = (e) => {
         const row = e.target instanceof Element ? e.target.closest('[data-sv-row]') : null;
         setActive(row instanceof HTMLElement && section.contains(row) ? row : null);
       };
+      const onMove = (e) => {
+        lastMoveT = performance.now();
+        engage(e);
+      };
+      const onOver = (e) => {
+        if (moveGate && performance.now() - lastMoveT > MOVE_FRESH_MS) {
+          setActive(null);
+          return;
+        }
+        engage(e);
+      };
       const onLeave = () => setActive(null);
       section.addEventListener('pointerover', onOver);
+      if (moveGate) section.addEventListener('pointermove', onMove);
       section.addEventListener('pointerleave', onLeave);
       cleanups.push(() => {
         section.removeEventListener('pointerover', onOver);
+        if (moveGate) section.removeEventListener('pointermove', onMove);
         section.removeEventListener('pointerleave', onLeave);
       });
     } else if (isTouchPrimary()) {

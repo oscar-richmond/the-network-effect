@@ -66,7 +66,7 @@ export function initServices6() {
   const svImgCtl = [];
   cleanups.push(initSvRowsSections({
     reduced, isMob: false, fineHover, schedule, root: page,
-    fixedImg: true, controllers: svImgCtl,
+    fixedImg: true, controllers: svImgCtl, moveGate: true,
   }));
 
   /* ── SCROLL-ACTIVE ROWS (R3): between hovers, the row under the
@@ -130,7 +130,39 @@ export function initServices6() {
         applyState();
       };
       if (fineHover) {
-        section.addEventListener('pointerenter', enter);
+        /* The machinery's moveGate discriminator, mirrored (the root
+           cause of the dead indent: pointerenter fired the moment
+           the full-width section slid under the RESTING cursor and
+           parked the table in hover mode for the whole pass, while
+           synthetic pointerovers — measured 40 per stationary wheel
+           pass, 0 pointermoves — retargeted the treatment
+           chaotically). An over without recent real movement is
+           scroll: the section stays in scroll mode. Real movement
+           over a row hands over to hover; real movement elsewhere
+           releases. */
+        const MOVE_FRESH_MS = 150;
+        let lastMoveT = -1e9;
+        const decide = (e) => {
+          const row = e.target instanceof Element ? e.target.closest('[data-sv-row]') : null;
+          if (row instanceof HTMLElement && section.contains(row)) {
+            if (!hoverOn) enter();
+          } else if (hoverOn) {
+            leave();
+          }
+        };
+        const onMove = (e) => {
+          lastMoveT = performance.now();
+          decide(e);
+        };
+        const onOver = (e) => {
+          if (performance.now() - lastMoveT > MOVE_FRESH_MS) {
+            if (hoverOn) leave();
+            return;
+          }
+          decide(e);
+        };
+        section.addEventListener('pointerover', onOver);
+        section.addEventListener('pointermove', onMove);
         section.addEventListener('pointerleave', leave);
         section.addEventListener('focusin', enter);
         const onFocusOut = (e) => {
@@ -139,7 +171,8 @@ export function initServices6() {
         };
         section.addEventListener('focusout', onFocusOut);
         cleanups.push(() => {
-          section.removeEventListener('pointerenter', enter);
+          section.removeEventListener('pointerover', onOver);
+          section.removeEventListener('pointermove', onMove);
           section.removeEventListener('pointerleave', leave);
           section.removeEventListener('focusin', enter);
           section.removeEventListener('focusout', onFocusOut);
