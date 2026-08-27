@@ -56,7 +56,12 @@ export default async function handler(req, res) {
 
   const to = process.env.DECK_REQUEST_TO || 'hello@networkeffectagency.co.uk';
   const from =
-    process.env.DECK_REQUEST_FROM || 'The Network Effect <onboarding@resend.dev>';
+    /* CANONICAL domain (Oscar, 2026-08-27): sender joins the same
+       domain as the recipient, from != to kept. Requires the domain
+       (or this sender) verified in Resend before it can deliver —
+       until then set DECK_REQUEST_FROM in Vercel to a verified
+       sender. */
+    process.env.DECK_REQUEST_FROM || 'The Network Effect <forms@networkeffectagency.co.uk>';
 
   const send = await fetch('https://api.resend.com/emails', {
     method: 'POST',

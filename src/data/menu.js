@@ -51,10 +51,13 @@ export const landingMenuLinks = [
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */
 
-/* THE ONE CORRECT ADDRESS (Oscar, 2026-08-10): every earlier
-   variant — hello@thenetworkeffect.com and
-   hello@thenetworkeffect.co.uk — was wrong and is now retired
-   site-wide. The holding pages already used this one. */
+/* ═══ CANONICAL (Oscar, FINAL, 2026-08-27) ═══
+   hello@networkeffectagency.co.uk is THE TNE address, site-wide.
+   Every earlier variant (hello@thenetworkeffect.com, and the
+   .co.uk that briefly returned in the 2026-08-24/26 nav+footer
+   respecs) is retired. This constant is the single source; the
+   API's defaults and every mailto agree with it. Do not restate
+   this ruling elsewhere — point here. */
 export const CONTACT_EMAIL = 'hello@networkeffectagency.co.uk';
 
 /** @type {MenuFooterLink[]} */

@@ -11,11 +11,8 @@
  * pending-sign-off + the standing founder-imagery caveat, as does
  * the Robbo profile crop on SCHEDULE A CALL.
  *
- * EMAIL: hello@networkeffectagency.co.uk — the ONE correct address
- * (Oscar, 2026-08-10). The Figma file's EMAIL US said
- * hello@thenetworkeffect.co.uk; that address is wrong and is
- * retired everywhere, so EMAIL US, the copy-to-clipboard pill and
- * the footer all now agree with LET'S CHAT. Subject = the holding
+ * EMAIL: hello@networkeffectagency.co.uk — CANONICAL per the ruling
+ * in data/menu.js (Oscar, FINAL, 2026-08-27). Subject = the holding
  * page's established enquiry subject, verbatim.
  */
 
