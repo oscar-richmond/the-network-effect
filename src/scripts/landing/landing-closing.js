@@ -310,18 +310,22 @@ export function initLandingClosing() {
       trigger: footer,
       /* The footer pins BEHIND the closing section (the reveal), so
          a viewport-percentage start would fire while it's still
-         covered: fire ~200px into the actual reveal instead (the
+         covered: fire ~200px into the actual reveal instead. The
          pin engages when the footer's flow top reaches
-         100dvh - 811 from the viewport top). */
+         100dvh - footerH from the viewport top — footerH is
+         MEASURED here (A1, 2026-08-27: a literal 811 outlived the
+         footer's move to 830 and skewed this trigger 19px; deriving
+         from the element kills that class of drift; 830 is only the
+         no-layout fallback). */
       /* MOBILE: no pin — the footer is plain flow, so the desktop
-         formula (innerHeight − 811 − 200, i.e. the top rising past
-         the viewport) can sit beyond the document's end and never
-         fire, leaving the footer text in its clips forever. A plain
-         in-view start is the correct trigger there. */
+         formula (innerHeight − footerH − 200, i.e. the top rising
+         past the viewport) can sit beyond the document's end and
+         never fire, leaving the footer text in its clips forever. A
+         plain in-view start is the correct trigger there. */
       start: () =>
         isMobileViewport()
           ? 'top 85%'
-          : `top ${(window.innerHeight - 811 - 200).toFixed(0)}px`,
+          : `top ${(window.innerHeight - (footer.offsetHeight || 830) - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {
         footerWordEls.forEach((el) => playLineRevealElement(el));
