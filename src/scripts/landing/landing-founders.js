@@ -20,6 +20,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { isMobileViewport } from './viewport.js';
+import { getLenisInstance } from './site-scroll.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -128,6 +129,23 @@ const FD_M_IMG_FROM = { left: '-47.25%', width: '181.1%' };
 const FD_M_IMG_TO = { left: '-29.6%', width: '151.2%' };
 const FD_M_FADE_PORTION = 0.6;
 
+/**
+ * WHO WE ARE → OUR NETWORK handoff (Oscar, 2026-08-27). ONE line
+ * governs both halves of the rule: the departing image's bottom
+ * edge crossing the viewport's lower-third line. Above it (bottom
+ * < ⅔vh) the network's entrance may play and an idle settle
+ * completes the handoff forward; below it, the settle returns the
+ * image fully into view. FOUNDERS_HANDOFF_T is the fraction of
+ * viewport height that line sits above the bottom edge — the
+ * natural candidate per the ruling, and the one knob to move it.
+ * landing-network.js imports it so the entrance gate and the
+ * settle threshold can never drift apart. Idle/duration follow
+ * the reel snap grammar (SNAP_IDLE_MS / SNAP_DURATION_S).
+ */
+export const FOUNDERS_HANDOFF_T = 1 / 3;
+const FOUNDERS_HANDOFF_IDLE_MS = 150;
+const FOUNDERS_HANDOFF_SETTLE_S = 0.6;
+
 export function initLandingFounders() {
   const section = document.querySelector('[data-landing-founders]');
   if (!(section instanceof HTMLElement)) return () => {};
@@ -136,8 +154,55 @@ export function initLandingFounders() {
   const buttons = Array.from(section.querySelectorAll('.landing-founders__btn'));
   const images = Array.from(section.querySelectorAll('[data-landing-founders-img]'));
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return () => {};
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── WHO WE ARE → OUR NETWORK handoff settle (Oscar 2026-08-27):
+     the boundary may never REST mid-viewport — stopped past the
+     third-line threshold the page settles forward (image out, Our
+     Network full-viewport); stopped below it, back (image fully in
+     view). The measure is the track's bottom edge: during the whole
+     departure it IS the expanded photo's bottom edge (verified
+     equal at every sampled scroll — the photo exits bottom-flush
+     with its track), and unlike the photo's rect it stays honest
+     under reduced motion, where the crop never expands. Idle + tween
+     grammar is the reel snap's (150ms / 0.6s cubic-out, new input
+     wins); reduced motion resolves the same zone instantly. Desktop
+     only — the mobile stack has no sticky boundary. */
+  let cleanupHandoffSettle = () => {};
+  {
+    const handoffTrack = section.closest('[data-landing-founders-track]') ?? section.parentElement;
+    if (handoffTrack instanceof HTMLElement && !isMobileViewport()) {
+      let settleTimer = 0;
+      const trySettle = () => {
+        const bottom = handoffTrack.getBoundingClientRect().bottom;
+        const vh = window.innerHeight || 0;
+        if (bottom <= 0.5 || bottom >= vh - 0.5) return;
+        const forward = bottom < vh * (1 - FOUNDERS_HANDOFF_T);
+        const target = Math.round((window.scrollY || 0) + (forward ? bottom : bottom - vh));
+        const lenis = getLenisInstance();
+        if (reducedMotion || !lenis) {
+          window.scrollTo(0, target);
+          return;
+        }
+        lenis.scrollTo(target, {
+          duration: FOUNDERS_HANDOFF_SETTLE_S,
+          easing: (t) => 1 - Math.pow(1 - t, 3),
+        });
+      };
+      const onHandoffScroll = () => {
+        window.clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(trySettle, FOUNDERS_HANDOFF_IDLE_MS);
+      };
+      window.addEventListener('scroll', onHandoffScroll, { passive: true });
+      cleanupHandoffSettle = () => {
+        window.clearTimeout(settleTimer);
+        window.removeEventListener('scroll', onHandoffScroll);
+      };
+    }
+  }
+
+  if (reducedMotion) {
+    return cleanupHandoffSettle;
   }
 
   /* ── Entry -> hold -> exit, ONE scrubbed timeline (so entry and
@@ -384,6 +449,7 @@ export function initLandingFounders() {
 
   return () => {
     disposed = true;
+    cleanupHandoffSettle();
     timeouts.forEach(clearTimeout);
     trigger?.kill();
     driftTweens.forEach((t) => {

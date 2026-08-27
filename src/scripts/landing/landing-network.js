@@ -19,6 +19,7 @@ import {
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isTouchPrimary } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
+import { FOUNDERS_HANDOFF_T } from './landing-founders.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -34,7 +35,11 @@ const ENTRY_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)'; // house reveal curve
    Lenis, so 700px ≈ 1s, and it stays small against the section's
    pinned dwell. Landing entry only — the /services prev-exit path
    keeps the single-trigger entrance. The reveal animation itself is
-   untouched; only its trigger moves. */
+   untouched; only its trigger moves.
+   HANDOFF REV (Oscar, 2026-08-27): on the landing the delayed
+   trigger is re-anchored to the founders handoff's third line —
+   see the trigger block — so this constant now serves only the
+   fallback path there (founders track missing). */
 const NETWORK_TITLE_DELAY_PX = 700;
 
 /* ── Industry hover / PHOTO-STRIP swap (Oscar's rev, repointed
@@ -502,23 +507,47 @@ export function initLandingNetwork() {
         section.getBoundingClientRect().top - prev.getBoundingClientRect().bottom,
       );
     };
+    /* Handoff gate (Oscar 2026-08-27, landing entry only): the
+       entrance holds until the departing WHO WE ARE image has risen
+       past the viewport's lower-third line — its bottom edge above
+       (1 − FOUNDERS_HANDOFF_T)·vh. The measure is the founders
+       track's bottom (≡ the expanded photo's bottom through the
+       whole departure, verified), turned into an absolute scroll
+       position so the trigger is exact at any viewport height. The
+       old anchor (`top+=pinOffset() top`) fired the instant the
+       departure BEGAN — image bottom still at the viewport's bottom
+       edge — and remains the fallback only if the track is missing.
+       prev-exit hosts (/services) keep their own anchor untouched. */
+    const foundersHandoffScroll = (line) => {
+      const foundersTrack = document.querySelector('[data-landing-founders-track]');
+      if (!(foundersTrack instanceof HTMLElement)) return null;
+      const bottom = foundersTrack.getBoundingClientRect().bottom + (window.scrollY || 0);
+      return Math.round(bottom - (window.innerHeight || 0) * line);
+    };
     trigger = ScrollTrigger.create({
       trigger: section,
       start: () =>
         section.dataset.networkEntry === 'prev-exit'
           ? `top ${prevExitOffset()}px`
-          : `top+=${pinOffset()} top`,
+          : foundersHandoffScroll(1 - FOUNDERS_HANDOFF_T) ?? `top+=${pinOffset()} top`,
       end: 'max',
       onEnter: showContent,
       onLeaveBack: hideContent,
     });
-    /* R4: the delayed group's own trigger, NETWORK_TITLE_DELAY_PX of
-       scroll past the main entrance (landing entry only — the array
-       is empty on prev-exit hosts). Same reveal, later trigger. */
+    /* R4's delayed group, re-anchored with the handoff gate (Oscar
+       2026-08-27): the title/subtitle now arrive at the THIRD line
+       itself (image bottom = FOUNDERS_HANDOFF_T·vh) — the fixed
+       NETWORK_TITLE_DELAY_PX (700) would land past the point the
+       image fully clears, so a forward settle could rest on a stage
+       missing its title. vh/3 of scroll after the main entrance
+       (≈324–383px) keeps R4's later-arrival intent and guarantees
+       the whole entrance has played wherever the settle can stop.
+       Landing entry only — the array is empty on prev-exit hosts. */
     if (delayedLines.length) {
       delayedTrigger = ScrollTrigger.create({
         trigger: section,
-        start: () => `top+=${pinOffset() + titleDelayPx} top`,
+        start: () =>
+          foundersHandoffScroll(FOUNDERS_HANDOFF_T) ?? `top+=${pinOffset() + titleDelayPx} top`,
         end: 'max',
         onEnter: () => playGroup(delayedLines),
         onLeaveBack: () => hideGroup(delayedLines),
