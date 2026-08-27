@@ -139,6 +139,12 @@ const SREEL_EXIT_PX = 600;            /* the cascade's total span */
 const SREEL_SLIDE_PX = 40;
 const SREEL_SLIDE_S = 0.5;
 const SREEL_SLIDE_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+/* The slide ARMS per pillar only once its rise is nearly home
+   (Oscar 2026-08-27: row 1 must arrive LEFT-ALIGNED and indent just
+   before the row lands / the divider fill is ~5% from completing —
+   both run the same [riseStart, +RISE_PX] window). Pure f(scrub px)
+   in the master onUpdate, so reversal un-arms by arithmetic. */
+const SREEL_SLIDE_ARM_T = 0.95;
 
 const SNAP_IDLE_MS = 150;
 const SNAP_DURATION_S = 0.6;
@@ -298,9 +304,18 @@ export function initLandingServicesReel() {
     slideIdx[i] = idx;
     if (idx >= 0) rowEls[i][idx]?.classList.add('is-sactive');
   };
-  setSlide(0, 0);
-  setSlide(1, 0);
-  setSlide(2, 0);
+  /* No slide at init: each pillar's row 1 arrives left-aligned and
+     the slide arms at SREEL_SLIDE_ARM_T of its rise (see the
+     constant). Driven from the master scrub px below. */
+  const risen = pillars.map(() => false);
+  const applyslideArm = (px) => {
+    for (let i = 0; i < 3; i += 1) {
+      const armed = (px - riseStart[i]) / RISE_PX >= SREEL_SLIDE_ARM_T;
+      if (armed === risen[i]) continue;
+      risen[i] = armed;
+      if (!hoverMode[i]) setSlide(i, armed ? activeIdx[i] : -1);
+    }
+  };
 
   const updateActive = (i, translatePx) => {
     const n = P[i].services.length;
@@ -316,7 +331,7 @@ export function initLandingServicesReel() {
       activeIdx[i] = cand;
       if (!hoverMode[i]) {
         requestImage(i, cand);
-        setSlide(i, cand);
+        if (risen[i]) setSlide(i, cand);
       }
     }
   };
@@ -352,7 +367,7 @@ export function initLandingServicesReel() {
       };
       const releaseMode = () => {
         hoverMode[i] = false;
-        setSlide(i, activeIdx[i]);
+        setSlide(i, risen[i] ? activeIdx[i] : -1);
         requestImage(i, activeIdx[i]);
       };
       const followRow = (target) => {
@@ -475,6 +490,7 @@ export function initLandingServicesReel() {
         for (let i = 0; i < 3; i += 1) {
           if (px >= riseStart[i]) playTexts(i);
         }
+        applyslideArm(px);
         applyTypeDrop(px);
       },
     },
