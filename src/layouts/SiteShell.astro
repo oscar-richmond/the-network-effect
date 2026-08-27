@@ -84,16 +84,19 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
         ><span data-char-ripple>SERVICES</span></a
       >
     </nav>
-    {/* "LET'S CHAT" replaces the visible address (Oscar's rev); the
-        mailto now points at the CONFIRMED address (nav respec
-        2026-08-24 — was networkeffectagency.co.uk). The arrow is Oscar's supplied SVG
+    {/* "LET'S CHAT" replaces the visible address (Oscar's rev).
+        The arrow is Oscar's supplied SVG
         inlined per his spec: fill="currentColor" (the asset's
         hardcoded white fill stripped, its no-op full-rect clipPath
         dropped) so text + arrow are ONE blended element that can
         never desync under the nav's per-item difference treatment. */}
+    {/* LET'S CHAT -> /contact (Oscar, 2026-08-27) — a page link now,
+        not a mailto; this also gives desktop its first route to
+        /contact (the link-audit finding). The email ruling stays a
+        separate decision on the other mailto surfaces. */}
     <a
       class="home__topbar-email"
-      href="mailto:hello@thenetworkeffect.co.uk"
+      href="/contact"
       data-char-ripple-trigger
     >
       <span data-char-ripple>LET’S CHAT</span>
