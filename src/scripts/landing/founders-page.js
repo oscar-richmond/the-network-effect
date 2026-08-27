@@ -47,6 +47,7 @@ import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, applyNavSweep } from './nav-motion.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
+import { getLenisInstance } from './site-scroll.js';
 
 const SCROLL_SMOOTH_LERP = 0.065; /* = site-scroll SCROLL_LERP */
 /* ── R2b PHASE MAP (Oscar, 2026-08-26 — the page now STARTS at
@@ -500,6 +501,27 @@ function initFoundersMobile(stage, reduced) {
   const timeouts = [];
   /** @type {(() => void)[]} */
   const cleanups = [];
+
+  /* BACK TO TOP (2026-08-27): this page was the one script that never
+     wired [data-footer-top], so the mobile legacy footer's button was
+     inert here while every other page scrolled home. The established
+     handler, verbatim (case-study.js / contact.js): real route
+     anchors — the footer's HOME, href="/" — navigate untouched; the
+     back-to-top BUTTON carries no href and gets the smooth scroll.
+     Mobile-only: desktop /founders is a fixed-viewport driver whose
+     footer family has no back-to-top at all. */
+  const topLinks = Array.from(document.querySelectorAll('[data-footer-top]'));
+  const onTopClick = (e) => {
+    const el = e.currentTarget;
+    if (el instanceof HTMLAnchorElement && el.getAttribute('href')?.startsWith('/')) return;
+    e.preventDefault();
+    const lenis = getLenisInstance();
+    if (lenis) lenis.scrollTo(0, { duration: 1.2, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  topLinks.forEach((el) => el.addEventListener('click', onTopClick));
+  cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
+
   const wrappedSlides = new Set();
   const staticSlides = new Set();
 
