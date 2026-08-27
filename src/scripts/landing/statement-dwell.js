@@ -27,19 +27,31 @@
  * geometry-invisible).
  */
 import { isMobileViewport } from './viewport.js';
+import { measureStatementInk } from './statement-bar.js';
 
 export const ST_DWELL_HOLD_PX = 300;
 
 /**
  * @param {HTMLElement} section the dwell box (pads + slack live here)
  * @param {HTMLElement} stage   the statement block wrapper (pins)
- * @param {{ topBound?: number | (() => number) }} [opts]
+ * @param {{ topBound?: number | (() => number), inkLines?: () => HTMLElement[] }} [opts]
  *   topBound (R5, Oscar 2026-08-27): the centring REGION's top edge
  *   in px from the viewport top — the block centres between it and
  *   the viewport bottom (equal gaps to both). 0 (the default) is
  *   the original full-viewport centring, so existing callers are
  *   byte-identical. A function re-derives on every apply/resize
  *   (the landing passes the measured nav bottom).
+ *   inkLines (R6, Oscar 2026-08-27 — the twice-missed centring's
+ *   mechanism): the statement's line elements. When present the
+ *   dwell centres the text's RENDERED INK (first line's cap top to
+ *   last line's ink bottom, statement-bar's shared measurement)
+ *   instead of the stage box — a stage whose own internal padding
+ *   is asymmetric (the closing stage bakes 54px above the lines and
+ *   a 180px legacy allowance below) centres its BOX perfectly while
+ *   the visible text rides high; anchoring to ink is the fix, and
+ *   the same measurement drives every instance so they cannot
+ *   drift apart. Fonts-gated internally (the metrics need real
+ *   faces).
  * @returns {() => void} cleanup
  */
 export function initStatementDwell(section, stage, opts = {}) {
@@ -50,6 +62,22 @@ export function initStatementDwell(section, stage, opts = {}) {
     return Number.isFinite(tb) ? Math.max(0, tb) : 0;
   };
 
+  /* The anchor: the distance from the stage's top to the point the
+     centring aligns with the region's centre. Box mode = h/2; ink
+     mode = the ink extent's midpoint (measured with the dwell
+     styles off, same pass as h). */
+  const inkAnchor = (h) => {
+    const lines = (typeof opts.inkLines === 'function' ? opts.inkLines() : [])
+      .filter((el) => el instanceof HTMLElement)
+      .sort((x, y) => x.getBoundingClientRect().top - y.getBoundingClientRect().top);
+    if (!lines.length) return h / 2;
+    const first = measureStatementInk(lines[0]);
+    const last = measureStatementInk(lines[lines.length - 1]);
+    if (!first || !last || !(last.inkBottom > first.inkTop)) return h / 2;
+    const stageTop = stage.getBoundingClientRect().top;
+    return ((first.inkTop - stageTop) + (last.inkBottom - stageTop)) / 2;
+  };
+
   const apply = () => {
     /* Measure the natural block height with the dwell styles off. */
     stage.style.position = '';
@@ -57,23 +85,36 @@ export function initStatementDwell(section, stage, opts = {}) {
     stage.style.height = '';
     section.style.height = '';
     const h = stage.offsetHeight;
-    const half = (h / 2).toFixed(1);
+    const m = inkAnchor(h);
+    const anchor = m.toFixed(1);
+    const rest = (h - m).toFixed(1);
     const tbHalf = (topBoundOf() / 2).toFixed(1);
-    /* Region [topBound, 100dvh]: sticky/pad-top = 50dvh + tb/2 −
-       h/2; pad-bottom = 50dvh − tb/2 − h/2 — at settle the gap
-       below the block equals the gap from topBound to its top. */
+    /* Region [topBound, 100dvh]: sticky/pad-top places the ANCHOR
+       (box middle, or the ink midpoint) on the region's centre —
+       the gaps from topBound to the ink top and from the ink bottom
+       to the viewport bottom are equal by construction. pad-bottom
+       keeps the neighbour-clearing strip below the stage's box. */
     stage.style.position = 'sticky';
-    stage.style.top = `calc(50dvh + ${tbHalf}px - ${half}px)`;
+    stage.style.top = `calc(50dvh + ${tbHalf}px - ${anchor}px)`;
     stage.style.height = `${h}px`;
     section.style.boxSizing = 'content-box';
-    section.style.paddingTop = `calc(50dvh + ${tbHalf}px - ${half}px)`;
-    section.style.paddingBottom = `calc(50dvh - ${tbHalf}px - ${half}px)`;
+    section.style.paddingTop = `calc(50dvh + ${tbHalf}px - ${anchor}px)`;
+    section.style.paddingBottom = `calc(50dvh - ${tbHalf}px - ${rest}px)`;
     section.style.height = `${h + ST_DWELL_HOLD_PX}px`;
   };
   apply();
+  /* Ink metrics need the real faces — re-derive once fonts settle
+     (idempotent; box-mode callers are already fonts-gated). */
+  let disposed = false;
+  if (typeof opts.inkLines === 'function') {
+    (document.fonts?.ready ?? Promise.resolve()).then(() => {
+      if (!disposed) apply();
+    });
+  }
   const onResize = () => apply();
   window.addEventListener('resize', onResize);
   return () => {
+    disposed = true;
     window.removeEventListener('resize', onResize);
     ['position', 'top', 'height'].forEach((k) => { stage.style[k] = ''; });
     ['boxSizing', 'paddingTop', 'paddingBottom', 'height'].forEach((k) => { section.style[k] = ''; });

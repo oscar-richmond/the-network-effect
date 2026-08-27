@@ -101,6 +101,11 @@ export function initLandingClosing() {
       const topbar = document.querySelector('.home__topbar');
       cleanupDwell = initStatementDwell(stDwellSection, stDwellStage, {
         topBound: () => (topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0),
+        /* R6 (Oscar 2026-08-27): centre the text's INK, not the
+           stage box — the box bakes 54px above the lines and a
+           180px legacy allowance below (the twice-missed centring's
+           mechanism; see statement-dwell). */
+        inkLines: () => Array.from(stDwellStage.querySelectorAll('[data-closing-st-line]')),
       });
       ScrollTrigger.refresh();
     });

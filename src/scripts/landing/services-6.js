@@ -220,12 +220,15 @@ export function initServices6() {
     stage.style.setProperty('--sv6-frag-h', `${maxTop + FRAG_LINE_H_PX}px`);
     /* R4 (Oscar 2026-08-27, the landing closing precedent): centred
        between the NAV WORDMARK's bottom and the viewport bottom —
-       the dwell's own topBound derivation, measured live. */
+       the dwell's own topBound derivation, measured live. R6: the
+       centring anchors to the text's INK (statement-dwell's shared
+       measurement), one derivation with the landing closing. */
     fragCleanups.push(initStatementDwell(sec, stage, {
       topBound: () => {
         const tb = document.querySelector('.home__topbar');
         return tb instanceof HTMLElement ? tb.getBoundingClientRect().bottom : 0;
       },
+      inkLines: () => Array.from(sec.querySelectorAll('[data-sv6-frag-line]')),
     }));
   });
   cleanups.push(() => fragCleanups.forEach((fn) => fn()));
