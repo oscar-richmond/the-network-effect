@@ -46,6 +46,13 @@ const BOX_STAGGER_MS = 100;   /* the landing featured card arrival */
 const ROW_STAGGER_MS = 60;    /* the sv-rows draw stagger (shipped) */
 const FRAG_LINE_PITCH_PX = 90;
 const FRAG_LINE_H_PX = 88;
+/* R5 (Oscar 2026-08-27): the pillar hero TEXT enters once the image
+   has expanded this many px per side beyond its rest margins —
+   almost the moment the expansion starts moving (was edge contact).
+   The threshold reads the measured --sv6-hero-inset; the EXIT keeps
+   the edge-contact-leave timing untouched (asymmetric by design). */
+const SV6_HERO_REST_INSET_PX = 24;
+const SV6_TEXT_ENTER_EXPAND_PX = 4;
 /* The landing's bottom pair (audit fix, 2026-08-27 — this build had
    NEITHER behaviour: the nav exit and idle snap only ever lived in
    services-v2.js, which initialises below the seam. Constants are
@@ -424,8 +431,27 @@ export function initServices6() {
             scrub: true,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
-              if (self.progress >= 0.999) playTexts();
-              else hideTexts();
+              /* R5 (Oscar 2026-08-27, asymmetric BY DESIGN): the
+                 ENTRANCE fires almost as the expansion starts moving
+                 — the measured inset shrinking SV6_TEXT_ENTER_EXPAND_PX
+                 past its 24px rest (read from the section's live
+                 --sv6-hero-inset, the one value the image clip
+                 derives from — never a scroll offset). The EXIT keeps
+                 the shipped edge-contact-leave threshold verbatim
+                 (progress < 0.999 — byte-identical reverse timing).
+                 The split is a direction-gated hysteresis band, not a
+                 latch: downward crossings play, upward crossings
+                 retire, every leg stays scrubbed — repeated passes
+                 and mid-band reversals re-derive cleanly. */
+              const inset = parseFloat(
+                getComputedStyle(sec).getPropertyValue('--sv6-hero-inset'),
+              );
+              if (self.direction >= 0) {
+                if (Number.isFinite(inset)
+                  && inset <= SV6_HERO_REST_INSET_PX - SV6_TEXT_ENTER_EXPAND_PX) playTexts();
+              } else if (self.progress < 0.999) {
+                hideTexts();
+              }
             },
           },
         });
