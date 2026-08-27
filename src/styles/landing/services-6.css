@@ -111,6 +111,15 @@
 	   Scoped to the section box only; IMMERSE/CONNECT unchanged. */
 	.landing-v2 .sv6-pillar#amplify { background: #161616; }
 
+	/* R4 item 5 (Oscar, 2026-08-27 — built per the interpretation
+	   note): the AMPLIFY crop starts 24px down into the source: the
+	   image's top edge sits 24px ABOVE the container top, shifting
+	   the visible composition down within the box. Was 50% 50%
+	   (≡ top at −217.15px: the 2000×1336 source covers 1728×720 as
+	   1728×1154.3, 434px of vertical overflow — 24 is comfortably
+	   within it, no gap risk). Crop-only: zero layout shift. */
+	.landing-v2 .sv6-pillar#amplify .sv6-pillar__img { object-position: 50% -24px; }
+
 	/* RM: no expansion choreography — static full bleed, text
 	   visible (the reveal never wraps under reduce). */
 	@media (prefers-reduced-motion: reduce) {
