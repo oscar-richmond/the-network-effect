@@ -6830,35 +6830,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   above the title top (68), dissolving to clear at the list top
 	   (190) — rows blur+fade THROUGH it, never a bare clip. The
 	   backdrop blur is masked to the same ramp. */
-	/* R2 (Oscar 2026-08-27): the single masked backdrop strip ended
-	   in a HARD blur edge at its box bottom (Chromium masks the
-	   element's paint, not the backdrop effect). Rebuilt as the
-	   house gradual-blur ladder: stacked slices stepping 12 -> 0.5,
-	   extending to 240 - 50px PAST the old boundary, outside the
-	   ramp's box - so the blur feathers out instead of cutting. The
-	   ground gradient (the visual dissolve) is unchanged. */
 	.landing-v2.landing-home .landing-sreel__listfade {
 		position: absolute;
 		left: -12px;
 		top: 0;
 		width: calc(100% + 24px);
-		height: 240px;
+		height: 190px;
 		pointer-events: none;
 		background: linear-gradient(to bottom, #eeeef0 0, #eeeef0 68px, rgba(238, 238, 240, 0) 190px);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+		-webkit-mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 190px);
+		mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 190px);
 	}
-
-	.landing-v2.landing-home .landing-sreel__listfade span {
-		position: absolute;
-		left: 0;
-		right: 0;
-	}
-
-	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(1) { top: 0; height: 80px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
-	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(2) { top: 80px; height: 40px; -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px); }
-	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(3) { top: 120px; height: 40px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(4) { top: 160px; height: 40px; -webkit-backdrop-filter: blur(3.5px); backdrop-filter: blur(3.5px); }
-	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(5) { top: 200px; height: 20px; -webkit-backdrop-filter: blur(1.5px); backdrop-filter: blur(1.5px); }
-	.landing-v2.landing-home .landing-sreel__listfade span:nth-child(6) { top: 220px; height: 20px; -webkit-backdrop-filter: blur(0.5px); backdrop-filter: blur(0.5px); }
 
 	.landing-v2.landing-home .landing-sreel:not(.is-live) .landing-sreel__listfade { display: none; }
 
