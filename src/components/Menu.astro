@@ -33,6 +33,14 @@ const flatLinks = rows ? rows.flat() : menuLinks;
 
 const base = import.meta.env.BASE_URL;
 const defaultImage = asset(`/assets/images/menu/${flatLinks[0]?.image ?? 'home.png'}`);
+/* EVERY href in this file goes through here (2026-08-27): anything
+   carrying a scheme — mailto:, https:, tel: — passes through
+   untouched; only real routes take the base prefix. The menu-footer
+   link used to build its own `${base}${href}` ternary off the
+   `external` flag, and the mailto entries carry no such flag, so the
+   address shipped as /mailto:hello@… and 404'd. Routing all four
+   sites through the helper means a future mailto/external href
+   inherits the handling automatically. */
 const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`);
 ---
 
@@ -71,7 +79,7 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
             ) : (
               menuLinks.map((link, index) => (
                 <a
-                  href={`${base}${link.href}`}
+                  href={linkHref(link.href)}
                   class="site-menu__link"
                   data-index={String(index)}
                   data-src={asset(`/assets/images/menu/${link.image}`)}
@@ -109,7 +117,7 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
                 until Oscar wires a destination. */}
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
-                <a class="landing-svc-card__btn" href={`${base}contact`} data-char-ripple-trigger>
+                <a class="landing-svc-card__btn" href={linkHref('contact')} data-char-ripple-trigger>
                   <span data-char-ripple>SCHEDULE A CALL</span>
                   <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
                 </a>
@@ -131,7 +139,7 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
               <ul>
                 <li>
                   <a
-                    href={link.external ? link.href : `${base}${link.href}`}
+                    href={linkHref(link.href)}
                     class="site-menu__footer-link"
                     data-char-ripple-trigger
                     {...(link.external
