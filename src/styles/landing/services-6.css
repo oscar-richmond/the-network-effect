@@ -101,6 +101,16 @@
 		--sv6-hero-inset: 24px;
 	}
 
+	/* R4 (Oscar, 2026-08-27): the AMPLIFY hero's backdrop — the
+	   ground visible in the 24px margins at rest and through the
+	   expansion — is the page's dark black, the dark band's own
+	   #161616 (extracted live: rgb(22,22,22)). The band above ends
+	   exactly at this image's top edge, so the black reads as one
+	   continuous region through the hero; the section edge below
+	   returns to the page ground (the statement stays as it is).
+	   Scoped to the section box only; IMMERSE/CONNECT unchanged. */
+	.landing-v2 .sv6-pillar#amplify { background: #161616; }
+
 	/* RM: no expansion choreography — static full bleed, text
 	   visible (the reveal never wraps under reduce). */
 	@media (prefers-reduced-motion: reduce) {
