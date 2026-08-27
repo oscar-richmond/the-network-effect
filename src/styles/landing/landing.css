@@ -2652,9 +2652,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* MEDIA only (Oscar's rev): every TEXT entrance is the word-by-
 	   word clip reveal now (hidden by the clip mechanism itself, no
 	   fade state needed) — the rise+fade remains for the closing
-	   tiles and the footer image. */
+	   tiles and the footer image. The START A PROJECT chip joins the
+	   family: its painted pill is the one footer surface the word
+	   wrap can't touch, so it pre-painted while every text ran its
+	   reveal — it now rises on its own column beat (the walkers
+	   schedule .is-visible at the chip's base delay). */
 	.landing-v2 .landing-closing__tile,
-	.landing-v2 .landing-footer__img {
+	.landing-v2 .landing-footer__img,
+	.landing-v2 .landing-footer__dchip {
 		opacity: 0;
 		transform: translateY(24px);
 		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
@@ -2662,7 +2667,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2 .landing-closing__tile.is-visible,
-	.landing-v2 .landing-footer__img.is-visible {
+	.landing-v2 .landing-footer__img.is-visible,
+	.landing-v2 .landing-footer__dchip.is-visible {
 		opacity: 1;
 		transform: none;
 	}

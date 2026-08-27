@@ -13,10 +13,14 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 
 const LINE_STAGGER_S = 0.12;
 
-/** @returns {{ wordEls: HTMLElement[], img: Element | null }} */
+/** @returns {{ wordEls: HTMLElement[], img: Element | null, chip: { el: HTMLElement, atMs: number } | null }} */
 export function wrapFooterReveals(footer) {
   const wordEls = [];
-  if (!(footer instanceof HTMLElement)) return { wordEls, img: null };
+  /* The START A PROJECT chip's painted pill — the one footer surface
+     the word wrap can't cover; it rises via the tile/image class
+     family on the same beat as its own words. */
+  let chip = null;
+  if (!(footer instanceof HTMLElement)) return { wordEls, img: null, chip };
   Array.from(footer.querySelectorAll('[data-footer-st-line]')).forEach((line, i) => {
     if (!(line instanceof HTMLElement)) return;
     line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -29,6 +33,9 @@ export function wrapFooterReveals(footer) {
       if (col instanceof HTMLElement) {
         wrapWordRevealElement(col, { baseDelay: base });
         wordEls.push(col);
+        if (col.classList.contains('landing-footer__dchip')) {
+          chip = { el: col, atMs: Math.round(base * 1000) };
+        }
       }
     } else {
       Array.from(col.children).forEach((child, j) => {
@@ -43,7 +50,7 @@ export function wrapFooterReveals(footer) {
     wrapWordRevealElement(item, { baseDelay: 0.9 + i * 0.04 });
     wordEls.push(item);
   });
-  return { wordEls, img: footer.querySelector('[data-footer-img]') };
+  return { wordEls, img: footer.querySelector('[data-footer-img]'), chip };
 }
 
 /** @param {{ wordEls: HTMLElement[], img: Element | null }} wrapped
@@ -51,6 +58,10 @@ export function wrapFooterReveals(footer) {
  *  caller's timeout book-keeping (cleared on dispose). */
 export function playFooterReveals(wrapped, schedule) {
   wrapped.wordEls.forEach((el) => playLineRevealElement(el));
+  if (wrapped.chip) {
+    const { el, atMs } = wrapped.chip;
+    schedule(() => el.classList.add('is-visible'), atMs);
+  }
   schedule(() => {
     wrapped.img?.classList.add('is-visible');
   }, 240);

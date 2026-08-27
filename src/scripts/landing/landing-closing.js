@@ -256,6 +256,11 @@ export function initLandingClosing() {
         closingWordEls.push(kwLine);
       }
     });
+    /* The START A PROJECT chip's painted pill — the one footer
+       surface the word wrap can't cover; it rises via the tile/image
+       class family on the same beat as its own words. */
+    let footerChip = null;
+    let footerChipAtMs = 0;
     footerCols.forEach((col, i) => {
       const base = (i * FOOTER_COL_STAGGER_MS) / 1000;
       if (col.matches('a, button')) {
@@ -263,6 +268,10 @@ export function initLandingClosing() {
            sweep as that element's own units. */
         wrapWordRevealElement(col, { baseDelay: base });
         footerWordEls.push(col);
+        if (col.classList.contains('landing-footer__dchip')) {
+          footerChip = col;
+          footerChipAtMs = i * FOOTER_COL_STAGGER_MS;
+        }
       } else {
         Array.from(col.children).forEach((child, j) => {
           if (!(child instanceof HTMLElement)) return;
@@ -310,6 +319,10 @@ export function initLandingClosing() {
       once: true,
       onEnter: () => {
         footerWordEls.forEach((el) => playLineRevealElement(el));
+        if (footerChip) {
+          const chipEl = footerChip;
+          timeouts.push(setTimeout(() => chipEl.classList.add('is-visible'), footerChipAtMs));
+        }
         timeouts.push(setTimeout(() => {
           if (footerImg) footerImg.classList.add('is-visible');
         }, FOOTER_IMG_AT_MS));
