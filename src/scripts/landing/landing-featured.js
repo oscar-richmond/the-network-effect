@@ -194,8 +194,6 @@ export function initLandingFeatured() {
      derivation (WORK/VIEW ALL bottoms HEADER_GAP above the images,
      FEATURED a line above WORK). */
   const hls = Array.from(section.querySelectorAll('.landing-featured__hl'));
-  const hlTops = [0, 0];
-  let viewallTop = 0;
   /* R2 (Oscar, 2026-08-24): the whole composition — header + the
      carousel block — centres VERTICALLY on the stage, with a fixed
      64px between the header and the image tops (his call: the
@@ -245,14 +243,26 @@ export function initLandingFeatured() {
     const headerTop = Math.max(24 + tb, tb + (stageH() - tb - blockH) / 2);
     const stripTop = headerTop + HL_H_PX + HEADER_IMG_GAP_PX;
     strip.style.top = `${stripTop.toFixed(0)}px`;
-    hlTops[0] = headerTop;
-    hlTops[1] = headerTop; // the pair sits on ONE line
-    hls.forEach((hl, i) => { hl.style.top = `${hlTops[i]}px`; });
+    /* R6 (Oscar 2026-08-27, the SHARED ROOT of the centring and
+       alignment repeat-failures): place() no longer writes the same
+       property the departure tween animates. The header top lives in
+       ONE variable this function owns; the departure rides a second
+       variable the tween owns (start structurally 0) — the elements
+       compose both in a calc. gsap's cached tween starts previously
+       resurrected whatever top was rendered at the tween's FIRST
+       render (the pre-place CSS 157px under a slow-fonts race —
+       reproduced: landed gaps 86/139 after one early pass; and the
+       rounded 211-for-210.5 echo on every pass) — two writers, last
+       one wins, pass-dependent. One writer per variable ends it. */
+    section.style.setProperty('--lf-header-top', `${headerTop.toFixed(1)}px`);
+  };
+  const positionViaVars = () => {
+    hls.forEach((hl) => { hl.style.top = 'calc(var(--lf-header-top, 157px) + var(--lf-depart, 0px))'; });
     if (viewall instanceof HTMLElement) {
-      viewallTop = headerTop;
-      viewall.style.top = `${headerTop.toFixed(0)}px`;
+      viewall.style.top = 'calc(var(--lf-header-top, 157px) + var(--lf-depart, 0px))';
     }
   };
+  positionViaVars();
 
   /* The WELD (supersedes W-under-A): WORK follows FEATURED on the
      same line at one word-space — measured from FEATURED's live box
@@ -296,17 +306,16 @@ export function initLandingFeatured() {
      the ground falls to dark over the final 500px. */
   const exitAt = () => (travel() || 1) + TRANSITION_DWELL_PX;
   tl.to(strip, { y: () => -stageH(), duration: stageH() }, exitAt());
-  if (viewall instanceof HTMLElement) {
-    /* Departure by layout TOP (the hls' own pattern): the entrance
-       owns viewall's y transform (its little rise) — a second tween
-       on the same property left the button behind during the
-       departure (caught on the fade-to-light pass: the lone element
-       on the emptying ground). Disjoint properties, no contest. */
-    tl.to(viewall, { top: () => `${(viewallTop - stageH()).toFixed(0)}px`, duration: stageH() }, exitAt());
-  }
-  hls.forEach((hl, i) => {
-    tl.to(hl, { top: () => hlTops[i] - stageH(), duration: stageH() }, exitAt());
-  });
+  /* R6 (the shared-root fix): the header lines + VIEW ALL depart via
+     ONE tween on the section's --lf-depart variable — layout `top`
+     through the calc (the blend rule holds: no transforms on the
+     difference lines), start structurally 0px so gsap's cached
+     start can never resurrect a stale position, and place()'s
+     --lf-header-top is composed live on every frame. This also
+     welds the pair's spacing (the old per-element tweens rounded
+     viewall with toFixed(0) and left the hls unrounded — the 1px
+     mid-departure divergence). */
+  tl.to(section, { '--lf-depart': () => `-${stageH()}px`, duration: stageH() }, exitAt());
   /* THE FADE-TO-LIGHT (R5, retimed — was `bottom bottom+=500` on
      the section's empty tail): begins the moment the departing
      carousel's midpoint crosses the viewport top, derived live
