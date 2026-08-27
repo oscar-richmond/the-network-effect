@@ -1,3 +1,5 @@
+import { SOCIAL_LINKS } from './landing/socials.js';
+
 /** @typedef {{ href: string, label: string, image: string }} MenuLink */
 
 /** @type {MenuLink[]} */
@@ -82,7 +84,11 @@ export const menuFooterLinks = [
    /old routes keep their lowercase "instagram". */
 export const landingMenuFooterLinks = [
   {
-    href: 'https://instagram.com/thenetwork_effect',
+    /* Reads the shared source (2026-08-27): the confirmed URL form
+       (www + trailing slash) replaces this file's earlier hardcoded
+       variant, which pointed at the same account. The /old menu's
+       list above keeps its own copy — those routes are frozen. */
+    href: SOCIAL_LINKS.find((s) => s.key === 'instagram')?.href || '',
     label: 'Instagram',
     external: true,
   },
