@@ -126,6 +126,11 @@ const SREEL_EXIT_ROW_STAGGER_PX = 24; /* per-row cascade offset */
 const SREEL_EXIT_ROWS_END_PX = 360;   /* rows all gone by here */
 const SREEL_EXIT_FURNITURE_AT_PX = 240; /* descs/label/image/CTA */
 const SREEL_EXIT_HEADS_AT_PX = 420;   /* titles//0N/dividers/WWD last */
+/* R5 (Oscar 2026-08-27): the fraction of the blur-out span (heads-at
+   + span = 600) at which the grey→black ground fade BEGINS — the
+   earlier-handoff gate. 0.75 = the last quarter of the cascade
+   overlaps the fade's start. */
+const SREEL_HANDOFF_GATE_T = 0.75;
 
 /* ── SCROLL-MODE TEXT SLIDE (Oscar 2026-08-27) — the scroll-active
    row's text slides right; tune here (pushed to CSS as
@@ -666,13 +671,21 @@ export function initLandingServicesReel() {
      removes. The progress fill is already autoAlpha 0 from its
      drain-tail belt and rides its divider; the travelled intro is
      clipped out of the stage (positionally gone). */
-  const exitClear = (() => {
-    const imgwin = pillars[2].querySelector('[data-sreel-imgwin]');
-    const deepest = ACTIVE_Y[2]
-      + (imgwin instanceof HTMLElement ? imgwin.offsetTop + imgwin.offsetHeight : 528);
-    return Math.min(deepest, stageH());
-  })();
-  const departPad = exitClear + TRANSITION_GROUND_FADE_PX;
+  /* R5 (Oscar 2026-08-27, the EARLIER HANDOFF — supersedes the
+     exitClear gating, which held the fade until the cascade had
+     fully finished): the ground fade now begins when the BLUR-OUT
+     reaches SREEL_HANDOFF_GATE_T of its span (0 = unblurred, 1 =
+     gone; the span is derived from the cascade's own constants so
+     the gate can never drift from the choreography), and the pad
+     shrinks so the fade still completes exactly as Featured's top
+     crosses the viewport bottom — the black-over-black arrival
+     contract, everything ~472px earlier. Blur, fade and the
+     arrival boundary all ride THIS one scrubbed timeline. The last
+     quarter of the blur-out overlaps the fade's start — the
+     departure-vs-ground safety table re-proved on the pass. */
+  const blurOutSpan = SREEL_EXIT_HEADS_AT_PX + SREEL_EXIT_SPAN_PX; /* 600 */
+  const fadeGateAt = Math.round(blurOutSpan * SREEL_HANDOFF_GATE_T); /* 450 */
+  const departPad = fadeGateAt + TRANSITION_GROUND_FADE_PX; /* 950 */
   section.style.setProperty('--sreel-outro-pad', `${departPad}px`);
 
   const depart = gsap.timeline({
@@ -718,12 +731,13 @@ export function initLandingServicesReel() {
     ]),
     wwd,
   ], SREEL_EXIT_HEADS_AT_PX);
-  /* THE GROUND — light → dark over the final 500, starting exactly
-     at the measured clearing point (see the header). */
+  /* THE GROUND — light → dark over the final 500, starting at the
+     blur-out's 75% gate (R5 — see fadeGateAt above; was the
+     measured clearing point ~922). */
   depart.fromTo([section, ...pillars],
     { backgroundColor: GROUND_LIGHT },
     { backgroundColor: GROUND_DARK, ease: 'none', duration: TRANSITION_GROUND_FADE_PX, immediateRender: false },
-    exitClear);
+    fadeGateAt);
   cleanups.push(() => { depart.scrollTrigger?.kill(); depart.kill(); });
 
   masterTl = tl;
