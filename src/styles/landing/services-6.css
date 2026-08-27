@@ -438,6 +438,17 @@
 
 	.landing-v2 .sv6-on-dark .sv6-gal__label { color: #eeeef0; }
 
+	/* FIX (Oscar 2026-08-27, diagnosed): the dark gallery's TITLE
+	   computed ink rgb(22,22,22) on the rgb(22,22,22) band —
+	   invisible by COLOUR, not stacking (it sits above the band; the
+	   load flash Oscar saw was the title painting before the band).
+	   Root cause: its light-ink rule was keyed to .sv6-gal--dark, a
+	   class the markup never rendered (the wrapper is .sv6-on-dark),
+	   so the title had been ink-on-dark since the build — which is
+	   also why its entrance was never seen. Same treatment as the
+	   labels: the dark region's light ink. */
+	.landing-v2 .sv6-on-dark .sv6-gal__title { color: #eeeef0; }
+
 	/* Item 6b (Oscar's instruction - DELIBERATE divergence from the
 	   frame): each arrow centred EXACTLY in the image gap (centre =
 	   box right + 4), on the label row. The frame draws them ~31
@@ -446,6 +457,12 @@
 	   delta reported. Vertically centred on the label row (22-tall
 	   in gallery 1, 44 in gallery 2); the dark gallery uses the
 	   light-stroke asset (the ink arrow was invisible on the band). */
+	/* currentColor rides the label ink per ground. */
+	.landing-v2 .sv6-gal__arrow { color: #161616; }
+	.landing-v2 .sv6-on-dark .sv6-gal__arrow { color: #eeeef0; }
+
+	.landing-v2 .sv6-gal__arrow svg { display: block; }
+
 	.landing-v2 .sv6-gal__arrow {
 		position: absolute;
 		left: calc(100% + 4px - 16px);
@@ -454,7 +471,9 @@
 		height: 16px;
 	}
 
-	.landing-v2 .sv6-on-dark .sv6-gal__arrow { top: calc(435.56px + 40px + 14px); }
+	/* (The dark gallery's old +14 arrow offset assumed its two-line
+	   44px labels; full-width labels render one line on both
+	   galleries, so the light offset serves both.) */
 
 	.landing-v2 .sv6-gal__arrow img { display: block; width: 32px; height: 16px; }
 
