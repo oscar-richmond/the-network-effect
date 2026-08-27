@@ -52,6 +52,9 @@ const BOTTOM_SNAP_IDLE_MS = 2000;
    armed long before the statement.) */
 const CLOSING_SNAP_EXIT_T = 0.5;
 const CLOSING_SNAP_NEAR_PX = 400;
+/* Mobile's shipped slide-anchored zone (kept byte-identical under
+   the seam; the desktop gate above replaces it ≥1025 only). */
+const SNAP_ZONE_TILE_BOTTOM_PX = 150; // 450px tiles, 2/3 off the top
 const BOTTOM_EPSILON_PX = 2;
 const NAV_SHOW_HYSTERESIS_PX = 64;
 const TILE_STAGGER_MS = 100;
@@ -185,8 +188,17 @@ export function initLandingClosing() {
      that behaviour is kept. Interruption stays the house Lenis
      convention (user input takes the tween over). */
   const inSnapZone = () => {
+    /* MOBILE keeps the shipped slide-anchored zone byte-identical
+       (the statement section is display:none under the seam — its
+       zero rect would read the exit condition permanently true,
+       the exact bug class the old anchor comment warned about). */
+    if (isMobileViewport()) {
+      const slide = closing.querySelector('.landing-closing__m-slide');
+      if (!(slide instanceof HTMLElement) || slide.getBoundingClientRect().height <= 0) return false;
+      return slide.getBoundingClientRect().bottom <= SNAP_ZONE_TILE_BOTTOM_PX;
+    }
     const st = document.querySelector('[data-closing-st]');
-    if (st instanceof HTMLElement) {
+    if (st instanceof HTMLElement && st.getBoundingClientRect().height > 0) {
       const r = st.getBoundingClientRect();
       if (r.top + r.height * CLOSING_SNAP_EXIT_T <= 0) return true;
     }
