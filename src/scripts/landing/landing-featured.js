@@ -194,8 +194,24 @@ export function initLandingFeatured() {
 
   const place = () => {
     fitCards();
-    const blockH = HL_H_PX + HEADER_IMG_GAP_PX + MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX;
-    const headerTop = Math.max(24, (stageH() - blockH) / 2);
+    /* R5 (Oscar 2026-08-27, the site-wide rule): the unit — header
+       line + VIEW ALL + the carousel — centres between the NAV
+       WORDMARK's measured bottom and the viewport bottom, equal
+       gaps both sides. The unit's height is MEASURED (the strip's
+       real box: the old blockH constant assumed image 450 + meta +
+       one title line = 638, but the rendered strip alone is ~653 —
+       card titleblocks outgrow the allowance — putting the true
+       unit at ~767 and the old centring 29px off before the nav
+       rule even applied). The 24px floor stays as the too-tall
+       guard: when the region can't hold the unit, it pins 24 under
+       the nav rather than clipping (flagged, not silent — the gap
+       report shows the inequality). */
+    const topbar = document.querySelector('.home__topbar');
+    const tb = topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0;
+    const measuredStripH = strip.getBoundingClientRect().height
+      || (MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX);
+    const blockH = HL_H_PX + HEADER_IMG_GAP_PX + measuredStripH;
+    const headerTop = Math.max(24 + tb, tb + (stageH() - tb - blockH) / 2);
     const stripTop = headerTop + HL_H_PX + HEADER_IMG_GAP_PX;
     strip.style.top = `${stripTop.toFixed(0)}px`;
     hlTops[0] = headerTop;
