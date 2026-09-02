@@ -2104,7 +2104,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   only the ground + the no-JS flow fallback (statement in
 		   flow, no dwell). */
 		margin-top: 0;
-		background: #eeeef0; /* stays opaque under the stage's travel */
+		/* R16 (Oscar, 2026-09-02): THE RED BAND — #C1250E (was #eeeef0).
+		   This is the RM / no-JS static ground; under motion
+		   landing-closing.js scrubs it in and out on the ground-fade
+		   grammar: light → red over the section's top clear strip as it
+		   enters (complete before any ink is visible), red → the
+		   footer's ground over the ink-to-edge clearance as it departs
+		   (so its bottom edge meets the footer in the footer's own
+		   colour — no cut). The stage below carries the same paint
+		   (the fixed-hero-video strip lesson) and rides the same tween. */
+		background: #c1250e; /* stays opaque under the stage's travel */
 	}
 
 	/* The dwell stage — geometry inline from statement-dwell.js; the
@@ -2115,7 +2124,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2 .landing-closing-st__stage {
 		position: relative;
 		height: calc(54px + 727px + 180px);
-		background: #eeeef0;
+		background: #c1250e; /* R16: rides the section's ground tween */
 	}
 
 	.landing-v2 .landing-closing-st__line {
@@ -2131,7 +2140,26 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		white-space: pre; /* line 3's wide gap is authored spaces */
 		color: #161616;
 	}
+
+	/* R16: the RED TAIL (see LandingClosing.astro) — the empty ground
+	   the exit fade runs on. CLOSING_RED_TAIL_PX = 500 (the house
+	   ground-fade length); landing-closing.js reads the rendered
+	   height, so this is the one source. z260 = the closing tier over
+	   the sticky footer (259): the footer's negative margin pulls it
+	   under this strip and the reveal happens at the strip's bottom
+	   edge, in the footer's own colour once the fade completes. */
+	.landing-v2 .landing-closing-tail {
+		display: block;
+		position: relative;
+		z-index: 260;
+		height: 500px;
+		background: #c1250e;
+	}
 }
+
+/* Desktop only — the mobile closing/footer stack is untouched. */
+.landing-v2 .landing-closing-tail { display: none; }
+@media (min-width: 1025px) { .landing-v2 .landing-closing-tail { display: block; } }
 
 .landing-v2 .landing-footer {
 	/* RELATIVE always: every child is absolutely positioned (cols

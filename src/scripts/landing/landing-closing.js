@@ -120,6 +120,154 @@ export function initLandingClosing() {
     });
   }
 
+  /* ── THE RED BAND (R16, Oscar 2026-09-02): the statement section's
+     ground is #C1250E. GROUND CHOREOGRAPHY on the established fade
+     grammar — two scrubbed, reversible windows on the section's (and
+     its stage's) backgroundColor:
+       ENTER  [section top at the viewport bottom, + the section's
+              top clear strip (its measured padding-top — the dwell's
+              symmetric pad)]: the closing's #eeeef0 → red. Complete
+              exactly as the stage's top reaches the viewport bottom;
+              the first ink sits 54 lower, so no ink is ever seen over
+              the shifting ground.
+       EXIT   on THE RED TAIL (the empty strip after the section —
+              the services-fade lesson, never under live content):
+              [tail top at the viewport bottom, + the tail's height]
+              — the section, its stage and the tail fade TOGETHER,
+              red → the FOOTER's own ground (read live), so the tail's
+              bottom edge uncovers the footer in the footer's colour
+              — no cut, and the statement's whole dwell sits on solid
+              red (the section's own bottom edge is only 21px below
+              the viewport at the dwell's release — a fade on the
+              section alone had to run through the hold). The
+              statement is plain #161616 ink, styled for both grounds,
+              so it may still be in view over the first part of this
+              shift; if the ink is ever ruled white-on-red it must fade
+              WITH the ground (the featured-metas device).
+     NAV OVERRIDE: while the band is under the nav every nav item is
+     solid #161616, blend off — a class on the ELEMENTS (never an
+     ancestor). ON when the band's top edge crosses the nav's vertical
+     midpoint (NAV_RED_SWITCH_T of the bar's height — the straddle
+     rule: half the bar's height of scroll either side is the
+     unavoidable straddle, minimised at the midpoint); OFF when the
+     exit fade completes (the tail's bottom edge at the viewport
+     bottom — the ground under the nav is the footer's grey by then,
+     where the blend's own result is #111, one step from the solid).
+     Both edges are pure functions of the band's rect, so reverse
+     scroll runs them backwards. RM: the static red band keeps the
+     nav rule (a state, not motion); the fades don't run (the RM
+     boundary rule). Desktop only. */
+  const RED = '#c1250e';
+  const NAV_RED_SWITCH_T = 0.5;
+  let cleanupRed = () => {};
+  if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement
+    && window.matchMedia('(min-width: 1025px)').matches) {
+    const section = stDwellSection;
+    const stage = stDwellStage;
+    const tail = document.querySelector('[data-closing-tail]');
+    const topbar = document.querySelector('.home__topbar');
+    /* The items AND the bar: the bar itself is difference-blended
+       (home.css — its own established shape), so an item switched to
+       normal inside it still composites through the bar's blend
+       (measured: #161616 over the red came out as (171,15,8) — the
+       bar's |ink − ground|). Both switch together for the state;
+       nothing else in the chain changes, and the class-off state is
+       byte-identical to before. */
+    const navEls = [
+      topbar,
+      document.querySelector('.home__logo'),
+      ...document.querySelectorAll('.home__nav-link'),
+      document.querySelector('.home__topbar-email'),
+    ].filter((el) => el instanceof HTMLElement);
+    let solid = false;
+    const setSolid = (on) => {
+      if (on === solid) return;
+      solid = on;
+      navEls.forEach((el) => el.classList.toggle('is-over-red', on));
+    };
+    const navSwitchY = () => (topbar instanceof HTMLElement
+      ? topbar.getBoundingClientRect().height * NAV_RED_SWITCH_T
+      : 35.5);
+    const onRedScroll = () => {
+      const r = section.getBoundingClientRect();
+      const vh = window.innerHeight || 0;
+      /* Red under the nav from the band's top edge at the switch line
+         until the exit fade completes = the tail's bottom edge at the
+         viewport bottom (the section's own bottom when no tail). */
+      const groundBottom = tail instanceof HTMLElement ? tail.getBoundingClientRect().bottom : r.bottom;
+      setSolid(r.top <= navSwitchY() && groundBottom > vh);
+    };
+    window.addEventListener('scroll', onRedScroll, { passive: true });
+    window.addEventListener('resize', onRedScroll);
+    onRedScroll();
+    const redTls = [];
+    if (!reduced) {
+      (document.fonts?.ready ?? Promise.resolve()).then(() => {
+        if (earlyDisposed) return;
+        /* Registered after the dwell's own fonts.then, so the pads are
+           already written when these measure. */
+        const enterPx = () => parseFloat(getComputedStyle(section).paddingTop) || 0;
+        /* The exit runs over the tail's own height (CLOSING_RED_TAIL_PX
+           in landing.css — read rendered, one source). Without a tail
+           it falls back to the section's ink→edge clearance. */
+        const exitPx = () => {
+          if (tail instanceof HTMLElement && tail.offsetHeight > 0) return tail.offsetHeight;
+          const lines = Array.from(stage.querySelectorAll('[data-closing-st-line]'));
+          const lastBottom = lines.length
+            ? Math.max(...lines.map((l) => l.offsetTop + l.offsetHeight))
+            : stage.offsetHeight;
+          return Math.max(0, stage.offsetHeight - lastBottom)
+            + (parseFloat(getComputedStyle(section).paddingBottom) || 0);
+        };
+        const exitTrigger = tail instanceof HTMLElement && tail.offsetHeight > 0 ? tail : section;
+        const grounds = [section, stage, ...(tail instanceof HTMLElement ? [tail] : [])];
+        const footerGround = () => (footer instanceof HTMLElement
+          ? getComputedStyle(footer).backgroundColor
+          : '#eeeef0');
+        const enter = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: 'top bottom',
+            end: () => `+=${Math.round(enterPx())}`,
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+        enter.fromTo([section, stage],
+          { backgroundColor: '#eeeef0' },
+          { backgroundColor: RED, ease: 'none', duration: 1, immediateRender: true }, 0);
+        const exit = gsap.timeline({
+          scrollTrigger: {
+            trigger: exitTrigger,
+            start: exitTrigger === tail ? 'top bottom' : () => `bottom bottom+=${Math.round(exitPx())}`,
+            end: exitTrigger === tail ? () => `+=${Math.round(exitPx())}` : 'bottom bottom',
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+        exit.fromTo(grounds,
+          { backgroundColor: RED },
+          { backgroundColor: footerGround(), ease: 'none', duration: 1, immediateRender: false }, 0);
+        redTls.push(enter, exit);
+        ScrollTrigger.refresh();
+        if (import.meta.env.DEV) {
+          window.__landingClosingRed = {
+            enter: () => [enter.scrollTrigger?.start, enter.scrollTrigger?.end],
+            exit: () => [exit.scrollTrigger?.start, exit.scrollTrigger?.end],
+            enterPx, exitPx, footerGround, solid: () => solid, navSwitchY,
+            tail: () => (tail instanceof HTMLElement ? tail.getBoundingClientRect() : null),
+          };
+        }
+      });
+    }
+    cleanupRed = () => {
+      window.removeEventListener('scroll', onRedScroll);
+      window.removeEventListener('resize', onRedScroll);
+      setSolid(false);
+      redTls.forEach((t) => { t.scrollTrigger?.kill(); t.kill(); });
+    };
+  }
+
   /* ── Fragmented statement entrance (frame 13:277) — the network
      section's vocabulary: per-line word reveal on a 120ms DOM-order
      stagger, one-shot at 65% viewport. RM: static, visible, no
@@ -241,7 +389,12 @@ export function initLandingClosing() {
   };
 
   if (reduced) {
-    return cleanupBase;
+    return () => {
+      earlyDisposed = true;
+      cleanupRed();
+      cleanupDwell();
+      cleanupBase();
+    };
   }
 
   const closingLines = Array.from(closing.querySelectorAll('[data-closing-line]'));
@@ -384,6 +537,7 @@ export function initLandingClosing() {
   return () => {
     earlyDisposed = true;
     fragTrigger?.kill();
+    cleanupRed();
     cleanupDwell();
     disposed = true;
     cleanupBase();
