@@ -137,6 +137,20 @@ const HERO_CARD_STAGGER_PX = 80;
 const HERO_CARD_EXIT_BUFFER_PX = 60;
 const HERO_GROUND_LIGHT = '#eeeef0';
 const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
+/* R18 (Oscar, 2026-09-02): WHO WE ARE begins entering when the ground
+   fade reaches this fraction of the way to black (was: at exitEnd =
+   the fade's end + EXIT_BUFFER 60 — the section's top crossed the
+   viewport bottom 60px after full black). The section is IN FLOW
+   after this hero's runway spacer, so its entry scroll IS the
+   spacer's end: the runway now ends at fadeStart + T × (fadeEnd −
+   fadeStart), derived from the fade's own window — the same scrub
+   numbers, so the two cannot desync; reverse scroll mirrors it by
+   construction (the section's top drops below the viewport bottom at
+   the same scroll the fade passes back below T). The founders' own
+   drift/hold/exit timeline and its one-shot entrance are anchored to
+   the track, so they follow. 1.0 restores the fade-end entry (with
+   the buffer gone); the GL pause gate stays at exitEnd. */
+const HERO_FOUNDERS_ENTER_AT_FADE_T = 0.9;
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
@@ -942,9 +956,11 @@ export function initLandingHeroScroll() {
          cards' own mapping: from the LEFT card two-thirds out
          (exitAt(0) − cardH/3) to the RIGHT card fully out (exitAt(2))
          — /old's backdrop-fade anchors. The founders section (its
-         own #161616, z 260 over this fixed stage) enters at exitEnd,
-         60px later: dark-on-dark, no half-state. backgroundColor on
-         the stage's ground layer isolates nothing. */
+         own #161616, z 260 over this fixed stage) enters at
+         HERO_FOUNDERS_ENTER_AT_FADE_T of this fade (R18: 0.9 — over
+         a 90%-black ground; was exitEnd, 60px after full black).
+         backgroundColor on the stage's ground layer isolates
+         nothing. */
       const fadeStart = exitAt(0) - cardH / 3;
       const fadeEnd = exitAt(2);
       if (heroBg instanceof HTMLElement) {
@@ -979,8 +995,13 @@ export function initLandingHeroScroll() {
       });
       triggers.push(gate);
 
-      total = exitEnd;
+      /* R18: the runway ends where WHO WE ARE should begin entering —
+         HERO_FOUNDERS_ENTER_AT_FADE_T of the ground fade (was exitEnd). */
+      const foundersEnterAt = fadeStart + (fadeEnd - fadeStart) * HERO_FOUNDERS_ENTER_AT_FADE_T;
+      total = foundersEnterAt;
       cardBeats = {
+        foundersEnterAt: +foundersEnterAt.toFixed(1),
+        foundersEnterAtFadeT: HERO_FOUNDERS_ENTER_AT_FADE_T,
         restTop,
         cardH: +cardH.toFixed(1),
         pinScrollY: +pinScrollY.toFixed(1),
