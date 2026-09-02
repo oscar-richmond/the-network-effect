@@ -56,7 +56,13 @@ gsap.registerPlugin(ScrollTrigger);
    what frees the vertical room AMPLIFY needed. */
 const STACK_PITCH = 128;           /* 32 + 64 + 32 (was the frame's 142) */
 const STACKED_Y1 = 138;            /* pillar 1's compacted Y (Option 12) */
-const ACTIVE_Y = [184, STACKED_Y1 + STACK_PITCH, STACKED_Y1 + 2 * STACK_PITCH]; /* 184/266/394 */
+/* Pillar 1's EXPANDED fix — welded 38 below the WHAT WE DO label's
+   box top (146 + 38 = 184 before R13; the label now sits at 177.6 so
+   the header row's ink tops 180 below the section boundary → 216).
+   The stacked base (138, label 100) is unchanged: the compaction
+   travel grows 46 → 78, the label riding the same distance. */
+const PILLAR1_ACTIVE_Y = 216;
+const ACTIVE_Y = [PILLAR1_ACTIVE_Y, STACKED_Y1 + STACK_PITCH, STACKED_Y1 + 2 * STACK_PITCH]; /* 216/266/394 */
 const TITLE_TOP = 68;              /* title row below the divider (expanded) */
 const TITLE_TOP_STACKED = 34;      /* closed: block top 32 + the 2px optical */
 const DESC_TOP_STACKED = 32;       /* closed desc top — the block top */

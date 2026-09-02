@@ -6189,7 +6189,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-sreel__wwd {
 		position: absolute;
 		left: 24px;
-		top: 146px; /* Option 11; JS rides it to 100 with the compaction */
+		/* R13 (Oscar, 2026-09-02): the HEADER ROW — this label and FROM
+		   ACCESS / TO IMPACT top-aligned on their INK, the row's ink top
+		   exactly 180 below the section above's bottom (= this stage's
+		   top at the pin; Our Network's container bottom — see the
+		   report for the strip-ink reading). Label ink sits 2.4 below
+		   its box (pixel-measured) → 177.6 (was 146, Option 11). JS
+		   still rides it to 100 with pillar 1's compaction. */
+		top: 177.6px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
@@ -6223,14 +6230,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   NOT share one line-height; flagged). The block's RIGHT INK edge
 	   sits 180 from the viewport's right (the hero's right-anchor
 	   inset); the 13-space serif lead scales with the size (325 @100
-	   → 292.5 @90). The resting rule is unchanged: box top 260 = WHAT
-	   WE DO bottom (160) + 100. */
+	   → 292.5 @90).
+	   R13 (Oscar, 2026-09-02) — SUPERSEDES the "100 below the WHAT WE
+	   DO label" resting rule (2026-08-26 / R11): the statement's INK
+	   TOP now aligns with the label's ink top as one row, 180 below
+	   the section boundary. Serif caps ink 10.4 below the box top
+	   (pixel-measured) → 169.6. The note follows at its 80 ink gap
+	   (398.8). */
 	.landing-v2.landing-home .landing-sreel__st {
 		position: absolute;
 		left: auto;
 		right: 183px; /* INK right at 180 (pixel-measured): the Dazzed T of
 		                 IMPACT overhangs its −0.05em-tightened box by 3px */
-		top: 260px;  /* WHAT WE DO bottom (160) + the 100 resting gap */
+		top: 169.6px;
 		margin: 0;
 		color: #161616;
 	}
@@ -6270,7 +6282,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-sreel__note {
 		position: absolute;
 		left: 179px;   /* INK left at 180 (pixel-measured): the O's 1px bearing */
-		top: 489.5px;  /* INK gap 80 (pixel-measured) below the statement */
+		top: 398.8px;  /* INK gap 80 (pixel-measured) below the statement; R13: rode the row up 90.7 (was 489.5) */
 		width: 740px;
 		margin: 0;
 		font-family: var(--font-serif-cond);
