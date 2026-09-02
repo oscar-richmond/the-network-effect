@@ -5894,7 +5894,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2.landing-home .landing-featured__viewall {
-		right: 24px;
+		/* R15 (Oscar 2026-09-02): RELOCATED — 80 below the carousel
+		   unit's bottom, horizontally centred (both written by
+		   landing-featured.js: --lf-viewall-top + the measured left);
+		   the base right-anchor goes inert. Chip, /work, hover as were. */
+		right: auto;
 		background: #343439;
 		color: #ffffff;
 		font-size: 16px;

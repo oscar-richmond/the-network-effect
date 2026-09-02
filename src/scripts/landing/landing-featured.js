@@ -288,6 +288,11 @@ export function initLandingFeatured() {
     strip.style.top = `${stripTop.toFixed(1)}px`;
     const viewallTop = unitTop + unitH + VIEWALL_GAP_PX;
     section.style.setProperty('--lf-header-top', `${LABEL_TOP_PX}px`);
+    section.style.setProperty('--lf-viewall-top', `${viewallTop.toFixed(1)}px`);
+    if (viewall instanceof HTMLElement) {
+      const vw = stage.getBoundingClientRect().width || window.innerWidth || 1728;
+      viewall.style.left = `${((vw - viewall.getBoundingClientRect().width) / 2).toFixed(1)}px`;
+    }
     lastPlacement = {
       wordmarkBottom: +wm.toFixed(2),
       unitH: +unitH.toFixed(2),
@@ -303,7 +308,7 @@ export function initLandingFeatured() {
   const positionViaVars = () => {
     hls.forEach((hl) => { hl.style.top = 'calc(var(--lf-header-top, 177.6px) + var(--lf-depart, 0px))'; });
     if (viewall instanceof HTMLElement) {
-      viewall.style.top = 'calc(var(--lf-header-top, 177.6px) + var(--lf-depart, 0px))';
+      viewall.style.top = 'calc(var(--lf-viewall-top, 900px) + var(--lf-depart, 0px))';
     }
   };
   positionViaVars();
