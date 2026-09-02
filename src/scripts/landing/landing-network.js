@@ -350,10 +350,12 @@ export function initLandingNetwork() {
      media (rev 2: the edge gradient was painting early over the
      services fade — it rides with the group now). */
   const stage = section.querySelector('[data-landing-network-stage]');
+  /* R9 (Oscar 2026-09-02): the logo rows and their band backdrop are
+     gone from desktop (landing.css) — the strip is the one riser now
+     (its own height from the stage bottom); the fades that framed
+     the rows went with them. Mobile's list above keeps the rows. */
   const media = Array.from(
-    section.querySelectorAll(
-      '[data-landing-network-row], [data-landing-network-strip], .landing-network__row-fade, .landing-network__edge-fade',
-    ),
+    section.querySelectorAll('[data-landing-network-strip]'),
   ).filter((el) => el instanceof HTMLElement);
 
   const timeouts = [];

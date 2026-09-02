@@ -99,8 +99,12 @@ const sectorLines = [
       the same line-reveal set. */}
   <p class="landing-network__label" aria-hidden="false"><span class="landing-network__line">OUR NETWORK</span></p>
 
-  {/* Marquees — aria-hidden: an infinite ambient logo drift is noise
-      to AT; the brand claims read from the (pending) copy instead. */}
+  {/* Marquees — MOBILE ONLY since R9 (Oscar, 2026-09-02): desktop
+      removed the logo carousels and their band backdrop (landing.css
+      hides these ≥1025 — out of layout, entrance and paint; the
+      markup survives for the mobile build's own 64px rows). aria-
+      hidden: an infinite ambient logo drift is noise to AT; the brand
+      claims read from the (pending) copy instead. */}
   <div
     class="landing-network__marquee landing-network__marquee--top"
     data-landing-network-row

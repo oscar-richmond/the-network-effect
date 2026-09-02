@@ -5320,20 +5320,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		letter-spacing: var(--ts-serif-editorial-track); /* guide −2% (frame −3% — guide wins, Oscar) */
 	}
 
-	/* Rows re-seat: 438 / 570 (frame 1:413/1:358; 32px between). */
-	.landing-v2.landing-home .landing-network__marquee--top { top: 438px; }
-	.landing-v2.landing-home .landing-network__marquee--bottom { top: 570px; }
-
-	/* The rows→strip overlap is gone (48px clear gap) — the melt
-	   band retires; the edge fade re-covers rows→strip. */
-	.landing-v2.landing-home .landing-network__row-fade { display: none; }
-
-	/* The band backdrop (frame 1:467): the same edge gradient,
-	   narrowed to the carousel band alone. */
-	.landing-v2.landing-home .landing-network__edge-fade {
-		top: 437px;
-		height: 234px;
-	}
+	/* THE LOGO CAROUSELS ARE GONE FROM DESKTOP (R9, Oscar 2026-09-02):
+	   both rows (formerly re-seated at 438 / 570) and the 234px band
+	   backdrop that existed solely to frame them (the edge gradient
+	   narrowed to the carousel band, frame 1:467). The markup remains
+	   ONLY because mobile's Our Network animates the same rows (its
+	   own 64px build below the seam, untouched); above the seam they
+	   are out of layout, entrance and paint (loading=lazy — nothing
+	   is fetched). landing-network.js drops them from the desktop
+	   rising group. The melt band was already retired. */
+	.landing-v2.landing-home .landing-network__marquee--top,
+	.landing-v2.landing-home .landing-network__marquee--bottom,
+	.landing-v2.landing-home .landing-network__row-fade,
+	.landing-v2.landing-home .landing-network__edge-fade { display: none; }
 
 	/* Strip (frame 1:342): y702, 264 tall, flush to the stage bottom
 	   (32px clear of row 2). Same five windows and images; the
