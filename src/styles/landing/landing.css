@@ -6192,9 +6192,22 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		pointer-events: none;
 	}
 
+	/* R11 (Oscar, 2026-09-02) — HERO-MATCHED at 90px, right-anchored:
+	   the pair restyles to the hero headline's MEASURED treatment
+	   (BUILT ON TRUST. / POWERED BY ACCESS., 2026-09-02 computed):
+	   serif line Serrif Condensed 500, 90/82.8 (0.92), −0.04em; sans
+	   line Dazzed 600, 90/79.2 (0.88), −0.05em — per-line line-heights
+	   exactly as the hero renders them (the hero's own two lines do
+	   NOT share one line-height; flagged). The block's RIGHT INK edge
+	   sits 180 from the viewport's right (the hero's right-anchor
+	   inset); the 13-space serif lead scales with the size (325 @100
+	   → 292.5 @90). The resting rule is unchanged: box top 260 = WHAT
+	   WE DO bottom (160) + 100. */
 	.landing-v2.landing-home .landing-sreel__st {
 		position: absolute;
-		left: 542px; /* frame x566 − the 24 inset (the svcrows literal) */
+		left: auto;
+		right: 183px; /* INK right at 180 (pixel-measured): the Dazzed T of
+		                 IMPACT overhangs its −0.05em-tightened box by 3px */
 		top: 260px;  /* WHAT WE DO bottom (160) + the 100 resting gap */
 		margin: 0;
 		color: #161616;
@@ -6202,8 +6215,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-sreel__st-line {
 		display: block;
-		font-size: var(--ts-serif-display-size);
-		line-height: var(--ts-serif-display-lh);
+		font-size: 90px;
 		white-space: nowrap;
 		text-transform: uppercase;
 	}
@@ -6212,29 +6224,39 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		letter-spacing: var(--ts-serif-display-track);
+		line-height: 82.8px;   /* hero: 90 × 0.92 */
+		letter-spacing: -0.04em; /* hero: −3.6px @90 */
 	}
 
 	.landing-v2.landing-home .landing-sreel__st-sans {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		letter-spacing: -0.05em;
-		margin-left: 325px; /* the 13-space serif lead at 100px */
+		line-height: 79.2px;   /* hero: 90 × 0.88 */
+		letter-spacing: -0.05em; /* hero: −4.5px @90 */
+		margin-left: 292.5px;  /* the 13-space serif lead, scaled 100 → 90 */
 	}
 
+	/* The pillars note — the hero intro's MEASURED treatment (We
+	   connect Talent…, 2026-09-02 computed: Serrif Condensed 500,
+	   38/42 = 1.1053, −0.027em) applied at Oscar's stated 32px (the
+	   hero stays 38 — the two differ in size deliberately; flagged):
+	   32 / 35.37 / −0.027em. LEFT INK edge 180 from the viewport's
+	   left; top set so its first-line INK TOP sits exactly 80 below
+	   the statement's last-line INK BOTTOM (measured: statement ink
+	   bottom 416.1 → note ink top 496.1). */
 	.landing-v2.landing-home .landing-sreel__note {
 		position: absolute;
-		left: 220px; /* the svcrows literal (196 + 24) */
-		top: 508px;  /* statement top + the historical 248 */
+		left: 179px;   /* INK left at 180 (pixel-measured): the O's 1px bearing */
+		top: 489.5px;  /* INK gap 80 (pixel-measured) below the statement */
 		width: 740px;
 		margin: 0;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 30px;
-		line-height: 34px;
-		letter-spacing: -0.015em;
+		font-size: 32px;
+		line-height: 35.37px;   /* hero intro ratio 42/38 at 32 */
+		letter-spacing: -0.027em; /* hero intro: −1.026px @38 */
 		color: #161616;
 	}
 
