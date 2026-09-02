@@ -108,10 +108,16 @@ body.founders-page {
 	white-space: nowrap;
 }
 
+/* R19 (Oscar, 2026-09-02): the em dash takes the label's treatment —
+   white + difference. Same bare chain as the label (labelrow: layout
+   `top` travel only, no transform; fd-ind: absolute, z auto; the
+   content group's transform is harmless — the portrait backdrop
+   shares the group). Was #161616 inked. */
 .landing-v2 .fd-ind__divider {
 	width: 16px;
 	height: 0.5px;
-	background: #161616;
+	background: #ffffff;
+	mix-blend-mode: difference;
 	flex: none;
 }
 
