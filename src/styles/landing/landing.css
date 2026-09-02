@@ -5965,8 +5965,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: var(--ts-serif-section-size); /* Heading / Section 34/38/-3% (Oscar 2026-08-26; was Editorial 48) */
-		line-height: var(--ts-serif-section-lh);
+		/* R15 (Oscar 2026-09-02): 28/30 on THIS surface only — SUPERSEDES
+		   the Section 34/38 card-title ruling (2026-08-26) here; /work's
+		   tiles and the case-study more-work cards keep 34/38. Tracking
+		   stays the Section token (−3%). */
+		font-size: 28px;
+		line-height: 30px;
 		letter-spacing: var(--ts-serif-section-track);
 		/* Sentence case: the TEXT is cased in landing-featured.js
 		   (desktop only — ::first-letter can't reach through the
