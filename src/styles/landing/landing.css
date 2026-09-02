@@ -5285,8 +5285,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* Subtitle (frame 1:341, 2026-08-26 — supersedes the R2
 	   nav-window centring calc): centred 410w at y168, Dazzed Bold
 	   18/18/−2% (no named 18px guide style — flagged). */
+	/* R9 (Oscar, 2026-09-02): the subtitle + sector list move DOWN
+	   together (+50: 168 → 218, 236 → 286) so the list's last-line
+	   INK BOTTOM sits exactly 180px above the taller strip's top
+	   (614): 286 + (2 × 48) + the Serrif 48/48 ink descent measured
+	   at 50 = 434 → 614 − 434 = 180. The label stays at 110; the
+	   subtitle→list gap (68) is unchanged. */
 	.landing-v2.landing-home .landing-network__subtitle {
-		top: 168px;
+		top: 218px;
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
@@ -5309,7 +5315,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   (36→48; still no named guide style, flagged). Terms keep
 	   their hover wiring. */
 	.landing-v2.landing-home .landing-network__body {
-		top: 236px;
+		top: 286px; /* R9: was 236 — see the subtitle note */
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
