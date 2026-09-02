@@ -967,7 +967,7 @@ body.founders-page {
 	   values (the slashes' 4px pads, the Lead face) untouched. */
 	.founders-page .fd-slide__rel-row {
 		margin: 0;
-		height: 36px; /* 32 line on the 36 pitch (644/680/716) */
+		height: 32px; /* 32 line on the 32 pitch (644/676/708); was 36 */
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
