@@ -6038,9 +6038,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		/* R15 (Oscar 2026-09-02): 28/30 on THIS surface only — SUPERSEDES
 		   the Section 34/38 card-title ruling (2026-08-26) here; /work's
 		   tiles and the case-study more-work cards keep 34/38. Tracking
-		   stays the Section token (−3%). */
-		font-size: 28px;
-		line-height: 30px;
+		   stays the Section token (−3%).
+		   R17 (Oscar, 2026-09-02, later the same day): 26px, leading
+		   28 — the 28/30 ruling scaled proportionately (30 × 26/28 =
+		   27.9 → 28; the alternative 30 would leave 4px of slack on a
+		   smaller size). Same surface-only scope. */
+		font-size: 26px;
+		line-height: 28px;
 		letter-spacing: var(--ts-serif-section-track);
 		/* Sentence case: the TEXT is cased in landing-featured.js
 		   (desktop only — ::first-letter can't reach through the
