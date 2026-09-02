@@ -4962,7 +4962,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   box top (canvas font metrics), so box top = 54.5 + 120 −
 		   12.9. (The type-pass rule below keeps the optical-centre
 		   translateX; Y translate is dropped there.) */
-		margin-top: 161.6px;
+		/* R6 (2026-09-02, the 90px headline): cap offset 11.6 at 90/79.2
+		   (12.9 × 0.9), so box top = 54.5 + 120 − 11.6. */
+		margin-top: 162.9px;
 	}
 
 	/* Type: frame 72/64/−4% — the guide's 02 Display L numbers on
@@ -5011,7 +5013,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 369.6px;
 		transform: none;
 		right: auto;
-		left: 225px;
+		left: 180px; /* R7 (Oscar, 2026-09-02): 180 from the viewport's left (was 225) */
 		width: 452px;
 		font-size: 30px;
 		line-height: 34px;
@@ -5348,7 +5350,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2 .home__nav-link {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600; /* R6 (Oscar, 2026-09-02): SemiBold — a real Dazzed cut; was 700 */
 		font-synthesis: none;
 		font-size: 18px; /* frame 1:644 (was 12) */
 		line-height: 18px;
@@ -5373,16 +5375,24 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   frame's own 13.5) and its right edge returns to the 24 margin
 	   (the superseded design's 32 retires with its 8px offset). */
 	.landing-v2 .home__topbar--about .home__topbar-email {
-		font-weight: 700;
+		font-weight: 600; /* R6 (Oscar, 2026-09-02): SemiBold with WORK / SERVICES; the wordmark is untouched */
+		font-synthesis: none; /* the no-fake-weight guard (600 is a real cut) */
 		font-size: 18px;
 		letter-spacing: -0.02em;
 		margin-right: 0;
 	}
 
 	.landing-v2 .home__topbar-email-arrow {
-		width: 13.5px;
-		height: 13.5px;
-		top: -0.72px; /* the −0.48 optical nudge, scaled ×1.5 */
+		/* R6 (Oscar, 2026-09-02): the arrow matches LET'S CHAT's cap
+		   height — 13.46 at Dazzed 600/18 (canvas actualBoundingBoxAscent
+		   of the caps; the glyph fills its viewBox, so box = ink) — and
+		   sits ON the cap band: the flex centring on the 24px line box
+		   left it 2px low (arrow top 28.0 vs cap top 26.0, bottom 41.5 vs
+		   baseline 39.5), which read as the arrow overrunning the
+		   letters. Was 13.5 at −0.72. */
+		width: 13.46px;
+		height: 13.46px;
+		top: -2.72px;
 	}
 }
 
@@ -5429,16 +5439,26 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   is two locked lines (the guide's "one typographic
 	   composition"). */
 	.landing-v2.landing-home .landing-hero__headline-text {
-		margin-left: 1028px;
-		/* R3 (Oscar, 2026-08-26): Y is TOP-ANCHORED (margin-top 141.6px
-		   in the base .landing-home rule — cap 100 below the wordmark);
-		   only X keeps the optical-centre translate. */
-		transform: translate(-50%, 0);
+		/* R7 (Oscar, 2026-09-02): the block is RIGHT-ANCHORED — its
+		   right edge (POWERED BY ACCESS., the wider line) sits 180px
+		   from the viewport's right; the auto left margin absorbs the
+		   free space (the flex parent's desktop padding measures 0, so
+		   the margin is the full 180 — measured, not assumed). Replaces
+		   the optical centre (margin-left 1028 + translateX −50%). Y
+		   stays top-anchored (margin-top in the base .landing-home
+		   rule). */
+		margin-left: auto;
+		margin-right: 180px;
+		transform: none;
 	}
 
 	.landing-v2.landing-home .landing-hero__headline-line {
-		font-size: 100px;
-		line-height: 88px;
+		/* R6 (Oscar, 2026-09-02): 90px (was 100/88) — leading keeps the
+		   0.88 ratio (79.2), tracking is em-based so it scales itself.
+		   The rest chain re-solves below: cap offset 12.9 × 0.9 = 11.6,
+		   block 2 × 79.2 = 158.4. */
+		font-size: 90px;
+		line-height: 79.2px;
 		white-space: nowrap;
 	}
 
@@ -5449,13 +5469,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   these names, so they stay; read them by role, not by name. */
 	.landing-v2.landing-home .landing-hero__headline-line--dazzed {
 		font-weight: 500; /* condensed Medium — Display / Serif L (was 400) */
-		line-height: var(--ts-serif-display-lh); /* 92 (guide; was 88) */
+		/* R6 (2026-09-02): the guide's Display leading (92 at the 100px
+		   tier) scaled to the 90px headline — 92 × 0.9 = 82.8. */
+		line-height: 82.8px;
 		letter-spacing: var(--ts-serif-display-track);
 	}
 
 	.landing-v2.landing-home .landing-hero__headline-line--serrif {
 		letter-spacing: -0.05em;
-		margin-left: 200px; /* the 8-space lead at 100px (was 144 at 72) */
+		margin-left: 180px; /* the 8-space lead = 2em: 180 at 90 (200 at 100, 144 at 72) */
 	}
 
 	/* ── SERIF COPY / Intro 48/50/−2% ── The 452px column was drawn
@@ -5469,7 +5491,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   R4 +20), the middle link of the px rest chain (see the base
 	   rule + the module header). */
 	.landing-v2.landing-home .landing-hero__intro-text {
-		top: 389.6px;
+		/* R6 (2026-09-02): the 90px headline's bottom = 162.9 + (82.8 +
+		   79.2) = 324.9. R7 (Oscar, same day): 80 below it (was 48) →
+		   404.9. The band top re-derives from this block's bottom. */
+		top: 404.9px;
 		width: 723px;
 		/* R5 (Oscar, 2026-09-02): 38px — between the guide's Serif
 		   Section (34/38/−3%) and Editorial/Intro (48/50/−2%) tiers,
