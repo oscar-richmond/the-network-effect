@@ -34,12 +34,10 @@ import LandingClosing from '../components/landing/LandingClosing.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
-/* The /services page's stylesheet rides along for the SHARED sv-rows
-   hover machinery (all selectors are .landing-v2 .sv-* namespaced —
-   nothing else on this page matches them; /services itself is
-   untouched). Landing-specific row geometry overrides live in
-   landing.css. */
-import '../styles/landing/services-v2.css';
+/* (services-v2.css no longer rides along — R10, 2026-09-02: the
+   /services sv-rows hover machinery is detached from this page, and
+   every rule in that sheet is .landing-v2 .sv-* namespaced, so
+   nothing here matched it once the row spans went.) */
 import '../styles/fonts.css';
 import { asset } from '../utils/asset.js';
 import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
@@ -69,8 +67,11 @@ import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
 
   {/* Services — the ROW-LIST redesign (frame 18:1694, 2026-08-24):
       normal flow now — header (WHAT WE DO / FROM ACCESS–TO IMPACT /
-      the pillars note) + three pillar row lists riding the /services
-      page's own sv-rows hover machinery (shared module). The OLD
+      the pillars note) + three pillar row lists whose active row
+      (scroll-driven, or hover/focus while the pointer is over the
+      list) indents with the text slide — one treatment for both
+      sources since R10 (2026-09-02; the /services sv-rows hover
+      machinery is no longer used on this page). The OLD
       stacked-cards markup below survives UNTOUCHED for MOBILE (the
       shipped build) and hides ≥1025; the new block is desktop-only.
       THE FADE-TO-BLACK lives on this section's tail now (its third
@@ -131,28 +132,22 @@ import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
             <p class="landing-sreel__desc" data-sreel-desc data-sreel-text>{p.desc[0]}<br />{p.desc[1]}</p>
             <p class="landing-sreel__wlabel" data-sreel-wlabel data-sreel-text>{p.label}</p>
             <div class="landing-sreel__listwin" data-sreel-listwin>
-              {/* TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27): the list is
-                  also a [data-sv-rows] host so the /services hover
-                  machinery (sv-rows.js, reused UNMODIFIED) can treat a
-                  hovered/focused row — red fill + rolling marquee +
-                  edge gradient; no image frame here (the reel's big
-                  image is the single image authority). Scroll mode
-                  keeps the new text slide instead (landing-services-
-                  reel.js arbitrates; only one mode at a time). */}
-              <div
-                class="landing-sreel__list"
-                data-sreel-list
-                data-sv-rows
-                data-sv-rows-list
-                style="--sv-accent:#c1250e"
-              >
+              {/* TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27; simplified
+                  R10, 2026-09-02): scroll AND hover/focus now produce
+                  the SAME row treatment — the text slide (one class,
+                  one set of constants; landing-services-reel.js
+                  arbitrates which source owns it) — and the pillar's
+                  big image follows the treated row in both modes.
+                  The /services sv-rows machinery (red fill + rolling
+                  marquee + edge gradients) is DETACHED from this page:
+                  no [data-sv-rows] host, no treatment spans — the
+                  shared module and /services are untouched. Rows stay
+                  focusable (keyboard = hover). */}
+              <div class="landing-sreel__list" data-sreel-list>
                 {p.services.map((svc) => (
-                  <div class="landing-sreel__row sv-rows__row" data-sv-row data-text={svc.t} data-img={asset(svc.img)} tabindex="0">
+                  <div class="landing-sreel__row" data-sreel-row tabindex="0">
                     <span class="landing-sreel__rowline" aria-hidden="true"></span>
                     <span class="landing-sreel__svc" data-sreel-text>{svc.t}</span>
-                    <span class="sv-rows__fill" aria-hidden="true"></span>
-                    <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
-                    <span class="sv-rows__edges" aria-hidden="true"></span>
                   </div>
                 ))}
                 <span class="landing-sreel__rowline landing-sreel__rowline--end" aria-hidden="true"></span>

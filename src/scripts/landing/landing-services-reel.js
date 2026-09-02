@@ -41,7 +41,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
-import { initSvRowsSections } from './sv-rows.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { isMobileViewport } from './viewport.js';
 import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
@@ -288,15 +287,20 @@ export function initLandingServicesReel() {
      active holds — no boundary flutter. */
   const activeIdx = pillars.map(() => 0);
 
-  /* ── TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27): scroll drives
-     the text slide; a pointer (or focus) over the list hands the
-     row treatment to the /services hover machinery instead. Only
-     one mode is applied at a time; activeIdx keeps updating
-     UNDERNEATH a hover so release always lands on the row the
-     current scroll position dictates. The pillar image follows the
-     TREATED row in both modes (one authority: requestImage's
-     latch), so the row and the image can never disagree. */
-  const rowEls = pillars.map((pillar) => Array.from(pillar.querySelectorAll('[data-sv-row]')));
+  /* ── TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27; simplified R10,
+     2026-09-02): scroll drives the text slide; a pointer (or focus)
+     over the list takes the SAME slide over — hover no longer hands
+     the row to the /services fill/marquee machinery (sv-rows.js is
+     detached from this page; /services untouched). One class
+     (.is-sactive), one set of constants (SREEL_SLIDE_*), one writer
+     (setSlide) for both sources, so the two modes are visually
+     identical and the handoff between them is a no-op when they
+     agree. activeIdx keeps updating UNDERNEATH a hover so release
+     always lands on the row the current scroll position dictates.
+     The pillar image follows the TREATED row in both modes (one
+     authority: requestImage's latch), so the row and the image can
+     never disagree. */
+  const rowEls = pillars.map((pillar) => Array.from(pillar.querySelectorAll('[data-sreel-row]')));
   const hoverMode = pillars.map(() => false);
   const slideIdx = pillars.map(() => -1);
   const setSlide = (i, idx) => {
@@ -341,30 +345,22 @@ export function initLandingServicesReel() {
      ?forcehover escape (services-6's formula; Oscar's machine
      reports the media query false). On touch nothing binds: the
      scroll slide is the only behaviour. Keyboard rides the same
-     path (focus = hover, blur = release) — sv-rows' own focusin
-     parity supplies the treatment; these listeners supply the mode.
-     The /services machinery is reused UNMODIFIED: no
-     [data-sv-rows-img] frame exists here, so its image runner is
-     inert and the reel's big image stays the one image authority. */
+     path (focus = hover, blur = release). While the pointer is over
+     the list, hover WINS: the hovered row takes the slide (setSlide
+     retargets it as one continuous movement — the outgoing row
+     returns on the same curve) and the image follows; entering the
+     list changes nothing until a row is actually under the pointer,
+     so landing on the already-active row is a no-op (setSlide's
+     same-index early-out: no re-trigger, no double indent). */
   const fineHover =
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');
   if (fineHover) {
-    const hoverTimers = [];
-    cleanups.push(initSvRowsSections({
-      reduced: false,
-      isMob: false,
-      fineHover,
-      schedule: (fn, ms) => hoverTimers.push(window.setTimeout(fn, ms)),
-      root,
-    }));
-    cleanups.push(() => hoverTimers.forEach(window.clearTimeout));
     pillars.forEach((pillar, i) => {
       const list = pillar.querySelector('[data-sreel-list]');
       if (!(list instanceof HTMLElement)) return;
       const enterMode = () => {
         hoverMode[i] = true;
-        setSlide(i, -1);
       };
       const releaseMode = () => {
         hoverMode[i] = false;
@@ -372,10 +368,12 @@ export function initLandingServicesReel() {
         requestImage(i, activeIdx[i]);
       };
       const followRow = (target) => {
-        const row = target instanceof Element ? target.closest('[data-sv-row]') : null;
+        const row = target instanceof Element ? target.closest('[data-sreel-row]') : null;
         if (!(row instanceof HTMLElement) || !list.contains(row)) return;
         const idx = rowEls[i].indexOf(row);
-        if (idx >= 0) requestImage(i, idx);
+        if (idx < 0) return;
+        setSlide(i, idx);
+        requestImage(i, idx);
       };
       const onEnter = () => enterMode();
       const onOver = (e) => followRow(e.target);
@@ -385,7 +383,7 @@ export function initLandingServicesReel() {
         followRow(e.target);
       };
       const onFocusOut = (e) => {
-        const next = e.relatedTarget instanceof Element ? e.relatedTarget.closest('[data-sv-row]') : null;
+        const next = e.relatedTarget instanceof Element ? e.relatedTarget.closest('[data-sreel-row]') : null;
         if (!next || !list.contains(next)) releaseMode();
       };
       list.addEventListener('pointerenter', onEnter);
