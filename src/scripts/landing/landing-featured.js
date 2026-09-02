@@ -241,50 +241,69 @@ export function initLandingFeatured() {
     });
   };
 
+  /* R15 (Oscar 2026-09-02) — THE NEW CENTRING DEFINITION (supersedes
+     R5's whole-block rule of 2026-08-27): the carousel UNIT alone —
+     the images + client names, NOT the label, NOT VIEW ALL — centres
+     between the NAV WORDMARK's measured bottom and the viewport
+     bottom, equal gaps. The unit's height is MEASURED at the fix
+     moment (min image top → max title bottom across the cards; the
+     strip's own box is the fixed 653 card height, taller than the
+     unit). The label sits at a FIXED top (its ink 180 below the
+     section above's bottom = this stage's top at the pin; Dazzed
+     12/14 ink sits 2.4 below its box → 177.6), and VIEW ALL sits
+     VIEWALL_GAP_PX below the unit's bottom, horizontally centred.
+     Same mechanism as the R6 fix — place() is the ONE writer of
+     --lf-header-top / --lf-viewall-top / the strip top; the
+     departure rides --lf-depart, composed in the calc. The 24px
+     floor stays as the too-tall guard (flagged in the gap report,
+     never a silent compression). */
   const LABEL_TOP_PX = 177.6;
+  const VIEWALL_GAP_PX = 80;
+  let lastPlacement = null;
   const place = () => {
     fitCards();
-    /* R5 (Oscar 2026-08-27, the site-wide rule): the unit — header
-       line + VIEW ALL + the carousel — centres between the NAV
-       WORDMARK's measured bottom and the viewport bottom, equal
-       gaps both sides. The unit's height is MEASURED (the strip's
-       real box: the old blockH constant assumed image 450 + meta +
-       one title line = 638, but the rendered strip alone is ~653 —
-       card titleblocks outgrow the allowance — putting the true
-       unit at ~767 and the old centring 29px off before the nav
-       rule even applied). The 24px floor stays as the too-tall
-       guard: when the region can't hold the unit, it pins 24 under
-       the nav rather than clipping (flagged, not silent — the gap
-       report shows the inequality). */
-    const topbar = document.querySelector('.home__topbar');
-    const tb = topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0;
-    const measuredStripH = strip.getBoundingClientRect().height
-      || (MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX);
-    const blockH = HL_H_PX + HEADER_IMG_GAP_PX + measuredStripH;
-    const centredTop = Math.max(24 + tb, tb + (stageH() - tb - blockH) / 2);
-    const stripTop = centredTop + HL_H_PX + HEADER_IMG_GAP_PX;
-    /* R15 item 1 (Oscar 2026-09-02): the label sits at a FIXED top — its
-       ink 180 below the section above's bottom (this stage's top at the
-       pin); Dazzed 12/14 ink sits 2.4 below its box → 177.6. */
-    const headerTop = LABEL_TOP_PX;
-    strip.style.top = `${stripTop.toFixed(0)}px`;
-    /* R6 (Oscar 2026-08-27, the SHARED ROOT of the centring and
-       alignment repeat-failures): place() no longer writes the same
-       property the departure tween animates. The header top lives in
-       ONE variable this function owns; the departure rides a second
-       variable the tween owns (start structurally 0) — the elements
-       compose both in a calc. gsap's cached tween starts previously
-       resurrected whatever top was rendered at the tween's FIRST
-       render (the pre-place CSS 157px under a slow-fonts race —
-       reproduced: landed gaps 86/139 after one early pass; and the
-       rounded 211-for-210.5 echo on every pass) — two writers, last
-       one wins, pass-dependent. One writer per variable ends it. */
-    section.style.setProperty('--lf-header-top', `${headerTop.toFixed(1)}px`);
+    const wordmark = document.querySelector('.home__logo');
+    const wm = wordmark instanceof HTMLElement ? wordmark.getBoundingClientRect().bottom : 0;
+    /* The unit, measured relative to the strip's box top — LAYOUT
+       offsets (offsetTop through the card), never client rects: at
+       place() time the cards still carry their entrance's 24px
+       pre-rise transform, and a rect-based read baked that 24 into
+       the strip top (measured: the landed unit sat 24 high). */
+    const stripRect = strip.getBoundingClientRect();
+    let unitTopOff = Infinity;
+    let unitBottomOff = -Infinity;
+    cards.forEach((c) => {
+      const win = c.querySelector('.landing-featured__imgwin');
+      const tb = c.querySelector('.landing-featured__titleblock');
+      if (win instanceof HTMLElement) unitTopOff = Math.min(unitTopOff, c.offsetTop + win.offsetTop);
+      if (tb instanceof HTMLElement) unitBottomOff = Math.max(unitBottomOff, c.offsetTop + tb.offsetTop + tb.offsetHeight);
+    });
+    if (!Number.isFinite(unitTopOff) || !Number.isFinite(unitBottomOff)) {
+      unitTopOff = 0;
+      unitBottomOff = stripRect.height || (MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX);
+    }
+    const unitH = unitBottomOff - unitTopOff;
+    const unitTop = Math.max(24 + wm, wm + (stageH() - wm - unitH) / 2);
+    const stripTop = unitTop - unitTopOff;
+    strip.style.top = `${stripTop.toFixed(1)}px`;
+    const viewallTop = unitTop + unitH + VIEWALL_GAP_PX;
+    section.style.setProperty('--lf-header-top', `${LABEL_TOP_PX}px`);
+    lastPlacement = {
+      wordmarkBottom: +wm.toFixed(2),
+      unitH: +unitH.toFixed(2),
+      unitTop: +unitTop.toFixed(2),
+      gapAbove: +(unitTop - wm).toFixed(2),
+      gapBelow: +(stageH() - (unitTop + unitH)).toFixed(2),
+      viewallTop: +viewallTop.toFixed(2),
+      viewallBottom: +(viewallTop + (viewall instanceof HTMLElement ? viewall.getBoundingClientRect().height : 38)).toFixed(2),
+      stageH: stageH(),
+      floorHit: unitTop === 24 + wm,
+    };
   };
   const positionViaVars = () => {
     hls.forEach((hl) => { hl.style.top = 'calc(var(--lf-header-top, 177.6px) + var(--lf-depart, 0px))'; });
     if (viewall instanceof HTMLElement) {
-      viewall.style.top = 'calc(var(--lf-header-top, 157px) + var(--lf-depart, 0px))';
+      viewall.style.top = 'calc(var(--lf-header-top, 177.6px) + var(--lf-depart, 0px))';
     }
   };
   positionViaVars();
@@ -517,6 +536,7 @@ export function initLandingFeatured() {
       trigger: () => masterTl?.scrollTrigger ?? null,
       travel,
       runway,
+      placement: () => lastPlacement,
     };
   }
 
