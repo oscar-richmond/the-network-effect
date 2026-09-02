@@ -871,6 +871,12 @@ body.founders-page {
 	}
 
 	/* ── Text block (guide mapping flagged in the report). */
+	/* R19 (Oscar, 2026-09-02): the founder eyebrows take the landing's
+	   SECTION-LABEL family exactly (FEATURED WORK / WHAT WE DO /
+	   OUR NETWORK, computed 2026-09-02): Dazzed 600, 12px / 14px,
+	   uppercase, tracking 0 (the guide's Label tier; WHAT WE DO alone
+	   carries its frame's −0.015em). Was 18/18/−0.02em. Position
+	   unchanged (710, 245); the dark ink is this page's. */
 	.founders-page .fd-slide__role {
 		position: absolute;
 		left: 710px;
@@ -879,13 +885,17 @@ body.founders-page {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 18px;
-		line-height: 18px;
-		letter-spacing: -0.02em;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: 0;
 		text-transform: uppercase;
 		color: #161616;
 	}
 
+	/* R19 (Oscar, 2026-09-02): 56 / 54 / −0.035em (was 48/50/0). The
+	   rendered face is DAZZED 600 (the frame's treatment) — kept;
+	   only size/leading/tracking change. The box grows 50 → 54, so
+	   the bio (absolute at 361) sits 20 below it (was 24). */
 	.founders-page .fd-slide__staticname {
 		position: absolute;
 		left: 710px;
@@ -933,17 +943,27 @@ body.founders-page {
 		color: #161616;
 	}
 
+	/* R19: the list labels ("A STRATEGIC OPERATOR…" / "THE NETWORK
+	   ADVANTAGE") join the same eyebrow family — 12/14/0 (were the
+	   frame's 12/12/+0.01em); the margin drops 2 so row 1 stays at
+	   y644 (14 box + 22). */
 	.founders-page .fd-slide__rel-label {
-		margin: 0 0 24px; /* label y608 → row 1 y644 (12 box + 24) */
+		margin: 0 0 22px; /* label y608 → row 1 y644 (14 box + 22) */
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
-		line-height: 12px;
-		letter-spacing: 0.01em; /* the frame's +0.12px */
+		line-height: 14px;
+		letter-spacing: 0;
 		text-transform: uppercase;
 	}
 
+	/* R19 (Oscar, 2026-09-02): row spacing −⅓. MEASURED first (pixel
+	   ink, both lists): 36px pitch, 24px ink runs, a 12px ink gap
+	   between rows (Robbo's and Ashley's lists share this rule and
+	   measured identically). 12 − ⅓ = 8 → the pitch becomes 32
+	   (= the Lead 32 line box; the 4px box gap goes). Line-internal
+	   values (the slashes' 4px pads, the Lead face) untouched. */
 	.founders-page .fd-slide__rel-row {
 		margin: 0;
 		height: 36px; /* 32 line on the 36 pitch (644/680/716) */
