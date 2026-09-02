@@ -82,7 +82,7 @@
 	   (centre + 3 optical): 50% − 184/2 + 3. */
 	top: calc(50% - 89px);
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: var(--ts-serif-display-size); /* HERO SCALE 100/92 (Oscar 2026-08-26; was 48/48) */
 	line-height: var(--ts-serif-display-lh);
 	text-align: center;
@@ -111,7 +111,7 @@
 .landing-v2 .sv-hero__title-sans {
 	display: block;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-synthesis: none;
 	letter-spacing: -0.05em; /* the hero sans track */
 }
@@ -190,7 +190,7 @@
 
 .landing-v2 .sv-pillar__title {
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 48px;
 	color: #fff;
@@ -240,7 +240,7 @@
 .landing-v2 .sv-intro__statement {
 	margin: 0;
 	max-width: 1680px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 48px;
 	text-transform: uppercase;
@@ -288,7 +288,7 @@
 	left: 24px;
 	top: 0;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 22px;
 	line-height: 16px;
 	color: #161616;
@@ -350,7 +350,7 @@
 .landing-v2 .sv-rows__index {
 	width: 52px;
 	flex: none;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 10px;
 	line-height: 16px;
 	text-align: right;
@@ -545,7 +545,7 @@
 
 .landing-v2 .sv-galhead__title {
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 40px; /* Oscar's rev — was the file's 48 */
 	line-height: 40px;
 	text-transform: uppercase;
@@ -567,7 +567,7 @@
 	width: 782px;
 	margin: 0;
 	text-align: right;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 28px; /* Oscar's rev — was the file's 32 */
 	line-height: 30px;
 	text-transform: uppercase;
@@ -622,7 +622,7 @@
 	width: 160px;
 	flex: none;
 	text-align: center;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 18px;
 	line-height: 22px;
 	text-transform: uppercase;
@@ -664,7 +664,7 @@
 .landing-v2 .sv-access__statement {
 	margin: 0 24px;
 	width: 1016px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 48px;
 	text-transform: uppercase;
@@ -703,7 +703,7 @@
 	display: flex;
 	align-items: center;
 	gap: 24px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	line-height: 22px;
 	text-transform: uppercase;

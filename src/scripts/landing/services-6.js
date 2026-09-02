@@ -330,10 +330,23 @@ export function initServices6() {
   const triggers = [];
   let disposed = false;
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
+  /* The dark band's edges are MEASURED from the CONNECT/AMPLIFY
+     pillars, so any reflow above them (a font swap re-wrapping a
+     statement, the reveal wraps landing) must re-derive it — caught
+     on the SemiBold pass: a 54px (one 56/54 statement line) stale
+     band. refreshInit runs before every ScrollTrigger measurement
+     pass, which is exactly when layout is final. */
+  const onRefreshInit = () => sizeBand();
+  ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
+  cleanups.push(() => ScrollTrigger.removeEventListener('refreshInit', onRefreshInit));
+
   fontsReady.then(() => {
     if (disposed) return;
     sizeBand();
     ScrollTrigger.refresh();
+    /* And once more on the house settle tick — the statement wraps
+       below run after this refresh. */
+    schedule(() => { sizeBand(); }, 600);
 
     /* Hero — word reveals at load. */
     const heroTitle = page.querySelector('[data-sv6-hero-title]');

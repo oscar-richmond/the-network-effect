@@ -41,7 +41,7 @@
 	   wrapped line 1. Ink positions unchanged. */
 	width: 976px;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 100px;
 	line-height: 88px;
 	letter-spacing: -0.05em;
@@ -237,7 +237,7 @@
 
 .landing-v2 .ct-modal__ghost--top {
 	top: calc(50% - 350px);
-	font-weight: 700;
+	font-weight: 600;
 	width: 1016px;
 }
 
@@ -301,7 +301,7 @@
 	background: var(--landing-svc-btn-fill, #e4e4ea);
 	color: var(--landing-accent-blue, #232a89);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	text-transform: uppercase;
 	text-decoration: none;
@@ -338,7 +338,7 @@
 	backdrop-filter: blur(12px);
 	color: #232a89;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	line-height: 18px;
 	text-transform: uppercase;

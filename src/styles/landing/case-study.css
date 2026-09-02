@@ -38,7 +38,7 @@ body.case-page {
 .landing-v2 .cs-hero__title {
 	margin: 0 0 0 24px;
 	max-width: 1200px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 48px;
 	text-transform: uppercase;
@@ -82,7 +82,7 @@ body.case-page {
 .landing-v2 .cs-intro__statement {
 	margin: 0;
 	max-width: 1680px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 48px;
 	text-transform: uppercase;
@@ -127,7 +127,7 @@ body.case-page {
 	left: 864px;
 	top: 0;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 19px;
 	text-transform: uppercase;
@@ -173,7 +173,7 @@ body.case-page {
 
 .landing-v2 .cs-did__pillar {
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 19px;
 	text-transform: uppercase;
@@ -264,7 +264,7 @@ body.case-page {
 
 .landing-v2 .cs-rail__label {
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 32px;
 	line-height: 32px;
 	text-transform: uppercase;
@@ -322,7 +322,7 @@ body.case-page {
 
 .landing-v2 .cs-more__title {
 	margin: 0 0 0 24px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 40px;
 	text-transform: uppercase;
@@ -449,7 +449,7 @@ body.case-page {
 	margin-left: 6px; /* the /work 6px convention */
 	vertical-align: top;
 	margin-top: 4px; /* cap optics */
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 10px;
 	line-height: 10px;
 	text-transform: uppercase;
@@ -532,7 +532,7 @@ body.case-page {
 		left: 0;
 		top: 0;
 		margin: 0;
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		line-height: 14px;
 		letter-spacing: 0;
@@ -569,7 +569,7 @@ body.case-page {
 		top: 0;
 		margin: 0;
 		width: 240px;
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 16px;
 		line-height: 19px;
 		text-transform: uppercase;
@@ -641,7 +641,7 @@ body.case-page {
 	mix-blend-mode: difference;
 	color: #fff;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 16px;
 	white-space: nowrap;
@@ -802,7 +802,7 @@ body.case-page {
 	background: var(--landing-svc-btn-fill);
 	color: var(--landing-accent-blue);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	cursor: pointer;
 	opacity: 0;
@@ -1190,7 +1190,7 @@ body.case-page {
 		background: #e4e4ea;
 		color: #232a89;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		text-transform: uppercase;
 		text-decoration: none;
@@ -1275,4 +1275,13 @@ body.case-page {
 /* The mobile-only affordances must not exist above the seam. */
 @media (min-width: 1025px) {
 	.landing-v2 .cs-more__viewall { display: none; }
+}
+
+/* UA-bold heading gap (the SemiBold pass, 2026-09-02): the facts
+   label/row labels carried no declared weight under the seam and
+   inherited the user-agent 700. */
+.landing-v2 .cs-facts__label,
+.landing-v2 .cs-facts__rowlabel {
+	font-weight: 600;
+	font-synthesis: none;
 }

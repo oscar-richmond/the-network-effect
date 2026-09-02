@@ -204,7 +204,7 @@ body.founders-page {
 }
 
 .landing-v2 .fd-slide__bio-text--bold {
-	font-weight: 700;
+	font-weight: 600;
 }
 
 .landing-v2 .fd-slide__bio-text--serrif {
@@ -238,7 +238,7 @@ body.founders-page {
 	background: var(--landing-svc-btn-fill, #e4e4ea);
 	color: var(--landing-accent-blue, #232a89);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 16px;
 	text-transform: uppercase;
@@ -277,7 +277,7 @@ body.founders-page {
 	bottom: 64px;
 	width: 1000px;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 20px;
 	line-height: 30px;
 	text-transform: uppercase;
@@ -626,7 +626,7 @@ body.founders-page {
 		background: var(--landing-svc-btn-fill, #e4e4ea);
 		color: var(--landing-accent-blue, #232a89);
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		line-height: 13px;
 		text-transform: uppercase;
@@ -877,7 +877,7 @@ body.founders-page {
 		top: 245px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 18px;
 		line-height: 18px;
@@ -892,7 +892,7 @@ body.founders-page {
 		top: 287px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 48px;
 		line-height: 50px;
@@ -936,7 +936,7 @@ body.founders-page {
 	.founders-page .fd-slide__rel-label {
 		margin: 0 0 24px; /* label y608 → row 1 y644 (12 box + 24) */
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
 		line-height: 12px;

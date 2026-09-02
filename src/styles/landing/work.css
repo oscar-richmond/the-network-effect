@@ -98,7 +98,7 @@ body.work-page {
 	position: absolute;
 	left: 24px;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 100px;
 	line-height: 88px;
 	letter-spacing: -0.05em;
@@ -342,7 +342,7 @@ body.work-page {
 		background: #e4e4ea;
 		color: #232a89;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		line-height: 38px;
 		text-align: center;
@@ -445,7 +445,7 @@ body.work-page {
 		background: #e4e4ea;
 		color: #232a89;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		text-transform: uppercase;
 		text-decoration: none;
@@ -539,4 +539,12 @@ body.work-page {
 		position: relative;
 		top: 1px;
 	}
+}
+
+/* UA-bold heading gap (the SemiBold pass, 2026-09-02): the mobile
+   list titles carried no declared weight and inherited the
+   user-agent 700. */
+.landing-v2 .work-m__title {
+	font-weight: 600;
+	font-synthesis: none;
 }

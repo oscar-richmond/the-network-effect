@@ -185,7 +185,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	background: var(--landing-svc-btn-fill, #e4e4ea);
 	color: var(--landing-accent-blue, #232a89);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 16px;
 	text-transform: uppercase;
@@ -428,7 +428,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: flex;
 	padding-top: 10px;
 	font-size: clamp(1.625rem, calc(3.1vw + 4px), 3.25rem);
-	font-weight: 700;
+	font-weight: 600;
 	line-height: 1.1;
 	color: var(--color-ink-strong);
 }
@@ -589,7 +589,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-hero__headline-line--dazzed {
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-synthesis: none;
 }
 
@@ -809,7 +809,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	width: 900px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	/* 40px/40 (Oscar's rev — the file drew this at 48/48). */
 	font-size: 40px;
 	line-height: 40px;
@@ -852,7 +852,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	border: 0;
 	background: #343439;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	/* 14px (Oscar's rev — the file drew these at 16). Widths are
 	   natural (pads + gap + label), so they narrow accordingly. */
 	font-size: 14px;
@@ -959,7 +959,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	width: max-content;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 40px;
 	line-height: 40px;
 	letter-spacing: normal;
@@ -1096,7 +1096,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: flex;
 	align-items: flex-start;
 	gap: 8px;
-	font-weight: 700;
+	font-weight: 600;
 	white-space: nowrap;
 }
 
@@ -1140,7 +1140,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	transform: translateY(-50%);
 	width: 574px;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	/* 28px (Oscar's rev — was 32/34). */
 	font-size: 28px;
 	line-height: 30px;
@@ -1158,7 +1158,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: flex;
 	align-items: center;
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 32px;
 	text-transform: uppercase;
@@ -1216,7 +1216,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	border: 0;
 	background: var(--landing-svc-btn-fill);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	color: var(--landing-accent-blue);
 	cursor: pointer;
@@ -1311,7 +1311,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	left: 24px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	/* 40/40 (Oscar's rev — the file drew it 48/48; 40-on-40 is the
 	   page's headline convention post-drop). */
 	font-size: 40px;
@@ -1333,7 +1333,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	left: 864px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 12px;
 	line-height: 14px;
 	text-transform: uppercase;
@@ -1845,7 +1845,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-access__hl-dazzed {
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-synthesis: none;
 }
 
@@ -1922,7 +1922,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-closing__hl {
 	position: absolute;
 	white-space: nowrap;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 40px;
 	line-height: 40px;
 	color: #fff;
@@ -1962,7 +1962,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2 .landing-closing__hl--serrif {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		letter-spacing: -0.0035em; /* explicit — inherit would take the
 		   parent headline's normal, not the hl rule's own value */
 	}
@@ -2122,7 +2122,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		position: absolute;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 100px;
 		line-height: 88px;
@@ -2252,7 +2252,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #eeeef0;
 		border: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 16px;
 		line-height: 1;
@@ -2282,7 +2282,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2 .landing-footer__dst-line {
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 56px;
 		line-height: 54px;
@@ -2373,7 +2373,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-footer__label {
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	line-height: 16px;
 	text-transform: uppercase;
@@ -2381,7 +2381,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 .landing-v2 .landing-footer__link {
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	line-height: 16px;
 	text-transform: uppercase;
@@ -2398,7 +2398,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	line-height: 16px;
 	text-transform: uppercase;
@@ -2432,7 +2432,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 .landing-v2 .landing-footer__st-line {
 	margin: 0;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 48px;
 	line-height: 48px;
 	text-transform: uppercase;
@@ -2477,7 +2477,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	padding: 0;
 	background: none;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	line-height: 16px;
 	text-transform: uppercase;
@@ -2698,7 +2698,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .landing-featured__hl--featured {
 	left: 24px;
 	top: 157px;
-	font-weight: 700;
+	font-weight: 600;
 }
 
 .landing-v2 .landing-featured__hl--work {
@@ -2724,7 +2724,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	border: 0;
 	background: var(--landing-svc-btn-fill);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 14px;
 	color: var(--landing-accent-blue);
 	cursor: pointer;
@@ -2964,7 +2964,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	mix-blend-mode: difference;
 	color: #fff;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 16px;
 	line-height: 16px;
 	white-space: nowrap;
@@ -3338,7 +3338,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   work/[slug]) — round brackets, Oscar 2026-08-26 */
 		display: block;
 		margin-top: 12px;
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		line-height: 14px;
 		color: #161616;
@@ -3885,7 +3885,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-svc-card__m-listhead {
 		margin: 0;
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 12px;
 		line-height: 14px;
 		text-transform: uppercase;
@@ -4142,7 +4142,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-network__subtitle {
 		margin: 100px var(--m-margin, 16px) 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
 		line-height: 14px;
@@ -4543,14 +4543,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-closing__m-kw {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		text-transform: uppercase;
 	}
 
 	.landing-v2.landing-home .landing-closing__m-index {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 10px;
 		line-height: 10px;
@@ -5143,7 +5143,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		left: 24px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
 		line-height: 14px;
@@ -5273,7 +5273,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		left: 24px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
 		line-height: 14px;
@@ -5293,7 +5293,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		width: 410px;
 		text-align: center;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 18px;
 		line-height: 18px;
@@ -5742,7 +5742,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-featured__hl {
 		position: absolute;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 40px;
 		line-height: 50px;
@@ -5769,7 +5769,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #343439;
 		color: #ffffff;
 		font-size: 16px;
-		font-weight: 700;
+		font-weight: 600;
 		height: 38px;
 		padding: 0 16px;
 		display: inline-flex;
@@ -5956,7 +5956,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 100px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
 		line-height: 14px;
@@ -5969,7 +5969,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		position: absolute;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 100px;
 		line-height: 88px;
@@ -6160,7 +6160,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 146px; /* Option 11; JS rides it to 100 with the compaction */
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 12px;
 		line-height: 14px;
@@ -6207,7 +6207,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-sreel__st-sans {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		letter-spacing: -0.05em;
 		margin-left: 325px; /* the 13-space serif lead at 100px */
@@ -6283,7 +6283,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-sreel__title {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		/* Scrubbed by the closed-state type drop (guide Editorial at
 		   rest-closed: 48/48/−2%; open = the frame's 56/54/−3.5%). */
@@ -6319,7 +6319,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   offset; em is unusable — it binds to the number's 24px). */
 		top: calc(var(--sreel-ttl-fs, 56px) * -0.0625 + 6.34px);
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 24px;
 		line-height: 24px;
@@ -6358,7 +6358,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		top: 190px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 16px;
 		line-height: 19px;
@@ -6532,7 +6532,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		box-sizing: border-box;
 		background: var(--landing-svc-btn-fill, #e4e4ea);
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		font-weight: 600;
 		font-synthesis: none;
 		font-size: 16px;
 		line-height: 1;
@@ -6573,4 +6573,23 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		object-fit: cover;
 		display: block;
 	}
+}
+
+/* ── UA-BOLD HEADING GAP (the SemiBold pass, 2026-09-02) ─────────────
+   These headings never declared a weight: desktop's respec blocks set
+   one (now 600), but under the seam their mobile rules size them
+   with vw and inherit the USER-AGENT bold (700) — invisible to any
+   grep, caught only by the rendered-weight sweep. Base scope, every
+   breakpoint; children with their own explicit weights keep them. */
+.landing-v2 .landing-sreel__st,
+.landing-v2 .landing-sreel__titlerow,
+.landing-v2 .landing-access__dheadline,
+.landing-v2 .landing-access__dlines,
+.landing-v2 .landing-access__dline,
+.landing-v2 .landing-access__headline,
+.landing-v2 .landing-access__hl-line,
+.landing-v2 .landing-featured__header,
+.landing-v2 .landing-closing__headline {
+	font-weight: 600;
+	font-synthesis: none;
 }
