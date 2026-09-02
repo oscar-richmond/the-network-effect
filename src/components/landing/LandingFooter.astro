@@ -199,10 +199,19 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     {/* EXPLICIT break (Oscar 2026-08-26): "Through people. Through"
         completes line 2 after "quietly."; "relationships." holds
         line 3 alone — authored, so 1512-in-shell can't re-break it.
-        The grey span carries the break; the colour split is
-        unchanged. */}
+        R16 (Oscar 2026-09-02): line 3 is its OWN line element now,
+        so "relationships." sits flush LEFT on the statement block's
+        edge. It used to be a <br> INSIDE the grey span: the reveal
+        wrap makes that span one inline-block atom, so the break
+        happened inside the atom and the word landed at the span's
+        left (x 543 — under "Through"), not the block's. The colour
+        split and the line-2 break are unchanged; the line joins the
+        reveal as the third staggered line. */}
     <p class="landing-footer__dst-line" data-footer-st-line
-      >It moves quietly. <span class="landing-footer__dst-grey">Through people. Through<br />relationships.</span></p
+      >It moves quietly. <span class="landing-footer__dst-grey">Through people. Through</span></p
+    >
+    <p class="landing-footer__dst-line" data-footer-st-line
+      ><span class="landing-footer__dst-grey">relationships.</span></p
     >
   </div>
 
