@@ -142,8 +142,12 @@ export function initLandingClosing() {
               section alone had to run through the hold). The
               statement is plain #161616 ink, styled for both grounds,
               so it may still be in view over the first part of this
-              shift; if the ink is ever ruled white-on-red it must fade
-              WITH the ground (the featured-metas device).
+              shift. INK RULED FINAL (Oscar, 2026-09-02): #161616 on
+              #C1250E stays — do not re-flag. Measured contrast 3.05:1,
+              which passes WCAG only at the large-text floor (3:1;
+              the statement is 100px, the nav 18-34px). The simple
+              exit fade stays as built; no ink fade is needed because
+              the dark ink is styled for both grounds.
      NAV OVERRIDE: while the band is under the nav every nav item is
      solid #161616, blend off — a class on the ELEMENTS (never an
      ancestor). ON when the band's top edge crosses the nav's vertical
