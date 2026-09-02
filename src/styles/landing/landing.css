@@ -5275,7 +5275,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-network__label {
 		display: block;
 		position: absolute;
-		top: 110px; /* frame 1:469 (was 100) */
+		/* R12 (Oscar, 2026-09-02): the label's TOP aligns with the top
+		   of the subtitle's first line (the two read as one row); it
+		   rides the group's move to the 140-above-strip position. Was
+		   110 (frame 1:469; 100 before that). Pixel-tuned: see the
+		   subtitle note. */
+		top: 223.3px;
 		left: 24px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -5291,14 +5296,18 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* Subtitle (frame 1:341, 2026-08-26 — supersedes the R2
 	   nav-window centring calc): centred 410w at y168, Dazzed Bold
 	   18/18/−2% (no named 18px guide style — flagged). */
-	/* R9 (Oscar, 2026-09-02): the subtitle + sector list move DOWN
-	   together (+50: 168 → 218, 236 → 286) so the list's last-line
-	   INK BOTTOM sits exactly 180px above the taller strip's top
-	   (614): 286 + (2 × 48) + the Serrif 48/48 ink descent measured
-	   at 50 = 434 → 614 − 434 = 180. The label stays at 110; the
-	   subtitle→list gap (68) is unchanged. */
+	/* R12 (Oscar, 2026-09-02) — SUPERSEDES R9's 180-above-strip rule
+	   (same day; one value carried here): the group (label + subtitle
+	   + sector list) sits so the list's last-line INK BOTTOM is exactly
+	   140 above the strip's top (614) → 474; 48 of INK between the
+	   subtitle's last line and the list's first; the label's top
+	   aligned with the subtitle's first line. Subtitle → 14/16 (was
+	   18/18; Dazzed 600, −0.02em, uppercase kept — renders cleanly at
+	   14; guide mapping: nearest the 12/14 Label tier, whose tracking
+	   is 0 — the −0.02em is kept as the subtitle's own, flagged). All
+	   positions pixel-measured (ink), see the report. */
 	.landing-v2.landing-home .landing-network__subtitle {
-		top: 218px;
+		top: 223px; /* pixel-tuned: last-line ink bottom 253 → list ink top 301 = 48 */
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
@@ -5307,8 +5316,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 18px;
-		line-height: 18px;
+		font-size: 14px;
+		line-height: 16px;
 		letter-spacing: -0.02em;
 		text-transform: uppercase;
 	}
@@ -5321,15 +5330,25 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   (36→48; still no named guide style, flagged). Terms keep
 	   their hover wiring. */
 	.landing-v2.landing-home .landing-network__body {
-		top: 286px; /* R9: was 236 — see the subtitle note */
+		top: 291.35px; /* R12: last-line ink bottom at 474 = strip 614 − 140 (was 286 / R9) */
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
-		width: 1014px;
+		/* R12 MEASURE (flagged, not silent): 1014 → 1040. At 56 the
+		   widest authored line ("Luxury / Fashion / Food & Beverage /
+		   Sports") renders 1023 wide — 9px past the 1014 box (white-
+		   space: pre keeps the authored line, so it overflowed rather
+		   than wrapped, and the reveal clip would shave "Sports"). 1040
+		   fits it with ~8px each side; the block stays centred. */
+		width: 1040px;
 		text-align: center;
-		font-size: var(--ts-serif-editorial-size);
-		line-height: var(--ts-serif-editorial-lh);
-		letter-spacing: var(--ts-serif-editorial-track); /* guide −2% (frame −3% — guide wins, Oscar) */
+		/* R12 (Oscar, 2026-09-02): SerrifCondensed-Medium 56/60/−0.03em
+		   (was the guide's Editorial 48/48/−2% via the vars). The three
+		   authored lines are kept — one rendered line each at 1728 and
+		   in the 1512 shell (see the measure note above). */
+		font-size: 56px;
+		line-height: 60px;
+		letter-spacing: -0.03em;
 	}
 
 	/* THE LOGO CAROUSELS ARE GONE FROM DESKTOP (R9, Oscar 2026-09-02):
