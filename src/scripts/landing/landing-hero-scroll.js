@@ -24,7 +24,12 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll } from './site-scroll.js';
-import { wrapLineRevealElement } from '../line-reveal.js';
+/* playLineRevealElement: the R7 static-arrival path (loads the splash
+   does not own — return visits, ?splash=0) calls it; it was never
+   imported, so build() threw there and the whole hero choreography
+   (triggers, runway, cards placement, GL) was dead on every return
+   visit. Found 2026-09-02 by the logo-row probe; fixed in place. */
+import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { createHeroRotatingGallery } from './hero-rotating-gallery.js';
 import { isMobileViewport } from './viewport.js';
 
