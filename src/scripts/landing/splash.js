@@ -182,6 +182,14 @@ export function initSplash(root) {
     headlineLines.forEach((el) => {
       if (el instanceof HTMLElement) playLineRevealElement(el);
     });
+    /* R7 (Oscar, 2026-09-02): the hero INTRO rides the same entrance
+       a slight beat behind the headline — its paragraphs were wrapped
+       by the hero module (fonts-gated, under the cover) with a reveal
+       delay of the headline's stagger + INTRO_AFTER_HEADLINE_S, so
+       playing them here lands them just after the second line. */
+    document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
+      if (p instanceof HTMLElement) playLineRevealElement(p);
+    });
     timers.push(setTimeout(() => {
       if (disposed) return;
       /* MENU and LET'S CHAT only — the LOGO has already arrived via

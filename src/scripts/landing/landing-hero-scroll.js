@@ -44,7 +44,13 @@ const HEADLINE_MOVE_PX = 400;
 const HEADLINE_LEFT_MARGIN = 24;
 
 /** Scroll px consumed per revealed line of the secondary copy. */
-const REVEAL_LINE_PX = 130;
+const REVEAL_LINE_PX = 130; /* retired for the intro (R7) — kept for the beats' history */
+/* R7 (Oscar, 2026-09-02): the intro joins the headline's splash
+   entrance a slight beat behind it. The headline's lines stagger at
+   the founders' 0.12s (splash.js); the intro starts this much after
+   the LAST headline line begins — 0.15 = "a very slight delay". */
+const HEADLINE_LINE_STAGGER_S = 0.12;
+const INTRO_AFTER_HEADLINE_S = 0.15;
 
 /* ── New constants (the video beat) ───────────────────────────────── */
 
@@ -613,52 +619,39 @@ export function initLandingHeroScroll() {
          encoded the retired side-by-side composition and no longer
          runs. (deriveIntroLineHeight / alignIntroToHeadline /
          correctIntroTop retained above, unreferenced, for history.) */
-      const introLines = wrapIntroLines(introText);
-      /* wrapLineRevealElement leaves an inline `transition: transform`
-         intended for its own class-toggle reveal; that fights a
-         continuous scrub, so GSAP takes sole control of the transform. */
-      introLines.forEach((el) => {
-        el.style.transition = 'none';
+      /* R7 (Oscar, 2026-09-02): the SCROLL reveal is retired — the
+         intro arrives with the HEADLINE's own entrance (the splash's
+         founders-style clip rise, playPageEntrance in splash.js) a
+         slight beat behind it: the paragraph's reveal delay is the
+         headline's two-line stagger plus INTRO_AFTER_HEADLINE_S, so
+         the wrap's own per-line transitions carry the timing. On a
+         load the splash does not own (return visits, ?splash=0) the
+         headline is static, so the intro is made visible statically
+         too — no scroll gate, no runway. The clips still exist for
+         the text exit wipes below. Beat 2's REVEAL_LINE_PX runway
+         is gone with it (revealEnd stays at sequenceEnd). */
+      introText.querySelectorAll('p').forEach((p) => {
+        p.dataset.revealDelay = String(
+          headlineText.querySelectorAll('.landing-hero__headline-line').length * HEADLINE_LINE_STAGGER_S
+            + INTRO_AFTER_HEADLINE_S,
+        );
       });
+      const introLines = wrapIntroLines(introText);
 
-      /* Armed only now — the lines exist and are positioned offscreen,
-         so making the block visible can no longer flash complete text. */
+      /* Armed only now — the lines exist and are clipped, so making
+         the block visible can no longer flash complete text. */
       intro?.classList.add('is-armed');
 
-      if (introLines.length) {
-        const revealStart = sequenceEnd;
-        revealEnd = revealStart + introLines.length * REVEAL_LINE_PX;
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: spacer,
-            start: `top+=${revealStart} top`,
-            end: `top+=${revealEnd} top`,
-            scrub: true,
-          },
+      if (introLines.length && document.documentElement.getAttribute('data-ne-splash') !== 'on') {
+        /* Static arrival, matching the un-splashed headline: reveal
+           with the transitions suppressed for one frame. */
+        const paragraphs = Array.from(introText.querySelectorAll('p'));
+        introLines.forEach((el) => { el.style.transition = 'none'; });
+        paragraphs.forEach((p) => playLineRevealElement(p));
+        introLines.forEach((el) => { el.parentElement?.classList.add('lr-done'); });
+        requestAnimationFrame(() => {
+          introLines.forEach((el) => { el.style.transition = ''; });
         });
-        tl.fromTo(
-          introLines,
-          { yPercent: 110, y: 0 },
-          { yPercent: 0, y: 0, ease: 'none', duration: 1, stagger: 0.6 },
-        );
-        /* Clip release at settle (the site-wide clipping fix,
-           2026-08-26): this reveal is a SCRUB — no transition events —
-           so the shared lr-done release is toggled here: a line's clip
-           frees its overflow exactly while the inner rests at
-           identity, and re-arms the moment the scrub moves it
-           (reverse-safe, pure f(progress)). */
-        const releaseAtSettle = () => {
-          introLines.forEach((el) => {
-            const clip = el.parentElement;
-            if (!clip?.classList.contains('lr-clip')) return;
-            clip.classList.toggle('lr-done', Math.abs(Number(gsap.getProperty(el, 'yPercent')) || 0) < 0.01);
-          });
-        };
-        tl.eventCallback('onUpdate', releaseAtSettle);
-        releaseAtSettle();
-        tweens.push(tl);
-        if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
       }
     }
 
