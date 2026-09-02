@@ -545,6 +545,10 @@ export function initLandingHeroScroll() {
       height: cardH,
       y: 0,
     });
+    /* The flash guard lifts only now — the cards were visibility:
+       hidden from first paint (landing.css) so the pre-fonts window
+       can never show them unsized. */
+    cards[0].parentElement?.classList.add('is-placed');
     return { cardW, cardH, restTop };
   };
 

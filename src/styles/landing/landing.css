@@ -4986,12 +4986,38 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		inset: 0;
 		z-index: 120;
 		pointer-events: none;
+		/* FLASH GUARD (R8 fix, 2026-09-02 — the "giant helicopter" bug):
+		   the cards' real geometry is written by the scroll module AFTER
+		   fonts.ready; until then the bare markup was visible with no
+		   size, so each card shrink-wrapped to its image's intrinsic
+		   pixels (960×1100) at the stage origin, the last one on top.
+		   Hidden until placed — the intro's is-armed discipline. */
+		visibility: hidden;
+	}
+	.landing-v2.landing-home .landing-hero__cards.is-placed {
+		visibility: visible;
 	}
 
+	/* The bare-markup rest shape (no-JS / pre-JS): the row's own
+	   geometry in CSS — a third of the width less margins and gaps,
+	   the 600/533.33 aspect, three columns — so a card can never
+	   render at its image's intrinsic size. The module overrides
+	   top/left/width/height inline with the measured values (its
+	   rest top derives from the intro's bottom + 120). */
 	.landing-v2.landing-home .landing-hero__card {
 		position: absolute;
 		overflow: hidden;
 		pointer-events: none;
+		top: calc(100% - 120px);
+		width: calc((100% - 48px - 16px) / 3);
+		aspect-ratio: 533.33 / 600;
+		left: 24px;
+	}
+	.landing-v2.landing-home .landing-hero__card:nth-child(2) {
+		left: calc(24px + (100% - 48px - 16px) / 3 + 8px);
+	}
+	.landing-v2.landing-home .landing-hero__card:nth-child(3) {
+		left: calc(24px + 2 * ((100% - 48px - 16px) / 3 + 8px));
 	}
 
 	.landing-v2.landing-home .landing-hero__card img {
