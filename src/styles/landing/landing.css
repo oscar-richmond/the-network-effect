@@ -5159,7 +5159,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   the 200px atom, now as block text-indent. */
 	.landing-v2.landing-home .landing-founders__headline {
 		top: 200px;
-		left: 601px;
+		/* R12 (Oscar, 2026-09-02): the block's RIGHT INK edge sits 180
+		   from the viewport's right — pixel-measured at the pin: the
+		   widest line (NEARLY 20 YEARS BUILDING, indented 200) inked to
+		   1553 at left 601 → 596 puts it at 1548. The CTAs move with the
+		   block (left 596 too), left-aligned to the un-indented lines
+		   as before. */
+		left: 596px;
 		width: 727px;
 		letter-spacing: -0.015em;
 		text-indent: 200px;
@@ -5182,8 +5188,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   re-draws 16 — reverses the earlier 14px rev); second chip goes
 	   #232326 per the frame. */
 	.landing-v2.landing-home .landing-founders__ctas {
-		top: 420px;
-		left: 601px;
+		top: 420px; /* superseded below (454 at the pin, R12) */
+		left: 596px; /* R12: rides the headline's right-anchor shift (601 → 596) */
 	}
 
 	.landing-v2.landing-home .landing-founders__btn {
@@ -5620,22 +5626,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		letter-spacing: -0.035em;
 	}
 
-	/* Founders CTAs follow the grown statement down, keeping the
-	   drawn 60px gap (headline 200..500 at 56/50 → CTAs 560; still
-	   22px clear of the photo at 620). */
+	/* Founders CTAs — 48 BELOW THE STATEMENT AT THE FIXED MOMENT
+	   (Oscar R12, 2026-09-02; supersedes the 64 ruling of 2026-08-26/27
+	   — one value carried here). Measured at the pin (the hold, where
+	   nothing moves), never at page-load rest (the scrub-drift entrance
+	   holds the text 60 lower there).
+	   THE ANCHOR, stated once so it stops being re-derived: 406 is the
+	   LAST LINE's rendered bottom at the pin — the h2's own box bottom
+	   is 400, because the last line overflows the box by 6. An audit
+	   reading the box instead of the line reported this as a 6px
+	   drift; it is the anchor, not an error. 406 + 48 = 454 (box
+	   bottom 400 -> 54; last-line INK bottom 396 -> 58). */
 	.landing-v2.landing-home .landing-founders__ctas {
-		/* 64 below the statement AT THE FIXED MOMENT (Oscar R2,
-		   2026-08-26): the earlier 420 measured 64 only at page-load
-		   rest, where the scrub-drift entrance holds the text 60 lower
-		   than settled.
-		   THE ANCHOR, stated once so it stops being re-derived
-		   (2026-08-27): 406 is the LAST LINE's rendered bottom at the
-		   pin — the h2's own box bottom is 400, because the last line
-		   overflows the box by 6. Measured at the pin: last-line
-		   bottom 406 -> CTA top 470 = 64 (box bottom 400 -> 70). An
-		   audit reading the box instead of the line reported this as
-		   a 6px drift; it is the anchor, not an error. 406 + 64. */
-		top: 470px;
+		top: 454px;
 	}
 
 	.landing-v2.landing-home .landing-access__headline {
