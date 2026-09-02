@@ -30,6 +30,12 @@
 import { asset } from '../../utils/asset.js';
 
 const heroVideo = asset('/assets/videos/louis-vuitton.mp4');
+/* R8: the desktop three-image hero (see the markup note). */
+const heroCards = [
+  asset('/assets/landing/hero/hero-1.jpg'),
+  asset('/assets/landing/hero/hero-2.jpg'),
+  asset('/assets/landing/hero/hero-3.jpg'),
+];
 ---
 
 <div class="landing-hero" data-landing-hero aria-hidden="true">
@@ -64,8 +70,30 @@ const heroVideo = asset('/assets/videos/louis-vuitton.mp4');
     </div>
   </div>
 
-  {/* VIDEO — always laid out full-viewport; what changes on scroll is
-      the CLIP, not the box. See landing.css. */}
+  {/* THE THREE-IMAGE HERO (R8, Oscar 2026-09-02 — the /old hero's
+      mechanic, ported): three cards in a bottom row that rise up and
+      over the text on scroll (landing-hero-scroll.js drives them;
+      hero-rotating-gallery.js takes them over in WebGL). DESKTOP
+      ONLY — display:none under the seam; mobile keeps the video below.
+      Assets: /old's hero-1 (still life) and hero-2 (editorial
+      portrait — named-person class, confirmation-required, flagged);
+      /old's hero-3 was Christian Dior product (third-party IP,
+      elevated) and is substituted with the Thunder Aviation image
+      (Oscar-supplied final, unflagged). loading=eager: the splash's
+      readiness gates on their decode. */}
+  <div class="landing-hero__cards" data-landing-hero-cards aria-hidden="true">
+    {heroCards.map((src) => (
+      <div class="landing-hero__card" data-landing-hero-card>
+        <img src={src} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+      </div>
+    ))}
+  </div>
+
+  {/* VIDEO — MOBILE ONLY now (R8): desktop hides it and runs the
+      three-image hero above; the mobile build keeps its band
+      expansion untouched (its own ruling comes with the new mobile
+      designs). Always laid out full-viewport there; what changes on
+      scroll is the CLIP, not the box. See landing.css. */}
   <video
     class="landing-hero__video"
     data-landing-hero-video

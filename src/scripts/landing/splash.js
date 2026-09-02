@@ -32,6 +32,7 @@
 
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { isMobileViewport } from './viewport.js';
 
 /* ── The register (every duration a named constant). */
 const MIN_MS = 1200;        // floor, so a warm cache still reads as a beat
@@ -47,6 +48,9 @@ const LINE_FADE_OUT_MS = 180;   // the finished line clears BEFORE any
 const COVER_EXIT_MS = 800;      // the black slides out downward
 const PAGE_ENTRANCE_LEAD_MS = 120; // page beats start as the cover leaves
 const NAV_AFTER_LOGO_MS = 200;  // MENU + LET'S CHAT follow the landed logo
+/* R8: the cards' entrance length (0.9s transform + the 0.2s third-card
+   delay) — the hero module's WebGL takeover waits for this event. */
+const CARDS_ENTERED_MS = 1150;
 const EASE = 'cubic-bezier(0.66, 0, 0.34, 1)';
 
 const SEEN_KEY = 'ne-splash-seen';
@@ -98,12 +102,20 @@ function readiness(root) {
           video.addEventListener('loadeddata', done, { once: true });
         });
 
-  const heroImgs = Array.from(document.querySelectorAll('.landing-hero img'));
+  /* R8 (Oscar 2026-09-02): DESKTOP readiness gates on the three hero
+     CARD images decoding — the video is mobile's hero now, so its
+     canplaythrough only gates under the seam. The card imgs are
+     display:none there and are left out (decode() would force-fetch
+     ~480KB of desktop assets on a phone). */
+  const mobile = isMobileViewport();
+  const heroImgs = Array.from(document.querySelectorAll('.landing-hero img')).filter(
+    (img) => mobile ? !img.closest('[data-landing-hero-cards]') : true,
+  );
   const imgsReady = Promise.all(
     heroImgs.map((img) => (img.decode ? img.decode().catch(() => {}) : Promise.resolve())),
   );
 
-  return Promise.all([fonts, videoReady, imgsReady]).then(raf2);
+  return Promise.all([fonts, mobile ? videoReady : Promise.resolve(), imgsReady]).then(raf2);
 }
 
 /**
@@ -177,6 +189,16 @@ export function initSplash(root) {
   const playPageEntrance = () => {
     const video = document.querySelector('[data-landing-hero-video]');
     if (video instanceof HTMLElement) video.classList.add('is-entered');
+    /* R8: the desktop cards' fade+rise (landing.css states); the hero
+       module hands the cards to WebGL only once this has played —
+       the DOM cards carry the entrance, the planes carry the exit. */
+    const cards = document.querySelector('[data-landing-hero-cards]');
+    if (cards instanceof HTMLElement) {
+      cards.classList.add('is-entered');
+      timers.push(setTimeout(() => {
+        document.dispatchEvent(new CustomEvent('landing-hero:cards-entered'));
+      }, CARDS_ENTERED_MS));
+    }
     /* Headline: the founders bio treatment — play the wrapped clips
        (wrapped in the main flow once fonts were ready). */
     headlineLines.forEach((el) => {

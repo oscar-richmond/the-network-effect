@@ -25,6 +25,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll } from './site-scroll.js';
 import { wrapLineRevealElement } from '../line-reveal.js';
+import { createHeroRotatingGallery } from './hero-rotating-gallery.js';
 import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -98,6 +99,32 @@ const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
    659.6 (= 389.6 + the old 3×50 intro + 120) is the fallback only. */
 const HERO_INTRO_TO_BAND_PX = 120;
 const VIDEO_BAND_TOP_PX = 659.6;
+
+/* ── THE THREE-IMAGE HERO (R8, Oscar 2026-09-02) — the /old hero's
+   scroll mechanic (about-3/about-scroll.js), ported to the desktop
+   landing in place of the video. Geometry verbatim from
+   AboutHero.astro: a row of three cards, 24px margins, 8px gaps,
+   600/533.33 aspect. Rest top = the intro's bottom + 120 (the
+   spacing ruling — /old peeked the row 120 above the viewport
+   bottom; the deliberate deviation). Choreography verbatim from
+   about-scroll.js: the row holds until pinScrollY = restTop −
+   (vh − cardH)/2, then the LEFT card rises at scroll speed, the
+   middle 80px later, the right 160 later, each until fully clear;
+   EXIT_BUFFER 60 after the last; runway = that + vh. The text
+   blur-outs are the shipped wipe vocabulary re-keyed to the covering
+   cards (headline ← the middle card, intro ← the left: each block's
+   FIRST coverer). The ground scrub-fades from the light ground to
+   the founders section's #161616 over [left card two-thirds out,
+   right card fully out] — /old's own anchors — so the founders
+   arrive dark-on-dark 60px later. hero-rotating-gallery.js takes
+   the cards over in WebGL once they've entered. */
+const HERO_CARD_MARGIN_PX = 24;
+const HERO_CARD_GAP_PX = 8;
+const HERO_CARD_ASPECT = 600 / 533.33;
+const HERO_CARD_STAGGER_PX = 80;
+const HERO_CARD_EXIT_BUFFER_PX = 60;
+const HERO_GROUND_LIGHT = '#eeeef0';
+const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
@@ -451,6 +478,10 @@ export function initLandingHeroScroll() {
   const intro = document.querySelector('[data-landing-hero-intro]');
   const introText = document.querySelector('[data-landing-hero-intro-text]');
   const video = document.querySelector('[data-landing-hero-video]');
+  const cards = Array.from(document.querySelectorAll('[data-landing-hero-card]')).filter(
+    (el) => el instanceof HTMLElement,
+  );
+  const heroBg = document.querySelector('[data-landing-hero] .landing-hero__bg');
 
   if (!(hero instanceof HTMLElement) || !(spacer instanceof HTMLElement)) {
     return () => {};
@@ -498,6 +529,49 @@ export function initLandingHeroScroll() {
   const vMargin = isMob ? VIDEO_MARGIN_PX_M : VIDEO_MARGIN_PX;
   const headlineLeft = isMob ? HEADLINE_LEFT_MARGIN_M : HEADLINE_LEFT_MARGIN;
 
+  /* R8: the cards' rest geometry — written as inline layout (top/left/
+     width/height) so the GL planes can read the rest top back from
+     the element itself (/old's own source), y reset for the scrub. */
+  const placeCards = (vh) => {
+    if (isMob || cards.length !== 3) return null;
+    const vw = window.innerWidth || 1728;
+    const cardW = (vw - 2 * HERO_CARD_MARGIN_PX - 2 * HERO_CARD_GAP_PX) / 3;
+    const cardH = cardW * HERO_CARD_ASPECT;
+    const restTop = bandTopFor(vh);
+    gsap.set(cards, {
+      top: restTop,
+      left: (i) => HERO_CARD_MARGIN_PX + i * (cardW + HERO_CARD_GAP_PX),
+      width: cardW,
+      height: cardH,
+      y: 0,
+    });
+    return { cardW, cardH, restTop };
+  };
+
+  /* R8: the WebGL takeover — created once the DOM cards have entered
+     (the splash's cards-entered event; immediately on a load the
+     splash does not own), destroyed with the module. The planes
+     mirror the cards' rects, so a takeover mid-scroll is seamless by
+     construction. Paused while the hero is scrolled past. */
+  let gallery = null;
+  let galleryDisposed = false;
+  const startGallery = () => {
+    if (gallery || galleryDisposed || isMob || cards.length !== 3) return;
+    gallery = createHeroRotatingGallery(cards, {
+      mount: hero,
+      restTopOf: (el) => parseFloat(el.style.top) || 0,
+    });
+    gallery?.ready.then(() => {
+      if (galleryDisposed) return;
+      cards.forEach((card) => {
+        const img = card.querySelector('img');
+        if (img instanceof HTMLElement) img.style.opacity = '0';
+      });
+    });
+  };
+  const onCardsEntered = () => startGallery();
+  document.addEventListener('landing-hero:cards-entered', onCardsEntered, { once: true });
+
   /* EVERYTHING below measures rendered text — the headline's travel is
      the distance from its laid-out left edge, and the copy's reveal
      clips are grouped by each word's offsetTop. Both are wrong if they
@@ -539,9 +613,14 @@ export function initLandingHeroScroll() {
         });
       }
       intro?.classList.add('is-armed');
+      /* R8: the cards at rest — the static composition (no rise, no
+         GL, no wipes; the ground stays light and the founders section
+         slides over it — the instant boundary). */
+      placeCards(hero.clientHeight || window.innerHeight);
     });
     return () => {
       disposed = true;
+      document.removeEventListener('landing-hero:cards-entered', onCardsEntered);
     };
   }
 
@@ -671,8 +750,64 @@ export function initLandingHeroScroll() {
        motion so the frame leaves and arrives softly rather than
        starting and stopping abruptly. */
     let videoEnd = revealEnd;
+    /** The last scroll px of the hero's own choreography (before the
+     *  +vh runway pad): mobile = the video hold's end; desktop = the
+     *  cards' EXIT_END. */
+    let total = revealEnd;
+    /** Desktop beat map for the DEV handle. */
+    let cardBeats = null;
 
-    if (video instanceof HTMLElement) {
+    /* ── Text exit wipes (see the ported constants above) ──────────
+       The shipped bottom-up blur+fade per line, keyed to a COVERING
+       edge: `coverAt(y)` returns the scroll position at which that
+       edge sits at screen y. Mobile keys it to the video's clip-top
+       (inverting the expansion's power1.inOut analytically); desktop
+       to the covering CARD's top edge (R8 — /old's own keying: the
+       block's first coverer). Two cascades, one per block. The wipes
+       touch only opacity/filter: the reveal owns the .lr-inner
+       transforms, so nothing contests. No blends in this text. */
+    const buildExitWipe = (lines, rect, coverAt) => {
+      const groups = lines.filter((l) => l instanceof HTMLElement);
+      if (!groups.length) return;
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: spacer,
+          start: `top+=${coverAt(rect.bottom + WIPE_LEAD)} top`,
+          end: `top+=${coverAt(rect.top)} top`,
+          scrub: true,
+        },
+      });
+      groups.forEach((group, i) => {
+        tl.fromTo(
+          group,
+          { opacity: 1, filter: 'blur(0px)' },
+          {
+            opacity: 0,
+            filter: `blur(${EXIT_BLUR_PX}px)`,
+            ease: 'none',
+            duration: 1,
+            immediateRender: false,
+          },
+          i * WIPE_STAGGER,
+        );
+      });
+      tweens.push(tl);
+      if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
+      return tl;
+    };
+    const headlineLines = headlineText instanceof HTMLElement
+      ? Array.from(headlineText.querySelectorAll('.landing-hero__headline-line')).reverse()
+      : [];
+    const introClips = !isMob && introText instanceof HTMLElement
+      ? Array.from(introText.querySelectorAll('.lr-clip')).reverse()
+      : [];
+
+    if (isMob && video instanceof HTMLElement) {
+      /* ── Beat 3 (MOBILE): the video opens to full screen ───────────
+         Untouched by R8 — mobile keeps its video hero until the new
+         mobile designs land. Starts VIDEO_LEAD_IN before the settle
+         ends; the tween drives the clip inset from the opening band
+         to zero with power1.inOut INSIDE the scrub. */
       const bandTop = bandTopFor(vh);
       const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
       videoEnd = videoStart + VIDEO_EXPAND_PX;
@@ -693,92 +828,132 @@ export function initLandingHeroScroll() {
       );
       tweens.push(tween);
       if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
-    }
-
-    /* ── Text exit wipes (see the ported constants above) ──────────
-       The video's clip-top travels bandTop -> 0 over the expansion
-       window with power1.inOut INSIDE the scrub, so mapping "edge at
-       screen y" to a scroll position inverts that ease analytically.
-       Two separate cascades, one per block (the reference's own
-       structure — each block wipes against its own rect); both key
-       to the same edge, so where the rects overlap they read as one
-       event. The wipes touch only opacity/filter: the travel tweens
-       own the lines' transforms and the reveal owns the .lr-inner
-       transforms, so the handoff from the travelled resting state is
-       seamless by construction (fromTo starts at exactly that state,
-       immediateRender false). No blends anywhere in this text — the
-       filters' stacking contexts sit on plain-ink lines inside the
-       hero stage. */
-    if (video instanceof HTMLElement) {
-      const bandTop = bandTopFor(vh);
-      const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
 
       const invertPower1InOut = (e) =>
         e < 0.5 ? Math.sqrt(e / 2) : 1 - Math.sqrt((1 - e) / 2);
-
       /** Scroll position at which the video's top edge sits at screen y. */
       const scrollWhenVideoTopAt = (y) => {
         const clamped = Math.min(Math.max(y, 0), bandTop);
         const eased = 1 - clamped / bandTop;
         return videoStart + invertPower1InOut(eased) * VIDEO_EXPAND_PX;
       };
-
-      /** @param {(HTMLElement)[]} lines bottom-most first */
-      const buildExitWipe = (lines, rect) => {
-        const groups = lines.filter((l) => l instanceof HTMLElement);
-        if (!groups.length) return;
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: spacer,
-            start: `top+=${scrollWhenVideoTopAt(rect.bottom + WIPE_LEAD)} top`,
-            end: `top+=${scrollWhenVideoTopAt(rect.top)} top`,
-            scrub: true,
-          },
-        });
-        groups.forEach((group, i) => {
-          tl.fromTo(
-            group,
-            { opacity: 1, filter: 'blur(0px)' },
-            {
-              opacity: 0,
-              filter: `blur(${EXIT_BLUR_PX}px)`,
-              ease: 'none',
-              duration: 1,
-              immediateRender: false,
-            },
-            i * WIPE_STAGGER,
-          );
-        });
-        tweens.push(tl);
-        if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
-        return tl;
-      };
-
       if (headlineText instanceof HTMLElement) {
-        const headlineLines = Array.from(
-          headlineText.querySelectorAll('.landing-hero__headline-line'),
-        ).reverse();
-        buildExitWipe(headlineLines, headlineText.getBoundingClientRect());
+        buildExitWipe(headlineLines, headlineText.getBoundingClientRect(), scrollWhenVideoTopAt);
       }
-      if (!isMob && introText instanceof HTMLElement) {
-        const introClips = Array.from(introText.querySelectorAll('.lr-clip')).reverse();
-        buildExitWipe(introClips, introText.getBoundingClientRect());
+      total = videoEnd + VIDEO_HOLD_PX;
+    } else if (!isMob && cards.length === 3) {
+      /* ── Beat 3 (DESKTOP, R8): THE THREE-IMAGE HERO ──────────────
+         /old's about-scroll.js Phase 1, verbatim in structure. The
+         row rests (placeCards) until pinScrollY, then each card's y
+         scrubs from 0 to −(restTop + cardH) — fully clear of the
+         viewport top — at exactly scroll speed over its own window:
+         [start_i, exit_i], start_i = pinScrollY + i·80. The stage is
+         fixed, so the hold needs no counter-scroll (on /old the cards
+         were in-flow and a 1:1 y tween cancelled document drift —
+         the same screen motion, one fewer moving part). */
+      const geo = placeCards(vh);
+      const { cardH, restTop } = geo;
+      const pinScrollY = Math.max(0, restTop - (vh - cardH) / 2);
+      const startOffsets = [0, HERO_CARD_STAGGER_PX, HERO_CARD_STAGGER_PX * 2];
+      const startAt = (i) => revealEnd + pinScrollY + startOffsets[i];
+      const exitAt = (i) => startAt(i) + restTop + cardH;
+      const exitEnd = exitAt(2) + HERO_CARD_EXIT_BUFFER_PX;
+
+      cards.forEach((card, i) => {
+        const tween = gsap.fromTo(
+          card,
+          { y: 0 },
+          {
+            y: -(restTop + cardH),
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: spacer,
+              start: `top+=${startAt(i)} top`,
+              end: `top+=${exitAt(i)} top`,
+              scrub: true,
+            },
+          },
+        );
+        tweens.push(tween);
+        if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
+      });
+
+      /** Scroll position at which card i's top edge sits at screen y
+       *  during its rise (the inverse of the tween above). */
+      const scrollWhenCardTopAt = (i, y) => startAt(i) + (restTop - y);
+      /* Headline (right-anchored, 408..1548): first covered by the
+         MIDDLE card (587..1142, starts 80 after the left); intro
+         (180..903): first covered by the LEFT card (24..579). Each
+         block is gone before ANY card reaches it — /old's rule. */
+      if (headlineText instanceof HTMLElement) {
+        buildExitWipe(headlineLines, headlineText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(1, y));
+      }
+      if (introText instanceof HTMLElement) {
+        buildExitWipe(introClips, introText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
       }
 
-      if (import.meta.env.DEV) {
-        window.__landingHeroWipe = {
-          bandTop,
-          headline: headlineText instanceof HTMLElement ? {
-            start: +scrollWhenVideoTopAt(headlineText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
-            end: +scrollWhenVideoTopAt(headlineText.getBoundingClientRect().top).toFixed(1),
-          } : null,
-          intro: introText instanceof HTMLElement ? {
-            start: +scrollWhenVideoTopAt(introText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
-            end: +scrollWhenVideoTopAt(introText.getBoundingClientRect().top).toFixed(1),
-          } : null,
-          videoWindow: [videoStart, videoStart + VIDEO_EXPAND_PX],
-        };
+      /* THE GROUND — light → the founders' #161616, scrubbed on the
+         cards' own mapping: from the LEFT card two-thirds out
+         (exitAt(0) − cardH/3) to the RIGHT card fully out (exitAt(2))
+         — /old's backdrop-fade anchors. The founders section (its
+         own #161616, z 260 over this fixed stage) enters at exitEnd,
+         60px later: dark-on-dark, no half-state. backgroundColor on
+         the stage's ground layer isolates nothing. */
+      const fadeStart = exitAt(0) - cardH / 3;
+      const fadeEnd = exitAt(2);
+      if (heroBg instanceof HTMLElement) {
+        const fade = gsap.fromTo(
+          heroBg,
+          { backgroundColor: HERO_GROUND_LIGHT },
+          {
+            backgroundColor: HERO_GROUND_DARK,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: spacer,
+              start: `top+=${fadeStart} top`,
+              end: `top+=${fadeEnd} top`,
+              scrub: true,
+            },
+          },
+        );
+        tweens.push(fade);
+        if (fade.scrollTrigger) triggers.push(fade.scrollTrigger);
       }
+
+      /* The GL canvas has nothing to draw past exitEnd (the founders
+         section covers the stage) — park its tick there, resume on
+         the way back. */
+      const gate = ScrollTrigger.create({
+        trigger: spacer,
+        start: `top+=${exitEnd} top`,
+        end: 'max',
+        onEnter: () => gallery?.setPaused(true),
+        onLeaveBack: () => gallery?.setPaused(false),
+      });
+      triggers.push(gate);
+
+      total = exitEnd;
+      cardBeats = {
+        restTop,
+        cardH: +cardH.toFixed(1),
+        pinScrollY: +pinScrollY.toFixed(1),
+        startAt: [0, 1, 2].map((i) => +startAt(i).toFixed(1)),
+        exitAt: [0, 1, 2].map((i) => +exitAt(i).toFixed(1)),
+        fade: [+fadeStart.toFixed(1), +fadeEnd.toFixed(1)],
+        exitEnd: +exitEnd.toFixed(1),
+        wipes: {
+          headline: headlineText instanceof HTMLElement ? [
+            +scrollWhenCardTopAt(1, headlineText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
+            +scrollWhenCardTopAt(1, headlineText.getBoundingClientRect().top).toFixed(1),
+          ] : null,
+          intro: introText instanceof HTMLElement ? [
+            +scrollWhenCardTopAt(0, introText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
+            +scrollWhenCardTopAt(0, introText.getBoundingClientRect().top).toFixed(1),
+          ] : null,
+        },
+      };
     }
 
     /* ── The runway ────────────────────────────────────────────────
@@ -786,7 +961,6 @@ export function initLandingHeroScroll() {
        the spacer needs an extra viewport height on top of the raw
        trigger distance or the final beat can never be scrolled to.
        (The /about-3 hero learned this the hard way; same correction.) */
-    const total = videoEnd + VIDEO_HOLD_PX;
     spacer.style.height = `${total + vh}px`;
 
     /* Dev-only verification handle (same convention as the holding
@@ -814,8 +988,9 @@ export function initLandingHeroScroll() {
         beats: {
           headlineEnd: HEADLINE_MOVE_PX,
           revealEnd,
-          videoStart: Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN),
-          videoEnd,
+          videoStart: isMob ? Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN) : null,
+          videoEnd: isMob ? videoEnd : null,
+          cards: cardBeats,
           total,
           spacerHeight: total + vh,
         },
@@ -859,10 +1034,18 @@ export function initLandingHeroScroll() {
     build();
     ScrollTrigger.refresh();
     window.addEventListener('resize', onResize);
+    /* R8: a load the splash does not own has no cards entrance — the
+       GL takeover follows the build straight away. (Under the splash
+       it waits for landing-hero:cards-entered.) */
+    if (document.documentElement.getAttribute('data-ne-splash') !== 'on') startGallery();
   });
 
   return () => {
     disposed = true;
+    galleryDisposed = true;
+    document.removeEventListener('landing-hero:cards-entered', onCardsEntered);
+    gallery?.destroy();
+    gallery = null;
     clearTimeout(resizeTimer);
     window.removeEventListener('resize', onResize);
     triggers.forEach((t) => t.kill());

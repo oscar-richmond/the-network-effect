@@ -3630,6 +3630,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 
 	.landing-v2.landing-home .landing-hero__intro { display: none; }
+	/* R8: the three-image hero is desktop's — mobile keeps its video. */
+	.landing-v2.landing-home .landing-hero__cards { display: none; }
 
 	.landing-v2.landing-home .landing-hero__video {
 		clip-path: inset(50% var(--landing-video-margin) 0px var(--landing-video-margin));
@@ -4966,6 +4968,72 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   (12.9 × 0.9), so box top = 54.5 + 120 − 11.6. */
 		margin-top: 162.9px;
 	}
+
+	/* ── THE THREE-IMAGE HERO (R8, Oscar 2026-09-02): the /old hero's
+	   cards, ported. A bottom row of three (24px margins, 8px gaps,
+	   600/533.33 aspect — geometry written by landing-hero-scroll.js
+	   from the live viewport), resting 120 below the intro (the
+	   spacing ruling; /old peeked 120 at the viewport bottom — the
+	   deliberate deviation). They rise up and over the text on scroll
+	   (scrubbed y on the WRAPPERS; the GL canvas below mirrors their
+	   rects), so the text's z 100 sits beneath their z 120. No blends
+	   in this subtree and no blended descendants — transforms here
+	   are safe; the nav blends over the stage from its own fixed
+	   layer above (z 260 > 250). Desktop only (hidden under the seam
+	   with the video taking over there). */
+	.landing-v2.landing-home .landing-hero__cards {
+		position: absolute;
+		inset: 0;
+		z-index: 120;
+		pointer-events: none;
+	}
+
+	.landing-v2.landing-home .landing-hero__card {
+		position: absolute;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.landing-v2.landing-home .landing-hero__card img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* The WebGL takeover canvas — the cards' own layer, a sibling
+	   inside the fixed stage (never an ancestor of anything). */
+	.landing-v2.landing-home .landing-hero__gallery-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 120;
+		pointer-events: none;
+	}
+
+	/* The video is MOBILE's hero now — desktop runs the cards. */
+	.landing-v2.landing-home .landing-hero__video {
+		display: none;
+	}
+
+	/* Splash-owned entrance for the cards (the closing-tiles fade+rise
+	   vocabulary, 100ms stagger) — on the INNER img, never the wrapper:
+	   the scroll module owns the wrapper's transform (its scrubbed y)
+	   and a CSS transition there would intercept the per-frame writes
+	   (the VIEW ALL lesson). splash.js adds .is-entered as the cover
+	   lifts; a normal load never carries these states. */
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card img {
+		opacity: 0;
+		transform: translate3d(0, 24px, 0) scale(1.04);
+		transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.9s cubic-bezier(0.42, 0, 0.24, 1);
+	}
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__cards.is-entered .landing-hero__card img {
+		opacity: 1;
+		transform: none;
+	}
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card:nth-child(2) img { transition-delay: 0.1s; }
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card:nth-child(3) img { transition-delay: 0.2s; }
 
 	/* Type: frame 72/64/−4% — the guide's 02 Display L numbers on
 	   SERRIF for BOTH lines (the frame abandons the Dazzed line-1).
