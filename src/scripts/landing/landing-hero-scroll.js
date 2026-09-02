@@ -91,26 +91,30 @@ const VIDEO_HOLD_PX = 300;
  * exactly (625px), so the video's opening state is unchanged there.
  *
  * R3 (Oscar, 2026-08-26): the DESKTOP band top is now PX-ANCHORED —
- * the foot of the rest chain (wordmark bottom 54.5 → +120 to the
- * headline cap → +48 to the intro → +120 below the intro's bottom,
- * 539.6; the two 100s became 120 in R4) — so the authored gaps hold
- * at ANY viewport height, including the scale shell's short
- * interiors. The fraction remains for MOBILE only (its own 0.5
- * constant below).
+ * the foot of the rest chain — so the authored gaps hold at ANY
+ * viewport height, including the scale shell's short interiors. The
+ * fraction remains for MOBILE only (its own 0.5 constant below).
+ * (The chain's VALUES are R20's — Oscar's ruling 2026-09-02, the one
+ * set: wordmark → cap 120, headline → intro 48, intro → logo row
+ * 120, row → cards 80 — see HERO_INTRO_TO_LOGOS_PX and the intro rule
+ * in landing.css; the R3/R4/R7/R14 numbers this note used to carry
+ * are superseded.)
  */
 const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
 /* R5 (Oscar, 2026-09-02): the foot of the chain is now MEASURED —
    see bandTopFor: intro rest bottom + HERO_INTRO_TO_BAND_PX. The
    659.6 (= 389.6 + the old 3×50 intro + 120) is the fallback only. */
 /* R14 (Oscar, 2026-09-02): THE LOGO ROW sits between the intro and
-   the cards — frame 0:621 (offset −83): intro bottom → 80 → the 100
-   row → 80 → the cards. The 120 became these three named parts; the
-   band/cards rest top is their sum (260). */
-const HERO_INTRO_TO_LOGOS_PX = 80;
+   the cards — frame 0:621 (offset −83): intro bottom → the row → 80
+   → the cards. R20 (Oscar's ruling, 2026-09-02 — the ONE set of hero
+   gaps, superseding R14's 80 here and R7's 80 above the intro): the
+   intro's bottom → the logo row is 120 (the headline → intro 48
+   lives in landing.css). The band/cards rest top is the sum (300). */
+const HERO_INTRO_TO_LOGOS_PX = 120;
 const HERO_LOGO_ROW_H_PX = 100;
 const HERO_LOGOS_TO_CARDS_PX = 80;
-const HERO_INTRO_TO_BAND_PX = HERO_INTRO_TO_LOGOS_PX + HERO_LOGO_ROW_H_PX + HERO_LOGOS_TO_CARDS_PX; /* 260 (was 120) */
-const VIDEO_BAND_TOP_PX = 799.6; /* fallback only: 539.6 + 260 */
+const HERO_INTRO_TO_BAND_PX = HERO_INTRO_TO_LOGOS_PX + HERO_LOGO_ROW_H_PX + HERO_LOGOS_TO_CARDS_PX; /* 300 (was 260 / 120) */
+const VIDEO_BAND_TOP_PX = 807.6; /* fallback only: 507.6 + 300 */
 
 /* ── THE THREE-IMAGE HERO (R8, Oscar 2026-09-02) — the /old hero's
    scroll mechanic (about-3/about-scroll.js), ported to the desktop

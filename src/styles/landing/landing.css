@@ -5774,9 +5774,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   rule + the module header). */
 	.landing-v2.landing-home .landing-hero__intro-text {
 		/* R6 (2026-09-02): the 90px headline's bottom = 162.9 + (82.8 +
-		   79.2) = 324.9. R7 (Oscar, same day): 80 below it (was 48) →
-		   404.9. The band top re-derives from this block's bottom. */
-		top: 404.9px;
+		   79.2) = 324.9. R20 (Oscar's ruling, 2026-09-02 — the ONE set
+		   of hero gaps, superseding R7's 80 and every older 120/48/120
+		   reading): 48 below the headline → 372.9; 120 from this
+		   block's bottom to the logo row (HERO_INTRO_TO_LOGOS_PX). The
+		   band/cards top re-derives from this block's bottom. */
+		top: 372.9px;
 		width: 723px;
 		/* R5 (Oscar, 2026-09-02): 38px — between the guide's Serif
 		   Section (34/38/−3%) and Editorial/Intro (48/50/−2%) tiers,
@@ -5790,12 +5793,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   re-interpolated on the same rule at t = (36 − 34)/14 ≈ 0.14:
 		   −2.86% (the lh interpolation gives 1.107 → 39.9 ≈ Oscar's
 		   40). The two lines are AUTHORED (a <br> in the markup) and
-		   locked with nowrap, so nothing can re-break them; the block
-		   is 4px shorter (84 → 80), and everything derived from its
-		   bottom (the logo row, the cards, the hero runway) re-derives
-		   by that 4. The gaps around it are the standing rulings —
-		   wordmark → cap 120 (R3/R6), headline → intro 80 (R7),
-		   intro → row 80 (R14) — unchanged. */
+		   locked with nowrap, so nothing can re-break them; everything
+		   derived from its bottom (the logo row, the cards, the hero
+		   runway) re-derives. THE GAPS (R20, Oscar's ruling 2026-09-02,
+		   one set): wordmark → BUILT ON TRUST cap 120 (unchanged, R3/
+		   R6), headline → this block 48, this block → the logo row 120,
+		   row → cards 80 (R14). */
 		font-size: 36px;
 		line-height: 40px;
 		letter-spacing: -0.0286em;
