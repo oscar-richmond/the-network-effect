@@ -73,9 +73,13 @@ const heroCards = [
           two-paragraph credentials copy moved on (the founders
           headline carries the 20/30-years line). Desktop-only either
           way: mobile skips Beat 2 and never renders the intro. */}
+      {/* R17 (Oscar 2026-09-02): 36/40 with the two lines AUTHORED —
+          the reveal wrap treats <br> as a hard line separator (its own
+          lw-br sentinel), so the break can't re-wrap in the 1512 shell:
+          line 1 "We connect Talent, Brands & Audiences through", line 2
+          "Experiences, Strategic Partnerships & Media". */}
       <p>
-        We connect Talent, Brands & Audiences through Experiences, Strategic
-        Partnerships & Media
+        We connect Talent, Brands & Audiences through<br />Experiences, Strategic Partnerships & Media
       </p>
     </div>
   </div>

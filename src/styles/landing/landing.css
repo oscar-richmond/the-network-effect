@@ -5777,10 +5777,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   34)/(48 − 34) ≈ 0.29: lh ratio 1.118 → 1.042 gives 1.096 →
 		   41.6 ≈ 42px; tracking −3% → −2% gives −2.7%. The 723px
 		   measure (drawn for 48) is left as-is — the wrap is reported,
-		   not re-fitted. Was 48/50/−2%. */
-		font-size: 38px;
-		line-height: 42px;
-		letter-spacing: -0.027em;
+		   not re-fitted. Was 48/50/−2%.
+		   R17 (Oscar, 2026-09-02): 36px / 40 (was 38/42). Tracking
+		   re-interpolated on the same rule at t = (36 − 34)/14 ≈ 0.14:
+		   −2.86% (the lh interpolation gives 1.107 → 39.9 ≈ Oscar's
+		   40). The two lines are AUTHORED (a <br> in the markup) and
+		   locked with nowrap, so nothing can re-break them; the block
+		   is 4px shorter (84 → 80), and everything derived from its
+		   bottom (the logo row, the cards, the hero runway) re-derives
+		   by that 4. The gaps around it are the standing rulings —
+		   wordmark → cap 120 (R3/R6), headline → intro 80 (R7),
+		   intro → row 80 (R14) — unchanged. */
+		font-size: 36px;
+		line-height: 40px;
+		letter-spacing: -0.0286em;
+		white-space: nowrap;
 	}
 
 	/* ── LARGE SANS 56/50/−3.5% ── */
