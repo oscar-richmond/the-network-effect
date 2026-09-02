@@ -2186,6 +2186,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* Desktop only — the mobile closing/footer stack is untouched. */
 .landing-v2 .landing-closing-tail { display: none; }
+
+/* R17: the featured chip's DESKTOP label is hidden below the seam
+   (the ≥1025 block flips the pair); the mobile chip renders its
+   served "VIEW ALL" exactly as before. */
+.landing-v2 .landing-featured__viewall-label--d { display: none; }
 @media (min-width: 1025px) { .landing-v2 .landing-closing-tail { display: block; } }
 
 .landing-v2 .landing-footer {
@@ -5958,6 +5963,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-featured__viewall img {
 		filter: brightness(0) invert(1);
 	}
+
+	/* R17 (Oscar 2026-09-02): the desktop label is "VIEW ALL WORK";
+	   the mobile chip keeps "VIEW ALL" (the two labels are authored in
+	   the markup and toggled here at the seam). */
+	.landing-v2 .landing-featured__viewall-label--m { display: none; }
+	.landing-v2 .landing-featured__viewall-label--d { display: inline; }
 
 	.landing-v2.landing-home .landing-featured__viewall {
 		/* R15 (Oscar 2026-09-02): RELOCATED — 80 below the carousel

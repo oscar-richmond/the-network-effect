@@ -53,8 +53,17 @@ import GradualBlur from '../GradualBlur.astro';
     </h2>
 
     {/* -> /work (the Featured Work page; was an inert placeholder). */}
+    {/* R17 (Oscar 2026-09-02): "VIEW ALL WORK" on DESKTOP — the chip
+        is content-derived (padding + label + arrow), so it widens with
+        the label; landing-featured.js place() centres it from its
+        LIVE measured width (no stored offset), so it re-centres by
+        itself. The label is authored twice and toggled at the 1024
+        seam (landing.css) so the MOBILE chip keeps "VIEW ALL" and its
+        rendered DOM stays byte-identical (the wordmark's own seam
+        device); the ripple wraps both, the hidden one is inert. */}
     <a class="landing-featured__viewall" href="/work" data-featured-viewall data-char-ripple-trigger>
-      <span data-char-ripple>VIEW ALL</span>
+      <span class="landing-featured__viewall-label--m" data-char-ripple>VIEW ALL</span>
+      <span class="landing-featured__viewall-label--d" data-char-ripple>VIEW ALL WORK</span>
       <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
     </a>
 
