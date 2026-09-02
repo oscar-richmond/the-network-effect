@@ -32,12 +32,22 @@ export const NETWORK_STRIP_SLOTS = 5;
    here 2026-08-26 rev 2 from landing.css's retired !important
    overrides — inline styles own the crops so the hover swap's cover
    entries can't be dragged out of their windows). */
+/* R9 (Oscar, 2026-09-02): the desktop strip grew by a third (264 ->
+   352, landing.css). Each crop keeps its IMAGE SCALE (no stretch, no
+   side-cropping) and the taller window is re-centred on the previous
+   subject centre, clamped inside the image box: y' = 176 − (132 − y),
+   clamped to [352 − h, 0]. Slot 1 clamps at 0 (its old crop already
+   sat at the box top — the window simply reveals 88px more below,
+   subject centre 34px higher in-window); slots 2–5 re-centre exactly.
+   These render on DESKTOP only (mobile cover-fits the windows with
+   its own !important rule), and the hover swap re-applies them on
+   the way back to the resting set. */
 export const NETWORK_STRIP_DEFAULT = [
-  { src: '/assets/landing/network/strip-1.jpg', win: 345, w: 351.73, h: 439.92, x: -1.28, y: -10.04 },
-  { src: '/assets/landing/network/strip-2.jpg', win: 346, w: 346, h: 429, x: 0, y: -71.5 },
-  { src: '/assets/landing/network/strip-3.jpg', win: 345, w: 355, h: 438, x: -10, y: -77.5 },
-  { src: '/assets/landing/network/strip-4.jpg', win: 346, w: 367, h: 459, x: -18, y: -77.5 },
-  { src: '/assets/landing/network/strip-5.jpg', win: 346, w: 349.01, h: 448.3, x: -2.01, y: -112.24 },
+  { src: '/assets/landing/network/strip-1.jpg', win: 345, w: 351.73, h: 439.92, x: -1.28, y: 0 },      /* was -10.04 (clamped) */
+  { src: '/assets/landing/network/strip-2.jpg', win: 346, w: 346, h: 429, x: 0, y: -27.5 },             /* was -71.5 */
+  { src: '/assets/landing/network/strip-3.jpg', win: 345, w: 355, h: 438, x: -10, y: -33.5 },           /* was -77.5 */
+  { src: '/assets/landing/network/strip-4.jpg', win: 346, w: 367, h: 459, x: -18, y: -33.5 },           /* was -77.5 */
+  { src: '/assets/landing/network/strip-5.jpg', win: 346, w: 349.01, h: 448.3, x: -2.01, y: -68.24 },   /* was -112.24 */
 ];
 
 const pc = (n) => ({ src: `/assets/landing/case/pavilion-club/stream-${n}.jpg` });

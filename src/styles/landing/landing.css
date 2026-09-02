@@ -5338,12 +5338,17 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   (32px clear of row 2). Same five windows and images; the
 	   re-centred y-crops override the inline values (which the
 	   MOBILE strip shares and must keep). */
+	/* R9 (Oscar, 2026-09-02): +⅓ — 264 → 352 (exact), still flush to
+	   the 966 stage bottom (top 966 − 352 = 614). Widths and the
+	   edge-to-edge window grammar unchanged; the per-slot crops
+	   re-derive in NETWORK_STRIP_DEFAULT (scale kept, windows
+	   re-centred). */
 	.landing-v2.landing-home .landing-network__strip {
-		top: 702px;
-		height: 264px;
+		top: 614px;
+		height: 352px;
 	}
 
-	.landing-v2.landing-home .landing-network__strip-win { height: 264px; }
+	.landing-v2.landing-home .landing-network__strip-win { height: 352px; }
 
 	/* (The per-slot crop overrides moved into NETWORK_STRIP_DEFAULT's
 	   y values, 2026-08-26 rev 2 — the !important tops here were
