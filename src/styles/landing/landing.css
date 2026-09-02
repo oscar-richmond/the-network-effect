@@ -6342,7 +6342,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-sreel__titlerow {
 		position: absolute;
 		left: 24px;
-		top: 68px; /* JS closes to 44 when stacked */
+		top: 68px; /* JS closes to 34 when stacked (TITLE_TOP_STACKED) */
 		margin: 0;
 		white-space: nowrap;
 	}
@@ -6403,16 +6403,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-sreel__desc {
 		position: absolute;
 		left: 428px;
-		top: 66px; /* JS closes to 32 when stacked */
+		/* R13 (Oscar, 2026-09-02): the top is JS-owned — centred on the
+		   title from both live leadings through the scrub (descTopFor in
+		   landing-services-reel.js). This value is the RM / no-JS rest
+		   (expanded, box-centred: 68 + (54 − 64) / 2). */
+		top: 63px;
 		width: 300px;
 		margin: 0;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		/* Scrubbed by the type drop (open = Section 34/38/−3%; closed
-		   = Lead 26/32/−2%). */
-		font-size: var(--sreel-desc-fs, var(--ts-serif-section-size));
-		line-height: var(--sreel-desc-lh, var(--ts-serif-section-lh));
+		/* Scrubbed by the type drop. R13: open 28/32, closed 24/28
+		   (SUPERSEDES 34/38 → 26/32); the tracking endpoints (−3% → −2%)
+		   are unchanged. Two AUTHORED lines (data desc[0]/desc[1] + <br>). */
+		font-size: var(--sreel-desc-fs, 28px);
+		line-height: var(--sreel-desc-lh, 32px);
 		letter-spacing: var(--sreel-desc-ls, var(--ts-serif-section-track));
 		text-transform: capitalize;
 		color: #161616;

@@ -54,18 +54,19 @@ gsap.registerPlugin(ScrollTrigger);
    band equalises SYMMETRIC 32 above / 32 below (was 44 above, 24
    below at the frame's 142 pitch) → stacked pitch 128, which is
    what frees the vertical room AMPLIFY needed. */
-const STACK_PITCH = 128;           /* 32 + 64 + 32 (was the frame's 142) */
+/* R13 (Oscar, 2026-09-02): the closed desc is 24/28 → a 56px block
+   (was 26/32 → 64), and the desc is CENTRED on the title in both
+   states (descTopFor below), so the stacked pitch RE-DERIVES from
+   the closed geometry: closed desc top + 56 + the 32 below. */
+const TITLE_TOP = 68;              /* title row below the divider (expanded) */
+const TITLE_TOP_STACKED = 34;      /* closed: block top 32 + the 2px optical */
 const STACKED_Y1 = 138;            /* pillar 1's compacted Y (Option 12) */
 /* Pillar 1's EXPANDED fix — welded 38 below the WHAT WE DO label's
-   box top (146 + 38 = 184 before R13; the label now sits at 177.6 so
+   box top (146 + 38 = 184 before R13; the label now sits at 178.3 so
    the header row's ink tops 180 below the section boundary → 216).
    The stacked base (138, label 100) is unchanged: the compaction
    travel grows 46 → 78, the label riding the same distance. */
 const PILLAR1_ACTIVE_Y = 216;
-const ACTIVE_Y = [PILLAR1_ACTIVE_Y, STACKED_Y1 + STACK_PITCH, STACKED_Y1 + 2 * STACK_PITCH]; /* 216/266/394 */
-const TITLE_TOP = 68;              /* title row below the divider (expanded) */
-const TITLE_TOP_STACKED = 34;      /* closed: block top 32 + the 2px optical */
-const DESC_TOP_STACKED = 32;       /* closed desc top — the block top */
 const LIST_TOP = 190;              /* list + label top below the divider */
 const ROW_PITCH = 53;              /* divider + text row pitch */
 const LABEL_H = 19;
@@ -86,8 +87,41 @@ const INTRO_EXIT_PX = 660;         /* clears the note past the stage top */
    tracking, no box desync, no endpoint snap). */
 const TTL_OPEN = { fs: 56, lh: 54, ls: -0.035 };
 const TTL_CLOSED = { fs: 48, lh: 48, ls: -0.02 };
-const DESC_OPEN = { fs: 34, lh: 38, ls: -0.03 };
-const DESC_CLOSED = { fs: 26, lh: 32, ls: -0.02 };
+/* R13 (Oscar, 2026-09-02): desc 28/32 expanded → 24/28 closed
+   (SUPERSEDES 34/38 → 26/32; tracking endpoints kept as they were —
+   the brief set size and leading only). Both states are two
+   AUTHORED lines (the data's desc[0] / desc[1] + the <br> — never
+   container wrapping), so the break can't move mid-scrub. */
+const DESC_OPEN = { fs: 28, lh: 32, ls: -0.03 };
+const DESC_CLOSED = { fs: 24, lh: 28, ls: -0.02 };
+const DESC_LINES = 2;
+/* ── DESC CENTRING (R13): the desc block sits vertically centred on
+   the title THROUGH the scrub — one writer (applyTypeDrop), every
+   frame, derived from BOTH elements' live line-heights (the boxes
+   are leading-driven, so the interpolated leadings ARE the live
+   heights) plus a small INK correction: Dazzed caps and Serrif
+   mixed-case don't centre their ink where their boxes do. The
+   correction is measured at each endpoint (pixel ink, 2026-09-02)
+   and interpolated on the same t, so it scales with the sizes. */
+/* Measured with the correction at 0 (pixel ink centres, desc minus
+   title, 1728): open +3.5 / +4 / +2.5 across the three pillars,
+   closed +1.5 / +3 — the desc's mixed-case ink (descenders on
+   "Experiences"/"Strategy", none on "& Media") centres a little
+   below the caps' ink. One mean correction per endpoint; the
+   per-pillar residue (±0.8) is glyph-specific and reported. */
+const DESC_INK_CORR_OPEN = -3.3;
+const DESC_INK_CORR_CLOSED = -2.3;
+const titleTopFor = (t) => TITLE_TOP + (TITLE_TOP_STACKED - TITLE_TOP) * t;
+const descTopFor = (t) => {
+  const ttlLh = TTL_OPEN.lh + (TTL_CLOSED.lh - TTL_OPEN.lh) * t;
+  const descLh = DESC_OPEN.lh + (DESC_CLOSED.lh - DESC_OPEN.lh) * t;
+  const corr = DESC_INK_CORR_OPEN + (DESC_INK_CORR_CLOSED - DESC_INK_CORR_OPEN) * t;
+  return titleTopFor(t) + (ttlLh - descLh * DESC_LINES) / 2 + corr;
+};
+/* The stacked pitch, re-derived (see the geometry block above):
+   closed desc top + the closed block + the 32 below it. */
+const STACK_PITCH = Math.round(descTopFor(1) + DESC_CLOSED.lh * DESC_LINES + 32);
+const ACTIVE_Y = [PILLAR1_ACTIVE_Y, STACKED_Y1 + STACK_PITCH, STACKED_Y1 + 2 * STACK_PITCH];
 
 /* ── Beats (scroll px). ────────────────────────────────────────── */
 const RISE_PX = 800;                    /* the staging card rise, kept */
@@ -505,12 +539,20 @@ export function initLandingServicesReel() {
      two covered pillars on EXACTLY their incoming rise's window
      (same progress; desync impossible; reversal is arithmetic). */
   const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t));
-  const lastDropT = [-1, -1];
+  const lastDropT = [-1, -1, -1];
+  const descEls = pillars.map((pl) => pl.querySelector('[data-sreel-desc]'));
   const applyTypeDrop = (px) => {
-    for (let k = 0; k < 2; k += 1) {
-      const start = riseStart[k + 1];
-      const raw = Math.min(Math.max((px - start) / RISE_PX, 0), 1);
-      const t = easeInOut(raw);
+    /* All three pillars: the two that close scrub on their incoming
+       rise's window; AMPLIFY never closes (t = 0) but its desc is
+       centred by the same writer (R13) — one authority for the desc
+       top, so it can never fight the compaction tweens. */
+    for (let k = 0; k < 3; k += 1) {
+      let t = 0;
+      if (k < 2) {
+        const start = riseStart[k + 1];
+        const raw = Math.min(Math.max((px - start) / RISE_PX, 0), 1);
+        t = easeInOut(raw);
+      }
       if (Math.abs(t - lastDropT[k]) < 0.0005) continue;
       lastDropT[k] = t;
       const m = (a, b2) => a + (b2 - a) * t;
@@ -521,6 +563,10 @@ export function initLandingServicesReel() {
       st.setProperty('--sreel-desc-fs', `${m(DESC_OPEN.fs, DESC_CLOSED.fs).toFixed(2)}px`);
       st.setProperty('--sreel-desc-lh', `${m(DESC_OPEN.lh, DESC_CLOSED.lh).toFixed(2)}px`);
       st.setProperty('--sreel-desc-ls', `${m(DESC_OPEN.ls, DESC_CLOSED.ls).toFixed(4)}em`);
+      /* The desc top — centred on the title from both live leadings
+         (descTopFor), written here and nowhere else. */
+      const desc = descEls[k];
+      if (desc instanceof HTMLElement) desc.style.top = `${descTopFor(t).toFixed(2)}px`;
     }
   };
   applyTypeDrop(0);
@@ -571,10 +617,12 @@ export function initLandingServicesReel() {
   const compact = (i, at, dur, toY) => {
     if (toY !== null) tl.to(pillars[i], { y: toY, duration: dur, ease: 'power1.inOut', immediateRender: false }, at);
     const titlerow = pillars[i].querySelector('[data-sreel-titlerow]');
-    const desc = pillars[i].querySelector('[data-sreel-desc]');
     if (titlerow instanceof HTMLElement) tl.to(titlerow, { top: TITLE_TOP_STACKED, duration: dur, ease: 'power1.inOut' }, at);
-    if (desc instanceof HTMLElement) tl.to(desc, { top: DESC_TOP_STACKED, duration: dur, ease: 'power1.inOut' }, at);
-    /* (The type drop is driven from the MASTER onUpdate below as a
+    /* (The desc's top is NOT tweened here any more — R13: applyTypeDrop
+       centres it on the title every frame from the same t; power1.inOut
+       is the identical quadratic in-out, so the title tween and the
+       derived desc top move in lock-step.)
+       (The type drop is driven from the MASTER onUpdate below as a
        pure function of the scrub position — the house single-progress
        discipline. Tween-based variants — a proxy onUpdate and GSAP's
        native var plugin — both misbehaved under backwards seeks.) */
