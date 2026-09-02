@@ -241,6 +241,7 @@ export function initLandingFeatured() {
     });
   };
 
+  const LABEL_TOP_PX = 177.6;
   const place = () => {
     fitCards();
     /* R5 (Oscar 2026-08-27, the site-wide rule): the unit — header
@@ -260,8 +261,12 @@ export function initLandingFeatured() {
     const measuredStripH = strip.getBoundingClientRect().height
       || (MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX);
     const blockH = HL_H_PX + HEADER_IMG_GAP_PX + measuredStripH;
-    const headerTop = Math.max(24 + tb, tb + (stageH() - tb - blockH) / 2);
-    const stripTop = headerTop + HL_H_PX + HEADER_IMG_GAP_PX;
+    const centredTop = Math.max(24 + tb, tb + (stageH() - tb - blockH) / 2);
+    const stripTop = centredTop + HL_H_PX + HEADER_IMG_GAP_PX;
+    /* R15 item 1 (Oscar 2026-09-02): the label sits at a FIXED top — its
+       ink 180 below the section above's bottom (this stage's top at the
+       pin); Dazzed 12/14 ink sits 2.4 below its box → 177.6. */
+    const headerTop = LABEL_TOP_PX;
     strip.style.top = `${stripTop.toFixed(0)}px`;
     /* R6 (Oscar 2026-08-27, the SHARED ROOT of the centring and
        alignment repeat-failures): place() no longer writes the same
@@ -277,7 +282,7 @@ export function initLandingFeatured() {
     section.style.setProperty('--lf-header-top', `${headerTop.toFixed(1)}px`);
   };
   const positionViaVars = () => {
-    hls.forEach((hl) => { hl.style.top = 'calc(var(--lf-header-top, 157px) + var(--lf-depart, 0px))'; });
+    hls.forEach((hl) => { hl.style.top = 'calc(var(--lf-header-top, 177.6px) + var(--lf-depart, 0px))'; });
     if (viewall instanceof HTMLElement) {
       viewall.style.top = 'calc(var(--lf-header-top, 157px) + var(--lf-depart, 0px))';
     }

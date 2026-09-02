@@ -5857,18 +5857,25 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #161616;
 	}
 
-	/* Header: ONE line — FEATURED WORK, Dazzed Bold 40/50/−2%,
-	   #EEEEF0, PLAIN (the difference treatment retires with the
-	   light ground); the two shipped line elements weld side by side
-	   (mobile markup untouched), WORK's serif face joins the sans. */
+	/* Header → SECTION LABEL (R15, Oscar 2026-09-02; SUPERSEDES the
+	   one-line heading ruling — 40/50/−2% as shipped, the "56/54" of
+	   the brief; one value carried here, dated): FEATURED WORK takes
+	   the eyebrow tier of WHAT WE DO / OUR NETWORK exactly — Dazzed
+	   600, 12/14, uppercase, tracking 0 (the guide's Label tier and
+	   OUR NETWORK's; WHAT WE DO carries its frame's −0.015em —
+	   flagged), #eeeef0 plain on the dark ground. 24 from the left
+	   margin; its top ink 180 below the section above's bottom (=
+	   this stage's top at the pin) — landing-featured.js writes the
+	   top (LABEL_TOP_PX). The two shipped line elements still weld
+	   side by side at one word-space (mobile markup untouched). */
 	.landing-v2.landing-home .landing-featured__hl {
 		position: absolute;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 40px;
-		line-height: 50px;
-		letter-spacing: -0.02em;
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: 0;
 		text-transform: uppercase;
 		color: #eeeef0;
 		mix-blend-mode: normal;
