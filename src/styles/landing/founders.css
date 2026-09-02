@@ -84,9 +84,13 @@ body.founders-page {
 .landing-v2 .fd-ind__thumb[data-slide='0'] img { object-position: 50% 29%; }
 .landing-v2 .fd-ind__thumb[data-slide='1'] img { object-position: 50% 21%; }
 
-/* The active stroke — the file's 3px #232A89. */
+/* The active stroke — R19 (Oscar, 2026-09-02): the brand red
+   #C1250E (was the file's #232A89). A SOLID outline on the thumb
+   button (blend normal, outside the difference group), so the red
+   reads as red over the imagery. The focus ring below keeps the
+   house accent (an accessibility ring, not the design stroke). */
 .landing-v2 .fd-ind__thumb[aria-current='true'] {
-	outline: 3px solid #232a89;
+	outline: 3px solid #c1250e;
 	outline-offset: -3px;
 }
 
