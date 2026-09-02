@@ -370,12 +370,13 @@ import '../styles/fonts.css';
   <div class="landing-footer-spacer" aria-hidden="true"></div>
   </div>
 
-  {/* Desktop footer — the standard BLUE theme (38:2562/#232A89).
-      AFTER the legacy block so the legacy driver's unscoped
-      .landing-footer queries keep finding ITS footer first on
-      mobile; services-6.js queries its own scoped wrapper. */}
+  {/* Desktop footer — the GREY/WHITE theme (Oscar's global ruling,
+      2026-09-02; was the 38:2562 blue). AFTER the legacy block so the
+      legacy driver's unscoped .landing-footer queries keep finding
+      ITS footer first on mobile; services-6.js queries its own
+      scoped wrapper. */}
   <div class="sv6-footwrap" data-sv6-footwrap>
-    <LandingFooter />
+    <LandingFooter theme="light" />
   </div>
   <div class="landing-footer-spacer sv6-footspacer" aria-hidden="true"></div>
 </SiteShell>
