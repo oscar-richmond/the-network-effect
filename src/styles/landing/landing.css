@@ -4988,7 +4988,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 	.landing-v2.landing-home .landing-hero__headline-line--serrif {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 700;
+		/* R5 (Oscar, 2026-09-02): SemiBold — Dazzed 600 is a real loaded
+		   cut (Dazzed-TRIAL-SemiBold, fonts.css; MENU / LET'S CHAT wear
+		   it), so no synthesis; font-synthesis stays none as the guard.
+		   BUILT ON TRUST. keeps Serrif Medium — the two lines now differ
+		   in weight by design (was Bold 700). */
+		font-weight: 600;
 		font-synthesis: none;
 		/* Frame: the second line leads with an 8-space run — authored
 		   as margin so the travel's measured convergence still lands
@@ -5466,9 +5471,17 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-hero__intro-text {
 		top: 389.6px;
 		width: 723px;
-		font-size: 48px;
-		line-height: 50px;
-		letter-spacing: -0.02em;
+		/* R5 (Oscar, 2026-09-02): 38px — between the guide's Serif
+		   Section (34/38/−3%) and Editorial/Intro (48/50/−2%) tiers,
+		   nearest named style = Section (+4px). Leading and tracking
+		   are interpolated between the two flanking tiers at t = (38 −
+		   34)/(48 − 34) ≈ 0.29: lh ratio 1.118 → 1.042 gives 1.096 →
+		   41.6 ≈ 42px; tracking −3% → −2% gives −2.7%. The 723px
+		   measure (drawn for 48) is left as-is — the wrap is reported,
+		   not re-fitted. Was 48/50/−2%. */
+		font-size: 38px;
+		line-height: 42px;
+		letter-spacing: -0.027em;
 	}
 
 	/* ── LARGE SANS 56/50/−3.5% ── */

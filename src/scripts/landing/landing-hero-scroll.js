@@ -87,6 +87,10 @@ const VIDEO_HOLD_PX = 300;
  * constant below).
  */
 const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
+/* R5 (Oscar, 2026-09-02): the foot of the chain is now MEASURED —
+   see bandTopFor: intro rest bottom + HERO_INTRO_TO_BAND_PX. The
+   659.6 (= 389.6 + the old 3×50 intro + 120) is the fallback only. */
+const HERO_INTRO_TO_BAND_PX = 120;
 const VIDEO_BAND_TOP_PX = 659.6;
 
 /** The band's side margins, matching --landing-video-margin. */
@@ -465,9 +469,26 @@ export function initLandingHeroScroll() {
   /* Regime-resolved geometry (mobile constants block above). Desktop
      resolves to the shipped values — bit-identical behaviour. */
   const bandFrac = isMob ? VIDEO_BAND_TOP_FRACTION_M : VIDEO_BAND_TOP_FRACTION;
-  /* Desktop: the px-anchored band top (see VIDEO_BAND_TOP_PX);
-     mobile keeps its fraction of the stage height. */
-  const bandTopFor = (vh) => (isMob ? Math.round(vh * bandFrac) : VIDEO_BAND_TOP_PX);
+  /* Desktop: the band top is DERIVED (R5, Oscar 2026-09-02) — the
+     intro's measured rest bottom + HERO_INTRO_TO_BAND_PX, so the
+     authored 120 below the intro holds through type changes (the
+     38px intro is 66px shorter than the 48px block the old constant
+     encoded). Measured inside the fonts-gated build (the intro is
+     laid out — visibility:hidden, not display:none — and its <p>
+     box carries no transform on desktop), re-derived by the resize
+     rebuild; VIDEO_BAND_TOP_PX remains only as the fallback when
+     nothing measurable exists. Mobile keeps its fraction of the
+     stage height. */
+  const bandTopFor = (vh) => {
+    if (isMob) return Math.round(vh * bandFrac);
+    if (introText instanceof HTMLElement && hero instanceof HTMLElement) {
+      const bottom = introText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top;
+      if (Number.isFinite(bottom) && bottom > 0) {
+        return Math.round((bottom + HERO_INTRO_TO_BAND_PX) * 10) / 10;
+      }
+    }
+    return VIDEO_BAND_TOP_PX;
+  };
   const vMargin = isMob ? VIDEO_MARGIN_PX_M : VIDEO_MARGIN_PX;
   const headlineLeft = isMob ? HEADLINE_LEFT_MARGIN_M : HEADLINE_LEFT_MARGIN;
 
