@@ -102,8 +102,15 @@ const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
 /* R5 (Oscar, 2026-09-02): the foot of the chain is now MEASURED —
    see bandTopFor: intro rest bottom + HERO_INTRO_TO_BAND_PX. The
    659.6 (= 389.6 + the old 3×50 intro + 120) is the fallback only. */
-const HERO_INTRO_TO_BAND_PX = 120;
-const VIDEO_BAND_TOP_PX = 659.6;
+/* R14 (Oscar, 2026-09-02): THE LOGO ROW sits between the intro and
+   the cards — frame 0:621 (offset −83): intro bottom → 80 → the 100
+   row → 80 → the cards. The 120 became these three named parts; the
+   band/cards rest top is their sum (260). */
+const HERO_INTRO_TO_LOGOS_PX = 80;
+const HERO_LOGO_ROW_H_PX = 100;
+const HERO_LOGOS_TO_CARDS_PX = 80;
+const HERO_INTRO_TO_BAND_PX = HERO_INTRO_TO_LOGOS_PX + HERO_LOGO_ROW_H_PX + HERO_LOGOS_TO_CARDS_PX; /* 260 (was 120) */
+const VIDEO_BAND_TOP_PX = 799.6; /* fallback only: 539.6 + 260 */
 
 /* ── THE THREE-IMAGE HERO (R8, Oscar 2026-09-02) — the /old hero's
    scroll mechanic (about-3/about-scroll.js), ported to the desktop
@@ -487,6 +494,7 @@ export function initLandingHeroScroll() {
     (el) => el instanceof HTMLElement,
   );
   const heroBg = document.querySelector('[data-landing-hero] .landing-hero__bg');
+  const logos = document.querySelector('[data-landing-hero-logos]');
 
   if (!(hero instanceof HTMLElement) || !(spacer instanceof HTMLElement)) {
     return () => {};
@@ -537,8 +545,23 @@ export function initLandingHeroScroll() {
   /* R8: the cards' rest geometry — written as inline layout (top/left/
      width/height) so the GL planes can read the rest top back from
      the element itself (/old's own source), y reset for the scrub. */
+  /* R14: the logo row's rest — intro bottom + HERO_INTRO_TO_LOGOS_PX,
+     written inline (the same measured foot the cards derive from);
+     the flash guard lifts with it. Desktop only. */
+  const placeLogos = () => {
+    if (isMob || !(logos instanceof HTMLElement)) return null;
+    const bottom = introText instanceof HTMLElement
+      ? introText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top
+      : VIDEO_BAND_TOP_PX - HERO_INTRO_TO_BAND_PX;
+    const top = Math.round((bottom + HERO_INTRO_TO_LOGOS_PX) * 10) / 10;
+    logos.style.top = `${top}px`;
+    logos.classList.add('is-placed');
+    return top;
+  };
+
   const placeCards = (vh) => {
     if (isMob || cards.length !== 3) return null;
+    placeLogos();
     const vw = window.innerWidth || 1728;
     const cardW = (vw - 2 * HERO_CARD_MARGIN_PX - 2 * HERO_CARD_GAP_PX) / 3;
     const cardH = cardW * HERO_CARD_ASPECT;
@@ -901,6 +924,19 @@ export function initLandingHeroScroll() {
       if (introText instanceof HTMLElement) {
         buildExitWipe(introClips, introText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
       }
+      /* R14 — THE LOGO ROW'S EXIT (proposal, flagged for review): the
+         row leaves WITH the hero content, on the text-wipe vocabulary
+         (WIPE_LEAD onset, EXIT_BLUR_PX, scrubbed → reversible), keyed
+         to the LEFT card — its first coverer — as ONE group (the band
+         and every cell fade together, never a cell-by-cell cascade).
+         By construction it is fully gone when the card's top reaches
+         the row's top, i.e. long before the ground fade begins at the
+         left card two-thirds out: no light band or light cell can
+         ever sit over dark ground. Tunables: WIPE_LEAD / EXIT_BLUR_PX
+         (shared with the text — one vocabulary). */
+      if (logos instanceof HTMLElement) {
+        buildExitWipe([logos], logos.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
+      }
 
       /* THE GROUND — light → the founders' #161616, scrubbed on the
          cards' own mapping: from the LEFT card two-thirds out
@@ -961,7 +997,12 @@ export function initLandingHeroScroll() {
             +scrollWhenCardTopAt(0, introText.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
             +scrollWhenCardTopAt(0, introText.getBoundingClientRect().top).toFixed(1),
           ] : null,
+          logos: logos instanceof HTMLElement ? [
+            +scrollWhenCardTopAt(0, logos.getBoundingClientRect().bottom + WIPE_LEAD).toFixed(1),
+            +scrollWhenCardTopAt(0, logos.getBoundingClientRect().top).toFixed(1),
+          ] : null,
         },
+        logosTop: logos instanceof HTMLElement ? parseFloat(logos.style.top) : null,
       };
     }
 

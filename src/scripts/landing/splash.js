@@ -108,8 +108,11 @@ function readiness(root) {
      display:none there and are left out (decode() would force-fetch
      ~480KB of desktop assets on a phone). */
   const mobile = isMobileViewport();
+  /* R14: the logo row's SVGs (eager, a few KB each) are NOT part of
+     the gate — a late mark is invisible under the row's own entrance,
+     and first paint must never wait on nine extra requests. */
   const heroImgs = Array.from(document.querySelectorAll('.landing-hero img')).filter(
-    (img) => mobile ? !img.closest('[data-landing-hero-cards]') : true,
+    (img) => !img.closest('[data-landing-hero-logos]') && (mobile ? !img.closest('[data-landing-hero-cards]') : true),
   );
   const imgsReady = Promise.all(
     heroImgs.map((img) => (img.decode ? img.decode().catch(() => {}) : Promise.resolve())),
@@ -192,6 +195,10 @@ export function initSplash(root) {
     /* R8: the desktop cards' fade+rise (landing.css states); the hero
        module hands the cards to WebGL only once this has played —
        the DOM cards carry the entrance, the planes carry the exit. */
+    /* R14: the logo row joins the same entrance — its CSS carries the
+       beat (a step after the intro) and the fade+rise. */
+    const logos = document.querySelector('[data-landing-hero-logos]');
+    if (logos instanceof HTMLElement) logos.classList.add('is-entered');
     const cards = document.querySelector('[data-landing-hero-cards]');
     if (cards instanceof HTMLElement) {
       cards.classList.add('is-entered');

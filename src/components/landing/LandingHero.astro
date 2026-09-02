@@ -28,6 +28,16 @@
  * this one line (plus the poster, if he sends one).
  */
 import { asset } from '../../utils/asset.js';
+import {
+  HERO_LOGO_BRANDS,
+  HERO_LOGO_SET_W,
+  HERO_LOGO_ROW_DUR_S,
+  HERO_LOGO_ROW_PHASE_DELAY_S,
+} from '../../data/landing/hero-logos.js';
+
+/* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
+   TWICE for the seamless wrap (the network carousel's own grammar). */
+const heroLogosDoubled = [...HERO_LOGO_BRANDS, ...HERO_LOGO_BRANDS];
 
 const heroVideo = asset('/assets/videos/louis-vuitton.mp4');
 /* R8: the desktop three-image hero (see the markup note). */
@@ -68,6 +78,46 @@ const heroCards = [
         Partnerships & Media
       </p>
     </div>
+  </div>
+
+  {/* THE LOGO ROW (R14, Oscar 2026-09-02 — frame 0:621): ONE rolling
+      carousel between the intro and the cards — the retired Our
+      Network TOP row's grammar (160×100 cells, 192 pitch, set rendered
+      twice, drifts RIGHT at 48s/set; the keyframe + the --marquee-set-w
+      contract are the network's own, reused) on the LIGHT ground:
+      cells rgba(22,22,22,.04) + 12px backdrop blur, #161616 marks, the
+      band's #eeeef0 edge fade. Position written by landing-hero-scroll.js
+      (intro bottom + 80; the cards rest 80 below it). DESKTOP ONLY.
+      ENTRANCE: the track fade-rises with the page entrance a beat
+      after the intro (splash.js adds .is-entered). EXIT: the wrapper
+      blur-fades on the text-wipe vocabulary, keyed to the LEFT card
+      (its first coverer) — gone before any card reaches it. The two
+      live on different elements so the CSS transition never contests
+      the scrubbed writes. No blends inside; not an ancestor of the
+      nav. loading=eager (tiny SVGs) but EXCLUDED from the splash's
+      readiness gate. ═ PENDING SIGN-OFF: real client marks on the
+      first viewport (hero-logos.js). ═ */}
+  <div class="landing-hero__logos" data-landing-hero-logos aria-hidden="true">
+    <div
+      class="landing-hero__logos-track"
+      data-landing-hero-logos-track
+      style={`--marquee-set-w:${HERO_LOGO_SET_W}px;--hero-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--hero-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s`}
+    >
+      {heroLogosDoubled.map((b) => (
+        <span class="landing-hero__logo-cell" data-landing-hero-logo-cell>
+          <img
+            src={b.src}
+            alt=""
+            loading="eager"
+            decoding="async"
+            width={b.w}
+            height={b.h}
+            style={`width:${b.w}px;height:${b.h}px`}
+          />
+        </span>
+      ))}
+    </div>
+    <div class="landing-hero__logos-band" aria-hidden="true"></div>
   </div>
 
   {/* THE THREE-IMAGE HERO (R8, Oscar 2026-09-02 — the /old hero's

@@ -3632,6 +3632,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-hero__intro { display: none; }
 	/* R8: the three-image hero is desktop's — mobile keeps its video. */
 	.landing-v2.landing-home .landing-hero__cards { display: none; }
+	/* R14: the logo row is desktop's too — mobile's hero is untouched. */
+	.landing-v2.landing-home .landing-hero__logos { display: none; }
 
 	.landing-v2.landing-home .landing-hero__video {
 		clip-path: inset(50% var(--landing-video-margin) 0px var(--landing-video-margin));
@@ -5060,6 +5062,94 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card:nth-child(2) img { transition-delay: 0.1s; }
 	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card:nth-child(3) img { transition-delay: 0.2s; }
+
+	/* ── THE LOGO ROW (R14, Oscar 2026-09-02 — frame 0:621, offset −83):
+	   full-bleed, 100 tall, between the intro and the cards (intro
+	   bottom + 80 → row → + 80 → cards; the scroll module writes the
+	   top). z 110: above the text (100), beneath the cards (120) that
+	   rise over it. Hidden until placed (the cards' flash-guard
+	   discipline). No blends inside; the nav (z 260) composites over
+	   the stage from its own fixed layer, never through this subtree. */
+	.landing-v2.landing-home .landing-hero__logos {
+		position: absolute;
+		left: 0;
+		top: calc(100% - 120px - 80px - 100px); /* pre-JS shape; JS writes intro bottom + 80 */
+		width: 100%;
+		height: 100px;
+		z-index: 110;
+		overflow: hidden;
+		pointer-events: none;
+		visibility: hidden;
+	}
+	.landing-v2.landing-home .landing-hero__logos.is-placed { visibility: visible; }
+
+	/* The track — the network carousel's machinery reused verbatim:
+	   the same keyframe (landing-network-marquee-right — the retired
+	   TOP row's direction) on the same --marquee-set-w contract; the
+	   duration/phase vars are set inline from hero-logos.js. The
+	   entrance transition lives HERE (inner) so the wrapper's scrubbed
+	   exit writes are never contested. */
+	.landing-v2.landing-home .landing-hero__logos-track {
+		display: flex;
+		width: max-content;
+		will-change: transform;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-home .landing-hero__logos-track {
+			animation: landing-network-marquee-right var(--hero-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--hero-logo-row-delay, 0s);
+		}
+	}
+
+	/* Cells — frame 0:629 "Brand background": #161616 at 4% over a 12px
+	   backdrop blur (the network row was rgba(233,233,241,.4) — the
+	   inverse palette for the light ground). 160×100, 192 pitch. */
+	.landing-v2.landing-home .landing-hero__logo-cell {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 160px;
+		height: 100px;
+		margin-right: 32px;
+		background: rgba(22, 22, 22, 0.04);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+	.landing-v2.landing-home .landing-hero__logo-cell img {
+		display: block;
+		max-width: none;
+	}
+
+	/* The band (frame 0:677): the ground colour at 0–3% / 97–100% —
+	   the retired edge fade's stops in #eeeef0 instead of #161616. */
+	.landing-v2.landing-home .landing-hero__logos-band {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: linear-gradient(
+			90deg,
+			#eeeef0 0%,
+			rgba(238, 238, 240, 0) 3%,
+			rgba(238, 238, 240, 0) 97%,
+			#eeeef0 100%
+		);
+	}
+
+	/* Splash-owned entrance (the cards' fade+rise vocabulary, on the
+	   TRACK): after the intro's beat — the headline's two-line stagger
+	   (0.24) + the intro's 0.15 + one more 0.15. A normal load never
+	   carries these states. */
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__logos-track {
+		opacity: 0;
+		transform: translate3d(0, 24px, 0);
+		transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1) 0.54s, transform 0.9s cubic-bezier(0.42, 0, 0.24, 1) 0.54s;
+	}
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__logos.is-entered .landing-hero__logos-track {
+		opacity: 1;
+		transform: none;
+	}
 
 	/* Type: frame 72/64/−4% — the guide's 02 Display L numbers on
 	   SERRIF for BOTH lines (the frame abandons the Dazzed line-1).
