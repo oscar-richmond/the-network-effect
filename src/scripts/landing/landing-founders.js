@@ -44,7 +44,9 @@ const IMAGES_AT_MS = 1040;
  * codebase's six-regression class. The blend-free layers use
  * transforms as normal.
  */
-const DRIFT_HEADLINE_PX = 60;
+/* R26 (Oscar, 2026-09-03): exported — landing-hero-scroll.js derives
+   WHO WE ARE's first-ink crossing from this drift (the label rides it). */
+export const DRIFT_HEADLINE_PX = 60;
 const DRIFT_CTAS_PX = 110;
 const DRIFT_ROBBO_PX = 140;
 const DRIFT_ASHLEY_PX = 170;

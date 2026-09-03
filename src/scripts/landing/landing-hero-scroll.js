@@ -21,6 +21,7 @@
  * expansion, and the way it is deliberately overlapped with the tail of
  * the second so the whole thing reads as one gesture.
  */
+import { DRIFT_HEADLINE_PX } from './landing-founders.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll } from './site-scroll.js';
@@ -141,23 +142,39 @@ const HERO_CARD_STAGGER_PX = 80;
 const HERO_CARD_EXIT_BUFFER_PX = 60;
 const HERO_GROUND_LIGHT = '#eeeef0';
 const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
-/* R21 (Oscar, 2026-09-02) — THE HERO → WHO WE ARE BOUNDARY, retimed:
-   THE FADE starts where it did (the left card two-thirds out) but
-   ends at HERO_GROUND_FADE_END_CARD's full exit — the LEFT card (0)
-   now, the right card (2) before: span cardH/3 = 208 at 1728 (was
-   368, −43%). THE ARRIVAL: WHO WE ARE is in flow after this runway
-   spacer, so its entry scroll IS the spacer's end. It now enters
-   HERO_FOUNDERS_ENTER_LEAD_PX BEFORE the three images fully clear
-   (exitAt(2)). DERIVATION (supersedes R18's 90%-of-fade gate): the
-   section's first ink (the label at 200 + its 60 entry drift = 260
-   below the section's top) entered 223 scroll-px after the images
-   cleared; −⅓ → 149; 260 − 149 = 111. With the faster fade the
-   section arrives 49 after full black (1932 vs 1883 at 1728) — dark
-   on dark, and the last card is still 111 from clear at the top
-   while the section enters from the bottom. Reverse scroll mirrors
-   it by construction. The GL pause gate stays at exitEnd. */
+/* R21 (Oscar, 2026-09-02) — THE FADE starts where it did (the left
+   card two-thirds out) and ends at HERO_GROUND_FADE_END_CARD's full
+   exit — the LEFT card (0): span cardH/3 = 208 at 1728.
+   R26 (Oscar, 2026-09-03) — THE ARRIVAL, keyed to an IMAGE EDGE
+   (supersedes R21's exitAt(2) − 111 lead and R18's 90%-of-fade gate):
+   WHO WE ARE's FIRST INK — its label, 200 into the section + the 60
+   entry drift it still carries as the section's top crosses the
+   viewport bottom = 260 — crosses the viewport bottom EXACTLY as the
+   SECOND image to clear has its bottom edge cross y=0. The stagger
+   leaves the cards left / middle / right, 80 apart, so that is the
+   MIDDLE card (slot 1), exitAt(1). WHY THE EARLIER RULINGS LANDED
+   LATE: both were scroll offsets hung off the fade or the LAST card,
+   not the images — R18 put the section's top at 90% of a fade that
+   itself ended at card 2; R21 put it 111 before card 2's clear; in
+   both the visible arrival (the ink, 260 later) came 229–300 after
+   the middle card had cleared. WHO WE ARE is in flow after this
+   runway spacer, so its entry scroll IS the spacer's end. The fade
+   keeps its start and now completes 180 AFTER the section's top has
+   crossed the viewport bottom (the overlap window is in the report;
+   the fade rate is Oscar's to rule). The GL pause gate stays at
+   exitEnd. */
 const HERO_GROUND_FADE_END_CARD = 0;
-const HERO_FOUNDERS_ENTER_LEAD_PX = 111;
+const HERO_FOUNDERS_ENTER_CARD = 1;   /* the second image to clear: the middle slot */
+/* The first ink's crossing is DERIVED, not the static 260: the label
+   sits 200 into the section and lags by DRIFT_HEADLINE_PX (60) as the
+   section's top enters, but that lag DECAYS over the section's entry
+   (it lands at 200 as the section fills the viewport), so the label
+   travels faster than the scroll — measured: 274 of travel for 260 of
+   scroll, 14 early. Solving labelTop = vh gives
+     d = (200 + 60) · entryPx / (entryPx + 60)
+   with entryPx = max(vh, section height), the founders entry window
+   (246.7 at 1117, 245.5 at the 994/942 interiors). */
+const HERO_FOUNDERS_LABEL_TOP_FALLBACK_PX = 200;
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
@@ -965,7 +982,7 @@ export function initLandingHeroScroll() {
          — /old's backdrop-fade anchors; R21 ends the fade at the
          LEFT card's full exit (HERO_GROUND_FADE_END_CARD). The
          founders section (its own #161616, z 260 over this fixed
-         stage) enters HERO_FOUNDERS_ENTER_LEAD_PX before the last
+         stage) enters as its first ink meets the middle card's clear (R26) — before the last
          card clears — after full black. backgroundColor on the
          stage's ground layer isolates nothing. */
       const fadeStart = exitAt(0) - cardH / 3;
@@ -1002,14 +1019,22 @@ export function initLandingHeroScroll() {
       });
       triggers.push(gate);
 
-      /* R21: the runway ends where WHO WE ARE begins entering —
-         HERO_FOUNDERS_ENTER_LEAD_PX before the images fully clear
-         (R18's 0.9-of-fade gate and the older exitEnd are superseded). */
-      const foundersEnterAt = exitAt(2) - HERO_FOUNDERS_ENTER_LEAD_PX;
+      /* R26: the runway ends where WHO WE ARE's first ink meets the
+         viewport bottom — exactly at the middle card's clear
+         (R21's −111 lead, R18's 0.9-of-fade gate, the older exitEnd:
+         all superseded). */
+      const foundersSection = document.querySelector('[data-landing-founders]');
+      const foundersLabel = document.querySelector('[data-landing-founders-label]');
+      const foundersLabelTop = foundersLabel instanceof HTMLElement && foundersLabel.offsetTop > 0
+        ? foundersLabel.offsetTop : HERO_FOUNDERS_LABEL_TOP_FALLBACK_PX;
+      const foundersEntryPx = Math.max(vh, foundersSection instanceof HTMLElement ? foundersSection.offsetHeight : 0);
+      const foundersFirstInkPx = (foundersLabelTop + DRIFT_HEADLINE_PX) * foundersEntryPx / (foundersEntryPx + DRIFT_HEADLINE_PX);
+      const foundersEnterAt = exitAt(HERO_FOUNDERS_ENTER_CARD) - foundersFirstInkPx;
       total = foundersEnterAt;
       cardBeats = {
         foundersEnterAt: +foundersEnterAt.toFixed(1),
-        foundersEnterLeadPx: HERO_FOUNDERS_ENTER_LEAD_PX,
+        foundersEnterCard: HERO_FOUNDERS_ENTER_CARD,
+        foundersFirstInkPx: +foundersFirstInkPx.toFixed(1),
         fadeEndCard: HERO_GROUND_FADE_END_CARD,
         restTop,
         cardH: +cardH.toFixed(1),
