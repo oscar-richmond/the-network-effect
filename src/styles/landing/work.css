@@ -94,12 +94,20 @@ body.work-page {
    spaces). The old 48/48 pair with the Serrif WORK was the
    original 27:3103 build; the serif face now lives ONLY in the
    mobile block below (its own design keeps it). */
+/* R34 item 1 (Oscar, 2026-09-03): 90 / 88 / −0.05em, Dazzed SemiBold
+   600 (the real cut — font-synthesis none so no weight is ever faked).
+   Supersedes the frame 2001:67 100/88 pair on this page (the brief
+   named 56/50; measured before the change the page rendered 100/88 —
+   56/50 is the landing's LARGE SANS tier, never this header's). The
+   two-line block keeps its 88 leading, so its height is unchanged
+   (176); only the glyphs shrink. */
 .landing-v2 .work-page__hl {
 	position: absolute;
 	left: 24px;
 	margin: 0;
 	font-weight: 600;
-	font-size: 100px;
+	font-synthesis: none;
+	font-size: 90px;
 	line-height: 88px;
 	letter-spacing: -0.05em;
 	text-transform: uppercase;
