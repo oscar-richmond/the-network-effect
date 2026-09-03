@@ -108,6 +108,30 @@ export function featuredCarouselExitsNavAt() {
   const navBottom = topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0;
   return Math.round(departAt + stripTop - navBottom);
 }
+/** R27 item 2 (Oscar, 2026-09-03): the scroll at which the departing
+ *  carousel UNIT's measured BOTTOM edge (the metas' bottom — the
+ *  visible carousel) crosses the viewport at fraction vpT of its
+ *  height (0.5 = the midpoint). Same self-contained shape as the
+ *  derivations above; landing-access anchors its entrance and its
+ *  headline reveal here (supersedes featuredCarouselExitsNavAt for
+ *  the arrival). Null outside the desktop pinned regime. */
+export function featuredUnitBottomCrossAt(vpT) {
+  const section = document.querySelector('[data-landing-featured]');
+  const strip = document.querySelector('[data-featured-strip]');
+  if (!(section instanceof HTMLElement) || !(strip instanceof HTMLElement)) return null;
+  if (isMobileViewport()) return null;
+  const sectionTop = section.getBoundingClientRect().top + (window.scrollY || 0);
+  const travel = Math.max(strip.scrollWidth + RIGHT_MARGIN_PX - (window.innerWidth || 1728), 0);
+  const departAt = sectionTop + travel + TRANSITION_DWELL_PX;
+  const stripTop = parseFloat(strip.style.top) || strip.getBoundingClientRect().top;
+  let unitBottomOff = 0;
+  strip.querySelectorAll('.landing-featured__card').forEach((c) => {
+    const tb = c.querySelector('.landing-featured__titleblock');
+    if (tb instanceof HTMLElement) unitBottomOff = Math.max(unitBottomOff, c.offsetTop + tb.offsetTop + tb.offsetHeight);
+  });
+  if (!unitBottomOff) unitBottomOff = strip.getBoundingClientRect().height;
+  return Math.round(departAt + stripTop + unitBottomOff - (window.innerHeight || 1080) * vpT);
+}
 const TAIL_CLEAR_PX = 100;
 const GROUND_LIGHT = '#eeeef0';
 /* Header geometry (Oscar's rev): WORK's bottom and VIEW ALL's

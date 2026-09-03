@@ -46,7 +46,23 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
-import { featuredCarouselExitsNavAt } from './landing-featured.js';
+import { featuredUnitBottomCrossAt } from './landing-featured.js';
+
+/* R27 item 2 (Oscar, 2026-09-03) — THE MUCH EARLIER ENTRANCE: this
+   section begins entering AS FEATURED WORK IS LEAVING — its headline's
+   top crosses the viewport bottom the moment the departing carousel
+   unit's measured BOTTOM edge crosses the viewport at this fraction of
+   its height (0.5 = the midpoint). A measured-edge trigger, never a
+   fade percentage or offset (the Who We Are lesson). The section's
+   overlap margin is derived from it (placeEntry below) and the
+   headline reveal fires on the same scroll — supersedes the R6
+   carousel-leaving-nav gate (featuredCarouselExitsNavAt). The ground
+   is dark on both sides by construction: the stage is still #161616
+   there, and this section's ground rides the featured tail fade
+   (landing-featured.js, R27 item 1). The gap between the incoming
+   headline and the departing metas is vh/2 at entry and constant
+   through the overlap (both move 1:1). */
+const ACCESS_ENTER_AT_CAROUSEL_BOTTOM_T = 0.5;
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -589,9 +605,32 @@ export function initLandingAccess() {
   let revealTrigger = null;
   let headlineTrigger = null;
   let disposed = false;
+  /* R27 item 2: the overlap margin — the headline's top (the label and
+     line 1 share it) meets the viewport bottom at the carousel unit's
+     bottom-edge crossing. Re-derived with the featured placement
+     (fonts, resize); ScrollTrigger refreshes on change since every
+     trigger below this section moves with it. */
+  const dlabel = section.querySelector('.landing-access__dlabel');
+  let lastEntryMargin = null;
+  const placeEntry = () => {
+    const cross = featuredUnitBottomCrossAt(ACCESS_ENTER_AT_CAROUSEL_BOTTOM_T);
+    const featured = document.querySelector('[data-landing-featured]');
+    if (cross == null || !(featured instanceof HTMLElement)) return;
+    const natural = featured.offsetTop + featured.offsetHeight; /* the flow position: right after Featured */
+    const headlineTop = dlabel instanceof HTMLElement && dlabel.offsetTop > 0 ? dlabel.offsetTop : 100;
+    const wanted = cross + (window.innerHeight || 1080) - headlineTop;
+    const margin = Math.round(wanted - natural);
+    if (margin === lastEntryMargin) return;
+    lastEntryMargin = margin;
+    section.style.marginTop = `${margin}px`;
+    ScrollTrigger.refresh();
+  };
+  const onEntryResize = () => placeEntry();
+  window.addEventListener('resize', onEntryResize);
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
+    placeEntry();
     dlines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -609,7 +648,9 @@ export function initLandingAccess() {
        regime without the featured pin. */
     headlineTrigger = ScrollTrigger.create({
       trigger: section,
-      start: () => featuredCarouselExitsNavAt() ?? 'top+=100 bottom',
+      /* R27 item 2: the reveal fires as the headline enters — the same
+         measured crossing that placed the section. */
+      start: () => featuredUnitBottomCrossAt(ACCESS_ENTER_AT_CAROUSEL_BOTTOM_T) ?? 'top+=100 bottom',
       once: true,
       onEnter: () => {
         dlines.forEach((line) => {
@@ -656,6 +697,8 @@ export function initLandingAccess() {
 
   return () => {
     disposed = true;
+    window.removeEventListener('resize', onEntryResize);
+    section.style.marginTop = '';
     timeouts.forEach(clearTimeout);
     window.clearTimeout(snapTimer);
     window.removeEventListener('resize', onResize);
