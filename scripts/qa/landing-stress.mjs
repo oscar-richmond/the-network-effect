@@ -40,6 +40,21 @@
  *   pace and depth (the reported reproduction sequence), sampling every
  *   wheel step for I2.
  *
+ * --page founders (R30): the /founders virtual-scroll driver instead of
+ *   the landing. Randomised wheel passes over its whole axis, asserting
+ *   after every move:
+ *     F1  the two text blocks' opacities SUM to 1 (±0.02) — the
+ *         crossfade can never leave the screen empty;
+ *     F2  they are never BOTH fully visible (both >= 0.99);
+ *     F3  the closing sweep is invisible before its phase, spans the
+ *         full width at and after its end, and its clip is monotonic
+ *         in pos (no jump between adjacent samples);
+ *     F4  the indicator's divider and label keep mix-blend-mode
+ *         difference through their blur-fade (a wrapper-level fade
+ *         would isolate them);
+ *     F5  state purity: leaving a position and returning to it
+ *         reproduces the same opacities, clip and transforms.
+ *
  * Playwright is resolved from the repo's node_modules (dev tooling).
  */
 import { chromium } from 'playwright';
@@ -58,12 +73,96 @@ const SHOT_DIR = arg('--shots', '');
 let seed = SEED; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
 const pick = (a, b) => a + rnd() * (b - a);
 
+const PAGE = arg('--page', 'landing');
 const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await (await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 const pageErrs = []; p.on('pageerror', (e) => pageErrs.push(String(e.message).slice(0, 120)));
-await p.goto(BASE + '/?splash=0&forcehover', { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
+await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
 const s = W >= 1728 ? 1 : W / 1728;
 const f = () => p.frames().find((fr) => fr.url().includes('framed=1')) ?? p.mainFrame();
+
+/* ══ R30 — /founders MODE ═══════════════════════════════════════════
+   The page is a VIRTUAL scroller (its own wheel-driven axis, no
+   document scroll), so the moves are wheel input over the body and the
+   state is read from the driver's own DEV handle plus computed style. */
+if (PAGE === 'founders') {
+  const FSTATE = `(() => {
+    const q = (s2) => document.querySelector(s2);
+    const num = (v) => { const m = /matrix\\([^)]+\\)/.exec(v); return m ? +m[0].split(',').slice(-1)[0].replace(')', '') : 0; };
+    const sl = [...document.querySelectorAll('[data-fd-slide]')].map((el) => { const cs = getComputedStyle(el);
+      return { op: +cs.opacity * (cs.visibility === 'hidden' ? 0 : 1), rawOp: +cs.opacity, vis: cs.visibility, y: +num(cs.transform).toFixed(1) }; });
+    const sw = q('[data-fd-sweep]'); const scs = sw ? getComputedStyle(sw) : null;
+    const clipPct = scs ? (/inset\\(0px ([\\d.]+)%/.exec(scs.clipPath) ? +/inset\\(0px ([\\d.]+)%/.exec(scs.clipPath)[1] : (scs.clipPath.includes('0%') ? 0 : null)) : null;
+    const div = q('.fd-ind__divider'); const lab = q('[data-fd-label]');
+    const track = q('[data-fd-coltrack]');
+    return { st: window.__founders ? window.__founders.state() : null,
+      slides: sl, sweepVisible: scs ? scs.visibility !== 'hidden' : false, sweepRemain: clipPct,
+      divBlend: div ? getComputedStyle(div).mixBlendMode : null, labBlend: lab ? getComputedStyle(lab).mixBlendMode : null,
+      divOp: div ? +getComputedStyle(div).opacity : null,
+      colY: track ? +num(getComputedStyle(track).transform).toFixed(1) : null,
+      errs: [] }; })()`;
+  const snap = () => f().evaluate(FSTATE);
+  const first = await snap();
+  if (!first.st) { console.log(JSON.stringify({ vp: `${W}x${H}`, page: 'founders', error: 'no __founders handle (dev build only)' })); await b.close(); process.exit(2); }
+  const MAX = first.st.maxPos;
+  const viol = []; const hist = []; const seen = new Map();
+  let prev = null; let fchecks = 0;
+  const check = (st, tag) => {
+    fchecks += 1;
+    const [r, a] = st.slides;
+    const inText = st.st.pos > st.st.textStart && st.st.pos < st.st.textEnd;
+    const sum = r.op + a.op;
+    if (inText && Math.abs(sum - 1) > 0.02) viol.push({ inv: 'F1', tag, pos: Math.round(st.st.pos), msg: 'text opacities do not sum to 1', robbo: r.op, ashley: a.op, sum: +sum.toFixed(3) });
+    if (r.op >= 0.99 && a.op >= 0.99) viol.push({ inv: 'F2', tag, pos: Math.round(st.st.pos), msg: 'both blocks fully visible', robbo: r.op, ashley: a.op });
+    if (st.st.pos < st.st.sweepStart - 1 && st.sweepVisible) viol.push({ inv: 'F3', tag, pos: Math.round(st.st.pos), msg: 'sweep visible before its phase', remain: st.sweepRemain });
+    if (st.st.pos >= st.st.sweepEnd + 1 && !(st.sweepVisible && st.sweepRemain === 0)) viol.push({ inv: 'F3', tag, pos: Math.round(st.st.pos), msg: 'sweep not edge to edge at/after its end', visible: st.sweepVisible, remain: st.sweepRemain });
+    if (prev && st.sweepRemain != null && prev.sweepRemain != null) {
+      const dPos = Math.abs(st.st.pos - prev.st.pos); const dClip = Math.abs(st.sweepRemain - prev.sweepRemain);
+      /* the clip moves 100% over FD_SWEEP_PX of pos; allow the rate plus slack */
+      const maxClip = (dPos / (st.st.sweepEnd - st.st.sweepStart)) * 100 + 2;
+      if (dClip > maxClip) viol.push({ inv: 'F3', tag, pos: Math.round(st.st.pos), msg: 'sweep clip discontinuity', from: prev.sweepRemain, to: st.sweepRemain, dPos: Math.round(dPos) });
+    }
+    if (st.divBlend !== 'difference' || st.labBlend !== 'difference') viol.push({ inv: 'F4', tag, pos: Math.round(st.st.pos), msg: 'indicator blend isolated', divBlend: st.divBlend, labBlend: st.labBlend });
+    /* F5 — purity: the same pos must reproduce the same visual state.
+       Compared NUMERICALLY against the bucket's own recorded pos: the
+       driver lerps, so a "settled" sample can sit a fraction of a px
+       from the last one, and every value here is a continuous function
+       of pos — the tolerance is that fraction's worth of travel, not
+       slack for a real jump (the column runs 1:1 with pos, so its
+       allowance is the pos delta itself plus a pixel). */
+    if (Math.abs(st.st.pos - st.st.targetPos) < 0.5) {
+      const key = Math.round(st.st.pos / 25) * 25;
+      const sig = { pos: st.st.pos, op0: st.slides[0].rawOp, op1: st.slides[1].rawOp, clip: st.sweepRemain, colY: st.colY };
+      const was = seen.get(key);
+      if (was) {
+        const dPos = Math.abs(sig.pos - was.pos);
+        const bad = [];
+        if (Math.abs(sig.op0 - was.op0) > dPos / 400 + 0.02) bad.push(`robbo ${was.op0} -> ${sig.op0}`);
+        if (Math.abs(sig.op1 - was.op1) > dPos / 400 + 0.02) bad.push(`ashley ${was.op1} -> ${sig.op1}`);
+        if (sig.clip != null && was.clip != null && Math.abs(sig.clip - was.clip) > dPos / 5 + 1) bad.push(`clip ${was.clip} -> ${sig.clip}`);
+        if (sig.colY != null && was.colY != null && Math.abs(sig.colY - was.colY) > dPos + 1) bad.push(`colY ${was.colY} -> ${sig.colY}`);
+        if (bad.length) viol.push({ inv: 'F5', tag, pos: Math.round(sig.pos), msg: 'same position, different state', dPos: +dPos.toFixed(2), bad });
+      } else seen.set(key, sig);
+    }
+    prev = st;
+  };
+  const settle = async (ms = 260) => { await p.waitForTimeout(ms); };
+  for (let i = 0; i < MOVES; i++) {
+    const kind = rnd();
+    const dir = rnd() < 0.5 ? -1 : 1;
+    const dist = Math.round(pick(60, 1400));
+    if (kind < 0.15) { await p.mouse.wheel(0, dir * dist); await p.waitForTimeout(Math.round(pick(20, 90))); await p.mouse.wheel(0, -dir * Math.round(dist * pick(0.4, 1.3))); hist.push(`rev ${dir * dist}`); }
+    else { const steps = Math.round(pick(1, 5)); for (let k = 0; k < steps; k++) { await p.mouse.wheel(0, dir * Math.round(dist / steps)); await p.waitForTimeout(Math.round(pick(10, 45))); const mid = await snap(); check(mid, 'mid'); } hist.push(`wheel ${dir * dist}/${steps}`); }
+    await settle();
+    check(await snap(), 'settled');
+    if (rnd() < 0.25) { await p.waitForTimeout(Math.round(pick(200, 700))); check(await snap(), 'pause'); }
+  }
+  const summary = { vp: `${W}x${H}`, page: 'founders', moves: MOVES, seed: SEED, maxPos: MAX, checks: fchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
+  console.log(JSON.stringify(summary));
+  await b.close();
+  process.exit(viol.length ? 2 : 0);
+}
 await p.mouse.move(W * 0.5, H * 0.6);
 
 const STATE = `(() => {
