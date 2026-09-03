@@ -133,7 +133,9 @@
    inside it would still be inverted by the bar (measured (171,15,8)
    over the red). While over the red the bar's blend is off as well;
    it is the same ancestor as before with one property changed for
-   the state, restored with the class. */
+   the state, restored with the class. R21: the state now spans the
+   section from its top crossing the bar's midpoint (white, fading to
+   red while fixed) through the red tail; off over the footer. */
 .landing-v2 .home__topbar--about.is-over-red {
 	mix-blend-mode: normal;
 }
@@ -2151,14 +2153,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   flow, no dwell). */
 		margin-top: 0;
 		/* R16 (Oscar, 2026-09-02): THE RED BAND — #C1250E (was #eeeef0).
-		   This is the RM / no-JS static ground; under motion
-		   landing-closing.js scrubs it in and out on the ground-fade
-		   grammar: light → red over the section's top clear strip as it
-		   enters (complete before any ink is visible), red → the
-		   footer's ground over the ink-to-edge clearance as it departs
-		   (so its bottom edge meets the footer in the footer's own
-		   colour — no cut). The stage below carries the same paint
-		   (the fixed-hero-video strip lesson) and rides the same tween.
+		   This is the RM / no-JS static ground. R21 (same day) REVERSED
+		   the sequence: under motion landing-closing.js lands the
+		   section WHITE, then scrubs white → red over the dwell's hold
+		   while the text is fixed; red is the final ground and the
+		   footer reveals from beneath the 180 red tail. The stage below
+		   carries the same paint (the fixed-hero-video strip lesson) and
+		   rides the same tween.
 		   INK RULED FINAL (Oscar, 2026-09-02): the statement keeps
 		   #161616 on this red — 3.05:1, the WCAG large-text floor (the
 		   statement is 100px); recorded so audits don't re-flag it. */

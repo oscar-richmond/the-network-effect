@@ -23,7 +23,7 @@
  * landing.css).
  */
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { initStatementDwell } from './statement-dwell.js';
+import { initStatementDwell, ST_DWELL_HOLD_PX } from './statement-dwell.js';
 import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
@@ -120,49 +120,41 @@ export function initLandingClosing() {
     });
   }
 
-  /* ── THE RED BAND (R16, Oscar 2026-09-02): the statement section's
-     ground is #C1250E. GROUND CHOREOGRAPHY on the established fade
-     grammar — two scrubbed, reversible windows on the section's (and
-     its stage's) backgroundColor:
-       ENTER  [section top at the viewport bottom, + the section's
-              top clear strip (its measured padding-top — the dwell's
-              symmetric pad)]: the closing's #eeeef0 → red. Complete
-              exactly as the stage's top reaches the viewport bottom;
-              the first ink sits 54 lower, so no ink is ever seen over
-              the shifting ground.
-       EXIT   on THE RED TAIL (the empty strip after the section —
-              the services-fade lesson, never under live content):
-              [tail top at the viewport bottom, + the tail's height]
-              — the section, its stage and the tail fade TOGETHER,
-              red → the FOOTER's own ground (read live), so the tail's
-              bottom edge uncovers the footer in the footer's colour
-              — no cut, and the statement's whole dwell sits on solid
-              red (the section's own bottom edge is only 21px below
-              the viewport at the dwell's release — a fade on the
-              section alone had to run through the hold). The
-              statement is plain #161616 ink, styled for both grounds,
-              so it may still be in view over the first part of this
-              shift. INK RULED FINAL (Oscar, 2026-09-02): #161616 on
-              #C1250E stays — do not re-flag. Measured contrast 3.05:1,
-              which passes WCAG only at the large-text floor (3:1;
-              the statement is 100px, the nav 18-34px). The simple
-              exit fade stays as built; no ink fade is needed because
-              the dark ink is styled for both grounds.
-     NAV OVERRIDE: while the band is under the nav every nav item is
-     solid #161616, blend off — a class on the ELEMENTS (never an
-     ancestor). ON when the band's top edge crosses the nav's vertical
-     midpoint (NAV_RED_SWITCH_T of the bar's height — the straddle
-     rule: half the bar's height of scroll either side is the
-     unavoidable straddle, minimised at the midpoint); OFF when the
-     exit fade completes (the tail's bottom edge at the viewport
-     bottom — the ground under the nav is the footer's grey by then,
-     where the blend's own result is #111, one step from the solid).
-     Both edges are pure functions of the band's rect, so reverse
-     scroll runs them backwards. RM: the static red band keeps the
-     nav rule (a state, not motion); the fades don't run (the RM
-     boundary rule). Desktop only. */
+  /* ── THE RED BAND — R21 (Oscar 2026-09-02) REVERSES the R16
+     sequence. Scrolling down: the statement ARRIVES on the WHITE
+     ground → it FIXES (the dwell, centred as built) → the ground
+     scrubs WHITE → RED (#C1250E) while the text stays fixed → once
+     fully red, continued scroll reveals the footer from beneath. One
+     progress value, fully reversible:
+       FADE   [the dwell's engage (section top at the viewport top),
+              + ST_DWELL_HOLD_PX]: #eeeef0 → red on the section, its
+              stage and the red tail together — the sticky hold IS
+              the fade window, so the text is pinned throughout and
+              is fully red exactly at the release.
+       TAIL   CLOSING_RED_TAIL_PX (landing.css; 180 — R21, was 500):
+              the red band continues 180 below the section's bottom
+              edge, then its edge uncovers the sticky footer (the
+              grey/white ground) — the reveal follows full red
+              directly; no hold on full red (Oscar hasn't asked for
+              one — CLOSING_RED_HOLD_PX below is the knob, 0).
+     The R16 enter fade (light → red over the top strip) and exit
+     fade (red → the footer's ground over a 500 tail) are retired.
+     INK RULED FINAL (Oscar, 2026-09-02): #161616 on both grounds —
+     3.05:1 on the red, the WCAG large-text floor (the statement is
+     100px); no ink switch anywhere in the sequence.
+     NAV OVERRIDE (unchanged mechanism): solid #161616, blend off,
+     while the band covers the nav's midpoint (NAV_RED_SWITCH_T of
+     the bar's height): ON as the section's top crosses it — the
+     ground is still white there, where the blend's own result is
+     (17,17,15), one step from the solid, so the switch is invisible;
+     it holds through the fade and the red tail; OFF as the tail's
+     bottom edge crosses the same line — over the footer's grey the
+     blend again reads (17,17,15). A class on the elements and the
+     bar (the bar itself is difference-blended), never a new ancestor.
+     RM: the static red band (no scrub) keeps the nav rule. */
   const RED = '#c1250e';
   const NAV_RED_SWITCH_T = 0.5;
+  const CLOSING_RED_HOLD_PX = 0; /* a pause on full red before the reveal — none ruled */
   let cleanupRed = () => {};
   if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement
     && window.matchMedia('(min-width: 1025px)').matches) {
@@ -194,12 +186,10 @@ export function initLandingClosing() {
       : 35.5);
     const onRedScroll = () => {
       const r = section.getBoundingClientRect();
-      const vh = window.innerHeight || 0;
-      /* Red under the nav from the band's top edge at the switch line
-         until the exit fade completes = the tail's bottom edge at the
-         viewport bottom (the section's own bottom when no tail). */
-      const groundBottom = tail instanceof HTMLElement ? tail.getBoundingClientRect().bottom : r.bottom;
-      setSolid(r.top <= navSwitchY() && groundBottom > vh);
+      const y = navSwitchY();
+      /* The band (section + tail) covers the nav's midpoint. */
+      const bandBottom = tail instanceof HTMLElement ? tail.getBoundingClientRect().bottom : r.bottom;
+      setSolid(r.top <= y && bandBottom > y);
     };
     window.addEventListener('scroll', onRedScroll, { passive: true });
     window.addEventListener('resize', onRedScroll);
@@ -208,58 +198,29 @@ export function initLandingClosing() {
     if (!reduced) {
       (document.fonts?.ready ?? Promise.resolve()).then(() => {
         if (earlyDisposed) return;
-        /* Registered after the dwell's own fonts.then, so the pads are
-           already written when these measure. */
-        const enterPx = () => parseFloat(getComputedStyle(section).paddingTop) || 0;
-        /* The exit runs over the tail's own height (CLOSING_RED_TAIL_PX
-           in landing.css — read rendered, one source). Without a tail
-           it falls back to the section's ink→edge clearance. */
-        const exitPx = () => {
-          if (tail instanceof HTMLElement && tail.offsetHeight > 0) return tail.offsetHeight;
-          const lines = Array.from(stage.querySelectorAll('[data-closing-st-line]'));
-          const lastBottom = lines.length
-            ? Math.max(...lines.map((l) => l.offsetTop + l.offsetHeight))
-            : stage.offsetHeight;
-          return Math.max(0, stage.offsetHeight - lastBottom)
-            + (parseFloat(getComputedStyle(section).paddingBottom) || 0);
-        };
-        const exitTrigger = tail instanceof HTMLElement && tail.offsetHeight > 0 ? tail : section;
+        /* Registered after the dwell's own fonts.then, so its paddings
+           and hold are already in place when this measures. */
         const grounds = [section, stage, ...(tail instanceof HTMLElement ? [tail] : [])];
-        const footerGround = () => (footer instanceof HTMLElement
-          ? getComputedStyle(footer).backgroundColor
-          : '#eeeef0');
-        const enter = gsap.timeline({
+        const fade = gsap.timeline({
           scrollTrigger: {
             trigger: section,
-            start: 'top bottom',
-            end: () => `+=${Math.round(enterPx())}`,
+            start: 'top top',                       /* = the dwell's engage */
+            end: () => `+=${ST_DWELL_HOLD_PX}`,     /* = the hold: red at the release */
             scrub: true,
             invalidateOnRefresh: true,
           },
         });
-        enter.fromTo([section, stage],
+        fade.fromTo(grounds,
           { backgroundColor: '#eeeef0' },
           { backgroundColor: RED, ease: 'none', duration: 1, immediateRender: true }, 0);
-        const exit = gsap.timeline({
-          scrollTrigger: {
-            trigger: exitTrigger,
-            start: exitTrigger === tail ? 'top bottom' : () => `bottom bottom+=${Math.round(exitPx())}`,
-            end: exitTrigger === tail ? () => `+=${Math.round(exitPx())}` : 'bottom bottom',
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        });
-        exit.fromTo(grounds,
-          { backgroundColor: RED },
-          { backgroundColor: footerGround(), ease: 'none', duration: 1, immediateRender: false }, 0);
-        redTls.push(enter, exit);
+        redTls.push(fade);
         ScrollTrigger.refresh();
         if (import.meta.env.DEV) {
           window.__landingClosingRed = {
-            enter: () => [enter.scrollTrigger?.start, enter.scrollTrigger?.end],
-            exit: () => [exit.scrollTrigger?.start, exit.scrollTrigger?.end],
-            enterPx, exitPx, footerGround, solid: () => solid, navSwitchY,
+            fade: () => [fade.scrollTrigger?.start, fade.scrollTrigger?.end],
+            holdPx: ST_DWELL_HOLD_PX, redHoldPx: CLOSING_RED_HOLD_PX,
             tail: () => (tail instanceof HTMLElement ? tail.getBoundingClientRect() : null),
+            solid: () => solid, navSwitchY,
           };
         }
       });
