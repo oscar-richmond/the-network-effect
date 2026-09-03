@@ -39,6 +39,7 @@ import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport } from './viewport.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 import { initMobileEntrance } from './m-entrance.js';
+import { sreelHandoff } from './landing-services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -265,10 +266,16 @@ export function initLandingFeatured() {
      --lf-viewall-top / the strip top; the departure rides --lf-depart,
      composed in the calc. The 24px floor stays as the too-tall guard
      (flagged in the gap report, never a silent compression).
-
+     R26 item 5 — THE EARLIER ENTRANCE (supersedes the reel's 75%-gate
+     arrival): the section's overlap margin is DERIVED so the header's
+     top crosses the viewport bottom exactly as AMPLIFY's right-hand
+     image is fully blurred out (the reel exports that progress value
+     and its depart pad — sreelHandoff()); the margin is written here,
+     the one writer, and ScrollTrigger refreshes on change. */
   const HEADER_INK_TOP_PX = 2;     /* cap top below the header's line-box top at 56/50 (measured) */
   const HEADER_INK_BOTTOM_PX = 46; /* the caps' baseline below the header's line-box top at 56/50 (measured) */
   const ROW_TO_UNIT_GAP_PX = 80;   /* header baseline → carousel unit top */
+  let lastEntryMargin = null;
   let lastPlacement = null;
   const place = () => {
     fitCards();
@@ -304,6 +311,20 @@ export function initLandingFeatured() {
     const viewallTop = headerTop + HEADER_INK_BOTTOM_PX - viewallH;
     section.style.setProperty('--lf-header-top', `${headerTop.toFixed(1)}px`);
     section.style.setProperty('--lf-viewall-top', `${viewallTop.toFixed(1)}px`);
+    /* Item 5: the overlap margin — the header's top meets the viewport
+       bottom at the Amplify image's blur-out. Landing + motion only
+       (the /services host and reduced motion keep the flow margin). */
+    let entryMargin = null;
+    const hand = sreelHandoff();
+    if (hand && document.body.classList.contains('landing-home') && !reducedMotion) {
+      entryMargin = hand.imageBlurOutPx - headerTop - hand.departPad;
+      const next = `${entryMargin.toFixed(1)}px`;
+      if (section.style.marginTop !== next) {
+        section.style.marginTop = next;
+        lastEntryMargin = entryMargin;
+        ScrollTrigger.refresh(); /* the section moved: every trigger below re-measures */
+      }
+    }
     lastPlacement = {
       wordmarkBottom: +wm.toFixed(2),
       unitH: +unitH.toFixed(2),
@@ -316,6 +337,8 @@ export function initLandingFeatured() {
       viewallBottom: +(viewallTop + viewallH).toFixed(2),
       stageH: stageH(),
       floorHit: blockTop === 24 + wm,
+      entryMargin,
+      handoff: hand,
     };
   };
   const positionViaVars = () => {

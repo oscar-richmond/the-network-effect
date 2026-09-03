@@ -173,6 +173,19 @@ const SREEL_EXIT_HEADS_AT_PX = 420;   /* titles//0N/dividers/WWD last */
    overlaps the fade's start. */
 const SREEL_HANDOFF_GATE_T = 0.75;
 
+/* R26 (Oscar, 2026-09-03) — THE FEATURED HAND-OFF, exported: the
+   progress (px into the depart timeline) at which AMPLIFY's right-hand
+   IMAGE is FULLY blurred out — it rides the furniture group, so
+   furniture-at + one span (240 + 180 = 420) — and the live depart pad.
+   landing-featured.js derives its overlap from these so the FEATURED
+   WORK heading's top crosses the viewport bottom at exactly that
+   moment (supersedes the 75%-gate arrival contract). */
+export const SREEL_IMAGE_BLUR_OUT_PX = SREEL_EXIT_FURNITURE_AT_PX + SREEL_EXIT_SPAN_PX;
+let lastDepartPad = 0;
+export function sreelHandoff() {
+  return lastDepartPad > 0 ? { departPad: lastDepartPad, imageBlurOutPx: SREEL_IMAGE_BLUR_OUT_PX } : null;
+}
+
 /* ── SCROLL-MODE TEXT SLIDE (Oscar 2026-08-27) — the scroll-active
    row's text slides right; tune here (pushed to CSS as
    --sreel-slide-x / -s / -ease). Ease = the house state-transition
@@ -740,6 +753,7 @@ export function initLandingServicesReel() {
   const blurOutSpan = SREEL_EXIT_HEADS_AT_PX + SREEL_EXIT_SPAN_PX; /* 600 */
   const fadeGateAt = Math.round(blurOutSpan * SREEL_HANDOFF_GATE_T); /* 450 */
   const departPad = fadeGateAt + TRANSITION_GROUND_FADE_PX; /* 783 (R26; was 950) */
+  lastDepartPad = departPad;
   section.style.setProperty('--sreel-outro-pad', `${departPad}px`);
 
   const depart = gsap.timeline({
