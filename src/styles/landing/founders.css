@@ -880,6 +880,41 @@ body.founders-page {
 		object-fit: cover;
 	}
 
+	/* R30 (Oscar, 2026-09-03) — THE COLUMN BUILD: the strip arrives
+	   one image at a time on load (founders-page.js orders the slots
+	   from the LIVE window: the third slot is already there, then the
+	   top, then the bottom, then the rest). The reveal is the site's
+	   media-entrance vocabulary — the founders MOBILE fade-rise,
+	   shared not re-invented (m-entrance / initFoundersMobile's
+	   .is-visible on .fd-slide__m-portrait et al). Slots below the
+	   fold are set visible immediately (nothing to watch). */
+	/* Gated on `html.js` (BaseLayout's own class) so the parked state
+	   exists from the FIRST paint — no visible-then-hidden flash — and
+	   a no-JS load keeps the whole column present. */
+	.js .founders-page .fd-col__slot {
+		opacity: 0;
+		transform: translate3d(0, 24px, 0);
+		transition:
+			opacity var(--fd-build-s, 0.52s) ease,
+			transform var(--fd-build-s, 0.52s) cubic-bezier(0.22, 0.61, 0.36, 1);
+	}
+
+	.js .founders-page .fd-col__slot.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* Reduced motion: the column is simply there (states, not motion —
+	   the house rule). */
+	@media (prefers-reduced-motion: reduce) {
+		.js .founders-page .fd-col__slot {
+			opacity: 1;
+			transform: none;
+			transition: none;
+		}
+	}
+
+
 	/* ── Text block (guide mapping flagged in the report). */
 	/* R19 (Oscar, 2026-09-02): the founder eyebrows take the landing's
 	   SECTION-LABEL family exactly (FEATURED WORK / WHAT WE DO /

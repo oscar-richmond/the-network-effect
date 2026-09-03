@@ -45,7 +45,7 @@
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
-import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapWordRevealElement, wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 import { getLenisInstance } from './site-scroll.js';
 
@@ -78,6 +78,51 @@ const RELEASE_RISE_PX = 96; /* the 120px white gap − the 24 rest (rev 2) */
 const FOOTER_REVEAL_PX = 830; /* frame 13:381 (was 811) */
 const NAV_EXIT_EPSILON_PX = 2;
 
+/* ══ R30 (Oscar, 2026-09-03) — THE FOUNDERS CHOREOGRAPHY PASS ══════
+   Five rulings, all desktop; mobile (initFoundersMobile) untouched.
+
+   1 THE COLUMN BUILDS IN on load, one image at a time, and the slide
+     transition's trigger moves off its scroll constant onto the
+     column's own measured edge.
+   2 The Robbo → Ashley TEXT no longer swaps: it blur-fades across on
+     the phase's own progress (see the diagnosis note at applyText).
+   3 Every text row ENTERS on the landing hero's word-clip vocabulary
+     (line-reveal.js — the same wrap and the same 1.2s curve), row by
+     row from the top.
+   4 Both blocks land BLOCK-CENTRE on the PORTRAIT'S CENTRE (measured,
+     per slide), and the landing is followed by one slot of column
+     travel before anything else moves.
+   (Item 5, the closing sweep, lands in its own commit.) */
+/* The column build — load-time (nothing here is scroll-driven): one
+   image every STAGGER, each taking BUILD_S; the third slot is already
+   there, so the build is (visible slots − 1) staggers long. */
+const FD_COL_BUILD_AT_MS = 300;
+const FD_COL_BUILD_STAGGER_MS = 120;
+const FD_COL_BUILD_S = 0.52;
+/* The text entrance's per-ROW delay. The hero's own 0.12 between line
+   groups would run this block 2.52s (11 rows) and read as waiting;
+   0.05 lands the last row's start at 0.50 and the block completes in
+   1.70s (Robbo, 11 rows) / 1.60s (Ashley, 9). The 1.2s reveal curve
+   itself is the hero's, untouched. */
+const FD_ROW_STAGGER_S = 0.05;
+/* The slide transition — ONE crossfade ramp on the text phase's own
+   progress, spanning [0.15, 0.85]: Robbo's blur-fade out and Ashley's
+   blur-fade in run on the SAME t, so their opacities sum to exactly 1
+   at every frame. Sequenced windows (the first build: out by 0.55, in
+   from 0.45) were measured dipping to 0.09 + 0.09 across the middle —
+   a near-empty screen, the very thing this ruling removes. 12px is the
+   house blur-fade exit (the services reel's own value). */
+const FD_XFADE_START_T = 0.15;
+const FD_XFADE_END_T = 0.85;
+const FD_TEXT_BLUR_PX = 12;
+/* Ashley's ROWS ride the arrival itself: they play just after her
+   block's top crosses the viewport bottom (measured at t = 0.24, so
+   0.30 clears it), and the 1.55s reveal runs through her travel —
+   one arrival, not a second animation stacked on the landing. The
+   reverse pass rewinds them without animating (the mobile swap's own
+   resetSlide pattern, which this page already uses). */
+const FD_ASHLEY_REVEAL_AT_T = 0.3;
+
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
 export function initFoundersPage() {
@@ -106,24 +151,79 @@ export function initFoundersPage() {
   const live = stage.querySelector('[data-fd-live]');
   const footerWrap = document.querySelector('[data-fd-footer]');
 
-  /* ── R2 anchors — named constants, nothing derived from names. */
-  const textStart = () => FD_HOLD_PX;
-  const textEnd = () => FD_HOLD_PX + FD_TEXT_PX;
-  const releaseStart = () => textEnd();
-  const footerStart = () => releaseStart() + RELEASE_RISE_PX;
-  const maxPos = () => footerStart() + FOOTER_REVEAL_PX;
-  /* Carousel travel: track bottom lands on the portrait's bottom at
-     Ashley's rest. Both boxes share the containing block, so the
-     rect difference cancels any shared (stage/content) transform. */
+  /* ── Anchors. R30 item 1: the TEXT PHASE'S START is no longer the
+     FD_HOLD_PX scroll constant — it is the scroll at which the NEW TOP
+     IMAGE'S top edge reaches the viewport top, i.e. exactly one slot
+     pitch of column roll (the roll is 1:1 through the hold, see
+     colRoll). Measured from the live slots, so it re-derives with the
+     geometry instead of coinciding with 360 by luck. */
   let colRollMax = 0;
+  let slotPitch = 212.4;
+  let colBuildOrder = [];
   const measureCol = () => {
     if (!(colWrap instanceof HTMLElement) || !(colTrack instanceof HTMLElement)
       || !(portrait instanceof HTMLElement)) return;
     const portBottom = portrait.getBoundingClientRect().bottom
       - colWrap.getBoundingClientRect().top;
     colRollMax = Math.max(0, colTrack.offsetHeight - portBottom);
+    const slots = Array.from(colTrack.querySelectorAll('.fd-col__slot'));
+    if (slots.length > 1) slotPitch = slots[1].offsetTop - slots[0].offsetTop;
+    /* THE BUILD ORDER, derived from the LIVE window (Oscar's ruling):
+       the THIRD slot is already there; then the TOP, then the BOTTOM
+       (the last slot whose box fits the window), then the remaining
+       ones top to bottom. Four visible slots in the 1512 shell give
+       3-1-4-2; five at 1728 give 3-1-5-2-4. Slots below the fold are
+       not in the build (nothing to watch) — they are simply shown. */
+    const winH = colWrap.clientHeight || 0;
+    const visible = slots
+      .map((s, i) => ({ i, top: s.offsetTop, bottom: s.offsetTop + s.offsetHeight }))
+      .filter((s) => s.bottom <= winH + 1);
+    if (!visible.length) { colBuildOrder = slots.map((_, i) => i); return; }
+    const idx = visible.map((s) => s.i);
+    const third = idx[Math.min(2, idx.length - 1)];
+    const top = idx[0];
+    const bottom = idx[idx.length - 1];
+    const rest = idx.filter((i) => i !== third && i !== top && i !== bottom);
+    colBuildOrder = [third, top, bottom, ...rest].filter((v, i, a) => a.indexOf(v) === i);
   };
   measureCol();
+
+  /* ── R30 item 4: each slide's BLOCK CENTRE lands on the PORTRAIT'S
+     CENTRE (Oscar: both slides, the same rule). Measured from layout
+     offsets — never rects — so the live travel transforms cancel out
+     of the derivation entirely. */
+  const blockShift = [0, 0];
+  const measureBlocks = () => {
+    if (!(portrait instanceof HTMLElement)) return;
+    const portraitCentre = portrait.offsetTop + portrait.offsetHeight / 2;
+    slides.forEach((slide, i) => {
+      const els = Array.from(slide.querySelectorAll('[data-fd-el]'))
+        .filter((el) => el instanceof HTMLElement && getComputedStyle(el).display !== 'none');
+      if (!els.length) return;
+      const top = Math.min(...els.map((el) => el.offsetTop));
+      const bottom = Math.max(...els.map((el) => el.offsetTop + el.offsetHeight));
+      blockShift[i] = portraitCentre - (top + bottom) / 2;
+    });
+  };
+  measureBlocks();
+
+  const textStart = () => slotPitch;
+  const textEnd = () => textStart() + FD_TEXT_PX;
+  const dwellEnd = () => textEnd() + slotPitch;   /* item 4: one more image of column travel */
+  const releaseStart = () => dwellEnd();
+  const footerStart = () => releaseStart() + RELEASE_RISE_PX;
+  const maxPos = () => footerStart() + FOOTER_REVEAL_PX;
+  /* The roll: 1:1 through the hold (so the trigger IS one pitch), the
+     remainder over the text phase (track bottom on the portrait's
+     bottom at Ashley's rest — the bound is unchanged), then exactly
+     one more pitch over the post-landing dwell. */
+  const colRoll = (p) => {
+    if (p <= textStart()) return Math.max(0, Math.min(p, slotPitch));
+    const t = clamp((p - textStart()) / FD_TEXT_PX, 0, 1);
+    const base = slotPitch + (colRollMax - slotPitch) * t;
+    if (p <= textEnd()) return base;
+    return colRollMax + clamp(p - textEnd(), 0, slotPitch);
+  };
   /* ── Indicator anchor (Oscar, 2026-08-26): bottom edge 32px above
      the PORTRAIT'S measured bottom, derived live (offset box — the
      shared containing block, so release/reveal transforms cancel).
@@ -176,6 +276,146 @@ export function initFoundersPage() {
     announce(i);
   };
 
+  /* ── R30 item 3 — THE TEXT ENTRANCE: the landing hero's OWN
+     vocabulary, reused wholesale — line-reveal.js's word wrap and its
+     1.2s cubic-bezier(0.42,0,0.24,1) clip reveal, the same call the
+     hero headline and intro make. ORDER: top-left, row by row down the
+     block. Only the CADENCE is this page's: the wrapper's own 0.12
+     between line groups would run Robbo's 11 rows for 2.52s, so the
+     delays are rewritten across the whole block at FD_ROW_STAGGER_S
+     (the vocabulary itself is untouched — same wrap, same curve). */
+  /* The reveal targets are the LEAF text elements, never the four
+     [data-fd-el] containers: the wrapper tokenises an element's DIRECT
+     children, so wrapping a container turns its <p> children into
+     inline atoms — measured, that collapsed the bio's 28px paragraph
+     gap and the relationships rows' 32px pitch (block 245..740 became
+     245..676). The leaves keep every container rule intact. */
+  const REVEAL_TEXT_SEL = '.fd-slide__role, .fd-slide__staticname, .fd-slide__bio2-para, .fd-slide__rel-label';
+  const REVEAL_ROW_SEL = '.fd-slide__rel-row';
+  /* A relationships ROW is authored with NO whitespace between its item
+     and separator spans, and the tokeniser re-joins atoms with a space
+     — which would widen every separator gap on a nowrap line. A row is
+     a single line, so the word wrap's own result for it IS one clip:
+     build that clip directly with the module's classes and its exact
+     transition, and the shared stylesheet drives it identically. */
+  const LR_TRANSITION = 'transform 1.2s cubic-bezier(0.42,0,0.24,1)';
+  const wrapSingleClip = (el) => {
+    if (el.querySelector(':scope > .lr-clip')) return;
+    const clip = document.createElement('span');
+    clip.className = 'lr-clip';
+    const inner = document.createElement('span');
+    inner.className = 'lr-inner';
+    inner.style.transition = `${LR_TRANSITION} 0s`;
+    while (el.firstChild) inner.appendChild(el.firstChild);
+    clip.appendChild(inner);
+    el.appendChild(clip);
+  };
+  const slideParts = slides.map((slide) => Array.from(slide.querySelectorAll(`${REVEAL_TEXT_SEL}, ${REVEAL_ROW_SEL}`))
+    .filter((el) => el instanceof HTMLElement && getComputedStyle(el).display !== 'none')
+    .map((el) => ({ el, single: el.matches(REVEAL_ROW_SEL) }))
+    /* top to bottom — the rows share the slide's transform, so the
+       rects order them exactly as the reader sees them */
+    .sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top));
+  const wrappedSlide = [false, false];
+  const rowCount = [0, 0];
+  const ensureWrapped = (i) => {
+    if (wrappedSlide[i] || reduced) return;
+    wrappedSlide[i] = true;
+    /* wrapLineRevealElement — the LANDING HERO'S own call (BUILT ON
+       TRUST / POWERED BY ACCESS and the "We connect…" intro go through
+       exactly this one, landing-hero-scroll.js): one clip per RENDERED
+       LINE, the 1.2s house curve. The word variant is the mobile
+       swap's, and would make the stagger per word (53 of them here),
+       not per row. */
+    slideParts[i].forEach(({ el, single }) => {
+      if (single) wrapSingleClip(el); else wrapLineRevealElement(el);
+    });
+    let row = 0;
+    slideParts[i].forEach(({ el }) => {
+      el.querySelectorAll('.lr-inner').forEach((inner) => {
+        if (inner instanceof HTMLElement) inner.style.transitionDelay = `${(row * FD_ROW_STAGGER_S).toFixed(2)}s`;
+        row += 1;
+      });
+    });
+    rowCount[i] = row;
+  };
+  const playSlideRows = (i) => { slideParts[i].forEach(({ el }) => playLineRevealElement(el)); };
+  /* The rewind for the reverse pass — the mobile swap's own pattern,
+     already proven on this page: the inner transitions (which carry the
+     per-row delays) are suppressed for the flip and restored verbatim,
+     so nothing animates backwards and the next forward pass replays
+     from the top. */
+  const resetSlideRows = (i) => {
+    slideParts[i].forEach(({ el }) => {
+      el.querySelectorAll('.lr-clip').forEach((clip) => {
+        const inner = clip.querySelector('.lr-inner');
+        if (inner instanceof HTMLElement) {
+          const t = inner.style.transition;
+          inner.style.transition = 'none';
+          clip.classList.remove('lr-visible');
+          void inner.offsetHeight;
+          inner.style.transition = t;
+        } else {
+          clip.classList.remove('lr-visible');
+        }
+      });
+    });
+  };
+  /* Ashley's rows ride the slide-in itself (item 2 × item 3): they play
+     once the transition is FD_ASHLEY_REVEAL_AT_T through, so the reveal
+     finishes as her block lands — one arrival, not two. */
+  let ashleyRowsPlayed = false;
+  const applyAshleyRows = (textTe) => {
+    if (reduced || !wrappedSlide[1]) return;
+    const want = textTe >= FD_ASHLEY_REVEAL_AT_T;
+    if (want === ashleyRowsPlayed) return;
+    ashleyRowsPlayed = want;
+    if (want) playSlideRows(1); else resetSlideRows(1);
+  };
+
+  /* ── R30 item 1 — THE COLUMN BUILD (load-time, nothing scroll-driven).
+     The third slot is already there; the rest arrive one at a time in
+     the order measureCol derived from the live window. Slots below the
+     fold are shown at once — there is nothing to watch. */
+  const colSlots = colTrack instanceof HTMLElement
+    ? Array.from(colTrack.querySelectorAll('.fd-col__slot')).filter((el) => el instanceof HTMLElement)
+    : [];
+  colSlots.forEach((s) => s.style.setProperty('--fd-build-s', `${FD_COL_BUILD_S}s`));
+  const buildColumn = () => {
+    if (!colSlots.length) return;
+    if (reduced) { colSlots.forEach((s) => s.classList.add('is-visible')); return; }
+    const inBuild = new Set(colBuildOrder);
+    colSlots.forEach((s, i) => { if (!inBuild.has(i)) s.classList.add('is-visible'); });
+    colBuildOrder.forEach((slotIdx, k) => {
+      const el = colSlots[slotIdx];
+      if (!(el instanceof HTMLElement)) return;
+      if (k === 0) { el.classList.add('is-visible'); return; }
+      schedule(() => el.classList.add('is-visible'), FD_COL_BUILD_AT_MS + (k - 1) * FD_COL_BUILD_STAGGER_MS);
+    });
+  };
+
+  /* ── R30 item 2 — THE SLIDE-CHANGE TEXT TRANSITION.
+     THE DEFECT (measured at nine points, both sizes): the text had NO
+     transition of any kind. Both blocks travelled the whole phase, but
+     each was only VISIBLE for half of it — the stylesheet hides the
+     inactive slide outright (.fd-slide[data-active='false']) and the
+     driver flipped which slide was active at the phase's midpoint, so
+     at 0.49 Robbo was visible and Ashley hidden and at 0.50 that
+     reversed in one frame. Robbo therefore vanished 400px into an
+     800px exit and Ashley appeared mid-flight: the instant
+     disappear / flash Oscar reported.
+     THE FIX: opacity and blur are written here from the phase's own
+     progress (the inline visibility overrides the class rule, so the
+     data-active swap keeps driving aria/tab state only). Both are pure
+     f(pos) — the reversal is arithmetic. */
+  const applySlideState = (el, op, blurT) => {
+    const o = reduced ? (op >= 0.5 ? 1 : 0) : clamp(op, 0, 1);
+    el.style.opacity = o >= 0.999 ? '' : o.toFixed(3);
+    const bl = reduced ? 0 : FD_TEXT_BLUR_PX * clamp(blurT, 0, 1);
+    el.style.filter = bl > 0.05 ? `blur(${bl.toFixed(2)}px)` : '';
+    el.style.visibility = o <= 0.001 ? 'hidden' : 'visible';
+  };
+
   /* ── The frame — every visual is a pure function of pos. */
   const frame = () => {
     const textT = clamp((pos - textStart()) / FD_TEXT_PX, 0, 1);
@@ -184,19 +424,22 @@ export function initFoundersPage() {
     const reveal = clamp(pos - footerStart(), 0, FOOTER_REVEAL_PX);
     const vh = window.innerHeight || 1080;
 
-    /* TEXT TRAVEL — Robbo up and out; Ashley up and in, landing on
-       the identical CSS slot (translate 0). The portrait and column
-       never travel: the page starts at Robbo's rest. */
+    /* TEXT TRAVEL — Robbo up and out; Ashley up and in, landing on her
+       measured centring offset (R30 item 4). The portrait never
+       travels: the page
+       starts at Robbo's rest. */
+    const xf = clamp((textTe - FD_XFADE_START_T) / (FD_XFADE_END_T - FD_XFADE_START_T), 0, 1);
     if (slides[0] instanceof HTMLElement) {
-      const y = -FD_TEXT_EXIT_PX * textTe;
-      slides[0].style.transform = y < -0.01 ? `translate3d(0, ${y.toFixed(1)}px, 0)` : '';
-      slides[0].style.visibility = textTe >= 1 ? 'hidden' : '';
+      const y = blockShift[0] - FD_TEXT_EXIT_PX * textTe;
+      slides[0].style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      applySlideState(slides[0], 1 - xf, xf);
     }
     if (slides[1] instanceof HTMLElement) {
-      const y = vh * (1 - textTe);
-      slides[1].style.transform = y > 0.01 ? `translate3d(0, ${y.toFixed(1)}px, 0)` : '';
-      slides[1].style.visibility = textTe <= 0 ? 'hidden' : '';
+      const y = blockShift[1] + vh * (1 - textTe);
+      slides[1].style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      applySlideState(slides[1], xf, 1 - xf);
     }
+    applyAshleyRows(textTe);
 
     /* PORTRAIT REVEAL-BEHIND over the travel's tail: Ashley is fully
        opaque beneath at all times; Robbo's layer wipes L→R off him —
@@ -214,18 +457,19 @@ export function initFoundersPage() {
 
     /* THE ROLLING CAROUSEL — bounded, scroll-driven: top of the strip
        at the page top at pos 0, bottom on the portrait's bottom edge
-       from Ashley's rest on; stops with the scroll, reverses. */
+       from Ashley's rest on; stops with the scroll, reverses. R30: 1:1
+       through the hold (so the slide trigger IS one slot pitch), then
+       ONE MORE PITCH over the post-landing dwell (item 4). */
     if (colTrack instanceof HTMLElement) {
-      const rollT = reduced ? (textTe >= 1 ? 1 : 0) : clamp(pos / textEnd(), 0, 1);
-      const roll = colRollMax * rollT;
+      const roll = reduced ? (textTe >= 1 ? colRollMax : 0) : colRoll(pos);
       colTrack.style.transform = roll > 0.01 ? `translate3d(0, ${(-roll).toFixed(2)}px, 0)` : '';
     }
-
     /* Indicator — the label row rides its 64px with the text travel. */
     if (labelRow instanceof HTMLElement) {
       labelRow.style.top = `${(19 + 64 * textTe).toFixed(1)}px`;
     }
     setActiveSlide(textTe >= 0.5 ? 1 : 0);
+
 
     /* Release + footer reveal — the unchanged grammar. */
     if (content instanceof HTMLElement) {
@@ -384,6 +628,7 @@ export function initFoundersPage() {
 
   const onResize = () => {
     measureCol();
+    measureBlocks(); /* R30 item 4: the centring re-derives with the geometry */
     placeIndicator();
     frame();
   };
@@ -399,6 +644,15 @@ export function initFoundersPage() {
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
+    /* R30: the wrap needs settled metrics (line grouping reads live
+       offsets — the house order), then the block geometry is measured
+       from the wrapped elements and the entrance plays. */
+    ensureWrapped(0);
+    ensureWrapped(1);
+    measureBlocks();
+    playSlideRows(0);
+    if (wantAshley) { playSlideRows(1); ashleyRowsPlayed = true; }
+    buildColumn();
     frame();
     if (!(footerEl instanceof HTMLElement)) return;
     wrappedFooter = wrapFooterReveals(footerEl);
@@ -420,8 +674,10 @@ export function initFoundersPage() {
       setPos: (p) => { setPosClamped(p); },
       state: () => ({
         pos, targetPos, textStart: textStart(), textEnd: textEnd(),
+        dwellEnd: dwellEnd(),
         releaseStart: releaseStart(), footerStart: footerStart(), maxPos: maxPos(),
-        activeSlide,
+        activeSlide, slotPitch, colRollMax, blockShift: [...blockShift],
+        colBuildOrder: [...colBuildOrder], rowCount: [...rowCount],
       }),
     };
   }
