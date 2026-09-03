@@ -967,8 +967,15 @@ body.founders-page {
 		   0..779, with 92px (Ashley) / 259px (Robbo) of rendered
 		   headroom. The "cut head" reported on the earlier build was the
 		   sweep's blur feathering the band's top edge (item 4), not the
-		   crop. */
-		object-position: 50% 0%;
+		   crop.
+		   R33 (Oscar, 2026-09-03): the photo moves UP 40px inside the
+		   band — the band's own edges untouched — so the window sits 40
+		   rendered px (37 source rows) lower on the source: rows 37..816
+		   visible, the top 37 rows lost, 40 more px of the lower body
+		   shown. Headroom becomes 52px (Ashley) / 219px (Robbo); both
+		   faces stay fully in frame. Identical at both sizes (the same
+		   1728 × 841 band). */
+		object-position: 50% -40px;
 	}
 
 	/* ── Text block (guide mapping flagged in the report). */
