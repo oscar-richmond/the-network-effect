@@ -248,21 +248,27 @@ export function initLandingFeatured() {
      bottom, equal gaps. The unit's height is MEASURED at the fix
      moment (min image top → max title bottom across the cards; the
      strip's own box is the fixed 653 card height, taller than the
-     unit). The header sits at a FIXED top (its ink 180 below the
-     section above's bottom = this stage's top at the pin; R25: the
-     LARGE SANS 56/50's cap top sits 2 below its own 50px line box,
-     pixel-measured on this header → 178), and VIEW ALL WORK
-     (R25, Oscar 2026-09-03 — supersedes R15's 80-below-the-unit,
-     centred placement) sits ON THE HEADER'S ROW: its bottom on the
-     header's ink bottom (HEADER_INK_BOTTOM_PX below the header top,
-     pixel-measured), its right edge 24 from the viewport (CSS).
-     Same mechanism as the R6 fix — place() is the ONE writer of
-     --lf-header-top / --lf-viewall-top / the strip top; the
-     departure rides --lf-depart, composed in the calc. The 24px
-     floor stays as the too-tall guard (flagged in the gap report,
-     never a silent compression). */
-  const LABEL_TOP_PX = 178;
+     unit). R26 (Oscar, 2026-09-03) — WHOLE-BLOCK CENTRING (supersedes
+     R15's carousel-only centring and R25's fixed header top with its
+     "ink 180 below the section above"): the BLOCK = the header row's
+     ink (FEATURED WORK's cap top to its baseline, where VIEW ALL
+     WORK's bottom sits) + ROW_TO_UNIT_GAP_PX + the carousel unit, and
+     the block is centred in the region from the nav's bottom to the
+     viewport bottom. The anchor stays this section's own: the
+     WORDMARK's bottom (54.5), as R15 ruled — the closing / services
+     dwells use the bar's bottom (71); the two differ by 16.5, an 8px
+     centre shift, one line to switch. The header's ink offsets are
+     pixel-measured on the LARGE SANS 56/50 (cap top 2 below its 50px
+     line box, baseline 46). VIEW ALL WORK (R25) sits on the header's
+     row: its bottom on the header's baseline, its right edge 24 from
+     the viewport (CSS). place() is the ONE writer of --lf-header-top /
+     --lf-viewall-top / the strip top; the departure rides --lf-depart,
+     composed in the calc. The 24px floor stays as the too-tall guard
+     (flagged in the gap report, never a silent compression).
+
+  const HEADER_INK_TOP_PX = 2;     /* cap top below the header's line-box top at 56/50 (measured) */
   const HEADER_INK_BOTTOM_PX = 46; /* the caps' baseline below the header's line-box top at 56/50 (measured) */
+  const ROW_TO_UNIT_GAP_PX = 80;   /* header baseline → carousel unit top */
   let lastPlacement = null;
   const place = () => {
     fitCards();
@@ -287,23 +293,29 @@ export function initLandingFeatured() {
       unitBottomOff = stripRect.height || (MAX_IMG_H_PX + META_GAP_PX + TITLE_H_PX);
     }
     const unitH = unitBottomOff - unitTopOff;
-    const unitTop = Math.max(24 + wm, wm + (stageH() - wm - unitH) / 2);
+    const rowInkH = HEADER_INK_BOTTOM_PX - HEADER_INK_TOP_PX; /* 44 */
+    const blockH = rowInkH + ROW_TO_UNIT_GAP_PX + unitH;
+    const blockTop = Math.max(24 + wm, wm + (stageH() - wm - blockH) / 2); /* the header row's ink top */
+    const headerTop = blockTop - HEADER_INK_TOP_PX;
+    const unitTop = blockTop + rowInkH + ROW_TO_UNIT_GAP_PX;
     const stripTop = unitTop - unitTopOff;
     strip.style.top = `${stripTop.toFixed(1)}px`;
     const viewallH = viewall instanceof HTMLElement ? viewall.getBoundingClientRect().height || 38 : 38;
-    const viewallTop = LABEL_TOP_PX + HEADER_INK_BOTTOM_PX - viewallH;
-    section.style.setProperty('--lf-header-top', `${LABEL_TOP_PX}px`);
+    const viewallTop = headerTop + HEADER_INK_BOTTOM_PX - viewallH;
+    section.style.setProperty('--lf-header-top', `${headerTop.toFixed(1)}px`);
     section.style.setProperty('--lf-viewall-top', `${viewallTop.toFixed(1)}px`);
     lastPlacement = {
       wordmarkBottom: +wm.toFixed(2),
       unitH: +unitH.toFixed(2),
+      blockH: +blockH.toFixed(2),
+      headerTop: +headerTop.toFixed(2),
       unitTop: +unitTop.toFixed(2),
-      gapAbove: +(unitTop - wm).toFixed(2),
+      gapAbove: +(blockTop - wm).toFixed(2),
       gapBelow: +(stageH() - (unitTop + unitH)).toFixed(2),
       viewallTop: +viewallTop.toFixed(2),
-      viewallBottom: +(viewallTop + (viewall instanceof HTMLElement ? viewall.getBoundingClientRect().height : 38)).toFixed(2),
+      viewallBottom: +(viewallTop + viewallH).toFixed(2),
       stageH: stageH(),
-      floorHit: unitTop === 24 + wm,
+      floorHit: blockTop === 24 + wm,
     };
   };
   const positionViaVars = () => {
