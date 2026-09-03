@@ -44,7 +44,7 @@
 
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
-import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
+import { createNavSweep } from './nav-motion.js';
 import { wrapWordRevealElement, wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 import { getLenisInstance } from './site-scroll.js';
@@ -637,18 +637,8 @@ export function initFoundersPage() {
   };
 
   /* ── Nav exit (the /work bottom behaviour). */
-  ensureLogoChars();
-  /* The swept links' own chars — unconditional (char-ripple's wrap
-     is hover-gated; the WORK-doesn't-sweep cause). */
-  ensureNavLinkChars();
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  let navHidden = false;
-  const setNav = (hidden) => {
-    if (navHidden === hidden) return;
-    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
-    navHidden = hidden;
-    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
-  };
+  /* R36 (Oscar, 2026-09-04): the SHARED sweep applier (nav-motion.js). */
+  const { setNav } = createNavSweep({ reduced });
 
   /* ── Input (the /work port). ROOT-CAUSE FIX (Oscar's report: the
      reveal stalls partway, footer top items cut off): wheel/touch

@@ -72,7 +72,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
-import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
+import { createNavSweep, BOTTOM_SNAP_IDLE_MS, BOTTOM_EPSILON_PX, NAV_SHOW_HYSTERESIS_PX } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
@@ -125,9 +125,6 @@ const SCROLL_SMOOTH_LERP = 0.065;
    via initMobileEntrance below.) */
 const LINE_STAGGER_S = 0.12;
 /* Bottom behaviours — the landing constants (landing-closing.js). */
-const BOTTOM_SNAP_IDLE_MS = 2000;
-const BOTTOM_EPSILON_PX = 2;
-const NAV_SHOW_HYSTERESIS_PX = 64;
 
 const clamp = (n, min, max) => Math.max(min, Math.min(n, max));
 
@@ -783,19 +780,10 @@ export function initWorkPage() {
      2. NAV EXIT (partial, 2026-08-27): at the bottom the two
         centred nav items ripple out (the shared nav-motion applier)
         and back in on the way up; wordmark + LET'S CHAT stay. */
-  ensureLogoChars();
-  /* The swept links' own chars — unconditional (char-ripple's wrap
-     is hover-gated; the WORK-doesn't-sweep cause). */
-  ensureNavLinkChars();
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  let navHidden = false;
-  const setNav = (hidden) => {
-    if (navHidden === hidden) return;
-    /* Never strand an open menu without its toggle. */
-    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
-    navHidden = hidden;
-    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
-  };
+  /* R36 (Oscar, 2026-09-04): the SHARED sweep applier (nav-motion.js);
+     this driver keeps its own pos-based bottom logic on the shared
+     constants. */
+  const { setNav } = createNavSweep({ reduced });
 
   let snapTimer = 0;
   let lastPos = 0;

@@ -164,7 +164,10 @@ export function applyNavSweep(hidden, { reduced = false, parts = getNavParts() }
         u.style.opacity = hidden ? '0' : '';
         return;
       }
-      u.classList.remove('nav-char-out', 'nav-char-in');
+      /* R36: a char-ripple pulse still on the unit would outrank this
+         sweep's animation (same specificity, later cascade) — strip it
+         here as well as on its own animationend (char-ripple.js). */
+      u.classList.remove('nav-char-out', 'nav-char-in', 'is-rippling', 'is-rippling-in');
       void u.offsetWidth;
       u.style.animationDelay = `${((hidden ? n - 1 - i : i) * NAV_CHAR_STAGGER_S).toFixed(2)}s`;
       u.classList.add(hidden ? 'nav-char-out' : 'nav-char-in');
@@ -177,6 +180,90 @@ export function applyNavSweep(hidden, { reduced = false, parts = getNavParts() }
     const menuToggle = document.querySelector('[data-menu-toggle]');
     if (menuToggle instanceof HTMLElement) menuToggle.style.pointerEvents = hidden ? 'none' : '';
   }
+}
+
+/* R36: the entrance class leaves with its animation too — its `both`
+   fill equals the resting state, and a lingering nav-char-in would
+   replay (blur-in flash) the moment a hover pulse's class was removed
+   over it. The out class keeps `forwards` and stays while hidden. One
+   document-level listener, installed once. */
+let sweepHygieneInstalled = false;
+function ensureSweepHygiene() {
+  if (sweepHygieneInstalled) return;
+  sweepHygieneInstalled = true;
+  document.addEventListener('animationend', (e) => {
+    if (e.animationName === 'cr-nav-in' && e.target instanceof Element) e.target.classList.remove('nav-char-in');
+  });
+}
+
+/* ══ R36 (Oscar, 2026-09-04) — THE BOTTOM-OF-PAGE BEHAVIOUR, SHARED.
+   Six pages carried six copies of the same three things (the guarded
+   sweep applier, the near-bottom idle snap, the direction/hysteresis
+   scroll logic) and the grid view carried none; the copies had drifted
+   (a Lenis handle read through different modules, a snap zone gated
+   differently). ONE binder for every document-scroll page and ONE
+   applier factory for the two virtual-scroll drivers, so the sweep,
+   the snap and the tab-order handling are identical everywhere. */
+export const BOTTOM_SNAP_IDLE_MS = 2000;
+export const BOTTOM_EPSILON_PX = 2;
+export const NAV_SHOW_HYSTERESIS_PX = 64;
+export const FOOTER_H_PX = 830; /* frame 13:381 */
+
+/** The guarded sweep applier: all three centred items out at the bottom
+ *  (wordmark + LET'S CHAT persist), never while the menu overlay is
+ *  open; tab order follows visibility (applyNavSweep). */
+export function createNavSweep({ reduced = false } = {}) {
+  ensureLogoChars();
+  ensureNavLinkChars();
+  ensureSweepHygiene();
+  const menuToggle = document.querySelector('[data-menu-toggle]');
+  let navHidden = false;
+  const setNav = (hidden) => {
+    if (navHidden === hidden) return;
+    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
+    navHidden = hidden;
+    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
+  };
+  return { setNav, isHidden: () => navHidden };
+}
+
+/** The document-scroll pages' bottom behaviour: the sweep at the very
+ *  bottom (back below the 64px hysteresis), and the 2s-idle snap to the
+ *  bottom when the last movement was downward and `inSnapZone()` holds
+ *  (default: within the footer's height). `scrollTo(y)` is the page's
+ *  glide — Lenis where it runs, native smooth otherwise. */
+export function bindBottomNavSweep({ reduced = false, inSnapZone = null, scrollTo = null, getLenis = null } = {}) {
+  const { setNav } = createNavSweep({ reduced });
+  const maxScroll = () => (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
+  const zone = inSnapZone ?? (() => maxScroll() - (window.scrollY || 0) < FOOTER_H_PX - BOTTOM_EPSILON_PX);
+  const glide = scrollTo ?? ((y) => {
+    const lenis = getLenis ? getLenis() : null;
+    if (lenis) lenis.scrollTo(y, { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    else window.scrollTo({ top: y, behavior: 'smooth' });
+  });
+  let snapTimer = 0;
+  let lastScrollY = window.scrollY || 0;
+  let lastDirDown = false;
+  const trySnapToBottom = () => {
+    if (reduced || !lastDirDown || !zone()) return;
+    const y = window.scrollY || 0;
+    if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
+    glide(maxScroll());
+  };
+  const onScroll = () => {
+    const y = window.scrollY || 0;
+    if (y !== lastScrollY) { lastDirDown = y > lastScrollY; lastScrollY = y; }
+    if (y >= maxScroll() - BOTTOM_EPSILON_PX) setNav(true);
+    else if (y < maxScroll() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  return () => {
+    window.removeEventListener('scroll', onScroll);
+    window.clearTimeout(snapTimer);
+    setNav(false);
+  };
 }
 
 /** The load entrance: parts hidden immediately (no flash), then the

@@ -178,9 +178,21 @@ export function initCharRipple(root = document) {
       void charBox.offsetWidth;
       spans.forEach((s) => s.classList.add(rippleClass));
     };
+    /* R36 (Oscar, 2026-09-04) — THE NAV-SWEEP CAUSE: the pulse class
+       used to stay on the chars after the animation ended, and its
+       rule (injected here, later in the cascade than landing.css at
+       equal specificity) then outranked the nav sweep's animation on
+       every item hovered since load — only never-hovered items swept.
+       The class now leaves with its animation (the header's stated
+       contract), so a finished pulse holds no rule. */
+    const onEnd = (e) => {
+      const t = e.target;
+      if (t instanceof Element && spans.includes(t)) t.classList.remove('is-rippling', 'is-rippling-in');
+    };
+    trigger.addEventListener('animationend', onEnd);
 
     trigger.addEventListener('mouseenter', onEnter);
-    cleanups.push(() => trigger.removeEventListener('mouseenter', onEnter));
+    cleanups.push(() => { trigger.removeEventListener('mouseenter', onEnter); trigger.removeEventListener('animationend', onEnd); });
   });
 
   return () => cleanups.forEach((fn) => fn());

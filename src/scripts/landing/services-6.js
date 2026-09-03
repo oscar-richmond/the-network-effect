@@ -33,7 +33,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
-import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
+import { bindBottomNavSweep } from './nav-motion.js';
 import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
@@ -57,10 +57,6 @@ const SV6_TEXT_ENTER_EXPAND_PX = 4;
    NEITHER behaviour: the nav exit and idle snap only ever lived in
    services-v2.js, which initialises below the seam. Constants are
    the case-study/contact pair, verbatim). */
-const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
-const BOTTOM_SNAP_IDLE_MS = 2000;
-const BOTTOM_EPSILON_PX = 2;
-const NAV_SHOW_HYSTERESIS_PX = 64;
 
 export function initServices6() {
   const page = document.querySelector('[data-services-6]');
@@ -573,47 +569,10 @@ export function initServices6() {
   /* ── Bottom behaviours — the case-study/landing pair, verbatim:
      the two centred nav items sweep out at the very bottom (back in
      on the way up), 2s idle snap inside the footer reveal. */
-  ensureLogoChars();
-  /* The swept links' own chars — unconditional (char-ripple's wrap
-     is hover-gated; the WORK-doesn't-sweep cause). */
-  ensureNavLinkChars();
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  let navHidden = false;
-  const setNav = (hidden) => {
-    if (navHidden === hidden) return;
-    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
-    navHidden = hidden;
-    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
-  };
-  const maxScroll = () =>
-    (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
-  let snapTimer = 0;
-  let lastScrollY = window.scrollY || 0;
-  let lastDirDown = false;
-  const inSnapZone = () => maxScroll() - (window.scrollY || 0) < FOOTER_H_PX - BOTTOM_EPSILON_PX;
-  const trySnapToBottom = () => {
-    if (reduced || !lastDirDown || !inSnapZone()) return;
-    const y = window.scrollY || 0;
-    if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
-    const lenis = getLenisInstance();
-    if (lenis) lenis.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
-  };
-  const onBottomScroll = () => {
-    const y = window.scrollY || 0;
-    if (y !== lastScrollY) {
-      lastDirDown = y > lastScrollY;
-      lastScrollY = y;
-    }
-    if (y >= maxScroll() - BOTTOM_EPSILON_PX) setNav(true);
-    else if (y < maxScroll() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
-    window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
-  };
-  window.addEventListener('scroll', onBottomScroll, { passive: true });
-  cleanups.push(() => {
-    window.removeEventListener('scroll', onBottomScroll);
-    window.clearTimeout(snapTimer);
-  });
+  /* R36 (Oscar, 2026-09-04): the SHARED bottom binder (nav-motion.js)
+     — sweep, hysteresis and the idle snap inside the footer's height,
+     one implementation on every document-scroll page. */
+  cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
 
   if (import.meta.env.DEV) {
     window.__services6 = {

@@ -24,7 +24,7 @@
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
-import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
+import { bindBottomNavSweep } from './nav-motion.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CAL_BOOKING_LINK } from '../../data/landing/contact.js';
@@ -34,9 +34,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* Bottom behaviours — the landing constants. */
 const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
-const BOTTOM_SNAP_IDLE_MS = 2000;
-const BOTTOM_EPSILON_PX = 2;
-const NAV_SHOW_HYSTERESIS_PX = 64;
 
 const CAL_EMBED_SRC = 'https://app.cal.com/embed/embed.js';
 
@@ -334,46 +331,10 @@ export function initContactPage() {
   cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
 
   /* ── Bottom behaviours — the landing pair, verbatim. */
-  ensureLogoChars();
-  /* The swept links' own chars — unconditional (char-ripple's wrap
-     is hover-gated; the WORK-doesn't-sweep cause). */
-  ensureNavLinkChars();
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  let navHidden = false;
-  const setNav = (hidden) => {
-    if (navHidden === hidden) return;
-    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
-    navHidden = hidden;
-    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
-  };
-  const maxScroll = () =>
-    (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
-  let snapTimer = 0;
-  let lastScrollY = window.scrollY || 0;
-  let lastDirDown = false;
-  const inSnapZone = () => maxScroll() - (window.scrollY || 0) < FOOTER_H_PX - BOTTOM_EPSILON_PX;
-  const trySnapToBottom = () => {
-    if (reduced || !lastDirDown || !inSnapZone()) return;
-    const y = window.scrollY || 0;
-    if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
-    if (lenis.i) lenis.i.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
-  };
-  const onBottomScroll = () => {
-    const y = window.scrollY || 0;
-    if (y !== lastScrollY) {
-      lastDirDown = y > lastScrollY;
-      lastScrollY = y;
-    }
-    if (y >= maxScroll() - BOTTOM_EPSILON_PX) setNav(true);
-    else if (y < maxScroll() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
-    window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
-  };
-  window.addEventListener('scroll', onBottomScroll, { passive: true });
-  cleanups.push(() => {
-    window.removeEventListener('scroll', onBottomScroll);
-    window.clearTimeout(snapTimer);
-  });
+  /* R36 (Oscar, 2026-09-04): the SHARED bottom binder (nav-motion.js)
+     — sweep, hysteresis and the idle snap inside the footer's height,
+     one implementation on every document-scroll page. */
+  cleanups.push(bindBottomNavSweep({ reduced, getLenis: () => lenis.i }));
 
   if (reduced) {
     return () => cleanups.forEach((fn) => fn());

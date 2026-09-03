@@ -20,7 +20,8 @@
  * RM: no stagger (every tile visible at once), no hover scale (CSS),
  * the header still reveals (the page's load beat).
  */
-import { initSiteScroll } from './site-scroll.js';
+import { initSiteScroll, getLenisInstance } from './site-scroll.js';
+import { bindBottomNavSweep } from './nav-motion.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
@@ -42,6 +43,10 @@ export function initWorkGrid() {
   let disposed = false;
 
   cleanups.push(initSiteScroll());
+  /* R36: the grid is a document-scroll page — it gets the shared bottom
+     behaviour (the nav sweep at the bottom, the idle snap) like every
+     other flow page; the list view keeps the driver's own. */
+  cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
   cleanups.push(initViewCaseCursor({
     cursorEl: document.querySelector('[data-work-cursor]'),
     linkSelector: '.work-grid [data-work-link]',

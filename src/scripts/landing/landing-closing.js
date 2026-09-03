@@ -27,7 +27,7 @@ import { initStatementDwell, ST_DWELL_HOLD_PX } from './statement-dwell.js';
 import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
-import { ensureLogoChars, ensureNavLinkChars, applyNavSweep, getSweptNavParts } from './nav-motion.js';
+import { bindBottomNavSweep } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 
@@ -44,7 +44,6 @@ const LINE_STAGGER_S = 0.12;
       SERVICES) ripple OUT (per-char blur, right-to-left — the menu
       hover effect reversed) and back in when scrolling up. The
       wordmark and LET'S CHAT remain present at all times. */
-const BOTTOM_SNAP_IDLE_MS = 2000;
 /* R6 (Oscar 2026-08-27): the settle's gate — it may only advance
    once this fraction of the statement section has exited the
    viewport top, OR within this many px of the page bottom.
@@ -55,8 +54,6 @@ const CLOSING_SNAP_NEAR_PX = 400;
 /* Mobile's shipped slide-anchored zone (kept byte-identical under
    the seam; the desktop gate above replaces it ≥1025 only). */
 const SNAP_ZONE_TILE_BOTTOM_PX = 150; // 450px tiles, 2/3 off the top
-const BOTTOM_EPSILON_PX = 2;
-const NAV_SHOW_HYSTERESIS_PX = 64;
 const TILE_STAGGER_MS = 100;
 const TILES_AT_MS = 200;
 const KEYWORDS_AT_MS = 600;
@@ -285,40 +282,14 @@ export function initLandingClosing() {
   /* ── Nav-at-bottom + auto-snap (all modes; RM = instant toggle,
      no auto-snap). Char wrap + sweep applier are shared with the
      load entrance (nav-motion.js). */
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  ensureLogoChars();
-  /* The swept links' own chars — unconditional (char-ripple's wrap
-     is hover-gated; the WORK-doesn't-sweep cause). */
-  ensureNavLinkChars();
-
-  let navHidden = false;
-  const setNav = (hidden) => {
-    if (navHidden === hidden) return;
-    /* Never strand an open menu without its toggle. */
-    if (hidden && menuToggle?.getAttribute('aria-expanded') === 'true') return;
-    navHidden = hidden;
-    applyNavSweep(hidden, { reduced, parts: getSweptNavParts() });
-  };
-
+  /* R36 (Oscar, 2026-09-04): the SHARED bottom binder (nav-motion.js)
+     — the sweep applier, the direction/hysteresis logic and the idle
+     snap are one implementation on every document-scroll page now.
+     This page keeps its own snap ZONE predicate: the R6 gate (the
+     statement half-exited, or within CLOSING_SNAP_NEAR_PX of the
+     bottom) — a ruled behaviour, passed in, not re-ruled here. */
   const maxScroll = () =>
     (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
-
-  let snapTimer = 0;
-  let lastScrollY = window.scrollY || 0;
-  let lastDirDown = false;
-
-  /* R6 (Oscar 2026-08-27, THE GATE — supersedes the tile-anchored
-     zone, which armed as soon as the tiles were 2/3 off the top:
-     long before the statement, so idling AT the centred dwell was
-     yanked to the footer — the eagerness). The settle may only
-     advance when EITHER at least CLOSING_SNAP_EXIT_T of the
-     statement section has exited the viewport top (its measured
-     midpoint above the top edge at 0.5) OR no more than
-     CLOSING_SNAP_NEAR_PX of scroll remains to the page bottom.
-     Below both, idling does nothing — the current machinery has no
-     back-settle at this boundary (the dwell is pure sticky) and
-     that behaviour is kept. Interruption stays the house Lenis
-     convention (user input takes the tween over). */
   const inSnapZone = () => {
     /* MOBILE keeps the shipped slide-anchored zone byte-identical
        (the statement section is display:none under the seam — its
@@ -336,30 +307,7 @@ export function initLandingClosing() {
     }
     return maxScroll() - (window.scrollY || 0) <= CLOSING_SNAP_NEAR_PX;
   };
-
-  const trySnapToBottom = () => {
-    if (reduced) return;
-    const y = window.scrollY || 0;
-    if (!lastDirDown || !inSnapZone()) return;
-    if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
-    const lenis = getLenisInstance();
-    if (lenis) {
-      lenis.scrollTo(maxScroll(), { duration: 1.0, easing: (t) => 1 - Math.pow(1 - t, 3) });
-    }
-  };
-
-  const onScroll = () => {
-    const y = window.scrollY || 0;
-    if (y !== lastScrollY) {
-      lastDirDown = y > lastScrollY;
-      lastScrollY = y;
-    }
-    if (y >= maxScroll() - BOTTOM_EPSILON_PX) setNav(true);
-    else if (y < maxScroll() - NAV_SHOW_HYSTERESIS_PX) setNav(false);
-    window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(trySnapToBottom, BOTTOM_SNAP_IDLE_MS);
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
+  const cleanupBottom = bindBottomNavSweep({ reduced, inSnapZone, getLenis: getLenisInstance });
 
   /* Mobile tile-carousel indicator (Part-2 rebuild) — swipe feedback,
      not motion, so it lives above the RM return. */
@@ -367,8 +315,7 @@ export function initLandingClosing() {
 
   const cleanupBase = () => {
     topLinks.forEach((el) => el.removeEventListener('click', onTopClick));
-    window.removeEventListener('scroll', onScroll);
-    window.clearTimeout(snapTimer);
+    cleanupBottom();
     cleanupInd();
   };
 
