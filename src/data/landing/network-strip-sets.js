@@ -50,6 +50,23 @@ export const NETWORK_STRIP_DEFAULT = [
   { src: '/assets/landing/network/strip-5.jpg', win: 346, w: 349.01, h: 448.3, x: -2.01, y: -68.24 },   /* was -112.24 */
 ];
 
+/* R23 (Oscar, 2026-09-03; Figma CijDb423viBXOwGJyPKwfb 1:67 → 0:279):
+   THE LANDING'S resting strip at 421 tall — each slot is the frame's
+   own image rect against its 345/346 mask (mask origin subtracted;
+   the file's sub-px kept). Same five sources (their aspects match the
+   file's uploads exactly). LandingNetwork.astro renders this set on
+   the landing (entry 'pin') and the hover swap returns to it there
+   (landing-network.js restingSet); /services keeps
+   NETWORK_STRIP_DEFAULT untouched, and mobile cover-fits whichever it
+   receives (its own !important rule), so its rendering is unchanged. */
+export const NETWORK_STRIP_HOME = [
+  { src: '/assets/landing/network/strip-1.jpg', win: 345, w: 387, h: 483, x: -37, y: -9 },
+  { src: '/assets/landing/network/strip-2.jpg', win: 346, w: 358, h: 444, x: -11, y: -14 },
+  { src: '/assets/landing/network/strip-3.jpg', win: 345, w: 355, h: 438, x: -10, y: -9.5 },
+  { src: '/assets/landing/network/strip-4.jpg', win: 346, w: 367, h: 459, x: -18, y: -10 },
+  { src: '/assets/landing/network/strip-5.jpg', win: 346, w: 348.74, h: 448.3, x: -2.01, y: -14.24 },
+];
+
 const pc = (n) => ({ src: `/assets/landing/case/pavilion-club/stream-${n}.jpg` });
 const ps = (n) => ({ src: `/assets/landing/case/pavilion-summit/stream-${n}.jpg` });
 const wr = (n) => ({ src: `/assets/landing/case/wilderness-reserve/stream-${n}.jpg` });

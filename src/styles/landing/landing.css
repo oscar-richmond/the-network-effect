@@ -5454,40 +5454,58 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   title retires for the 12px label; subtitle + sector list move
 	   to the centred region; strip drops BELOW the rows with the
 	   frame's 48px gap. Internal behaviour untouched. */
+	/* R23 (Oscar, 2026-09-03) — LAYOUT RESPEC to frame
+	   CijDb423viBXOwGJyPKwfb 1:67 ("Group 398"; 83 chrome subtracted):
+	   the section is 1041 (was 966); title LEFT at the margin as the
+	   LARGE SANS 56/50/−3.5% (the founders-headline tier — the 12px
+	   eyebrow label retires here, no eyebrow exists in the frame);
+	   subtitle RIGHT-aligned to the 24 margin on the same row;
+	   sector list full width, right-aligned, 48/52; strip 421,
+	   edge-to-edge. Behaviour untouched (hover swap, entrance,
+	   handoff). */
 	.landing-v2.landing-home .landing-network {
-		/* Frame 1:339 (2026-08-26): 966 stage (was 1118) + the 900
-		   dwell + the R3 founders-release allowance (unchanged — the
-		   pin runway is consumed invisibly beneath the held photo). */
-		height: calc(966px + 900px + 1014px);
+		/* 1041 stage (frame) + the 900 dwell + the R3 founders-release
+		   allowance (unchanged — the pin runway is consumed invisibly
+		   beneath the departing founders section). */
+		height: calc(1041px + 900px + 1014px);
 	}
 
 	.landing-v2.landing-home .landing-network__stage {
-		top: calc(100vh - 966px);
-		top: calc(100dvh - 966px);
-		height: 966px;
+		top: calc(100vh - 1041px);
+		top: calc(100dvh - 1041px);
+		height: 1041px;
 	}
 
-	.landing-v2.landing-home .landing-network__title { display: none; }
-
-	.landing-v2.landing-home .landing-network__label {
+	/* Title (0:277): x24, frame y298 → 215; box 421×50. Dazzed
+	   SemiBold 56/50/−3.5% #eeeef0 — the LARGE SANS tier below (the
+	   founders headline, We Create Access). The mobile serif accent
+	   span is neutralised here (the closing-headline device). */
+	.landing-v2.landing-home .landing-network__title {
 		display: block;
-		position: absolute;
-		/* R12 (Oscar, 2026-09-02): the label's TOP aligns with the top
-		   of the subtitle's first line (the two read as one row); it
-		   rides the group's move to the 140-above-strip position. Was
-		   110 (frame 1:469; 100 before that). Pixel-tuned: see the
-		   subtitle note. */
-		top: 223.3px;
-		left: 24px;
-		margin: 0;
-		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 600;
-		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
-		letter-spacing: -0.015em;
-		text-transform: uppercase;
+		top: 215px;
+		font-size: 56px;
+		line-height: 50px;
+		letter-spacing: -0.035em;
 		color: #eeeef0;
+		white-space: nowrap;
+	}
+
+	.landing-v2.landing-home .landing-network__title-serrif {
+		font-family: inherit;
+		font-weight: inherit;
+	}
+
+	/* The 12/14 eyebrow (R12) retires on the landing: the frame has no
+	   eyebrow — its "OUR NETWORK" IS the title. Base rule hides it. */
+
+	/* R23: frame 1:67's separators are SINGLE-spaced (" / "); the
+	   markup keeps the authored double run (mobile and /services
+	   render it unchanged). Collapsing the runs here — white-space
+	   normal on the landing's desktop lines — yields exactly the
+	   frame's spacing with no markup change; the three authored lines
+	   sit well inside the 1680 box (widest 898), so nothing can wrap. */
+	.landing-v2.landing-home .landing-network__body .landing-network__line {
+		white-space: normal;
 	}
 
 	/* Subtitle (frame 1:341, 2026-08-26 — supersedes the R2
@@ -5503,20 +5521,29 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   14; guide mapping: nearest the 12/14 Label tier, whose tracking
 	   is 0 — the −0.02em is kept as the subtitle's own, flagged). All
 	   positions pixel-measured (ink), see the report. */
+	/* R23 (0:278): RIGHT-aligned, right edge on the 24 margin (x1294 →
+	   1704, 410 wide), frame y307 → 224, on the title's row. Dazzed
+	   SemiBold 16/20/−2% uppercase, two authored lines (the frame's
+	   40 box) — supersedes R12's 14/16 (the frame differs). The 9px
+	   box offset to the title (298 vs 307) is a BASELINE alignment:
+	   the title's baseline and the subtitle's LAST line's baseline
+	   coincide (same faces as the file, so the frame's raw tops
+	   reproduce it — verified by ink measure, see the report). */
 	.landing-v2.landing-home .landing-network__subtitle {
-		top: 223px; /* pixel-tuned: last-line ink bottom 253 → list ink top 301 = 48 */
-		left: 50%;
-		right: auto;
-		transform: translateX(-50%);
+		top: 224px;
+		left: auto;
+		right: 24px;
+		transform: none;
 		width: 410px;
-		text-align: center;
+		text-align: right;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 14px;
-		line-height: 16px;
+		font-size: 16px;
+		line-height: 20px;
 		letter-spacing: -0.02em;
 		text-transform: uppercase;
+		color: #eeeef0;
 	}
 
 	/* Sector list (16:622): centred Serrif Medium 36/48 — NOT a named
@@ -5526,26 +5553,24 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   Medium 48/48/−3% — the same three rendered lines, larger
 	   (36→48; still no named guide style, flagged). Terms keep
 	   their hover wiring. */
+	/* R23 (0:276): FULL WIDTH between the margins (x24, 1680 wide),
+	   right-aligned, frame y427 → 344; Serrif Condensed Medium 48/52,
+	   tracking 0 (the frame carries none) — supersedes R12's centred
+	   56/60/−3%. The three authored lines hold (156 = 3 × 52; the
+	   widest renders well inside 1680 at 1728 and in the 1512 shell —
+	   no reflow, no stranded separator). Gaps per frame: row bottom
+	   (348) → list top (427) = 79; list bottom (583) → strip (703) =
+	   120 — box edges; the ink values are in the report. */
 	.landing-v2.landing-home .landing-network__body {
-		top: 291.35px; /* R12: last-line ink bottom at 474 = strip 614 − 140 (was 286 / R9) */
-		left: 50%;
-		right: auto;
-		transform: translateX(-50%);
-		/* R12 MEASURE (flagged, not silent): 1014 → 1040. At 56 the
-		   widest authored line ("Luxury / Fashion / Food & Beverage /
-		   Sports") renders 1023 wide — 9px past the 1014 box (white-
-		   space: pre keeps the authored line, so it overflowed rather
-		   than wrapped, and the reveal clip would shave "Sports"). 1040
-		   fits it with ~8px each side; the block stays centred. */
-		width: 1040px;
-		text-align: center;
-		/* R12 (Oscar, 2026-09-02): SerrifCondensed-Medium 56/60/−0.03em
-		   (was the guide's Editorial 48/48/−2% via the vars). The three
-		   authored lines are kept — one rendered line each at 1728 and
-		   in the 1512 shell (see the measure note above). */
-		font-size: 56px;
-		line-height: 60px;
-		letter-spacing: -0.03em;
+		top: 344px;
+		left: 24px;
+		right: 24px;
+		transform: none;
+		width: 1680px;
+		text-align: right;
+		font-size: 48px;
+		line-height: 52px;
+		letter-spacing: 0;
 	}
 
 	/* THE LOGO CAROUSELS ARE GONE FROM DESKTOP (R9, Oscar 2026-09-02):
@@ -5571,12 +5596,19 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   edge-to-edge window grammar unchanged; the per-slot crops
 	   re-derive in NETWORK_STRIP_DEFAULT (scale kept, windows
 	   re-centred). */
+	/* R23 (0:279): 421 tall (was 352), frame y703 → 620, flush to the
+	   1041 stage bottom (620 + 421). FULL-BLEED, CONTIGUOUS: five
+	   windows at x 0/345/691/1036/1382, widths 345/346/345/346/346 =
+	   1728 exactly, ZERO gaps — confirmed from the frame's mask
+	   rects; a deliberate departure from the site's 8px-grid grammar
+	   (the strip reads as one image band). The per-slot crops are the
+	   frame's own image rects (NETWORK_STRIP_HOME). */
 	.landing-v2.landing-home .landing-network__strip {
-		top: 614px;
-		height: 352px;
+		top: 620px;
+		height: 421px;
 	}
 
-	.landing-v2.landing-home .landing-network__strip-win { height: 352px; }
+	.landing-v2.landing-home .landing-network__strip-win { height: 421px; }
 
 	/* (The per-slot crop overrides moved into NETWORK_STRIP_DEFAULT's
 	   y values, 2026-08-26 rev 2 — the !important tops here were

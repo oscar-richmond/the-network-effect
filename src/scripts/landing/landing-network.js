@@ -13,6 +13,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import {
   NETWORK_STRIP_DEFAULT,
+  NETWORK_STRIP_HOME,
   NETWORK_STRIP_SETS,
   NETWORK_STRIP_SLOTS,
 } from '../../data/landing/network-strip-sets.js';
@@ -88,9 +89,18 @@ function assertStripSets() {
   console.error(msg);
 }
 
+/* R23: the RESTING set is per host — the landing renders the frame's
+   421 crops (NETWORK_STRIP_HOME, LandingNetwork.astro); /services
+   keeps the shipped default. The hover swap returns to the same set
+   the markup was authored with, so the resting strip never changes
+   shape across a swap cycle. */
+function restingSet() {
+  return document.body.classList.contains('landing-home') ? NETWORK_STRIP_HOME : NETWORK_STRIP_DEFAULT;
+}
+
 function normalisedSet(key) {
-  const base = key === 'all' ? NETWORK_STRIP_DEFAULT : NETWORK_STRIP_SETS[key];
-  if (!base) return NETWORK_STRIP_DEFAULT;
+  const base = key === 'all' ? restingSet() : NETWORK_STRIP_SETS[key];
+  if (!base) return restingSet();
   const out = [];
   for (let i = 0; i < NETWORK_STRIP_SLOTS; i += 1) out.push(base[i % base.length]);
   return out;

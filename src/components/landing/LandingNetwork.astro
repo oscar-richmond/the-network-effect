@@ -39,9 +39,12 @@ import { asset } from '../../utils/asset.js';
 
 /* The resting strip lives in network-strip-sets.js now (the industry
    hover swaps these five — single source of truth for the default). */
-import { NETWORK_STRIP_DEFAULT } from '../../data/landing/network-strip-sets.js';
+import { NETWORK_STRIP_DEFAULT, NETWORK_STRIP_HOME } from '../../data/landing/network-strip-sets.js';
 
-const strip = NETWORK_STRIP_DEFAULT.map((s) => ({ ...s, src: asset(s.src) }));
+/* R23 (Oscar, 2026-09-03): the LANDING (entry 'pin') renders the
+   frame 1:67 crops for its 421 strip (NETWORK_STRIP_HOME); /services
+   (prev-exit) keeps the shipped default byte-for-byte. */
+const strip = (entry === 'pin' ? NETWORK_STRIP_HOME : NETWORK_STRIP_DEFAULT).map((s) => ({ ...s, src: asset(s.src) }));
 
 /** The set is rendered twice per row for the seamless wrap. */
 const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
@@ -51,7 +54,13 @@ const doubled = [...NETWORK_BRANDS, ...NETWORK_BRANDS];
    layout exactly: the separators carry the double-space-slash runs
    as expression strings (white-space: pre keeps them; the reveal
    uses the child-preserving exact wrap in landing-network.js). The
-   authored line breaks are the arrays below. */
+   authored line breaks are the arrays below.
+   R23 (Oscar, 2026-09-03): the landing's DESKTOP list takes frame
+   1:67's SINGLE-spaced " / " — the markup stays the authored double
+   run (mobile and /services render it unchanged, DOM byte-identical);
+   landing.css collapses the runs on the landing desktop by switching
+   the lines to white-space: normal (the lines fit their 1680 box with
+   room, so nothing can wrap). */
 const sectorLines = [
   ['Talent', 'Hospitality', 'TV & Film', 'Music'],
   ['Luxury', 'Fashion', 'Food & Beverage', 'Sports'],
