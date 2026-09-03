@@ -127,7 +127,9 @@ const ACTIVE_Y = [PILLAR1_ACTIVE_Y, STACKED_Y1 + STACK_PITCH, STACKED_Y1 + 2 * S
 const RISE_PX = 800;                    /* the staging card rise, kept */
 const REEL_PX_PER_SERVICE = 220;        /* TUNABLE — reel pace per row */
 const TRANSITION_DWELL_PX = 250;        /* verbatim through relocations */
-const TRANSITION_GROUND_FADE_PX = 500;  /* verbatim */
+/* R26 (Oscar, 2026-09-03): ⅔ of the shipped 500 — the grey → black
+   scrub range, same start (the 75% gate below). Old 500 / new 333. */
+const TRANSITION_GROUND_FADE_PX = 333;
 const GROUND_DARK = '#161616';
 const GROUND_LIGHT = '#eeeef0';
 
@@ -737,7 +739,7 @@ export function initLandingServicesReel() {
      departure-vs-ground safety table re-proved on the pass. */
   const blurOutSpan = SREEL_EXIT_HEADS_AT_PX + SREEL_EXIT_SPAN_PX; /* 600 */
   const fadeGateAt = Math.round(blurOutSpan * SREEL_HANDOFF_GATE_T); /* 450 */
-  const departPad = fadeGateAt + TRANSITION_GROUND_FADE_PX; /* 950 */
+  const departPad = fadeGateAt + TRANSITION_GROUND_FADE_PX; /* 783 (R26; was 950) */
   section.style.setProperty('--sreel-outro-pad', `${departPad}px`);
 
   const depart = gsap.timeline({
