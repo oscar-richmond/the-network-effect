@@ -57,8 +57,10 @@ const DRIFT_PHOTO_PX = 200;
  * FOUNDERS_EXIT_PX every item scrolls up and off at its own pace
  * (each travels exactly its own clearance over the same window, so
  * they leave together at different speeds — the entry mirrored) and
- * the ground fades #161616 -> the hero grey. Keep HOLD/EXIT in step
- * with the track height in landing.css.
+ * the ground fades #161616 -> the hero grey. R22: the sticky RELEASES
+ * at FOUNDERS_RELEASE_PX (760) into the exit, when the photo has
+ * cleared — keep HOLD/RELEASE in step with the track height in
+ * landing.css.
  */
 const FOUNDERS_HOLD_PX = 250;
 const FOUNDERS_EXIT_PX = 900;
@@ -80,24 +82,64 @@ const EXIT_HEADLINE_PX = 420;
 const EXIT_CTAS_PX = 300;
 const EXIT_ROBBO_PX = 220;
 const EXIT_ASHLEY_PX = 180;
+/* R22 (Oscar, 2026-09-03): the big photo LEAVES WITH THE OTHERS — its
+   rise is triggered at the same exit start (holdEnd) as every other
+   item, at its own pace: the lowest item, so the slowest (the
+   never-overlap ordering above), a touch under Ashley's 180. Tunable.
+   Before R22 it stayed fixed through the whole 900 exit and only
+   moved when the sticky released (trigger holdEnd + 900); now the
+   trigger is holdEnd itself, the shared 250 hold. */
+const EXIT_PHOTO_PX = 150;
 
 /**
  * Exit blur (Oscar's rev): as each LEFT item starts its exit travel it
  * blurs away — the portrait names' blur vocabulary (the shared 3px),
  * scrubbed against scroll rather than clocked, each over its own
  * scroll distance so the speeds differ with the travel paces (the
- * faster the mover, the quicker the dissolve). The big photo doesn't
- * blur — it EXPANDS to full screen instead, covering the section as
- * the sticky release approaches; the ground fade is gone (stays
- * #161616 under the photo). Portrait blurs target the CROP spans,
- * never the figures: a filtered/faded ancestor would isolate the
+ * faster the mover, the quicker the dissolve). The ground fade is
+ * gone (stays #161616). Portrait blurs target the CROP spans, never
+ * the figures: a filtered/faded ancestor would isolate the
  * difference-blended names (the six-regression class).
+ *
+ * R22 (Oscar, 2026-09-03): the big PHOTO blurs too, in the same
+ * vocabulary, slightly later than the rest: it stays SHARP until the
+ * headline's ("NEARLY 20 YEARS…") TOP INK reaches the BOTTOM OF THE
+ * NAV, then blur-fades, and is the LAST element to clear — fully out
+ * EXIT_PHOTO_BLUR_LAG_PX after the slowest other blur (Ashley's 700)
+ * completes. The start is DERIVED from measured geometry at init, not
+ * a scroll offset: the headline's first line box top within the
+ * section (the section pins at viewport top 0) + the face's ink inset
+ * (HEADLINE_INK_INSET_PX — Dazzed 56/50's cap top sits 8 below the
+ * line box, pixel-measured at 1728; the in-shell 1512 renders the
+ * same px grammar) against the nav bar's live bottom, converted to
+ * exit progress through the headline's own EXIT travel:
+ *   blurStart = (inkTop − navBottom) / EXIT_HEADLINE_PX × EXIT_PX
+ * Both the rise and the blur sit on the section's one scrub timeline,
+ * so they cannot desync and reverse mirrored (last to leave, first
+ * to return). The photo has no blended descendants (a bare <img>),
+ * so filtering it isolates nothing.
  */
 const EXIT_BLUR_PX = 3;
 const EXIT_BLUR_HEADLINE_PX = 450;
 const EXIT_BLUR_CTAS_PX = 550;
 const EXIT_BLUR_ROBBO_PX = 650;
 const EXIT_BLUR_ASHLEY_PX = 700;
+const EXIT_PHOTO_BLUR_LAG_PX = 60;
+const HEADLINE_INK_INSET_PX = 8;
+
+/**
+ * THE RELEASE (Oscar, 2026-09-03: "once the photo clears, bring the
+ * section below in so it's seamless"): the sticky pin lets go the
+ * moment the photo — the last element — is fully out, not at the end
+ * of the 900 exit window. The track is section + HOLD + RELEASE
+ * (landing.css keeps the same three numbers); the exit window stays
+ * 900 so every other item's pace is untouched — its last 140 play
+ * after the release, on items that are all invisible by 700. The
+ * handoff settle's back target is this release point too (the
+ * section flush, everything cleared), so no partially-faded image can
+ * ever be a resting state.
+ */
+export const FOUNDERS_RELEASE_PX = EXIT_BLUR_ASHLEY_PX + EXIT_PHOTO_BLUR_LAG_PX;
 
 /**
  * MOBILE expansion (the Figma 402-frame rebuild, 2026-08-13): the
@@ -145,13 +187,18 @@ const FD_M_FADE_PORTION = 0.6;
 export const FOUNDERS_HANDOFF_T = 1 / 3;
 
 /** R21 (Oscar, 2026-09-02): the departing IMAGE's bottom edge in
- *  viewport px — the founders photo itself (it no longer expands, so
- *  its rect is honest in every mode); the track's bottom is the
- *  fallback when the photo is missing. landing-network.js reads the
- *  same helper for its entrance gate, so the two can never drift. */
+ *  viewport px. R22: the photo now rises and blur-fades out with the
+ *  exit (it is transparent by the release), so its LIVE rect would
+ *  read 150 high and describe an invisible element — the edge is the
+ *  photo's LAYOUT SLOT instead: the section's bottom edge minus the
+ *  photo's inset (24), the same document anchor landing-network.js
+ *  derives its entrance gate from, so the two can never drift. The
+ *  track's bottom is the fallback when the section is missing. */
 export function foundersDepartingEdge() {
-  const photo = document.querySelector('[data-landing-founders] .landing-founders__photo');
-  if (photo instanceof HTMLElement) return photo.getBoundingClientRect().bottom;
+  const section = document.querySelector('[data-landing-founders]');
+  if (section instanceof HTMLElement) {
+    return section.getBoundingClientRect().bottom - foundersDepartingEdgeInsetPx();
+  }
   const track = document.querySelector('[data-landing-founders-track]');
   return track instanceof HTMLElement ? track.getBoundingClientRect().bottom : 0;
 }
@@ -185,11 +232,15 @@ export function initLandingFounders() {
   /* ── WHO WE ARE → OUR NETWORK handoff settle (Oscar 2026-08-27):
      the boundary may never REST mid-viewport — stopped past the
      third-line threshold the page settles forward (image out, Our
-     Network full-viewport); stopped below it, back (image fully in
-     view). R21: the THRESHOLD is the photo's own bottom edge
-     (foundersDepartingEdge — the image no longer expands, so its
-     rect is honest in every mode); the settle target is the track's
-     bottom, the section's edge (24 below the photo). Idle + tween
+     Network full-viewport); stopped below it, back to the RELEASE
+     point (the section flush at the top, everything cleared — R22;
+     was the track's bottom at the viewport bottom, which now sits
+     inside the exit with the photo still fading). R21/R22: the
+     THRESHOLD is the photo's layout
+     slot's bottom edge (foundersDepartingEdge — 24 above the
+     section's edge; the photo itself has risen and blurred out by
+     the release, R22); the settle target is the track's bottom, the
+     section's edge. Idle + tween
      grammar is the reel snap's (150ms / 0.6s cubic-out, new input
      wins); reduced motion resolves the same zone instantly. Desktop
      only — the mobile stack has no sticky boundary. */
@@ -202,12 +253,14 @@ export function initLandingFounders() {
         const bottom = handoffTrack.getBoundingClientRect().bottom;
         const vh = window.innerHeight || 0;
         if (bottom <= 0.5 || bottom >= vh - 0.5) return;
-        /* R21: the THRESHOLD reads the photo's own bottom edge
-           (foundersDepartingEdge — 24 above the track's edge now the
-           image no longer expands); the settle TARGETS the section's
-           edge so no strip of the founders ground can rest at the top. */
+        /* R21/R22: the THRESHOLD reads the photo's layout slot
+           (foundersDepartingEdge — 24 above the track's edge); the
+           settle TARGETS the section's edge so no strip of the
+           founders ground can rest at the top. */
         const forward = foundersDepartingEdge() < vh * (1 - FOUNDERS_HANDOFF_T);
-        const target = Math.round((window.scrollY || 0) + (forward ? bottom : bottom - vh));
+        const target = Math.round(
+          (window.scrollY || 0) + (forward ? bottom : bottom - section.offsetHeight),
+        );
         const lenis = getLenisInstance();
         if (reducedMotion || !lenis) {
           window.scrollTo(0, target);
@@ -266,13 +319,37 @@ export function initLandingFounders() {
     );
     const holdEnd = entryPx + FOUNDERS_HOLD_PX;
     const photo = section.querySelector('.landing-founders__photo');
+    const headline = section.querySelector('.landing-founders__headline');
+
+    /* R22: the photo's blur-out START, derived from measured geometry
+       (constants block): the headline's first line box top within the
+       section (+ the ink inset) against the nav's live bottom, mapped
+       onto the exit through the headline's own travel. Measured BEFORE
+       the timeline exists, so no drift transform is on the headline
+       yet (and the measured y is subtracted regardless). */
+    const nav = document.querySelector('.home__topbar');
+    const firstLine = section.querySelector('.landing-founders__line') ?? headline;
+    const navBottomPx = nav instanceof HTMLElement ? nav.getBoundingClientRect().bottom : 0;
+    const headlineInkTopPx = firstLine instanceof HTMLElement
+      ? firstLine.getBoundingClientRect().top
+        - section.getBoundingClientRect().top
+        - (headline instanceof HTMLElement ? Number(gsap.getProperty(headline, 'y')) || 0 : 0)
+        + HEADLINE_INK_INSET_PX
+      : 0;
+    const photoBlurStartPx = Math.min(
+      FOUNDERS_EXIT_PX,
+      Math.max(0, ((headlineInkTopPx - navBottomPx) / EXIT_HEADLINE_PX) * FOUNDERS_EXIT_PX),
+    );
+    const photoBlurEndPx = Math.max(
+      EXIT_BLUR_HEADLINE_PX, EXIT_BLUR_CTAS_PX, EXIT_BLUR_ROBBO_PX, EXIT_BLUR_ASHLEY_PX,
+    ) + EXIT_PHOTO_BLUR_LAG_PX;
     const driftSpec = [
       /* The WHO WE ARE label (frame 16:204) rides the headline's own
          drift amplitude — the established vocabulary, nothing new. */
       { el: section.querySelector('[data-landing-founders-label]'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: section.querySelector('[data-landing-founders-label]'), blurDur: EXIT_BLUR_HEADLINE_PX },
       { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__headline'), blurDur: EXIT_BLUR_HEADLINE_PX },
       { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, exit: EXIT_CTAS_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__ctas'), blurDur: EXIT_BLUR_CTAS_PX },
-      { el: photo, px: DRIFT_PHOTO_PX, exit: 0, mode: 'y' },
+      { el: photo, px: DRIFT_PHOTO_PX, exit: EXIT_PHOTO_PX, mode: 'y' },
       { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, exit: EXIT_ROBBO_PX, mode: 'top', blurEl: section.querySelector('.landing-founders__portrait--robbo .landing-founders__portrait-crop'), blurDur: EXIT_BLUR_ROBBO_PX },
       { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, exit: EXIT_ASHLEY_PX, mode: 'top', blurEl: section.querySelector('.landing-founders__portrait--ashley .landing-founders__portrait-crop'), blurDur: EXIT_BLUR_ASHLEY_PX },
     ];
@@ -324,20 +401,34 @@ export function initLandingFounders() {
       }
     });
 
-    /* R21 (Oscar, 2026-09-02): THE EXPANSION IS GONE — the photo no
-       longer grows to the viewport over the exit. It simply stays
-       FIXED with the pinned section (no exit travel: exit 0 above)
-       through the hold and the other items' departure —
-       FOUNDERS_PHOTO_HOLD_PX = FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX
-       of scroll, the section's own pin — and then rides off with the
-       section as the sticky releases. WHAT DEPENDED ON IT: the
-       track's extra 350 (the Our Network entrance played beneath the
-       expanded photo) retires with it (landing.css: the track is
-       1014 + 250 + 900 now, −350), and the handoff's "departing
-       image edge" is the photo's OWN bottom (foundersDepartingEdge
-       below) instead of the track's, which only equalled the image
-       while it expanded. The photo's inline left/width seeds that
-       fed the tween are gone too. */
+    /* R21 (Oscar, 2026-09-02): THE EXPANSION IS GONE (the track's
+       extra 350 retired with it — landing.css: 1014 + 250 + 900).
+       R22 (2026-09-03): the R21 "fixed through the whole exit" hold
+       (holdEnd + 900 before the photo moved) is gone too — the photo
+       rises from holdEnd with everything else (EXIT_PHOTO_PX above)
+       and blur-fades out last, on the derived window below. Its
+       filter/opacity are its own (a bare <img> inside — no blended
+       descendant to isolate). */
+    /* The blur/opacity target is the photo's INNER IMG, never the
+       figure: the entrance's .is-visible fade owns the figure's
+       opacity through a 0.8s CSS transition, which would smear every
+       scrubbed opacity write across time (measured: the scrub's blur
+       exact, its opacity lagging both ways) — the mobile note's
+       collision class. Separate elements, the two fades multiply. */
+    const photoImg = photo instanceof HTMLElement ? photo.querySelector('img') : null;
+    if (photoImg instanceof HTMLElement && photoBlurEndPx > photoBlurStartPx) {
+      tl.fromTo(
+        photoImg,
+        { filter: 'blur(0px)', opacity: 1 },
+        {
+          filter: `blur(${EXIT_BLUR_PX}px)`,
+          opacity: 0,
+          duration: photoBlurEndPx - photoBlurStartPx,
+          ease: 'none',
+        },
+        holdEnd + photoBlurStartPx,
+      );
+    }
     driftTweens.push(tl);
 
     if (import.meta.env.DEV) {
@@ -346,6 +437,15 @@ export function initLandingFounders() {
         holdPx: FOUNDERS_HOLD_PX,
         exitPx: FOUNDERS_EXIT_PX,
         timelineTotal: entryPx + FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX,
+        holdEndPx: holdEnd,
+        photoExitPx: EXIT_PHOTO_PX,
+        photoBlurStartPx: +photoBlurStartPx.toFixed(1),
+        photoBlurEndPx,
+        photoBlurLagPx: EXIT_PHOTO_BLUR_LAG_PX,
+        releasePx: FOUNDERS_RELEASE_PX,
+        navBottomPx,
+        headlineInkTopPx,
+        lastOtherBlurEndPx: photoBlurEndPx - EXIT_PHOTO_BLUR_LAG_PX,
       };
     }
   } else {

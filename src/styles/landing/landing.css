@@ -785,14 +785,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    viewport bottom at spacer(total+vh) - vh = 1950, the same scroll
    position — no overlap, no seam. */
 /* Track = section + HOLD (250, the landed "resistance" dwell) +
-   EXIT (900, items fly off + ground fade). Keep these two numbers in
-   step with FOUNDERS_HOLD_PX / FOUNDERS_EXIT_PX in
-   landing-founders.js — the sticky release and the timeline end must
-   coincide. */
+   RELEASE (760 — R22, Oscar 2026-09-03: the sticky lets go the moment
+   the photo, the last item, has blur-faded out; was the full 900 exit
+   window). Keep these numbers in step with FOUNDERS_HOLD_PX /
+   FOUNDERS_RELEASE_PX in landing-founders.js — the sticky release and
+   the photo's clear must coincide (the exit timeline's last 140 play
+   post-release on invisible items). */
 .landing-v2 .landing-founders-track {
 	position: relative;
 	z-index: 260;
-	height: calc(1049px + 250px + 900px);
+	height: calc(1049px + 250px + 760px);
 }
 
 .landing-v2 .landing-founders {
@@ -5308,8 +5310,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		z-index: 261;
 		/* R21 (Oscar, 2026-09-02): the photo no longer expands, so the
 		   350 the Our Network entrance consumed beneath the expanded
-		   image retires: 1014 + the 250 hold + the 900 items' exit. */
-		height: calc(1014px + 250px + 900px);
+		   image retires. R22 (2026-09-03): 1014 + the 250 hold + the 760
+		   RELEASE (the photo's clear — FOUNDERS_RELEASE_PX), not the
+		   900 exit window. */
+		height: calc(1014px + 250px + 760px);
 	}
 
 	.landing-v2.landing-home .landing-founders {
