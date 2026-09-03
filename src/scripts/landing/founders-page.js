@@ -132,11 +132,24 @@ const FD_ASHLEY_REVEAL_AT_T = 0.3;
    scroll); carrying that exact rate across the 1728 viewport gives
    988. Raise it to slow the sweep, lower it to quicken. */
 const FD_SWEEP_PX = 988;
-/* Ashley's text and the column are clear by 70% of the sweep, so the
-   end state (image + nav + the white strip) is unambiguous; the
-   indicator has blurred out by 35%. */
+/* The COLUMN is clear by 70% of the sweep (its window rides up and
+   out); the indicator has blurred out by 35%. R32 item 3: Ashley's
+   TEXT no longer rides up — the sweep owns its exit (see applyTextWipe):
+   measured at 1728 the up-exit had already carried the block's upper
+   rows off screen (role/name at −200 by the time the edge reached the
+   block's left extent at 41% of the sweep) while the relationship rows
+   were still on screen, so the two effects were stacking and the text
+   vanished before, not under, the image. */
 const FD_SWEEP_EXIT_T = 0.7;
 const FD_IND_FADE_T = 0.35;
+/* R32 item 3 — THE TEXT WIPE under the passing edge: the landing hero's
+   own treatment (landing-hero-scroll.js buildExitWipe — opacity 1 → 0
+   with blur 0 → EXIT_BLUR_PX 10, ease none, per line), keyed here to
+   the sweep's LEADING-EDGE X against each rendered line's measured
+   x-range: a line starts blurring as the edge reaches its left extent
+   and is gone as the edge passes its right — it disappears UNDER the
+   image, never before or after. Pure f(edge x): reversible. */
+const FD_WIPE_BLUR_PX = 10;
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
@@ -416,6 +429,37 @@ export function initFoundersPage() {
     });
   };
 
+  /* ── R32 item 3 — THE TEXT WIPE under the sweep's leading edge (the
+     hero's buildExitWipe treatment: opacity → 0 with blur → 10, ease
+     none, one line at a time). Each rendered line of Ashley's block —
+     the wrap's .lr-clip groups, so a two-line paragraph is two rows —
+     is measured LIVE (its rect; the block no longer moves during the
+     sweep, and the measurement is cheap: eight rects) and driven from
+     the edge's x: t = (edgeX − line.left) / line.width. Below its left
+     extent a line is untouched; past its right it is gone. */
+  const wipeLines = () => (wrappedSlide[1]
+    ? slideParts[1].flatMap(({ el }) => Array.from(el.querySelectorAll(':scope > .lr-clip')))
+    : slideParts[1].map(({ el }) => el)).filter((el) => el instanceof HTMLElement);
+  let wipeActive = false;
+  const applyTextWipe = (sweepT) => {
+    if (!(sweep instanceof HTMLElement)) return;
+    if (sweepT <= 0) {
+      if (!wipeActive) return;
+      wipeActive = false;
+      wipeLines().forEach((el) => { el.style.opacity = ''; el.style.filter = ''; });
+      return;
+    }
+    wipeActive = true;
+    const edgeX = sweepT * (sweep.offsetWidth || window.innerWidth || 1728);
+    wipeLines().forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0) return;
+      const t = reduced ? (edgeX >= r.right ? 1 : 0) : clamp((edgeX - r.left) / r.width, 0, 1);
+      el.style.opacity = t <= 0 ? '' : (1 - t).toFixed(3);
+      el.style.filter = t <= 0 ? '' : `blur(${(FD_WIPE_BLUR_PX * t).toFixed(2)}px)`;
+    });
+  };
+
   /* ── R30 item 2 — THE SLIDE-CHANGE TEXT TRANSITION.
      THE DEFECT (measured at nine points, both sizes): the text had NO
      transition of any kind. Both blocks travelled the whole phase, but
@@ -460,7 +504,9 @@ export function initFoundersPage() {
       applySlideState(slides[0], 1 - xf, xf);
     }
     if (slides[1] instanceof HTMLElement) {
-      const y = blockShift[1] + vh * (1 - textTe) - FD_TEXT_EXIT_PX * sweepExit;
+      /* R32 item 3: no up-exit for the text — it stays put and the
+         sweep's edge wipes it (applyTextWipe below). */
+      const y = blockShift[1] + vh * (1 - textTe);
       slides[1].style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
       applySlideState(slides[1], xf, 1 - xf);
     }
@@ -532,6 +578,7 @@ export function initFoundersPage() {
         sweep.style.filter = bl > 0.05 ? `blur(${bl.toFixed(2)}px)` : '';
       }
     }
+    applyTextWipe(sweepT);
     setActiveSlide(textTe >= 0.5 ? 1 : 0);
 
     /* Release + footer reveal — the unchanged grammar. */
