@@ -6043,7 +6043,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   no currentColor) — filtered to white here (R2, Oscar's report);
 	   mobile keeps the shipped blue. */
 	.landing-v2.landing-home .landing-featured__viewall img {
-		filter: brightness(0) invert(1);
+		/* R26 (Oscar, 2026-09-03 — the blue-arrow hover bug): the ripple
+		   animates `filter` on the arrow, which REPLACED this colour
+		   filter for the animation's 0.6s and showed the svg's baked
+		   blue. The ripple's arrow keyframes now compose their blur
+		   with --char-ripple-arrow-filter (char-ripple.js), so the
+		   white holds through the sweep. */
+		--char-ripple-arrow-filter: brightness(0) invert(1);
+		filter: var(--char-ripple-arrow-filter);
 	}
 
 	/* R17 (Oscar 2026-09-02): the desktop label is "VIEW ALL WORK";

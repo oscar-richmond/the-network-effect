@@ -76,6 +76,11 @@ export function ensureStyles() {
     :root {
       --char-ripple-duration: 0.6s;
       --char-ripple-blur: 3px;
+      /* The arrow's BASE filter, composed into its keyframes (R26,
+         Oscar 2026-09-03): a chip that paints its baked-blue arrow
+         another colour with a filter sets this too, so the ripple's
+         blur doesn't replace the colour for 0.6s. Default = no-op. */
+      --char-ripple-arrow-filter: brightness(1);
     }
     .cr-sr {
       position: absolute;
@@ -88,9 +93,11 @@ export function ensureStyles() {
     .cr-char {
       display: inline-block;
     }
-    .cr-char.is-rippling,
-    [data-char-ripple-arrow].is-rippling {
+    .cr-char.is-rippling {
       animation: cr-blur var(--char-ripple-duration, 0.6s) ease-in-out 1;
+    }
+    [data-char-ripple-arrow].is-rippling {
+      animation: cr-blur-arrow var(--char-ripple-duration, 0.6s) ease-in-out 1;
     }
     .cr-char.is-rippling-in {
       animation: cr-blur-in var(--char-ripple-duration, 0.6s) ease-in-out 1 both;
@@ -99,6 +106,11 @@ export function ensureStyles() {
       0% { filter: blur(0); }
       50% { filter: blur(var(--char-ripple-blur, 3px)); }
       100% { filter: blur(0); }
+    }
+    @keyframes cr-blur-arrow {
+      0% { filter: var(--char-ripple-arrow-filter, brightness(1)) blur(0); }
+      50% { filter: var(--char-ripple-arrow-filter, brightness(1)) blur(var(--char-ripple-blur, 3px)); }
+      100% { filter: var(--char-ripple-arrow-filter, brightness(1)) blur(0); }
     }
     @keyframes cr-blur-in {
       0% { opacity: 0; filter: blur(var(--char-ripple-blur, 3px)); }
