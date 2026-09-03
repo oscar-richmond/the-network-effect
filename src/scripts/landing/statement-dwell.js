@@ -34,7 +34,7 @@ export const ST_DWELL_HOLD_PX = 300;
 /**
  * @param {HTMLElement} section the dwell box (pads + slack live here)
  * @param {HTMLElement} stage   the statement block wrapper (pins)
- * @param {{ topBound?: number | (() => number), inkLines?: () => HTMLElement[] }} [opts]
+ * @param {{ topBound?: number | (() => number), inkLines?: () => HTMLElement[], holdPx?: number }} [opts]
  *   topBound (R5, Oscar 2026-08-27): the centring REGION's top edge
  *   in px from the viewport top — the block centres between it and
  *   the viewport bottom (equal gaps to both). 0 (the default) is
@@ -52,11 +52,16 @@ export const ST_DWELL_HOLD_PX = 300;
  *   the same measurement drives every instance so they cannot
  *   drift apart. Fonts-gated internally (the metrics need real
  *   faces).
+ *   holdPx (R23, Oscar 2026-09-03): this instance's hold — the
+ *   sticky slack in px. Defaults to ST_DWELL_HOLD_PX (the shared
+ *   "one more scroll"); the landing closing passes its red fade's
+ *   scrub range so the text stays fixed for exactly the fade.
  * @returns {() => void} cleanup
  */
 export function initStatementDwell(section, stage, opts = {}) {
   if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement)) return () => {};
   if (isMobileViewport()) return () => {};
+  const holdPx = Number.isFinite(opts.holdPx) ? Math.max(0, opts.holdPx) : ST_DWELL_HOLD_PX;
   const topBoundOf = () => {
     const tb = typeof opts.topBound === 'function' ? opts.topBound() : (opts.topBound || 0);
     return Number.isFinite(tb) ? Math.max(0, tb) : 0;
@@ -100,7 +105,7 @@ export function initStatementDwell(section, stage, opts = {}) {
     section.style.boxSizing = 'content-box';
     section.style.paddingTop = `calc(50dvh + ${tbHalf}px - ${anchor}px)`;
     section.style.paddingBottom = `calc(50dvh - ${tbHalf}px - ${rest}px)`;
-    section.style.height = `${h + ST_DWELL_HOLD_PX}px`;
+    section.style.height = `${h + holdPx}px`;
   };
   apply();
   /* Ink metrics need the real faces — re-derive once fonts settle

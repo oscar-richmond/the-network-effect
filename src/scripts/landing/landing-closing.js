@@ -110,6 +110,10 @@ export function initLandingClosing() {
       const topbar = document.querySelector('.home__topbar');
       cleanupDwell = initStatementDwell(stDwellSection, stDwellStage, {
         topBound: () => (topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0),
+        /* R23 (Oscar 2026-09-03): the hold IS the red fade's scrub
+           range (CLOSING_FADE_PX, 600 — twice R21's 300), so the text
+           stays fixed for the whole white → red. */
+        holdPx: CLOSING_FADE_PX,
         /* R6 (Oscar 2026-08-27): centre the text's INK, not the
            stage box — the box bakes 54px above the lines and a
            180px legacy allowance below (the twice-missed centring's
@@ -127,10 +131,12 @@ export function initLandingClosing() {
      fully red, continued scroll reveals the footer from beneath. One
      progress value, fully reversible:
        FADE   [the dwell's engage (section top at the viewport top),
-              + ST_DWELL_HOLD_PX]: #eeeef0 → red on the section, its
+              + CLOSING_FADE_PX (R23: 600, twice R21's 300 — half
+              speed, same start)]: #eeeef0 → red on the section, its
               stage and the red tail together — the sticky hold IS
-              the fade window, so the text is pinned throughout and
-              is fully red exactly at the release.
+              the fade window (the dwell takes holdPx = the fade), so
+              the text is pinned throughout and is fully red exactly
+              at the release.
        TAIL   CLOSING_RED_TAIL_PX (landing.css; 180 — R21, was 500):
               the red band continues 180 below the section's bottom
               edge, then its edge uncovers the sticky footer (the
@@ -154,6 +160,13 @@ export function initLandingClosing() {
      RM: the static red band (no scrub) keeps the nav rule. */
   const RED = '#c1250e';
   const NAV_RED_SWITCH_T = 0.5;
+  /* R23 (Oscar 2026-09-03): HALF SPEED — the white → red scrub (and
+     its reverse) takes TWICE the scroll it did: 600 (was the dwell's
+     300 hold). Same start point (the dwell's engage). The dwell's
+     hold is set to this same value (initStatementDwell holdPx), so
+     the text stays fixed for exactly the fade; the runway grows by
+     the added 300. One knob. */
+  const CLOSING_FADE_PX = ST_DWELL_HOLD_PX * 2;
   const CLOSING_RED_HOLD_PX = 0; /* a pause on full red before the reveal — none ruled */
   let cleanupRed = () => {};
   if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement
@@ -205,7 +218,7 @@ export function initLandingClosing() {
           scrollTrigger: {
             trigger: section,
             start: 'top top',                       /* = the dwell's engage */
-            end: () => `+=${ST_DWELL_HOLD_PX}`,     /* = the hold: red at the release */
+            end: () => `+=${CLOSING_FADE_PX}`,      /* R23: = the (doubled) hold: red at the release */
             scrub: true,
             invalidateOnRefresh: true,
           },
@@ -218,7 +231,7 @@ export function initLandingClosing() {
         if (import.meta.env.DEV) {
           window.__landingClosingRed = {
             fade: () => [fade.scrollTrigger?.start, fade.scrollTrigger?.end],
-            holdPx: ST_DWELL_HOLD_PX, redHoldPx: CLOSING_RED_HOLD_PX,
+            holdPx: CLOSING_FADE_PX, fadePx: CLOSING_FADE_PX, redHoldPx: CLOSING_RED_HOLD_PX,
             tail: () => (tail instanceof HTMLElement ? tail.getBoundingClientRect() : null),
             solid: () => solid, navSwitchY,
           };
