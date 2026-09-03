@@ -233,6 +233,26 @@ const gridRows = GRID_ROWS.map((row) =>
 
   </main>
 
+  {/* ══ THE VIEW TOGGLE (R35) — LIST / GRID, right-aligned at the 24
+      margin in the FEATURED WORK header row (where VIEW ALL sits on
+      the landing). Two 38px chips from the MORE INFO family, 24px line
+      glyphs drawn here (originals: three bars / four squares) on the
+      site's arrow stroke weight; the ACTIVE chip's glyph is the brand
+      red stroke on the resting fill. One element serves both views:
+      absolute in the document, so it sits in the list's fixed stage
+      row and scrolls with the grid's header. In DOM order it sits
+      BEFORE the grid so the keyboard path runs header → toggle →
+      tiles in reading order → footer. Hidden ≤1024. */}
+  <div class="work-viewtoggle" data-work-viewtoggle role="group" aria-label="Featured work view">
+    <button type="button" class="work-viewtoggle__btn is-active" data-work-view="list" aria-pressed="true" aria-label="List view">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" /></svg>
+    </button>
+    <button type="button" class="work-viewtoggle__btn" data-work-view="grid" aria-pressed="false" aria-label="Grid view">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="miter" /></svg>
+    </button>
+  </div>
+  <p class="work-sr-live" data-work-view-live aria-live="polite"></p>
+
   {/* ══ GRID VIEW (R35) — a normal scrolling document, shown when the
       body carries .work-view-grid (work-view.js). Its header is the
       list header's markup and treatment (the hl classes) so the two

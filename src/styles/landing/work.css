@@ -705,6 +705,39 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 		outline-offset: 2px;
 	}
 
+	/* ── THE VIEW TOGGLE — two MORE INFO-family chips (38px, the
+	   family's fill and ink) at the 24 margin; work-view.js derives
+	   --work-toggle-top so the chips' bottom sits on FEATURED's
+	   baseline. z above the stage's left column (3). */
+	.landing-v2 .work-viewtoggle {
+		position: absolute;
+		right: 24px;
+		top: var(--work-toggle-top, 159px);
+		z-index: 5;
+		display: flex;
+		gap: 8px;
+		margin: 0;
+	}
+	.landing-v2 .work-viewtoggle__btn {
+		width: 38px;
+		height: 38px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: 0;
+		background: var(--landing-svc-btn-fill, #e4e4ea);
+		color: var(--landing-accent-blue, #232a89);
+		cursor: pointer;
+	}
+	.landing-v2 .work-viewtoggle__btn svg { display: block; }
+	/* ACTIVE = the brand red on the glyph's stroke (currentColor); a
+	   red fill would read as a block beside the heading. */
+	.landing-v2 .work-viewtoggle__btn.is-active { color: #c1250e; cursor: default; }
+	.landing-v2 .work-viewtoggle__btn:focus-visible {
+		outline: 2px solid #232a89;
+		outline-offset: 2px;
+	}
 }
 
 /* The view announcer: the page's sr-only pattern, pinned to the top so
@@ -715,6 +748,7 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
    view announcer (desktop-only machinery — the mobile DOM renders
    byte-identically). */
 @media (max-width: 1024px) {
+	.landing-v2 .work-viewtoggle,
 	.landing-v2 .work-grid,
 	.landing-v2 [data-work-view-live] { display: none !important; }
 }
@@ -726,6 +760,13 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
    on the image inside the clipped tile (live tiles only). RM: every
    tile present, no scale. */
 @media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .work-viewtoggle {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.3s, transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.3s;
+	}
+	.landing-v2 .work-viewtoggle.is-visible { opacity: 1; transform: none; }
+
 	.landing-v2 .work-gtile {
 		opacity: 0;
 		transform: translateY(24px);
