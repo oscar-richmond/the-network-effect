@@ -520,6 +520,7 @@ export function initLandingServicesReel() {
       start: 'top 65%',
       once: true,
       onEnter: () => {
+        introPlayed = true;
         if (wwd instanceof HTMLElement) playLineRevealElement(wwd);
         introLines.forEach((line) => {
           if (line instanceof HTMLElement) playLineRevealElement(line);
@@ -545,6 +546,33 @@ export function initLandingServicesReel() {
     }
   };
 
+  /* R28 (Oscar, 2026-09-03) — THE RE-ENTRY SAFETY NET: every visual
+     property this section's scrubs and exits touch is re-asserted
+     deterministically for the CURRENT progress whenever the section is
+     re-entered (from either direction) or its exit cascade is reversed
+     out of. Idempotent and cheap: (1) the word-reveal state — a played
+     pillar's clips carry lr-visible (a played entrance never un-plays;
+     re-adding is a no-op when present); (2) the scrubbed timelines are
+     re-rendered at their own current time with force, so any inline
+     opacity / filter / transform / visibility a tween owns is rewritten
+     from the timeline's authority, whatever interrupted it; (3) the
+     type-drop cache is cleared so its next frame rewrites from px.
+     Nothing here can desync from scroll — it only re-applies f(scroll). */
+  let masterTlRef = null;
+  let departTlRef = null;
+  let introPlayed = false;
+  const lastDropT = [-1, -1, -1]; // R28: hoisted above the safety net (it clears the cache)
+  const reassertTexts = () => {
+    pillars.forEach((pillar, i) => {
+      if (!played[i]) return;
+      parts[i].forEach((el) => { if (el instanceof HTMLElement) playLineRevealElement(el); });
+    });
+    if (wwd instanceof HTMLElement && introPlayed) playLineRevealElement(wwd);
+    lastDropT.fill(-1);
+    if (masterTlRef) masterTlRef.render(masterTlRef.time(), false, true);
+    if (departTlRef) departTlRef.render(departTlRef.time(), false, true);
+  };
+
   /* ── The master timeline (duration units = scroll px). ────────── */
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -554,6 +582,9 @@ export function initLandingServicesReel() {
       end: `+=${RUNWAY_PX}`,
       scrub: true,
       invalidateOnRefresh: true,
+      onEnter: () => reassertTexts(),
+      onEnterBack: () => reassertTexts(),
+      onLeaveBack: () => reassertTexts(),
       onUpdate: (self) => {
         window.clearTimeout(snapTimer);
         snapTimer = window.setTimeout(trySnap, SNAP_IDLE_MS);
@@ -571,7 +602,7 @@ export function initLandingServicesReel() {
      two covered pillars on EXACTLY their incoming rise's window
      (same progress; desync impossible; reversal is arithmetic). */
   const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t));
-  const lastDropT = [-1, -1, -1];
+  masterTlRef = tl;
   const descEls = pillars.map((pl) => pl.querySelector('[data-sreel-desc]'));
   const applyTypeDrop = (px) => {
     /* All three pillars: the two that close scrub on their incoming
@@ -780,8 +811,13 @@ export function initLandingServicesReel() {
       end: 'bottom bottom',
       scrub: true,
       invalidateOnRefresh: true,
+      /* R28: reversing out of the cascade (scroll-up) and re-entering
+         it both re-assert the texts (the safety net above). */
+      onLeaveBack: () => reassertTexts(),
+      onEnterBack: () => reassertTexts(),
     },
   });
+  departTlRef = depart;
   const exitTween = (els, at, dur = SREEL_EXIT_SPAN_PX) => {
     const list = (Array.isArray(els) ? els : [els]).filter((el) => el instanceof HTMLElement);
     if (list.length) {
