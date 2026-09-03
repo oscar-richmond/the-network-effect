@@ -74,7 +74,17 @@ const FD_TEXT_EXIT_PX = 800; /* clears the text block's 245..752 span */
 const FD_REVEAL_START_T = 0.55; /* of the text phase */
 const FD_REVEAL_END_T = 0.95;   /* Ashley fully there as his text lands */
 const FD_REVEAL_BLUR_PX = 6;    /* the lightbox edge blur, kept */
-const RELEASE_RISE_PX = 96; /* the 120px white gap − the 24 rest (rev 2) */
+/* R32 item 5 (Oscar, 2026-09-03): the 96px release rise is RETIRED.
+   It was the rev-2 grammar's "white gap grows below the portrait" —
+   96 more px of stage ground exposed under the content before the
+   footer reveal. With the closing sweep the band is the last thing on
+   the stage, and that rise was the WHITE BLOCK leading it over the
+   footer (measured: the ground band below the image grew from the
+   deliberate 196 strip to 292 at 1728 / 73 to 169 in the shell). The
+   reveal now begins the moment the sweep is edge to edge, and only
+   the strip leads the band. (Was 96 = the 120 white gap − the 24
+   rest.) */
+const RELEASE_RISE_PX = 0;
 const FOOTER_REVEAL_PX = 830; /* frame 13:381 (was 811) */
 const NAV_EXIT_EPSILON_PX = 2;
 
@@ -150,6 +160,17 @@ const FD_IND_FADE_T = 0.35;
    and is gone as the edge passes its right — it disappears UNDER the
    image, never before or after. Pure f(edge x): reversible. */
 const FD_WIPE_BLUR_PX = 10;
+/* R32 item 5 — THE FOOTER'S BOTTOM ROW enters from the reveal's own
+   progress (/founders only: the band-carried reveal exposes the row
+   at ~40px, long before the 200px one-shot). Each item takes the
+   footer's media-entrance vocabulary — the fade-rise (opacity 0 → 1,
+   translateY 24 → 0) the chip and image use — scrubbed, staggered
+   across the row: item i runs over [exposeAt + i·STAGGER, +SPAN] of
+   the reveal, where exposeAt is the row's MEASURED first exposure
+   (the viewport bottom minus the fixed row's bottom). Reverses. */
+const FD_FOOTER_ROW_STAGGER_PX = 40;
+const FD_FOOTER_ROW_SPAN_PX = 160;
+const FD_FOOTER_ROW_RISE_PX = 24;
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
@@ -429,6 +450,24 @@ export function initFoundersPage() {
     });
   };
 
+  /* ── R32 item 5 — the footer bottom row's scrubbed entrance. */
+  const footerRowItems = Array.from(footerWrap?.querySelectorAll('[data-footer-row-scrub] .landing-footer__ritem') ?? [])
+    .filter((el) => el instanceof HTMLElement);
+  const footerRowEl = footerWrap?.querySelector('[data-footer-row-scrub]') ?? null;
+  const applyFooterRow = (reveal, vh) => {
+    if (!footerRowItems.length) return;
+    if (reduced) { footerRowItems.forEach((el) => { el.style.opacity = ''; el.style.transform = ''; }); return; }
+    /* the row is fixed with the footer: its bottom never moves, so the
+       exposure point is the same measurement at every frame */
+    const rowBottom = footerRowEl instanceof HTMLElement ? footerRowEl.getBoundingClientRect().bottom : vh;
+    const exposeAt = Math.max(0, vh - rowBottom);
+    footerRowItems.forEach((el, i) => {
+      const t = clamp((reveal - exposeAt - i * FD_FOOTER_ROW_STAGGER_PX) / FD_FOOTER_ROW_SPAN_PX, 0, 1);
+      el.style.opacity = t >= 0.999 ? '' : t.toFixed(3);
+      el.style.transform = t >= 0.999 ? '' : `translate3d(0, ${(FD_FOOTER_ROW_RISE_PX * (1 - t)).toFixed(1)}px, 0)`;
+    });
+  };
+
   /* ── R32 item 3 — THE TEXT WIPE under the sweep's leading edge (the
      hero's buildExitWipe treatment: opacity → 0 with blur → 10, ease
      none, one line at a time). Each rendered line of Ashley's block —
@@ -592,6 +631,7 @@ export function initFoundersPage() {
       content.style.transform = `translate3d(0, ${(-rise).toFixed(1)}px, 0)`;
     }
     stage.style.transform = `translate3d(0, ${(-reveal).toFixed(1)}px, 0)`;
+    applyFooterRow(reveal, vh);
     setNav(reveal >= FOOTER_REVEAL_PX - NAV_EXIT_EPSILON_PX);
     maybePlayFooter();
   };

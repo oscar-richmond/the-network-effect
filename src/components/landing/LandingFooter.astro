@@ -52,9 +52,17 @@ const FOOTER_SOCIALS = ['linkedin', 'instagram']
 
 interface Props {
   theme?: 'blue' | 'light';
+  /* R32 item 5 (Oscar, 2026-09-03) — a PAGE-SCOPED flag, not a fork:
+     'scrub' marks the desktop bottom row (data-footer-row-scrub) so the
+     hosting page's driver enters its items from ITS reveal progress
+     (footer-motion.js then leaves them out of the one-shot word wrap).
+     Only /founders passes it — its band-carried reveal exposes the row
+     before the one-shot fires. Every other page omits the prop and
+     renders byte-identical markup. */
+  rowEntrance?: 'static' | 'scrub';
 }
 
-const { theme = 'blue' } = Astro.props;
+const { theme = 'blue', rowEntrance = 'static' } = Astro.props;
 const arrowNe = asset(theme === 'light' ? '/assets/landing/closing/arrow-ne-dark.svg' : '/assets/landing/closing/arrow-ne.svg');
 const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark.svg' : '/assets/landing/closing/arrow-up.svg');
 ---
@@ -215,7 +223,7 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     >
   </div>
 
-  <div class="landing-footer__drow" data-footer-desktop>
+  <div class="landing-footer__drow" data-footer-desktop data-footer-row-scrub={rowEntrance === 'scrub' ? '' : undefined}>
     {/* Inert legal placeholder (frame 13:392/13:398) — no page yet. */}
     <span class="landing-footer__ritem landing-footer__ritem--terms is-placeholder" data-footer-col data-hover data-char-ripple-trigger><span data-char-ripple>Terms &amp; Conditions</span></span>
     {/* PRIVACY POLICY (Oscar 2026-08-26, resolves the earlier flag):

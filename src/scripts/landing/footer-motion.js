@@ -28,6 +28,12 @@ export function wrapFooterReveals(footer) {
     wordEls.push(line);
   });
   Array.from(footer.querySelectorAll('[data-footer-col]')).forEach((col, i) => {
+    /* R32 (founders): a row the hosting page scrubs from its own reveal
+       progress (data-footer-row-scrub) is not wrapped here — the page
+       owns those items' entrance. The index still advances, so every
+       other column keeps its exact base delay. No page without the
+       attribute is affected. */
+    if (col.closest('[data-footer-row-scrub]')) return;
     const base = i * 0.12;
     if (col.matches('a, button')) {
       if (col instanceof HTMLElement) {

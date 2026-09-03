@@ -352,7 +352,10 @@ import '../styles/fonts.css';
       (the /work fixed-wrap grammar; the sticky schema is opted out
       for this page in founders.css). */}
   <div class="fd-footer-wrap" data-fd-footer>
-    <LandingFooter theme="light" />
+    {/* R32 item 5: the bottom row enters from THIS page's reveal
+        progress (the band-carried reveal exposes it before the
+        one-shot) — a page-scoped flag on the shared component. */}
+    <LandingFooter theme="light" rowEntrance="scrub" />
   </div>
 </SiteShell>
 
