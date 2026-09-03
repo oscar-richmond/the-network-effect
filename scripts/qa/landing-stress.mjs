@@ -49,6 +49,10 @@
  * --focus hero: cycles across that boundary (from the cards' rest to
  *   Who We Are landed and back) at random pace, sampling every step.
  *
+ * --page work (R34): the /work list view — W1 docked meta cap top level
+ *   with its image, W2 no readable overlap, W3 purity, W4 tile pitch and
+ *   continuity.
+ *
  * --page founders (R30): the /founders virtual-scroll driver instead of
  *   the landing. Randomised wheel passes over its whole axis, asserting
  *   after every move:
@@ -93,9 +97,61 @@ const PAGE = arg('--page', 'landing');
 const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await (await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 const pageErrs = []; p.on('pageerror', (e) => pageErrs.push(String(e.message).slice(0, 120)));
-await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
+await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
 const s = W >= 1728 ? 1 : W / 1728;
 const f = () => p.frames().find((fr) => fr.url().includes('framed=1')) ?? p.mainFrame();
+
+/* ══ R34 — /work MODE (the list view's fixed-viewport driver) ═════
+   W1  the DOCKED meta's title cap top is level with its image's top
+       (±1.5): the column's origin and the dock relation are one rule;
+   W2  no two meta units overlap while both are readable (opacity >
+       0.05 on their titles) — the wipe clears the outgoing before the
+       incoming reaches it;
+   W3  purity: the same position reproduces the same tile y and docked
+       index;
+   W4  tiles keep their pitch (every adjacent pair exactly PITCH apart)
+       and never jump between adjacent samples faster than the input. */
+if (PAGE === 'work') {
+  const WSTATE = `(() => {
+    const st = window.__workPage ? window.__workPage.state() : null; if (!st) return { st: null };
+    const num = (v) => { const m = /matrix\\([^)]+\\)/.exec(v); return m ? +m[0].split(',').slice(-1)[0].replace(')', '') : 0; };
+    const tiles = [...document.querySelectorAll('.work-tile')].map((t) => +t.getBoundingClientRect().top.toFixed(1));
+    const units = [...document.querySelectorAll('.work-meta-unit')].map((u) => { const t = u.querySelector('.work-page__meta-title'); const r = u.getBoundingClientRect(); const tr = t.getBoundingClientRect(); const cs = getComputedStyle(t); return { top: +r.top.toFixed(1), titleTop: +tr.top.toFixed(1), titleBottom: +tr.bottom.toFixed(1), descBottom: +u.querySelector('.work-page__meta-desc').getBoundingClientRect().bottom.toFixed(1), op: +cs.opacity, vis: cs.visibility }; });
+    /* the cap inset from the same metrics the driver uses */
+    const t0 = document.querySelector('.work-page__meta-title'); let capInset = 0; if (t0) { const cs = getComputedStyle(t0); const c = document.createElement('canvas').getContext('2d'); c.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const m = c.measureText('H'); capInset = (parseFloat(cs.lineHeight) - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent; }
+    return { st, tiles, units, capInset: +capInset.toFixed(2), vh: innerHeight }; })()`;
+  const snap = () => f().evaluate(WSTATE);
+  const first = await snap();
+  if (!first.st) { console.log(JSON.stringify({ vp: `${W}x${H}`, page: 'work', error: 'no __workPage handle (dev build only)' })); await b.close(); process.exit(2); }
+  const PITCH = first.tiles.length > 1 ? +(first.tiles[1] - first.tiles[0]).toFixed(1) : 624;
+  const viol = []; const hist = []; const seen = new Map(); let prev = null; let wchecks = 0;
+  const check = (st, tag) => {
+    wchecks += 1; const pos = Math.round(st.st.pos);
+    const d = st.st.dockedIdx;
+    if (st.st.pos <= st.st.carouselMax) {
+      /* W1 — a RIDING unit (its image has not reached the dock) keeps its cap top level with its image top; a PINNED unit's image has passed it (the dock relation is the same rule the column's origin is derived from) */
+      st.units.forEach((u, i) => { const capTop = u.titleTop + st.capInset; const tileTop = st.tiles[i]; if (tileTop == null) return; const riding = tileTop > capTop + 1.5; if (riding && Math.abs(capTop - tileTop) > 1.5) viol.push({ inv: 'W1', tag, pos, msg: 'riding meta cap top not level with its image top', unit: i, capTop: +capTop.toFixed(1), tileTop }); });
+    }
+    /* W2 — the overtake wipe's contract (META_WIPE_LEAD 40 / SPAN 60, unchanged by R34 and measured identical on the pre-R34 code): a pinned title is at most 1 − 40/60 ≈ 0.34 when the incoming title's top first touches its bottom, and fully gone (≤ 0.02) by the time the incoming top reaches the pinned title's top. A pinned title above 0.4 under any intrusion, or still readable once overtaken to its top, is a real overlap. */
+    for (let i = 0; i < st.units.length - 1; i++) { const a = st.units[i], b2 = st.units[i + 1]; if (a.vis === 'hidden' || b2.vis === 'hidden' || b2.op <= 0.05) continue; const intrusion = a.titleBottom - b2.titleTop; if (intrusion > 1 && b2.titleTop > a.titleTop - 1 && a.op > 0.4) viol.push({ inv: 'W2', tag, pos, msg: 'pinned title still readable under the incoming title', a: i, b: i + 1, intrusion: +intrusion.toFixed(1), aOp: a.op }); if (b2.titleTop <= a.titleTop + 1 && b2.titleTop > a.titleTop - 40 && a.op > 0.02) viol.push({ inv: 'W2', tag, pos, msg: 'pinned title not gone once overtaken to its top', a: i, b: i + 1, aOp: a.op }); }
+    for (let i = 1; i < st.tiles.length; i++) if (Math.abs((st.tiles[i] - st.tiles[i - 1]) - PITCH) > 0.6) viol.push({ inv: 'W4', tag, pos, msg: 'tile pitch broken', i, delta: +(st.tiles[i] - st.tiles[i - 1]).toFixed(1), pitch: PITCH });
+    if (prev && Math.abs(st.tiles[0] - prev.tiles[0]) > Math.abs(st.st.pos - prev.st.pos) + 2) viol.push({ inv: 'W4', tag, pos, msg: 'tile jumped faster than the position moved', from: prev.tiles[0], to: st.tiles[0], dPos: +(st.st.pos - prev.st.pos).toFixed(1) });
+    if (Math.abs(st.st.pos - st.st.targetPos) < 0.5) { const key = Math.round(st.st.pos / 25) * 25; const sig = { pos: st.st.pos, t0: st.tiles[0], d }; const was = seen.get(key); if (was) { const dPos = Math.abs(sig.pos - was.pos); if (Math.abs(sig.t0 - was.t0) > dPos + 1) viol.push({ inv: 'W3', tag, pos, msg: 'same position, different tile y', was: was.t0, now: sig.t0 }); if (sig.d !== was.d && dPos < 5) viol.push({ inv: 'W3', tag, pos, msg: 'same position, different docked index', was: was.d, now: sig.d }); } else seen.set(key, sig); }
+    prev = st;
+  };
+  for (let i = 0; i < MOVES; i++) {
+    const kind = rnd(); const dir = rnd() < 0.5 ? -1 : 1; const dist = Math.round(pick(60, 1600));
+    if (kind < 0.15) { await p.mouse.wheel(0, dir * dist); await p.waitForTimeout(Math.round(pick(20, 90))); await p.mouse.wheel(0, -dir * Math.round(dist * pick(0.4, 1.3))); hist.push(`rev ${dir * dist}`); }
+    else { const steps = Math.round(pick(1, 5)); for (let k = 0; k < steps; k++) { await p.mouse.wheel(0, dir * Math.round(dist / steps)); await p.waitForTimeout(Math.round(pick(10, 45))); check(await snap(), 'mid'); } hist.push(`wheel ${dir * dist}/${steps}`); }
+    await p.waitForTimeout(260); check(await snap(), 'settled');
+    if (rnd() < 0.25) { await p.waitForTimeout(Math.round(pick(200, 700))); check(await snap(), 'pause'); }
+  }
+  const summary = { vp: `${W}x${H}`, page: 'work', moves: MOVES, seed: SEED, maxPos: first.st.maxPos, checks: wchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
+  console.log(JSON.stringify(summary));
+  await b.close();
+  process.exit(viol.length ? 2 : 0);
+}
 
 /* ══ R30 — /founders MODE ═══════════════════════════════════════════
    The page is a VIRTUAL scroller (its own wheel-driven axis, no
