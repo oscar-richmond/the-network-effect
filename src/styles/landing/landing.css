@@ -6010,25 +6010,23 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		background: #161616;
 	}
 
-	/* Header → SECTION LABEL (R15, Oscar 2026-09-02; SUPERSEDES the
-	   one-line heading ruling — 40/50/−2% as shipped, the "56/54" of
-	   the brief; one value carried here, dated): FEATURED WORK takes
-	   the eyebrow tier of WHAT WE DO / OUR NETWORK exactly — Dazzed
-	   600, 12/14, uppercase, tracking 0 (the guide's Label tier and
-	   OUR NETWORK's; WHAT WE DO carries its frame's −0.015em —
-	   flagged), #eeeef0 plain on the dark ground. 24 from the left
-	   margin; its top ink 180 below the section above's bottom (=
-	   this stage's top at the pin) — landing-featured.js writes the
-	   top (LABEL_TOP_PX). The two shipped line elements still weld
-	   side by side at one word-space (mobile markup untouched). */
+	/* Header (R25, Oscar 2026-09-03; SUPERSEDES R15's 12/14 eyebrow
+	   ruling, one value carried here, dated): FEATURED WORK is the
+	   LARGE SANS tier — Dazzed SemiBold 56/50/−3.5%, the founders /
+	   Our Network / We Create Access headline — uppercase, #eeeef0
+	   plain on the dark ground. 24 from the left margin; its top INK
+	   180 below the section above's bottom (= this stage's top at the
+	   pin) — landing-featured.js writes the top (LABEL_TOP_PX, the
+	   face's 8px cap inset folded in). The two shipped line elements
+	   still weld side by side at one word-space (mobile untouched). */
 	.landing-v2.landing-home .landing-featured__hl {
 		position: absolute;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
-		letter-spacing: 0;
+		font-size: 56px;
+		line-height: 50px;
+		letter-spacing: -0.035em;
 		text-transform: uppercase;
 		color: #eeeef0;
 		mix-blend-mode: normal;
@@ -6053,11 +6051,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2 .landing-featured__viewall-label--d { display: inline; }
 
 	.landing-v2.landing-home .landing-featured__viewall {
-		/* R15 (Oscar 2026-09-02): RELOCATED — 80 below the carousel
-		   unit's bottom, horizontally centred (both written by
-		   landing-featured.js: --lf-viewall-top + the measured left);
-		   the base right-anchor goes inert. Chip, /work, hover as were. */
-		right: auto;
+		/* R25 (Oscar 2026-09-03; supersedes R15's below-the-carousel
+		   placement): ABOVE the carousel, on the header's row — its
+		   bottom on the FEATURED WORK ink bottom (landing-featured.js
+		   writes --lf-viewall-top), its right edge 24 from the viewport
+		   (the base right-anchor, live again). Chip, /work, hover as were. */
+		right: 24px;
 		background: #343439;
 		color: #ffffff;
 		font-size: 16px;

@@ -248,17 +248,21 @@ export function initLandingFeatured() {
      bottom, equal gaps. The unit's height is MEASURED at the fix
      moment (min image top → max title bottom across the cards; the
      strip's own box is the fixed 653 card height, taller than the
-     unit). The label sits at a FIXED top (its ink 180 below the
-     section above's bottom = this stage's top at the pin; Dazzed
-     12/14 ink sits 2.4 below its box → 177.6), and VIEW ALL sits
-     VIEWALL_GAP_PX below the unit's bottom, horizontally centred.
+     unit). The header sits at a FIXED top (its ink 180 below the
+     section above's bottom = this stage's top at the pin; R25: the
+     LARGE SANS 56/50's cap top sits 2 below its own 50px line box,
+     pixel-measured on this header → 178), and VIEW ALL WORK
+     (R25, Oscar 2026-09-03 — supersedes R15's 80-below-the-unit,
+     centred placement) sits ON THE HEADER'S ROW: its bottom on the
+     header's ink bottom (HEADER_INK_BOTTOM_PX below the header top,
+     pixel-measured), its right edge 24 from the viewport (CSS).
      Same mechanism as the R6 fix — place() is the ONE writer of
      --lf-header-top / --lf-viewall-top / the strip top; the
      departure rides --lf-depart, composed in the calc. The 24px
      floor stays as the too-tall guard (flagged in the gap report,
      never a silent compression). */
-  const LABEL_TOP_PX = 177.6;
-  const VIEWALL_GAP_PX = 80;
+  const LABEL_TOP_PX = 178;
+  const HEADER_INK_BOTTOM_PX = 46; /* the caps' baseline below the header's line-box top at 56/50 (measured) */
   let lastPlacement = null;
   const place = () => {
     fitCards();
@@ -286,13 +290,10 @@ export function initLandingFeatured() {
     const unitTop = Math.max(24 + wm, wm + (stageH() - wm - unitH) / 2);
     const stripTop = unitTop - unitTopOff;
     strip.style.top = `${stripTop.toFixed(1)}px`;
-    const viewallTop = unitTop + unitH + VIEWALL_GAP_PX;
+    const viewallH = viewall instanceof HTMLElement ? viewall.getBoundingClientRect().height || 38 : 38;
+    const viewallTop = LABEL_TOP_PX + HEADER_INK_BOTTOM_PX - viewallH;
     section.style.setProperty('--lf-header-top', `${LABEL_TOP_PX}px`);
     section.style.setProperty('--lf-viewall-top', `${viewallTop.toFixed(1)}px`);
-    if (viewall instanceof HTMLElement) {
-      const vw = stage.getBoundingClientRect().width || window.innerWidth || 1728;
-      viewall.style.left = `${((vw - viewall.getBoundingClientRect().width) / 2).toFixed(1)}px`;
-    }
     lastPlacement = {
       wordmarkBottom: +wm.toFixed(2),
       unitH: +unitH.toFixed(2),
