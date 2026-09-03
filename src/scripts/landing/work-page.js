@@ -283,21 +283,15 @@ export function initWorkPage() {
   const baseTop = () => stageH() - IMG_H_PX - TILE_BOTTOM_CLEAR_PX;
   const dockY = () => baseTop();
 
-  /* ── W-under-A (the featured section's Range mechanism). */
+  /* ── The header pair. */
   const hlFeatured = document.querySelector('[data-work-hl-featured]');
   const hlWork = document.querySelector('[data-work-hl-work]');
-  /* Frame 2001:67 (2026-08-26): WORK sits RIGHT-FLUSH with
-     FEATURED (the frame's 11-space lead lands its right edge on the
-     block's right edge) — derived from the rendered rects so it
-     holds if either width changes. (Replaces the old W-under-A
-     Range derivation, which encoded the retired 48px pair.) */
-  const alignWork = () => {
-    if (!(hlFeatured instanceof HTMLElement) || !(hlWork instanceof HTMLElement)) return;
-    const fRect = hlFeatured.getBoundingClientRect();
-    const wRect = hlWork.getBoundingClientRect();
-    if (fRect.width === 0 || wRect.width === 0) return;
-    hlWork.style.left = `${(fRect.right - wRect.width - stage.getBoundingClientRect().left).toFixed(2)}px`;
-  };
+  /* R34 item 2 (Oscar, 2026-09-03): WORK's indent is an EXPLICIT
+     value in work.css now — the W's ink on the U's ink, measured at
+     the 90px size — so the frame 2001:67 right-flush derivation that
+     lived here (alignWork: WORK's right edge on FEATURED's, from the
+     rendered rects; itself the successor of the 48px-era W-under-A
+     Range derivation) is retired. Nothing writes hlWork's left. */
 
   /* Tile geometry: left edge at the stage literal (TILE_LEFT_PX —
      see the note on the constant), right edge held at stage-16. Set
@@ -804,7 +798,6 @@ export function initWorkPage() {
   let disposed = false;
   fontsReady.then(() => {
     if (disposed) return;
-    alignWork();
     deriveTileWidth();
     measureUnits(); /* index offsets + push heights need real glyphs */
     frame();
@@ -820,7 +813,6 @@ export function initWorkPage() {
   cleanups.push(() => timeouts.forEach(clearTimeout));
 
   const onResize = () => {
-    alignWork();
     deriveTileWidth();
     measureUnits();
     frame();

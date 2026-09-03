@@ -122,6 +122,16 @@ body.work-page {
 
 .landing-v2 .work-page__hl--work {
 	top: 208px; /* the second 88px line (120 + 88) */
+	/* R34 item 2 (Oscar, 2026-09-03): the W's INK aligns with the U's
+	   INK in FEATURED above — glyph ink, not boxes (the two glyphs
+	   have different side bearings). Measured at 90px (2× pixel ink,
+	   1728): the U's ink starts at x 293.0 (its box at 296.33); the W's
+	   ink starts 1.19px right of its own box (191.5 vs 190.31 under the
+	   old derivation), so left = 293.0 − 1.19 = 291.8. Authored as an
+	   explicit value; supersedes the frame 2001:67 right-flush
+	   derivation work-page.js used to compute live (alignWork, retired
+	   with this ruling). Before: W ink 191.5; after: 293.0. */
+	left: 291.8px;
 }
 
 /* (The DESKTOP filter pills are REMOVED — Oscar, 2026-08-26: frame
