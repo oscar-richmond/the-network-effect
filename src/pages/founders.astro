@@ -288,6 +288,35 @@ import '../styles/fonts.css';
         treatment; the travel machinery went with them
         (founders-page.js: phases re-anchored to named constants,
         no derived name clamps remain). */}
+
+    {/* ── THE CLOSING SWEEP (R30, Oscar 2026-09-03) — the landing
+        image of the page's end state: the WHO WE ARE sofa shot (the
+        SAME asset the landing section uses — one file, one standing
+        founder-imagery sign-off), swept in left-to-right over
+        Ashley's portrait on the PORTRAIT TRANSITION'S OWN mechanism
+        (founders-page.js applySweep: the clip inset + the sin-curve
+        edge blur, FD_REVEAL_BLUR_PX — the same constants the
+        Robbo→Ashley wipe uses) and continuing past the portrait's
+        edge to the full viewport width.
+
+        GEOMETRY: the VIEWPORT TOP down to the portrait's bottom, at
+        100vw — so the end state is the image, the nav over it, and
+        the ONE deliberate white strip below, which is the portrait's
+        existing bottom margin, untouched (196 at 1728, 73 in the
+        1512 shell — Oscar's ruling: kept, not "fixed").
+        CROP: object-position 50% 0 — TOP-anchored, so the 20% lost
+        is the bottom (feet and rug); both faces and upper bodies
+        sit in the kept 80%.
+
+        DOM: last in fd-content, so paint order puts it over the
+        portrait, the column and both slides with NO z-index (the
+        page's standing rule — a stacking context here would isolate
+        the difference-blended names beneath it). BLEND: the nav is
+        in the SiteShell header, an entirely different subtree, so
+        this element's clip can never become its blend ancestor. */}
+    <figure class="fd-sweep" data-fd-sweep aria-hidden="true">
+      <img src={asset('/assets/landing/founders/founders-photo.jpg')} alt="" loading="lazy" decoding="async" />
+    </figure>
     </div>
 
     {/* MOBILE thumb dock (rev 4): the face CTAs sit fixed 32px from

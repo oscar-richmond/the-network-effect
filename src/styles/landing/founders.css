@@ -914,6 +914,46 @@ body.founders-page {
 		}
 	}
 
+	/* ── THE CLOSING SWEEP (R30) — the portrait's own band at full
+	   viewport width; the white strip below it is the portrait's
+	   existing bottom margin, kept exactly (Oscar's ruling).
+	   The clip is written by the driver every frame (one writer,
+	   pure f(pos)); the resting state is fully clipped away. NO
+	   z-index — DOM order paints it above the portrait, the column
+	   and the slides, and a stacking context here would isolate the
+	   difference-blended names beneath it (the page's standing
+	   rule). */
+	/* Top edge at the VIEWPORT TOP, bottom on the PORTRAIT'S bottom:
+	   the end state is the image, the nav over it, and ONE strip — the
+	   deliberate one below (Oscar's ruling: kept, not "fixed"). Anchored
+	   at the portrait's top 80 the band left a second light strip above
+	   the image and the nav sat outside it; the brief's end state names
+	   only the bottom strip. */
+	.founders-page .fd-sweep {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: calc(80px + min(841px, 100vh - 104px));
+		height: calc(80px + min(841px, 100dvh - 104px));
+		margin: 0;
+		overflow: hidden;
+		clip-path: inset(0 100% 0 0);
+		pointer-events: none;
+	}
+
+	.founders-page .fd-sweep img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		/* TOP-anchored (Oscar's crop ruling): at 1728 × 921 the 3:2
+		   photo scales to 1152.3 tall, so the visible band is the top
+		   79.9% — the bottom 20.1% (feet, rug) is what is lost; both
+		   faces and upper bodies are in the kept region. Identical at
+		   the 1512 shell (its interior is the same 1728 × 921 band). */
+		object-position: 50% 0;
+	}
 
 	/* ── Text block (guide mapping flagged in the report). */
 	/* R19 (Oscar, 2026-09-02): the founder eyebrows take the landing's
@@ -1042,7 +1082,8 @@ body.founders-page {
 	.founders-page .fd-slide__staticname,
 	.founders-page .fd-slide__bio2,
 	.founders-page .fd-slide__rel,
-	.founders-page .fd-col {
+	.founders-page .fd-col,
+	.founders-page .fd-sweep {
 		display: none;
 	}
 }

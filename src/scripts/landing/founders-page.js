@@ -92,7 +92,12 @@ const NAV_EXIT_EPSILON_PX = 2;
    4 Both blocks land BLOCK-CENTRE on the PORTRAIT'S CENTRE (measured,
      per slide), and the landing is followed by one slot of column
      travel before anything else moves.
-   (Item 5, the closing sweep, lands in its own commit.) */
+   5 THE CLOSING SWEEP replaces the old "release straight to footer":
+     Ashley's text and the column leave upward while the WHO WE ARE
+     sofa shot sweeps in from the left on the PORTRAIT TRANSITION'S
+     mechanism, past the portrait's edge to the full viewport width,
+     the indicator blurring out with it; the release follows only
+     once the image is edge to edge. */
 /* The column build — load-time (nothing here is scroll-driven): one
    image every STAGGER, each taking BUILD_S; the third slot is already
    there, so the build is (visible slots − 1) staggers long. */
@@ -122,6 +127,16 @@ const FD_TEXT_BLUR_PX = 12;
    reverse pass rewinds them without animating (the mobile swap's own
    resetSlide pattern, which this page already uses). */
 const FD_ASHLEY_REVEAL_AT_T = 0.3;
+/* THE SWEEP — TUNABLE. The portrait wipe covers its 630px box over
+   0.4 × FD_TEXT_PX = 360px of scroll (1.75px of travel per px of
+   scroll); carrying that exact rate across the 1728 viewport gives
+   988. Raise it to slow the sweep, lower it to quicken. */
+const FD_SWEEP_PX = 988;
+/* Ashley's text and the column are clear by 70% of the sweep, so the
+   end state (image + nav + the white strip) is unambiguous; the
+   indicator has blurred out by 35%. */
+const FD_SWEEP_EXIT_T = 0.7;
+const FD_IND_FADE_T = 0.35;
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
@@ -150,6 +165,11 @@ export function initFoundersPage() {
   const label = stage.querySelector('[data-fd-label]');
   const live = stage.querySelector('[data-fd-live]');
   const footerWrap = document.querySelector('[data-fd-footer]');
+
+  const sweep = stage.querySelector('[data-fd-sweep]');
+  const indThumbs = stage.querySelector('.fd-ind__thumbs');
+  const indDivider = stage.querySelector('.fd-ind__divider');
+  const indLabel = stage.querySelector('[data-fd-label]');
 
   /* ── Anchors. R30 item 1: the TEXT PHASE'S START is no longer the
      FD_HOLD_PX scroll constant — it is the scroll at which the NEW TOP
@@ -210,7 +230,9 @@ export function initFoundersPage() {
   const textStart = () => slotPitch;
   const textEnd = () => textStart() + FD_TEXT_PX;
   const dwellEnd = () => textEnd() + slotPitch;   /* item 4: one more image of column travel */
-  const releaseStart = () => dwellEnd();
+  const sweepStart = () => dwellEnd();
+  const sweepEnd = () => sweepStart() + FD_SWEEP_PX;
+  const releaseStart = () => sweepEnd();
   const footerStart = () => releaseStart() + RELEASE_RISE_PX;
   const maxPos = () => footerStart() + FOOTER_REVEAL_PX;
   /* The roll: 1:1 through the hold (so the trigger IS one pitch), the
@@ -420,13 +442,16 @@ export function initFoundersPage() {
   const frame = () => {
     const textT = clamp((pos - textStart()) / FD_TEXT_PX, 0, 1);
     const textTe = reduced ? (textT < 0.5 ? 0 : 1) : textT;
+    const sweepRaw = clamp((pos - sweepStart()) / FD_SWEEP_PX, 0, 1);
+    const sweepT = reduced ? (sweepRaw < 0.5 ? 0 : 1) : sweepRaw;
+    const sweepExit = clamp(sweepT / FD_SWEEP_EXIT_T, 0, 1);
     const rise = clamp(pos - releaseStart(), 0, RELEASE_RISE_PX);
     const reveal = clamp(pos - footerStart(), 0, FOOTER_REVEAL_PX);
     const vh = window.innerHeight || 1080;
 
     /* TEXT TRAVEL — Robbo up and out; Ashley up and in, landing on her
-       measured centring offset (R30 item 4). The portrait never
-       travels: the page
+       measured centring offset (R30 item 4), then leaving upward with
+       the closing sweep (item 5). The portrait never travels: the page
        starts at Robbo's rest. */
     const xf = clamp((textTe - FD_XFADE_START_T) / (FD_XFADE_END_T - FD_XFADE_START_T), 0, 1);
     if (slides[0] instanceof HTMLElement) {
@@ -435,7 +460,7 @@ export function initFoundersPage() {
       applySlideState(slides[0], 1 - xf, xf);
     }
     if (slides[1] instanceof HTMLElement) {
-      const y = blockShift[1] + vh * (1 - textTe);
+      const y = blockShift[1] + vh * (1 - textTe) - FD_TEXT_EXIT_PX * sweepExit;
       slides[1].style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
       applySlideState(slides[1], xf, 1 - xf);
     }
@@ -464,12 +489,50 @@ export function initFoundersPage() {
       const roll = reduced ? (textTe >= 1 ? colRollMax : 0) : colRoll(pos);
       colTrack.style.transform = roll > 0.01 ? `translate3d(0, ${(-roll).toFixed(2)}px, 0)` : '';
     }
+    /* R30 item 5 — the column leaves upward WITH Ashley's text as the
+       sweep comes in (the window itself travels; the roll inside it is
+       untouched, so the reverse restores both by arithmetic). */
+    if (colWrap instanceof HTMLElement) {
+      const out = (colWrap.offsetHeight || vh) * sweepExit;
+      colWrap.style.transform = out > 0.01 ? `translate3d(0, ${(-out).toFixed(1)}px, 0)` : '';
+    }
+
     /* Indicator — the label row rides its 64px with the text travel. */
     if (labelRow instanceof HTMLElement) {
       labelRow.style.top = `${(19 + 64 * textTe).toFixed(1)}px`;
     }
-    setActiveSlide(textTe >= 0.5 ? 1 : 0);
+    /* R30 item 5c — the indicator BLURS AND FADES OUT with the sweep's
+       first FD_IND_FADE_T. BLEND SAFETY: the divider and the label
+       carry mix-blend-mode difference, so they are faded as DIRECT
+       targets (self-opacity/filter keeps an element's own blend; a
+       wrapper-level fade on .fd-ind would isolate them and flip their
+       contrast mid-sweep — the established rule on this site). */
+    const indT = clamp(sweepT / FD_IND_FADE_T, 0, 1);
+    const indBlur = FD_REVEAL_BLUR_PX * indT;
+    [indThumbs, indDivider, indLabel].forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+      el.style.opacity = indT <= 0.001 ? '' : (1 - indT).toFixed(3);
+      el.style.filter = indBlur > 0.05 ? `blur(${indBlur.toFixed(2)}px)` : '';
+    });
 
+    /* R30 item 5 — THE SWEEP: the portrait transition's own mechanism
+       (the clip inset plus the sin-curve edge blur at FD_REVEAL_BLUR_PX
+       — applySlide/applyWipe's constants, reused verbatim), except it
+       reveals the INCOMING image left to right and runs past the
+       portrait's edge to the full viewport width. */
+    if (sweep instanceof HTMLElement) {
+      if (sweepT <= 0.0001) {
+        sweep.style.visibility = 'hidden';
+        sweep.style.clipPath = 'inset(0 100% 0 0)';
+        sweep.style.filter = '';
+      } else {
+        sweep.style.visibility = 'visible';
+        sweep.style.clipPath = `inset(0 ${((1 - sweepT) * 100).toFixed(3)}% 0 0)`;
+        const bl = sweepT < 0.999 ? FD_REVEAL_BLUR_PX * Math.sin(Math.PI * sweepT) : 0;
+        sweep.style.filter = bl > 0.05 ? `blur(${bl.toFixed(2)}px)` : '';
+      }
+    }
+    setActiveSlide(textTe >= 0.5 ? 1 : 0);
 
     /* Release + footer reveal — the unchanged grammar. */
     if (content instanceof HTMLElement) {
@@ -674,7 +737,7 @@ export function initFoundersPage() {
       setPos: (p) => { setPosClamped(p); },
       state: () => ({
         pos, targetPos, textStart: textStart(), textEnd: textEnd(),
-        dwellEnd: dwellEnd(),
+        dwellEnd: dwellEnd(), sweepStart: sweepStart(), sweepEnd: sweepEnd(),
         releaseStart: releaseStart(), footerStart: footerStart(), maxPos: maxPos(),
         activeSlide, slotPitch, colRollMax, blockShift: [...blockShift],
         colBuildOrder: [...colBuildOrder], rowCount: [...rowCount],
