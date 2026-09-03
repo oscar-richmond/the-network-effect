@@ -182,8 +182,25 @@ const SREEL_HANDOFF_GATE_T = 0.75;
    moment (supersedes the 75%-gate arrival contract). */
 export const SREEL_IMAGE_BLUR_OUT_PX = SREEL_EXIT_FURNITURE_AT_PX + SREEL_EXIT_SPAN_PX;
 let lastDepartPad = 0;
+let departTrigger = null;
 export function sreelHandoff() {
   return lastDepartPad > 0 ? { departPad: lastDepartPad, imageBlurOutPx: SREEL_IMAGE_BLUR_OUT_PX } : null;
+}
+/** R28 (Oscar, 2026-09-03): HOW DARK IS THE GROUND — 0 (light) → 1
+ *  (#161616), a pure function of the depart scrub's progress (the
+ *  same value that drives the ground tween, so it can never disagree
+ *  with the painted colour). 1 when there is no reel on the page.
+ *  landing-featured.js gates its edge gradient on it. */
+export function sreelGroundDarkness() {
+  if (!departTrigger || !lastDepartPad) return 1;
+  /* From the scroller's CURRENT position against the trigger's start,
+     not from the trigger's cached progress: ScrollTrigger updates its
+     triggers in sequence, so a reader running earlier in the same
+     tick would see the previous frame's progress — a one-step lag at
+     rest that the scroll position itself never has. */
+  const px = Math.min(Math.max(departTrigger.scroll() - departTrigger.start, 0), lastDepartPad);
+  const fadeGateAt = Math.round((SREEL_EXIT_HEADS_AT_PX + SREEL_EXIT_SPAN_PX) * SREEL_HANDOFF_GATE_T);
+  return Math.min(Math.max((px - fadeGateAt) / TRANSITION_GROUND_FADE_PX, 0), 1);
 }
 
 /* ── SCROLL-MODE TEXT SLIDE (Oscar 2026-08-27) — the scroll-active
@@ -823,7 +840,8 @@ export function initLandingServicesReel() {
       { backgroundColor: GROUND_DARK, ease: 'none', duration: TRANSITION_GROUND_FADE_PX, immediateRender: true },
       fadeGateAt);
   }
-  cleanups.push(() => { depart.scrollTrigger?.kill(); depart.kill(); });
+  departTrigger = depart.scrollTrigger ?? null;
+  cleanups.push(() => { departTrigger = null; depart.scrollTrigger?.kill(); depart.kill(); });
 
   masterTl = tl;
   trigger = tl.scrollTrigger ?? null;

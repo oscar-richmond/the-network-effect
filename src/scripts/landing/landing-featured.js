@@ -39,7 +39,7 @@ import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport } from './viewport.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 import { initMobileEntrance } from './m-entrance.js';
-import { sreelHandoff } from './landing-services-reel.js';
+import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -494,40 +494,78 @@ export function initLandingFeatured() {
   const bandFade = { t: 0 };
   const edgeTint = section.querySelector('[data-featured-edge-tint]');
   const bandEl = section.querySelector('.gradual-blur');
-  tl.to(bandFade, {
-    t: 1,
-    duration: BAND_FADE_PX,
-    onUpdate: () => {
-      /* R6 item 4 (Oscar 2026-08-27, the escaped-gradient class):
-         a fully-drained band previously kept blur(0rem) — two
-         stacked layers remaining ACTIVE BACKDROP ROOTS through the
-         whole departure/boundary, the window where Chrome's
-         backdrop sampling under sticky ancestors is known to paint
-         the blur detached from its element (the element itself
-         never moves — verified over randomised passes — and the
-         stage clips overflow; the artifact is compositing-level).
-         Drained now means NO backdrop root anywhere: filters go
-         'none' and the band goes visibility-hidden, both pure
-         functions of the same scrubbed value — reversal rebuilds
-         them exactly. */
-      const drained = bandFade.t >= 0.999;
-      blurLayers.forEach((l, i) => {
-        const r = blurBases[i] * (1 - bandFade.t);
-        const v = drained || r < 0.004 ? 'none' : `blur(${r.toFixed(3)}rem)`;
-        l.style.backdropFilter = v;
-        l.style.webkitBackdropFilter = v;
-      });
-      if (bandEl instanceof HTMLElement) {
-        bandEl.style.visibility = drained ? 'hidden' : '';
-      }
-      /* The tint drains with the radii (the access-exit pairing) —
-         plain gradient div, opacity is safe (no backdrop root). */
-      if (edgeTint instanceof HTMLElement) {
-        edgeTint.style.opacity = (1 - bandFade.t).toFixed(3);
-      }
-    },
-  }, (travel() || 1) - BAND_FADE_PX);
+  /* R28 (Oscar, 2026-09-03 — the gradient's third recurrence, fixed at
+     the mechanism): the band is now a PURE FUNCTION of two scrubbed
+     values and nothing else —
+       gate  = how dark the ground is (sreelGroundDarkness, the reel's
+               depart progress — the exact value that paints the stage),
+               mapped 0 → 1 across [BAND_IN_AT_DARK_T, BAND_FULL_AT_DARK_T]
+               (fades IN slowly only once the ground is nearly black, and
+               OUT on the same value in reverse);
+       drain = 1 − bandFade.t (the end-of-travel dissolve, as before).
+     opacity = gate × drain for the tint; the band's own opacity is the
+     gate; and the backdrop-filter layers exist ONLY while that product
+     is non-zero — whenever the band is invisible there is NO backdrop
+     root anywhere. That closes both symptoms: (a) the band no longer
+     paints over a light or greying ground (measured pre-fix: opacity 1
+     with blur(3rem) from the section's entry at ground rgb(238)
+     through the whole fade); (b) the compositing-level escape (Chrome
+     painting a backdrop blur detached from its element under sticky /
+     transformed / overlapped ancestors — the R6 item 4 finding) had
+     re-opened two windows since R6: the entry, where active roots sat
+     over the outro's blurring, transforming exit cascade, and the
+     scroll-up return from Access, where the roots came back while the
+     opaque Access section still overlapped the stage. Both windows
+     now have no roots (gate 0 at entry until the ground is dark; the
+     drain holds through the departure and the overlap). The band's
+     IntersectionObserver class and its 0.3s opacity transition are
+     neutralised here: inline opacity is the one writer, no transition
+     to smear a scrub. Written from the ENTRY driver below (the window
+     before the pin, where the master scrub is not yet running) and
+     from the master scrub's own updates; reversal is arithmetic. */
+  const BAND_IN_AT_DARK_T = 0.85;   /* the band starts fading in at 85% dark */
+  const BAND_FULL_AT_DARK_T = 1.0;  /* fully in at black */
+  if (bandEl instanceof HTMLElement) bandEl.style.transition = 'none';
+  let lastBandKey = '';
+  const applyBand = () => {
+    const dark = sreelGroundDarkness();
+    const gate = Math.min(Math.max((dark - BAND_IN_AT_DARK_T) / (BAND_FULL_AT_DARK_T - BAND_IN_AT_DARK_T), 0), 1);
+    const drain = 1 - bandFade.t;
+    const tintOp = gate * drain;
+    const off = tintOp <= 0.004;
+    const key = `${gate.toFixed(3)}|${drain.toFixed(3)}`;
+    if (key === lastBandKey) return;
+    lastBandKey = key;
+    blurLayers.forEach((l, i) => {
+      const r = blurBases[i] * drain;
+      const v = off || r < 0.004 ? 'none' : `blur(${r.toFixed(3)}rem)`;
+      l.style.backdropFilter = v;
+      l.style.webkitBackdropFilter = v;
+    });
+    if (bandEl instanceof HTMLElement) {
+      bandEl.style.opacity = gate.toFixed(3);
+      bandEl.style.visibility = off ? 'hidden' : '';
+    }
+    if (edgeTint instanceof HTMLElement) {
+      edgeTint.style.opacity = tintOp.toFixed(3);
+    }
+  };
+  tl.to(bandFade, { t: 1, duration: BAND_FADE_PX, onUpdate: applyBand }, (travel() || 1) - BAND_FADE_PX);
+  /* The ENTRY driver: from the section's top entering the viewport
+     bottom to its pin — the ground fade happens in this window, before
+     the master scrub exists. onUpdate + onRefresh keep the band a
+     function of the current scroll after resizes and refreshes too. */
+  const bandEntry = ScrollTrigger.create({
+    trigger: section,
+    start: 'top bottom',
+    end: 'top top',
+    onUpdate: applyBand,
+    onRefresh: applyBand,
+    onLeaveBack: applyBand,
+    onEnterBack: applyBand,
+  });
   masterTl = tl;
+  applyBand();
 
   /* VIEW ALL's entrance is gsap-driven (NOT the CSS hidden-state
      class): its departure is a scrubbed gsap transform, and a CSS
@@ -636,5 +674,6 @@ export function initLandingFeatured() {
     lightFade.kill();
     masterTl?.scrollTrigger?.kill();
     masterTl?.kill();
+    bandEntry?.kill();
   };
 }
