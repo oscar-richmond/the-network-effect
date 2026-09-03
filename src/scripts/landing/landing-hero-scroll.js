@@ -141,20 +141,23 @@ const HERO_CARD_STAGGER_PX = 80;
 const HERO_CARD_EXIT_BUFFER_PX = 60;
 const HERO_GROUND_LIGHT = '#eeeef0';
 const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
-/* R18 (Oscar, 2026-09-02): WHO WE ARE begins entering when the ground
-   fade reaches this fraction of the way to black (was: at exitEnd =
-   the fade's end + EXIT_BUFFER 60 — the section's top crossed the
-   viewport bottom 60px after full black). The section is IN FLOW
-   after this hero's runway spacer, so its entry scroll IS the
-   spacer's end: the runway now ends at fadeStart + T × (fadeEnd −
-   fadeStart), derived from the fade's own window — the same scrub
-   numbers, so the two cannot desync; reverse scroll mirrors it by
-   construction (the section's top drops below the viewport bottom at
-   the same scroll the fade passes back below T). The founders' own
-   drift/hold/exit timeline and its one-shot entrance are anchored to
-   the track, so they follow. 1.0 restores the fade-end entry (with
-   the buffer gone); the GL pause gate stays at exitEnd. */
-const HERO_FOUNDERS_ENTER_AT_FADE_T = 0.9;
+/* R21 (Oscar, 2026-09-02) — THE HERO → WHO WE ARE BOUNDARY, retimed:
+   THE FADE starts where it did (the left card two-thirds out) but
+   ends at HERO_GROUND_FADE_END_CARD's full exit — the LEFT card (0)
+   now, the right card (2) before: span cardH/3 = 208 at 1728 (was
+   368, −43%). THE ARRIVAL: WHO WE ARE is in flow after this runway
+   spacer, so its entry scroll IS the spacer's end. It now enters
+   HERO_FOUNDERS_ENTER_LEAD_PX BEFORE the three images fully clear
+   (exitAt(2)). DERIVATION (supersedes R18's 90%-of-fade gate): the
+   section's first ink (the label at 200 + its 60 entry drift = 260
+   below the section's top) entered 223 scroll-px after the images
+   cleared; −⅓ → 149; 260 − 149 = 111. With the faster fade the
+   section arrives 49 after full black (1932 vs 1883 at 1728) — dark
+   on dark, and the last card is still 111 from clear at the top
+   while the section enters from the bottom. Reverse scroll mirrors
+   it by construction. The GL pause gate stays at exitEnd. */
+const HERO_GROUND_FADE_END_CARD = 0;
+const HERO_FOUNDERS_ENTER_LEAD_PX = 111;
 
 /** The band's side margins, matching --landing-video-margin. */
 const VIDEO_MARGIN_PX = 24;
@@ -959,14 +962,14 @@ export function initLandingHeroScroll() {
       /* THE GROUND — light → the founders' #161616, scrubbed on the
          cards' own mapping: from the LEFT card two-thirds out
          (exitAt(0) − cardH/3) to the RIGHT card fully out (exitAt(2))
-         — /old's backdrop-fade anchors. The founders section (its
-         own #161616, z 260 over this fixed stage) enters at
-         HERO_FOUNDERS_ENTER_AT_FADE_T of this fade (R18: 0.9 — over
-         a 90%-black ground; was exitEnd, 60px after full black).
-         backgroundColor on the stage's ground layer isolates
-         nothing. */
+         — /old's backdrop-fade anchors; R21 ends the fade at the
+         LEFT card's full exit (HERO_GROUND_FADE_END_CARD). The
+         founders section (its own #161616, z 260 over this fixed
+         stage) enters HERO_FOUNDERS_ENTER_LEAD_PX before the last
+         card clears — after full black. backgroundColor on the
+         stage's ground layer isolates nothing. */
       const fadeStart = exitAt(0) - cardH / 3;
-      const fadeEnd = exitAt(2);
+      const fadeEnd = exitAt(HERO_GROUND_FADE_END_CARD); /* R21: the left card clear (was the right) */
       if (heroBg instanceof HTMLElement) {
         const fade = gsap.fromTo(
           heroBg,
@@ -999,13 +1002,15 @@ export function initLandingHeroScroll() {
       });
       triggers.push(gate);
 
-      /* R18: the runway ends where WHO WE ARE should begin entering —
-         HERO_FOUNDERS_ENTER_AT_FADE_T of the ground fade (was exitEnd). */
-      const foundersEnterAt = fadeStart + (fadeEnd - fadeStart) * HERO_FOUNDERS_ENTER_AT_FADE_T;
+      /* R21: the runway ends where WHO WE ARE begins entering —
+         HERO_FOUNDERS_ENTER_LEAD_PX before the images fully clear
+         (R18's 0.9-of-fade gate and the older exitEnd are superseded). */
+      const foundersEnterAt = exitAt(2) - HERO_FOUNDERS_ENTER_LEAD_PX;
       total = foundersEnterAt;
       cardBeats = {
         foundersEnterAt: +foundersEnterAt.toFixed(1),
-        foundersEnterAtFadeT: HERO_FOUNDERS_ENTER_AT_FADE_T,
+        foundersEnterLeadPx: HERO_FOUNDERS_ENTER_LEAD_PX,
+        fadeEndCard: HERO_GROUND_FADE_END_CARD,
         restTop,
         cardH: +cardH.toFixed(1),
         pinScrollY: +pinScrollY.toFixed(1),
