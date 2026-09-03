@@ -1642,6 +1642,25 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	pointer-events: none;
 }
 
+/* R21 (Oscar, 2026-09-02): each portrait is a LINK to its founder's
+   slide (the anchor inside the figure, absolute inset 0). No
+   transform/opacity/filter/z-index — never a stacking context, so
+   the difference name it wraps still blends against the portrait.
+   Focus ring: the dark-ground ink of the three-ink pattern (this
+   section is #161616). The site cursor owns the pointer. */
+.landing-v2 .landing-founders__portrait-link {
+	position: absolute;
+	inset: 0;
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+
+.landing-v2 .landing-founders__portrait-link:focus-visible {
+	outline: 2px solid #eeeef0;
+	outline-offset: 2px;
+}
+
 .landing-v2 .landing-founders__portrait:hover .landing-founders__portrait-name {
 	opacity: 1;
 	/* Instant container show — the ENTRANCE belongs to the per-char

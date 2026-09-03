@@ -138,8 +138,14 @@ export function initFoundersPage() {
   placeIndicator();
 
   /* ── State. */
-  let pos = 0;
-  let targetPos = 0;
+  /* R21 (Oscar, 2026-09-02): DEEP LINK — /founders#ashley boots
+     SETTLED on Ashley's rest (the text phase's end), never animating
+     through Robbo's; #robbo / no hash = the page's own start. The
+     page-transition wipe covers the boot, so the landed state is the
+     first frame seen. */
+  const wantAshley = /^#ashley$/i.test(window.location.hash || '');
+  let pos = wantAshley ? textEnd() : 0;
+  let targetPos = pos;
   let flickVel = 0;
   let activeSlide = 0;
   let announced = 0;
@@ -405,7 +411,7 @@ export function initFoundersPage() {
     }
   }
   frame();
-  announce(0);
+  announce(activeSlide);
 
   if (import.meta.env.DEV) {
     window.__founders = {
@@ -497,7 +503,9 @@ function initFoundersMobile(stage, reduced) {
     ),
   }));
 
-  let active = 1; /* Ashley lands (the file's state; SSR matches) */
+  /* R21: the deep link on mobile — #robbo shows Robbo's profile;
+     #ashley / no hash = the file's landing state (Ashley). */
+  let active = /^#robbo$/i.test(window.location.hash || '') ? 0 : 1; /* Ashley lands (the file's state; SSR matches) */
   let disposed = false;
   let fontsDone = false;
   /** @type {ReturnType<typeof setTimeout>[]} */
