@@ -430,6 +430,26 @@ export function initLandingFeatured() {
   lightFade.fromTo(stage,
     { backgroundColor: '#161616' },
     { backgroundColor: GROUND_LIGHT, ease: 'none', duration: 1, immediateRender: false }, 0);
+  /* R27 (Oscar, 2026-09-03) — THE SEAM CLASS at this boundary: (1) the
+     SECTION beneath the stage was transparent, so once the stage
+     unpins mid-fade (it does in the shell interiors — at 994 the stage
+     lets go 92px before the fade completes) its still-grey bottom edge
+     sat over the body's #eeeef0; (2) the incoming ACCESS section painted
+     its fixed #eeeef0 over the fading stage. Both now ride THIS tween:
+     the section from the stage's dark, and Access from #161616 — with
+     immediateRender, so Access is DARK from load, matching the stage
+     it now enters over (R27 item 2: it arrives while the carousel is
+     still departing). Access rests at its CSS #eeeef0 once the fade
+     completes; the section tail is never seen before the fade. */
+  const accessSection = document.querySelector('[data-landing-access]');
+  lightFade.fromTo(section,
+    { backgroundColor: '#161616' },
+    { backgroundColor: GROUND_LIGHT, ease: 'none', duration: 1, immediateRender: false }, 0);
+  if (accessSection instanceof HTMLElement) {
+    lightFade.fromTo(accessSection,
+      { backgroundColor: '#161616' },
+      { backgroundColor: GROUND_LIGHT, ease: 'none', duration: 1, immediateRender: true }, 0);
+  }
   if (metaEls.length) {
     lightFade.fromTo(metaEls,
       { autoAlpha: 1 },

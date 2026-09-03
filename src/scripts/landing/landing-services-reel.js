@@ -806,6 +806,23 @@ export function initLandingServicesReel() {
     { backgroundColor: GROUND_LIGHT },
     { backgroundColor: GROUND_DARK, ease: 'none', duration: TRANSITION_GROUND_FADE_PX, immediateRender: false },
     fadeGateAt);
+  /* R27 (Oscar, 2026-09-03) — THE SEAM CLASS: the incoming FEATURED
+     stage used to sit at its fixed #161616 while this ground faded
+     beneath its top edge (measured: a 216-luminance step at the seam
+     mid-fade). It now rides THIS timeline at the same position and
+     length, so the two are the identical colour every frame.
+     immediateRender: the stage is LIGHT from load (the from state) —
+     it enters the viewport 30px before the fade begins (R26: at the
+     Amplify image's blur-out), over the still-light ground, and only
+     the landing hosts it (null on /services). Reduced motion never
+     reaches here (the stage keeps its CSS #161616). */
+  const featuredStage = document.querySelector('.landing-featured__stage');
+  if (featuredStage instanceof HTMLElement) {
+    depart.fromTo(featuredStage,
+      { backgroundColor: GROUND_LIGHT },
+      { backgroundColor: GROUND_DARK, ease: 'none', duration: TRANSITION_GROUND_FADE_PX, immediateRender: true },
+      fadeGateAt);
+  }
   cleanups.push(() => { depart.scrollTrigger?.kill(); depart.kill(); });
 
   masterTl = tl;

@@ -987,9 +987,24 @@ export function initLandingHeroScroll() {
          stage's ground layer isolates nothing. */
       const fadeStart = exitAt(0) - cardH / 3;
       const fadeEnd = exitAt(HERO_GROUND_FADE_END_CARD); /* R21: the left card clear (was the right) */
+      /* R27 (Oscar, 2026-09-03) — THE SEAM CLASS, fixed at the mechanism:
+         an incoming section that paints its OWN opaque ground at a fixed
+         colour over a fading layer draws a hard line at its top edge
+         (measured mid-fade: hero ground rgb(130) above the seam, the
+         section's #161616 below — a 108-luminance step). The incoming
+         ground now rides THIS tween — same targets array, same scrub,
+         same colours — so at every frame WHO WE ARE's section and track
+         are the identical colour to the hero ground beneath them. Both
+         rest at #161616 once the fade completes (their CSS value); the
+         section is off-screen until the fade has begun, so the from
+         state is never seen. */
+      const foundersGround = [
+        document.querySelector('[data-landing-founders]'),
+        document.querySelector('[data-landing-founders-track]'),
+      ].filter((el) => el instanceof HTMLElement);
       if (heroBg instanceof HTMLElement) {
         const fade = gsap.fromTo(
-          heroBg,
+          [heroBg, ...foundersGround],
           { backgroundColor: HERO_GROUND_LIGHT },
           {
             backgroundColor: HERO_GROUND_DARK,
