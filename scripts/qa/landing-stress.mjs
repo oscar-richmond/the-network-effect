@@ -26,6 +26,19 @@
  *   R1  residue drift: with NO scroll input for 350ms while a section is
  *       fully off-screen, none of its watched elements' inline styles
  *       change (an orphaned tween / loop would).
+ *   I1  (R29, the IMMERSE-over-FROM-ACCESS recurrence) while the FROM
+ *       ACCESS / TO IMPACT statement is on screen, the IMMERSE panel's top
+ *       never sits above the statement's box bottom — the panel may only
+ *       rise once the statement has travelled out (by construction the
+ *       two never cross on a forward pass);
+ *   I2  continuity: between consecutive samples of one move, the three
+ *       panels' and the intro's transforms move no faster than their
+ *       scrubs' steepest rate allows for the scroll delta (a discontinuity
+ *       = a stale value being replaced by a re-measured one).
+ *
+ * --focus immerse: full down-up-down cycles through What We Do at random
+ *   pace and depth (the reported reproduction sequence), sampling every
+ *   wheel step for I2.
  *
  * Playwright is resolved from the repo's node_modules (dev tooling).
  */
@@ -89,6 +102,11 @@ const STATE = `(() => {
       pillars.forEach((pl, i) => { if (!risen[i]) return; ['.landing-sreel__title', '.landing-sreel__num', '[data-sreel-desc]'].forEach((sel) => { const el = pl.querySelector(sel); if (el) check(el, sel, i); }); if (i === topIdx) { pl.querySelectorAll('.landing-sreel__svc').forEach((el, k) => { if (el.getBoundingClientRect().top < vh && el.getBoundingClientRect().bottom > 0) check(el, '.landing-sreel__svc#' + k, i); }); const wl = pl.querySelector('[data-sreel-wlabel]'); if (wl) check(wl, '[data-sreel-wlabel]', i); } });
       const wwd = q('.landing-sreel__wwd'); if (wwd && risen.some(Boolean)) check(wwd, '.landing-sreel__wwd', -1);
     }
+    /* I1 — IMMERSE below FROM ACCESS while the statement is on screen */
+    const stEl = q('.landing-sreel__st'); const p0 = q('[data-sreel-pillar]');
+    if (onScreen && stEl && p0) { const str = rect(stEl); const pr = rect(p0); const stOn = str.b > 0 && str.t < vh; const p0On = pr.t < vh - 2;
+      out.immerse = { st: str, p0: pr };
+      if (stOn && p0On && pr.t < str.b - 1) out.errs.push({ inv: 'I1', msg: 'IMMERSE panel top above the FROM ACCESS statement bottom', st: str, p0: pr, introStyle: q('[data-sreel-intro]')?.getAttribute('style')?.slice(0, 60), p0Style: p0.getAttribute('style')?.slice(0, 60) }); }
   }
   /* residue snapshot for R1 (inline styles of watched elements) */
   out.residue = { featured: qa('[data-landing-featured] .gradual-blur, [data-featured-edge-tint], [data-featured-strip], .landing-featured__stage').map((e) => e.getAttribute('style') || '').join('|').length, wwd: qa('.landing-sreel__title, [data-sreel-desc], .landing-sreel__wwd, [data-sreel-pillar]').map((e) => e.getAttribute('style') || '').join('|'), featuredOff: ft ? (rect(ft).b < -50 || rect(ft).t > vh + 50) : false, wwdOff: sstage ? (rect(sstage).b < -50 || rect(sstage).t > vh + 50) : false };
@@ -122,7 +140,26 @@ let lastResidue = null;
 const FOCUS = arg('--focus', '');
 const wwdTop = await f().evaluate(() => { const s2 = document.querySelector('.landing-sreel'); return s2 ? Math.round(s2.getBoundingClientRect().top + scrollY) : 0; });
 const wwdBottom = await f().evaluate(() => { const o = document.querySelector('[data-landing-services]'); return o ? Math.round(o.getBoundingClientRect().bottom + scrollY) : 0; });
+/* I2 — per-step transform sampling (one evaluate: scroll + transforms from the same frame) */
+const MOTION = `(() => { const m = (el) => { const t = el ? getComputedStyle(el).transform : 'none'; const mm = /matrix\\(([^)]+)\\)/.exec(t); return mm ? +mm[1].split(',')[5] : 0; }; const ps = [...document.querySelectorAll('[data-sreel-pillar]')]; return { y: scrollY, p: ps.map(m), intro: m(document.querySelector('[data-sreel-intro]')) }; })()`;
+const RATE = { p: 2.4, intro: 1.2, slack: 6 }; /* power1.out rise: 2·(stage − 216)/800 ≤ 2.26 px/px; intro 660/600 = 1.1 */
+let lastMotion = null;
+const motionStep = async (tag) => { const m = await f().evaluate(MOTION); if (lastMotion) { const dy = Math.abs(m.y - lastMotion.y); const bad = []; m.p.forEach((v, k) => { if (Math.abs(v - lastMotion.p[k]) > RATE.p * dy + RATE.slack) bad.push(`pillar${k} ${lastMotion.p[k].toFixed(1)}->${v.toFixed(1)} over dy ${dy.toFixed(0)}`); }); if (Math.abs(m.intro - lastMotion.intro) > RATE.intro * dy + RATE.slack) bad.push(`intro ${lastMotion.intro.toFixed(1)}->${m.intro.toFixed(1)} over dy ${dy.toFixed(0)}`); if (bad.length) violations.push({ move: log.length, phase: tag, y: Math.round(m.y), inv: 'I2', msg: 'transform discontinuity between adjacent samples', bad, recent: log.slice(-8) }); checks += 1; } lastMotion = m; };
+const wheelTo = async (target, step, waitMs, tag) => { for (let guard = 0; guard < 600; guard++) { const cur = await f().evaluate(() => scrollY); const d = target - cur; if (Math.abs(d) < 4) break; await p.mouse.wheel(0, Math.sign(d) * Math.min(Math.abs(d), step) * s); await p.waitForTimeout(waitMs); await motionStep(tag); } };
 for (let i = 0; i < MOVES; i++) {
+  if (FOCUS === 'immerse') {
+    /* one full cycle: down through What We Do (to a random depth into Featured), up past its start by a random amount (sometimes to the top), down again through rise 1 — random pace, occasional idle pauses (the snap window) */
+    const pace = pick(0.4, 3); const step = Math.round(pick(60, 420)); const wait = Math.round(pick(12, 60) / pace);
+    const depth = Math.round(wwdBottom - H + pick(-1500, 1800)); const upTo = rnd() < 0.2 ? 0 : Math.round(wwdTop - pick(120, 3000));
+    lastMotion = null; await wheelTo(depth, step, wait, 'cycle-down1'); if (rnd() < 0.5) await p.waitForTimeout(Math.round(pick(100, 800)));
+    lastMotion = null; await wheelTo(upTo, step, wait, 'cycle-up'); await p.waitForTimeout(Math.round(pick(80, 900)));
+    let st = await snapshot(); await record(st, 'cycle-top');
+    lastMotion = null; await wheelTo(Math.round(wwdTop + pick(300, 1900)), Math.round(pick(40, 160)), Math.round(pick(20, 70)), 'cycle-down2');
+    log.push(`immerse-cycle depth ${depth} up ${upTo} pace ${pace.toFixed(1)} step ${step}`);
+    await p.waitForTimeout(90); st = await snapshot(); await record(st, 'cycle-down2'); const pause = Math.round(pick(200, 1000)); await p.waitForTimeout(pause); st = await snapshot(); await record(st, 'cycle-pause');
+    if (SHOT_DIR && st.errs.length && violations.length <= 6) await p.screenshot({ path: `${SHOT_DIR}/violation-${violations.length}-${st.errs[0].inv}-y${st.y}.png` });
+    continue;
+  }
   if (FOCUS === 'wwd') {
     /* leave What We Do downward (to a random depth up to ~2600 past its end: Featured, sometimes Access), then return upward at a random pace, sometimes reversing mid-cascade */
     const depth = Math.round(pick(wwdBottom - H, wwdBottom + pick(200, 2600))); const pace = pick(0.3, 3);

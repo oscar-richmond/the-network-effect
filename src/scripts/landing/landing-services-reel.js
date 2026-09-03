@@ -562,6 +562,54 @@ export function initLandingServicesReel() {
   let departTlRef = null;
   let introPlayed = false;
   const lastDropT = [-1, -1, -1]; // R28: hoisted above the safety net (it clears the cache)
+
+  /* R29 (Oscar, 2026-09-03) — THE PILLAR Y: ONE WRITER, PURE f(px).
+     ROOT CAUSE of "IMMERSE rises over FROM ACCESS on the second pass":
+     pillar 1's transform had TWO tweens on the master timeline — the
+     rise (fromTo, stage height → 216 over [0, 800)) and the compaction
+     (to 138 over [800, 1600)). A `to` tween records its start lazily
+     from the element (216, correct while the playhead sits inside its
+     window) and REWRITES that start whenever it is rendered before its
+     window. A forced re-render of the timeline at time 0 (the R28
+     re-entry safety net firing on onLeaveBack, once the up-pass crossed
+     the section start) rendered the compaction AFTER the rise and left
+     the panel at 216 — its fixed position — while the intro sat at its
+     rest: the panel then rode the stage on the way back down covering
+     the statement's lower half (measured: panel top 264 / statement
+     322..484 at 1728), until the first onUpdate past px 0 rendered the
+     rise and SNAPPED it to ~975 (the harness's I2 jump 216 → 974.5).
+     Pre-R28 the same double-writer was one refresh mid-rise away from
+     the identical stale start (invalidateOnRefresh re-records `to`
+     starts from whatever the reverse render order left).
+     FIX: no tween owns a pillar's y any more. Every frame the master
+     onUpdate (and every re-entry / refresh) writes y from the scrub px
+     through the SAME curves the tweens used — power1.out for the rise,
+     power1.inOut for pillar 1's compaction — from the stage's LIVE
+     height (nothing measured once, nothing cached across passes; the
+     wipes' edge-crossing solve uses these exact formulas). The intro's
+     exit stays a single fromTo on the same timeline — one writer, an
+     explicit start — so the two are consistent by construction. */
+  const riseOut = (t) => 1 - (1 - t) * (1 - t);                          /* power1.out */
+  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t)); /* power1.inOut */
+  const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
+  const pillarYFor = (i, px, S) => {
+    if (i === 0 && px > riseStart[1]) {
+      return ACTIVE_Y[0] + (STACKED_Y1 - ACTIVE_Y[0]) * easeInOut(clamp01((px - riseStart[1]) / RISE_PX));
+    }
+    return S + (ACTIVE_Y[i] - S) * riseOut(clamp01((px - riseStart[i]) / RISE_PX));
+  };
+  const lastPillarY = [NaN, NaN, NaN];
+  const applyPillarY = (px) => {
+    const S = stageH();
+    for (let i = 0; i < 3; i += 1) {
+      const y = pillarYFor(i, px, S);
+      if (y === lastPillarY[i]) continue;
+      lastPillarY[i] = y;
+      gsap.set(pillars[i], { y });
+    }
+  };
+  const currentPx = () => (masterTlRef?.scrollTrigger ? masterTlRef.scrollTrigger.progress * RUNWAY_PX : 0);
+
   const reassertTexts = () => {
     pillars.forEach((pillar, i) => {
       if (!played[i]) return;
@@ -571,6 +619,10 @@ export function initLandingServicesReel() {
     lastDropT.fill(-1);
     if (masterTlRef) masterTlRef.render(masterTlRef.time(), false, true);
     if (departTlRef) departTlRef.render(departTlRef.time(), false, true);
+    /* R29: the pillar Y is re-derived for the current px after the
+       renders (idempotent — the same value the next frame would write). */
+    lastPillarY.fill(NaN);
+    applyPillarY(currentPx());
   };
 
   /* ── The master timeline (duration units = scroll px). ────────── */
@@ -585,6 +637,9 @@ export function initLandingServicesReel() {
       onEnter: () => reassertTexts(),
       onEnterBack: () => reassertTexts(),
       onLeaveBack: () => reassertTexts(),
+      /* R29: a refresh re-measures the trigger; the pillar Y follows
+         the new progress at once (never a stale frame). */
+      onRefresh: (self) => { lastPillarY.fill(NaN); applyPillarY(self.progress * RUNWAY_PX); },
       onUpdate: (self) => {
         window.clearTimeout(snapTimer);
         snapTimer = window.setTimeout(trySnap, SNAP_IDLE_MS);
@@ -592,6 +647,7 @@ export function initLandingServicesReel() {
         for (let i = 0; i < 3; i += 1) {
           if (px >= riseStart[i]) playTexts(i);
         }
+        applyPillarY(px);
         applyslideArm(px);
         applyTypeDrop(px);
       },
@@ -601,7 +657,7 @@ export function initLandingServicesReel() {
   /* ── THE TYPE DROP — pure f(scrub px), written every frame for the
      two covered pillars on EXACTLY their incoming rise's window
      (same progress; desync impossible; reversal is arithmetic). */
-  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t));
+  /* (easeInOut — power1.inOut — is defined with the pillar-Y writer above; R29.) */
   masterTlRef = tl;
   const descEls = pillars.map((pl) => pl.querySelector('[data-sreel-desc]'));
   const applyTypeDrop = (px) => {
@@ -642,12 +698,10 @@ export function initLandingServicesReel() {
     tl.fromTo(intro, { y: 0 }, { y: -INTRO_EXIT_PX, duration: INTRO_PX, immediateRender: false }, 0);
   }
 
-  /* RISES + FILLS + REELS per pillar. */
+  /* RISES (R29: the pillar Y is NOT a tween any more — applyPillarY
+     writes it from the scrub px every frame; see the writer above) +
+     FILLS + REELS per pillar. */
   pillars.forEach((pillar, i) => {
-    tl.fromTo(pillar,
-      { y: () => stageH() },
-      { y: ACTIVE_Y[i], duration: RISE_PX, ease: 'power1.out', immediateRender: i !== 0 ? false : true },
-      riseStart[i]);
     const fill = pillar.querySelector('[data-sreel-fill]');
     if (fill instanceof HTMLElement) {
       tl.fromTo(fill, { scaleX: 1 }, { scaleX: 0, duration: RISE_PX, immediateRender: false }, riseStart[i]);
@@ -677,8 +731,10 @@ export function initLandingServicesReel() {
      transform them via an ancestor... the pillar itself transforms,
      but the title blends against the pillar's own opaque ground:
      the staging card contract, kept). */
-  const compact = (i, at, dur, toY) => {
-    if (toY !== null) tl.to(pillars[i], { y: toY, duration: dur, ease: 'power1.inOut', immediateRender: false }, at);
+  const compact = (i, at, dur) => {
+    /* (R29: pillar 1's 216 → 138 slide is written by applyPillarY on
+       this same window and curve — the `to` tween that used to sit
+       here was the second writer on its y; see the root-cause note.) */
     const titlerow = pillars[i].querySelector('[data-sreel-titlerow]');
     if (titlerow instanceof HTMLElement) tl.to(titlerow, { top: TITLE_TOP_STACKED, duration: dur, ease: 'power1.inOut' }, at);
     /* (The desc's top is NOT tweened here any more — R13: applyTypeDrop
@@ -690,10 +746,10 @@ export function initLandingServicesReel() {
        discipline. Tween-based variants — a proxy onUpdate and GSAP's
        native var plugin — both misbehaved under backwards seeks.) */
   };
-  compact(0, riseStart[1], RISE_PX, STACKED_Y1);
+  compact(0, riseStart[1], RISE_PX);
   /* Pillar 2's active Y IS its stacked Y (266); only its band closes
      (type drop + offsets) as pillar 3 rises. */
-  compact(1, riseStart[2], RISE_PX, null);
+  compact(1, riseStart[2], RISE_PX);
   /* WHAT WE DO rides pillar 1's compaction (146 → 100). */
   if (wwd instanceof HTMLElement) {
     tl.to(wwd, { top: WWD_Y_STACKED, duration: RISE_PX, ease: 'power1.inOut' }, riseStart[1]);
