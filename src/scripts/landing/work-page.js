@@ -278,10 +278,43 @@ export function initWorkPage() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stageH = () => stage.clientHeight || window.innerHeight;
-  /* The live first-tile top / dock (14"/15" pass): bottom-anchored
-     on the stage — equals BASE_TOP_PX (441) at the 1117 reference. */
-  const baseTop = () => stageH() - IMG_H_PX - TILE_BOTTOM_CLEAR_PX;
-  const dockY = () => baseTop();
+  /* R34 item 3 (Oscar, 2026-09-03) — THE COLUMN'S ORIGIN IS THE FIRST
+     TITLE'S CAP TOP. On landing the first image's top sits level with
+     the cap top of "Wilderness Reserve": baseTop = unit 0's dock (its
+     title box top — the viewport-centred dock the metas already use)
+     + the title's cap inset, DERIVED from the title's own font metrics
+     (capInset below), never a literal. Every subsequent image keeps
+     the pitch, so the whole column moves down with it.
+     SUPERSEDES the 14"/15" pass's bottom-anchored derivation (stageH −
+     image − 60), which is kept only as the pre-measure fallback (fonts
+     not ready, no units). Measured: 441 → 510.5 at 1117, 318 → 449 at
+     994, 266 → 423 at 942 — the tile is bottom-anchored no more, so
+     the 14" fit is re-reported in the R34 report (the first tile's
+     bottom now sits below the viewport by 9.5 / 71 / 97 at those
+     heights: reported, not compromised, per the brief). */
+  const baseTop = () => (units.length && units[0].dockY != null
+    ? units[0].dockY + capInset
+    : stageH() - IMG_H_PX - TILE_BOTTOM_CLEAR_PX);
+  const dockY = () => baseTop() - capInset;
+  /* The meta title's cap top below its box top, from the rendered
+     font: the line box centres the font's ascent+descent, and the cap
+     height is the font's 'H' ascent above the baseline. Re-derived
+     with the units (fonts, resize); pixel-checked 7.0 at 34/38. */
+  let capInset = 0;
+  const deriveCapInset = () => {
+    const title = document.querySelector('.work-page__meta-title');
+    if (!(title instanceof HTMLElement)) return;
+    const cs = getComputedStyle(title);
+    const ctx = document.createElement('canvas').getContext('2d');
+    if (!ctx) return;
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = ctx.measureText('H');
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2;
+    const asc = m.fontBoundingBoxAscent ?? parseFloat(cs.fontSize) * 0.9;
+    const desc = m.fontBoundingBoxDescent ?? parseFloat(cs.fontSize) * 0.2;
+    const cap = m.actualBoundingBoxAscent ?? parseFloat(cs.fontSize) * 0.7;
+    capInset = (lh - (asc + desc)) / 2 + asc - cap;
+  };
 
   /* ── The header pair. */
   const hlFeatured = document.querySelector('[data-work-hl-featured]');
@@ -311,6 +344,7 @@ export function initWorkPage() {
   let units = [];
 
   const measureUnits = () => {
+    deriveCapInset();
     units.forEach((u) => {
       const tRect = u.title.getBoundingClientRect();
       const uRect = u.el.getBoundingClientRect();
@@ -392,7 +426,7 @@ export function initWorkPage() {
         desc.className = 'work-page__meta-desc';
         desc.textContent = p.desc;
         u.append(title, desc);
-        u.style.transform = `translate3d(0, ${(baseTop() + i * PITCH_PX).toFixed(0)}px, 0)`;
+        u.style.transform = `translate3d(0, ${(baseTop() + i * PITCH_PX - capInset).toFixed(0)}px, 0)`;
         metasLayer.appendChild(u);
         return { el: u, project: p, title, desc, descText: p.desc, blockH: 150, dockY: null, wipeLines: null, wiped: false };
       });
@@ -450,7 +484,7 @@ export function initWorkPage() {
 
   const dockedProbe = (p1) => {
     for (let i = units.length - 1; i >= 0; i -= 1) {
-      if (baseTop() + i * PITCH_PX - p1 <= (units[i].dockY ?? dockY())) return i;
+      if (baseTop() + i * PITCH_PX - p1 - capInset <= (units[i].dockY ?? dockY())) return i;
     }
     return 0;
   };
@@ -496,7 +530,10 @@ export function initWorkPage() {
     let succY = Infinity;
     for (let i = units.length - 1; i >= 0; i -= 1) {
       const u = units[i];
-      const linked = baseTop() + i * PITCH_PX - p1;
+      /* R34: the unit rides capInset ABOVE its image's top, so a docked
+         meta's cap top is level with the image top — the same relation
+         the column's origin is derived from. */
+      const linked = baseTop() + i * PITCH_PX - p1 - capInset;
       const dockI = u.dockY ?? dockY();
       let y = Math.max(linked, dockI); /* pinned — NEVER displaced */
       if (y === dockI) y += hold; /* the reveal hold, uniform */
