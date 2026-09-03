@@ -258,8 +258,16 @@ export function initLandingFounders() {
            settle TARGETS the section's edge so no strip of the
            founders ground can rest at the top. */
         const forward = foundersDepartingEdge() < vh * (1 - FOUNDERS_HANDOFF_T);
+        /* The back target is the RELEASE point: the track's bottom at
+           the section's pinned bottom = its sticky top + its height
+           (14"/15" pass, 2026-09-03: with the bottom-aligned pin the
+           sticky top is negative below a 1014 viewport, and targeting
+           the bare height landed 20–72 BEFORE the release, on a photo
+           still 4–15% visible — the half-stuck state. Sticky top 0 at
+           1728: byte-identical). */
+        const stickyTop = Math.min(0, parseFloat(getComputedStyle(section).top) || 0);
         const target = Math.round(
-          (window.scrollY || 0) + (forward ? bottom : bottom - section.offsetHeight),
+          (window.scrollY || 0) + (forward ? bottom : bottom - (section.offsetHeight + stickyTop)),
         );
         const lenis = getLenisInstance();
         if (reducedMotion || !lenis) {
@@ -326,15 +334,23 @@ export function initLandingFounders() {
        section (+ the ink inset) against the nav's live bottom, mapped
        onto the exit through the headline's own travel. Measured BEFORE
        the timeline exists, so no drift transform is on the headline
-       yet (and the measured y is subtracted regardless). */
+       yet (and the measured y is subtracted regardless).
+       14"/15" PASS (2026-09-03): the section pins at its STICKY TOP,
+       which is 0 only when the viewport is at least the section's 1014
+       (bottom-aligned pin: −20 at the 994 interior, −72 at 942), so
+       the ink's VIEWPORT position at the pin is the in-section offset
+       PLUS that sticky top — without it the blur fired 43–155 late
+       in-shell. At 1728 the sticky top is 0: byte-identical. */
     const nav = document.querySelector('.home__topbar');
     const firstLine = section.querySelector('.landing-founders__line') ?? headline;
     const navBottomPx = nav instanceof HTMLElement ? nav.getBoundingClientRect().bottom : 0;
+    const stickyTopPx = Math.min(0, parseFloat(getComputedStyle(section).top) || 0);
     const headlineInkTopPx = firstLine instanceof HTMLElement
       ? firstLine.getBoundingClientRect().top
         - section.getBoundingClientRect().top
         - (headline instanceof HTMLElement ? Number(gsap.getProperty(headline, 'y')) || 0 : 0)
         + HEADLINE_INK_INSET_PX
+        + stickyTopPx
       : 0;
     const photoBlurStartPx = Math.min(
       FOUNDERS_EXIT_PX,
@@ -445,6 +461,7 @@ export function initLandingFounders() {
         releasePx: FOUNDERS_RELEASE_PX,
         navBottomPx,
         headlineInkTopPx,
+        stickyTopPx,
         lastOtherBlurEndPx: photoBlurEndPx - EXIT_PHOTO_BLUR_LAG_PX,
       };
     }
