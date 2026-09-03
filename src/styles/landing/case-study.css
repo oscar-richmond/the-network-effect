@@ -533,8 +533,8 @@ body.case-page {
 		top: 0;
 		margin: 0;
 		font-weight: 600;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: var(--eyebrow-size, 14px); /* R26: the 14/16 eyebrow tier (was the guide's 12/14) */
+		line-height: var(--eyebrow-lh, 16px);
 		letter-spacing: 0;
 		text-transform: uppercase;
 		color: #161616;

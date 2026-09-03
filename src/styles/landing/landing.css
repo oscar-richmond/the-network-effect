@@ -5332,7 +5332,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		height: 1014px;
 	}
 
-	/* NEW label — guide 08 Label / Sans at the frame's −1.5%. */
+	/* NEW label — was guide 08 Label / Sans (12/14) at the frame's −1.5%;
+	   R26 (Oscar, 2026-09-03): the eyebrow tier is 14/16 site-wide via
+	   the --eyebrow-* tokens (global.css) — off the guide's 12/14. */
 	.landing-v2.landing-home .landing-founders__label {
 		display: block;
 		position: absolute;
@@ -5342,8 +5344,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: var(--eyebrow-size, 14px);
+		line-height: var(--eyebrow-lh, 16px);
 		letter-spacing: -0.015em;
 		text-transform: uppercase;
 		color: #eeeef0;
@@ -6257,8 +6259,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: var(--eyebrow-size, 14px); /* R26: the 14/16 eyebrow tier (was 12/14) */
+		line-height: var(--eyebrow-lh, 16px);
 		letter-spacing: -0.015em;
 		text-transform: uppercase;
 		color: #161616;
@@ -6460,16 +6462,18 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		   ACCESS / TO IMPACT top-aligned on their INK, the row's ink top
 		   exactly 180 below the section above's bottom (= this stage's
 		   top at the pin; Our Network's container bottom — see the
-		   report for the strip-ink reading). Label ink sits 2.4 below
-		   its box (pixel-measured) → 177.6 (was 146, Option 11). JS
-		   still rides it to 100 with pillar 1's compaction. */
-		top: 177.6px;
+		   report for the strip-ink reading). R26 (2026-09-03): the tier
+		   is 14/16 now (--eyebrow-*; off the guide's 12/14) — the cap
+		   top sits 3 below the 16px box (pixel-measured) → 177 keeps
+		   the ink at 180 (was 177.6 for 12/14's 2.4). JS still rides it
+		   to 100 with pillar 1's compaction. */
+		top: 177px;
 		margin: 0;
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: var(--eyebrow-size, 14px);
+		line-height: var(--eyebrow-lh, 16px);
 		letter-spacing: -0.015em;
 		text-transform: uppercase;
 		color: #161616;

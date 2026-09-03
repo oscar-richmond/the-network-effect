@@ -895,8 +895,8 @@ body.founders-page {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: var(--eyebrow-size, 14px); /* R26 (2026-09-03): the eyebrow tier is 14/16 site-wide (off the guide's 12/14) */
+		line-height: var(--eyebrow-lh, 16px);
 		letter-spacing: 0;
 		text-transform: uppercase;
 		color: #161616;
@@ -959,12 +959,12 @@ body.founders-page {
 	   frame's 12/12/+0.01em); the margin drops 2 so row 1 stays at
 	   y644 (14 box + 22). */
 	.founders-page .fd-slide__rel-label {
-		margin: 0 0 22px; /* label y608 → row 1 y644 (14 box + 22) */
+		margin: 0 0 20px; /* label y608 → row 1 y644 (R26: 16 box + 20; was 14 + 22) */
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 12px;
-		line-height: 14px;
+		font-size: var(--eyebrow-size, 14px); /* R26: the 14/16 eyebrow tier */
+		line-height: var(--eyebrow-lh, 16px);
 		letter-spacing: 0;
 		text-transform: uppercase;
 	}

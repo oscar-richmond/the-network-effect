@@ -1,6 +1,16 @@
 @import './fonts.css';
 
 :root {
+  /* THE EYEBROW / SECTION-LABEL TIER (R26, Oscar 2026-09-03): one
+     token pair so every small section label — WHO WE ARE, WHAT WE DO,
+     the We Create Access label, the case-study FACTS label, the
+     /founders role + relationships labels — moves together. 14/16
+     (was 12/14: the +2 leading kept proportionate; this moves the
+     tier OFF the guide's 12/14 Label style — noted where the rules
+     cite it). Tracking stays per instance (the landing three carry
+     their frame's −0.015em; the rest 0). */
+  --eyebrow-size: 14px;
+  --eyebrow-lh: 16px;
   /* Colour */
   --color-bg: #ffffff;
   --color-fg: #121212;
