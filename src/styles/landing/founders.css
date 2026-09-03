@@ -950,12 +950,25 @@ body.founders-page {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		/* TOP-anchored (Oscar's crop ruling): at 1728 × 921 the 3:2
-		   photo scales to 1152.3 tall, so the visible band is the top
-		   79.9% — the bottom 20.1% (feet, rug) is what is lost; both
-		   faces and upper bodies are in the kept region. Identical at
-		   the 1512 shell (its interior is the same 1728 × 921 band). */
-		object-position: 50% 0;
+		/* R32 item 2 — THE CROP, derived from the source, not guessed.
+		   Source 1600 × 1067 (3:2). Band 1728 × 841 at both sizes (the
+		   shell's interior is the same 1728 band; the portrait height
+		   clamps to 841 at every interior height ≥ 945). object-fit
+		   cover scales by the width: 1728 / 1600 = 1.08 → 1152.3 tall,
+		   so the band shows 841 / 1.08 = 778.7 source rows and 288.3
+		   are lost. object-position 50% 0% places the window at source
+		   rows 0..779: the TOP of the photo is fully included and the
+		   loss is entirely the bottom (shins, feet, rug). That is the
+		   limit of "shift the image down" — the window already starts
+		   at row 0; moving it further would need a taller band or a
+		   smaller scale (letterboxing), which the brief did not ask for.
+		   Faces (visual read of the source): Ashley's crown ≈ row 85,
+		   chin ≈ 300; Robbo's crown ≈ row 240, chin ≈ 470 — all inside
+		   0..779, with 92px (Ashley) / 259px (Robbo) of rendered
+		   headroom. The "cut head" reported on the earlier build was the
+		   sweep's blur feathering the band's top edge (item 4), not the
+		   crop. */
+		object-position: 50% 0%;
 	}
 
 	/* ── Text block (guide mapping flagged in the report). */
