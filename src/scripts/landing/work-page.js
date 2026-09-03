@@ -77,8 +77,18 @@ import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 
-const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev)
+const BASE_TOP_PX = 441; // first tile top = meta title top (Oscar's rev) — the 1728×1117 value; see baseTop()
 const IMG_H_PX = 616; // Oscar's rev: the pre-412 height (640) minus 24
+/* 14"/15" PASS (Oscar, 2026-09-03): the first tile's top is now
+   BOTTOM-ANCHORED — the stage height minus the image minus this
+   clearance, which is exactly what 441 was at the 1117 reference
+   (1117 − 616 − 60 = 441: byte-identical there). In the scale shell
+   the interior is 942–1030 tall and a px-literal 441 cut the tile's
+   bottom by 63 (994) to 115 (942) on a fixed-viewport page where every
+   lost pixel shows; the clearance is the invariant the composition
+   actually carried. The dock (the meta position) rides with it — the
+   metas dock at the tile's top by construction. */
+const TILE_BOTTOM_CLEAR_PX = 1117 - BASE_TOP_PX - IMG_H_PX; // 60
 const GAP_PX = 8;
 const PITCH_PX = IMG_H_PX + GAP_PX; // 624
 const END_GAP_PX = 163; /* ground below the last image before the
@@ -95,7 +105,7 @@ const TILE_RIGHT_MARGIN_PX = 16; // right edge held at stage - 16
    literal the derivation used to produce (the site's 1728 px-literal
    grammar; the shell keeps the inner viewport at 1728). */
 const TILE_LEFT_PX = 760;
-const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441)
+const DOCK_Y_PX = BASE_TOP_PX; // the dock = the old meta position (441 at 1117); live value: dockY()
 const META_WIPE_BLUR_PX = 6; // the services roll-over blur (Oscar's rev)
 /* The in-place wipe window: each line wipes over SPAN px of the
    incoming edge's travel, starting LEAD px before contact. LEAD >
@@ -268,6 +278,10 @@ export function initWorkPage() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stageH = () => stage.clientHeight || window.innerHeight;
+  /* The live first-tile top / dock (14"/15" pass): bottom-anchored
+     on the stage — equals BASE_TOP_PX (441) at the 1117 reference. */
+  const baseTop = () => stageH() - IMG_H_PX - TILE_BOTTOM_CLEAR_PX;
+  const dockY = () => baseTop();
 
   /* ── W-under-A (the featured section's Range mechanism). */
   const hlFeatured = document.querySelector('[data-work-hl-featured]');
@@ -384,7 +398,7 @@ export function initWorkPage() {
         desc.className = 'work-page__meta-desc';
         desc.textContent = p.desc;
         u.append(title, desc);
-        u.style.transform = `translate3d(0, ${(BASE_TOP_PX + i * PITCH_PX).toFixed(0)}px, 0)`;
+        u.style.transform = `translate3d(0, ${(baseTop() + i * PITCH_PX).toFixed(0)}px, 0)`;
         metasLayer.appendChild(u);
         return { el: u, project: p, title, desc, descText: p.desc, blockH: 150, dockY: null, wipeLines: null, wiped: false };
       });
@@ -397,7 +411,7 @@ export function initWorkPage() {
   const carouselMax = () => {
     /* Phase 1 ends with the last image's bottom + the 80px run-out
        (Oscar's rev) on the viewport bottom. */
-    const contentBottom = BASE_TOP_PX + (tiles.length - 1) * PITCH_PX + IMG_H_PX + END_GAP_PX;
+    const contentBottom = baseTop() + (tiles.length - 1) * PITCH_PX + IMG_H_PX + END_GAP_PX;
     return Math.max(contentBottom - stageH(), 0);
   };
   const maxPos = () => carouselMax() + FOOTER_REVEAL_PX;
@@ -410,7 +424,7 @@ export function initWorkPage() {
   const layout = () => {
     const p1 = Math.min(pos, carouselMax());
     tiles.forEach(({ el }, i) => {
-      const y = BASE_TOP_PX + i * PITCH_PX - p1;
+      const y = baseTop() + i * PITCH_PX - p1;
       el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
     });
     const revealT = clamp(pos - carouselMax(), 0, FOOTER_REVEAL_PX);
@@ -442,7 +456,7 @@ export function initWorkPage() {
 
   const dockedProbe = (p1) => {
     for (let i = units.length - 1; i >= 0; i -= 1) {
-      if (BASE_TOP_PX + i * PITCH_PX - p1 <= (units[i].dockY ?? DOCK_Y_PX)) return i;
+      if (baseTop() + i * PITCH_PX - p1 <= (units[i].dockY ?? dockY())) return i;
     }
     return 0;
   };
@@ -467,7 +481,7 @@ export function initWorkPage() {
     if (revealT > 0) {
       const du = units[Math.min(units.length - 1, Math.max(0, dockedProbe(p1)))];
       if (du) {
-        const dDock = du.dockY ?? DOCK_Y_PX;
+        const dDock = du.dockY ?? dockY();
         hold = Math.min(revealT, Math.max(stageH() - END_GAP_PX - dDock - du.blockH, 0));
       }
     }
@@ -478,7 +492,7 @@ export function initWorkPage() {
       /* RM: no travel choreography — instant swap-in-place at the
          dock, driven by the same dock-crossing trigger. */
       units.forEach((u, i) => {
-        const dockI = u.dockY ?? DOCK_Y_PX;
+        const dockI = u.dockY ?? dockY();
         u.el.style.visibility = i === docked ? '' : 'hidden';
         u.el.style.transform = `translate3d(0, ${(dockI + hold).toFixed(1)}px, 0)`;
       });
@@ -488,8 +502,8 @@ export function initWorkPage() {
     let succY = Infinity;
     for (let i = units.length - 1; i >= 0; i -= 1) {
       const u = units[i];
-      const linked = BASE_TOP_PX + i * PITCH_PX - p1;
-      const dockI = u.dockY ?? DOCK_Y_PX;
+      const linked = baseTop() + i * PITCH_PX - p1;
+      const dockI = u.dockY ?? dockY();
       let y = Math.max(linked, dockI); /* pinned — NEVER displaced */
       if (y === dockI) y += hold; /* the reveal hold, uniform */
       /* THE OVERTAKE WIPE (Oscar's rev 4 — IN PLACE, line by line):
@@ -674,7 +688,7 @@ export function initWorkPage() {
     const link = e.target instanceof Element ? e.target.closest('[data-work-link]') : null;
     if (!(link instanceof HTMLElement) || !link.dataset.tileIndex) return;
     const i = Number(link.dataset.tileIndex);
-    const desired = clamp(BASE_TOP_PX + i * PITCH_PX - (stageH() / 2 - IMG_H_PX / 2), 0, maxPos());
+    const desired = clamp(baseTop() + i * PITCH_PX - (stageH() / 2 - IMG_H_PX / 2), 0, maxPos());
     setPosClamped(desired);
   };
   carousel.addEventListener('focusin', onFocusIn);
