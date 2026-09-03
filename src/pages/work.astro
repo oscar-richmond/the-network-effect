@@ -66,6 +66,29 @@ const MOBILE_ENTRIES = MOBILE_ORDER.map((slug) => workPool.find((p) => p.slug ==
 );
 const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
 
+/* ── GRID VIEW (R35, Oscar 2026-09-03) — COMPOSITION A, nine tiles from
+   the single source (the eight projects + the Ashley portrait stub,
+   the pool's only true 3:4 source). A 12-column grid inside the 24px
+   margins (1680 → column 118 on 24px gutters, work.css); modules:
+   l6 = 6-col landscape 828×552 (3:2), l3 = 3-col landscape 402×268,
+   sq3 = 3-col square 402×402, p3 = 3-col portrait 402×536 (3:4).
+   The rows copy the reference's first two row compositions module
+   for module and put its World Buskers module on the RIGHT of row 3
+   with one small tile left and the middle open; counts 3 / 4 / 2
+   never repeat, no adjacent pair shares a size, every row mixes
+   three heights. The TV/film work (Adolescence, Animol, Top Boy) are
+   the landscapes — their elevated rights flags (data header) stand,
+   and they are prominent tiles now. Top Boy takes the template's
+   small landscape (Oscar's ruling on option A). */
+const GRID_ROWS = [
+  [['animol', 'l6'], ['wilderness-reserve', 'sq3'], ['tbc-ashley-walters', 'p3']],
+  [['top-boy', 'l3'], ['pavilion-club', 'p3'], ['yoxman-food-festival', 'sq3'], ['pavilion-summit', 'p3']],
+  [['thunder-aviation', 'sq3'], ['adolescence', 'l6r']],
+];
+const gridRows = GRID_ROWS.map((row) =>
+  row.map(([slug, mod]) => ({ p: workPool.find((x) => x.slug === slug), mod })).filter((t) => t.p !== undefined),
+);
+
 ---
 
 <SiteShell title="Featured Work — The Network Effect" bodyClass="landing-v2 work-page">
@@ -210,9 +233,50 @@ const moreArrow = asset('/assets/landing/services-stack/more-arrow.svg');
 
   </main>
 
+  {/* ══ GRID VIEW (R35) — a normal scrolling document, shown when the
+      body carries .work-view-grid (work-view.js). Its header is the
+      list header's markup and treatment (the hl classes) so the two
+      views share one heading position; only one view is displayed at a
+      time, so the page never exposes two h1s. Tiles: live slugs are
+      real links through the wipe with the VIEW CASE STUDY cursor;
+      unbuilt studies use the established .is-placeholder gating (no
+      href, no cursor hit-test, unfocusable). The name beneath each
+      tile is the landing carousel's 26/28 card tier; the /0N index is
+      omitted here (flagged). Hidden ≤1024 — mobile keeps its list. */}
+  <section class="work-grid" data-work-grid aria-label="Featured work, grid view">
+    <div class="work-grid__head">
+      <h1 class="work-page__hl work-page__hl--featured" data-work-grid-hl-featured>FEATURED</h1>
+      <p class="work-page__hl work-page__hl--work" data-work-grid-hl-work aria-hidden="true">WORK</p>
+    </div>
+    <div class="work-grid__rows" data-work-grid-rows>
+      {gridRows.map((row, r) => (
+        <div class="work-grid__row" data-work-grid-row data-row={String(r)}>
+          {row.map(({ p, mod }, t) => {
+            const live = LIVE_CASE_SLUGS.includes(p.slug);
+            const name = p.title.join(' ');
+            const cls = `work-gtile work-gtile--${mod}`;
+            return live ? (
+              <a class={cls} href={`/work/${p.slug}`} data-work-link data-work-gtile data-slug={p.slug} data-tile={String(t)} aria-label={`${name} — view project`}>
+                <figure class="work-gtile__media"><img src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /></figure>
+                <p class="work-gtile__name">{name}</p>
+              </a>
+            ) : (
+              <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
+                <figure class="work-gtile__media"><img src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /></figure>
+                <p class="work-gtile__name">{name}</p>
+              </span>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  </section>
+
+
   {/* Footer — the landing footer, revealed from BEHIND the stage at
       the end of the travel (the landing parallax uncover; the stage
-      slides up over this fixed layer — work-page.js phase 2). */}
+      slides up over this fixed layer — work-page.js phase 2). In grid
+      view (R35) the wrap is static and the footer follows the flow. */}
   <div class="work-footer-wrap" data-work-footer>
     <LandingFooter theme="light" />
   </div>

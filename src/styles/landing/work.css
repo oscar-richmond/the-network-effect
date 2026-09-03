@@ -566,3 +566,174 @@ body.work-page {
 	font-weight: 600;
 	font-synthesis: none;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   R35 (Oscar, 2026-09-03) — THE GRID VIEW + THE VIEW TOGGLE.
+   LIST stays the default; GRID is a normal scrolling document shown
+   when the body carries .work-view-grid (work-view.js flips it on a
+   full teardown/boot). Desktop only — the mobile page keeps its list
+   and never shows the toggle. Every dimension here is px on the 1728
+   grammar (no vw): the 1512 shell renders it as a scaled 1728.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* The view state: exactly one of the two views is displayed. */
+.landing-v2 .work-grid { display: none; }
+body.work-page.work-view-grid { overflow: auto; }             /* the document scrolls (Lenis, work-grid.js) */
+body.work-page.work-view-grid .work-stage { display: none; }
+body.work-page.work-view-grid .work-grid { display: block; }
+body.work-page.work-view-grid .work-page__metas { display: none; }
+/* In grid view the footer follows the flow (the fixed reveal wrap is
+   list-view machinery). */
+body.work-page.work-view-grid .work-footer-wrap { position: static; height: auto; }
+body.work-page.work-view-grid .work-footer-wrap .landing-footer { position: relative; }
+/* During a switch the fixed footer layer would show through the fading
+   stage (it sits under it at z0) — veiled for the switch's length. */
+body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
+
+/* ── THE SWITCH TRANSITION (the house blur-fade), sequenced: the
+   outgoing view blur-fades out, the swap happens, the incoming
+   blur-fades in from the parked state. Durations = work-view.js's
+   SWITCH_OUT_MS / SWITCH_IN_MS. The stage and the grid carry no
+   difference-blended descendants (the nav and the cursor are
+   siblings), so a root-level opacity/filter isolates nothing. */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .work-stage,
+	.landing-v2 .work-grid {
+		transition: opacity 0.36s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)), filter 0.36s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+	.landing-v2 .work-stage.is-view-out,
+	.landing-v2 .work-grid.is-view-out {
+		opacity: 0;
+		filter: blur(12px);
+		pointer-events: none;
+	}
+	.landing-v2 .work-stage.is-view-in,
+	.landing-v2 .work-grid.is-view-in {
+		opacity: 0;
+		filter: blur(12px);
+		transition: none;
+	}
+	.landing-v2 .work-grid:not(.is-view-in),
+	.landing-v2 .work-stage:not(.is-view-in) {
+		transition-duration: 0.42s, 0.42s;
+	}
+}
+
+@media (min-width: 1025px) {
+	/* ── THE GRID: a 12-column grid inside the 24px margins — 1680 →
+	   twelve 118px columns on 24px gutters (the reference runs 16 on a
+	   16 margin; ours matches its margin, an editorial project grid
+	   wants the air). Tokens are tunables. */
+	.landing-v2 .work-grid {
+		--work-grid-gutter: 24px;
+		--work-grid-rowgap: 96px;   /* Oscar: 96 to start, tunable (the reference's ~250 paces sixteen projects) */
+		--work-grid-top: 80px;      /* the first row below the header block (120 + 176) */
+		position: relative;
+		background: #eeeef0;
+		padding-bottom: 120px;
+	}
+
+	/* The header block — the list header's classes (position absolute
+	   at left 24 / top 120 & 208 inside this relative block), so the
+	   two views share one heading position to the pixel. */
+	.landing-v2 .work-grid__head {
+		position: relative;
+		height: 296px; /* 120 + the 176 two-line block */
+	}
+
+	.landing-v2 .work-grid__rows {
+		display: flex;
+		flex-direction: column;
+		gap: var(--work-grid-rowgap);
+		padding: var(--work-grid-top) 24px 0;
+	}
+
+	.landing-v2 .work-grid__row {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		column-gap: var(--work-grid-gutter);
+		align-items: start; /* heights vary within a row — names land on different baselines */
+	}
+
+	/* The tile modules (the reference's 412 / 840 modules mapped to 3 /
+	   6 columns): l6 828×552, l3 402×268, sq3 402×402, p3 402×536. */
+	.landing-v2 .work-gtile {
+		display: block;
+		grid-column: span 3;
+		text-decoration: none;
+		color: #161616;
+	}
+	.landing-v2 .work-gtile--l6 { grid-column: span 6; }
+	.landing-v2 .work-gtile--l6r { grid-column: 7 / span 6; } /* row 3: the World Buskers module, RIGHT */
+	.landing-v2 .work-gtile.is-placeholder { cursor: default; }
+
+	.landing-v2 .work-gtile__media {
+		margin: 0;
+		overflow: hidden;
+		background: #e4e4ea;
+		aspect-ratio: 1 / 1;
+	}
+	.landing-v2 .work-gtile--l6 .work-gtile__media,
+	.landing-v2 .work-gtile--l6r .work-gtile__media,
+	.landing-v2 .work-gtile--l3 .work-gtile__media { aspect-ratio: 3 / 2; }
+	.landing-v2 .work-gtile--p3 .work-gtile__media { aspect-ratio: 3 / 4; }
+
+	.landing-v2 .work-gtile__media img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* The client name, 16 below the tile: the landing carousel's card
+	   tier (R17: Serrif Condensed Medium 26/28, the Section −3%
+	   tracking, natural case). The /0N index is omitted (flagged). */
+	.landing-v2 .work-gtile__name {
+		margin: 16px 0 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 26px;
+		line-height: 28px;
+		letter-spacing: -0.03em;
+		color: #161616;
+	}
+
+	/* Keyboard: the ground-correct ring (the list tiles' own). */
+	.landing-v2 .work-gtile:focus-visible {
+		outline: 2px solid #232a89;
+		outline-offset: 2px;
+	}
+
+}
+
+/* The view announcer: the page's sr-only pattern, pinned to the top so
+   its 1px box never extends the document (it sits after the stage). */
+.landing-v2 [data-work-view-live] { top: 0; left: 0; }
+
+/* Mobile keeps its list and never shows the toggle, the grid, or the
+   view announcer (desktop-only machinery — the mobile DOM renders
+   byte-identically). */
+@media (max-width: 1024px) {
+	.landing-v2 .work-grid,
+	.landing-v2 [data-work-view-live] { display: none !important; }
+}
+
+/* ── ENTRANCES (no-preference): the toggle enters with the header;
+   the tiles take the featured-card fade-rise (24px, 0.8s, the
+   holding ease), rows top to bottom, tiles staggered within a row by
+   work-grid.js's inline transition-delay. Hover: a slow 1.02 scale
+   on the image inside the clipped tile (live tiles only). RM: every
+   tile present, no scale. */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .work-gtile {
+		opacity: 0;
+		transform: translateY(24px);
+		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)), transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+	.landing-v2 .work-gtile.is-visible { opacity: 1; transform: none; }
+
+	.landing-v2 .work-gtile__media img { transition: transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); }
+	.landing-v2 a.work-gtile:hover .work-gtile__media img,
+	.landing-v2 a.work-gtile:focus-visible .work-gtile__media img { transform: scale(1.02); }
+}
