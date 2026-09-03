@@ -2202,7 +2202,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		display: block;
 		position: relative;
 		z-index: 260;
-		height: 500px;
+		/* R21 (Oscar, 2026-09-02): 180 (was 500). Red is the FINAL ground
+		   now (the sequence is white → red while fixed, then the footer
+		   reveals from beneath), so the tail carries no exit fade — it is
+		   the 180px gap from the statement section's bottom edge to the
+		   footer's reveal point. It fades white → red WITH the section
+		   during the dwell (landing-closing.js). */
+		height: 180px;
 		background: #c1250e;
 	}
 }
