@@ -34,7 +34,7 @@ export const ST_DWELL_HOLD_PX = 300;
 /**
  * @param {HTMLElement} section the dwell box (pads + slack live here)
  * @param {HTMLElement} stage   the statement block wrapper (pins)
- * @param {{ topBound?: number | (() => number), inkLines?: () => HTMLElement[], holdPx?: number }} [opts]
+ * @param {{ topBound?: number | (() => number), inkLines?: () => HTMLElement[], holdPx?: number, bottomClear?: boolean }} [opts]
  *   topBound (R5, Oscar 2026-08-27): the centring REGION's top edge
  *   in px from the viewport top — the block centres between it and
  *   the viewport bottom (equal gaps to both). 0 (the default) is
@@ -56,12 +56,18 @@ export const ST_DWELL_HOLD_PX = 300;
  *   sticky slack in px. Defaults to ST_DWELL_HOLD_PX (the shared
  *   "one more scroll"); the landing closing passes its red fade's
  *   scrub range so the text stays fixed for exactly the fade.
+ *   bottomClear (R23): false drops the neighbour-clearing padding
+ *   below the stage's box. The default (true) keeps the neighbour
+ *   below out until release; the landing closing's neighbour is its
+ *   own red tail — the same band — so the strip was only stacking
+ *   ground between the statement's ink and the footer's reveal.
  * @returns {() => void} cleanup
  */
 export function initStatementDwell(section, stage, opts = {}) {
   if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement)) return () => {};
   if (isMobileViewport()) return () => {};
   const holdPx = Number.isFinite(opts.holdPx) ? Math.max(0, opts.holdPx) : ST_DWELL_HOLD_PX;
+  const bottomClear = opts.bottomClear !== false;
   const topBoundOf = () => {
     const tb = typeof opts.topBound === 'function' ? opts.topBound() : (opts.topBound || 0);
     return Number.isFinite(tb) ? Math.max(0, tb) : 0;
@@ -104,7 +110,7 @@ export function initStatementDwell(section, stage, opts = {}) {
     stage.style.height = `${h}px`;
     section.style.boxSizing = 'content-box';
     section.style.paddingTop = `calc(50dvh + ${tbHalf}px - ${anchor}px)`;
-    section.style.paddingBottom = `calc(50dvh - ${tbHalf}px - ${rest}px)`;
+    section.style.paddingBottom = bottomClear ? `calc(50dvh - ${tbHalf}px - ${rest}px)` : '0px';
     section.style.height = `${h + holdPx}px`;
   };
   apply();

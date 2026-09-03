@@ -2175,7 +2175,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   lines are absolutely positioned, so the box needs it). */
 	.landing-v2 .landing-closing-st__stage {
 		position: relative;
-		height: calc(54px + 727px + 180px);
+		/* R23 (Oscar, 2026-09-03): the stage ENDS AT THE INK BOTTOM of
+		   the last line ("value."): 54 above the lines + the 727 line
+		   block − 9 (the last line's box overhangs its ink by 9 at
+		   100/88, pixel-measured — --closing-st-ink-inset). The 180
+		   allowance below retires: it was the frame's box, applied to
+		   the line BOX, and it stacked with the tail's 180 (R21) into
+		   369 of red under the ink. The tail is now the one 180 gap
+		   (ink → the band's end / footer reveal); the dwell's ink
+		   centring is untouched (it anchors the ink, not the box). */
+		height: calc(54px + 727px - 9px);
 		background: #c1250e; /* R16: rides the section's ground tween */
 	}
 
@@ -2206,9 +2215,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		z-index: 260;
 		/* R21 (Oscar, 2026-09-02): 180 (was 500). Red is the FINAL ground
 		   now (the sequence is white → red while fixed, then the footer
-		   reveals from beneath), so the tail carries no exit fade — it is
-		   the 180px gap from the statement section's bottom edge to the
-		   footer's reveal point. It fades white → red WITH the section
+		   reveals from beneath), so the tail carries no exit fade. R23
+		   (2026-09-03): the statement section now ends at "value."'s ink
+		   bottom (stage height above; no dwell clearing strip), so this
+		   180 IS the whole gap from that ink to the footer's reveal
+		   point — the one 180. It fades white → red WITH the section
 		   during the dwell (landing-closing.js). */
 		height: 180px;
 		background: #c1250e;

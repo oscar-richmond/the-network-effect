@@ -112,8 +112,11 @@ export function initLandingClosing() {
         topBound: () => (topbar instanceof HTMLElement ? topbar.getBoundingClientRect().bottom : 0),
         /* R23 (Oscar 2026-09-03): the hold IS the red fade's scrub
            range (CLOSING_FADE_PX, 600 — twice R21's 300), so the text
-           stays fixed for the whole white → red. */
+           stays fixed for the whole white → red; no clearing strip
+           below the stage — the tail is the same band, and the strip
+           was stacking ground between "value." and the reveal. */
         holdPx: CLOSING_FADE_PX,
+        bottomClear: false,
         /* R6 (Oscar 2026-08-27): centre the text's INK, not the
            stage box — the box bakes 54px above the lines and a
            180px legacy allowance below (the twice-missed centring's
@@ -138,11 +141,14 @@ export function initLandingClosing() {
               the text is pinned throughout and is fully red exactly
               at the release.
        TAIL   CLOSING_RED_TAIL_PX (landing.css; 180 — R21, was 500):
-              the red band continues 180 below the section's bottom
-              edge, then its edge uncovers the sticky footer (the
-              grey/white ground) — the reveal follows full red
-              directly; no hold on full red (Oscar hasn't asked for
-              one — CLOSING_RED_HOLD_PX below is the knob, 0).
+              R23: the section's stage now ENDS AT THE INK BOTTOM of
+              "value." (its 180 legacy allowance retired — it had
+              stacked with this tail: 189 + 180 = 369 of red below
+              the ink) and the dwell adds no clearing strip, so the
+              tail's 180 is THE gap: ink bottom → the band's end,
+              where the sticky footer (grey/white) uncovers. The
+              reveal follows full red directly; no hold on full red
+              (CLOSING_RED_HOLD_PX below is the knob, 0).
      The R16 enter fade (light → red over the top strip) and exit
      fade (red → the footer's ground over a 500 tail) are retired.
      INK RULED FINAL (Oscar, 2026-09-02): #161616 on both grounds —
