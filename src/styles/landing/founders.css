@@ -923,19 +923,22 @@ body.founders-page {
 	   and the slides, and a stacking context here would isolate the
 	   difference-blended names beneath it (the page's standing
 	   rule). */
-	/* Top edge at the VIEWPORT TOP, bottom on the PORTRAIT'S bottom:
-	   the end state is the image, the nav over it, and ONE strip — the
-	   deliberate one below (Oscar's ruling: kept, not "fixed"). Anchored
-	   at the portrait's top 80 the band left a second light strip above
-	   the image and the nav sat outside it; the brief's end state names
-	   only the bottom strip. */
+	/* R32 item 1 (Oscar, 2026-09-03) — EXACTLY the portrait's band: the
+	   same top (80) and the same height formula (min(841, 100dvh − 104))
+	   as .fd-portrait, at 100vw — it enters as another portrait wiping
+	   in from the left and carries on across the width at that height
+	   and y. Ground above and below it; the nav sits on the ground, not
+	   the photo (which retires the R30 contrast flag). Measured against
+	   the portrait at 1728 and in the 1512 shell: top 80 = 80, height
+	   841 = 841. The deliberate white strip below is the portrait's own
+	   bottom margin (196 at 1728, 73 in the shell). */
 	.founders-page .fd-sweep {
 		position: absolute;
 		left: 0;
-		top: 0;
+		top: 80px;
 		width: 100%;
-		height: calc(80px + min(841px, 100vh - 104px));
-		height: calc(80px + min(841px, 100dvh - 104px));
+		height: min(841px, calc(100vh - 104px));
+		height: min(841px, calc(100dvh - 104px));
 		margin: 0;
 		overflow: hidden;
 		clip-path: inset(0 100% 0 0);
