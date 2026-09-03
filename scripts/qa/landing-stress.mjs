@@ -39,6 +39,15 @@
  * --focus immerse: full down-up-down cycles through What We Do at random
  *   pace and depth (the reported reproduction sequence), sampling every
  *   wheel step for I2.
+ *   H1  (R31, the hero -> Who We Are boundary) whenever WHO WE ARE's
+ *       first ink (its label) is inside the viewport, the hero ground
+ *       has finished fading (luminance <= 22 + 2) — no light ground
+ *       under the incoming ink, either direction;
+ *   H2  whenever the Who We Are section's top edge is inside the
+ *       viewport, its computed background equals the hero ground's
+ *       (the R27 seam class — one colour every frame).
+ * --focus hero: cycles across that boundary (from the cards' rest to
+ *   Who We Are landed and back) at random pace, sampling every step.
  *
  * --page founders (R30): the /founders virtual-scroll driver instead of
  *   the landing. Randomised wheel passes over its whole axis, asserting
@@ -207,6 +216,15 @@ const STATE = `(() => {
       out.immerse = { st: str, p0: pr };
       if (stOn && p0On && pr.t < str.b - 1) out.errs.push({ inv: 'I1', msg: 'IMMERSE panel top above the FROM ACCESS statement bottom', st: str, p0: pr, introStyle: q('[data-sreel-intro]')?.getAttribute('style')?.slice(0, 60), p0Style: p0.getAttribute('style')?.slice(0, 60) }); }
   }
+  /* H1 / H2 — the hero -> Who We Are boundary */
+  const heroBg = q('.landing-hero__bg'); const fsec = q('[data-landing-founders]'); const flabel = q('[data-landing-founders-label]');
+  if (heroBg && fsec) {
+    const hL = lum(getComputedStyle(heroBg).backgroundColor); const fr2 = rect(fsec); const secOn = fr2.t < vh && fr2.t > -5;
+    const fBg = getComputedStyle(fsec).backgroundColor; const hBg = getComputedStyle(heroBg).backgroundColor;
+    out.boundary = { heroL: hL == null ? null : +hL.toFixed(1), secTop: fr2.t, fBg, hBg };
+    if (flabel) { const lr = rect(flabel); const inkOn = lr.t < vh && lr.b > 0; if (inkOn && hL != null && hL > 24) out.errs.push({ inv: 'H1', msg: 'Who We Are ink on screen over an unfinished ground fade', heroL: +hL.toFixed(1), label: lr, secTop: fr2.t }); }
+    if (secOn && fBg !== hBg) out.errs.push({ inv: 'H2', msg: 'Who We Are ground differs from the hero ground at the seam', fBg, hBg, secTop: fr2.t });
+  }
   /* residue snapshot for R1 (inline styles of watched elements) */
   out.residue = { featured: qa('[data-landing-featured] .gradual-blur, [data-featured-edge-tint], [data-featured-strip], .landing-featured__stage').map((e) => e.getAttribute('style') || '').join('|').length, wwd: qa('.landing-sreel__title, [data-sreel-desc], .landing-sreel__wwd, [data-sreel-pillar]').map((e) => e.getAttribute('style') || '').join('|'), featuredOff: ft ? (rect(ft).b < -50 || rect(ft).t > vh + 50) : false, wwdOff: sstage ? (rect(sstage).b < -50 || rect(sstage).t > vh + 50) : false };
   return out;
@@ -245,7 +263,20 @@ const RATE = { p: 2.4, intro: 1.2, slack: 6 }; /* power1.out rise: 2·(stage −
 let lastMotion = null;
 const motionStep = async (tag) => { const m = await f().evaluate(MOTION); if (lastMotion) { const dy = Math.abs(m.y - lastMotion.y); const bad = []; m.p.forEach((v, k) => { if (Math.abs(v - lastMotion.p[k]) > RATE.p * dy + RATE.slack) bad.push(`pillar${k} ${lastMotion.p[k].toFixed(1)}->${v.toFixed(1)} over dy ${dy.toFixed(0)}`); }); if (Math.abs(m.intro - lastMotion.intro) > RATE.intro * dy + RATE.slack) bad.push(`intro ${lastMotion.intro.toFixed(1)}->${m.intro.toFixed(1)} over dy ${dy.toFixed(0)}`); if (bad.length) violations.push({ move: log.length, phase: tag, y: Math.round(m.y), inv: 'I2', msg: 'transform discontinuity between adjacent samples', bad, recent: log.slice(-8) }); checks += 1; } lastMotion = m; };
 const wheelTo = async (target, step, waitMs, tag) => { for (let guard = 0; guard < 600; guard++) { const cur = await f().evaluate(() => scrollY); const d = target - cur; if (Math.abs(d) < 4) break; await p.mouse.wheel(0, Math.sign(d) * Math.min(Math.abs(d), step) * s); await p.waitForTimeout(waitMs); await motionStep(tag); } };
+const heroBeats = await f().evaluate(() => window.__landingHero?.beats?.cards ?? null);
 for (let i = 0; i < MOVES; i++) {
+  if (FOCUS === 'hero') {
+    /* one cycle across the boundary: from the cards' rest (before the rise) to Who We Are landed (a viewport past its entry), back above the rise, at random pace */
+    if (!heroBeats) { console.log('no hero beats handle'); break; }
+    const from = Math.max(0, Math.round(heroBeats.startAt[0] - pick(200, 900))); const to = Math.round(heroBeats.foundersEnterAt + H + pick(0, 900));
+    const step = Math.round(pick(40, 360)); const wait = Math.round(pick(10, 60));
+    lastMotion = null; await wheelTo(from, 400, 20, 'hero-pre');
+    await wheelTo(to, step, wait, 'hero-down'); let st = await snapshot(); await record(st, 'hero-landed');
+    if (rnd() < 0.5) await p.waitForTimeout(Math.round(pick(100, 700)));
+    await wheelTo(Math.round(from + pick(-300, 300)), step, wait, 'hero-up'); st = await snapshot(); await record(st, 'hero-back');
+    log.push(`hero-cycle ${from} -> ${to} step ${step}`);
+    continue;
+  }
   if (FOCUS === 'immerse') {
     /* one full cycle: down through What We Do (to a random depth into Featured), up past its start by a random amount (sometimes to the top), down again through rise 1 — random pace, occasional idle pauses (the snap window) */
     const pace = pick(0.4, 3); const step = Math.round(pick(60, 420)); const wait = Math.round(pick(12, 60) / pace);

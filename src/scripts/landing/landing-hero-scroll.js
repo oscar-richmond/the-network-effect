@@ -162,9 +162,25 @@ const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
    keeps its start and now completes 180 AFTER the section's top has
    crossed the viewport bottom (the overlap window is in the report;
    the fade rate is Oscar's to rule). The GL pause gate stays at
-   exitEnd. */
-const HERO_GROUND_FADE_END_CARD = 0;
-const HERO_FOUNDERS_ENTER_CARD = 1;   /* the second image to clear: the middle slot */
+   exitEnd.
+   R31 (Oscar, 2026-09-03) — ONE ANCHOR FOR BOTH EVENTS (supersedes
+   R21's fade start and R26's entrance): the moment the THIRD image to
+   clear — the RIGHT card, slot 2 — has its bottom edge cross y=0,
+   the ground fade STARTS and WHO WE ARE's top crosses the viewport
+   bottom, together. Both derive from that card's edge: exitAt(2) is
+   the scroll at which its scrubbed y reaches −(restTop + cardH), i.e.
+   its measured bottom at 0 (verified 0.1 at 1117 / 994 / 942 and in
+   the 1512 shell). It IS the last to clear: the stagger starts the
+   cards left / middle / right 80 apart at one speed to one height,
+   and only at exitAt(2) do all three bottoms read 0. The fade keeps
+   its RATE (span cardH/3 = 208 at 1728) so it completes 208 after
+   the boundary; the section's own ground rides the same tween (R27),
+   and its first ink — the label, ~246 in — crosses the viewport
+   bottom 38 after the fade completes, so no light ground ever sits
+   under it in either direction. The fade is long complete by the time
+   the section is fully in (a viewport later). Old → new, 1728:
+   entrance 1716.6 → 2043.3, fade 1675.3..1883.3 → 2043.3..2251.3. */
+const HERO_BOUNDARY_CARD = 2;         /* the third image to clear: the right slot */
 /* The first ink's crossing is DERIVED, not the static 260: the label
    sits 200 into the section and lags by DRIFT_HEADLINE_PX (60) as the
    section's top enters, but that lag DECAYS over the section's entry
@@ -977,16 +993,15 @@ export function initLandingHeroScroll() {
       }
 
       /* THE GROUND — light → the founders' #161616, scrubbed on the
-         cards' own mapping: from the LEFT card two-thirds out
-         (exitAt(0) − cardH/3) to the RIGHT card fully out (exitAt(2))
-         — /old's backdrop-fade anchors; R21 ends the fade at the
-         LEFT card's full exit (HERO_GROUND_FADE_END_CARD). The
-         founders section (its own #161616, z 260 over this fixed
-         stage) enters as its first ink meets the middle card's clear (R26) — before the last
-         card clears — after full black. backgroundColor on the
-         stage's ground layer isolates nothing. */
-      const fadeStart = exitAt(0) - cardH / 3;
-      const fadeEnd = exitAt(HERO_GROUND_FADE_END_CARD); /* R21: the left card clear (was the right) */
+         cards' own mapping. R31: it STARTS at the boundary — the RIGHT
+         card's bottom edge crossing y=0 (exitAt(2)) — and keeps its
+         R21 rate, the cardH/3 span (/old's two-thirds-out → full-exit
+         length), so it completes 208 after the boundary at 1728. The
+         founders section (z 260 over this fixed stage) enters at the
+         SAME scroll, its ground riding this tween (R27 below).
+         backgroundColor on the stage's ground layer isolates nothing. */
+      const fadeStart = exitAt(HERO_BOUNDARY_CARD);
+      const fadeEnd = fadeStart + cardH / 3;
       /* R27 (Oscar, 2026-09-03) — THE SEAM CLASS, fixed at the mechanism:
          an incoming section that paints its OWN opaque ground at a fixed
          colour over a fading layer draws a hard line at its top edge
@@ -995,9 +1010,17 @@ export function initLandingHeroScroll() {
          ground now rides THIS tween — same targets array, same scrub,
          same colours — so at every frame WHO WE ARE's section and track
          are the identical colour to the hero ground beneath them. Both
-         rest at #161616 once the fade completes (their CSS value); the
-         section is off-screen until the fade has begun, so the from
-         state is never seen. */
+         rest at #161616 once the fade completes (their CSS value).
+         R31: the section's top now crosses the viewport bottom at the
+         SAME scroll the fade begins, so the from state is written at
+         creation (immediateRender — the featured stage's own R27
+         shape): measured with it false, the first arrival frame in the
+         994 / 942 interiors showed 0.2px of the section's stylesheet
+         #161616 over the still-light hero (the spacer's integer height
+         against the trigger's float start) — a one-frame hairline the
+         light from state removes. Off-screen until the boundary, the
+         light state is never seen; on refresh the scrub sets the
+         correct progress for any load position. */
       const foundersGround = [
         document.querySelector('[data-landing-founders]'),
         document.querySelector('[data-landing-founders-track]'),
@@ -1009,7 +1032,7 @@ export function initLandingHeroScroll() {
           {
             backgroundColor: HERO_GROUND_DARK,
             ease: 'none',
-            immediateRender: false,
+            immediateRender: true,
             scrollTrigger: {
               trigger: spacer,
               start: `top+=${fadeStart} top`,
@@ -1034,23 +1057,25 @@ export function initLandingHeroScroll() {
       });
       triggers.push(gate);
 
-      /* R26: the runway ends where WHO WE ARE's first ink meets the
-         viewport bottom — exactly at the middle card's clear
-         (R21's −111 lead, R18's 0.9-of-fade gate, the older exitEnd:
-         all superseded). */
+      /* R31: the runway ends AT the boundary — WHO WE ARE's top crosses
+         the viewport bottom as the right card's bottom edge crosses
+         y=0, the same scroll the fade starts (R26's ink-at-the-middle-
+         card, R21's −111 lead, R18's 0.9-of-fade gate: all superseded).
+         The first-ink distance is still derived (the label's offset +
+         the decaying entry drift) — for the report and the safety
+         table, not as an anchor. */
       const foundersSection = document.querySelector('[data-landing-founders]');
       const foundersLabel = document.querySelector('[data-landing-founders-label]');
       const foundersLabelTop = foundersLabel instanceof HTMLElement && foundersLabel.offsetTop > 0
         ? foundersLabel.offsetTop : HERO_FOUNDERS_LABEL_TOP_FALLBACK_PX;
       const foundersEntryPx = Math.max(vh, foundersSection instanceof HTMLElement ? foundersSection.offsetHeight : 0);
       const foundersFirstInkPx = (foundersLabelTop + DRIFT_HEADLINE_PX) * foundersEntryPx / (foundersEntryPx + DRIFT_HEADLINE_PX);
-      const foundersEnterAt = exitAt(HERO_FOUNDERS_ENTER_CARD) - foundersFirstInkPx;
+      const foundersEnterAt = exitAt(HERO_BOUNDARY_CARD);
       total = foundersEnterAt;
       cardBeats = {
         foundersEnterAt: +foundersEnterAt.toFixed(1),
-        foundersEnterCard: HERO_FOUNDERS_ENTER_CARD,
+        boundaryCard: HERO_BOUNDARY_CARD,
         foundersFirstInkPx: +foundersFirstInkPx.toFixed(1),
-        fadeEndCard: HERO_GROUND_FADE_END_CARD,
         restTop,
         cardH: +cardH.toFixed(1),
         pinScrollY: +pinScrollY.toFixed(1),
