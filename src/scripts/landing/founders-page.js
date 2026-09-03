@@ -561,22 +561,28 @@ export function initFoundersPage() {
       el.style.filter = indBlur > 0.05 ? `blur(${indBlur.toFixed(2)}px)` : '';
     });
 
-    /* R30 item 5 — THE SWEEP: the portrait transition's own mechanism
-       (the clip inset plus the sin-curve edge blur at FD_REVEAL_BLUR_PX
-       — applySlide/applyWipe's constants, reused verbatim), except it
-       reveals the INCOMING image left to right and runs past the
-       portrait's edge to the full viewport width. */
+    /* R30 item 5 — THE SWEEP: the portrait transition's clip mechanism
+       (the inset wipe), revealing the INCOMING image left to right and
+       running past the portrait's edge to the full viewport width.
+       R32 item 4 — CRISP: the portrait wipe's travelling blur
+       (filter: blur(6·sin πt) on the whole layer) is NOT carried here.
+       DIAGNOSED: a filter on the sweeping element blurs its content
+       right up to its own box, so the band's top and bottom edges
+       feathered semi-transparent and the clip edge showed soft
+       content — the "blurred / semi-transparent leading side and top".
+       On the 630px portrait that blur is the intentional lightbox
+       edge vocabulary (R2, kept there); at full-bleed it read as a
+       defect. The sweep is now clip-only: hard edges, full opacity,
+       every frame. */
     if (sweep instanceof HTMLElement) {
       if (sweepT <= 0.0001) {
         sweep.style.visibility = 'hidden';
         sweep.style.clipPath = 'inset(0 100% 0 0)';
-        sweep.style.filter = '';
       } else {
         sweep.style.visibility = 'visible';
         sweep.style.clipPath = `inset(0 ${((1 - sweepT) * 100).toFixed(3)}% 0 0)`;
-        const bl = sweepT < 0.999 ? FD_REVEAL_BLUR_PX * Math.sin(Math.PI * sweepT) : 0;
-        sweep.style.filter = bl > 0.05 ? `blur(${bl.toFixed(2)}px)` : '';
       }
+      sweep.style.filter = '';
     }
     applyTextWipe(sweepT);
     setActiveSlide(textTe >= 0.5 ? 1 : 0);
