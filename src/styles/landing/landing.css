@@ -5712,8 +5712,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600; /* R6 (Oscar, 2026-09-02): SemiBold — a real Dazzed cut; was 700 */
 		font-synthesis: none;
-		font-size: 18px; /* frame 1:644 (was 12) */
-		line-height: 18px;
+		/* R29 (Oscar, 2026-09-03): 16px with LET'S CHAT (was the frame's
+		   18); leading stays solid (16/16, the 18/18 ratio) and the
+		   tracking is em-relative, so both scale with the size. */
+		font-size: 16px;
+		line-height: 16px;
 		letter-spacing: -0.02em;
 		text-transform: uppercase;
 		text-decoration: none;
@@ -5737,7 +5740,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2 .home__topbar--about .home__topbar-email {
 		font-weight: 600; /* R6 (Oscar, 2026-09-02): SemiBold with WORK / SERVICES; the wordmark is untouched */
 		font-synthesis: none; /* the no-fake-weight guard (600 is a real cut) */
-		font-size: 18px;
+		font-size: 16px; /* R29 (Oscar, 2026-09-03): 16 with the links (was 18); the 1.333 leading and −0.02em tracking are relative and follow */
 		letter-spacing: -0.02em;
 		margin-right: 0;
 	}
