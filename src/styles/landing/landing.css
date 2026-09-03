@@ -5280,7 +5280,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   track height is just the dwell now. */
 	.landing-v2.landing-home .landing-founders-track {
 		z-index: 261;
-		height: calc(1014px + 250px + 900px + 350px);
+		/* R21 (Oscar, 2026-09-02): the photo no longer expands, so the
+		   350 the Our Network entrance consumed beneath the expanded
+		   image retires: 1014 + the 250 hold + the 900 items' exit. */
+		height: calc(1014px + 250px + 900px);
 	}
 
 	.landing-v2.landing-home .landing-founders {

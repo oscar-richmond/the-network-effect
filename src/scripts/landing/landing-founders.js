@@ -143,6 +143,32 @@ const FD_M_FADE_PORTION = 0.6;
  * the reel snap grammar (SNAP_IDLE_MS / SNAP_DURATION_S).
  */
 export const FOUNDERS_HANDOFF_T = 1 / 3;
+
+/** R21 (Oscar, 2026-09-02): the departing IMAGE's bottom edge in
+ *  viewport px — the founders photo itself (it no longer expands, so
+ *  its rect is honest in every mode); the track's bottom is the
+ *  fallback when the photo is missing. landing-network.js reads the
+ *  same helper for its entrance gate, so the two can never drift. */
+export function foundersDepartingEdge() {
+  const photo = document.querySelector('[data-landing-founders] .landing-founders__photo');
+  if (photo instanceof HTMLElement) return photo.getBoundingClientRect().bottom;
+  const track = document.querySelector('[data-landing-founders-track]');
+  return track instanceof HTMLElement ? track.getBoundingClientRect().bottom : 0;
+}
+
+/** The photo's bottom edge measured UP from the section's (and so the
+ *  track's) bottom edge, in layout px — 24 in the frame's geometry. A
+ *  ScrollTrigger start must be a DOCUMENT position: while the section
+ *  is pinned the photo's viewport rect does not move with scroll, so
+ *  the network's gate derives its scroll anchor from the track's edge
+ *  (in flow, scroll-linear) minus this inset — the photo's edge is
+ *  exactly there once the section has released. */
+export function foundersDepartingEdgeInsetPx() {
+  const section = document.querySelector('[data-landing-founders]');
+  const photo = section?.querySelector('.landing-founders__photo');
+  if (!(section instanceof HTMLElement) || !(photo instanceof HTMLElement)) return 0;
+  return Math.max(0, section.offsetHeight - (photo.offsetTop + photo.offsetHeight));
+}
 const FOUNDERS_HANDOFF_IDLE_MS = 150;
 const FOUNDERS_HANDOFF_SETTLE_S = 0.6;
 
@@ -160,11 +186,10 @@ export function initLandingFounders() {
      the boundary may never REST mid-viewport — stopped past the
      third-line threshold the page settles forward (image out, Our
      Network full-viewport); stopped below it, back (image fully in
-     view). The measure is the track's bottom edge: during the whole
-     departure it IS the expanded photo's bottom edge (verified
-     equal at every sampled scroll — the photo exits bottom-flush
-     with its track), and unlike the photo's rect it stays honest
-     under reduced motion, where the crop never expands. Idle + tween
+     view). R21: the THRESHOLD is the photo's own bottom edge
+     (foundersDepartingEdge — the image no longer expands, so its
+     rect is honest in every mode); the settle target is the track's
+     bottom, the section's edge (24 below the photo). Idle + tween
      grammar is the reel snap's (150ms / 0.6s cubic-out, new input
      wins); reduced motion resolves the same zone instantly. Desktop
      only — the mobile stack has no sticky boundary. */
@@ -177,7 +202,11 @@ export function initLandingFounders() {
         const bottom = handoffTrack.getBoundingClientRect().bottom;
         const vh = window.innerHeight || 0;
         if (bottom <= 0.5 || bottom >= vh - 0.5) return;
-        const forward = bottom < vh * (1 - FOUNDERS_HANDOFF_T);
+        /* R21: the THRESHOLD reads the photo's own bottom edge
+           (foundersDepartingEdge — 24 above the track's edge now the
+           image no longer expands); the settle TARGETS the section's
+           edge so no strip of the founders ground can rest at the top. */
+        const forward = foundersDepartingEdge() < vh * (1 - FOUNDERS_HANDOFF_T);
         const target = Math.round((window.scrollY || 0) + (forward ? bottom : bottom - vh));
         const lenis = getLenisInstance();
         if (reducedMotion || !lenis) {
@@ -295,31 +324,20 @@ export function initLandingFounders() {
       }
     });
 
-    /* The photo's exit: expand its crop window to the full viewport
-       (measured from the pinned geometry so it lands exactly on the
-       screen). Inline left/width seed the tween's from-state; the CSS
-       right-anchor is over-constrained away once left+width are set. */
-    if (photo instanceof HTMLElement) {
-      const secRect = section.getBoundingClientRect();
-      const pr = photo.getBoundingClientRect();
-      photo.style.left = `${(pr.left - secRect.left).toFixed(1)}px`;
-      photo.style.width = `${pr.width.toFixed(1)}px`;
-      const vh = window.innerHeight;
-      const pinTop = Math.min(0, vh - section.offsetHeight);
-      tl.to(
-        photo,
-        {
-          top: -pinTop,
-          left: 0,
-          width: window.innerWidth,
-          height: vh,
-          duration: FOUNDERS_EXIT_PX,
-          ease: 'none',
-        },
-        holdEnd,
-      );
-    }
-
+    /* R21 (Oscar, 2026-09-02): THE EXPANSION IS GONE — the photo no
+       longer grows to the viewport over the exit. It simply stays
+       FIXED with the pinned section (no exit travel: exit 0 above)
+       through the hold and the other items' departure —
+       FOUNDERS_PHOTO_HOLD_PX = FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX
+       of scroll, the section's own pin — and then rides off with the
+       section as the sticky releases. WHAT DEPENDED ON IT: the
+       track's extra 350 (the Our Network entrance played beneath the
+       expanded photo) retires with it (landing.css: the track is
+       1014 + 250 + 900 now, −350), and the handoff's "departing
+       image edge" is the photo's OWN bottom (foundersDepartingEdge
+       below) instead of the track's, which only equalled the image
+       while it expanded. The photo's inline left/width seeds that
+       fed the tween are gone too. */
     driftTweens.push(tl);
 
     if (import.meta.env.DEV) {

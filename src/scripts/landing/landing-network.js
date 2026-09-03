@@ -19,7 +19,7 @@ import {
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isTouchPrimary } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
-import { FOUNDERS_HANDOFF_T } from './landing-founders.js';
+import { FOUNDERS_HANDOFF_T, foundersDepartingEdgeInsetPx } from './landing-founders.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -523,7 +523,14 @@ export function initLandingNetwork() {
     const foundersHandoffScroll = (line) => {
       const foundersTrack = document.querySelector('[data-landing-founders-track]');
       if (!(foundersTrack instanceof HTMLElement)) return null;
-      const bottom = foundersTrack.getBoundingClientRect().bottom + (window.scrollY || 0);
+      /* R21: the departing IMAGE's edge in DOCUMENT space — the track's
+         bottom (in flow, scroll-linear) minus the photo's fixed inset
+         from the section's edge (24: the image no longer expands, so
+         its edge sits that much above the track's once the section has
+         released; while pinned it never reaches the line). A live rect
+         of the pinned photo would not be scroll-linear here. */
+      const bottom = foundersTrack.getBoundingClientRect().bottom + (window.scrollY || 0)
+        - foundersDepartingEdgeInsetPx();
       return Math.round(bottom - (window.innerHeight || 0) * line);
     };
     trigger = ScrollTrigger.create({
