@@ -35,9 +35,10 @@ export function getNavParts() {
 }
 
 /** The parts the PAGE-BOTTOM exit sweeps (Oscar's partial-sweep
- *  ruling, 2026-08-27): the two centred nav items ONLY — WORK and
- *  SERVICES. The wordmark and LET'S CHAT remain present at all
- *  times; the full list above still serves the load entrance. */
+ *  ruling, 2026-08-27): the centred nav items ONLY — WORK, SERVICES
+ *  and (R29, 2026-09-03) FOUNDERS, whatever the bar carries. The
+ *  wordmark and LET'S CHAT remain present at all times; the full
+ *  list above still serves the load entrance. */
 export function getSweptNavParts() {
   return Array.from(document.querySelectorAll('.home__nav-link')).filter(
     (el) => el instanceof HTMLElement,

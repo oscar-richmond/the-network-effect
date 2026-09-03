@@ -71,17 +71,23 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
         "TheNetworkEffect" (Serrif Medium 24 — landing.css) before
         any wrap or reveal, so the mobile DOM stays byte-identical. */}
     <h1 class="home__logo"><a class="home__logo-link" href="/">THE NETWORK EFFECT</a></h1>
-    {/* TWO DIRECT LINKS (frame 1:643, 2026-08-26 — supersedes the
-        17:1638 four-link build): WORK and SERVICES only, 18px on the
-        32px gap; FOUNDERS and the inert OUR NETWORK placeholder are
-        DROPPED by the file. Hidden <=1024 where the burger + overlay
-        stay the shipped mobile nav. */}
+    {/* THREE DIRECT LINKS (R29, Oscar 2026-09-03 — FOUNDERS rejoins
+        the frame 1:643 pair as the third item, same markup and
+        treatment): WORK · SERVICES · FOUNDERS, 16px on the 32px gap
+        (the size drops from 18 with LET'S CHAT; the wordmark is
+        unchanged). The group re-centres on the viewport from its own
+        live width — the bar's 1fr / auto / 1fr grid, no stored x.
+        Hidden <=1024 where the burger + overlay stay the shipped
+        mobile nav (the link exists in the DOM, display:none). */}
     <nav class="home__nav-links" aria-label="Primary">
       <a class="home__nav-link" href="/work" data-char-ripple-trigger
         ><span data-char-ripple>WORK</span></a
       >
       <a class="home__nav-link" href="/services" data-char-ripple-trigger
         ><span data-char-ripple>SERVICES</span></a
+      >
+      <a class="home__nav-link" href="/founders" data-char-ripple-trigger
+        ><span data-char-ripple>FOUNDERS</span></a
       >
     </nav>
     {/* "LET'S CHAT" replaces the visible address (Oscar's rev).
