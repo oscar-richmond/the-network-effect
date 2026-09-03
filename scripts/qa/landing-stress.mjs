@@ -53,6 +53,11 @@
  *   with its image, W2 no readable overlap, W3 purity, W4 tile pitch and
  *   continuity.
  *
+ * --page work --focus switch (R35): the /work list <-> grid switch —
+ *   W1 listener balance flat across cycles, W2 one cursor instance,
+ *   W3 the right machinery per view (list handle / Lenis / stage /
+ *   body overflow), W4 ScrollTrigger count flat, W5 aria-pressed.
+ *
  * --page founders (R30): the /founders virtual-scroll driver instead of
  *   the landing. Randomised wheel passes over its whole axis, asserting
  *   after every move:
@@ -94,6 +99,7 @@ let seed = SEED; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0;
 const pick = (a, b) => a + rnd() * (b - a);
 
 const PAGE = arg('--page', 'landing');
+const FOCUS = arg('--focus', '');
 const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await (await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 const pageErrs = []; p.on('pageerror', (e) => pageErrs.push(String(e.message).slice(0, 120)));
@@ -111,7 +117,7 @@ const f = () => p.frames().find((fr) => fr.url().includes('framed=1')) ?? p.main
        index;
    W4  tiles keep their pitch (every adjacent pair exactly PITCH apart)
        and never jump between adjacent samples faster than the input. */
-if (PAGE === 'work') {
+if (PAGE === 'work' && FOCUS !== 'switch') {
   const WSTATE = `(() => {
     const st = window.__workPage ? window.__workPage.state() : null; if (!st) return { st: null };
     const num = (v) => { const m = /matrix\\([^)]+\\)/.exec(v); return m ? +m[0].split(',').slice(-1)[0].replace(')', '') : 0; };
@@ -147,6 +153,68 @@ if (PAGE === 'work') {
     if (rnd() < 0.25) { await p.waitForTimeout(Math.round(pick(200, 700))); check(await snap(), 'pause'); }
   }
   const summary = { vp: `${W}x${H}`, page: 'work', moves: MOVES, seed: SEED, maxPos: first.st.maxPos, checks: wchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
+  console.log(JSON.stringify(summary));
+  await b.close();
+  process.exit(viol.length ? 2 : 0);
+}
+
+/* ══ R35 — /work VIEW-SWITCH MODE (--page work --focus switch) ═══════
+   LIST is the fixed-viewport driver, GRID a normal document; the view
+   controller must tear one down completely before booting the other.
+   The page's EventTarget add/remove are instrumented at load so the
+   live-listener balance can be read after every switch. Asserts:
+     W1 listener balance flat: after the first full cycle the net
+        (adds − removes) is identical after every later cycle in the
+        same view;
+     W2 exactly one cursor instance live in either view;
+     W3 in grid view the list handle (__workPage) is null, Lenis is on
+        (html.lenis), the stage is display:none and the body scrolls;
+        in list view the reverse (no Lenis, the handle present, the
+        wrap hidden);
+     W4 ScrollTrigger count flat per view;
+     W5 no page errors; the toggle's aria-pressed matches the view. */
+if (PAGE === 'work' && FOCUS === 'switch') {
+  await f().evaluate(() => {
+    const w = window; w.__lc = { add: 0, remove: 0 };
+    const A = EventTarget.prototype.addEventListener, R = EventTarget.prototype.removeEventListener;
+    EventTarget.prototype.addEventListener = function (...a) { w.__lc.add++; return A.apply(this, a); };
+    EventTarget.prototype.removeEventListener = function (...a) { w.__lc.remove++; return R.apply(this, a); };
+  });
+  const WSTATE = `(() => { const st = getComputedStyle(document.querySelector('.work-stage')); return { view: window.__workView?.view(), switching: !!window.__workView?.switching(), pressed: [...document.querySelectorAll('[data-work-view]')].map((b) => b.dataset.workView + ':' + b.getAttribute('aria-pressed')).join(' '), lc: window.__lc ? window.__lc.add - window.__lc.remove : null, cursors: window.__viewCaseCursorCount || 0, listHandle: !!window.__workPage, gridHandle: !!window.__workGrid, lenis: document.documentElement.classList.contains('lenis'), stageDisplay: st.display, bodyOverflow: getComputedStyle(document.body).overflow, st: (window.gsap && window.ScrollTrigger) ? ScrollTrigger.getAll().length : (window.__workPage?.gsap?.globals?.().ScrollTrigger?.getAll?.().length ?? null), scrollY: Math.round(scrollY), gridVisible: [...document.querySelectorAll('[data-work-gtile]')].filter((t) => t.classList.contains('is-visible')).length }; })()`;
+  const wsnap = () => f().evaluate(WSTATE);
+  const viol = []; const hist = []; const baseline = { list: null, grid: null };
+  let wchecks = 0;
+  const check = (st, tag) => { wchecks += 1;
+    if (st.switching) return;
+    const v = st.view;
+    if (!v) { viol.push({ inv: 'W5', tag, msg: 'no view controller handle' }); return; }
+    if (st.cursors !== 1) viol.push({ inv: 'W2', tag, view: v, msg: 'cursor instances != 1', cursors: st.cursors });
+    if (v === 'grid') { if (st.listHandle) viol.push({ inv: 'W3', tag, view: v, msg: 'list driver handle present in grid view' }); if (!st.lenis) viol.push({ inv: 'W3', tag, view: v, msg: 'Lenis absent in grid view' }); if (st.stageDisplay !== 'none') viol.push({ inv: 'W3', tag, view: v, msg: 'stage displayed in grid view', display: st.stageDisplay }); if (st.bodyOverflow === 'hidden') viol.push({ inv: 'W3', tag, view: v, msg: 'body overflow hidden in grid view' }); if (!st.gridHandle) viol.push({ inv: 'W3', tag, view: v, msg: 'grid handle absent in grid view' }); }
+    else { if (!st.listHandle) viol.push({ inv: 'W3', tag, view: v, msg: 'list driver handle absent in list view' }); if (st.lenis) viol.push({ inv: 'W3', tag, view: v, msg: 'Lenis present in list view' }); if (st.stageDisplay === 'none') viol.push({ inv: 'W3', tag, view: v, msg: 'stage hidden in list view' }); if (st.gridHandle) viol.push({ inv: 'W3', tag, view: v, msg: 'grid handle present in list view' }); }
+    const exp = v === 'grid' ? 'list:false grid:true' : 'list:true grid:false';
+    if (st.pressed !== exp) viol.push({ inv: 'W5', tag, view: v, msg: 'aria-pressed mismatch', pressed: st.pressed });
+    /* the instrumentation starts after the initial view booted, so its
+       own listeners are invisible until it has been torn down once —
+       a view's baseline is its first visit AFTER a switch */
+    if (tag === 'boot') return;
+    if (baseline[v] == null) baseline[v] = { lc: st.lc, st: st.st };
+    else { if (st.lc !== baseline[v].lc) viol.push({ inv: 'W1', tag, view: v, msg: 'listener balance drifted', was: baseline[v].lc, now: st.lc }); if (st.st !== baseline[v].st) viol.push({ inv: 'W4', tag, view: v, msg: 'ScrollTrigger count drifted', was: baseline[v].st, now: st.st }); }
+  };
+  const clickView = async (v) => { const btn = await f().$(`[data-work-view="${v}"]`); if (btn) await btn.click(); };
+  const settleSwitch = async () => { for (let k = 0; k < 60; k++) { await p.waitForTimeout(100); const st = await wsnap(); if (!st.switching) return st; } return wsnap(); };
+  check(await wsnap(), 'boot');
+  /* the first cycle sets the per-view baselines (a boot registers K listeners, a teardown removes K) */
+  for (let i = 0; i < MOVES; i++) {
+    const st0 = await wsnap(); const next = st0.view === 'grid' ? 'list' : 'grid';
+    await clickView(next); const st = await settleSwitch(); hist.push(`switch -> ${next}`); check(st, 'after-switch');
+    /* scroll about in the new view */
+    const n = Math.round(pick(1, 5)); for (let k = 0; k < n; k++) { await p.mouse.wheel(0, (rnd() < 0.7 ? 1 : -1) * Math.round(pick(200, 1800)) * s); await p.waitForTimeout(Math.round(pick(40, 200))); }
+    await p.waitForTimeout(Math.round(pick(150, 500)));
+    check(await wsnap(), 'after-scroll');
+    if (rnd() < 0.15) { /* a rapid double-click: the second must be ignored while switching */ await clickView(st.view === 'grid' ? 'list' : 'grid'); await p.waitForTimeout(60); await clickView(st.view); await settleSwitch(); check(await wsnap(), 'after-rapid'); }
+  }
+  const summary = { vp: `${W}x${H}`, page: 'work', focus: 'switch', moves: MOVES, seed: SEED, checks: wchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), baseline, pageErrors: pageErrs, first: viol.slice(0, 5) };
   if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
   console.log(JSON.stringify(summary));
   await b.close();
@@ -335,7 +403,6 @@ const record = async (st, phase) => { checks += 1; for (const e of st.errs) viol
   if (st.wwd && st.wwd.stageOnScreen && !st.wwd.inExit) { const tp = await textPresence(); if (tp) { if (tp.title != null && tp.title < 40) violations.push({ move: log.length, phase, y: st.y, inv: 'T3', msg: 'What We Do title box has no ink (pixel presence)', pillar: tp.pillar, spread: tp.title, recent: log.slice(-8) }); if (tp.row != null && tp.row < 30) violations.push({ move: log.length, phase, y: st.y, inv: 'T3', msg: 'What We Do row box has no ink (pixel presence)', pillar: tp.pillar, spread: tp.row, recent: log.slice(-8) }); } } };
 const maxScroll = await f().evaluate(() => document.documentElement.scrollHeight - innerHeight);
 let lastResidue = null;
-const FOCUS = arg('--focus', '');
 const wwdTop = await f().evaluate(() => { const s2 = document.querySelector('.landing-sreel'); return s2 ? Math.round(s2.getBoundingClientRect().top + scrollY) : 0; });
 const wwdBottom = await f().evaluate(() => { const o = document.querySelector('[data-landing-services]'); return o ? Math.round(o.getBoundingClientRect().bottom + scrollY) : 0; });
 /* I2 — per-step transform sampling (one evaluate: scroll + transforms from the same frame) */

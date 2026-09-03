@@ -842,8 +842,16 @@ export function initWorkPage() {
     wrapFooter();
     [hlFeatured, hlWork].forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
-      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapWordRevealElement(line);
+      /* R35: wrap ONCE per page life — the list ↔ grid switch re-boots
+         this driver, and a second wrap would nest clips (R28). The
+         reveal replays on every boot. */
+      if (!line.querySelector('.lr-clip')) {
+        line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+        wrapWordRevealElement(line);
+      } else {
+        line.querySelectorAll('.lr-clip').forEach((c) => c.classList.remove('lr-visible'));
+        void line.offsetHeight;
+      }
       playLineRevealElement(line);
     });
   });
@@ -895,5 +903,8 @@ export function initWorkPage() {
     disposed = true;
     setNav(false); /* restore the nav chars if torn down mid-sweep */
     cleanups.forEach((fn) => fn());
+    /* R35: the view switch tears this driver down in-page — the DEV
+       handle must not outlive it (the harness asserts its absence). */
+    if (import.meta.env.DEV) window.__workPage = null;
   };
 }

@@ -317,11 +317,13 @@ const gridRows = GRID_ROWS.map((row) =>
 <script>
   import { initCharRipple } from '../scripts/char-ripple.js';
   import { initNavEntrance } from '../scripts/landing/nav-motion.js';
-  import { initWorkPage } from '../scripts/landing/work-page.js';
+  import { initWorkView } from '../scripts/landing/work-view.js';
 
   let cleanupCharRipple = initCharRipple();
   let cleanupNavEntrance = initNavEntrance();
-  let cleanupWorkPage = initWorkPage();
+  /* R35: the view controller boots the list driver (default) or the
+     grid, and owns the switch — a full teardown and boot each way. */
+  let cleanupWorkPage = initWorkView();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupCharRipple();
@@ -332,6 +334,6 @@ const gridRows = GRID_ROWS.map((row) =>
   document.addEventListener('astro:after-swap', () => {
     cleanupCharRipple = initCharRipple();
     cleanupNavEntrance = initNavEntrance();
-    cleanupWorkPage = initWorkPage();
+    cleanupWorkPage = initWorkView();
   });
 </script>

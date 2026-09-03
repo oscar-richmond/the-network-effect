@@ -37,6 +37,9 @@ export function initViewCaseCursor(opts = {}) {
 
   document.documentElement.classList.add('work-cursor-on');
   document.body.classList.add('work-cursor-on');
+  /* R35: live-instance count for the /work view-switch harness (a
+     torn-down view must leave exactly the incoming view's instance). */
+  if (import.meta.env.DEV) window.__viewCaseCursorCount = (window.__viewCaseCursorCount || 0) + 1;
 
   /* Centre on the pointer WITHOUT transform (blend root): the
      measured half-extent becomes a static margin. */
@@ -99,5 +102,6 @@ export function initViewCaseCursor(opts = {}) {
     window.cancelAnimationFrame(raf);
     document.documentElement.classList.remove('work-cursor-on', 'work-cursor-live');
     document.body.classList.remove('work-cursor-on');
+    if (import.meta.env.DEV) window.__viewCaseCursorCount = Math.max(0, (window.__viewCaseCursorCount || 1) - 1);
   };
 }

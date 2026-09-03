@@ -13,8 +13,23 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 
 const LINE_STAGGER_S = 0.12;
 
+/* R35 (/work views, 2026-09-03): the wrap is IDEMPOTENT per footer —
+   a page that boots a view more than once in one page life (the /work
+   list ↔ grid switch tears each view down and boots the other) must
+   not re-wrap already-wrapped lines: wrapWordRevealElement nests new
+   clips inside the old ones and the text never reveals (the What We Do
+   R28 finding). The first call's result is cached on the element. */
+const wrappedFooters = new WeakMap();
+
 /** @returns {{ wordEls: HTMLElement[], img: Element | null, chip: { el: HTMLElement, atMs: number } | null }} */
 export function wrapFooterReveals(footer) {
+  if (footer instanceof HTMLElement && wrappedFooters.has(footer)) return wrappedFooters.get(footer);
+  const result = wrapFooterRevealsOnce(footer);
+  if (footer instanceof HTMLElement) wrappedFooters.set(footer, result);
+  return result;
+}
+
+function wrapFooterRevealsOnce(footer) {
   const wordEls = [];
   /* The START A PROJECT chip's painted pill — the one footer surface
      the word wrap can't cover; it rises via the tile/image class

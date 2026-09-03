@@ -54,8 +54,27 @@ export function initSiteScroll() {
   rafId = window.requestAnimationFrame(raf);
   return () => {
     window.cancelAnimationFrame(rafId);
-    lenis?.destroy();
+    /* R35 (the /work view switch): Lenis 1.3's destroy() removes its
+       listeners and classes but NOT the velocity-reset timeout it arms
+       on every native scroll (onNativeScroll → setTimeout → isScrolling
+       = false → updateClassName), so a teardown within ~400ms of a
+       scroll left `html.lenis` re-added by a dead instance (measured).
+       Clear it first, then sweep the classes once more after that
+       window in case one was already queued. */
+    const dying = lenis;
+    if (dying && dying._resetVelocityTimeout != null) {
+      clearTimeout(dying._resetVelocityTimeout);
+      dying._resetVelocityTimeout = null;
+    }
+    dying?.destroy();
     lenis = null;
-    document.documentElement.classList.remove('lenis');
+    const sweep = () => {
+      if (lenis) return; /* a newer instance owns the classes */
+      Array.from(document.documentElement.classList).forEach((c) => {
+        if (c === 'lenis' || c.startsWith('lenis-')) document.documentElement.classList.remove(c);
+      });
+    };
+    sweep();
+    setTimeout(sweep, 500);
   };
 }
