@@ -54,13 +54,16 @@ STAGE_BUILD_ENV=(
 )
 
 # Anything passed after `npm run stage --` is forwarded verbatim.
+# NOTE the ${...+...} guard below: this script runs under `set -u`, and on
+# bash 3.2 (which is what macOS ships) expanding an EMPTY array with
+# "${EXTRA[@]}" is an unbound-variable error, not an empty list.
 EXTRA=("$@")
 
 echo "→ Deploying a PREVIEW build (branch: $BRANCH)…"
 echo "  build env: ${STAGE_BUILD_ENV[*]}"
 # --yes skips the interactive scope/link prompts; the deployment URL is
 # the last line of stdout.
-DEPLOY_URL="$(vercel deploy --yes "${STAGE_BUILD_ENV[@]}" "${EXTRA[@]}" | tail -1)"
+DEPLOY_URL="$(vercel deploy --yes "${STAGE_BUILD_ENV[@]}" ${EXTRA[@]+"${EXTRA[@]}"} | tail -1)"
 
 if [ -z "$DEPLOY_URL" ]; then
   echo "No deployment URL returned — aborting before aliasing." >&2
