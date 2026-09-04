@@ -224,7 +224,7 @@ export const WORK_GRID_HOVER = {
   'tbc-ashley-walters': '/assets/landing/founders-page/col-2.png',
   'top-boy': '/assets/landing/network/strip-3.jpg',
   'pavilion-club': '/assets/landing/case/pavilion-club/stream-4.jpg',
-  'yoxman-food-festival': '/assets/landing/case/yoxman/stream-5.jpg',
+  'yoxman-food-festival': '/assets/landing/case/yoxman/stream-3.jpg', /* its own tile already shows stream-5 */
   'pavilion-summit': '/assets/landing/case/pavilion-summit/stream-2.jpg',
   'thunder-aviation': '/assets/landing/closing/tile-2.jpg',
   'adolescence': '/assets/landing/services-stack/connect.jpg',
