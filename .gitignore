@@ -23,3 +23,24 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 .vercel
+
+# macOS metadata — never assets
+.DS_Store
+
+# macOS metadata — never assets
+.DS_Store
+
+# Working scratch left in the repo root by earlier sessions — probe
+# output, Figma exports and baseline captures. Not part of the site.
+/figma-assets-mobile/
+/mobile-baseline/
+/sv15/
+/svS7/
+/sv15-*.mjs
+/sv*probe.mjs
+/svA-old*.mjs
+/ct-after3-*.json
+/nsw3-mafter-*.json
+/featr2c.json
+/r13-touch-before.json
+.claude/launch.json

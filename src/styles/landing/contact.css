@@ -551,7 +551,17 @@
 	}
 
 	/* CTA rows: real tap targets. */
-	.landing-v2 .ct__cta { min-height: 44px; }
+	/* Page-weight batch item 9 (Oscar, 2026-09-04): the selector said
+	   .ct__cta — a class that exists nowhere. The CTAs are .ct-cta (a
+	   single hyphen, the component) inside .ct__ctas (the double-hyphen
+	   layout box), so this rule matched nothing and the mobile touch
+	   floor it was meant to guarantee was never applied.
+	   HEIGHT CHANGE, reported: the mobile CTAs render 64px tall (the
+	   shipped base), so a 44px minimum was already exceeded and fixing
+	   the selector changes NO rendered height at 390, 402 or 430. It is
+	   corrected because a dead rule is worse than none — it reads as
+	   cover for a floor that is not actually being held anywhere. */
+	.landing-v2 .ct-cta { min-height: 44px; }
 
 	/* Full-screen modal chrome: 44px close clear of the notch. */
 	.landing-v2 .ct-modal__close {
@@ -625,21 +635,33 @@
 	   read straight off the same token the image's own width uses. They
 	   cannot drift, and it holds at 1728 and in the 1512 shell alike
 	   (both render in design px).
-	   MECHANISM: a page variant on the SHARED nav — the group leaves the
-	   bar's centre column and pins to the bar itself (which is already
-	   position: fixed, so it is the containing block). top/bottom 0 keeps
-	   the group full-height, so its own `align-items: center` still
-	   centres the links on the bar's line exactly as the grid did. No
-	   fork; on the other six pages the selector never matches.
-	   NOTE the first attempt used `justify-self: end` with a margin —
-	   that aligns to the END OF THE GRID COLUMN, not the bar, and landed
-	   the group at 643 instead of 950 (measured). The column is auto-
-	   sized and centred, so it is not a usable reference edge. */
+	   MECHANISM: a page variant on the SHARED nav, page-scoped; the group
+	   keeps its natural content width and is only MOVED.
+	   ═ TWO EARLIER ATTEMPTS, RECORDED SO NEITHER IS TRIED AGAIN ═
+	   · `justify-self: end` + margin-right aligns to the end of the GRID
+	     COLUMN, not the bar — the column is auto-sized and centred, so it
+	     is not a usable reference edge (landed the group at 643, not 950).
+	   · `position: absolute` looks right but the group is still a GRID
+	     ITEM, and an absolutely-positioned grid item's containing block is
+	     its GRID AREA. The grid resolved a `left` of −25.375px against the
+	     `right`, CONSTRAINING the box to 111.4px instead of letting it
+	     shrink-to-fit; the flex items shrank and, because char-ripple
+	     wraps every letter in an inline-block .cr-char, each label wrapped
+	     ONE CHARACTER PER LINE (heights of 72 and 144). `fixed` escapes
+	     the grid area entirely, which `absolute` does not. ═ */
 	.landing-v2.contact-page .home__nav-links {
-		position: absolute;
+		/* POSITION: FIXED — the containing block is then the VIEWPORT, so
+		   `right` measures from its right edge and nothing constrains the
+		   group's width. */
+		position: fixed;
 		right: calc(var(--ct-image-w) + 24px);
 		top: 0;
-		bottom: 0;
+		height: 71px; /* the bar's own height — the links centre in it */
+	}
+	/* The guard: these labels must never wrap, at any width. */
+	.landing-v2.contact-page .home__nav-link,
+	.landing-v2.contact-page .home__nav-link [data-char-ripple] {
+		white-space: nowrap;
 	}
 
 	/* LET'S CHAT — the twin (frame 1:298): x1562.23; Dazzed SemiBold 18

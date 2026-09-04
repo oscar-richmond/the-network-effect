@@ -1,10 +1,30 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PartnersWheel from '../../components/services/PartnersWheel.astro';
-import Menu from '../../components/Menu.astro';
-import '../../styles/home.css';
-import '../../styles/services/services-page.css';
-import '../../styles/fonts.css';
+import { ARCHIVE_ROUTES } from '../../../data/flags.js';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PartnersWheel from '../../../components/services/PartnersWheel.astro';
+import Menu from '../../../components/Menu.astro';
+import '../../../styles/home.css';
+import '../../../styles/services/services-page.css';
+import '../../../styles/fonts.css';
+
+/* Page-weight batch item 1 (Oscar, 2026-09-04): THE ARCHIVE IS OUT OF THE
+   PRODUCTION BUILD. This is the parked pre-rebuild site — viewable during
+   development, not part of the launched site. It renders under
+   `astro dev` and a build emits no route for it, using the same
+   empty-getStaticPaths gate the dev-only splash variant uses (a plain
+   page cannot opt out of a static build; a rest route with no paths
+   can). The URL is unchanged.
+   The HOLDING pages are NOT affected: they are real deploy targets,
+   still built, and still served on the launch domain by the edge
+   middleware.
+   MEASURED SCOPE, reported honestly: this removes the archive's HTML and
+   its JS/CSS bundles from dist. It does NOT shrink dist by the archive's
+   images — everything under public/ is copied verbatim whether a route
+   references it or not, so unreferenced media is a separate item (5).
+   PUBLIC_ARCHIVE=1 builds it anyway. */
+export function getStaticPaths() {
+  return ARCHIVE_ROUTES ? [{ params: { slug: undefined } }] : [];
+}
 ---
 
 <BaseLayout
@@ -46,8 +66,8 @@ import '../../styles/fonts.css';
 </BaseLayout>
 
 <script>
-  import { initServicesScroll } from '../../scripts/services/services-scroll.js';
-  import { initPartnersScroll } from '../../scripts/services/partners-scroll.js';
+  import { initServicesScroll } from '../../../scripts/services/services-scroll.js';
+  import { initPartnersScroll } from '../../../scripts/services/partners-scroll.js';
 
   // Plumbing first (Lenis + ScrollTrigger wiring), then the wheel —
   // the AboutScroll.astro init-order idiom, two modules instead of six.

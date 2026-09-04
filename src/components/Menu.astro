@@ -169,7 +169,13 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
           grammar (scripts/cover-swap.js): the incoming image wipes
           in OVER the outgoing one, which never disappears first. */}
       <div class="site-menu__image" data-menu-image aria-hidden="true">
-        <img src={defaultImage} alt="" data-menu-image-el data-menu-image-base decoding="async" />
+        {/* Page-weight batch item 3 (Oscar, 2026-09-04): loading="lazy".
+            This is the menu overlay's resting image — it sits inside a
+            panel that is closed at height 0 on every page load, so it was
+            being fetched eagerly on EVERY route for a panel most visits
+            never open. The overlay's own open animation gives the fetch
+            more than enough time. */}
+        <img src={defaultImage} alt="" data-menu-image-el data-menu-image-base loading="lazy" decoding="async" />
         <img src={defaultImage} alt="" data-menu-image-over decoding="async" hidden />
       </div>
     </div>

@@ -52,6 +52,16 @@ const moreWork = WORK_PROJECTS.filter((p) => p.slug !== study.base.slug).map((p)
 }));
 /* The LET'S CHAT arrow path (SiteShell's inline asset) — reused for
    the pager, rotated to point left/right (Oscar's rev). */
+/* Page-weight batch item 2 (Oscar, 2026-09-04): every stream VIDEO now
+   carries a POSTER and preload="none". The poster is what the slot shows
+   until the video can play, so the row no longer holds an empty box
+   while several MB arrive, and preload="none" stops the browser fetching
+   the file before it is near the viewport (autoplay still starts it when
+   it is). The poster sits beside the video, same name with
+   same name with -poster.jpg (ffmpeg, frame at 0.5s). Declared here
+   rather than inline — a regex literal in an attribute does not survive
+   the .astro compiler. */
+const posterFor = (src) => src.replace('.mp4', '-poster.jpg').replace('.webm', '-poster.jpg');
 const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z';
 ---
 
@@ -210,7 +220,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
                    playsinline for iOS; looped. NOTE: the current
                    build's stream is ALL stills (the file's exports) —
                    this renders the moment a video lands in the data. */
-                <video src={src} autoplay muted loop playsinline></video>
+                <video src={src} poster={posterFor(src)} preload="none" autoplay muted loop playsinline></video>
               ) : (
                 <img src={src} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" />
               )}

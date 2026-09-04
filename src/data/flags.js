@@ -69,3 +69,16 @@ export const HERO_ENTRY_SPLASH = heroEntrySplashOverride === '1' ? true : heroEn
  */
 const splashBOverride = import.meta.env.PUBLIC_LANDING_SPLASH_B;
 export const LANDING_SPLASH_B = splashBOverride === '1' ? true : splashBOverride === '0' ? false : !!import.meta.env.DEV;
+
+/**
+ * ARCHIVE_ROUTES — page-weight batch item 1 (Oscar, 2026-09-04).
+ *
+ * /old and /old/services are the parked pre-rebuild site. They stay
+ * viewable under `astro dev` and are omitted from a production build,
+ * where they were dragging their own asset graph into dist. The HOLDING
+ * pages are unaffected — they are real deploy targets, still built, and
+ * still served on the launch domain by the edge middleware.
+ *
+ * PUBLIC_ARCHIVE=1 builds them anyway.
+ */
+export const ARCHIVE_ROUTES = import.meta.env.DEV || import.meta.env.PUBLIC_ARCHIVE === '1';
