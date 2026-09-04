@@ -601,18 +601,26 @@ body.case-page {
 	.landing-v2 .cs-more { padding-top: 142px; }
 	/* Frame 2001:389 (extracted 2026-08-26 — the face that was
 	   unextractable in the 36:1827 task, flagged then): ONE face,
-	   Dazzed Bold 40/50/−2% uppercase — no serif mix on desktop.
+	   Dazzed SemiBold uppercase — no serif mix on desktop.
+	   R45 (Oscar, 2026-09-04: "MORE WORK looks too small — the same
+	   size and style as FEATURED WORK on /work"): the /work title's
+	   metrics verbatim (work.css .work-page__hl — Dazzed SemiBold
+	   90 / 88 / −0.05em, brand-black ink). Was the frame's 40/50/−2%.
+	   Still ONE line (MORE WORK ≈ 613 of the 1704 row) at the 24
+	   margin; the pager re-centres on the taller line below.
 	   The cs-serrif class stays in the markup because the MOBILE
 	   design stacks a Serrif WORK; here it inherits the title's
 	   face (a breakpoint-scoped correction, not specificity
 	   stacking — the serif belongs only below the seam). */
-	.landing-v2 .cs-more__title { font-size: 40px; line-height: 50px; letter-spacing: -0.02em; }
+	.landing-v2 .cs-more__title { font-size: 90px; line-height: 88px; letter-spacing: -0.05em; }
 	.landing-v2 .cs-more__title .cs-serrif {
 		font-family: inherit;
 		font-weight: inherit;
 		letter-spacing: inherit;
 	}
-	.landing-v2 .cs-more__pager { top: 148px; }
+	/* R45: the pager rides the title row, centred on the 88 line box —
+	   142 (the row's top) + (88 − 32) / 2 = 170. Was 148 on the 50 line. */
+	.landing-v2 .cs-more__pager { top: 170px; }
 	.landing-v2 .cs-more__cardrow { margin-top: 24px; }
 }
 
