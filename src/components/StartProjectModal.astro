@@ -1,0 +1,153 @@
+---
+/**
+ * START A PROJECT — the site-wide form modal (R40, Oscar 2026-09-04).
+ *
+ * SHELL: the schedule-a-call modal's machinery reused wholesale (the
+ * brand-black frosted backdrop fading via its OWN properties, the
+ * logo-only z-order — a top-level fixed logo twin carrying difference
+ * itself at z401, everything else behind the z400 backdrop — the focus
+ * trap, Esc, return-focus to the trigger, the hidden → reflow → is-open
+ * transitions, the scroll lock through Lenis, the [hidden] display
+ * guard). The two modals are siblings: opening either closes the other
+ * (the `ne:modal-open` event).
+ *
+ * STEPS (the reference's pattern, adapted — see the R40 report):
+ *   /01  WHAT KIND OF PROJECT?  — pillar tiles, MULTI-select (a
+ *        checkbox group), at least one required; WHO ARE YOU? — a
+ *        single-select chip row (radio group); CANCEL / NEXT.
+ *   /02  TELL US MORE.          — name, email, company (optional),
+ *        message; the honeypot; BACK / SEND (SENDING while pending).
+ *   Success and error states replace the panel's content.
+ *
+ * TYPE: field labels in the eyebrow tier (Dazzed SemiBold 14 caps);
+ * the step headline in the card-title tier (Serrif Condensed Medium
+ * 34/38 — the Section serif; the 56 statement tier reads as a page
+ * headline, too loud inside a 1040 panel — reported); inputs and
+ * helper copy in Serrif Condensed. One accent: #C1250E (selected
+ * tiles, the primary button, focus and validation). Inputs are
+ * hairline-underline fields on the 2px divider grammar.
+ *
+ * COPY flagged my-edit-pending (Oscar): the success headline and line.
+ * DEEP LINK: ?project=1 or #start-project opens on load.
+ */
+import { CONTACT_EMAIL } from '../data/landing/contact.js';
+const PILLARS = [
+  { key: 'immerse', name: 'IMMERSE', desc: 'Experiences & cultural moments' },
+  { key: 'connect', name: 'CONNECT', desc: 'Partnerships & talent' },
+  { key: 'amplify', name: 'AMPLIFY', desc: 'Narrative & media' },
+  { key: 'unsure', name: 'NOT SURE YET', desc: 'We’ll help you find the shape' },
+];
+const WHO = ['BRAND', 'TALENT', 'AGENCY', 'OTHER'];
+const MAILTO = `mailto:${CONTACT_EMAIL}`;
+---
+
+<div class="sp-modal" data-sp-modal role="dialog" aria-modal="true" aria-labelledby="sp-title" hidden>
+  <div class="sp-modal__backdrop" data-sp-backdrop aria-hidden="true"></div>
+  <div class="sp-modal__band">
+    <form class="sp-modal__panel" data-sp-panel novalidate action="/api/start-project" method="post">
+      <p class="sp-modal__index" data-sp-index aria-hidden="true">/01</p>
+      <button type="button" class="sp-modal__close" data-sp-close data-char-ripple-trigger aria-label="Close">
+        <span data-char-ripple>CLOSE</span>
+      </button>
+
+      {/* ── /01 */}
+      <section class="sp-step" data-sp-step="1">
+        <h2 class="sp-modal__title" id="sp-title" data-sp-title>What kind of project?</h2>
+        <fieldset class="sp-group" data-sp-pillars aria-describedby="sp-pillars-err">
+          <legend class="sp-label">Choose one or more</legend>
+          <div class="sp-tiles">
+            {PILLARS.map((p) => (
+              <label class="sp-tile" data-sp-tile data-char-ripple-trigger>
+                <input type="checkbox" name="pillars" value={p.key} class="sp-tile__input" />
+                <span class="sp-tile__name" data-char-ripple>{p.name}</span>
+                <span class="sp-tile__desc">{p.desc}</span>
+              </label>
+            ))}
+          </div>
+          <p class="sp-error" id="sp-pillars-err" data-sp-error="pillars" role="alert"></p>
+        </fieldset>
+        <fieldset class="sp-group sp-group--who" data-sp-who>
+          <legend class="sp-label">Who are you?</legend>
+          <div class="sp-chips" role="radiogroup" aria-label="Who are you?">
+            {WHO.map((w) => (
+              <label class="sp-chip" data-sp-chip data-char-ripple-trigger>
+                <input type="radio" name="who" value={w.toLowerCase()} class="sp-chip__input" />
+                <span data-char-ripple>{w}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div class="sp-actions">
+          <button type="button" class="ne-cta ne-cta--ghost" data-sp-cancel data-char-ripple-trigger><span data-char-ripple>CANCEL</span></button>
+          <button type="button" class="ne-cta ne-cta--float" data-sp-next data-char-ripple-trigger>
+            <span data-char-ripple>NEXT</span>
+            <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow><path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+          </button>
+        </div>
+      </section>
+
+      {/* ── /02 */}
+      <section class="sp-step" data-sp-step="2" hidden>
+        <h2 class="sp-modal__title" data-sp-title2>Tell us more.</h2>
+        <div class="sp-fields">
+          <div class="sp-field">
+            <label class="sp-label" for="sp-name">Your name</label>
+            <input class="sp-input" id="sp-name" name="name" type="text" autocomplete="name" required aria-describedby="sp-name-err" />
+            <p class="sp-error" id="sp-name-err" data-sp-error="name" role="alert"></p>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label" for="sp-email">Your email</label>
+            <input class="sp-input" id="sp-email" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="sp-email-err" />
+            <p class="sp-error" id="sp-email-err" data-sp-error="email" role="alert"></p>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label" for="sp-company">Company or brand <span class="sp-label__opt">(optional)</span></label>
+            <input class="sp-input" id="sp-company" name="company" type="text" autocomplete="organization" aria-describedby="sp-company-err" />
+            <p class="sp-error" id="sp-company-err" data-sp-error="company" role="alert"></p>
+          </div>
+          <div class="sp-field">
+            <label class="sp-label" for="sp-message">What should we know?</label>
+            <textarea class="sp-input sp-input--area" id="sp-message" name="message" rows="4" required placeholder="The brief, the moment, the ambition." aria-describedby="sp-message-err"></textarea>
+            <p class="sp-error" id="sp-message-err" data-sp-error="message" role="alert"></p>
+          </div>
+          {/* the honeypot — invisible, tab-skipped, autofill bait (the deck-request precedent) */}
+          <div class="sp-hp" aria-hidden="true"><label for="sp-website">Website</label><input id="sp-website" name="website" type="text" tabindex="-1" autocomplete="off" /></div>
+        </div>
+        <div class="sp-actions">
+          <button type="button" class="ne-cta ne-cta--ghost" data-sp-back data-char-ripple-trigger><span data-char-ripple>BACK</span></button>
+          <button type="submit" class="ne-cta ne-cta--float" data-sp-send data-char-ripple-trigger>
+            <span data-char-ripple data-sp-send-label>SEND</span>
+            <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow><path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+          </button>
+        </div>
+      </section>
+
+      {/* ── success / error (replace the panel's content) */}
+      <section class="sp-step sp-step--done" data-sp-step="success" hidden>
+        {/* COPY: my-edit-pending (Oscar) */}
+        <h2 class="sp-modal__title sp-modal__title--done">That’s a good start.</h2>
+        <p class="sp-copy">We’ll be in touch within two working days.</p>
+        <div class="sp-actions">
+          <button type="button" class="ne-cta ne-cta--float" data-sp-done data-char-ripple-trigger><span data-char-ripple>CLOSE</span></button>
+        </div>
+      </section>
+      <section class="sp-step sp-step--done" data-sp-step="error" hidden>
+        <h2 class="sp-modal__title sp-modal__title--done">Something didn’t send.</h2>
+        <p class="sp-copy">Try again in a moment, or email us at <a class="sp-mail" href={MAILTO} data-char-ripple-trigger><span data-char-ripple>{CONTACT_EMAIL}</span></a></p>
+        <div class="sp-actions">
+          <button type="button" class="ne-cta ne-cta--float" data-sp-retry data-char-ripple-trigger><span data-char-ripple>TRY AGAIN</span></button>
+        </div>
+      </section>
+      <p class="sp-live" data-sp-live aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+{/* The logo twin — TOP-LEVEL fixed difference element (the contact modal's construction; never inside the backdrop-filter subtree). */}
+<a class="sp-modal__logo" data-sp-logo href="/" hidden>THE NETWORK EFFECT</a>
+
+<script>
+  import { initStartProject } from '../scripts/start-project.js';
+  let cleanup = initStartProject();
+  document.addEventListener('astro:before-swap', () => cleanup());
+  document.addEventListener('astro:after-swap', () => { cleanup = initStartProject(); });
+</script>

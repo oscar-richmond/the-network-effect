@@ -7015,3 +7015,329 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	font-weight: 600;
 	font-synthesis: none;
 }
+
+/* ══ START A PROJECT — the site-wide form modal (R40, Oscar 2026-09-04)
+   ═══════════════════════════════════════════════════════════════════
+   The schedule-a-call modal's shell verbatim (contact.css): z400 over
+   the topbar (270) and the floating chip (265), under the menu (500)
+   and the grain (9000); the backdrop fades on its OWN properties
+   (never wrapper opacity — the backdrop-root lesson): rgba(22,22,22)
+   0 → .8 with blur 0 → 52 over 0.6s; the logo twin is a TOP-LEVEL
+   fixed difference element at z401. The [hidden] guard beats the
+   display. */
+.landing-v2 .sp-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 400;
+}
+.landing-v2 .sp-modal[hidden] { display: none !important; }
+.landing-v2 .sp-modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(22, 22, 22, 0);
+	-webkit-backdrop-filter: blur(0px);
+	backdrop-filter: blur(0px);
+	transition: background 0.6s ease-out, -webkit-backdrop-filter 0.6s ease-out, backdrop-filter 0.6s ease-out;
+	cursor: pointer;
+}
+.landing-v2 .sp-modal.is-open .sp-modal__backdrop {
+	background: rgba(22, 22, 22, 0.8);
+	-webkit-backdrop-filter: blur(52px);
+	backdrop-filter: blur(52px);
+}
+/* The band: everything centres between the wordmark's bottom (the
+   71px bar) and the viewport bottom — the contact modal's rev-2
+   centring. */
+.landing-v2 .sp-modal__band {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 71px;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow-y: auto;
+	padding: 24px;
+	box-sizing: border-box;
+}
+/* THE PANEL: 1040 wide (the contact modal's window width — the file's
+   1040×490 precedent), the site's 24 internal grammar (a 48 inset =
+   2 × 24), light #EEEEF0 ground, brand-black ink. Height is content-
+   derived; the driver tweens it between steps (SP_HEIGHT_MS). Arrives
+   after the frost (the contact window's 0.35s / 0.25s beat). */
+.landing-v2 .sp-modal__panel {
+	position: relative;
+	width: 1040px;
+	max-width: 100%;
+	max-height: 100%;
+	box-sizing: border-box;
+	padding: 48px;
+	margin: 0;
+	background: #eeeef0;
+	color: #161616;
+	overflow: hidden;
+	opacity: 0;
+	transform: translateY(12px);
+	transition: opacity 0.35s ease-out 0.25s, transform 0.35s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.25s, height var(--sp-height-s, 0.42s) var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+.landing-v2 .sp-modal.is-open .sp-modal__panel { opacity: 1; transform: none; }
+/* The step index — the site's /0N grammar, top-left of the panel
+   (the What We Do /0N: Dazzed SemiBold 24/24). */
+.landing-v2 .sp-modal__index {
+	position: absolute;
+	left: 24px;
+	top: 24px;
+	margin: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 24px;
+	line-height: 24px;
+	color: #161616;
+}
+/* CLOSE — the contact modal's pill (97×40, #E4E4EA, accent 14/18),
+   top-right inside the panel on the 24 grammar. */
+.landing-v2 .sp-modal__close {
+	position: absolute;
+	right: 24px;
+	top: 24px;
+	width: 97px;
+	height: 40px;
+	border: 0;
+	background: #e4e4ea;
+	color: #232a89;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 14px;
+	line-height: 18px;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+/* The step headline — the card-title tier: Serrif Condensed Medium
+   34/38 (the Section serif; the landing's card titles). */
+.landing-v2 .sp-modal__title {
+	margin: 40px 0 32px;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 34px;
+	line-height: 38px;
+	letter-spacing: -0.03em;
+	color: #161616;
+}
+.landing-v2 .sp-modal__title--done { margin-top: 64px; }
+/* Labels — the eyebrow tier: Dazzed SemiBold 14 caps. */
+.landing-v2 .sp-label {
+	display: block;
+	margin: 0 0 12px;
+	padding: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 14px;
+	line-height: 18px;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: #161616;
+}
+.landing-v2 .sp-label__opt { font-weight: 500; text-transform: none; letter-spacing: 0; color: #6b6b70; }
+.landing-v2 .sp-group { margin: 0 0 32px; padding: 0; border: 0; min-width: 0; }
+/* THE TILES — the More Info chip family at rest (#E4E4EA), the
+   floating-CTA variant when selected (#C1250E fill, #161616 ink):
+   name in the label tier, descriptor in serif beneath; a checkbox
+   group (the input is the truth, visually hidden but focusable — the
+   ring paints on the tile via :focus-within). */
+.landing-v2 .sp-tiles {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+.landing-v2 .sp-tile {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 108px;
+	padding: 20px 24px;
+	box-sizing: border-box;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	color: #161616;
+	cursor: pointer;
+	transition: background-color 0.25s ease-out;
+}
+.landing-v2 .sp-tile.is-selected { background: #c1250e; }
+.landing-v2 .sp-tile__input,
+.landing-v2 .sp-chip__input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+.landing-v2 .sp-tile__name {
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 14px;
+	line-height: 18px;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+.landing-v2 .sp-tile__desc {
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 18px;
+	line-height: 22px;
+	letter-spacing: -0.02em;
+}
+/* rings per ground: the light ring on the dark backdrop tier is the
+   panel's; on a resting tile the accent ring; on a RED tile the
+   floating-CTA ring ink (#161616 inset). */
+.landing-v2 .sp-tile:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
+.landing-v2 .sp-tile.is-selected:focus-within { outline: 2px solid #161616; outline-offset: -2px; }
+/* WHO ARE YOU — a single-select chip row (radios): the More Info
+   chip family (38 tall, 16 pads, Dazzed 16 caps). */
+.landing-v2 .sp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.landing-v2 .sp-chip {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	height: 38px;
+	padding: 0 16px;
+	background: var(--landing-svc-btn-fill, #e4e4ea);
+	color: var(--landing-accent-blue, #232a89);
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 1;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: background-color 0.25s ease-out, color 0.25s ease-out;
+}
+.landing-v2 .sp-chip.is-selected { background: #c1250e; color: #161616; }
+.landing-v2 .sp-chip:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
+.landing-v2 .sp-chip.is-selected:focus-within { outline: 2px solid #161616; outline-offset: -2px; }
+/* FIELDS — hairline-underline inputs on the 2px divider grammar
+   (#e0e0e7, the tables' rule): label above, the input's text in
+   Serrif Condensed 24/28, the rule beneath turning ink on focus and
+   red on error. */
+.landing-v2 .sp-fields { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; row-gap: 24px; }
+.landing-v2 .sp-field { display: flex; flex-direction: column; min-width: 0; }
+.landing-v2 .sp-field:nth-child(4) { grid-column: 1 / -1; }
+.landing-v2 .sp-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 6px 0 10px;
+	border: 0;
+	border-bottom: 2px solid #e0e0e7;
+	border-radius: 0;
+	background: transparent;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 24px;
+	line-height: 28px;
+	letter-spacing: -0.02em;
+	color: #161616;
+	outline: none;
+	transition: border-color 0.25s ease-out;
+}
+.landing-v2 .sp-input::placeholder { color: #8f8f95; opacity: 1; }
+.landing-v2 .sp-input:focus { border-bottom-color: #161616; }
+.landing-v2 .sp-input[aria-invalid="true"] { border-bottom-color: #c1250e; }
+.landing-v2 .sp-input--area { resize: vertical; min-height: 92px; }
+/* inline validation — red, plain, beneath the rule; a reserved line
+   so the layout never jumps */
+.landing-v2 .sp-error {
+	margin: 8px 0 0;
+	min-height: 18px;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 18px;
+	color: #c1250e;
+}
+.landing-v2 .sp-hp { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+/* controls — right-aligned, the CTA family: NEXT / SEND = the
+   floating variant (red), CANCEL / BACK = the ghost variant. */
+.landing-v2 .sp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 40px; }
+.landing-v2 .ne-cta--ghost {
+	padding: 13.16px 24px 15.19px;
+	background: transparent;
+	color: #161616;
+	box-shadow: inset 0 0 0 2px #e0e0e7;
+}
+.landing-v2 .ne-cta--ghost:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
+.landing-v2 .ne-cta--float.is-sending { cursor: progress; opacity: 0.85; }
+.landing-v2 .sp-copy {
+	margin: 0;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 24px;
+	line-height: 30px;
+	letter-spacing: -0.02em;
+	color: #161616;
+}
+.landing-v2 .sp-mail { color: #161616; text-decoration: underline; text-underline-offset: 3px; }
+.landing-v2 .sp-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
+/* STEP TRANSITION — the house blur-crossfade: out 0.36s, in 0.42s
+   (SP_STEP_OUT_MS / SP_STEP_IN_MS); the panel's height tweens
+   between the measured steps meanwhile. */
+.landing-v2 .sp-step { transition: opacity 0.42s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)), filter 0.42s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); }
+.landing-v2 .sp-step[hidden] { display: none !important; }
+.landing-v2 .sp-step.is-out { opacity: 0; filter: blur(12px); transition-duration: 0.36s, 0.36s; pointer-events: none; }
+.landing-v2 .sp-step.is-in { opacity: 0; filter: blur(12px); transition: none; }
+.landing-v2 .sp-step.is-measuring { position: absolute; visibility: hidden; left: 48px; right: 48px; }
+/* the logo twin — the contact modal's exact construction */
+.landing-v2 .sp-modal__logo {
+	position: fixed;
+	left: 24px;
+	top: 0;
+	z-index: 401;
+	width: max-content;
+	height: 71px;
+	display: flex;
+	align-items: center;
+	margin: 0;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: var(--ts-serif-section-size);
+	line-height: var(--ts-serif-section-lh);
+	letter-spacing: var(--ts-serif-section-track);
+	text-decoration: none;
+	color: #ffffff;
+	mix-blend-mode: difference;
+	opacity: 0;
+	transition: opacity 0.35s ease-out;
+}
+.landing-v2 .sp-modal__logo[hidden] { display: none !important; }
+.landing-v2 .sp-modal__logo.is-open { opacity: 1; }
+.landing-v2 .sp-modal__logo:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+/* the floating chip leaves while the modal is open (its z-order rule) */
+html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
+/* RM: no crossfades, no height tween */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .sp-step, .landing-v2 .sp-modal__panel, .landing-v2 .sp-modal__backdrop, .landing-v2 .sp-tile, .landing-v2 .sp-chip { transition: none; }
+}
+/* MOBILE (≤1024): the contact modal's full-screen behaviour — the
+   panel fills the viewport, 16px+ inputs (no iOS zoom), 44px targets;
+   the mobile designs re-rule this. */
+@media (max-width: 1024px) {
+	.landing-v2 .sp-modal__band { top: 0; padding: 0; align-items: stretch; }
+	.landing-v2 .sp-modal__panel { width: 100%; max-height: none; min-height: 100%; padding: 72px 20px 32px; }
+	.landing-v2 .sp-tiles { grid-template-columns: 1fr 1fr; }
+	.landing-v2 .sp-tile { min-height: 96px; padding: 16px; }
+	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
+	.landing-v2 .sp-chip { min-height: 44px; }
+	.landing-v2 .sp-input { font-size: 18px; line-height: 24px; }
+	.landing-v2 .sp-modal__logo { left: 16px; font-size: 18px; letter-spacing: 0.04em; font-family: var(--font-logo); }
+}
