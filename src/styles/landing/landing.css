@@ -111,6 +111,37 @@
 	color: #ffffff;
 }
 
+/* ═══ R50 items 3 + 4 (Oscar, 2026-09-04) — TWO AUDIT FINDINGS RECORDED
+   RATHER THAN CHANGED. Both are here so a later audit re-raising them
+   finds the ruling instead of the symptom.
+
+   ITEM 3 — "one role, four type tiers: the section label". The sweep's
+   headline claim, that the --eyebrow-size token is "referenced zero
+   times", is STALE: R26 adopted it, and it now drives six rules across
+   landing.css, case-study.css and founders.css — every label already on
+   the 14/16 tier reads the token. What remains is real but is a DESIGN
+   decision, not a defect: the same role is still drawn at 16/19 on the
+   case studies and /services (cs-did__label, cs-rail__label,
+   sv-rows__label) and at 18/22 on /services (CONCEPT). Collapsing those
+   onto 14/16 would visibly shrink labels across two whole pages and
+   move the 1728 reference the whole build is measured against, so it is
+   Oscar's tier to pick, not one to take unattended. Logged.
+
+   ITEM 4 — THE NAV OVER THE SERVICES CROSS-FADE, ACCEPTED. Around
+   scrollY 16,750–17,100 the pillar section tweens its ground from light
+   to dark beneath a nav that is white on mix-blend-mode: difference.
+   Difference against white IS the inverse of the backdrop, so as the
+   backdrop passes through mid-grey the nav's rendered ink passes through
+   mid-grey too and the contrast collapses — measured 16.31:1 at
+   rgb(238,238,240), 1.97:1 at rgb(152,152,154), 1.37:1 at
+   rgb(116,116,117), 3.30:1 at rgb(84,84,84) — for roughly 250–350px of
+   scroll, in both directions, every time. This is arithmetic, not a bug:
+   any difference-blended element crossing a mid-grey backdrop does it.
+   The two real fixes are to suspend the blend across that window (the
+   red band's own trick) or to abandon difference on this page; both
+   change the nav's behaviour on the reference build. ACCEPTED as a
+   declared difference for launch. ═══ */
+
 /* ── NAV OVER THE RED BAND (R16, Oscar 2026-09-02 — the landing's
    closing statement only): while the red band sits under the nav,
    every nav item renders SOLID #161616 with the difference blend
@@ -120,13 +151,22 @@
    bar stays a transparent grid, the items composite straight against
    the ground exactly as before whenever the class is absent. The
    arrow is currentColor; the focus ring is currentColor; the sweep
-   classes ride the .cr-char descendants — all follow. */
+   classes ride the .cr-char descendants — all follow.
+   R50 item 2 (Oscar, 2026-09-04) — THE INK IS #EEEEF0, NOT #161616.
+   Black on this red measures 3.05:1. The 34px wordmark scraped a pass
+   against the 3:1 large-text allowance, but the 16px nav links and
+   LET'S CHAT need 4.5:1 and did not reach it. #EEEEF0 — already in the
+   palette, and the page's own ground colour — measures 5.12:1 on the
+   red and clears every item in the group. (White was the other
+   candidate at 5.93:1; #EEEEF0 wins because it is the ink the rest of
+   the site's dark grounds already use, so the nav reads as the same
+   component rather than a brighter one for this band only.) */
 .landing-v2 .home__topbar--about .home__logo.is-over-red,
 .landing-v2 .home__topbar--about .home__nav-link.is-over-red,
 .landing-v2 .home__topbar--about .home__topbar-email.is-over-red,
 .landing-v2 .home__topbar--about .home__topbar-email.is-over-red:hover {
 	mix-blend-mode: normal;
-	color: #161616;
+	color: #eeeef0;
 }
 
 /* The BAR carries difference too (home.css) — an item at normal
@@ -386,10 +426,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    label box sits 1px lower than the derivation assumed), so the pads
    are corrected by that pixel: 13.16 / 15.19 → ink top 16.0, ink
    bottom 16.0; the box is 16 + 12.35 + 16 = 44.35 tall. */
+/* R50 item 2: the label is #EEEEF0 — at 16px it needs 4.5:1 and black on
+   this red gives 3.05:1; #EEEEF0 gives 5.12:1. The arrow inherits it. */
 .landing-v2 .ne-cta--float {
 	padding: 13.16px 24px 15.19px 24px;
 	background: #c1250e;
-	color: #161616;
+	color: #eeeef0;
 }
 
 /* The arrow's box (12.4 = the cap span, the family token) sits on the
@@ -402,13 +444,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	top: 1px;
 }
 
-/* Focus ring (the three-ink pattern): this chip floats over
-   arbitrary grounds, so its ring sits INSIDE the fill (offset −2,
-   the filled-box precedent) where the ground is always the red —
-   the label's own #161616: 3.08:1 on #C1250E (the non-text UI floor
-   3:1; the light ink would be 5.09:1, the accent 2.0:1 — reported). */
+/* Focus ring (the three-ink pattern): this chip floats over arbitrary
+   grounds, so its ring sits INSIDE the fill (offset −2, the filled-box
+   precedent) where the ground is always the red. R50 item 2: it follows
+   the label to #EEEEF0 — 5.12:1 on #C1250E against the 3:1 non-text
+   floor, and now the same ink as the label it rings, which is the
+   three-ink pattern's whole point. */
 .landing-v2 .ne-cta--float:focus-visible {
-	outline: 2px solid #161616;
+	outline: 2px solid #eeeef0;
 	outline-offset: -2px;
 }
 
@@ -2351,6 +2394,21 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   footer content appearing at the page top after the reveal). */
 	position: relative;
 	height: 830px; /* frame 13:381 (2026-08-26; was 811) */
+	/* R50 item 1 (Oscar, 2026-09-04) — THE FOOTER'S MUTED GREY.
+	   #A6A6A8 measured 2.10:1 on the #EEEEF0 ground, on EVERY page and at
+	   both sizes — it fails 4.5:1 for the 14px labels and even 3:1 for the
+	   48/56px statement clauses, and the sibling links on the same band
+	   measure 14.85:1, so the ground was never the problem.
+	   ONE TOKEN, not two: #6C6C6E clears 4.52:1, the strictest requirement
+	   anything in this role carries, so no instance can fail wherever it
+	   is used. The alternative — a lighter #89898B (3.01:1) for the large
+	   statement clauses and a darker one for the 14px labels — was
+	   rejected: it preserves a shade more of the dimmed look but splits
+	   one role across two values, which is the exact fault the sweep
+	   raises against the section label elsewhere, and 3.01 leaves no
+	   margin at all. The muted/primary relationship still reads clearly:
+	   4.52:1 against the primary ink's 15.6:1 on the same band. */
+	--footer-muted: #6c6c6e;
 	background: var(--landing-accent-blue);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	color: #fff;
@@ -2439,7 +2497,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		white-space: nowrap;
 	}
 
-	.landing-v2 .landing-footer__dlabel { color: #a6a6a8; }
+	.landing-v2 .landing-footer__dlabel { color: var(--footer-muted); }
 	.landing-v2 .landing-footer__dlink { cursor: pointer; }
 	.landing-v2 .landing-footer__dlink.is-placeholder { cursor: default; }
 
@@ -2507,7 +2565,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		height: 1px;
 	}
 
-	.landing-v2 .landing-footer__dst-grey { color: #a6a6a8; }
+	.landing-v2 .landing-footer__dst-grey { color: var(--footer-muted); }
 
 	/* BOTTOM ROW — y774, items at the frame's x offsets. */
 	.landing-v2 .landing-footer__drow {
@@ -2549,7 +2607,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* LIGHT THEME (the /services colourway — structure global; the
 	   colour question is flagged for Oscar, colours unchanged per
 	   page meanwhile). */
-	.landing-v2 .landing-footer--light .landing-footer__dlabel { color: #a6a6a8; }
+	.landing-v2 .landing-footer--light .landing-footer__dlabel { color: var(--footer-muted); }
 	.landing-v2 .landing-footer--light .landing-footer__dlink,
 	.landing-v2 .landing-footer--light .landing-footer__dst-line,
 	.landing-v2 .landing-footer--light .landing-footer__drow .landing-footer__ritem { color: #161616; }
@@ -2587,7 +2645,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	font-size: 14px;
 	line-height: 16px;
 	text-transform: uppercase;
-	color: #a6a6a8;
+	color: var(--footer-muted);
 }
 
 .landing-v2 .landing-footer__link {
@@ -2664,7 +2722,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
 	font-weight: 500;
 	font-synthesis: none;
-	color: #a6a6a8;
+	color: var(--footer-muted);
 	text-transform: uppercase;
 }
 
@@ -4859,7 +4917,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	/* The Serrif clauses go muted on mobile (file 0:362) — #A6A6A8
 	   reads on both themes (it IS the light theme's muted too). */
 	.landing-v2 .landing-footer__st-serrif {
-		color: #a6a6a8;
+		color: var(--footer-muted);
 	}
 
 	.landing-v2 .landing-footer__cols {
