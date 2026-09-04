@@ -592,8 +592,17 @@ body.work-page.work-view-grid .work-page__metas { display: none; }
    full reveal. h is the footer's MEASURED height, written by
    work-grid.js as --work-footer-h (830 = the frame 13:381 fallback).
    The fixed wrap stays list-view machinery. (Was: the wrap static and
-   the footer in plain flow.) */
-body.work-page.work-view-grid .work-footer-wrap { position: static; height: auto; }
+   the footer in plain flow.)
+   R41 FIX (Oscar's report, 2026-09-04 — "the footer reveal isn't
+   showing"): the wrap was `position: static; height: auto`, so the
+   footer's own −830 margin COLLAPSED the wrap to zero height — and a
+   sticky element cannot travel outside its containing block, so it
+   never stuck: it scrolled away behind the grid and the footer was
+   never seen. `display: contents` dissolves the wrap in grid view, so
+   the footer sits in the BODY flow exactly as it does on the landing
+   (where this schema works) and the sticky top has the document to
+   travel in. */
+body.work-page.work-view-grid .work-footer-wrap { display: contents; }
 body.work-page.work-view-grid .work-footer-wrap .landing-footer {
 	position: sticky;
 	top: calc(100vh - var(--work-footer-h, 830px));
