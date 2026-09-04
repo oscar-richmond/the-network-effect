@@ -98,18 +98,16 @@ export const SB_STACK_HOLD = 1.0;
 /* R65 item 2c — THE DISCARDS. Three extra images arrive FIRST, the
    hero's three stack on top of them, and the first three then clear
    before the travel begins.
-   THEIR EXIT, recommended and used: a BLUR-FADE that also drops them a
-   little — they dissolve downward out of the pile rather than sliding
-   anywhere, which reads as the stack resolving to what it wanted rather
-   than as three cards glitching out. A plain fade was the alternative
-   and reads as a dropped frame at this speed; sliding them out from
-   under the pile competes with the travel that follows.
+   THEIR EXIT (R70, superseding R65's blur-fade): a plain opacity fade
+   IN PLACE. R65 dropped them 40px and blurred them, which was the whole
+   problem — any displacement walks them out from under the top card and
+   they are seen. Behind an opaque card at the identical rect, a fade
+   with no movement is invisible, which is the requirement: one image
+   throughout, then the three heroes leave for their places.
    It completes BEFORE the sort — SB_SORT_AT is derived from it below. */
 export const SB_DISCARD_OUT_AT_OFFSET = 0.25; /* after the pile completes */
 export const SB_DISCARD_OUT_DUR = 0.55;
 export const SB_DISCARD_OUT_STAGGER = 0.07;
-export const SB_DISCARD_OUT_Y = 40;           /* the downward drift, px */
-export const SB_DISCARD_OUT_BLUR = 14;        /* px */
 /* The gap between the discards clearing and the sort starting. */
 export const SB_SORT_GAP = 0.2;      /* the centred row, as a fraction of the hero's */
 export const SB_OPEN_STAGGER = 0.12;    /* three windows appearing — three events */
@@ -138,6 +136,17 @@ export const SB_SORT_AT = Math.max(
    fade-out ends exactly here, so this is both "as soon as the background
    fades" and the earliest point at which nothing rises behind it. */
 export const SB_TEXT_AT = SB_SORT_AT + SB_TRAVEL_DUR;
+/* R70 — THE LOGO ROW follows the intro immediately. The hero module gives
+   the intro a reveal delay of the headline's stagger +
+   INTRO_AFTER_HEADLINE_S (0.39) and line-reveal runs a 1.2s transition,
+   so the intro's last line lands SB_TEXT_AT + 1.59. The row starts there.
+   It used to ride playPageBeats at the settle and then wait out the CSS's
+   own 0.54s entrance delay on top — measured, it began at 10.99 and did
+   not finish until ~12.3. That delay is suppressed on this route (the
+   beat is scheduled here instead), so the row rises the moment the
+   intro's text has settled. */
+export const SB_INTRO_SETTLE_S = 0.39 + 1.2;
+export const SB_LOGOS_AT = SB_TEXT_AT + SB_INTRO_SETTLE_S;
 export const SB_HEADLINE_AT = SB_TEXT_AT;
 export const SB_CONTENT_AT = SB_HEADLINE_AT + 0.5;
 export const SB_LINE_WIPE_AT = SB_OPEN_AT;
@@ -368,9 +377,16 @@ export function initSplashB(splashRoot) {
     });
   };
 
-  const playPageBeats = () => {
+  let logosPlayed = false;
+  const playLogos = () => {
+    if (logosPlayed) return;
+    logosPlayed = true;
     const logos = document.querySelector('[data-landing-hero-logos]');
     if (logos instanceof HTMLElement) logos.classList.add('is-entered');
+  };
+
+  const playPageBeats = () => {
+    playLogos();
     const cards = document.querySelector('[data-landing-hero-cards]');
     if (cards instanceof HTMLElement) cards.classList.add('is-entered');
     document.dispatchEvent(new CustomEvent('landing-hero:cards-entered'));
@@ -530,6 +546,18 @@ export function initSplashB(splashRoot) {
   const timeout = new Promise((r) => window.setTimeout(() => r('timeout'), SB_READY_TIMEOUT_MS));
 
   Promise.race([Promise.all([fontsReady, decoded, placed]), timeout]).then(() => {
+    /* R70 (Oscar, 2026-09-04) — WRAP THE HEADLINE HERE, under the red.
+       DIAGNOSED: the wrap was only happening inside playHeroText, which
+       fires at SB_TEXT_AT — measured at t=9.02, while the ground began
+       fading at 8.53 and was clear by 8.95. So for that half-second the
+       headline was UNWRAPPED and therefore sitting there fully visible;
+       the wrap then parked it (it vanished) and it animated back in by
+       10.32. Exactly the "you see it, it disappears, it animates in"
+       report. Wrapping at readiness — before the sequence draws a single
+       frame, with the opaque red over the whole hero — means the lines
+       are parked long before anything can be seen, so the first time
+       they are visible is when they rise. */
+    wrapHeadline();
     if (done) return;
     if (!cardsPlaced()) { skip(); return; }
     deriveMini();
@@ -571,18 +599,22 @@ export function initSplashB(splashRoot) {
     }, SB_OPEN_AT);
     tl.to(imgs, { scale: 1, duration: SB_OPEN_DUR, ease: 'power2.out', stagger: SB_OPEN_STAGGER }, SB_OPEN_AT);
 
-    /* ── THE DISCARDS CLEAR (R65 item 2c): a blur-fade that drops them a
-       little, so the pile resolves to the hero's three. Timed to finish
-       before the sort — SB_SORT_AT is derived from this beat, so the two
-       can never overlap. They are removed from the DOM on completion, so
-       nothing of them can survive into the settle. */
+    /* ── THE DISCARDS CLEAR (R70): they must NEVER be seen. The pile is
+       six cards at one identical rect, so the top card occludes the five
+       beneath it exactly — and the R65 exit broke that by sliding them
+       DOWN 40px and blurring them, which walked them out from under the
+       top card's bottom edge in full view (measured: discard tops at
+       404 / 419 / 427 against a top card fixed at 387, on a 343-tall
+       card). They now leave with NO displacement at all: a short opacity
+       fade in place, entirely behind the card above them, so what the eye
+       sees is one image throughout and then the three heroes departing.
+       No blur, no drift — a moving element cannot stay hidden behind a
+       stationary one. Removed from the DOM on completion. */
     if (sbDiscards.length) {
       tl.to(sbDiscards, {
         opacity: 0,
-        y: `+=${SB_DISCARD_OUT_Y}`,
-        filter: `blur(${SB_DISCARD_OUT_BLUR}px)`,
         duration: SB_DISCARD_OUT_DUR,
-        ease: 'power2.in',
+        ease: 'none',
         stagger: SB_DISCARD_OUT_STAGGER,
         onComplete: () => sbDiscards.forEach((d) => d.remove()),
       }, SB_DISCARD_OUT_AT);
@@ -611,6 +643,7 @@ export function initSplashB(splashRoot) {
       playHeroText();
       document.dispatchEvent(new CustomEvent('landing-splash-b:headline'));
     }, SB_TEXT_AT);
+    tl.add(playLogos, SB_LOGOS_AT);
     tl.add(() => { rippleNavIn(); document.dispatchEvent(new CustomEvent('landing-splash-b:content')); }, SB_CONTENT_AT);
     /* hold the timeline open to the last beat so onComplete is the settle */
     tl.to({}, { duration: 0.5 }, SB_CONTENT_AT + 1);

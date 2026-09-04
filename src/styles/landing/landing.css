@@ -5356,6 +5356,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 		transform: translate3d(0, 24px, 0);
 		transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1) 0.54s, transform 0.9s cubic-bezier(0.42, 0, 0.24, 1) 0.54s;
 	}
+	/* R70: on the splash-B route the row's beat is SCHEDULED (it rides the
+	   intro's settle, splash-b.js), so the shipped 0.54s entrance delay
+	   would land it half a second late on top of that. Zeroed here only —
+	   the main landing page keeps its own delay, which is what carries its
+	   beat. */
+	html[data-ne-splash='on'] body.splash-variant-b .landing-hero__logos-track {
+		transition-delay: 0s, 0s;
+	}
 	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__logos.is-entered .landing-hero__logos-track {
 		opacity: 1;
 		transform: none;
