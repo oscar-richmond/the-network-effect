@@ -1,4 +1,24 @@
-import gsap from 'gsap';
+/**
+ * THE SITE CURSOR — one small round dot, everywhere.
+ *
+ * R42 (Oscar, 2026-09-04): the HOVER EXPANSION IS REMOVED. The dot used
+ * to tween its radius ×3 (10 → 30) on every `a, button, [data-hover],
+ * [data-cursor="expand"], [data-menu-toggle]`, wired per element on
+ * boot. That tween, its per-element mouseenter/mouseleave listeners and
+ * the `selector` / `hoverScale` options are gone: the dot is a constant
+ * `radius` on every page and every element. The markup's [data-hover] /
+ * [data-cursor="expand"] attributes are simply inert now (left in place
+ * — they carry no other meaning and removing them would churn the
+ * served DOM). The page-specific LABEL cursors are untouched and still
+ * hide this dot while they run: VIEW CASE STUDY over /work tiles
+ * (view-case-cursor.js) and ( VIEW GALLERY + ) over the case-study
+ * stream (case-study.js).
+ *
+ * Unchanged: fixed full-viewport canvas at z9999, difference blend,
+ * white fill, the lerped follow, `cursor: none` while active, and the
+ * hover-capable + no-reduced-motion gate (touch and RM keep the system
+ * cursor).
+ */
 
 /**
  * @param {number} a
@@ -11,17 +31,12 @@ function lerp(a, b, n) {
 
 /**
  * @param {{
- *   selector?: string,
  *   radius?: number,
- *   hoverScale?: number,
  *   followEase?: number,
  * }} [options]
  */
 export function initCanvasCursor(options = {}) {
-  const hoverSelector =
-    options.selector ?? 'a, button, [data-hover], [data-cursor="expand"], [data-menu-toggle]';
   const baseRadius = options.radius ?? 10;
-  const hoverScale = options.hoverScale ?? 3;
   const followEase = options.followEase ?? 0.25;
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,22 +61,10 @@ export function initCanvasCursor(options = {}) {
   let disposed = false;
 
   const circle = {
-    radius: baseRadius,
+    radius: baseRadius, /* R42: constant — nothing changes it */
     lastX: mouseX,
     lastY: mouseY,
   };
-
-  /** @type {HTMLElement[]} */
-  const hoverTargets = [];
-  /** @type {Map<HTMLElement, { enter: () => void, leave: () => void }>} */
-  const hoverHandlers = new Map();
-
-  const hoverTween = gsap.to(circle, {
-    radius: baseRadius * hoverScale,
-    duration: 0.25,
-    ease: 'power1.inOut',
-    paused: true,
-  });
 
   const resize = () => {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -102,33 +105,7 @@ export function initCanvasCursor(options = {}) {
     mouseY = event.clientY;
   };
 
-  const bindHoverTargets = () => {
-    hoverHandlers.forEach((handlers, el) => {
-      el.removeEventListener('mouseenter', handlers.enter);
-      el.removeEventListener('mouseleave', handlers.leave);
-    });
-    hoverHandlers.clear();
-    hoverTargets.length = 0;
-
-    document.querySelectorAll(hoverSelector).forEach((el) => {
-      if (!(el instanceof HTMLElement)) return;
-      hoverTargets.push(el);
-
-      const enter = () => {
-        hoverTween.play();
-      };
-      const leave = () => {
-        hoverTween.reverse();
-      };
-
-      hoverHandlers.set(el, { enter, leave });
-      el.addEventListener('mouseenter', enter);
-      el.addEventListener('mouseleave', leave);
-    });
-  };
-
   resize();
-  bindHoverTargets();
   rafId = requestAnimationFrame(render);
 
   window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -139,12 +116,6 @@ export function initCanvasCursor(options = {}) {
     cancelAnimationFrame(rafId);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('resize', resize);
-    hoverHandlers.forEach((handlers, el) => {
-      el.removeEventListener('mouseenter', handlers.enter);
-      el.removeEventListener('mouseleave', handlers.leave);
-    });
-    hoverHandlers.clear();
-    hoverTween.kill();
     document.documentElement.classList.remove('canvas-cursor-active');
   };
 }
