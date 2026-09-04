@@ -780,7 +780,10 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 		position: absolute;
 		left: var(--work-toggle-left, 375px);
 		top: var(--work-toggle-top, 318px);
-		z-index: 5;
+		/* z261: over the grid's content tier (260 since R38 item 7 — the
+		   grid out-stacks the sticky footer) and the list stage (1);
+		   under the nav (270). Was 5, which the grid's tier buried. */
+		z-index: 261;
 		display: flex;
 		gap: 12px;
 		margin: 0;

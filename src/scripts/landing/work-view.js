@@ -127,7 +127,7 @@ export function initWorkView() {
     const inkBottom = baseline + (m.actualBoundingBoxDescent || 0);
     const inkRight = left + m.actualBoundingBoxRight;
     toggle.style.setProperty('--work-toggle-top', `${(inkBottom + TOGGLE_GAP_PX).toFixed(1)}px`);
-    toggle.style.setProperty('--work-toggle-left', `${(inkRight - toggle.offsetWidth).toFixed(1)}px`);
+    toggle.style.setProperty('--work-toggle-left', `${(inkRight - toggle.getBoundingClientRect().width).toFixed(2)}px`);
     /* R38 item 3: the grid's first row begins GRID_START_GAP_PX below the
        toggle group's bottom — derived from the group's placed box, so
        the two rulings (the toggle's anchor, the grid's start) stay one
