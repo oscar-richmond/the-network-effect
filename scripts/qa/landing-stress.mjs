@@ -58,6 +58,12 @@
  *   W3 the right machinery per view (list handle / Lenis / stage /
  *   body overflow), W4 ScrollTrigger count flat, W5 aria-pressed.
  *
+ * --page services (R36): the /services random walk with the shared R36
+ *     checks — N1 the bottom nav sweep, C1–C6 the closing statement band
+ *     (grounds equal / white→red bounds / monotonic / nav-over-red / dwell /
+ *     tail ≥ vh − 830), S7 one scroll-active row per table. N1 and C1–C6
+ *     also ride the landing mode's every snapshot; N1 rides the founders
+ *     mode's pauses on the driver's pos.
  * --page founders (R30): the /founders virtual-scroll driver instead of
  *   the landing. Randomised wheel passes over its whole axis, asserting
  *   after every move:
@@ -103,9 +109,55 @@ const FOCUS = arg('--focus', '');
 const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await (await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 const pageErrs = []; p.on('pageerror', (e) => pageErrs.push(String(e.message).slice(0, 120)));
-await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
+await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : PAGE === 'services' ? '/services?splash=0&forcehover' : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
 const s = W >= 1728 ? 1 : W / 1728;
 const f = () => p.frames().find((fr) => fr.url().includes('framed=1')) ?? p.mainFrame();
+
+/* ══ R36 (2026-09-04) — SHARED BOTTOM / CLOSING CHECKS (every page mode) ══
+   N1  (item 1) at the page's bottom (y ≥ max − 2, settled) all three centred
+       nav links are swept (every char carries nav-char-out, tabindex −1);
+       away from it (y < max − 64, settled) none is (no nav-char-out, no
+       tabindex) — the shared binder / applier on every page;
+   C1  (item 7) the closing statement's three grounds (section, stage, tail)
+       read the same colour at every frame (one tween);
+   C2  white (238,238,240) before the fade's start, red (193,37,14) after
+       its end; C3 the ground only moves towards red as y grows (and back as
+       it shrinks) inside the fade; C4 the nav is solid (is-over-red) exactly
+       while the band covers the nav's midpoint; C5 the stage holds one
+       viewport top through the fade (the dwell); C6 the tail's bottom never
+       rises above vh − 830 (the footer exposes at most its own height). */
+const R36STATE = `(() => {
+  const links = [...document.querySelectorAll('.home__nav-link')]; const units = (a) => [...a.querySelectorAll('.cr-char')];
+  const linkSt = links.map((a) => { const u = units(a); return { out: u.length > 0 && u.every((c) => c.classList.contains('nav-char-out')), anyOut: u.some((c) => c.classList.contains('nav-char-out')), ti: a.getAttribute('tabindex') }; });
+  const st = document.querySelector('[data-closing-st]'); const stage = st ? st.querySelector('[data-closing-st-stage]') : null; const tail = document.querySelector('[data-closing-tail]'); const tb = document.querySelector('.home__topbar');
+  const rgb = (c) => { const m = /rgba?\\((\\d+), (\\d+), (\\d+)/.exec(c || ''); return m ? [+m[1], +m[2], +m[3]] : null; };
+  const cl = (st && stage && tail && getComputedStyle(st).display !== 'none') ? { top: +st.getBoundingClientRect().top.toFixed(1), sec: rgb(getComputedStyle(st).backgroundColor), stg: rgb(getComputedStyle(stage).backgroundColor), tl: rgb(getComputedStyle(tail).backgroundColor), stageTop: +stage.getBoundingClientRect().top.toFixed(1), tailB: +tail.getBoundingClientRect().bottom.toFixed(1), overRed: tb ? tb.classList.contains('is-over-red') : null, navY: tb ? tb.getBoundingClientRect().height * 0.5 : 35.5, fade: (window.__closingStatement && window.__closingStatement.fade) ? window.__closingStatement.fade() : null } : null;
+  const tables = [...document.querySelectorAll('.sv6-table')].map((t) => t.querySelectorAll('[data-sv-row].is-sactive').length);
+  return { y: Math.round(scrollY), max: document.documentElement.scrollHeight - innerHeight, vh: innerHeight, links: linkSt, cl, tables }; })()`;
+let r36Engage = null; let r36Prev = null; let r36Checks = 0;
+const r36Checks_ = (bs, tag, pos, push) => {
+  r36Checks += 1; const settled = /settled|pause|landed|back|top|after-move/.test(tag) && !/mid/.test(tag);
+  const y = pos ? pos.y : bs.y, max = pos ? pos.max : bs.max;
+  if (settled && bs.links.length === 3) {
+    if (y >= max - 2 && !bs.links.every((l) => l.out && l.ti === '-1')) push({ inv: 'N1', tag, y, msg: 'nav not swept at the bottom', links: bs.links });
+    if (y < max - 64 && bs.links.some((l) => l.anyOut || l.ti !== null)) push({ inv: 'N1', tag, y, msg: 'nav still swept away from the bottom', links: bs.links });
+  }
+  const c = bs.cl; if (c && c.sec && c.stg && c.tl) {
+    const eq = (a, b2) => a && b2 && a.every((v, i) => Math.abs(v - b2[i]) <= 1);
+    if (!eq(c.sec, c.stg) || !eq(c.sec, c.tl)) push({ inv: 'C1', tag, y, msg: 'closing grounds differ', sec: c.sec, stg: c.stg, tl: c.tl });
+    if (c.fade) { const [f0, f1] = c.fade;
+      if (bs.y <= f0 - 1 && !eq(c.sec, [238, 238, 240])) push({ inv: 'C2', tag, y, msg: 'closing ground not white before the fade', sec: c.sec, fade: c.fade });
+      if (bs.y >= f1 + 1 && !eq(c.sec, [193, 37, 14])) push({ inv: 'C2', tag, y, msg: 'closing ground not red after the fade', sec: c.sec, fade: c.fade });
+      if (r36Prev && r36Prev.cl && r36Prev.cl.sec && bs.y >= f0 && bs.y <= f1 && r36Prev.y >= f0 && r36Prev.y <= f1) { const dy = bs.y - r36Prev.y; const dg = c.sec[1] - r36Prev.cl.sec[1]; if ((dy > 0 && dg > 1) || (dy < 0 && dg < -1)) push({ inv: 'C3', tag, y, msg: 'closing ground moved against the scroll inside the fade', dy, from: r36Prev.cl.sec, to: c.sec }); }
+      if (bs.y >= f0 && bs.y <= f1) { if (r36Engage == null) r36Engage = c.stageTop; else if (Math.abs(c.stageTop - r36Engage) > 1.5) push({ inv: 'C5', tag, y, msg: 'statement stage moved during the fade (dwell broken)', stageTop: c.stageTop, engage: r36Engage }); }
+    }
+    /* C4 reads at settled samples only: the switch rides the scroll event, one frame behind a mid-glide rect read (the switch point is where both nav readings coincide, so the lag is invisible by construction) */
+    const expect = c.top <= c.navY && c.tailB > c.navY; if (settled && c.overRed !== null && c.overRed !== expect) push({ inv: 'C4', tag, y, msg: 'nav-over-red state differs from the band covering the nav midpoint', overRed: c.overRed, top: c.top, tailB: c.tailB, navY: c.navY });
+    if (c.tailB < bs.vh - 830 - 1.5) push({ inv: 'C6', tag, y, msg: 'tail bottom above vh − 830 (footer over-exposed)', tailB: c.tailB, vh: bs.vh });
+  }
+  if (bs.tables.some((n) => n > 1)) push({ inv: 'S7', tag, y, msg: 'more than one scroll-active row in a table', tables: bs.tables });
+  r36Prev = bs;
+};
 
 /* ══ R34 — /work MODE (the list view's fixed-viewport driver) ═════
    W1  the DOCKED meta's title cap top is level with its image's top
@@ -311,6 +363,7 @@ if (PAGE === 'founders') {
     prev = st;
   };
   const settle = async (ms = 260) => { await p.waitForTimeout(ms); };
+  const r36 = async (tag) => { const bs = await f().evaluate(R36STATE); const st = await f().evaluate(() => window.__founders.state()); r36Checks_(bs, tag, { y: st.pos, max: st.maxPos }, (v) => viol.push({ ...v, pos: Math.round(st.pos) })); };
   for (let i = 0; i < MOVES; i++) {
     const kind = rnd();
     const dir = rnd() < 0.5 ? -1 : 1;
@@ -319,9 +372,31 @@ if (PAGE === 'founders') {
     else { const steps = Math.round(pick(1, 5)); for (let k = 0; k < steps; k++) { await p.mouse.wheel(0, dir * Math.round(dist / steps)); await p.waitForTimeout(Math.round(pick(10, 45))); const mid = await snap(); check(mid, 'mid'); } hist.push(`wheel ${dir * dist}/${steps}`); }
     await settle();
     check(await snap(), 'settled');
-    if (rnd() < 0.25) { await p.waitForTimeout(Math.round(pick(200, 700))); check(await snap(), 'pause'); }
+    if (rnd() < 0.25) { await p.waitForTimeout(Math.round(pick(200, 700))); check(await snap(), 'pause'); await r36('pause'); }
   }
-  const summary = { vp: `${W}x${H}`, page: 'founders', moves: MOVES, seed: SEED, maxPos: MAX, checks: fchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  const summary = { vp: `${W}x${H}`, page: 'founders', moves: MOVES, seed: SEED, maxPos: MAX, checks: fchecks + r36Checks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
+  console.log(JSON.stringify(summary));
+  await b.close();
+  process.exit(viol.length ? 2 : 0);
+}
+/* ══ R36 — /services MODE (--page services): the generic random walk with
+   the shared checks (N1, C1–C6, S7) and page errors. */
+if (PAGE === 'services') {
+  await p.mouse.move(W * 0.5, H * 0.6);
+  const viol = []; const hist = [];
+  const maxS = await f().evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  const r36 = async (tag) => { const bs = await f().evaluate(R36STATE); r36Checks_(bs, tag, null, (v) => viol.push({ ...v, move: hist.length, recent: hist.slice(-6) })); return bs; };
+  for (let i = 0; i < MOVES; i++) {
+    const dir = rnd() < 0.5 ? -1 : 1; const dist = Math.round(pick(80, 2600)); const kind = rnd();
+    if (kind < 0.15) { await p.mouse.wheel(0, dir * dist * s); await p.waitForTimeout(Math.round(pick(20, 90))); await p.mouse.wheel(0, -dir * Math.round(dist * pick(0.4, 1.3)) * s); hist.push(`rev ${dir * dist}`); }
+    else if (kind < 0.25) { const y = Math.round(pick(0, maxS)); await f().evaluate((v) => window.scrollTo(0, v), y); hist.push(`jump ${y}`); }
+    else if (kind < 0.35) { /* the closing band: walk it slowly, both ways */ const bs0 = await f().evaluate(R36STATE); const fd = bs0.cl && bs0.cl.fade; if (fd) { const from = Math.round(fd[0] - pick(100, 600)), to = Math.round(fd[1] + pick(100, 900)); await f().evaluate((v) => window.scrollTo(0, v), from); await p.waitForTimeout(300); for (let k = 0; k < 8; k++) { await p.mouse.wheel(0, ((to - from) / 8) * s); await p.waitForTimeout(Math.round(pick(30, 120))); await r36('mid'); } for (let k = 0; k < 8; k++) { await p.mouse.wheel(0, -((to - from) / 8) * s); await p.waitForTimeout(Math.round(pick(30, 120))); await r36('mid'); } hist.push(`band ${from}..${to}`); } }
+    else { const steps = Math.round(pick(1, 6)); for (let k = 0; k < steps; k++) { await p.mouse.wheel(0, dir * Math.round(dist / steps) * s); await p.waitForTimeout(Math.round(pick(8, 40))); await r36('mid'); } hist.push(`wheel ${dir * dist}/${steps}`); }
+    await p.waitForTimeout(80); await r36('after-move');
+    if (rnd() < 0.4) { const pause = Math.round(pick(900, 1500)); await p.waitForTimeout(pause); await r36('pause'); hist[hist.length - 1] += ` +pause${pause}`; }
+  }
+  const summary = { vp: `${W}x${H}`, page: 'services', moves: MOVES, seed: SEED, maxScroll: maxS, checks: r36Checks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
   if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
   console.log(JSON.stringify(summary));
   await b.close();
@@ -406,6 +481,7 @@ const textPresence = async () => { const y0 = await f().evaluate(() => scrollY);
 function decodePng(buf) { try { const zlib = require('node:zlib'); let pos = 8; let w = 0, h = 0, ct = 6; const idat = []; while (pos < buf.length) { const len = buf.readUInt32BE(pos); const type = buf.toString('ascii', pos + 4, pos + 8); if (type === 'IHDR') { w = buf.readUInt32BE(pos + 8); h = buf.readUInt32BE(pos + 12); ct = buf[pos + 17]; } if (type === 'IDAT') idat.push(buf.subarray(pos + 8, pos + 8 + len)); pos += 12 + len; } const bpp = ct === 2 ? 3 : 4; const raw = zlib.inflateSync(Buffer.concat(idat)); const stride = w * bpp; const rows = []; let prev = Buffer.alloc(stride); let i = 0; for (let y = 0; y < h; y++) { const fl = raw[i]; const cur = Buffer.from(raw.subarray(i + 1, i + 1 + stride)); i += 1 + stride; for (let x = 0; x < stride; x++) { const a = x >= bpp ? cur[x - bpp] : 0, b2 = prev[x], c = x >= bpp ? prev[x - bpp] : 0; if (fl === 1) cur[x] = (cur[x] + a) & 255; else if (fl === 2) cur[x] = (cur[x] + b2) & 255; else if (fl === 3) cur[x] = (cur[x] + ((a + b2) >> 1)) & 255; else if (fl === 4) { const pa = Math.abs(b2 - c), pb = Math.abs(a - c), pc = Math.abs(a + b2 - 2 * c); const pr = pa <= pb && pa <= pc ? a : pb <= pc ? b2 : c; cur[x] = (cur[x] + pr) & 255; } } rows.push(cur); prev = cur; } return { w, h, bpp, rows }; } catch (e) { return null; } }
 const violations = []; const log = []; let checks = 0;
 const record = async (st, phase) => { checks += 1; for (const e of st.errs) violations.push({ move: log.length, phase, y: st.y, ...e, recent: log.slice(-8) });
+  { const bs = await f().evaluate(R36STATE); r36Checks_(bs, phase, null, (v) => violations.push({ move: log.length, phase, ...v, recent: log.slice(-8) })); }
   if (st.wwd && st.wwd.stageOnScreen && !st.wwd.inExit) { const tp = await textPresence(); if (tp) { if (tp.title != null && tp.title < 40) violations.push({ move: log.length, phase, y: st.y, inv: 'T3', msg: 'What We Do title box has no ink (pixel presence)', pillar: tp.pillar, spread: tp.title, recent: log.slice(-8) }); if (tp.row != null && tp.row < 30) violations.push({ move: log.length, phase, y: st.y, inv: 'T3', msg: 'What We Do row box has no ink (pixel presence)', pillar: tp.pillar, spread: tp.row, recent: log.slice(-8) }); } } };
 const maxScroll = await f().evaluate(() => document.documentElement.scrollHeight - innerHeight);
 let lastResidue = null;
@@ -469,7 +545,7 @@ for (let i = 0; i < MOVES; i++) {
     st = st2; }
   if (SHOT_DIR && st.errs.length && violations.length <= 6) { await p.screenshot({ path: `${SHOT_DIR}/violation-${violations.length}-${st.errs[0].inv}-y${st.y}.png` }); }
 }
-const summary = { vp: `${W}x${H}`, moves: MOVES, seed: SEED, checks, violations: violations.length, byInvariant: violations.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: violations.slice(0, 5) };
+const summary = { vp: `${W}x${H}`, moves: MOVES, seed: SEED, checks: checks + r36Checks, violations: violations.length, byInvariant: violations.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: violations.slice(0, 5) };
 if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations, log }, null, 1));
 console.log(JSON.stringify(summary));
 await b.close();
