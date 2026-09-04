@@ -27,6 +27,7 @@ import SiteShell from '../../layouts/SiteShell.astro';
 import LandingFooter from '../../components/landing/LandingFooter.astro';
 import CtaChip from '../../components/landing/CtaChip.astro';
 import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
+import { existsSync } from 'node:fs';
 import { asset } from '../../utils/asset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
@@ -61,7 +62,19 @@ const moreWork = WORK_PROJECTS.filter((p) => p.slug !== study.base.slug).map((p)
    same name with -poster.jpg (ffmpeg, frame at 0.5s). Declared here
    rather than inline — a regex literal in an attribute does not survive
    the .astro compiler. */
-const posterFor = (src) => src.replace('.mp4', '-poster.jpg').replace('.webm', '-poster.jpg');
+/* R73 (Oscar, 2026-09-04): the poster is only declared if the file
+   ACTUALLY EXISTS. R63 added poster= to every stream video but only one
+   poster had been generated, so yoxman's second video pointed at a
+   missing file and threw a 404 into the console on that route — caught
+   by the production gate. Both posters exist now, and this check means a
+   future video drop without one silently omits the attribute (the slot
+   just shows the video's own first frame) instead of 404ing. The lookup
+   is filesystem-side at build time, so it costs the browser nothing. */
+const posterFor = (src) => {
+  const rel = src.replace('.mp4', '-poster.jpg').replace('.webm', '-poster.jpg');
+  const onDisk = new URL(`../../../public${rel.startsWith('/') ? rel : `/${rel}`}`, import.meta.url);
+  return existsSync(onDisk) ? rel : undefined;
+};
 const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z';
 ---
 

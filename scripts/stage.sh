@@ -39,7 +39,19 @@ fi
 #   PUBLIC_LANDING_SPLASH_B=1  builds /landing-splash-b as a real route on
 #   staging so the alternate splash is reviewable. The main landing page
 #   is untouched and keeps its own splash.
-STAGE_BUILD_ENV=(--build-env PUBLIC_LANDING_SPLASH_B=1)
+#
+#   PUBLIC_START_PROJECT=1     ships the START A PROJECT drawer. Without
+#   it a build falls back to the pre-R40 behaviour — the CTAs become
+#   plain mailtos and styled placeholders — so the whole drawer would be
+#   unreviewable on staging. The /api/start-project function deploys
+#   either way and is guarded, so this only changes what the UI offers.
+#
+# HERO_ENTRY is deliberately NOT set: the main landing page keeps the
+# splash it ships with today.
+STAGE_BUILD_ENV=(
+  --build-env PUBLIC_LANDING_SPLASH_B=1
+  --build-env PUBLIC_START_PROJECT=1
+)
 
 # Anything passed after `npm run stage --` is forwarded verbatim.
 EXTRA=("$@")
