@@ -58,6 +58,10 @@
  *   W3 the right machinery per view (list handle / Lenis / stage /
  *   body overflow), W4 ScrollTrigger count flat, W5 aria-pressed.
  *
+ * --page modal --route <path> (R40): the START A PROJECT modal's lifecycle
+ *     from every trigger on the page — M1 open/close clean, M2 focus
+ *     returns, M3 listener balance flat, M4 one modal at a time, M5 the
+ *     trap holds.
  * --page case --case <slug> (R37): a case study's random walk with the
  *     floating START A PROJECT chip's invariants X1–X5 (hidden at the
  *     top / shown in range / hidden past the last image / never two
@@ -114,7 +118,8 @@ const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl
 const p = await (await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 const pageErrs = []; p.on('pageerror', (e) => pageErrs.push(String(e.message).slice(0, 120)));
 const CASE = arg('--case', 'wilderness-reserve');
-await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : PAGE === 'services' ? '/services?splash=0&forcehover' : PAGE === 'case' ? `/work/${CASE}?splash=0&forcehover` : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
+const ROUTE = arg('--route', '/');
+await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : PAGE === 'services' ? '/services?splash=0&forcehover' : PAGE === 'case' ? `/work/${CASE}?splash=0&forcehover` : PAGE === 'modal' ? `${ROUTE}${ROUTE.includes('?') ? '&' : '?'}splash=0&forcehover` : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
 const s = W >= 1728 ? 1 : W / 1728;
 const f = () => p.frames().find((fr) => fr.url().includes('framed=1')) ?? p.mainFrame();
 
@@ -390,6 +395,55 @@ if (PAGE === 'founders') {
   await b.close();
   process.exit(viol.length ? 2 : 0);
 }
+/* ══ R40 — MODAL MODE (--page modal --route <path>): the START A PROJECT
+   form modal's lifecycle from EVERY trigger on the page, randomised:
+   M1  every trigger opens the modal (is-open, not hidden, the logo twin
+       visible, body overflow locked) and Esc / CANCEL / backdrop / CLOSE
+       closes it (hidden, overflow released);
+   M2  focus returns to the trigger that opened it;
+   M3  listener balance flat across cycles (the page's add/remove counts
+       instrumented at load — a cycle must remove what it added);
+   M4  only one modal open at a time (the contact page's schedule modal
+       closes when this opens and vice versa);
+   M5  the trap holds: Tab from the modal's last focusable lands on its
+       first; no page errors. */
+if (PAGE === 'modal') {
+  await f().evaluate(() => { const w = window; w.__lc = { add: 0, remove: 0 }; const A = EventTarget.prototype.addEventListener, R = EventTarget.prototype.removeEventListener; EventTarget.prototype.addEventListener = function (...a) { w.__lc.add++; return A.apply(this, a); }; EventTarget.prototype.removeEventListener = function (...a) { w.__lc.remove++; return R.apply(this, a); }; });
+  const MST = `(() => { const m = document.querySelector('[data-sp-modal]'); const twin = document.querySelector('[data-sp-logo]'); const ct = document.querySelector('[data-ct-modal]'); return { open: !!m && m.classList.contains('is-open') && !m.hidden, hidden: m ? m.hidden : null, twin: twin ? (!twin.hidden && +getComputedStyle(twin).opacity > 0.5) : null, overflow: document.body.style.overflow, ct: ct ? ct.classList.contains('is-open') : null, lc: window.__lc.add - window.__lc.remove, active: document.activeElement ? document.activeElement.tagName + ':' + (document.activeElement.textContent || '').trim().slice(0, 12) : null, menu: !!document.querySelector('[data-menu]')?.classList.contains('is-open') }; })()`;
+  const viol = []; const hist = []; let mchecks = 0; let lcBase = null;
+  const trig = await f().evaluate(() => [...document.querySelectorAll('[data-start-project]')].map((t, i) => { t.dataset.spQa = String(i); return { i, inMenu: !!t.closest('[data-menu]'), text: t.textContent.replace(/\s+/g, ' ').trim().slice(0, 16) }; }));
+  if (!trig.length) { console.log(JSON.stringify({ vp: `${W}x${H}`, page: 'modal', route: ROUTE, error: 'no triggers' })); await b.close(); process.exit(2); }
+  const closers = ['esc', 'cancel', 'backdrop', 'close'];
+  const settle = async (ms) => p.waitForTimeout(ms);
+  for (let i = 0; i < MOVES; i++) {
+    const t = trig[Math.floor(rnd() * trig.length)];
+    if (t.inMenu) { await f().evaluate(() => document.querySelector('[data-menu-toggle]').click()); await settle(1300); }
+    await f().evaluate((i2) => { const el = document.querySelector(`[data-sp-qa="${i2}"]`); el.scrollIntoView({ block: 'center' }); el.click(); }, t.i); await settle(Math.round(pick(700, 1100)));
+    const o = await f().evaluate(MST); mchecks += 1;
+    if (!o.open || !o.twin || o.overflow !== 'hidden') viol.push({ inv: 'M1', move: i, msg: 'modal did not open cleanly', trigger: t, o });
+    if (o.menu) viol.push({ inv: 'M4', move: i, msg: 'menu still open over the modal', trigger: t });
+    /* M5: Tab wraps within the modal */
+    if (rnd() < 0.3) { let wrapped = false; for (let k = 0; k < 40; k++) { await p.keyboard.press('Tab'); const a = await f().evaluate(() => ({ inModal: !!document.activeElement.closest('[data-sp-modal]') || document.activeElement.hasAttribute('data-sp-logo'), first: document.activeElement === document.querySelector('[data-sp-modal] [data-sp-close]') })); if (!a.inModal) { viol.push({ inv: 'M5', move: i, msg: 'focus escaped the modal', trigger: t }); break; } if (k > 3 && a.first) { wrapped = true; break; } } mchecks += 1; void wrapped; }
+    /* M4 on /contact: opening the schedule modal must close this one */
+    if (rnd() < 0.25 && (await f().evaluate(() => !!document.querySelector('[data-ct-open]')))) { await f().evaluate(() => document.querySelector('[data-ct-open]').click()); await settle(900); const o2 = await f().evaluate(MST); mchecks += 1; if (o2.open || !o2.ct) viol.push({ inv: 'M4', move: i, msg: 'both modals open', o2 }); await f().evaluate(() => document.querySelector('[data-sp-qa="0"]').click()); await settle(900); const o3 = await f().evaluate(MST); mchecks += 1; if (!o3.open || o3.ct) viol.push({ inv: 'M4', move: i, msg: 'schedule modal did not yield', o3 }); }
+    const how = closers[Math.floor(rnd() * closers.length)];
+    if (how === 'esc') await p.keyboard.press('Escape'); else if (how === 'cancel') await f().evaluate(() => document.querySelector('[data-sp-cancel]')?.click()); else if (how === 'backdrop') await f().evaluate(() => document.querySelector('[data-sp-backdrop]').click()); else await f().evaluate(() => document.querySelector('[data-sp-close]').click());
+    await settle(Math.round(pick(800, 1200)));
+    const c = await f().evaluate(MST); mchecks += 1;
+    if (c.open || !c.hidden || c.overflow !== '') viol.push({ inv: 'M1', move: i, msg: 'modal did not close cleanly', how, c });
+    const back = await f().evaluate((i2) => document.activeElement === document.querySelector(`[data-sp-qa="${i2}"]`), t.i); mchecks += 1;
+    if (!back && !t.inMenu) viol.push({ inv: 'M2', move: i, msg: 'focus did not return to the trigger', trigger: t, active: c.active });
+    if (t.inMenu) { await f().evaluate(() => { const m = document.querySelector('[data-menu]'); if (m.classList.contains('is-open')) document.querySelector('[data-menu-toggle]').click(); }); await settle(1200); }
+    if (i >= 2) { if (lcBase == null) lcBase = c.lc; else if (c.lc !== lcBase) viol.push({ inv: 'M3', move: i, msg: 'listener balance drifted across cycles', was: lcBase, now: c.lc }); }
+    hist.push(`${t.text} → ${how}`);
+  }
+  const summary = { vp: `${W}x${H}`, page: 'modal', route: ROUTE, moves: MOVES, seed: SEED, triggers: trig.length, checks: mchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
+  console.log(JSON.stringify(summary));
+  await b.close();
+  process.exit(viol.length ? 2 : 0);
+}
+
 /* ══ R37 — CASE-STUDY MODE (--page case --case <slug>): the floating
    START A PROJECT chip's invariants on the generic random walk:
    X1  at the top (y < 2, settled) the chip is hidden (visibility hidden,

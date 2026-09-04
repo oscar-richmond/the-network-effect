@@ -303,11 +303,10 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       bottom edges — hidden at the top, in from the first scroll, out
       once the stream's last image has fully entered (float-cta.js,
       driven from case-study.js; hidden while the lightbox is open).
-      DESTINATION: the footer's live mailto to the canonical address
-      (the working instance; /contact's inert START A PROJECT is the
-      unresolved one — flagged for Oscar's ruling). */}
+      DESTINATION (R40): the site-wide START A PROJECT form modal — one
+      behaviour everywhere; the href is the modal's deep link. */}
   <div class="cs-float" data-cs-float>
-    <CtaChip variant="float" href="mailto:hello@networkeffectagency.co.uk" label="START A PROJECT" data-cs-float-cta />
+    <CtaChip variant="float" href="#start-project" label="START A PROJECT" data-cs-float-cta data-start-project />
   </div>
 
   {/* ── LIGHTBOX (Oscar's rev): click any stream image -> centred

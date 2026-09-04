@@ -112,9 +112,8 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
 
                 SCHEDULE A CALL lives on /contact (the modal is that
                 page's machinery) — from the menu it navigates
-                there. START A PROJECT keeps the placeholder
-                convention: styled and rippling, non-navigating
-                until Oscar wires a destination. */}
+                there. START A PROJECT opens the site-wide form modal
+                (R40) — the menu closes as it opens. */}
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
                 <a class="landing-svc-card__btn" href={linkHref('contact')} data-char-ripple-trigger>
@@ -125,10 +124,10 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
             </span>
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
-                <span class="landing-svc-card__btn is-placeholder" data-hover data-char-ripple-trigger>
+                <a class="landing-svc-card__btn" href="#start-project" data-start-project data-char-ripple-trigger>
                   <span data-char-ripple>START A PROJECT</span>
                   <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-                </span>
+                </a>
               </span>
             </span>
           </div>

@@ -496,7 +496,14 @@ export function initMenu(scope = document) {
   navBody.addEventListener('mouseleave', onNavMouseLeave);
   document.addEventListener('keydown', onKeyDown);
 
+  /* R40 (2026-09-04): a modal opening from inside the menu (START A
+     PROJECT) takes the page — the menu (z500, over the modal tier)
+     retracts first. */
+  const onModalOpen = () => { if (root.classList.contains('is-open')) close(); };
+  document.addEventListener('ne:modal-open', onModalOpen);
+
   return () => {
+    document.removeEventListener('ne:modal-open', onModalOpen);
     clearTailBoost();
     window.clearTimeout(settleTimer);
     document.removeEventListener('visibilitychange', onVisibility);

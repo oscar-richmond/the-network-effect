@@ -91,7 +91,7 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     <a
       class="landing-footer__start"
       data-footer-col
-      href="mailto:hello@networkeffectagency.co.uk"
+      href="#start-project" data-start-project
       data-char-ripple-trigger
     >
       <span data-char-ripple>START A PROJECT</span>
@@ -173,7 +173,9 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
         12.4px); gaps 8 (label→arrow) / 16 (arrow→chip edge). The
         site's other arrows are separate asset-file instances with
         deliberate per-theme variants — untouched. */}
-    <a class="landing-footer__dchip" data-footer-col href="mailto:hello@networkeffectagency.co.uk" data-char-ripple-trigger>
+    {/* R40: opens the site-wide form modal (the href is the deep link — the
+        no-JS fallback opens it on load). Was the live mailto. */}
+    <a class="landing-footer__dchip" data-footer-col href="#start-project" data-start-project data-char-ripple-trigger>
       <span data-char-ripple>START A PROJECT</span>
       <svg class="landing-footer__dchip-arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow>
         <path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" />

@@ -162,6 +162,8 @@ export function initContactPage() {
     if (modalOpen || !(modal instanceof HTMLElement)) return;
     modalOpen = true;
     opener = triggerEl ?? null;
+    /* R40: the START A PROJECT modal is a sibling — one open at a time */
+    document.dispatchEvent(new CustomEvent('ne:modal-open', { detail: 'schedule' }));
     mountCal();
     lenis.i?.stop();
     document.body.style.overflow = 'hidden';
@@ -211,9 +213,12 @@ export function initContactPage() {
   };
   document.addEventListener('keydown', onKey);
   document.addEventListener('keydown', onTrapKey);
+  const onSiblingOpen = (e) => { if (e.detail !== 'schedule') closeModal(); };
+  document.addEventListener('ne:modal-open', onSiblingOpen);
   cleanups.push(() => {
     document.removeEventListener('keydown', onKey);
     document.removeEventListener('keydown', onTrapKey);
+    document.removeEventListener('ne:modal-open', onSiblingOpen);
     document.body.style.overflow = '';
   });
 

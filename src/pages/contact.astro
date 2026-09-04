@@ -56,10 +56,9 @@ import '../styles/fonts.css';
     >
 
     {/* Three 64px primary CTAs (file widths 292/230/163, 16px
-        gaps). SCHEDULE opens the modal; START A PROJECT is the
-        footer-placeholder convention (styled, rippling, dot-
-        expanding, NON-NAVIGATING — no destination yet, Oscar to
-        wire); EMAIL US is the established enquiry mailto. */}
+        gaps). SCHEDULE opens the call modal; START A PROJECT opens
+        the site-wide form modal (R40 — one behaviour everywhere);
+        EMAIL US is the established enquiry mailto. */}
     <div class="ct__ctas" data-ct-ctas>
       <button type="button" class="ct-cta ct-cta--schedule" data-ct-open data-char-ripple-trigger>
         {/* Robbo crop — standing founder sign-off caveat. */}
@@ -69,10 +68,12 @@ import '../styles/fonts.css';
         <span data-char-ripple>SCHEDULE A CALL</span>
         <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
       </button>
-      <span class="ct-cta ct-cta--start is-placeholder" data-hover data-char-ripple-trigger>
+      {/* R40 (Oscar, 2026-09-04): START A PROJECT opens the site-wide form
+          modal (was the inert placeholder). */}
+      <button type="button" class="ct-cta ct-cta--start" data-start-project data-char-ripple-trigger>
         <span data-char-ripple>START A PROJECT</span>
         <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-      </span>
+      </button>
       {/* EMAIL US — the HOLDING PAGE's contact UX ported (Oscar's
           rev 3: a bare mailto is a silent no-op without a mail
           client): click COPIES the address and confirms via the
