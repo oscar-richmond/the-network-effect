@@ -50,7 +50,7 @@
 import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
-import { playLineRevealElement } from '../line-reveal.js';
+import { playLineRevealElement, wrapWordRevealElement } from '../line-reveal.js';
 
 /* ── the reference's timings, verbatim */
 export const SB_COUNT_DUR = 3;
@@ -63,7 +63,11 @@ export const SB_DIGITS_OUT_STAGGER = 0.1;
    into their hero positions. SB_OPEN_* are retained as the STACK's
    names so every derived beat (the line's wipe) keeps its anchor. */
 export const SB_OPEN_AT = 4.5;
-export const SB_OPEN_DUR = 1.5;
+/* R69 (Oscar, 2026-09-04): version A's own burst duration (HE_BURST_DUR
+   0.75) — the pile was arriving at half that pace. The 0.12 stagger
+   already matched it, so this one number brings the whole arrival onto
+   the reference's tempo, and shortens the sequence by 0.75s. */
+export const SB_OPEN_DUR = 0.75;
 export const SB_TRAVEL_AT = 6;
 export const SB_TRAVEL_DUR = 2;
 /* R59: the headline and content beats are DERIVED from the sort now
@@ -76,19 +80,19 @@ export const SB_CONTENT_AT_LEGACY = 7.5;
 export const SB_MINI_SCALE = 0.42;
 /* The pile's size at the centre — version A's HE_BURST_SCALE. */
 export const SB_STACK_SCALE = 0.55;
-/* R65 item 2b (Oscar, 2026-09-04) — THE STACK'S VARIATION.
-   DIAGNOSED first: only two cards read in the pile because all three
-   arrived at the SAME size in the SAME place with no offset, so each
-   later card completely occluded the one beneath and the stack looked
-   like a single card with one edge showing. Nothing was broken — there
-   was simply nothing to see.
-   THE VARIATION is deliberate, not random: each card in arrival order
-   steps DOWN in scale and alternates its rotation, so every one of the
-   six shows a corner. A step and an angle per card, applied by index —
-   so adding or removing a card changes nothing else. */
-export const SB_STACK_SCALE_STEP = 0.055;   /* each later card this much smaller */
-export const SB_STACK_ROT_DEG = 5;          /* the base angle; sign alternates */
-export const SB_STACK_OFFSET_PX = 26;       /* the per-card positional drift */
+/* R67 (Oscar, 2026-09-04) — THE PILE IS STRAIGHT AND ONE SIZE, exactly as
+   the shipped entry animation on the main landing page stacks it.
+   R65 had varied each card's scale, rotation and offset so all six read
+   individually; Oscar's ruling supersedes that outright — version A is
+   the reference, and version A stacks every card at ONE scale
+   (HE_BURST_SCALE 0.55), at ONE centre, with no rotation and no drift.
+   SB_STACK_SCALE below is that same 0.55. The variation constants are
+   deliberately gone rather than set to zero: a tunable that must stay at
+   zero is an invitation to re-introduce the thing that was rejected.
+   CONSEQUENCE, understood and accepted: the cards occlude one another
+   exactly, so the pile reads as ONE card — which is what the reference
+   does. What reads is the ARRIVAL (six beats of it) and then the swap,
+   not six visible edges. */
 /* The beat the pile holds before it sorts — version A's HE_STACK_HOLD. */
 export const SB_STACK_HOLD = 1.0;
 /* R65 item 2c — THE DISCARDS. Three extra images arrive FIRST, the
@@ -130,7 +134,11 @@ export const SB_SORT_AT = Math.max(
   SB_OPEN_AT + SB_STACK_TOTAL + SB_STACK_HOLD,
   SB_DISCARD_OUT_AT + SB_DISCARD_OUT_TOTAL + SB_SORT_GAP,
 );
-export const SB_HEADLINE_AT = SB_SORT_AT + SB_TRAVEL_DUR;
+/* The hero's text arrives the instant the red has gone — the ground's
+   fade-out ends exactly here, so this is both "as soon as the background
+   fades" and the earliest point at which nothing rises behind it. */
+export const SB_TEXT_AT = SB_SORT_AT + SB_TRAVEL_DUR;
+export const SB_HEADLINE_AT = SB_TEXT_AT;
 export const SB_CONTENT_AT = SB_HEADLINE_AT + 0.5;
 export const SB_LINE_WIPE_AT = SB_OPEN_AT;
 export const SB_LINE_WIPE_DUR = SB_SORT_AT - SB_OPEN_AT;
@@ -139,6 +147,33 @@ export const SB_LINE_WIPE_DUR = SB_SORT_AT - SB_OPEN_AT;
    ~2.2s longer). */
 export const SB_READY_TIMEOUT_MS = 3500;
 export const SB_FAILSAFE_MS = 20000;
+
+/* R69 (Oscar, 2026-09-04) — THE COUNT'S EASE: fast away, decelerating,
+   then EVENLY PACED to the end.
+   WHAT WAS WRONG: power3.out. Its tail is almost flat, so the last
+   numbers crawl — 98→99 took 0.18s and 99→100 took 0.95s, which is
+   the "going from 99 to 100 is too slow" exactly.
+   WHAT THIS IS: a quadratic that decelerates from a fast start to
+   reach SB_COUNT_KNEE_V of the count at SB_COUNT_KNEE_T of the time,
+   joined to a straight line for the rest — so the final stretch runs
+   at ONE constant rate and 98, 99 and 100 are evenly spaced by
+   construction, not by tuning. The join is smooth because the
+   quadratic's coefficients are solved for the line's own slope at the
+   knee: no stall, no kink.
+   With the shipped values the opening runs at 3.05× the average rate
+   and the last ten numbers take 0.135s each — against 0.95s for the
+   final step before. */
+const SB_COUNT_KNEE_T = 0.55; /* of the duration */
+const SB_COUNT_KNEE_V = 0.9;  /* of the count */
+const countEase = (x) => {
+  const K = SB_COUNT_KNEE_T;
+  const V = SB_COUNT_KNEE_V;
+  const m = (1 - V) / (1 - K);          /* the tail's constant rate */
+  if (x >= K) return V + (x - K) * m;   /* linear to 1 at x = 1 */
+  const a = (m * K - V) / (K * K);      /* solved so f(K)=V and f'(K)=m */
+  const b = m - 2 * a * K;
+  return a * x * x + b * x;
+};
 
 /** The reference's CustomEase 'hop' — cubic-bezier(0.9, 0, 0.1, 1) — as
  *  a plain solver, so no Club plugin is needed. Newton with a bisection
@@ -279,20 +314,67 @@ export function initSplashB(splashRoot) {
      intro never released — parked at y44, invisible.
      AFTER: both released together on the settle beat, exactly as the
      shipped splash does at its own landing. */
+  /* R68 (Oscar, 2026-09-04) — THE TEXT ARRIVES AS THE RED CLEARS, not at
+     the settle. It was released inside playPageBeats, which runs when the
+     whole timeline completes — TWO FULL SECONDS after the ground had
+     faded, so the hero sat empty and then the copy appeared late. It is
+     its own beat now, fired from the timeline at SB_TEXT_AT, which is
+     derived as the moment the ground's fade-out COMPLETES: released a
+     beat earlier and the lines would rise behind the red, which is the
+     other half of what Oscar reported.
+     THE ORDER WITHIN IT is not set here and must not be: the hero module
+     writes each element's own reveal delay when it wraps them — the
+     headline's two lines at 0 and 0.12, the intro at the headline's
+     stagger + INTRO_AFTER_HEADLINE_S (0.39) — so one release call plays
+     the headline first and the intro straight after its second line,
+     exactly as the shipped splash does. Restating those numbers here
+     would let the two pages drift.
+     Idempotent, because the settle path calls it too: a skipped or
+     failsafed sequence must still land the text. */
+  /* R69 — THE HEADLINE HAD NO CLIPS TO PLAY. Diagnosed: the shipped
+     splash WRAPS the two headline lines itself, in its own readiness
+     gate and under its own cover (splash.js: a per-line revealDelay of
+     i × the headline stagger, then wrapWordRevealElement); the hero
+     module never wraps them. This variant only ever CALLED
+     playLineRevealElement on them, which is a no-op against unwrapped
+     lines — measured, zero .lr-inner elements under the headline — so
+     the headline simply sat there while everything else animated.
+     Wrapped here on the same terms: under this variant's own red ground,
+     so the restructure is never seen, with the same per-line delay so
+     the two lines stagger exactly as they do on the main page. */
+  const HEADLINE_LINE_STAGGER_S = 0.12;
+  let headlineWrapped = false;
+  const wrapHeadline = () => {
+    if (headlineWrapped) return;
+    headlineWrapped = true;
+    document.querySelectorAll('[data-landing-hero-headline-text] .landing-hero__headline-line')
+      .forEach((el, i) => {
+        if (!(el instanceof HTMLElement)) return;
+        el.dataset.revealDelay = String(i * HEADLINE_LINE_STAGGER_S);
+        wrapWordRevealElement(el);
+      });
+  };
+
+  let textPlayed = false;
+  const playHeroText = () => {
+    if (textPlayed) return;
+    textPlayed = true;
+    wrapHeadline();
+    document.querySelectorAll('[data-landing-hero-headline-text] .landing-hero__headline-line').forEach((el) => {
+      if (el instanceof HTMLElement) playLineRevealElement(el);
+    });
+    document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
+      if (p instanceof HTMLElement) playLineRevealElement(p);
+    });
+  };
+
   const playPageBeats = () => {
     const logos = document.querySelector('[data-landing-hero-logos]');
     if (logos instanceof HTMLElement) logos.classList.add('is-entered');
     const cards = document.querySelector('[data-landing-hero-cards]');
     if (cards instanceof HTMLElement) cards.classList.add('is-entered');
     document.dispatchEvent(new CustomEvent('landing-hero:cards-entered'));
-    /* the headline's wrapped clips, then the intro's paragraphs — the
-       shipped splash's own two calls, same order */
-    document.querySelectorAll('[data-landing-hero-headline-text] p').forEach((el) => {
-      if (el instanceof HTMLElement) playLineRevealElement(el);
-    });
-    document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
-      if (p instanceof HTMLElement) playLineRevealElement(p);
-    });
+    playHeroText();
   };
 
   const settle = () => {
@@ -341,11 +423,10 @@ export function initSplashB(splashRoot) {
   /* the centred row is the hero's row IN MINIATURE — filled in once the
      hero has placed itself, so the travel is a pure place-and-scale */
   let miniW = 0, miniH = 0, gap = 0, miniLeft = () => 0, miniTop = 0;
-  /* R65: the pile's arrival order and its per-card variation are built in
-     deriveMini (they need the placed rects) and read by the timeline — so
-     they are declared here, in the scope both share. */
+  /* The pile's arrival order is built in deriveMini (it needs the placed
+     rects) and read by the timeline — declared here, in the scope both
+     share. */
   let pileOrder = [];
-  let vary = () => ({ s: SB_STACK_SCALE, rot: 0, dx: 0, dy: 0 });
   const deriveMini = () => {
     const cardW = rects[0].width;
     const cardH = rects[0].height;
@@ -365,31 +446,23 @@ export function initSplashB(splashRoot) {
        (compositor transforms only, resolved once, one owner). */
     const centreLeft = vw / 2 - cardW / 2;
     const centreTop = vh / 2 - cardH / 2;
-    /* R65 items 2b + 2c — THE PILE, SIX DEEP AND VARIED.
-       ARRIVAL ORDER is discard 1, 2, 3 then hero LEFT, RIGHT, MIDDLE —
-       the middle last so it lands on top, version A's own reorder kept.
-       Each card's index in that order drives its variation: a scale step
-       down, an alternating rotation and a small positional drift, so no
-       card completely covers the one beneath it and all six read. The
-       hero cards' FINAL state is still exactly x:0 y:0 scale:1 rotation:0
-       against their own landing box, so the sort remains a plain return
-       to zero and the landing stays pixel-exact. */
+    /* R67 — THE PILE: SIX DEEP, ONE SIZE, STRAIGHT (version A's own
+       geometry). Every card is set to the SAME centred position at the
+       SAME card size and scales from 0 to SB_STACK_SCALE — no rotation,
+       no offset, no size step. The discards borrow the middle card's box
+       so they occupy exactly the same place; they never travel, so the
+       box is only a size. The hero cards' FINAL state is still x:0 y:0
+       scale:1 against their own landing box, so the sort remains a plain
+       return to zero and the landing stays pixel-exact.
+       ARRIVAL ORDER: the three discards, then hero LEFT, RIGHT and the
+       MIDDLE last so it lands on top — version A's own reorder, kept. */
     pileOrder = [...sbDiscards, sbCards[0], sbCards[2], sbCards[1]];
-    vary = (el) => {
-      const k = pileOrder.indexOf(el);
-      const s = SB_STACK_SCALE - k * SB_STACK_SCALE_STEP;
-      const rot = (k % 2 ? 1 : -1) * SB_STACK_ROT_DEG * (1 - k / (pileOrder.length * 1.6));
-      const drift = SB_STACK_OFFSET_PX * (k - (pileOrder.length - 1) / 2) / (pileOrder.length - 1) * 2;
-      return { s, rot, dx: drift, dy: -drift * 0.55 };
-    };
-    /* the discards borrow the middle card's box so they pile in the same
-       place; they never travel, so the box is only a size */
     gsap.set(sbDiscards, {
       top: rects[1].top, left: rects[1].left, width: rects[1].width, height: rects[1].height,
       transformOrigin: '50% 50%',
-      x: (i, el) => centreLeft - rects[1].left + vary(el).dx,
-      y: (i, el) => centreTop - rects[1].top + vary(el).dy,
-      rotation: (i, el) => vary(el).rot,
+      x: centreLeft - rects[1].left,
+      y: centreTop - rects[1].top,
+      rotation: 0,
       scale: 0,
     });
     gsap.set(sbCards, {
@@ -398,9 +471,9 @@ export function initSplashB(splashRoot) {
       width: (i) => rects[i].width,
       height: (i) => rects[i].height,
       transformOrigin: '50% 50%',
-      x: (i) => centreLeft - rects[i].left + vary(sbCards[i]).dx,
-      y: (i) => centreTop - rects[i].top + vary(sbCards[i]).dy,
-      rotation: (i) => vary(sbCards[i]).rot,
+      x: (i) => centreLeft - rects[i].left,
+      y: (i) => centreTop - rects[i].top,
+      rotation: 0,
       scale: 0,
       clipPath: 'none',
     });
@@ -471,7 +544,7 @@ export function initSplashB(splashRoot) {
     tl.to(counter, {
       value: 100,
       duration: SB_COUNT_DUR,
-      ease: 'power3.out',
+      ease: countEase,
       onUpdate: () => renderCount(Math.floor(counter.value)),
       onComplete: () => {
         renderCount(100);
@@ -493,7 +566,7 @@ export function initSplashB(splashRoot) {
        A's order — LEFT, RIGHT, then the MIDDLE last so it lands on top
        of the pile (hero-entry.js's own reorder, kept). */
     tl.to(pileOrder, {
-      scale: (i, el) => vary(el).s, ease: 'power2.out',
+      scale: SB_STACK_SCALE, ease: 'power2.out',
       duration: SB_OPEN_DUR, stagger: SB_OPEN_STAGGER,
     }, SB_OPEN_AT);
     tl.to(imgs, { scale: 1, duration: SB_OPEN_DUR, ease: 'power2.out', stagger: SB_OPEN_STAGGER }, SB_OPEN_AT);
@@ -519,7 +592,7 @@ export function initSplashB(splashRoot) {
        compositor, with the destination already the element's own layout
        box. Per-frame deltas verified monotonic with no reversals. */
     tl.to(sbCards, {
-      x: 0, y: 0, scale: 1, rotation: 0, ease: 'power3.inOut',
+      x: 0, y: 0, scale: 1, ease: 'power3.inOut',
       duration: SB_TRAVEL_DUR, stagger: SB_TRAVEL_STAGGER,
     }, SB_SORT_AT);
 
@@ -534,7 +607,10 @@ export function initSplashB(splashRoot) {
 
     /* ── the headline, then the nav and the rest — OUR vocabulary on the
        reference's clock. The hero's own modules own these reveals. */
-    tl.add(() => { document.dispatchEvent(new CustomEvent('landing-splash-b:headline')); }, SB_HEADLINE_AT);
+    tl.add(() => {
+      playHeroText();
+      document.dispatchEvent(new CustomEvent('landing-splash-b:headline'));
+    }, SB_TEXT_AT);
     tl.add(() => { rippleNavIn(); document.dispatchEvent(new CustomEvent('landing-splash-b:content')); }, SB_CONTENT_AT);
     /* hold the timeline open to the last beat so onComplete is the settle */
     tl.to({}, { duration: 0.5 }, SB_CONTENT_AT + 1);
