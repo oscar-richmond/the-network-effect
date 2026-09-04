@@ -40,8 +40,16 @@ const ROW_BAND_CENTRE_PX = 34;
  *   schedule: (fn: () => void, ms: number) => void,
  *   root?: ParentNode }} opts
  */
-export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false }) {
+/* R36 item 6 (Oscar, 2026-09-04): opts.treatment — 'full' (the default:
+   accent fill + marquee + edge gradients + the image, the class
+   `is-active`) or 'indent' (the landing rows' treatment: the text's
+   indent slide + the image only — the class `is-hactive`, so none of
+   the shared `.is-active` fill/marquee/text-out rules engage; the host
+   maps `.is-hactive` to its slide transform). The marquee tracks are
+   not built in indent mode (nothing rolls). Existing hosts unchanged. */
+export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false, treatment = 'full' }) {
   const cleanups = [];
+  const activeClass = treatment === 'indent' ? 'is-hactive' : 'is-active';
   const rowSections = Array.from(root.querySelectorAll('[data-sv-rows]'));
   rowSections.forEach((section) => {
     if (!(section instanceof HTMLElement)) return;
@@ -53,7 +61,7 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
     /* Marquee tracks — built once; widths measured after fonts so
        the loop shift is exact (seamless at every row width). */
     const buildMarquees = () => {
-      if (reduced) return;
+      if (reduced || treatment === 'indent') return;
       const listWidth = section.querySelector('[data-sv-rows-list]')?.clientWidth ?? 1161;
       rows.forEach((row) => {
         const marq = row.querySelector('[data-sv-marq]');
@@ -203,13 +211,13 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
     };
     const setActive = (row) => {
       if (row === active) return;
-      if (active) active.classList.remove('is-active');
+      if (active) active.classList.remove(activeClass);
       active = row;
       if (!(row instanceof HTMLElement)) {
         clearImg();
         return;
       }
-      row.classList.add('is-active');
+      row.classList.add(activeClass);
       showImg(row);
     };
     cleanups.push(clearSwap);

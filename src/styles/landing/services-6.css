@@ -279,9 +279,9 @@
 	/* ── 4. THE TABLES (sv-rows reused; frame geometry): label at
 	   x551 top-aligned with the table; list x776, 928 wide; row
 	   pitch 69 (2px divider + text 26 below, 26/32/−2% Serrif
-	   Condensed Medium); the hover band spans 71 (divider + row).
-	   The image frame keeps the machinery's 280×380 — only its x
-	   moves to the frame's 1304. Accent = the page's red. */
+	   Condensed Medium). The image frame keeps the machinery's
+	   280×380 (fixed centre-right, R3). Accent = the page's red
+	   (the focus ring only, since R36 item 6). */
 	.landing-v2 .sv6-table { margin-top: 120px; }
 
 	.landing-v2 .sv6-table .sv-rows__label {
@@ -315,43 +315,12 @@
 		letter-spacing: -0.02em;
 	}
 
-	.landing-v2 .sv6-table .sv-rows__fill,
-	.landing-v2 .sv6-table .sv-rows__marq,
-	.landing-v2 .sv6-table .sv-rows__edges { height: 71px; }
-
-	/* The hover marquee at the frame's own face — the resting item's
-	   Serrif 26 rolling white (the old build's Dazzed 22 was ITS
-	   file's spec). Loop gap stays the machinery's 80 (shared shift
-	   constant); the frame's 48 is a static-mock artifact, reported. */
-	.landing-v2 .sv6-table .sv-rows__marq-unit {
-		font-family: var(--font-serif-cond);
-		font-weight: 500;
-		font-synthesis: none;
-		font-size: 26px;
-		line-height: 32px;
-		letter-spacing: -0.02em;
-		text-transform: none;
-	}
-
-	/* Item 3 (Oscar R2): the highlight occludes BOTH dividers. The
-	   band already spans them geometrically (top 0 -> 71 = own 2px
-	   divider through the next row's), but the NEXT row's divider
-	   painted ABOVE the fill (DOM order) - the active row z-lifts,
-	   and the next divider (and the endline after the last row)
-	   whitens on the same delayed beat as the row's own, so no grey
-	   fragment shows mid-transition. */
-	.landing-v2 .sv6-table .sv-rows__row.is-active { z-index: 1; }
-
-	.landing-v2 .sv6-table .sv-rows__row.is-active + .sv-rows__row .sv-rows__divider {
-		background-color: #fff;
-	}
-
-	.landing-v2 .sv6-table:has(.sv-rows__row:last-child.is-active) .sv-rows__endline .sv-rows__divider {
-		background-color: #fff;
-	}
-
-	/* Item 2: the marquee text centres in the 71px band. */
-	.landing-v2 .sv6-table .sv-rows__marq { align-items: center; }
+	/* R36 item 6 (Oscar, 2026-09-04): the red fill, the edge gradients,
+	   the rolling marquee and the divider whitening are RETIRED from
+	   this page (the sv-rows machinery runs its 'indent' treatment
+	   here; its full treatment stays for its other hosts). Hover /
+	   focus now reads exactly like the landing rows: the text's indent
+	   slide + the image swap in the fixed frame. */
 
 	/* R3 (Oscar 2026-08-27): the hover/scroll image no longer glides
 	   beside the rows - it holds FIXED on screen, vertically centred
@@ -368,20 +337,27 @@
 		   must never feed the section's hover arbitration */
 	}
 
-	/* The scroll-active row indents its text right - the landing
-	   reel's slide vocabulary on the sv6 tables (same constants,
-	   pushed as vars by services-6.js). Hover's is-active text-out
-	   overrides the transform. */
+	/* The active row indents its text right — the landing reel's slide
+	   vocabulary on the sv6 tables (same constants, pushed as vars by
+	   services-6.js). TWO SOURCES, ONE TREATMENT (the landing's R10
+	   rule): the scroll driver's `is-sactive` and the machinery's hover
+	   / focus `is-hactive` (R36 item 6) map to the same transform; the
+	   JS arbitrates which source owns it (hover clears the scroll one). */
 	.landing-v2 .sv6-table .sv-rows__inner {
-		transition: opacity 0.25s ease-out, filter 0.25s ease-out,
-			transform var(--sv6-slide-s, 0.5s) var(--sv6-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		transition: transform var(--sv6-slide-s, 0.5s) var(--sv6-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	.landing-v2 .sv6-table .sv-rows__row.is-sactive .sv-rows__inner {
+	.landing-v2 .sv6-table .sv-rows__row.is-sactive .sv-rows__inner,
+	.landing-v2 .sv6-table .sv-rows__row.is-hactive .sv-rows__inner {
 		transform: translateX(var(--sv6-slide-x, 40px));
 	}
 
-	.landing-v2 .sv6-table .sv-rows__row.is-active .sv-rows__inner { transform: none; }
+	/* RM (the landing rule: no slide choreography) — the hover / focus
+	   state still reads (an instant indent, the machinery's own "static
+	   cue only" rule; no image swap under RM either, sv-rows.js). */
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2 .sv6-table .sv-rows__inner { transition: none; }
+	}
 
 	/* Blue-highlight audit (Oscar): the machinery's remaining blue
 	   on this page is the keyboard focus ring — accent-red here. */
@@ -390,9 +366,8 @@
 	}
 
 	/* Dark-band variant (CONNECT): the frame's #2f2f2f rules, white
-	   text/label; the active divider still whitens over the fill. */
+	   text/label. */
 	.landing-v2 .sv6-table--dark .sv-rows__divider { background: #2f2f2f; }
-	.landing-v2 .sv6-table--dark .sv-rows__row.is-active .sv-rows__divider { background-color: #fff; }
 	.landing-v2 .sv6-table--dark .sv-rows__text,
 	.landing-v2 .sv6-table--dark .sv-rows__label { color: #eeeef0; }
 

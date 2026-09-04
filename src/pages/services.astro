@@ -104,9 +104,10 @@ import '../styles/fonts.css';
         </div>
 
         {/* Label + the 928 hover table — the sv-rows machinery
-            markup contract verbatim (index-less rows; every row's
-            hover image is the frame's placeholder pending Oscar's
-            per-row drop — see services-6.js). */}
+            markup contract (index-less rows; every row's hover image
+            is the frame's placeholder pending Oscar's per-row drop —
+            see services-6.js). R36 item 6: treatment 'indent' — no
+            fill / marquee / edges spans. */}
         <section
           class={`sv-rows sv6-table${p.dark ? ' sv6-table--dark' : ''}`}
           data-sv-rows
@@ -127,9 +128,8 @@ import '../styles/fonts.css';
                 <span class="sv-rows__inner">
                   <span class="sv-rows__text">{row}</span>
                 </span>
-                <span class="sv-rows__fill" aria-hidden="true"></span>
-                <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
-                <span class="sv-rows__edges" aria-hidden="true"></span>
+                {/* R36 item 6: the fill / marquee / edges spans are retired here —
+                    the rows take the landing's indent + image treatment. */}
               </li>
             ))}
           </ul>

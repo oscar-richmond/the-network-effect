@@ -77,9 +77,15 @@ export function initServices6() {
      centre-right slot instead of gliding; controllers hand back
      each table's image runner for the scroll driver below. */
   const svImgCtl = [];
+  /* R36 item 6 (Oscar, 2026-09-04): treatment 'indent' — the landing
+     rows' hover (the text's indent slide + the image swap in the fixed
+     frame); the red fill / edge gradients / rolling marquee / text-out
+     are retired from this page (their spans are gone from the markup,
+     their rules from services-6.css). The shared machinery keeps the
+     full treatment for its other hosts. */
   cleanups.push(initSvRowsSections({
     reduced, isMob: false, fineHover, schedule, root: page,
-    fixedImg: true, controllers: svImgCtl, moveGate: true,
+    fixedImg: true, controllers: svImgCtl, moveGate: true, treatment: 'indent',
   }));
 
   /* ── SCROLL-ACTIVE ROWS (R3): between hovers, the row under the
