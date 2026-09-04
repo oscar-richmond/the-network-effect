@@ -7818,15 +7818,39 @@ html.sb-on .splash-b { display: block; }
 .splash-b__card {
 	position: absolute;
 	overflow: hidden;
-	clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);
-	will-change: clip-path, top, left, width, height;
+	/* R59 item 3: the cards scale up from nothing at the centre now
+	   (version A's stack), so there is no clip-path to animate — the
+	   reveal IS the scale. Only the transform is promoted. */
+	will-change: transform;
+	/* R59 item 4 — THE WHITE HAIRLINE ON THE RIGHT EDGE, FIXED AT THE
+	   CAUSE. The card clipped a width:100% image with overflow:hidden
+	   while the card itself sat at fractional positions and sizes (its
+	   box is the hero card's live rect, e.g. 554.59 wide, and it was
+	   being transform-scaled on top of that). The clip box and the
+	   image's own right edge then rounded to DIFFERENT device pixels,
+	   and the half-pixel between them composited the image against
+	   nothing — a pale seam down the right edge, brightest while the
+	   scale was in motion. It was not the source file and not
+	   object-fit: both edges are simply un-snapped.
+	   THE FIX is to make a gap geometrically impossible rather than to
+	   chase the rounding: the image overshoots its box by a pixel on
+	   every side (inset −1, size calc(100% + 2px)), so whatever pixel
+	   the clip lands on is always interior to the image. translateZ(0)
+	   puts the card on its own compositor layer so the clip is
+	   rasterised once at a whole-pixel boundary rather than re-sampled
+	   per frame. */
+	transform: translateZ(0);
+	backface-visibility: hidden;
 }
 .splash-b__card img {
-	width: 100%;
-	height: 100%;
+	position: absolute;
+	inset: -1px;
+	width: calc(100% + 2px);
+	height: calc(100% + 2px);
 	object-fit: cover;
 	display: block;
 	will-change: transform;
+	backface-visibility: hidden;
 }
 /* THE COUNTER — the reference's box verbatim. */
 .splash-b__counter {
@@ -7910,18 +7934,15 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 	transform: none;
 	transition: none;
 }
-/* THE RED BLOCKS (Oscar's design call, R54 item 6): the hero's own card
-   wrappers paint BRAND RED on this route, so once the gallery takes the
-   images over the row reads as three red blocks with the twirling
-   planes moving across them. This is the deterministic way to get that
-   look — the wrappers are the only thing behind the canvas, they are
-   the boxes the planes mirror, and their layering cannot vary: the
-   canvas is a later sibling in the same stage. Scoped to this route's
-   body marker, so the main landing page is untouched. */
-/* (the variant marker sits on the BODY alongside landing-v2 /
-   landing-home — all three are the same element, so they compound
-   rather than nest.) */
-body.splash-variant-b.landing-home .landing-hero__card { background: #c1250e; }
+/* R59 item 2 (Oscar, 2026-09-04): THE RED BLOCKS ARE REMOVED — reverted
+   to what was there before, which is NOTHING behind the twirling
+   images: the page ground shows through as it originally did. R54 item
+   6 painted the hero's own card wrappers #C1250E on this route (the
+   brief at the time asked for solid red blocks behind the planes); this
+   reverses that decision. The wrappers carry no background again, so
+   this route's hero DOM and its layering are identical to the main
+   landing page's — no extra element, no extra paint, nothing behind the
+   cards. Verified by comparing the two pages' hero subtrees. */
 /* Desktop only, and never under reduced motion — splash-b.js refuses to
    run in both cases; these keep the frame before it decides clean. */
 @media (max-width: 1024px) { .splash-b { display: none; } }

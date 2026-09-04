@@ -50,20 +50,34 @@
 import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
+import { playLineRevealElement } from '../line-reveal.js';
 
 /* ── the reference's timings, verbatim */
 export const SB_COUNT_DUR = 3;
 export const SB_DIGITS_OUT_DELAY = 1;
 export const SB_DIGITS_OUT_DUR = 0.75;
 export const SB_DIGITS_OUT_STAGGER = 0.1;
+/* R59 item 3 (Oscar, 2026-09-04) — THE MIDDLE BEAT IS NOW VERSION A'S
+   STACK AND SORT, ported from hero-entry.js rather than rewritten: the
+   three images pile ON TOP OF EACH OTHER at the centre, hold, then sort
+   into their hero positions. SB_OPEN_* are retained as the STACK's
+   names so every derived beat (the line's wipe) keeps its anchor. */
 export const SB_OPEN_AT = 4.5;
 export const SB_OPEN_DUR = 1.5;
 export const SB_TRAVEL_AT = 6;
 export const SB_TRAVEL_DUR = 2;
-export const SB_HEADLINE_AT = 7;
-export const SB_CONTENT_AT = 7.5;
+/* R59: the headline and content beats are DERIVED from the sort now
+   (they were absolutes tuned against the retired travel at 6). The
+   headline lands as the first card touches down; the content follows
+   half a second later, as before. */
+export const SB_HEADLINE_AT_LEGACY = 7;
+export const SB_CONTENT_AT_LEGACY = 7.5;
 /* ── ours */
-export const SB_MINI_SCALE = 0.42;      /* the centred row, as a fraction of the hero's */
+export const SB_MINI_SCALE = 0.42;
+/* The pile's size at the centre — version A's HE_BURST_SCALE. */
+export const SB_STACK_SCALE = 0.55;
+/* The beat the pile holds before it sorts — version A's HE_STACK_HOLD. */
+export const SB_STACK_HOLD = 1.0;      /* the centred row, as a fraction of the hero's */
 export const SB_OPEN_STAGGER = 0.12;    /* three windows appearing — three events */
 export const SB_TRAVEL_STAGGER = 0.08;  /* echoes the hero's own left/middle/right order */
 export const SB_IMG_SCALE_FROM = 2;     /* the reference's inner-image scale */
@@ -73,8 +87,14 @@ export const SB_GROUND_OUT_DUR = 0.6;   /* red resolving to the hero's ground */
    typed: it starts wiping as the images begin appearing in the centre
    (SB_OPEN_AT) and is gone exactly as the travel begins (SB_TRAVEL_AT),
    so retiming either beat carries the wipe with it. */
+/* The sort begins once the pile has assembled and held. Derived, so
+   retiming the stack carries the sort and the line's wipe with it. */
+export const SB_STACK_TOTAL = 2 * SB_OPEN_STAGGER + SB_OPEN_DUR;
+export const SB_SORT_AT = SB_OPEN_AT + SB_STACK_TOTAL + SB_STACK_HOLD;
+export const SB_HEADLINE_AT = SB_SORT_AT + SB_TRAVEL_DUR;
+export const SB_CONTENT_AT = SB_HEADLINE_AT + 0.5;
 export const SB_LINE_WIPE_AT = SB_OPEN_AT;
-export const SB_LINE_WIPE_DUR = SB_TRAVEL_AT - SB_OPEN_AT;
+export const SB_LINE_WIPE_DUR = SB_SORT_AT - SB_OPEN_AT;
 export const SB_READY_TIMEOUT_MS = 2500;
 export const SB_FAILSAFE_MS = 15000;
 
@@ -187,12 +207,48 @@ export function initSplashB(splashRoot) {
     });
   };
 
+  /* R59 items 1 + 5 (Oscar, 2026-09-04) — THE HERO'S TEXT ENTRANCE IS
+     THE MAIN LANDING PAGE'S, VERBATIM.
+     ITEM 1, DIAGNOSED: the intro paragraph beneath POWERED BY ACCESS.
+     never appeared on this route. It is NOT missing from the markup and
+     NOT dropped by the shared-component extraction — measured, both
+     lines are present, the wrapper is `is-armed` and opacity 1. They sit
+     at transform matrix(1,0,0,1,0,44): still parked 44px down inside
+     their own reveal clips, so they are clipped out of sight. The hero
+     module wraps and parks them at fonts-ready; the shipped splash
+     RELEASES them in its playPageBeats with playLineRevealElement, and
+     this variant's beats never called it. The same is true of the
+     headline's wrapped lines. Sampled on the main page they read
+     matrix(1,0,0,1,0,0) — released.
+     ITEM 5: the fix and the entrance are therefore the same thing —
+     splash.js's exact treatment, in its exact order. The MECHANISM is
+     line-reveal.js's clip-and-slide (each line an .lr-clip box with an
+     .lr-inner parked at +44px, released by playLineRevealElement); the
+     DURATIONS, STAGGER and EASING live on the wrapped elements
+     themselves, written by the hero module when it wrapped them (the
+     headline's own two-line stagger, then the intro a beat behind at
+     the headline stagger + INTRO_AFTER_HEADLINE_S). Playing them here
+     rather than re-declaring anything is what makes this verbatim: the
+     numbers are never restated in this file, so they cannot drift from
+     the main page's.
+     BEFORE (this route): headline released by nothing in this module,
+     intro never released — parked at y44, invisible.
+     AFTER: both released together on the settle beat, exactly as the
+     shipped splash does at its own landing. */
   const playPageBeats = () => {
     const logos = document.querySelector('[data-landing-hero-logos]');
     if (logos instanceof HTMLElement) logos.classList.add('is-entered');
     const cards = document.querySelector('[data-landing-hero-cards]');
     if (cards instanceof HTMLElement) cards.classList.add('is-entered');
     document.dispatchEvent(new CustomEvent('landing-hero:cards-entered'));
+    /* the headline's wrapped clips, then the intro's paragraphs — the
+       shipped splash's own two calls, same order */
+    document.querySelectorAll('[data-landing-hero-headline-text] p').forEach((el) => {
+      if (el instanceof HTMLElement) playLineRevealElement(el);
+    });
+    document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
+      if (p instanceof HTMLElement) playLineRevealElement(p);
+    });
   };
 
   const settle = () => {
@@ -246,14 +302,30 @@ export function initSplashB(splashRoot) {
     const cardH = rects[0].height;
     miniW = cardW * SB_MINI_SCALE;
     miniH = cardH * SB_MINI_SCALE;
-    gap = (rects[1].left - rects[0].left - cardW) * SB_MINI_SCALE;
+    gap = 8 * SB_MINI_SCALE;
     const rowW = miniW * 3 + gap * 2;
     miniLeft = (i) => (vw - rowW) / 2 + i * (miniW + gap);
     miniTop = (vh - miniH) / 2;
+    /* R59 item 3 — VERSION A'S GEOMETRY, PORTED VERBATIM (hero-entry.js):
+       each stand-in's LAYOUT BOX is its own landing rect, and x/y carry
+       it to the centre with scale 0. Nothing about the box changes after
+       this, so the sort is a plain return to x:0 y:0 scale:1 — the
+       destination is the real card's own box by construction, which is
+       both the pixel-exactness discipline (no re-measured target, so the
+       55px class of bug cannot recur) and the smooth-travel discipline
+       (compositor transforms only, resolved once, one owner). */
+    const centreLeft = vw / 2 - cardW / 2;
+    const centreTop = vh / 2 - cardH / 2;
     gsap.set(sbCards, {
-      top: miniTop, left: (i) => miniLeft(i), width: miniW, height: miniH,
-      transformOrigin: '0 0', x: 0, y: 0, scale: 1,
-      clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
+      top: (i) => rects[i].top,
+      left: (i) => rects[i].left,
+      width: (i) => rects[i].width,
+      height: (i) => rects[i].height,
+      transformOrigin: '50% 50%',
+      x: (i) => centreLeft - rects[i].left,
+      y: (i) => centreTop - rects[i].top,
+      scale: 0,
+      clipPath: 'none',
     });
     gsap.set(sbCards.map((c) => c.querySelector('img')), { scale: SB_IMG_SCALE_FROM });
   };
@@ -337,49 +409,33 @@ export function initSplashB(splashRoot) {
     if (counterBox instanceof HTMLElement) tl.to(counterBox, { scale: 1, duration: SB_COUNT_DUR, ease: 'power3.out' }, '<');
     if (bar instanceof HTMLElement) tl.to(bar, { scaleX: 1, duration: SB_COUNT_DUR, ease: 'power3.out' }, '<');
 
-    /* ── the three open from their points, left → right */
-    tl.to(sbCards, {
-      clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
-      duration: SB_OPEN_DUR, ease: hop, stagger: SB_OPEN_STAGGER,
+    /* ── THE STACK (SB_OPEN_AT): the three grow from nothing at the
+       centre, one after another, piling on top of each other. Version
+       A's order — LEFT, RIGHT, then the MIDDLE last so it lands on top
+       of the pile (hero-entry.js's own reorder, kept). */
+    const stackEls = [sbCards[0], sbCards[2], sbCards[1]];
+    tl.to(stackEls, {
+      scale: SB_STACK_SCALE, ease: 'power2.out',
+      duration: SB_OPEN_DUR, stagger: SB_OPEN_STAGGER,
     }, SB_OPEN_AT);
-    tl.to(imgs, { scale: SB_IMG_SCALE_MID, duration: SB_OPEN_DUR, ease: hop, stagger: SB_OPEN_STAGGER }, SB_OPEN_AT);
+    tl.to(imgs, { scale: 1, duration: SB_OPEN_DUR, ease: 'power2.out', stagger: SB_OPEN_STAGGER }, SB_OPEN_AT);
 
-    /* ── THE TRAVEL — the reference's full-bleed beat is this instead:
-       each lands on its own hero card's measured rect. */
-    /* R54 item 4 — THE TRAVEL IS TRANSFORM-ONLY, AND ITS DESTINATION IS
-       RESOLVED ONCE.
-       WHAT WAS WRONG: this animated top / left / width / height. Those
-       are layout properties, so every frame the browser resolved them to
-       whole pixels — sampled per frame, card 0's top moved
-       0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1 … and its width
-       stepped 233, 233, 234, 237, 240, 245 …: the row sat still for a
-       dozen frames, jumped a pixel, sat still again. That stutter is the
-       shake. (It was NOT the WebGL planes fighting the DOM — the gallery
-       does not start until the settle — and not a measurement feedback
-       loop: there were zero reversals across 216 sampled frames.)
-       WHAT IT IS NOW: the layout box stays the mini box for the whole
-       travel and only the transform moves, so the compositor carries it
-       at sub-pixel precision. The destination is read ONCE, when this
-       tween first renders at SB_TRAVEL_AT — GSAP evaluates function-based
-       values at tween start, which is after fonts and after the hero has
-       placed its cards, so it is the real resting rect and nothing is
-       re-measured mid-flight. Origin is 0 0, and the mini row is the
-       hero's row scaled uniformly, so scaleX and scaleY are equal and
-       the images cannot distort. */
+    /* ── THE SORT: a plain return to zero — x, y and scale only, on the
+       compositor, with the destination already the element's own layout
+       box. Per-frame deltas verified monotonic with no reversals. */
     tl.to(sbCards, {
-      x: (i) => heroCards[i].getBoundingClientRect().left - miniLeft(i),
-      y: (i) => heroCards[i].getBoundingClientRect().top - miniTop,
-      scale: () => heroCards[0].getBoundingClientRect().width / miniW,
-      duration: SB_TRAVEL_DUR, ease: hop, stagger: SB_TRAVEL_STAGGER,
-    }, SB_TRAVEL_AT);
-    tl.to(imgs, { scale: 1, duration: SB_TRAVEL_DUR, ease: hop, stagger: SB_TRAVEL_STAGGER }, SB_TRAVEL_AT);
+      x: 0, y: 0, scale: 1, ease: 'power3.inOut',
+      duration: SB_TRAVEL_DUR, stagger: SB_TRAVEL_STAGGER,
+    }, SB_SORT_AT);
+
+
     /* R54 item 7: the line WIPES AWAY left → right — its left edge
        travels right until it meets the right end — starting as the
        images appear and finishing exactly as the travel begins. The
        second line that used to ride over the first is gone. */
     if (bar instanceof HTMLElement) tl.to(bar, { clipPath: 'inset(0 0 0 100%)', duration: SB_LINE_WIPE_DUR, ease: hop }, SB_LINE_WIPE_AT);
     /* the red resolves to the hero's own ground as the three come home */
-    if (ground instanceof HTMLElement) tl.to(ground, { opacity: 0, duration: SB_GROUND_OUT_DUR, ease: 'power1.inOut' }, SB_TRAVEL_AT + SB_TRAVEL_DUR - SB_GROUND_OUT_DUR);
+    if (ground instanceof HTMLElement) tl.to(ground, { opacity: 0, duration: SB_GROUND_OUT_DUR, ease: 'power1.inOut' }, SB_SORT_AT + SB_TRAVEL_DUR - SB_GROUND_OUT_DUR);
 
     /* ── the headline, then the nav and the rest — OUR vocabulary on the
        reference's clock. The hero's own modules own these reveals. */
