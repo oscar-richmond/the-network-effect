@@ -709,31 +709,46 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	   family's fill and ink) at the 24 margin; work-view.js derives
 	   --work-toggle-top so the chips' bottom sits on FEATURED's
 	   baseline. z above the stage's left column (3). */
+	/* R38 item 1 (Oscar, 2026-09-04; frame 0:202): icon + label chips,
+	   12 apart. Right edge on the K's INK, top 32 below the title's
+	   bottom INK — work-view.js measures both from the rendered glyphs
+	   and writes --work-toggle-left / --work-toggle-top (the CSS values
+	   are the pre-JS approximation at 1728: K ink right 578.6, WORK
+	   baseline 285.9). */
 	.landing-v2 .work-viewtoggle {
 		position: absolute;
-		right: 24px;
-		top: var(--work-toggle-top, 159px);
+		left: var(--work-toggle-left, 375px);
+		top: var(--work-toggle-top, 318px);
 		z-index: 5;
 		display: flex;
-		gap: 8px;
+		gap: 12px;
 		margin: 0;
 	}
 	.landing-v2 .work-viewtoggle__btn {
-		width: 38px;
 		height: 38px;
 		display: inline-flex;
 		align-items: center;
-		justify-content: center;
-		padding: 0;
+		gap: 6px;               /* icon → label (frame: icon at 16, label at 38) */
+		padding: 0 16px;
 		border: 0;
 		background: var(--landing-svc-btn-fill, #e4e4ea);
 		color: var(--landing-accent-blue, #232a89);
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 1;
+		text-transform: uppercase;
 		cursor: pointer;
+		transition: background-color 0.25s ease-out, color 0.25s ease-out;
 	}
-	.landing-v2 .work-viewtoggle__btn svg { display: block; }
-	/* ACTIVE = the brand red on the glyph's stroke (currentColor); a
-	   red fill would read as a block beside the heading. */
-	.landing-v2 .work-viewtoggle__btn.is-active { color: #c1250e; cursor: default; }
+	.landing-v2 .work-viewtoggle__icon { display: block; flex: none; fill: currentColor; }
+	/* ACTIVE = the frame's filled chip: #232A89 with white ink and icon. */
+	.landing-v2 .work-viewtoggle__btn.is-active {
+		background: var(--landing-accent-blue, #232a89);
+		color: #fff;
+		cursor: default;
+	}
 	.landing-v2 .work-viewtoggle__btn:focus-visible {
 		outline: 2px solid #232a89;
 		outline-offset: 2px;

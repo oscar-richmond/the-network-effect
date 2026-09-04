@@ -33,12 +33,12 @@ export const WORK_VIEW_STORAGE_KEY = 'ne:work-view';
 export const WORK_VIEW_QUERY_KEY = 'view';
 export const SWITCH_OUT_MS = 360;
 export const SWITCH_IN_MS = 420;
-/* The toggle's vertical anchor: the chips' bottom edge sits on the
-   FEATURED line's BASELINE (the landing's VIEW ALL sits on its
-   header's ink bottom the same way) — derived from the font's
-   measured metrics at boot and on resize; the CSS top is the
-   pre-JS approximation. */
-const TOGGLE_H_PX = 38;
+/* The toggle's anchor (R38 item 1, Oscar 2026-09-04 — supersedes the
+   R35 baseline-of-FEATURED anchor): its right edge on the K's ink in
+   WORK, its top 32 below the title's bottom ink — both derived from
+   the font's measured metrics at boot and on resize; the CSS values
+   are the pre-JS approximation. */
+const TOGGLE_GAP_PX = 32; /* R38: the group's top below the title's bottom ink */
 
 const readInitialView = () => {
   const q = new URLSearchParams(window.location.search).get(WORK_VIEW_QUERY_KEY);
@@ -91,21 +91,34 @@ export function initWorkView() {
   };
 
   /* ── The toggle's vertical anchor (see TOGGLE_H_PX). */
+  /* R38 item 1 (Oscar, 2026-09-04): the group's RIGHT edge sits on the
+     K's INK in WORK and its TOP 32 below the title's bottom INK — the
+     glyphs, not the boxes (the frame's 583 is the text box's right
+     edge). Canvas metrics of the WORK line: its baseline from the line
+     box (88) and the font's ascent/descent; the K's ink right =
+     the line's left + actualBoundingBoxRight of "WORK"; the bottom ink
+     = baseline + the caps' descent (0 for WORK). Re-derived on resize
+     and after fonts. */
   const placeToggle = () => {
     if (!(toggle instanceof HTMLElement)) return;
-    const hl = document.querySelector('[data-work-hl-featured]');
+    const hl = document.querySelector('[data-work-hl-work]');
     if (!(hl instanceof HTMLElement)) return;
     const cs = getComputedStyle(hl);
     const ctx = document.createElement('canvas').getContext('2d');
     if (!ctx) return;
     ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    const m = ctx.measureText('H');
+    const m = ctx.measureText(hl.textContent.trim());
     const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2;
     const asc = m.fontBoundingBoxAscent ?? parseFloat(cs.fontSize) * 0.9;
     const desc = m.fontBoundingBoxDescent ?? parseFloat(cs.fontSize) * 0.2;
-    const top = parseFloat(cs.top) || 120;
+    const top = parseFloat(cs.top) || 208;
+    const left = parseFloat(cs.left) || 291.8;
     const baseline = top + (lh - (asc + desc)) / 2 + asc;
-    toggle.style.setProperty('--work-toggle-top', `${(baseline - TOGGLE_H_PX).toFixed(1)}px`);
+    const inkBottom = baseline + (m.actualBoundingBoxDescent || 0);
+    const inkRight = left + m.actualBoundingBoxRight;
+    toggle.style.setProperty('--work-toggle-top', `${(inkBottom + TOGGLE_GAP_PX).toFixed(1)}px`);
+    toggle.style.setProperty('--work-toggle-left', `${(inkRight - toggle.offsetWidth).toFixed(1)}px`);
+    if (import.meta.env.DEV) window.__workToggle = { inkRight: +inkRight.toFixed(2), inkBottom: +inkBottom.toFixed(2), baseline: +baseline.toFixed(2), boxRight: +(left + m.width).toFixed(2) };
   };
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {

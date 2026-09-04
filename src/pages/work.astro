@@ -243,12 +243,26 @@ const gridRows = GRID_ROWS.map((row) =>
       row and scrolls with the grid's header. In DOM order it sits
       BEFORE the grid so the keyboard path runs header → toggle →
       tiles in reading order → footer. Hidden ≤1024. */}
+  {/* R38 item 1 (Oscar, 2026-09-04; Figma 404lXHunYm2c107Kq97pv6 frame
+      0:91, group 0:202): two 38px More Info-family chips 12 apart, each a
+      16×12 icon LEFT of its label (icon at x16, label at x38: 16 pad + 16
+      icon + 6 gap, 16 right pad; group 203 wide = 95 + 12 + 96). Labels
+      per the frame: GRID and ROW. The ACTIVE view's chip is the frame's
+      filled #232A89 with white ink and icon; the inactive chip rests on
+      the family's #E4E4EA with accent ink (the frame draws ROW active on
+      its single-column content). Icons are the frame's vector geometry
+      (0:208 / 0:216) on a 16×12 box, currentColor so they ride the ink.
+      Position (work-view.js placeToggle): the group's RIGHT edge on the
+      K's INK in WORK and its top 32 below the title's bottom INK — both
+      measured from the rendered glyphs, not the boxes. */}
   <div class="work-viewtoggle" data-work-viewtoggle role="group" aria-label="Featured work view">
-    <button type="button" class="work-viewtoggle__btn is-active" data-work-view="list" aria-pressed="true" aria-label="List view">
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" /></svg>
-    </button>
     <button type="button" class="work-viewtoggle__btn" data-work-view="grid" aria-pressed="false" aria-label="Grid view">
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="miter" /></svg>
+      <svg class="work-viewtoggle__icon" viewBox="0 0 16 12" width="16" height="12" aria-hidden="true"><rect x="0" y="0" width="10" height="2" /><rect x="13" y="0" width="3" height="2" /><rect x="6" y="5" width="10" height="2" /><rect x="0" y="9" width="2" height="3" /><rect x="5" y="10" width="11" height="2" /></svg>
+      <span class="work-viewtoggle__label">GRID</span>
+    </button>
+    <button type="button" class="work-viewtoggle__btn is-active" data-work-view="list" aria-pressed="true" aria-label="List view">
+      <svg class="work-viewtoggle__icon" viewBox="0 0 16 12" width="16" height="12" aria-hidden="true"><rect x="0" y="0" width="16" height="2" /><rect x="0" y="5" width="16" height="2" /><rect x="0" y="10" width="16" height="2" /></svg>
+      <span class="work-viewtoggle__label">ROW</span>
     </button>
   </div>
   <p class="work-sr-live" data-work-view-live aria-live="polite"></p>
