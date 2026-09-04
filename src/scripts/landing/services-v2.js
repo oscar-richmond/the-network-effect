@@ -180,6 +180,16 @@ export function initServicesV2() {
     ScrollTrigger.refresh();
   });
 
+  /* `disposed` is declared HERE, above the reduced-motion return below,
+     because the statement-dwell callback installed earlier reads it when
+     fonts resolve. Declared after that return (as it was) the RM path
+     skipped its initialiser and the callback threw a temporal-dead-zone
+     ReferenceError — "Cannot access 'disposed' before initialization" —
+     on every mobile /services load with reduced motion, which also meant
+     the dwells (documented as layout, not motion, and meant to run under
+     RM) never installed. */
+  let disposed = false;
+
   if (reduced) {
     /* RM: static page (sticky is layout; the wave rides plain
        scroll via the section's fallback height — no scrub, images
@@ -189,7 +199,6 @@ export function initServicesV2() {
   }
 
   const triggers = [];
-  let disposed = false;
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
