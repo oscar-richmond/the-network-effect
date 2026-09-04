@@ -12,13 +12,13 @@
  *     the time this boots);
  *   · the header pair's word reveal (the list header's vocabulary,
  *     wrapped once per page life, replayed per boot);
- *   · the tiles' entrance — rows revealing top to bottom as they enter
- *     the viewport, tiles staggered within each row (the featured-card
- *     fade-rise, work.css) — once per boot;
+ *   · the row reveal (R38) — red containers resolving to their images
+ *     per row at a quarter of the tallest tile entered, reversible;
+ *   · the hover swap (R38) — the cover-swap wipe to a second image;
  *   · the footer's entrance on a scroll trigger (a flow page's
  *     grammar; the wrap is idempotent in footer-motion).
- * RM: no stagger (every tile visible at once), no hover scale (CSS),
- * the header still reveals (the page's load beat).
+ * RM: no red state (images present), no hover swap, the header still
+ * reveals (the page's load beat).
  */
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { bindBottomNavSweep } from './nav-motion.js';
@@ -27,13 +27,12 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createCoverSwap } from '../cover-swap.js';
 
-/* The entrance's tunables: a row's tiles arrive GRID_TILE_STAGGER_MS
-   apart; when more than one row is already in view at boot, the rows
-   themselves are GRID_ROW_STAGGER_MS apart. */
-export const GRID_ROW_STAGGER_MS = 160;
-export const GRID_TILE_STAGGER_MS = 90;
+/* R38 item 6 — the row reveal's tunables (the R35 entrance staggers
+   are retired with the fade-rise). */
+export const GRID_REVEAL_THRESHOLD_T = 0.25; /* of the row's tallest tile entered */
+export const GRID_REVEAL_MS = 600;           /* the veil's fade / the image's un-blur */
+export const GRID_REVEAL_BLUR_PX = 12;       /* the image's blur under the veil */
 const LINE_STAGGER_S = 0.12;
-const ROW_ENTER_THRESHOLD = 0.12;
 
 export function initWorkGrid() {
   const grid = document.querySelector('[data-work-grid]');
@@ -109,39 +108,38 @@ export function initWorkGrid() {
     });
   }
 
-  /* ── The tiles' entrance. */
+  /* ── R38 item 6: THE ROW REVEAL — red containers resolving to images.
+     Per row, from that row's MEASURED geometry: the threshold is a
+     quarter of the row's TALLEST tile entered (row top + tallest/4 ≤
+     the viewport bottom) — resolve; above it — red again (mirrored,
+     scroll-driven, reversible). All tiles in a row resolve together
+     (Oscar's default). Tunables: GRID_REVEAL_THRESHOLD_T, the
+     duration and blur as CSS vars (GRID_REVEAL_MS / GRID_REVEAL_BLUR_PX).
+     RM: no veil (CSS), rows marked resolved at boot. */
   const rows = Array.from(grid.querySelectorAll('[data-work-grid-row]')).filter((el) => el instanceof HTMLElement);
   const tilesOf = (row) => Array.from(row.querySelectorAll('[data-work-gtile]')).filter((el) => el instanceof HTMLElement);
-  let rowsRevealed = 0;
-  const revealRow = (row) => {
-    if (row.dataset.gridRevealed === '1') return;
-    row.dataset.gridRevealed = '1';
-    const rowBeat = rowsRevealed * GRID_ROW_STAGGER_MS;
-    rowsRevealed += 1;
-    tilesOf(row).forEach((tile, i) => {
-      tile.style.transitionDelay = reduced ? '' : `${rowBeat + i * GRID_TILE_STAGGER_MS}ms`;
-      tile.classList.add('is-visible');
-    });
-    /* the row beat only applies to rows that are on screen together;
-       a row that enters later starts its own count */
-    timeouts.push(setTimeout(() => { rowsRevealed = Math.max(0, rowsRevealed - 1); }, GRID_ROW_STAGGER_MS + 50));
-  };
-  let io = null;
-  if (reduced || typeof IntersectionObserver !== 'function') {
-    rows.forEach(revealRow);
-  } else {
-    io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => { if (entry.isIntersecting && entry.target instanceof HTMLElement) { revealRow(entry.target); io?.unobserve(entry.target); } });
-    }, { threshold: ROW_ENTER_THRESHOLD });
-    rows.forEach((row) => io.observe(row));
-  }
-  cleanups.push(() => {
-    io?.disconnect();
-    /* once per BOOT: the next boot replays from the parked state */
+  grid.style.setProperty('--work-reveal-s', `${GRID_REVEAL_MS / 1000}s`);
+  grid.style.setProperty('--work-reveal-blur', `${GRID_REVEAL_BLUR_PX}px`);
+  const rowThreshold = (row) => Math.max(...tilesOf(row).map((t) => (t.querySelector('.work-gtile__media') ?? t).getBoundingClientRect().height), 0) * GRID_REVEAL_THRESHOLD_T;
+  const measureRows = () => {
+    const vh = window.innerHeight || 0;
     rows.forEach((row) => {
-      delete row.dataset.gridRevealed;
-      tilesOf(row).forEach((tile) => { tile.classList.remove('is-visible'); tile.style.transitionDelay = ''; });
+      const top = row.getBoundingClientRect().top;
+      const on = reduced || top + rowThreshold(row) <= vh;
+      row.classList.toggle('is-resolved', on);
     });
+  };
+  let revealRaf = 0;
+  const onRevealScroll = () => { if (!revealRaf) revealRaf = requestAnimationFrame(() => { revealRaf = 0; measureRows(); }); };
+  measureRows();
+  window.addEventListener('scroll', onRevealScroll, { passive: true });
+  window.addEventListener('resize', onRevealScroll);
+  cleanups.push(() => {
+    window.removeEventListener('scroll', onRevealScroll);
+    window.removeEventListener('resize', onRevealScroll);
+    window.cancelAnimationFrame(revealRaf);
+    /* once per BOOT: the next boot replays from the parked (red) state */
+    rows.forEach((row) => row.classList.remove('is-resolved'));
   });
 
   /* ── The footer: the flow-page grammar — wrapped once (idempotent),
@@ -163,7 +161,7 @@ export function initWorkGrid() {
 
   if (import.meta.env.DEV) {
     window.__workGrid = {
-      rows: () => rows.map((r) => ({ revealed: r.dataset.gridRevealed === '1', tiles: tilesOf(r).map((t) => [t.dataset.slug, t.classList.contains('is-visible'), t.style.transitionDelay]) })),
+      rows: () => rows.map((r) => ({ resolved: r.classList.contains('is-resolved'), threshold: +rowThreshold(r).toFixed(1), top: +r.getBoundingClientRect().top.toFixed(1), tiles: tilesOf(r).map((t) => t.dataset.slug) })),
     };
   }
 
