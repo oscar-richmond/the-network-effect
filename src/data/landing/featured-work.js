@@ -164,14 +164,19 @@ export const WORK_EXTRAS = [
     tbc: true,
   },
   {
-    /* TBC — RIGHTS: named-person portrait (Ashley Walters). */
-    index: '/00',
-    title: ['TBC'],
-    desc: 'Content to follow.',
+    /* R39 item 2 (Oscar, 2026-09-04): REAL CONTENT — the Rolling Stone
+       portrait entry. RIGHTS: named-person portrait (Ashley Walters) —
+       the standing elevated flag stands; the slug is kept for the
+       existing deep links / the grid composition (no URL of its own —
+       an unbuilt study, rendered as a placeholder tile / card). Index
+       /09 = the ninth project on the page (was the stub's /00). */
+    index: '/09',
+    title: ['Music and Culture'],
+    desc: 'A long-standing presence across British music, entertainment and youth culture.',
     slug: 'tbc-ashley-walters',
-    tags: [], // TBC
+    tags: [],
     workImg: wp(5),
-    tbc: true,
+    tbc: false,
   },
   {
     /* TBC — RIGHTS: recognizable chef portrait (possibly Yoxman-
@@ -204,11 +209,19 @@ export const WORK_EXTRAS = [
  *  work-page image fall back to their landing card image as a
  *  PLACEHOLDER — Oscar's image drop follows (copy-only change,
  *  his words). The WORK_EXTRAS stubs above stay defined but ride
- *  no carousel until his content lands. */
-export const WORK_PROJECTS = FEATURED_CARDS.map((c) => ({
-  ...c,
-  workImg: c.workImg ?? c.img.src, // PLACEHOLDER pending Oscar's drop
-}));
+ *  no carousel until their content lands — an extra whose content
+ *  HAS landed (tbc: false; R39: Music and Culture) rides every
+ *  surface. */
+export const WORK_PROJECTS = [
+  ...FEATURED_CARDS.map((c) => ({
+    ...c,
+    workImg: c.workImg ?? c.img.src, // PLACEHOLDER pending Oscar's drop
+  })),
+  /* R39 item 2: an extra with REAL content (tbc: false) joins every
+     /work surface — the desktop list, the grid, the case studies'
+     MORE WORK rail — from this one source. The TBC stubs stay out. */
+  ...WORK_EXTRAS.filter((e) => !e.tbc),
+];
 
 /* ═══ /work GRID — HOVER IMAGES (R38 item 5, Oscar 2026-09-04) ═══
    Each grid tile swaps to a SECOND image on hover (the /services
