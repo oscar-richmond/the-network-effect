@@ -7358,6 +7358,23 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 .landing-v2 .sp-mail { color: #161616; text-decoration: underline; text-underline-offset: 3px; }
 .landing-v2 .sp-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
+
+/* ── A11y batch (Oscar, 2026-09-04) ─────────────────────────────────
+   THE VISUALLY-HIDDEN UTILITY: present for assistive technology,
+   absent from layout and paint. Used by the landing hero's exposed
+   copy and the founders page's h1. */
+.landing-v2 .landing-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+.landing-v2 .landing-sr:focus { outline: none; }
 /* STEP TRANSITION — the house blur-crossfade: out 0.36s, in 0.42s
    (SP_STEP_OUT_MS / SP_STEP_IN_MS). R44: the drawer is full height,
    so the panel no longer tweens its height between steps — the steps

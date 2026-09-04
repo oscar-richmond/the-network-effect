@@ -61,6 +61,24 @@ const heroEntryFlash = [
 ];
 ---
 
+
+{/* A11y batch item 2 (Oscar, 2026-09-04): THE PROPOSITION, EXPOSED.
+    The stage below is aria-hidden because it is scroll machinery —
+    headline that slides, lines that reveal, a marquee, cards that
+    rise — and Chrome prunes its text from the accessibility tree
+    entirely, so the home page had no heading and no copy for a
+    screen reader. This block is the same copy, visually hidden,
+    outside the stage: the page's h1, the statement, the client
+    roll-call (the nine marks are alt="" images inside the marquee).
+    It is also the skip link's target on this route (the hero IS the
+    first content; there is no <main> on the landing page). Zero
+    layout: the utility clips it to a pixel. */}
+<div class="landing-sr" id="main" tabindex="-1">
+  <h1>Built on trust. Powered by access.</h1>
+  <p>We connect Talent, Brands &amp; Audiences through Experiences, Strategic Partnerships &amp; Media.</p>
+  <p>Trusted by {HERO_LOGO_BRANDS.map((b) => b.name).join(', ')}.</p>
+</div>
+
 <div class="landing-hero" data-landing-hero aria-hidden="true">
   <div class="landing-hero__bg"></div>
 
