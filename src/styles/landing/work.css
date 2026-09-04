@@ -628,7 +628,10 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	.landing-v2 .work-grid {
 		--work-grid-gutter: 24px;
 		--work-grid-rowgap: 96px;   /* Oscar: 96 to start, tunable (the reference's ~250 paces sixteen projects) */
-		--work-grid-top: 80px;      /* the first row below the header block (120 + 176) */
+		/* R38 item 3: the first row begins 80 below the TOGGLE GROUP'S
+		   bottom — work-view.js derives this from the placed toggle
+		   (bottom + 80 − the 296 head); 140 is the 1728 pre-JS value. */
+		--work-grid-top: 140px;
 		position: relative;
 		background: #eeeef0;
 		padding-bottom: 120px;

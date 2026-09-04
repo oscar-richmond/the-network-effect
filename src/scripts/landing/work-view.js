@@ -42,6 +42,7 @@ export const SWITCH_IN_MS = 420;
    the font's measured metrics at boot and on resize; the CSS values
    are the pre-JS approximation. */
 const TOGGLE_GAP_PX = 32; /* R38: the group's top below the title's bottom ink */
+const GRID_START_GAP_PX = 80; /* R38 item 3: the first row below the toggle group's bottom */
 
 /* R38 item 2 (Oscar, 2026-09-04): GRID is the default view; LIST is
    what the user switches to. The query wins on load (?view=list is
@@ -127,6 +128,16 @@ export function initWorkView() {
     const inkRight = left + m.actualBoundingBoxRight;
     toggle.style.setProperty('--work-toggle-top', `${(inkBottom + TOGGLE_GAP_PX).toFixed(1)}px`);
     toggle.style.setProperty('--work-toggle-left', `${(inkRight - toggle.offsetWidth).toFixed(1)}px`);
+    /* R38 item 3: the grid's first row begins GRID_START_GAP_PX below the
+       toggle group's bottom — derived from the group's placed box, so
+       the two rulings (the toggle's anchor, the grid's start) stay one
+       chain. The grid reads it as its rows' padding-top. */
+    if (grid instanceof HTMLElement) {
+      const head = grid.querySelector('.work-grid__head');
+      const headH = head instanceof HTMLElement ? head.offsetHeight : 296;
+      const toggleBottom = inkBottom + TOGGLE_GAP_PX + toggle.offsetHeight;
+      grid.style.setProperty('--work-grid-top', `${Math.max(0, toggleBottom + GRID_START_GAP_PX - headH).toFixed(1)}px`);
+    }
     if (import.meta.env.DEV) window.__workToggle = { inkRight: +inkRight.toFixed(2), inkBottom: +inkBottom.toFixed(2), baseline: +baseline.toFixed(2), boxRight: +(left + m.width).toFixed(2) };
   };
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
