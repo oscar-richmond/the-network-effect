@@ -1,0 +1,66 @@
+---
+/**
+ * THE CLOSING STATEMENT — a SHARED component (R36 item 7, Oscar
+ * 2026-09-04): the fragmented statement section + the red tail,
+ * extracted VERBATIM from LandingClosing.astro (frame 13:277's
+ * composition, the dline grammar) so the landing and /services carry
+ * one instance each of the same section. Driven by
+ * closing-statement.js (dwell, white → red scrub, nav-over-red,
+ * entrance); styled by landing.css (.landing-closing-st*,
+ * .landing-closing-tail — page-agnostic under .landing-v2). Desktop
+ * only (display:none ≤1024 on both pages).
+ *
+ * COPY: the same lines on both pages — on /services this is a
+ * PLACEHOLDER pending Oscar's services-specific statement (flagged).
+ */
+/* ── FRAGMENTED STATEMENT (frame 13:277, x88 y1264, 1616×727) — the
+   We Create Access dline grammar verbatim: Dazzed Bold 100/88/−4%
+   UPPERCASE ink, absolutely positioned lines, authored x/y (the
+   pitch is deliberately irregular: 90/88/101/90...). Supersedes the
+   old right-hand intro paragraph on desktop (mobile keeps its own).
+   Line 3's wide word-gap is AUTHORED SPACES (white-space: pre). */
+const ST_LINES = [
+  { x: 374, y: 0, t: 'The' },
+  { x: 295, y: 90, t: 'network effect' },
+  { x: 88, y: 178, t: 'exists            to connect people,' },
+  { x: 565, y: 279, t: 'brands and talent' },
+  { x: 201, y: 369, t: 'in ways that create' },
+  { x: 228, y: 459, t: 'long-term' },
+  { x: 1037, y: 459, t: 'cultural' },
+  { x: 410, y: 549, t: 'and commercial' },
+  { x: 1007, y: 639, t: 'value.' },
+];
+---
+
+{/* ── THE FRAGMENTED STATEMENT — its own full-width flow section
+    (desktop only; ≤1024 keeps the shipped mobile closing untouched).
+    The 54px breathing space to the closing above lives INSIDE the
+    section (+54 on every line top) so the box sits flush against the
+    closing — a margin here was a transparent strip that exposed the
+    fixed hero video. The read gap from the descriptions stays the
+    frame's 225. */}
+<section class="landing-closing-st" data-closing-st aria-label="The network effect">
+  {/* The DWELL stage (Oscar R3, 2026-08-26): sticky slack — the
+      closing's own hold mechanism reused. The stage pins when the
+      statement's centre crosses the viewport centre (sticky top =
+      50dvh − half the stage) and holds for the section's extra
+      --closing-st-hold of scroll. Pure CSS: scrub-native,
+      reversible, and the RM static equivalent for free. */}
+  <div class="landing-closing-st__stage" data-closing-st-stage>
+    {ST_LINES.map((l) => (
+      <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y + 54}px`}>{l.t}</p>
+    ))}
+  </div>
+</section>
+
+{/* THE RED TAIL — R21 (Oscar 2026-09-02): 180px of the final red
+    ground below the statement section (was the 500 exit-fade tail of
+    R16). The sequence is now white arrival → white→red while the
+    text is fixed (R23: over 600 of scroll, half speed) → the footer
+    revealed from beneath this tail's bottom edge; the tail fades
+    WITH the section during the dwell (landing-closing.js) and stays
+    red. R23: the statement section ends at "value."'s ink bottom, so
+    this 180 is THE gap from that ink to the reveal. Desktop only
+    (display:none ≤1024, like the statement section). z260: the
+    closing tier over the footer (259). */}
+<div class="landing-closing-tail" data-closing-tail aria-hidden="true"></div>

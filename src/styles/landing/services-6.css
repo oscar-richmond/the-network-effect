@@ -546,7 +546,16 @@
 	   +24, its one deliberate exception). This page shipped 120 —
 	   the sv6 module's own number — which was the audit's one
 	   genuine spacing drift. */
-	.landing-v2 .sv6 { padding-bottom: 139px; }
+	/* R36 item 7 (Oscar, 2026-09-04): the CLOSING STATEMENT is now the
+	   page's last flow child and the footer reveals from beneath its
+	   red tail (the landing's 180 ruling — the tail's bottom edge IS
+	   the reveal line), so the pre-footer padding retires (was 139).
+	   The gap above the statement is the page's section gap: 120 — the
+	   tables' own margin-top precedent (.sv6-table); the dwell's derived
+	   clear strip and the block's 54 sit INSIDE the section, exactly as
+	   on the landing (statement-dwell.js). */
+	.landing-v2 .sv6 { padding-bottom: 0; }
+	.landing-v2 .sv6 .landing-closing-st { margin-top: 120px; }
 
 	/* ── Entrances (no-preference; live vocabulary — word reveals
 	   are wrapped by the driver; the media below get the house

@@ -31,6 +31,7 @@ import LandingFeatured from '../components/landing/LandingFeatured.astro';
 import LandingServicesStack from '../components/landing/LandingServicesStack.astro';
 import LandingAccess from '../components/landing/LandingAccess.astro';
 import LandingClosing from '../components/landing/LandingClosing.astro';
+import ClosingStatement from '../components/landing/ClosingStatement.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
@@ -189,6 +190,9 @@ import { SERVICES_REEL_PILLARS } from '../data/landing/services-reel.js';
       (Figma 21:2392). Both carry z260, the exit gate over the fixed
       hero stage. */}
   <LandingClosing />
+  {/* R36 item 7: the shared closing statement + red tail (was inside
+      LandingClosing) — same flow position, byte-identical output. */}
+  <ClosingStatement />
   {/* R16 (Oscar 2026-09-02): the GREY/WHITE footer theme (frame
       L3MtStuayLmiag1JOIzDfJ 3:67 — colour-identical to the existing
       'light' colourway) on the landing, following the red statement

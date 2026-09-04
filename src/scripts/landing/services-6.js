@@ -36,6 +36,7 @@ import { initSvRowsSections } from './sv-rows.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
+import { initClosingStatement } from './closing-statement.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 
@@ -241,6 +242,10 @@ export function initServices6() {
     }));
   });
   cleanups.push(() => fragCleanups.forEach((fn) => fn()));
+
+  /* ── The closing statement (R36 item 7): the shared driver — dwell,
+     white → red scrub, nav-over-red, entrance (closing-statement.js). */
+  cleanups.push(initClosingStatement({ reduced }));
 
   /* ── Galleries — the featured pattern: derived travel, sticky
      pin, 1:1 scrub. With the frame's six 273px boxes the strip

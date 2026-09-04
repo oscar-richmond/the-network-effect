@@ -45,6 +45,7 @@
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingNetwork from '../components/landing/LandingNetwork.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
+import ClosingStatement from '../components/landing/ClosingStatement.astro';
 import { SERVICES_HERO, SERVICES_PILLARS, SERVICES_ACCESS } from '../data/landing/services-v2.js';
 import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER, SV6_HOVER_IMGS } from '../data/landing/services-6.js';
 import { asset } from '../utils/asset.js';
@@ -193,6 +194,13 @@ import '../styles/fonts.css';
         )}
       </Fragment>
     ))}
+
+    {/* R36 item 7 (Oscar, 2026-09-04): the CLOSING STATEMENT — the landing's
+        shared instance (same composition, same choreography; the copy is a
+        PLACEHOLDER here, flagged) — below AMPLIFY's WE CREATE list, the
+        page's last flow child: the footer reveals from beneath its red tail
+        (the 180 ruling). Spacing above: services-6.css. */}
+    <ClosingStatement />
 
     {/* The dark band (38:2501) is painted by .sv6-darkband — a
         wrapper is impossible without reordering the flow, so the
