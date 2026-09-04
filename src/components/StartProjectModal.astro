@@ -174,6 +174,14 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
 </div>
 {/* The logo twin — TOP-LEVEL fixed difference element (the contact modal's construction; never inside the backdrop-filter subtree). */}
 <a class="sp-modal__logo" data-sp-logo href="/" hidden>THE NETWORK EFFECT</a>
+{/* R44 item 9: the BACKDROP CURSOR — /work's view-case cursor verbatim
+    (view-case-cursor.js): one top-level fixed element carrying
+    mix-blend-mode: difference ITSELF, following the pointer on left/top
+    (never transform), live only while the pointer is over the backdrop;
+    the site's dot hides meanwhile. Round brackets per the standing
+    ruling; uppercase per every label on the site. [hidden] until the
+    form's first open on desktop (the driver boots it lazily). */}
+<div class="work-cursor sp-cursor" data-sp-cursor aria-hidden="true" hidden>( CLOSE )</div>
 
 <script>
   import { initStartProject } from '../scripts/start-project.js';

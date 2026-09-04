@@ -7394,6 +7394,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .sp-modal__logo:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 /* the floating chip leaves while the modal is open (its z-order rule) */
 html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
+/* R44 item 9: the backdrop cursor is the .work-cursor element (its
+   rules above: fixed, z9999, difference, Dazzed 600 16, blur-in);
+   nothing form-specific beyond the hook class. */
 /* RM: no crossfades, no slide, no progress tween */
 @media (prefers-reduced-motion: reduce) {
 	.landing-v2 .sp-step, .landing-v2 .sp-modal__panel, .landing-v2 .sp-modal__backdrop, .landing-v2 .sp-tile, .landing-v2 .sp-chip, .landing-v2 .sp-progress__bar { transition: none; }

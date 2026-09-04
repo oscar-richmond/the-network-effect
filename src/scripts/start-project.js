@@ -22,12 +22,19 @@
  * slide durations are CSS tunables (--sp-drawer-in-s / -out-s); the
  * close guard still waits SP_CLOSE_MS. RM: instant swaps, no tweens.
  *
+ * R44 item 9 — THE BACKDROP CURSOR: /work's view-case cursor reused
+ * verbatim (initViewCaseCursor) with the backdrop as its only target:
+ * "( CLOSE )" in difference while the pointer is over the backdrop,
+ * the site's dot back over the drawer. One instance for the page's
+ * life (the backdrop is hoverable only while the modal is open).
+ *
  * SUBMIT: the deck-request client pattern — the honeypot short-
  * circuits to success, fetch JSON to /api/start-project, the send
  * button holds SENDING (aria-busy) while pending; error keeps the
  * entered data for retry. DEEP LINK: ?project=1 or #start-project.
  */
 import { getLenisInstance } from './landing/site-scroll.js';
+import { initViewCaseCursor } from './landing/view-case-cursor.js';
 
 export const SP_STEP_OUT_MS = 360;
 export const SP_STEP_IN_MS = 420;
@@ -175,6 +182,7 @@ export function initStartProject() {
     document.documentElement.classList.add('sp-modal-open');
     modal.hidden = false;
     if (logoTwin instanceof HTMLElement) logoTwin.hidden = false;
+    bootCursor();
     void modal.offsetWidth;
     modal.classList.add('is-open');
     logoTwin?.classList.add('is-open');
@@ -261,6 +269,20 @@ export function initStartProject() {
   const onBlur = (e) => { const t = e.target; if (!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) || step !== '2') return; if (t.name === 'name' && !t.value.trim()) setError('name', MESSAGES.name); if (t.name === 'email' && t.value.trim() && !EMAIL_RE.test(t.value.trim())) setError('email', MESSAGES.email); if (t.name === 'message' && !t.value.trim()) setError('message', MESSAGES.message); };
   modal.addEventListener('focusout', onBlur);
   cleanups.push(() => modal.removeEventListener('focusout', onBlur));
+
+  /* ── the backdrop cursor (R44 item 9): /work's mechanism, the backdrop as
+     its target. Booted LAZILY on the first open — desktop only (the mobile
+     modal is full-screen: no backdrop to hover) — so a page that never
+     opens the form carries the element [hidden] and its DOM dumps stay
+     byte-identical; the module centres the label once fonts are ready. */
+  const cursorEl = document.querySelector('[data-sp-cursor]');
+  let cursorBooted = false;
+  const bootCursor = () => {
+    if (cursorBooted || reduced || !(cursorEl instanceof HTMLElement) || !window.matchMedia('(min-width: 1025px)').matches) return;
+    cursorBooted = true;
+    cursorEl.hidden = false;
+    cleanups.push(initViewCaseCursor({ cursorEl, linkSelector: '[data-sp-backdrop]', reduced }));
+  };
 
   /* ── the deep link */
   const params = new URLSearchParams(window.location.search);
