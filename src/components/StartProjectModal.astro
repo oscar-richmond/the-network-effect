@@ -145,10 +145,8 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         </div>
         <div class="sp-actions">
           <button type="button" class="ne-cta ne-cta--ghost" data-sp-back data-char-ripple-trigger><span data-char-ripple>BACK</span></button>
-          <button type="submit" class="ne-cta sp-btn--primary" data-sp-send data-char-ripple-trigger>
-            <span data-char-ripple data-sp-send-label>SEND</span>
-            <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow><path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
-          </button>
+          {/* R57 item 5: no arrow, as NEXT. */}
+          <button type="submit" class="ne-cta sp-btn--primary" data-sp-send data-char-ripple-trigger><span data-char-ripple data-sp-send-label>SEND</span></button>
         </div>
       </section>
 
