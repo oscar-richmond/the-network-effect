@@ -158,7 +158,7 @@ const gridRows = GRID_ROWS.map((row) =>
         return (
           <article class="work-m__entry" data-work-m-entry data-tags={p.tags.join(' ')}>
             {live ? (
-              <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true">
+              <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${p.title.join(' ')} — view project`}>
                 <figure class="work-m__img">
                   <img src={p.workImg} alt="" loading="lazy" decoding="async" width="1024" height="616" />
                 </figure>
