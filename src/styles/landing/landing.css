@@ -7713,7 +7713,7 @@ html.sb-on .splash-b { display: block; }
 	font-size: clamp(2.5rem, 25vw, 25rem);
 	line-height: 1;
 	letter-spacing: -0.02em;
-	color: #eeeef0;
+	color: #161616;
 	/* TABULAR FIGURES, and they matter here: this face's numerals are
 	   proportional — measured at 400px, "1" is 134 where "0" is 244, so
 	   "11" (266) to "88" (456) is a 190px swing. Against a left-bottom
@@ -7722,7 +7722,19 @@ html.sb-on .splash-b { display: block; }
 	font-variant-numeric: tabular-nums;
 	font-feature-settings: 'tnum' 1;
 }
-/* one cell per digit, so a digit's slide-out is its own transform */
+/* R54 items 1 + 2 (Oscar, 2026-09-04): the counter and the line are
+   BRAND BLACK on the red. #161616 on #C1250E measures 3.05:1 — the
+   counter is 400px display type, so it clears the 3:1 large-text
+   allowance comfortably; the line is a graphic, so the 3:1 non-text
+   threshold applies and it clears that too, by the same margin. Both
+   are reported: 3.05:1 is a pass for what these two are, and neither
+   is body text. */
+/* THE DIGIT MASK — the reference's masked split, rebuilt. SplitText's
+   `mask: 'chars'` wraps every char in an overflow:hidden box so the
+   char slides out of its OWN cell and vanishes behind the ground. Ours
+   had the digits sliding bare over the ground, visible the whole way;
+   this is that wrapper. */
+.splash-b__digitmask { display: inline-block; overflow: hidden; vertical-align: top; }
 .splash-b__digit { display: inline-block; will-change: transform; }
 /* THE HAIRLINE — the reference's bar and its fill. */
 .splash-b__bar {
@@ -7731,20 +7743,18 @@ html.sb-on .splash-b { display: block; }
 	bottom: 6rem;
 	width: calc(100% - 4rem);
 	height: 1.5px;
-	background: rgba(238, 238, 240, 0.35);
+	background: #161616;
 	transform: scaleX(0);
 	transform-origin: left;
-	will-change: transform;
-	overflow: hidden;
+	will-change: transform, clip-path;
 	z-index: 2;
-}
-.splash-b__bar-fill {
-	position: absolute;
-	inset: 0;
-	background: #eeeef0;
-	transform: scaleX(0);
-	transform-origin: left;
-	will-change: transform;
+	/* R54 item 7: the line draws left → right, then WIPES AWAY in the
+	   same direction — its left edge travels right until it meets the
+	   right end. That is a clip inset from the left, not a second line
+	   riding over the first (the reference's `.progress` fill, which
+	   this replaces and which is gone). Clip rather than a second
+	   transform so the draw's own scaleX is never disturbed. */
+	clip-path: inset(0 0 0 0);
 }
 /* While the sequence owns the screen the hero's own cards stay dark;
    they take over at the settle with no transition, because the
@@ -7754,11 +7764,30 @@ html.sb-on .landing-v2.landing-home .landing-hero__card img {
 	transform: none !important;
 	transition: none !important;
 }
+/* R54 item 6: NO `!important` opacity here. It used to force the hero's
+   DOM images visible after landing — and the WebGL gallery hides those
+   same images (inline `opacity: 0`) when it takes the cards over, so an
+   `!important` rule beat its inline style and BOTH were drawn: the flat
+   DOM copies sat behind the twirling planes. Measured: inline opacity
+   "0", computed 1. The gallery owns that opacity; the handoff just has
+   to not fight it. (The same defect exists in the hero ENTRY
+   animation's `html.he-landed` rule — flagged, not touched here.) */
 html.sb-landed .landing-v2.landing-home .landing-hero__card img {
-	opacity: 1 !important;
-	transform: none !important;
-	transition: none !important;
+	transform: none;
+	transition: none;
 }
+/* THE RED BLOCKS (Oscar's design call, R54 item 6): the hero's own card
+   wrappers paint BRAND RED on this route, so once the gallery takes the
+   images over the row reads as three red blocks with the twirling
+   planes moving across them. This is the deterministic way to get that
+   look — the wrappers are the only thing behind the canvas, they are
+   the boxes the planes mirror, and their layering cannot vary: the
+   canvas is a later sibling in the same stage. Scoped to this route's
+   body marker, so the main landing page is untouched. */
+/* (the variant marker sits on the BODY alongside landing-v2 /
+   landing-home — all three are the same element, so they compound
+   rather than nest.) */
+body.splash-variant-b.landing-home .landing-hero__card { background: #c1250e; }
 /* Desktop only, and never under reduced motion — splash-b.js refuses to
    run in both cases; these keep the frame before it decides clean. */
 @media (max-width: 1024px) { .splash-b { display: none; } }

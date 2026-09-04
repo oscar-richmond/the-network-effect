@@ -71,6 +71,9 @@ const heroCards = [
     <p class="splash-b__count" data-sb-count>0</p>
   </div>
 
-  {/* THE HAIRLINE — draws scaleX 0 → 1 across the same 3s. */}
-  <div class="splash-b__bar" data-sb-bar><span class="splash-b__bar-fill" data-sb-barfill></span></div>
+  {/* THE HAIRLINE — draws scaleX 0 → 1 across the same 3s, then wipes
+      away left → right as the images appear (R54 item 7). The
+      reference's second `.progress` fill that used to ride over it is
+      removed with the mechanism. */}
+  <div class="splash-b__bar" data-sb-bar></div>
 </div>

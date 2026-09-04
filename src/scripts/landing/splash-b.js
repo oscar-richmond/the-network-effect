@@ -49,6 +49,7 @@
  */
 import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
+import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
 
 /* ── the reference's timings, verbatim */
 export const SB_COUNT_DUR = 3;
@@ -68,6 +69,12 @@ export const SB_TRAVEL_STAGGER = 0.08;  /* echoes the hero's own left/middle/rig
 export const SB_IMG_SCALE_FROM = 2;     /* the reference's inner-image scale */
 export const SB_IMG_SCALE_MID = 1.5;
 export const SB_GROUND_OUT_DUR = 0.6;   /* red resolving to the hero's ground */
+/* R54 item 7 — THE LINE'S EXIT, derived from the timeline rather than
+   typed: it starts wiping as the images begin appearing in the centre
+   (SB_OPEN_AT) and is gone exactly as the travel begins (SB_TRAVEL_AT),
+   so retiming either beat carries the wipe with it. */
+export const SB_LINE_WIPE_AT = SB_OPEN_AT;
+export const SB_LINE_WIPE_DUR = SB_TRAVEL_AT - SB_OPEN_AT;
 export const SB_READY_TIMEOUT_MS = 2500;
 export const SB_FAILSAFE_MS = 15000;
 
@@ -103,7 +110,6 @@ export function initSplashB(splashRoot) {
   const counterBox = document.querySelector('[data-sb-counter]');
   const countEl = document.querySelector('[data-sb-count]');
   const bar = document.querySelector('[data-sb-bar]');
-  const barFill = document.querySelector('[data-sb-barfill]');
   const sbCards = Array.from(document.querySelectorAll('[data-sb-card]'));
   const heroCards = Array.from(document.querySelectorAll('[data-landing-hero-card]'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -150,6 +156,37 @@ export function initSplashB(splashRoot) {
   /* the page's own entrance beats — the SAME ones the shipped splash
      plays, so the hero's arrival vocabulary is the live one, not the
      reference's */
+  /* R54 item 5 — THE NAV. index.astro boots initNavEntrance() after the
+     splash, and that zeroes every nav part's opacity and then bows out
+     when `data-ne-splash` is on, expecting the splash to drive their
+     arrival. This variant never did, so the whole nav — wordmark, three
+     links, LET'S CHAT, the menu label — sat at inline `opacity: 0` for
+     the life of the page (measured). It now arrives on the site's own
+     char ripple, the same sweep units and stagger the shipped splash
+     uses, at the reference's content beat. The wordmark keeps its
+     difference blend, so it composites against the red exactly as the
+     main landing page's does over its own grounds. */
+  const rippleNavIn = () => {
+    ensureLogoChars();
+    [
+      document.querySelector('.home__logo'),
+      document.querySelector('[data-menu-label-menu]'),
+      ...document.querySelectorAll('.home__nav-link'),
+      document.querySelector('.home__topbar-email'),
+    ].forEach((part) => {
+      if (!(part instanceof HTMLElement)) return;
+      part.style.opacity = '';
+      part.style.pointerEvents = '';
+      sweepUnits(part).forEach((u, i) => {
+        if (reduced) { u.style.opacity = ''; return; }
+        u.classList.remove('nav-char-out', 'nav-char-in');
+        void u.offsetWidth;
+        u.style.animationDelay = `${(i * NAV_CHAR_STAGGER_S).toFixed(2)}s`;
+        u.classList.add('nav-char-in');
+      });
+    });
+  };
+
   const playPageBeats = () => {
     const logos = document.querySelector('[data-landing-hero-logos]');
     if (logos instanceof HTMLElement) logos.classList.add('is-entered');
@@ -215,6 +252,7 @@ export function initSplashB(splashRoot) {
     miniTop = (vh - miniH) / 2;
     gsap.set(sbCards, {
       top: miniTop, left: (i) => miniLeft(i), width: miniW, height: miniH,
+      transformOrigin: '0 0', x: 0, y: 0, scale: 1,
       clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
     });
     gsap.set(sbCards.map((c) => c.querySelector('img')), { scale: SB_IMG_SCALE_FROM });
@@ -224,11 +262,24 @@ export function initSplashB(splashRoot) {
   const renderCount = (n) => {
     if (!(countEl instanceof HTMLElement)) return;
     const s = String(n);
+    /* R54 item 3:each digit lives inside its OWN overflow:hidden mask —
+       the reference gets this from SplitText's `mask` option, which
+       wraps each split char in a clipping box so it slides out of that
+       box and disappears behind the ground. Ours slid bare over the
+       ground. The mask is the wrapper; the digit inside is what moves. */
     if (countEl.childElementCount !== s.length) {
       countEl.textContent = '';
-      for (const ch of s) { const d = document.createElement('span'); d.className = 'splash-b__digit'; d.textContent = ch; countEl.appendChild(d); }
+      for (const ch of s) {
+        const mask = document.createElement('span');
+        mask.className = 'splash-b__digitmask';
+        const d = document.createElement('span');
+        d.className = 'splash-b__digit';
+        d.textContent = ch;
+        mask.appendChild(d);
+        countEl.appendChild(mask);
+      }
     } else {
-      [...countEl.children].forEach((el, i) => { if (el.textContent !== s[i]) el.textContent = s[i]; });
+      [...countEl.children].forEach((m, i) => { const d = m.firstElementChild; if (d && d.textContent !== s[i]) d.textContent = s[i]; });
     }
   };
   renderCount(0);
@@ -273,7 +324,7 @@ export function initSplashB(splashRoot) {
       onUpdate: () => renderCount(Math.floor(counter.value)),
       onComplete: () => {
         renderCount(100);
-        gsap.to([...(countEl?.children || [])], {
+        gsap.to([...(countEl?.children || [])].map((m) => m.firstElementChild).filter(Boolean), {
           x: '-100%',
           duration: SB_DIGITS_OUT_DUR,
           ease: 'power3.out',
@@ -295,27 +346,45 @@ export function initSplashB(splashRoot) {
 
     /* ── THE TRAVEL — the reference's full-bleed beat is this instead:
        each lands on its own hero card's measured rect. */
-    /* The destination is read LIVE, when this tween first renders at
-       SB_TRAVEL_AT — not at build time. The hero re-places its cards
-       once fonts have settled, and a destination captured earlier
-       lands them in the wrong place (measured: 808 against the hero's
-       real 753). Function-based values are GSAP's own answer to this. */
+    /* R54 item 4 — THE TRAVEL IS TRANSFORM-ONLY, AND ITS DESTINATION IS
+       RESOLVED ONCE.
+       WHAT WAS WRONG: this animated top / left / width / height. Those
+       are layout properties, so every frame the browser resolved them to
+       whole pixels — sampled per frame, card 0's top moved
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1 … and its width
+       stepped 233, 233, 234, 237, 240, 245 …: the row sat still for a
+       dozen frames, jumped a pixel, sat still again. That stutter is the
+       shake. (It was NOT the WebGL planes fighting the DOM — the gallery
+       does not start until the settle — and not a measurement feedback
+       loop: there were zero reversals across 216 sampled frames.)
+       WHAT IT IS NOW: the layout box stays the mini box for the whole
+       travel and only the transform moves, so the compositor carries it
+       at sub-pixel precision. The destination is read ONCE, when this
+       tween first renders at SB_TRAVEL_AT — GSAP evaluates function-based
+       values at tween start, which is after fonts and after the hero has
+       placed its cards, so it is the real resting rect and nothing is
+       re-measured mid-flight. Origin is 0 0, and the mini row is the
+       hero's row scaled uniformly, so scaleX and scaleY are equal and
+       the images cannot distort. */
     tl.to(sbCards, {
-      top: (i) => heroCards[i].getBoundingClientRect().top,
-      left: (i) => heroCards[i].getBoundingClientRect().left,
-      width: (i) => heroCards[i].getBoundingClientRect().width,
-      height: (i) => heroCards[i].getBoundingClientRect().height,
+      x: (i) => heroCards[i].getBoundingClientRect().left - miniLeft(i),
+      y: (i) => heroCards[i].getBoundingClientRect().top - miniTop,
+      scale: () => heroCards[0].getBoundingClientRect().width / miniW,
       duration: SB_TRAVEL_DUR, ease: hop, stagger: SB_TRAVEL_STAGGER,
     }, SB_TRAVEL_AT);
     tl.to(imgs, { scale: 1, duration: SB_TRAVEL_DUR, ease: hop, stagger: SB_TRAVEL_STAGGER }, SB_TRAVEL_AT);
-    if (barFill instanceof HTMLElement) tl.to(barFill, { scaleX: 1, duration: SB_TRAVEL_DUR, ease: hop }, SB_TRAVEL_AT);
+    /* R54 item 7: the line WIPES AWAY left → right — its left edge
+       travels right until it meets the right end — starting as the
+       images appear and finishing exactly as the travel begins. The
+       second line that used to ride over the first is gone. */
+    if (bar instanceof HTMLElement) tl.to(bar, { clipPath: 'inset(0 0 0 100%)', duration: SB_LINE_WIPE_DUR, ease: hop }, SB_LINE_WIPE_AT);
     /* the red resolves to the hero's own ground as the three come home */
     if (ground instanceof HTMLElement) tl.to(ground, { opacity: 0, duration: SB_GROUND_OUT_DUR, ease: 'power1.inOut' }, SB_TRAVEL_AT + SB_TRAVEL_DUR - SB_GROUND_OUT_DUR);
 
     /* ── the headline, then the nav and the rest — OUR vocabulary on the
        reference's clock. The hero's own modules own these reveals. */
     tl.add(() => { document.dispatchEvent(new CustomEvent('landing-splash-b:headline')); }, SB_HEADLINE_AT);
-    tl.add(() => { document.dispatchEvent(new CustomEvent('landing-splash-b:content')); }, SB_CONTENT_AT);
+    tl.add(() => { rippleNavIn(); document.dispatchEvent(new CustomEvent('landing-splash-b:content')); }, SB_CONTENT_AT);
     /* hold the timeline open to the last beat so onComplete is the settle */
     tl.to({}, { duration: 0.5 }, SB_CONTENT_AT + 1);
   }
