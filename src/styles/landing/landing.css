@@ -7106,11 +7106,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	padding: 48px 48px 56px;
 	box-sizing: border-box;
 }
-/* The step index — the site's /0N grammar, top-left of the panel
-   (the What We Do /0N: Dazzed SemiBold 24/24). */
+/* The step index — the site's /0N grammar (Dazzed SemiBold 24/24).
+   R44 item 3: on the CONTENT COLUMN's left edge (the 48 inset — the
+   same x as the labels and the tiles); was the 24 grammar. */
 .landing-v2 .sp-modal__index {
 	position: absolute;
-	left: 24px;
+	left: 48px;
 	top: 24px;
 	margin: 0;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -7358,7 +7359,8 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 /* MOBILE (≤1024): the contact modal's full-screen behaviour AS BEFORE
    R44 — the panel fills the viewport (no third-width drawer, no slide:
    the rise-and-fade entrance it shipped with), 16px+ inputs (no iOS
-   zoom), 44px targets; the mobile designs re-rule this. */
+   zoom), 44px targets; the mobile designs re-rule this. The index
+   keeps its shipped 24 inset below the seam. */
 @media (max-width: 1024px) {
 	.landing-v2 .sp-modal__panel {
 		width: 100%;
@@ -7368,6 +7370,7 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 	}
 	.landing-v2 .sp-modal.is-open .sp-modal__panel { opacity: 1; transform: none; transition-duration: 0.35s, 0.35s; }
 	.landing-v2 .sp-modal__scroll { padding: 72px 20px 32px; }
+	.landing-v2 .sp-modal__index { left: 24px; }
 	.landing-v2 .sp-tiles { grid-template-columns: 1fr 1fr; }
 	.landing-v2 .sp-tile { min-height: 96px; padding: 16px; }
 	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
