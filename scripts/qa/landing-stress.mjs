@@ -230,7 +230,9 @@ if (PAGE === 'work' && FOCUS !== 'switch') {
         in list view the reverse (no Lenis, the handle present, the
         wrap hidden);
      W4 ScrollTrigger count flat per view;
-     W5 no page errors; the toggle's aria-pressed matches the view. */
+     W5 no page errors; the toggle's aria-pressed matches the view;
+     W6 (R39) the shared header and the toggle chips hold one signature
+        (position, width, opacity, filter) through every switch. */
 if (PAGE === 'work' && FOCUS === 'switch') {
   await f().evaluate(() => {
     const w = window; w.__lc = { add: 0, remove: 0 };
@@ -238,7 +240,7 @@ if (PAGE === 'work' && FOCUS === 'switch') {
     EventTarget.prototype.addEventListener = function (...a) { w.__lc.add++; return A.apply(this, a); };
     EventTarget.prototype.removeEventListener = function (...a) { w.__lc.remove++; return R.apply(this, a); };
   });
-  const WSTATE = `(() => { const st = getComputedStyle(document.querySelector('.work-stage')); return { view: window.__workView?.view(), switching: !!window.__workView?.switching(), pressed: [...document.querySelectorAll('[data-work-view]')].map((b) => b.dataset.workView + ':' + b.getAttribute('aria-pressed')).join(' '), lc: window.__lc ? window.__lc.add - window.__lc.remove : null, cursors: window.__viewCaseCursorCount || 0, listHandle: !!window.__workPage, gridHandle: !!window.__workGrid, lenis: document.documentElement.classList.contains('lenis'), stageDisplay: st.display, bodyOverflow: getComputedStyle(document.body).overflow, st: (window.gsap && window.ScrollTrigger) ? ScrollTrigger.getAll().length : (window.__workPage?.gsap?.globals?.().ScrollTrigger?.getAll?.().length ?? null), scrollY: Math.round(scrollY), gridVisible: [...document.querySelectorAll('[data-work-gtile]')].filter((t) => t.classList.contains('is-visible')).length }; })()`;
+  const WSTATE = `(() => { const st = getComputedStyle(document.querySelector('.work-stage')); const hdr = document.querySelector('[data-work-header]'); const hcs = hdr ? getComputedStyle(hdr) : null; const H = (el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, +cs.opacity, cs.filter, cs.visibility].join('|'); }; const hdrSig = hdr ? [H(hdr), ...[...hdr.querySelectorAll('.work-page__hl')].map(H), ...[...document.querySelectorAll('[data-work-viewtoggle] button')].map(H)].join(' ; ') : null; return { hdrSig, view: window.__workView?.view(), switching: !!window.__workView?.switching(), pressed: [...document.querySelectorAll('[data-work-view]')].map((b) => b.dataset.workView + ':' + b.getAttribute('aria-pressed')).join(' '), lc: window.__lc ? window.__lc.add - window.__lc.remove : null, cursors: window.__viewCaseCursorCount || 0, listHandle: !!window.__workPage, gridHandle: !!window.__workGrid, lenis: document.documentElement.classList.contains('lenis'), stageDisplay: st.display, bodyOverflow: getComputedStyle(document.body).overflow, st: (window.gsap && window.ScrollTrigger) ? ScrollTrigger.getAll().length : (window.__workPage?.gsap?.globals?.().ScrollTrigger?.getAll?.().length ?? null), scrollY: Math.round(scrollY), gridVisible: [...document.querySelectorAll('[data-work-gtile]')].filter((t) => t.classList.contains('is-visible')).length }; })()`;
   const wsnap = () => f().evaluate(WSTATE);
   const viol = []; const hist = []; const baseline = { list: null, grid: null };
   let wchecks = 0;
@@ -259,19 +261,22 @@ if (PAGE === 'work' && FOCUS === 'switch') {
     else { if (st.lc !== baseline[v].lc) viol.push({ inv: 'W1', tag, view: v, msg: 'listener balance drifted', was: baseline[v].lc, now: st.lc }); if (st.st !== baseline[v].st) viol.push({ inv: 'W4', tag, view: v, msg: 'ScrollTrigger count drifted', was: baseline[v].st, now: st.st }); }
   };
   const clickView = async (v) => { const btn = await f().$(`[data-work-view="${v}"]`); if (btn) await btn.click(); };
-  const settleSwitch = async () => { for (let k = 0; k < 60; k++) { await p.waitForTimeout(100); const st = await wsnap(); if (!st.switching) return st; } return wsnap(); };
-  check(await wsnap(), 'boot');
+  /* W6 (R39 item 3): the shared header (title lines) and the toggle chips keep one signature — position, width, opacity 1, no filter — at every sample DURING a switch (polled every 40ms) and after it */
+  let hdrBaseline = null; let w6checks = 0;
+  const w6 = (st, tag) => { if (st.hdrSig == null) return; w6checks += 1; if (hdrBaseline == null) { hdrBaseline = st.hdrSig; return; } if (st.hdrSig !== hdrBaseline) viol.push({ inv: 'W6', tag, msg: 'header / toggle signature changed', was: hdrBaseline, now: st.hdrSig }); };
+  const settleSwitch = async () => { for (let k = 0; k < 150; k++) { await p.waitForTimeout(40); const st = await wsnap(); w6(st, 'mid-switch'); if (!st.switching) return st; } return wsnap(); };
+  { const st0 = await wsnap(); check(st0, 'boot'); await p.waitForTimeout(2500); w6(await wsnap(), 'boot'); }
   /* the first cycle sets the per-view baselines (a boot registers K listeners, a teardown removes K) */
   for (let i = 0; i < MOVES; i++) {
     const st0 = await wsnap(); const next = st0.view === 'grid' ? 'list' : 'grid';
-    await clickView(next); const st = await settleSwitch(); hist.push(`switch -> ${next}`); check(st, 'after-switch');
+    await clickView(next); const st = await settleSwitch(); hist.push(`switch -> ${next}`); check(st, 'after-switch'); w6(st, 'after-switch');
     /* scroll about in the new view */
     const n = Math.round(pick(1, 5)); for (let k = 0; k < n; k++) { await p.mouse.wheel(0, (rnd() < 0.7 ? 1 : -1) * Math.round(pick(200, 1800)) * s); await p.waitForTimeout(Math.round(pick(40, 200))); }
     await p.waitForTimeout(Math.round(pick(150, 500)));
     check(await wsnap(), 'after-scroll');
     if (rnd() < 0.15) { /* a rapid double-click: the second must be ignored while switching */ await clickView(st.view === 'grid' ? 'list' : 'grid'); await p.waitForTimeout(60); await clickView(st.view); await settleSwitch(); check(await wsnap(), 'after-rapid'); }
   }
-  const summary = { vp: `${W}x${H}`, page: 'work', focus: 'switch', moves: MOVES, seed: SEED, checks: wchecks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), baseline, pageErrors: pageErrs, first: viol.slice(0, 5) };
+  const summary = { vp: `${W}x${H}`, page: 'work', focus: 'switch', moves: MOVES, seed: SEED, checks: wchecks + w6checks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), baseline, pageErrors: pageErrs, first: viol.slice(0, 5) };
   if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
   console.log(JSON.stringify(summary));
   await b.close();

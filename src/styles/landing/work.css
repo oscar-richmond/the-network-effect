@@ -665,13 +665,29 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 		padding-bottom: 120px;
 	}
 
-	/* The header block — the list header's classes (position absolute
-	   at left 24 / top 120 & 208 inside this relative block), so the
-	   two views share one heading position to the pixel. */
+	/* The head — a 296 spacer (120 + the 176 two-line block) since R39
+	   item 3: the title itself is the shared header below, outside the
+	   crossfading roots. */
 	.landing-v2 .work-grid__head {
 		position: relative;
-		height: 296px; /* 120 + the 176 two-line block */
+		height: 296px;
 	}
+
+	/* R39 item 3 — THE SHARED HEADER: absolute in the document over the
+	   full width (its lines keep the hl classes' left 24 / top 120 & 208
+	   and 291.8), z261 with the toggle (over the grid's tier and the
+	   stage; under the nav). Pointer-inert. The stage's own header is
+	   display:none here (it serves the mobile page). */
+	.landing-v2 .work-header {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		height: 296px;
+		z-index: 261;
+		pointer-events: none;
+	}
+	.landing-v2 .work-stage__left .work-page__hl { display: none; }
 
 	.landing-v2 .work-grid__rows {
 		display: flex;
@@ -843,6 +859,7 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 @media (max-width: 1024px) {
 	.landing-v2 .work-viewtoggle,
 	.landing-v2 .work-grid,
+	.landing-v2 .work-header,
 	.landing-v2 [data-work-view-live] { display: none !important; }
 }
 

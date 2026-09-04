@@ -31,6 +31,7 @@
 import { initWorkPage } from './work-page.js';
 import { initWorkGrid } from './work-grid.js';
 import { isMobileViewport } from './viewport.js';
+import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 export const WORK_VIEW_STORAGE_KEY = 'ne:work-view';
 export const WORK_VIEW_QUERY_KEY = 'view';
@@ -113,7 +114,7 @@ export function initWorkView() {
      and after fonts. */
   const placeToggle = () => {
     if (!(toggle instanceof HTMLElement)) return;
-    const hl = document.querySelector('[data-work-hl-work]');
+    const hl = document.querySelector('[data-work-header-work]') ?? document.querySelector('[data-work-hl-work]');
     if (!(hl instanceof HTMLElement)) return;
     const cs = getComputedStyle(hl);
     const ctx = document.createElement('canvas').getContext('2d');
@@ -147,6 +148,17 @@ export function initWorkView() {
   fontsReady.then(() => {
     if (disposed) return;
     placeToggle();
+    /* R39 item 3: the SHARED header reveals ONCE per page life (the list
+       header's vocabulary — the word clip on the 0.12 line stagger);
+       switches never replay it. RM: static. */
+    if (!reduced) {
+      [document.querySelector('[data-work-header-featured]'), document.querySelector('[data-work-header-work]')].forEach((line, i) => {
+        if (!(line instanceof HTMLElement) || line.querySelector('.lr-clip')) return;
+        line.dataset.revealDelay = String(i * 0.12);
+        wrapWordRevealElement(line);
+        playLineRevealElement(line);
+      });
+    }
     /* the toggle enters with the header (the page's load beat) */
     if (toggle instanceof HTMLElement) toggle.classList.add('is-visible');
   });

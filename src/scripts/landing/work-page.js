@@ -828,7 +828,10 @@ export function initWorkPage() {
     frame();
     if (reduced) return;
     wrapFooter();
-    [hlFeatured, hlWork].forEach((line, i) => {
+    /* R39 item 3: on desktop the title is the SHARED header (work-view.js
+       reveals it once; this stage's own lines are display:none) — skip. */
+    const sharedHeader = document.querySelector('[data-work-header]');
+    (sharedHeader ? [] : [hlFeatured, hlWork]).forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       /* R35: wrap ONCE per page life — the list ↔ grid switch re-boots
          this driver, and a second wrap would nest clips (R28). The

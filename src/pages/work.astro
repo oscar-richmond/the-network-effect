@@ -269,6 +269,19 @@ const gridRows = GRID_ROWS.map((row) =>
   </div>
   <p class="work-sr-live" data-work-view-live aria-live="polite"></p>
 
+  {/* ══ THE SHARED HEADER (R39 item 3, Oscar 2026-09-04): FEATURED WORK
+      rendered ONCE for both desktop views, outside the crossfading
+      roots (the stage, the grid) — a sibling like the toggle, absolute
+      in the document at the header's coordinates (the hl classes), so
+      a view switch never touches it: it stays static and continuous
+      while only the content below crossfades. Revealed once at page
+      boot (work-view.js). Hidden ≤1024: the mobile page keeps the
+      stage's own header in flow, byte-identical. */}
+  <div class="work-header" data-work-header>
+    <h1 class="work-page__hl work-page__hl--featured" data-work-header-featured>FEATURED</h1>
+    <p class="work-page__hl work-page__hl--work" data-work-header-work aria-hidden="true">WORK</p>
+  </div>
+
   {/* ══ GRID VIEW (R35) — a normal scrolling document, shown when the
       body carries .work-view-grid (work-view.js). Its header is the
       list header's markup and treatment (the hl classes) so the two
@@ -280,10 +293,9 @@ const gridRows = GRID_ROWS.map((row) =>
       tile is the landing carousel's 26/28 card tier; the /0N index is
       omitted here (flagged). Hidden ≤1024 — mobile keeps its list. */}
   <section class="work-grid" data-work-grid aria-label="Featured work, grid view">
-    <div class="work-grid__head">
-      <h1 class="work-page__hl work-page__hl--featured" data-work-grid-hl-featured>FEATURED</h1>
-      <p class="work-page__hl work-page__hl--work" data-work-grid-hl-work aria-hidden="true">WORK</p>
-    </div>
+    {/* R39 item 3: the head is a spacer now — the title lives in the
+        shared header above (outside this crossfading root). */}
+    <div class="work-grid__head" aria-hidden="true"></div>
     <div class="work-grid__rows" data-work-grid-rows>
       {gridRows.map((row, r) => (
         <div class="work-grid__row" data-work-grid-row data-row={String(r)}>

@@ -10,8 +10,8 @@
  *   · the VIEW CASE STUDY cursor over the grid's LIVE tiles (its own
  *     instance of the shared module; the list's instance is gone by
  *     the time this boots);
- *   · the header pair's word reveal (the list header's vocabulary,
- *     wrapped once per page life, replayed per boot);
+ *   · (the header is the SHARED one since R39 — the view controller
+ *     reveals it once per page life; switches never touch it);
  *   · the row reveal (R38) — red containers resolving to their images
  *     per row at a quarter of the tallest tile entered, reversible;
  *   · the hover swap (R38) — the cover-swap wipe to a second image;
@@ -23,7 +23,6 @@
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
-import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createCoverSwap } from '../cover-swap.js';
 
@@ -56,25 +55,9 @@ export function initWorkGrid() {
     reduced,
   }));
 
-  /* ── The header pair (the list header's beat). */
-  const lines = [
-    grid.querySelector('[data-work-grid-hl-featured]'),
-    grid.querySelector('[data-work-grid-hl-work]'),
-  ].filter((el) => el instanceof HTMLElement);
+  /* (R39 item 3: the header is the SHARED one, revealed once by the view
+     controller — this view no longer carries a title of its own.) */
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
-  fontsReady.then(() => {
-    if (disposed || reduced) return;
-    lines.forEach((line, i) => {
-      if (!line.querySelector('.lr-clip')) {
-        line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-        wrapWordRevealElement(line);
-      } else {
-        line.querySelectorAll('.lr-clip').forEach((c) => c.classList.remove('lr-visible'));
-        void line.offsetHeight;
-      }
-      playLineRevealElement(line);
-    });
-  });
 
   /* ── R38 item 5: THE HOVER SWAP — the /services row-hover cover-swap
      (cover-swap.js, the shared runner: one run in flight per tile, the
