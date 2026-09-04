@@ -7152,15 +7152,22 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 .landing-v2 .sp-modal__close svg { display: block; width: 16px; height: 16px; }
 .landing-v2 .sp-modal__close:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
-/* PROGRESS — R44 item 8: 2px (the divider grammar) brand blue, flush
-   to the drawer's bottom edge, full width; the bar's width is the
-   step (⅓ / ⅔ / full — --sp-progress from the driver) and tweens
-   between steps at the house beat. */
+/* PROGRESS — R44 item 8, MOVED to the drawer's TOP edge by R57 item 7
+   (Oscar): 2px (the divider grammar) brand blue, flush to the top,
+   full width; the bar's width is the step (1/3, 2/3, full —
+   --sp-progress from the driver) and tweens between steps at the same
+   house beat. Everything else about it is unchanged.
+   IT DOES NOT CROWD THE TOP CONTENT, so nothing shifts down: the
+   drawer's topmost fixtures are the close X (a 40px hit box at top
+   16) and the /01 index (24 tall at top 24), and the bar occupies
+   y 0-2 — 14px clear of the X's box and 22px clear of the index's
+   cap line. The index keeps its left: 48px, still on the content
+   column with the labels and the tiles. */
 .landing-v2 .sp-progress {
 	position: absolute;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	top: 0;
 	height: 2px;
 	pointer-events: none;
 	z-index: 1;
