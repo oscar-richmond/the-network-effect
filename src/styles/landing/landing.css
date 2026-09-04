@@ -7301,9 +7301,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	color: #c1250e;
 }
 .landing-v2 .sp-hp { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
-/* controls — right-aligned, the CTA family: NEXT / SEND = the
-   floating variant (red), CANCEL / BACK = the ghost variant. */
+/* controls — right-aligned, the CTA family. R44 item 5: NEXT / SEND
+   (and the done / retry controls) = the form's own SOLID BLUE primary
+   (#232A89 fill, white ink, the float variant's box: 13.16 / 24 /
+   15.19 pads) — .ne-cta--float itself is untouched, the case-study
+   chip stays red; CANCEL / BACK = the ghost (text) variant, so the
+   pair never reads as identical. */
 .landing-v2 .sp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 40px; }
+.landing-v2 .sp-btn--primary {
+	padding: 13.16px 24px 15.19px;
+	background: #232a89;
+	color: #ffffff;
+}
+.landing-v2 .sp-btn--primary:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
+.landing-v2 .sp-btn--primary.is-sending { cursor: progress; opacity: 0.85; }
 .landing-v2 .ne-cta--ghost {
 	padding: 13.16px 24px 15.19px;
 	background: transparent;
@@ -7311,7 +7322,6 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	box-shadow: inset 0 0 0 2px #e0e0e7;
 }
 .landing-v2 .ne-cta--ghost:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
-.landing-v2 .ne-cta--float.is-sending { cursor: progress; opacity: 0.85; }
 .landing-v2 .sp-copy {
 	margin: 0;
 	font-family: var(--font-serif-cond);

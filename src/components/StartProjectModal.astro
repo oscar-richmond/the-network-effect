@@ -102,7 +102,7 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         </fieldset>
         <div class="sp-actions">
           <button type="button" class="ne-cta ne-cta--ghost" data-sp-cancel data-char-ripple-trigger><span data-char-ripple>CANCEL</span></button>
-          <button type="button" class="ne-cta ne-cta--float" data-sp-next data-char-ripple-trigger>
+          <button type="button" class="ne-cta sp-btn--primary" data-sp-next data-char-ripple-trigger>
             <span data-char-ripple>NEXT</span>
             <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow><path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
           </button>
@@ -138,7 +138,7 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         </div>
         <div class="sp-actions">
           <button type="button" class="ne-cta ne-cta--ghost" data-sp-back data-char-ripple-trigger><span data-char-ripple>BACK</span></button>
-          <button type="submit" class="ne-cta ne-cta--float" data-sp-send data-char-ripple-trigger>
+          <button type="submit" class="ne-cta sp-btn--primary" data-sp-send data-char-ripple-trigger>
             <span data-char-ripple data-sp-send-label>SEND</span>
             <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow><path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
           </button>
@@ -151,14 +151,14 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         <h2 class="sp-modal__title sp-modal__title--done">That’s a good start.</h2>
         <p class="sp-copy">We’ll be in touch within two working days.</p>
         <div class="sp-actions">
-          <button type="button" class="ne-cta ne-cta--float" data-sp-done data-char-ripple-trigger><span data-char-ripple>CLOSE</span></button>
+          <button type="button" class="ne-cta sp-btn--primary" data-sp-done data-char-ripple-trigger><span data-char-ripple>CLOSE</span></button>
         </div>
       </section>
       <section class="sp-step sp-step--done" data-sp-step="error" hidden>
         <h2 class="sp-modal__title sp-modal__title--done">Something didn’t send.</h2>
         <p class="sp-copy">Try again in a moment, or email us at <a class="sp-mail" href={MAILTO} data-char-ripple-trigger><span data-char-ripple>{CONTACT_EMAIL}</span></a></p>
         <div class="sp-actions">
-          <button type="button" class="ne-cta ne-cta--float" data-sp-retry data-char-ripple-trigger><span data-char-ripple>TRY AGAIN</span></button>
+          <button type="button" class="ne-cta sp-btn--primary" data-sp-retry data-char-ripple-trigger><span data-char-ripple>TRY AGAIN</span></button>
         </div>
       </section>
       <p class="sp-live" data-sp-live aria-live="polite"></p>
