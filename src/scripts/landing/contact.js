@@ -28,6 +28,7 @@ import { bindBottomNavSweep } from './nav-motion.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CAL_BOOKING_LINK } from '../../data/landing/contact.js';
+import { CT_LOGOS_FADE_START, CT_LOGOS_FADE_END } from '../../data/landing/contact-logos.js';
 import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -347,6 +348,34 @@ export function initContactPage() {
      one implementation on every document-scroll page. */
   cleanups.push(bindBottomNavSweep({ reduced, getLenis: () => lenis.i }));
 
+  /* ── R58 item 8 — THE LOGO ROW CLEARS FOR THE FOOTER. The trigger is
+     the footer's MEASURED reveal, not a scroll offset: p = the uncovered
+     height (the viewport's bottom edge minus the red section's bottom
+     edge) over the footer's 830, clamped 0..1 — 1 when the page rests at
+     its end. The row's opacity is a pure function of p, ramping down
+     across [CT_LOGOS_FADE_START, CT_LOGOS_FADE_END] — so scrolling back
+     up restores it along the same curve, mirrored by construction. Written as a CSS var (the
+     entrance owns the opacity property until it settles); visibility
+     hidden at 0 so nothing of the row can paint. Bound under reduced
+     motion too (there is no entrance there, and the row still sits
+     above the footer). Desktop only — the row is display:none under
+     the seam. */
+  const logos = document.querySelector('[data-ct-logos]');
+  if (logos instanceof HTMLElement && !isMobileViewport()) {
+    const clamp01 = (v) => Math.min(1, Math.max(0, v));
+    const updateLogosFade = () => {
+      const uncovered = window.innerHeight - page.getBoundingClientRect().bottom;
+      const p = clamp01(uncovered / FOOTER_H_PX);
+      const o = 1 - clamp01((p - CT_LOGOS_FADE_START) / (CT_LOGOS_FADE_END - CT_LOGOS_FADE_START));
+      logos.style.setProperty('--ct-logos-fade', o.toFixed(3));
+      logos.style.visibility = o <= 0 ? 'hidden' : '';
+    };
+    window.addEventListener('scroll', updateLogosFade, { passive: true });
+    window.addEventListener('resize', updateLogosFade);
+    cleanups.push(() => { window.removeEventListener('scroll', updateLogosFade); window.removeEventListener('resize', updateLogosFade); });
+    updateLogosFade();
+  }
+
   if (reduced) {
     return () => cleanups.forEach((fn) => fn());
   }
@@ -371,10 +400,18 @@ export function initContactPage() {
       schedule(() => cta.classList.add('is-visible'), 300 + i * 60);
     });
 
-    /* Media (the hero video) — blur/fade at the hero-image beat. */
+    /* Media — blur/fade at the hero-image beat: the image section
+       (desktop, R58) and the founders slot (mobile). */
     schedule(() => {
       document.querySelector('[data-ct-media]')?.classList.add('is-visible');
+      document.querySelector('[data-ct-image]')?.classList.add('is-visible');
     }, 300);
+    /* R58: the label and the logo row follow the row items — 540 / 600;
+       the row's transition retires once it has landed (900 later) so
+       the footer fade can write per frame. */
+    schedule(() => { document.querySelector('[data-ct-label]')?.classList.add('is-visible'); }, 540);
+    schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-visible'); }, 600);
+    schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-settled'); }, 600 + 900);
 
     /* Footer — the covered-trigger reveal maths, verbatim. */
     const footer = document.querySelector('[data-landing-footer]');

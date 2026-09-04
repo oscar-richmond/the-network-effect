@@ -194,18 +194,18 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    menu use these exact CTAs (Oscar's rev) and landing.css is the
    sheet every new-build page loads. Per-surface WIDTHS stay with
    their own surface (contact.css / menu.css), which load after. */
-/* R57 item 6 (Oscar): the pair on /contact JOINS THE CTA FAMILY — the
-   family's 38px box on 16px pads (the More Info / VIEW ALL WORK
-   instances), not the 64px box on 32px pads they shipped with. They
-   keep their arrows and the family's 8px label->arrow gap, and their
-   widths stay content-derived under the arrow-spacing ruling below,
-   which is unchanged — only the two numbers the family fixes have
-   moved. */
+/* R58 (Oscar, 2026-09-04 — the contact redesign, frame 1:90): this
+   BASE is the shipped 64/32 again, which is what MOBILE /contact still
+   renders (that build is a separate pass and byte-identical). R57's
+   "join the CTA family" (38/16) lasted one commit: the frame rules the
+   desktop pair at 48px on 16px pads, page-scoped in contact.css at
+   ≥1025. The menu does NOT use this class (the note below is stale on
+   that point). */
 .landing-v2 .ct-cta {
 	position: relative;
 	display: flex;
 	align-items: center;
-	height: 38px;
+	height: 64px;
 	border: 0;
 	/* ARROW SPACING (Oscar's 16" design, 2026-08-10, edge REVISED
 	   2026-08-27): text, 8px, the arrow — unchanged — then EQUAL
@@ -214,9 +214,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   ruling; the left side is the value). Content-flow + explicit
 	   gap still holds the internal numbers — the widths are the
 	   CONSEQUENCE of the spec, so each pill grew by the added 10.
-	   Plain px: the scale shell renders these in design space.
-	   R57 item 6: the family's 16px, was 32. */
-	padding: 0 16px;
+	   Plain px: the scale shell renders these in design space. */
+	padding: 0 32px;
 	gap: 8px;
 	justify-content: flex-start;
 	background: var(--landing-svc-btn-fill, #e4e4ea);

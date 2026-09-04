@@ -37,6 +37,24 @@ import '../styles/landing/landing.css';
 import '../styles/landing/contact.css';
 import '../styles/fonts.css';
 import { START_PROJECT_MODAL } from '../data/flags.js';
+import {
+  CT_LOGO_BRANDS, CT_LOGO_SET_W, CT_LOGO_ROW_DUR_S, CT_LOGO_ROW_PHASE_DELAY_S, CT_LOGO_ROW_DIRECTION,
+} from '../data/landing/contact-logos.js';
+
+/* R58 (Oscar, 2026-09-04) — THE CONTACT REDESIGN, Figma
+   TYVUPMVruMzSWOxL9tyIlM frame 1:90 "Contact" (1728×1950, chrome −83),
+   the frame as the page's TOTAL SPEC. Red ground #C1250E from the top
+   of the page to the footer (1037); the nav solid black with the blend
+   OFF on this page (LET'S CHAT alone keeps difference, as a page-owned
+   fixed twin over the photograph); the intro Dazzed SemiBold 90/88 −5%
+   with the indent on line TWO; a 48px CTA row — START A PROJECT, EMAIL
+   US, Instagram, LinkedIn — all #161616 with white ink; "WE'VE WORKED
+   WITH" over a rolling logo row that runs under the image's left edge;
+   the image a full-height 754×1037 window at the right edge. The
+   founders image (ct__media) survives for MOBILE only — that build is
+   a separate pass and stays byte-identical. The SCHEDULE A CALL modal
+   markup stays inert and unreachable, as R43 left it. */
+const ctLogosDoubled = [...CT_LOGO_BRANDS, ...CT_LOGO_BRANDS];
 ---
 
 <SiteShell title="Contact — The Network Effect" bodyClass="landing-v2 contact-page">
@@ -52,8 +70,13 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
         (the serif second line retires); the file's leading-space
         run as the established spacer atom (text-indent breaks the
         reveal wrap's line grouping). */}
+    {/* R58: the frame (1:91) indents LINE TWO — ten leading spaces
+        before CONVERSATION., its ink at x191 against line 1's x32 — so
+        the spacer atom moves inside the second line (mobile draws it
+        at width 0 either way). Supersedes the 51:2884 ruling (line 1
+        indented 301, 100px). */}
     <h1 class="ct__intro" data-ct-intro
-      ><span class="ct__intro-indent" aria-hidden="true"></span>{CONTACT_INTRO.line1}<br /><span class="ct__intro-serrif">{CONTACT_INTRO.line2}</span></h1
+      >{CONTACT_INTRO.line1}<br /><span class="ct__intro-serrif"><span class="ct__intro-indent" aria-hidden="true"></span>{CONTACT_INTRO.line2}</span></h1
     >
 
     {/* R43 (Oscar, 2026-09-04): SCHEDULE A CALL is REMOVED from the page.
@@ -70,15 +93,19 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
       {/* R40 (Oscar, 2026-09-04): START A PROJECT opens the site-wide form
           modal (was the inert placeholder). R41: while the modal is off
           (any build) it is that placeholder again. */}
+      {/* R58: the arrows are inline currentColor now (the frame's 1:310 /
+          1:142 path — the same 12px arrow the family draws), so one mark
+          reads white on the black desktop pair and blue on the mobile
+          build's light pair without a second asset. */}
       {START_PROJECT_MODAL ? (
       <button type="button" class="ct-cta ct-cta--start" data-start-project data-char-ripple-trigger>
         <span data-char-ripple>START A PROJECT</span>
-        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+        <svg class="ct-cta__arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" data-char-ripple-arrow><path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152H2.16746e-07L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" /></svg>
       </button>
       ) : (
       <span class="ct-cta ct-cta--start is-placeholder" data-hover data-char-ripple-trigger>
         <span data-char-ripple>START A PROJECT</span>
-        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+        <svg class="ct-cta__arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" data-char-ripple-arrow><path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152H2.16746e-07L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" /></svg>
       </span>
       )}
       {/* EMAIL US — the HOLDING PAGE's contact UX ported (Oscar's
@@ -87,26 +114,27 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
           cursor-bound pill below; the mailto still fires after
           (holding-deck-form.js is the source pattern — the holding
           page itself untouched). */}
+      {/* FLAG (R58): the frame's second button reads "GET IN TOUCH" (1:141,
+          169 wide); Oscar's brief names it EMAIL US with the mailto
+          unchanged — built as EMAIL US, content-derived, the frame's
+          label reported. */}
       <a class="ct-cta ct-cta--email" href={CONTACT_MAILTO} data-ct-copy data-contact-email={CONTACT_EMAIL} data-char-ripple-trigger>
         <span data-char-ripple>EMAIL US</span>
-        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+        <svg class="ct-cta__arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" data-char-ripple-arrow><path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152H2.16746e-07L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" /></svg>
       </a>
-    </div>
-
-    {/* NEW — social icon chips (51:2862): 48px squares in the More
-        Info family fill, 16 apart. Hrefs come from the ONE shared
-        source (data/landing/socials.js — the footer reads the same
-        file), so the eventual URL drop lands everywhere at once;
-        while empty they are the established inert placeholders. */}
-    <div class="ct__socials" data-ct-socials>
+      {/* R58: the two social chips JOIN THE ROW (frame 1:143 / 1:151 —
+          48×48 #161616, 24px white icons, 16 apart after EMAIL US). One
+          shared source for the hrefs (data/landing/socials.js: Instagram
+          live, LinkedIn the standing placeholder). Desktop only — the
+          mobile build never showed the chips and still does not. */}
       {SOCIAL_LINKS.map((soc) => (
         soc.href ? (
           <a class="ct-social" href={soc.href} target="_blank" rel="noopener" aria-label={soc.label}>
-            <img src={asset(`/assets/landing/contact/social-${soc.key}.svg`)} alt="" width="24" height="24" />
+            <img src={asset(`/assets/landing/contact/social-${soc.key}-white.svg`)} alt="" width="24" height="24" />
           </a>
         ) : (
           <span class="ct-social is-placeholder" data-hover aria-label={`${soc.label} — profile link coming soon`}>
-            <img src={asset(`/assets/landing/contact/social-${soc.key}.svg`)} alt="" width="24" height="24" />
+            <img src={asset(`/assets/landing/contact/social-${soc.key}-white.svg`)} alt="" width="24" height="24" />
           </span>
         )
       ))}
@@ -114,7 +142,42 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
 
     </div>
 
-    {/* Right-side media — frame 51:2877: the founders photograph
+    {/* R58: the label + the rolling logo row (frame 1:215 / 1:157) —
+        the hero row's marks and machinery, on the red; the row's box
+        clips the track, the band's fades sit over it, the image section
+        below sits over both, so the cells travel under the image's left
+        edge. contact.js fades the row out on the footer's measured
+        reveal. Rights: the same unverified logos — see contact-logos.js. */}
+    <p class="ct__label" data-ct-label>WE’VE WORKED WITH</p>
+    <div class="ct__logos" data-ct-logos aria-hidden="true">
+      <div
+        class="ct__logos-track"
+        data-ct-logos-track
+        data-direction={CT_LOGO_ROW_DIRECTION}
+        style={`--marquee-set-w:${CT_LOGO_SET_W}px;--ct-logo-row-dur:${CT_LOGO_ROW_DUR_S}s;--ct-logo-row-delay:${CT_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s`}
+      >
+        {ctLogosDoubled.map((b) => (
+          <span class="ct__logo-cell">
+            <img src={b.src} alt="" loading="lazy" decoding="async" width={b.w} height={b.h} style={`width:${b.w}px;height:${b.h}px`} />
+          </span>
+        ))}
+      </div>
+      <div class="ct__logos-band" aria-hidden="true"></div>
+    </div>
+
+    {/* R58: THE IMAGE (frame 1:208) — a 754×1037 window flush to the
+        viewport's right edge from the top of the page to the footer;
+        inside it the photograph at the mask group's own placement
+        (1:211: 783.71×1100.5 at −25.96 / −32.31 — a uniform 0.7507 of
+        the 1044×1466 source, NOT a centre crop). Converted from the
+        file's Display P3 to sRGB. RIGHTS: a new photograph (a table,
+        hands, a bottle) — pending sign-off, source unconfirmed. */}
+    <div class="ct__image" data-ct-image aria-hidden="true">
+      <img src={asset('/assets/landing/contact/contact-table.jpg')} alt="" loading="eager" decoding="async" width="1044" height="1466" />
+    </div>
+
+    {/* Right-side media — MOBILE ONLY since R58 (the desktop slot is the
+        image section above). Frame 51:2877: the founders photograph
         (asset 023A6940, the frame's TOPMOST visible layer — the LV
         screenshot is fully covered beneath it, so the elevated
         third-party-IP flag comes OFF this slot; this image carries
@@ -130,6 +193,24 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
       aria-hidden="true"
     />
   </main>
+
+  {/* R58 — LET'S CHAT, THE PAGE-OWNED TWIN (frame 1:298: x1562.23, 139.16
+      wide, Dazzed 18 white with DIFFERENCE, a 14.2px arrow, over the
+      photograph). The bar's own LET'S CHAT is hidden on this page: the
+      bar is set to mix-blend-mode: normal here so the wordmark and the
+      three links can render solid black, and a stacking context is an
+      isolated group — a blended child of a normal bar would only ever
+      composite against the bar's own (transparent) content, never the
+      page. So the blend lives on THIS element: fixed, a sibling of
+      <main> at body level (the modal logo twin's proven construction —
+      no ancestor with a transform, opacity, filter or blend), at the
+      nav tier. It joins the nav's load entrance via getNavParts()
+      ([data-nav-twin]); the bottom sweep never sweeps LET'S CHAT, by
+      Oscar's partial-sweep ruling, so it needs no sweep. Desktop only. */}
+  <a class="ct__chat" data-nav-twin data-char-ripple-trigger href="/contact">
+    <span data-char-ripple>LET’S CHAT</span>
+    <svg class="ct__chat-arrow" viewBox="0 0 14.2156 14.2156" width="14.2156" height="14.2156" aria-hidden="true" data-char-ripple-arrow><path d="M2.10245 14.2156L1.0871 13.1357L0.0717531 12.1204L9.87194 2.54876L2.56764e-07 2.54876L0 0H14.2156V14.2156L11.6668 14.2156L11.6668 4.34365L2.10245 14.2156Z" fill="currentColor" /></svg>
+  </a>
 
   {/* Footer — the shared BLUE colourway, untouched. */}
   <LandingFooter theme="light" />

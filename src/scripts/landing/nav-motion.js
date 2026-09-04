@@ -31,6 +31,10 @@ export function getNavParts() {
        mobile they are display:none and the sweeps are no-ops. */
     ...document.querySelectorAll('.home__nav-link'),
     document.querySelector('.home__topbar-email'),
+    /* R58 (/contact): a page-owned LET'S CHAT twin — the bar's own is
+       hidden there and this fixed, blend-carrying sibling stands in
+       (contact.astro). Null on every other page. */
+    document.querySelector('[data-nav-twin]'),
   ].filter((el) => el instanceof HTMLElement);
 }
 

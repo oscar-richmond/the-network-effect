@@ -13,10 +13,9 @@
 
 .landing-v2 .ct {
 	position: relative;
-	/* Frame 51:2829 (2026-08-27): FIXED 1002px composition — the
-	   footer begins at frame 1120 − 118 chrome; the one-viewport
-	   centred layout retires. Page total = 1002 + the 830 reveal. */
-	height: 1002px;
+	/* R58 (frame 1:90, chrome −83): the footer begins at frame 1120 →
+	   1037. Page total = 1037 + the 830 reveal (was 1002 + 830). */
+	height: 1037px;
 }
 
 /* The intro + CTA + socials column — frame-fixed at top 329 (frame
@@ -28,21 +27,24 @@
 .landing-v2 .ct__cluster {
 	position: absolute;
 	left: 24px;
-	top: 329px;
+	top: 307px; /* R58: frame 1:91 y390 − 83 (was 329) */
 }
 
 /* Intro — frame 51:2884: Dazzed Bold 100/88/−5% BOTH lines,
    uppercase ink; the leading-space run as the spacer atom (the
    reveal-wrap convention — text-indent breaks line grouping).
    Maps to the guide's Display L / Sans tier (100/88/−5%). */
+/* R58 (frame 1:91, 2026-09-04): Dazzed SemiBold 90/88 −5% in an 896
+   box — supersedes the 51:2884 ruling (100/88/−5%, 976). Maps to the
+   guide's Display L / Sans tier at the frame's own size; the −5%
+   tracking and the 88 leading are the tier's. Case: the frame is set
+   in caps; the copy is authored in caps (no transform needed, kept for
+   the mobile build's sake). */
 .landing-v2 .ct__intro {
-	/* 976: the frame's 971 box + 5px slack — the word-reveal wrap's
-	   inline-block clips round up and 969.6 of ink in a 971 box
-	   wrapped line 1. Ink positions unchanged. */
-	width: 976px;
+	width: 896px;
 	margin: 0;
 	font-weight: 600;
-	font-size: 100px;
+	font-size: 90px;
 	line-height: 88px;
 	letter-spacing: -0.05em;
 	text-transform: uppercase;
@@ -70,10 +72,12 @@
 
 .landing-v2 .ct__intro-indent {
 	display: inline-block;
-	width: 301px; /* the frame's own ink: line 1 starts 301.2 in
-	   (measured from the 51:2884 export's pixel columns; our Dazzed
-	   render matches the frame's widths within 1px — 668 vs 667.8,
-	   800 vs 799.3) */
+	/* R58: LINE TWO's indent — the frame's ten leading spaces put the
+	   C of CONVERSATION. at x191 (measured from the 1:90 export's
+	   pixel columns; line 1's L sits at x32). 167 = the ink delta,
+	   TUNED against our own render (159 landed the C at 183; our
+	   Dazzed's leading sidebearing differs from the file's by 8). */
+	width: 167px;
 	height: 1px;
 }
 
@@ -83,9 +87,17 @@
    drift). In the cluster's flow, 80px below the intro, 16px gaps,
    file widths. */
 .landing-v2 .ct__ctas {
-	margin-top: 80px;
+	/* R58 (frame 1:132 at y614 → 531): 48 below the intro's 176 box
+	   (was 80); the four items centre on one 48px line, 16 apart. */
+	margin-top: 48px;
 	display: flex;
+	align-items: center;
 	gap: 16px;
+}
+/* The row is its four items, not the column — desktop only, so the
+   mobile build's stacked column keeps its shipped full-width box. */
+@media (min-width: 1025px) {
+	.landing-v2 .ct__ctas { width: max-content; }
 }
 
 /* The CTA COMPONENT — including its per-variant widths — now lives
@@ -107,6 +119,11 @@
 	display: block;
 	overflow: hidden;
 }
+/* R58: the founders slot is MOBILE-ONLY now — the desktop composition's
+   image is the .ct__image section (frame 1:208). */
+@media (min-width: 1025px) {
+	.landing-v2 .ct__media { display: none; }
+}
 
 /* ── Social icon chips (51:2862) — 48px squares, the More Info
    family fill, 16 apart, icons 24 centred. The family's hover is
@@ -115,26 +132,19 @@
    divider grey, the founders-buttons darken-on-hover precedent in
    the light family). Focus ring = the light-ground accent (the
    .ct-cta rule's ink). 48×48 meets the touch floor. */
-.landing-v2 .ct__socials {
-	margin-top: 32px;
-	display: flex;
-	gap: 16px;
-}
-
-/* The chips are the 51:2829 DESKTOP respec — mobile /contact is a
-   separate pass and stays byte-identical (frame not drawn there). */
-@media (max-width: 1024px) {
-	.landing-v2 .ct__socials { display: none; }
-}
-
+/* R58 (frame 1:143 / 1:151): the chips live IN the CTA row now — 48×48
+   #161616 with the frame's 24px white icons (basil:instagram-outline,
+   ri:linkedin-line). No hover state is drawn in the frame and a darken
+   on #161616 would be invisible, so the pointer promise is the cursor's
+   alone (reported). */
 .landing-v2 .ct-social {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex: none;
 	width: 48px;
 	height: 48px;
-	background: var(--landing-svc-btn-fill, #e4e4ea);
-	transition: background-color 0.25s ease-out;
+	background: #161616;
 }
 
 .landing-v2 .ct-social img {
@@ -143,16 +153,23 @@
 	height: 24px;
 }
 
-.landing-v2 .ct-social:hover,
-.landing-v2 .ct-social:active {
-	background: #e0e0e7;
-}
-
 .landing-v2 .ct-social.is-placeholder { cursor: default; }
 
+/* Rings on the black fills: the light ring INSIDE the fill (#eeeef0 on
+   #161616 = 15.6:1); the accent ring outside would sit on the red at
+   1.9:1. */
 .landing-v2 .ct-social:focus-visible {
-	outline: 2px solid #232a89;
-	outline-offset: 2px;
+	outline: 2px solid #eeeef0;
+	outline-offset: -4px;
+}
+
+/* DESKTOP ONLY — and this rule must come AFTER the base above, not
+   before it: at equal specificity the later rule wins, and a hide
+   written first is simply overridden (measured: the chips rendered at
+   390 and pushed mobile /contact 128px taller). The mobile build never
+   showed these chips and still does not. */
+@media (max-width: 1024px) {
+	.landing-v2 .ct-social { display: none; }
 }
 
 /* ── SCHEDULE A CALL modal — the lightbox machinery, brand-black
@@ -545,4 +562,260 @@
 
 	/* The cal window scrolls its own content; keep momentum. */
 	.landing-v2 .ct-modal__cal { -webkit-overflow-scrolling: touch; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   R58 — THE CONTACT REDESIGN (Oscar, 2026-09-04), frame 1:90 as the
+   page's total spec. Everything below is DESKTOP (≥1025); the mobile
+   build is a separate pass and byte-identical — every new element is
+   display:none under the seam.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1025px) {
+	/* 1 — THE GROUND: brand red from the top of the page (behind the
+	   transparent nav bar — the nav has no ground of its own) to the
+	   footer's top at 1037. The document ground beneath stays #eeeef0:
+	   the footer reveal is unchanged. The selector matches the
+	   FOOTER-OCCLUSION gate's shape in landing.css
+	   (.landing-v2.contact-page main[data-contact] { background:
+	   #eeeef0 }) — that rule is what the section paints to cover the
+	   revealing footer, and a weaker selector loses to it. Same duty,
+	   new colour. */
+	.landing-v2.contact-page main[data-contact] { background: #c1250e; }
+
+	/* 2 — THE NAV: SOLID, NO BLEND, this page only. The R16 over-red
+	   declarations (landing.css) keyed on the page's body class instead
+	   of the closing band's JS class: the BAR's difference is off (an
+	   item at normal inside a difference bar is inverted by the bar —
+	   measured (171,15,8) over this red in R16), and the wordmark and
+	   the three links render #161616 at normal. Nothing else changes:
+	   the bar stays a transparent grid, and on the other six pages the
+	   selector never matches, so their blend chain is untouched.
+	   The links take the frame's 18px (1:222 — R29's 16 is the
+	   site-wide ruling; this page's frame draws 18, and the group still
+	   re-centres from its own width). The bar's own LET'S CHAT is hidden
+	   here — the page-owned twin below carries it. */
+	.landing-v2.contact-page .home__topbar--about { mix-blend-mode: normal; }
+	.landing-v2.contact-page .home__topbar--about .home__logo,
+	.landing-v2.contact-page .home__topbar--about .home__nav-link {
+		mix-blend-mode: normal;
+		color: #161616;
+	}
+	.landing-v2.contact-page .home__topbar--about .home__nav-link {
+		font-size: 18px;
+		line-height: 18px;
+	}
+	.landing-v2.contact-page .home__topbar--about .home__topbar-email { display: none; }
+
+	/* LET'S CHAT — the twin (frame 1:298): x1562.23; Dazzed SemiBold 18
+	   (the file's "Bold" is the site's 600 cut, R6), −0.02em, uppercase,
+	   white, DIFFERENCE carried by the element itself; label 115.3 +
+	   9.6 gap + the 14.2 arrow = 139.16. Vertically it sits on the bar's
+	   centre line (35.5 — the site's nav band), not the frame's 46: the
+	   frame draws its whole nav 10px lower than the built bar (wordmark
+	   and links alike), which is the frame's header offset, not a move
+	   of one item — reported. z270 = the nav tier. Hover = the base
+	   email rule's opacity fade, as the bar's own. */
+	.landing-v2 .ct__chat {
+		position: fixed;
+		left: 1562.23px;
+		top: 26.5px;
+		z-index: 270;
+		display: inline-flex;
+		align-items: center;
+		gap: 9.6px;
+		height: 18px;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 18px;
+		line-height: 18px;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+		text-decoration: none;
+		white-space: nowrap;
+		color: #ffffff;
+		mix-blend-mode: difference;
+		transition: opacity 0.25s ease-out;
+	}
+	.landing-v2 .ct__chat:hover { opacity: 0.6; }
+	.landing-v2 .ct__chat-arrow { display: block; flex: none; width: 14.2156px; height: 14.2156px; }
+	.landing-v2 .ct__chat:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+	/* 4 — THE CTA ROW (frame 1:132): 48px on 16px pads, #161616 fill,
+	   white ink, the family's 8px label→arrow gap; widths content-
+	   derived (START A PROJECT 16 + 146 + 8 + 12 + 16 = 198, the frame's
+	   own). DELTA FROM THE CTA FAMILY (More Info / VIEW ALL WORK: 38
+	   tall, #e4e4ea fill, #232a89 ink): +10 height, the inverse
+	   palette; same pads, same gap, same 16px Dazzed SemiBold. This
+	   supersedes R57's "join the family" (38/16) — the frame rules. */
+	.landing-v2 .ct-cta {
+		height: 48px;
+		padding: 0 16px;
+		gap: 8px;
+		background: #161616;
+		color: #ffffff;
+	}
+	.landing-v2 .ct-cta__arrow { width: 12px; height: 12px; }
+	.landing-v2 .ct-cta:focus-visible {
+		outline: 2px solid #eeeef0;
+		outline-offset: -4px;
+	}
+
+	/* 6 — THE LABEL (frame 1:215 at y878 → 795): the EYEBROW token —
+	   Dazzed SemiBold 14/18, +0.02em, caps, #161616. The frame draws it
+	   at 16px on a 14 line with −0.015em (177×14 box); Oscar's brief
+	   maps it to the token, so the token wins and the frame's 16 is
+	   reported as the delta. */
+	.landing-v2 .ct__label {
+		position: absolute;
+		left: 24px;
+		top: 795px;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 18px;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+
+	/* 7 — THE LOGO ROW (frame 1:157 at y940 → 857, 100 tall). The box
+	   spans the viewport and CLIPS the track; the band's fades sit over
+	   the track; the image section (below, z3) sits over both — so the
+	   cells run under the image's left edge at 974 and vanish there. */
+	.landing-v2 .ct__logos {
+		position: absolute;
+		left: 0;
+		top: 857px;
+		width: 100%;
+		height: 100px;
+		overflow: hidden;
+		z-index: 1;
+		opacity: var(--ct-logos-fade, 1);
+	}
+	/* The track — the hero row's machinery: the network marquee
+	   keyframes on the --marquee-set-w contract; duration / phase /
+	   direction from contact-logos.js (inline vars + data-direction). */
+	.landing-v2 .ct__logos-track {
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: flex;
+		width: max-content;
+		will-change: transform;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2 .ct__logos-track[data-direction='right'] {
+			animation: landing-network-marquee-right var(--ct-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--ct-logo-row-delay, 0s);
+		}
+		.landing-v2 .ct__logos-track[data-direction='left'] {
+			animation: landing-network-marquee-left var(--ct-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--ct-logo-row-delay, 0s);
+		}
+	}
+	/* Cells (frame 1:165 "Brand background"): 160×100 on the 192 pitch,
+	   WHITE at 4% over a 12px backdrop blur — the hero row's panel is
+	   #161616 at 4%: the inverse tint for the red ground. The marks are
+	   the hero row's #161616 SVGs (the frame's own fills). */
+	.landing-v2 .ct__logo-cell {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 160px;
+		height: 100px;
+		margin-right: 32px;
+		background: rgba(255, 255, 255, 0.04);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+	.landing-v2 .ct__logo-cell img { display: block; max-width: none; }
+	/* The band (frame 1:207): 0–1048, the ground fading in over the
+	   first and last 10% (104.8px each): red at 0, clear by 104.8; clear
+	   until 943.2, red by 1048. The right fade's second half (974–1048)
+	   lies under the image — so the visible right-hand resolution is the
+	   31px between 943 and the image's edge, then the image itself. The
+	   left fade meets the viewport edge. */
+	.landing-v2 .ct__logos-band {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 1048px;
+		height: 100%;
+		pointer-events: none;
+		background: linear-gradient(90deg, #c1250e 0%, rgba(193, 37, 14, 0) 10%, rgba(193, 37, 14, 0) 90%, #c1250e 100%);
+	}
+
+	/* 5 — THE IMAGE (frame 1:208): the window at the right edge, the
+	   full 1037 from the top of the page to the footer; the source at
+	   the mask group's placement — 783.71×1100.5 at −25.955 / −32.313,
+	   a uniform 0.7507 of 1044×1466, so the visible region is source
+	   x 34.6–1039.0 of 1044 and y 43.0–1424.4 of 1466 (identical in
+	   the 1512 shell: design px). z3 over the row (1) and the band. */
+	.landing-v2 .ct__image {
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 754px;
+		height: 1037px;
+		overflow: hidden;
+		z-index: 3;
+	}
+	.landing-v2 .ct__image img {
+		position: absolute;
+		left: -25.955px;
+		top: -32.313px;
+		width: 783.71px;
+		height: 1100.497px;
+		max-width: none;
+		display: block;
+	}
+}
+
+/* Under the seam nothing of the desktop composition exists. */
+@media (max-width: 1024px) {
+	.landing-v2 .ct__label,
+	.landing-v2 .ct__logos,
+	.landing-v2 .ct__image,
+	.landing-v2 .ct__chat { display: none; }
+}
+
+/* ENTRANCES (no-preference), re-anchored to the new layout — the live
+   vocabulary: the intro's word reveal at 0; the four row items on the
+   pills' fade-rise from 300 at 60 apart (START A PROJECT, EMAIL US,
+   Instagram, LinkedIn); the image's blur-in at 300 with them; the
+   label's fade-rise at 540 and the row's at 600 (the hero row's 24px
+   rise on its 0.8/0.9 curve); the footer's reveals on its own trigger.
+   contact.js schedules the classes. */
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .ct__label {
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+	.landing-v2 .ct__label.is-visible { opacity: 1; transform: none; }
+	@media (min-width: 1025px) {
+		.landing-v2 .ct__logos {
+			opacity: 0;
+			transform: translate3d(0, 24px, 0);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.9s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2 .ct__logos.is-visible { opacity: var(--ct-logos-fade, 1); transform: none; }
+		/* once entered the scroll-driven fade writes the var per frame —
+		   no transition may lag it */
+		.landing-v2 .ct__logos.is-settled { transition: none; }
+		.landing-v2 .ct__image {
+			opacity: 0;
+			filter: blur(6px);
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				filter 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+		.landing-v2 .ct__image.is-visible { opacity: 1; filter: blur(0); }
+	}
 }
