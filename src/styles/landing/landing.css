@@ -7120,25 +7120,28 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	line-height: 24px;
 	color: #161616;
 }
-/* CLOSE — the contact modal's pill (97×40, #E4E4EA, accent 14/18),
-   top-right inside the panel on the 24 grammar. */
+/* CLOSE — R44 item 2a: a BARE X, no chip. A 16px glyph at the CTA
+   family's 1.6 stroke, brand-black, in a 40px hit box whose centre
+   sits on the index's line (index 24 tall at top 24 → centre 36;
+   box top 16) with the glyph's right edge on the 24 grammar (box
+   right 12). Was the contact pill (97×40, #E4E4EA / #232A89). */
 .landing-v2 .sp-modal__close {
 	position: absolute;
-	right: 24px;
-	top: 24px;
-	width: 97px;
+	right: 12px;
+	top: 16px;
+	width: 40px;
 	height: 40px;
+	padding: 0;
 	border: 0;
-	background: #e4e4ea;
-	color: #232a89;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 600;
-	font-synthesis: none;
-	font-size: 14px;
-	line-height: 18px;
-	text-transform: uppercase;
+	background: transparent;
+	color: #161616;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	cursor: pointer;
 }
+.landing-v2 .sp-modal__close svg { display: block; width: 16px; height: 16px; }
+.landing-v2 .sp-modal__close:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
 /* The step headline — the card-title tier: Serrif Condensed Medium
    34/38 (the Section serif; the landing's card titles). */
 .landing-v2 .sp-modal__title {
