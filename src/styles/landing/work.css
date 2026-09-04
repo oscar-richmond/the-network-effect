@@ -583,10 +583,27 @@ body.work-page.work-view-grid { overflow: auto; }             /* the document sc
 body.work-page.work-view-grid .work-stage { display: none; }
 body.work-page.work-view-grid .work-grid { display: block; }
 body.work-page.work-view-grid .work-page__metas { display: none; }
-/* In grid view the footer follows the flow (the fixed reveal wrap is
-   list-view machinery). */
+/* R38 item 7 (Oscar, 2026-09-04): in grid view the footer REVEALS FROM
+   BEHIND the page like every other document-scroll page — the landing
+   / case-study sticky schema (landing.css): the footer pins at
+   100dvh − h with a −h margin under the grid's last h px, the grid is
+   the content tier (z260) over it (259), and an h-tall spacer after
+   the footer keeps the document height so the page ends exactly at
+   full reveal. h is the footer's MEASURED height, written by
+   work-grid.js as --work-footer-h (830 = the frame 13:381 fallback).
+   The fixed wrap stays list-view machinery. (Was: the wrap static and
+   the footer in plain flow.) */
 body.work-page.work-view-grid .work-footer-wrap { position: static; height: auto; }
-body.work-page.work-view-grid .work-footer-wrap .landing-footer { position: relative; }
+body.work-page.work-view-grid .work-footer-wrap .landing-footer {
+	position: sticky;
+	top: calc(100vh - var(--work-footer-h, 830px));
+	top: calc(100dvh - var(--work-footer-h, 830px));
+	margin-top: calc(-1 * var(--work-footer-h, 830px));
+	z-index: 259;
+}
+body.work-page.work-view-grid .work-grid { z-index: 260; } /* the content tier over the footer */
+body.work-page.work-view-grid .work-footer-spacer { display: block; height: var(--work-footer-h, 830px); pointer-events: none; }
+.landing-v2 .work-footer-spacer { display: none; }
 /* During a switch the fixed footer layer would show through the fading
    stage (it sits under it at z0) — veiled for the switch's length. */
 body.work-page.work-switching .work-footer-wrap { visibility: hidden; }

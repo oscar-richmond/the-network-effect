@@ -145,6 +145,12 @@ export function initWorkGrid() {
   /* ── The footer: the flow-page grammar — wrapped once (idempotent),
      played when it enters. */
   const footer = document.querySelector('[data-work-footer] [data-landing-footer]');
+  /* R38 item 7: the sticky uncover's height is the footer's rendered
+     height (work.css reads --work-footer-h); re-derived on resize. */
+  const deriveFooterH = () => { if (footer instanceof HTMLElement) document.body.style.setProperty('--work-footer-h', `${footer.offsetHeight || 830}px`); };
+  deriveFooterH();
+  window.addEventListener('resize', deriveFooterH);
+  cleanups.push(() => { window.removeEventListener('resize', deriveFooterH); document.body.style.removeProperty('--work-footer-h'); });
   let footerIo = null;
   fontsReady.then(() => {
     if (disposed || !(footer instanceof HTMLElement)) return;
