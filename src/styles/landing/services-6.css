@@ -44,18 +44,28 @@
 	   share (desc-bottom -> pillar-top now 120 + 100 = 220). */
 	.landing-v2 .sv6-hero { padding: 275px 24px 100px; }
 
+	/* R36 item 4 (Oscar, 2026-09-04): THE LANDING HERO'S COMPUTED
+	   VALUES, mixed faces kept. The landing headline (landing.css,
+	   R6 2026-09-02) renders its serif line Serrif Condensed Medium
+	   90/82.8/−0.04em and its Dazzed line 600 90/79.2/−0.05em — two
+	   leadings, one per face (flagged: they differ by design on the
+	   landing). Here both faces share ONE line, so each span carries
+	   its own leading and the line box takes the taller (82.8); the
+	   h1's own line-height is set to that strut so nothing else can
+	   grow it. Was 100/88 with −0.04em / −0.008em. */
 	.landing-v2 .sv6-hero__title {
 		margin: 0;
 		white-space: nowrap;
-		font-size: 100px;
-		line-height: 88px;
+		font-size: 90px;
+		line-height: 82.8px;
 	}
 
 	.landing-v2 .sv6-hero__t-serif {
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		letter-spacing: -0.04em;
+		line-height: 82.8px;   /* hero: 90 × 0.92 */
+		letter-spacing: -0.04em; /* hero: −3.6px @90 */
 		white-space: pre; /* the frame's trailing space survives */
 	}
 
@@ -63,19 +73,27 @@
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		letter-spacing: -0.008em; /* frame −0.8px at 100 (flagged) */
+		line-height: 79.2px;   /* hero: 90 × 0.88 */
+		letter-spacing: -0.05em; /* hero: −4.5px @90 */
 	}
 
+	/* R36 item 4: the landing INTRO treatment (landing.css R17,
+	   2026-09-02): Serrif Condensed Medium 36/40/−0.0286em (was
+	   48/50/−0.015em). The frame's 1429 measure is kept (the wrap is
+	   reported, not re-fitted). The frame's title-top → desc-top 112
+	   is preserved: the mixed line box measures 85.8 (the two faces'
+	   inline boxes, 82.8 and 79.2, baseline-aligned — their union is
+	   taller than either), so the margin is 112 − 85.8 (was 112 − 91
+	   = 21). */
 	.landing-v2 .sv6-hero__desc {
-		margin: 21px 0 0; /* frame gap 112: the mixed-face line box
-		   renders 91 tall (the serif span's ascent), so 112 − 91 */
+		margin: 26.2px 0 0;
 		width: 1429px;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 48px;
-		line-height: 50px;
-		letter-spacing: -0.015em;
+		font-size: 36px;
+		line-height: 40px;
+		letter-spacing: -0.0286em;
 		color: #161616;
 	}
 
