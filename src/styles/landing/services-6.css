@@ -19,6 +19,38 @@
 .landing-v2 .sv6-footspacer { display: none; }
 .landing-v2 .sv-legacy { display: contents; }
 
+/* R71 (Oscar, 2026-09-04) — THE 8px SIDEWAYS SCROLL ON MOBILE /services,
+   ROOT-CAUSED AND FIXED.
+   The sweep reproduced it (scrollWidth 398 against a clientWidth of 390
+   at 390, 402 and 430) but attributed it to "the hero title's word-reveal
+   wrappers" without naming the mechanism, and a scan for elements
+   crossing the viewport edge came back EMPTY, which sent the earlier pass
+   looking for a containing-block effect. Both were near-misses. The real
+   cause, bisected element by element:
+     .sv-legacy → .sv → .sv-hero → .sv-hero__textwrap → .sv-hero__title
+     → .lr-clip--word   { padding: 0 8px; margin: 0 -8px }
+   That pair is deliberate — the word-reveal clips vertically, so it needs
+   8px of horizontal room either side or overhanging glyphs would be cut —
+   and it puts the clip box at left −8 / right 398 against a 390 viewport.
+   The negative left costs nothing (it cannot create scroll); the right 8
+   is the whole overflow. Everywhere else on the site an ancestor happens
+   to clip it. Here the entire chain up to <body> is overflow: visible, so
+   it reaches the document.
+   THE FIX is to clip at the legacy page's own root. `overflow-x: clip`
+   rather than `hidden` on purpose: clip does NOT create a scroll
+   container, so .sv-hero__textwrap's position: sticky keeps working
+   against the viewport — `hidden` would have broken the hero outright.
+   Nothing visible is lost: the only ink it removes is ink already past
+   the viewport edge, while the reveal keeps its full bleed inside the
+   section. Mobile only, and .sv-legacy is display:none above the seam, so
+   the 1728 reference cannot be touched by this. */
+@media (max-width: 1024px) {
+	.landing-v2 .sv {
+		overflow-x: clip;
+		overflow-y: visible;
+	}
+}
+
 @media (min-width: 1025px) {
 	.landing-v2 .sv6 { display: block; }
 	.landing-v2 .sv6-footwrap { display: contents; }
