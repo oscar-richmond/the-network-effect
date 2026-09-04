@@ -369,6 +369,12 @@ export function initMenu(scope = document) {
          re-record is loss-free. */
       if (tl.progress() === 0) tl.invalidate();
       tl.play();
+      /* Focus lands on the first link once the panel has begun to
+         open (next frame — the toggle's own click must settle first). */
+      requestAnimationFrame(() => {
+        const first = root.querySelector('a[href], button:not([disabled])');
+        if (root.classList.contains('is-open') && first instanceof HTMLElement) first.focus({ preventScroll: true });
+      });
       revealCTAs(true);
       if (landingSwap) {
         sweepLabels(true);
@@ -390,6 +396,12 @@ export function initMenu(scope = document) {
        parks the queued open; the settle belt owns the terminal char
        state either way. */
     if (!tl.reversed()) {
+      /* Focus goes back to the toggle if it was inside the menu (or
+         dropped to the body by a backdrop click). */
+      const active = document.activeElement;
+      if (active === document.body || (active instanceof Node && root.contains(active))) {
+        toggle.focus({ preventScroll: true });
+      }
       tl.reverse();
       if (!reducedMotion && tl.time() > PANEL_BAND_END_S) {
         tl.timeScale(CLOSE_TAIL_TIMESCALE);
@@ -484,10 +496,31 @@ export function initMenu(scope = document) {
     close();
   };
 
+  /* A11y batch item 5 (Oscar, 2026-09-04): FOCUS MANAGEMENT. Opening
+     moves focus to the first menu link; while open, Tab cycles inside
+     the menu — the toggle (it IS the close control) plus every link
+     and button in the panel — instead of walking the page behind the
+     overlay; closing returns focus to the toggle. */
+  const menuFocusables = () => [
+    toggle,
+    ...Array.from(root.querySelectorAll('a[href], button:not([disabled])')),
+  ].filter((el) => el instanceof HTMLElement && el.getClientRects().length > 0);
+
   const onKeyDown = (event) => {
     if (event.key === 'Escape') {
       close();
+      return;
     }
+    if (event.key !== 'Tab' || !root.classList.contains('is-open')) return;
+    const items = menuFocusables();
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    const inside = items.includes(active);
+    if (event.shiftKey) {
+      if (!inside || active === first) { event.preventDefault(); last.focus(); }
+    } else if (!inside || active === last) { event.preventDefault(); first.focus(); }
   };
 
   toggle.addEventListener('click', onToggleClick);
