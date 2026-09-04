@@ -14,9 +14,12 @@
  * STEPS: a small state machine — /01 (pillars ≥ 1, who optional) →
  * /02 (name, email, message required; company optional) → success |
  * error. The step transition is the house blur-crossfade
- * (SP_STEP_OUT_MS / SP_STEP_IN_MS) with the panel's HEIGHT tweened
- * between the measured step heights (SP_HEIGHT_MS), the /0N index
- * updating at the swap. RM: instant swaps, no tween.
+ * (SP_STEP_OUT_MS / SP_STEP_IN_MS), the /0N index updating at the
+ * swap. R44: the panel is a full-height DRAWER, so the R40 height
+ * tween is retired — the steps crossfade in place and the scroll
+ * wrapper returns to its top. The
+ * slide durations are CSS tunables (--sp-drawer-in-s / -out-s); the
+ * close guard still waits SP_CLOSE_MS. RM: instant swaps, no tweens.
  *
  * SUBMIT: the deck-request client pattern — the honeypot short-
  * circuits to success, fetch JSON to /api/start-project, the send
@@ -27,8 +30,7 @@ import { getLenisInstance } from './landing/site-scroll.js';
 
 export const SP_STEP_OUT_MS = 360;
 export const SP_STEP_IN_MS = 420;
-export const SP_HEIGHT_MS = 420;
-export const SP_CLOSE_MS = 620; /* the frost-out (the contact modal's 0.6s) */
+export const SP_CLOSE_MS = 620; /* the frost-out and the drawer's slide-out guard (CSS --sp-drawer-out-s 0.48s inside it) */
 export const SP_QUERY_KEY = 'project';
 export const SP_HASH = '#start-project';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,6 +49,7 @@ export function initStartProject() {
   const logoTwin = document.querySelector('[data-sp-logo]');
   const steps = new Map(Array.from(modal.querySelectorAll('[data-sp-step]')).map((el) => [el.dataset.spStep, el]));
   const index = modal.querySelector('[data-sp-index]');
+  const scroll = modal.querySelector('[data-sp-scroll]');
   const live = modal.querySelector('[data-sp-live]');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const cleanups = [];
@@ -87,26 +90,20 @@ export function initStartProject() {
     if (next === step || animating) return;
     const from = steps.get(step); const to = steps.get(next);
     if (!(from instanceof HTMLElement) || !(to instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
-    const wasStep = step; step = next; setIndex(next);
+    step = next; setIndex(next);
+    const toTop = () => { if (scroll instanceof HTMLElement) scroll.scrollTop = 0; };
     if (reduced || instant) {
-      from.hidden = true; to.hidden = false; panel.style.height = ''; focusFirst(next); return;
+      from.hidden = true; to.hidden = false; toTop(); focusFirst(next); return;
     }
     animating = true;
-    /* measure both heights: the panel tweens between them while the steps crossfade */
-    const h0 = panel.getBoundingClientRect().height;
-    /* the incoming step's height, measured out of flow (absolute, hidden) so the panel's own height stays h0: h1 = the panel's chrome (h0 − the outgoing step) + the incoming step */
-    to.hidden = false; to.classList.add('is-measuring'); const h1 = (h0 - from.getBoundingClientRect().height) + to.getBoundingClientRect().height; to.classList.remove('is-measuring'); to.hidden = true;
-    panel.style.height = `${h0}px`;
     from.classList.add('is-out');
     schedule(() => {
       from.hidden = true; from.classList.remove('is-out');
-      to.hidden = false; to.classList.add('is-in');
+      to.hidden = false; to.classList.add('is-in'); toTop();
       void to.offsetWidth;
-      panel.style.height = `${h1}px`;
       to.classList.remove('is-in');
-      schedule(() => { panel.style.height = ''; animating = false; focusFirst(next); }, Math.max(SP_STEP_IN_MS, SP_HEIGHT_MS) + 20);
+      schedule(() => { animating = false; focusFirst(next); }, SP_STEP_IN_MS + 20);
     }, SP_STEP_OUT_MS);
-    void wasStep;
   };
 
   /* ── validation */

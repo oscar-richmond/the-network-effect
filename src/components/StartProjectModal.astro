@@ -22,12 +22,32 @@
  * TYPE: field labels in the eyebrow tier (Dazzed SemiBold 14 caps);
  * the step headline in the card-title tier (Serrif Condensed Medium
  * 34/38 — the Section serif; the 56 statement tier reads as a page
- * headline, too loud inside a 1040 panel — reported); inputs and
- * helper copy in Serrif Condensed. One accent: #C1250E (selected
- * tiles, the primary button, focus and validation). Inputs are
- * hairline-underline fields on the 2px divider grammar.
+ * headline, too loud inside the panel — reported); inputs and
+ * helper copy in Serrif Condensed. Inputs are hairline-underline
+ * fields on the 2px divider grammar.
  *
- * COPY flagged my-edit-pending (Oscar): the success headline and line.
+ * ACCENT TRAIL: R40 (2026-09-04 a.m.) shipped ONE accent, brand red
+ * #C1250E (selected tiles, the primary button, focus and validation).
+ * R44 (Oscar, 2026-09-04 p.m.) SUPERSEDES it for the FORM ONLY: the
+ * accent is brand blue #232A89 — selected tiles and chips (blue fill,
+ * white ink), the primary button, the progress bar. Validation stays
+ * red (an error, not an accent). The floating case-study CTA stays
+ * red — that is the CTA family's variant, not the form's.
+ *
+ * R44 LAYOUT: a RIGHT-SIDE DRAWER — one third of the viewport wide,
+ * flush top / right / bottom, sliding in from the right edge (the
+ * nav stays beneath the frosted backdrop; the wordmark twin stays
+ * through). The close control is a bare X; clicking the backdrop
+ * anywhere closes; the /0N index sits on the content column; the
+ * tiles and chips share one resting treatment (black outline, black
+ * ink) and one selected treatment (blue fill, white ink); NEXT / SEND
+ * are solid blue, CANCEL / BACK the ghost; every field carries a
+ * placeholder one tier below its text; a 2px blue progress bar rides
+ * the drawer's bottom edge (⅓ → ⅔ → full); the pointer over the
+ * backdrop reads "( CLOSE )" via the /work view-case cursor.
+ *
+ * COPY flagged my-edit-pending (Oscar): the success headline and line;
+ * the R44 placeholders.
  * DEEP LINK: ?project=1 or #start-project opens on load.
  */
 import { CONTACT_EMAIL } from '../data/landing/contact.js';
@@ -49,6 +69,7 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
       <button type="button" class="sp-modal__close" data-sp-close data-char-ripple-trigger aria-label="Close">
         <span data-char-ripple>CLOSE</span>
       </button>
+      <div class="sp-modal__scroll" data-sp-scroll>
 
       {/* ── /01 */}
       <section class="sp-step" data-sp-step="1">
@@ -139,6 +160,7 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         </div>
       </section>
       <p class="sp-live" data-sp-live aria-live="polite"></p>
+      </div>
     </form>
   </div>
 </div>

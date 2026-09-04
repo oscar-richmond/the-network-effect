@@ -7016,19 +7016,40 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	font-synthesis: none;
 }
 
-/* ══ START A PROJECT — the site-wide form modal (R40, Oscar 2026-09-04)
+/* ══ START A PROJECT — the site-wide form modal (R40, Oscar 2026-09-04;
+   R44 drawer + treatment, Oscar 2026-09-04 p.m.)
    ═══════════════════════════════════════════════════════════════════
-   The schedule-a-call modal's shell verbatim (contact.css): z400 over
-   the topbar (270) and the floating chip (265), under the menu (500)
-   and the grain (9000); the backdrop fades on its OWN properties
-   (never wrapper opacity — the backdrop-root lesson): rgba(22,22,22)
-   0 → .8 with blur 0 → 52 over 0.6s; the logo twin is a TOP-LEVEL
-   fixed difference element at z401. The [hidden] guard beats the
-   display. */
+   The schedule-a-call modal's shell (contact.css): z400 over the
+   topbar (270) and the floating chip (265), under the menu (500) and
+   the grain (9000); the backdrop fades on its OWN properties (never
+   wrapper opacity — the backdrop-root lesson): rgba(22,22,22) 0 → .8
+   with blur 0 → 52 over 0.6s; the logo twin is a TOP-LEVEL fixed
+   difference element at z401. The [hidden] guard beats the display.
+
+   R44 — THE DRAWER: the panel is a RIGHT-SIDE drawer ONE THIRD of the
+   viewport wide (--sp-drawer-w = 100vw / 3: 576 at 1728; in the 1512
+   shell the iframe's own 100vw is 1728, so 576 design px = 504 real
+   px — the shell's interior edges, not the real viewport), flush to
+   the top, right and bottom edges, sliding in from the right edge over
+   --sp-drawer-in-s (0.62s, the frost's beat) and out over
+   --sp-drawer-out-s (0.48s), house easing. The band is a pointer-
+   transparent positioning layer so a click ANYWHERE outside the drawer
+   reaches the backdrop and closes (item 2b). The nav stays where it is
+   BENEATH the backdrop (z270 < 400), frosted and dimmed like every
+   other page element; the drawer covers its right third (LET'S CHAT);
+   the wordmark twin stays through at z401 — it never overlaps the
+   drawer (x24…271 vs x ≥ 1152) and the drawer is not its ancestor, so
+   the drawer's transform cannot isolate the twin's blend.
+   ACCENT (R44): brand blue #232A89 for the form — selected fills, the
+   primary button, the progress bar. Validation stays red. */
 .landing-v2 .sp-modal {
 	position: fixed;
 	inset: 0;
 	z-index: 400;
+	--sp-drawer-w: calc(100vw / 3);
+	--sp-drawer-in-s: 0.62s;
+	--sp-drawer-out-s: 0.48s;
+	--sp-ease: var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 .landing-v2 .sp-modal[hidden] { display: none !important; }
 .landing-v2 .sp-modal__backdrop {
@@ -7045,43 +7066,46 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	-webkit-backdrop-filter: blur(52px);
 	backdrop-filter: blur(52px);
 }
-/* The band: everything centres between the wordmark's bottom (the
-   71px bar) and the viewport bottom — the contact modal's rev-2
-   centring. */
+/* The band: a full-viewport positioning layer that lets pointer
+   events through to the backdrop (R44 item 2b). */
 .landing-v2 .sp-modal__band {
 	position: absolute;
-	left: 0;
-	right: 0;
-	top: 71px;
-	bottom: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	overflow-y: auto;
-	padding: 24px;
-	box-sizing: border-box;
+	inset: 0;
+	pointer-events: none;
 }
-/* THE PANEL: 1040 wide (the contact modal's window width — the file's
-   1040×490 precedent), the site's 24 internal grammar (a 48 inset =
-   2 × 24), light #EEEEF0 ground, brand-black ink. Height is content-
-   derived; the driver tweens it between steps (SP_HEIGHT_MS). Arrives
-   after the frost (the contact window's 0.35s / 0.25s beat). */
+/* THE DRAWER (the form): light #EEEEF0 ground, brand-black ink; a
+   flex column whose scroll wrapper carries the 48 inset (2 × 24) and
+   scrolls internally when the interior is shorter than a step; the
+   index, the X and the progress bar are the panel's own fixtures. */
 .landing-v2 .sp-modal__panel {
-	position: relative;
-	width: 1040px;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: var(--sp-drawer-w);
 	max-width: 100%;
-	max-height: 100%;
 	box-sizing: border-box;
-	padding: 48px;
 	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
 	background: #eeeef0;
 	color: #161616;
 	overflow: hidden;
-	opacity: 0;
-	transform: translateY(12px);
-	transition: opacity 0.35s ease-out 0.25s, transform 0.35s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) 0.25s, height var(--sp-height-s, 0.42s) var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	pointer-events: auto;
+	opacity: 1;
+	transform: translateX(100%);
+	transition: transform var(--sp-drawer-out-s) var(--sp-ease);
 }
-.landing-v2 .sp-modal.is-open .sp-modal__panel { opacity: 1; transform: none; }
+.landing-v2 .sp-modal.is-open .sp-modal__panel { opacity: 1; transform: none; transition-duration: var(--sp-drawer-in-s); }
+.landing-v2 .sp-modal__scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 48px 48px 56px;
+	box-sizing: border-box;
+}
 /* The step index — the site's /0N grammar, top-left of the panel
    (the What We Do /0N: Dazzed SemiBold 24/24). */
 .landing-v2 .sp-modal__index {
@@ -7146,12 +7170,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .sp-group { margin: 0 0 32px; padding: 0; border: 0; min-width: 0; }
 /* THE TILES — the More Info chip family at rest (#E4E4EA), the
    floating-CTA variant when selected (#C1250E fill, #161616 ink):
-   name in the label tier, descriptor in serif beneath; a checkbox
-   group (the input is the truth, visually hidden but focusable — the
-   ring paints on the tile via :focus-within). */
+   name in the label tier, descriptor in serif beneath. Two per row in
+   the drawer's 480 column (2 × 236 + 8). A checkbox group (the input
+   is the truth, visually hidden but focusable — the ring paints on
+   the tile via :focus-within). */
 .landing-v2 .sp-tiles {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 8px;
 }
 .landing-v2 .sp-tile {
@@ -7165,9 +7190,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	background: var(--landing-svc-btn-fill, #e4e4ea);
 	color: #161616;
 	cursor: pointer;
-	transition: background-color 0.25s ease-out;
+	transition: background-color 0.25s ease-out, color 0.25s ease-out;
 }
-.landing-v2 .sp-tile.is-selected { background: #c1250e; }
+.landing-v2 .sp-tile.is-selected { background: #c1250e; color: #161616; }
 .landing-v2 .sp-tile__input,
 .landing-v2 .sp-chip__input {
 	position: absolute;
@@ -7195,8 +7220,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	line-height: 22px;
 	letter-spacing: -0.02em;
 }
-/* rings per ground: the light ring on the dark backdrop tier is the
-   panel's; on a resting tile the accent ring; on a RED tile the
+/* rings per ground: at rest the accent ring outside; on a RED fill the
    floating-CTA ring ink (#161616 inset). */
 .landing-v2 .sp-tile:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
 .landing-v2 .sp-tile.is-selected:focus-within { outline: 2px solid #161616; outline-offset: -2px; }
@@ -7209,6 +7233,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	align-items: center;
 	height: 38px;
 	padding: 0 16px;
+	box-sizing: border-box;
 	background: var(--landing-svc-btn-fill, #e4e4ea);
 	color: var(--landing-accent-blue, #232a89);
 	font-family: 'Dazzed', var(--font-display, sans-serif);
@@ -7226,10 +7251,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 /* FIELDS — hairline-underline inputs on the 2px divider grammar
    (#e0e0e7, the tables' rule): label above, the input's text in
    Serrif Condensed 24/28, the rule beneath turning ink on focus and
-   red on error. */
-.landing-v2 .sp-fields { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; row-gap: 24px; }
+   red on error. One column in the drawer (R44). */
+.landing-v2 .sp-fields { display: grid; grid-template-columns: 1fr; row-gap: 24px; }
 .landing-v2 .sp-field { display: flex; flex-direction: column; min-width: 0; }
-.landing-v2 .sp-field:nth-child(4) { grid-column: 1 / -1; }
 .landing-v2 .sp-input {
 	width: 100%;
 	box-sizing: border-box;
@@ -7289,13 +7313,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .sp-mail { color: #161616; text-decoration: underline; text-underline-offset: 3px; }
 .landing-v2 .sp-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
 /* STEP TRANSITION — the house blur-crossfade: out 0.36s, in 0.42s
-   (SP_STEP_OUT_MS / SP_STEP_IN_MS); the panel's height tweens
-   between the measured steps meanwhile. */
-.landing-v2 .sp-step { transition: opacity 0.42s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)), filter 0.42s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); }
+   (SP_STEP_OUT_MS / SP_STEP_IN_MS). R44: the drawer is full height,
+   so the panel no longer tweens its height between steps — the steps
+   crossfade in place. */
+.landing-v2 .sp-step { transition: opacity 0.42s var(--sp-ease), filter 0.42s var(--sp-ease); }
 .landing-v2 .sp-step[hidden] { display: none !important; }
 .landing-v2 .sp-step.is-out { opacity: 0; filter: blur(12px); transition-duration: 0.36s, 0.36s; pointer-events: none; }
 .landing-v2 .sp-step.is-in { opacity: 0; filter: blur(12px); transition: none; }
-.landing-v2 .sp-step.is-measuring { position: absolute; visibility: hidden; left: 48px; right: 48px; }
 /* the logo twin — the contact modal's exact construction */
 .landing-v2 .sp-modal__logo {
 	position: fixed;
@@ -7324,20 +7348,34 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .sp-modal__logo:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 /* the floating chip leaves while the modal is open (its z-order rule) */
 html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
-/* RM: no crossfades, no height tween */
+/* RM: no crossfades, no slide */
 @media (prefers-reduced-motion: reduce) {
 	.landing-v2 .sp-step, .landing-v2 .sp-modal__panel, .landing-v2 .sp-modal__backdrop, .landing-v2 .sp-tile, .landing-v2 .sp-chip { transition: none; }
 }
-/* MOBILE (≤1024): the contact modal's full-screen behaviour — the
-   panel fills the viewport, 16px+ inputs (no iOS zoom), 44px targets;
-   the mobile designs re-rule this. */
+/* MOBILE (≤1024): the contact modal's full-screen behaviour AS BEFORE
+   R44 — the panel fills the viewport (no third-width drawer, no slide:
+   the rise-and-fade entrance it shipped with), 16px+ inputs (no iOS
+   zoom), 44px targets; the mobile designs re-rule this. */
 @media (max-width: 1024px) {
-	.landing-v2 .sp-modal__band { top: 0; padding: 0; align-items: stretch; }
-	.landing-v2 .sp-modal__panel { width: 100%; max-height: none; min-height: 100%; padding: 72px 20px 32px; }
+	.landing-v2 .sp-modal__panel {
+		width: 100%;
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity 0.35s ease-out 0.25s, transform 0.35s var(--sp-ease) 0.25s;
+	}
+	.landing-v2 .sp-modal.is-open .sp-modal__panel { opacity: 1; transform: none; transition-duration: 0.35s, 0.35s; }
+	.landing-v2 .sp-modal__scroll { padding: 72px 20px 32px; }
 	.landing-v2 .sp-tiles { grid-template-columns: 1fr 1fr; }
 	.landing-v2 .sp-tile { min-height: 96px; padding: 16px; }
 	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
 	.landing-v2 .sp-chip { min-height: 44px; }
 	.landing-v2 .sp-input { font-size: 18px; line-height: 24px; }
 	.landing-v2 .sp-modal__logo { left: 16px; font-size: 18px; letter-spacing: 0.04em; font-family: var(--font-logo); }
+}
+/* RM, at the is-open rules' own specificity and AFTER the mobile block
+   (the generic RM reset above loses to `.sp-modal.is-open .sp-modal__panel`):
+   no slide on desktop, no rise-and-fade below the seam. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2 .sp-modal.is-open .sp-modal__panel,
+	.landing-v2 .sp-modal__panel { transition: none; }
 }
