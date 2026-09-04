@@ -28,7 +28,10 @@ import { bindBottomNavSweep } from './nav-motion.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CAL_BOOKING_LINK } from '../../data/landing/contact.js';
-import { CT_LOGOS_FADE_START, CT_LOGOS_FADE_END } from '../../data/landing/contact-logos.js';
+import {
+  CT_LOGOS_FADE_START, CT_LOGOS_FADE_END,
+  CT_ROW_H, CT_ROW_BOTTOM_GAP, CT_LABEL_GAP,
+} from '../../data/landing/contact-logos.js';
 import { isMobileViewport } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -348,6 +351,84 @@ export function initContactPage() {
      one implementation on every document-scroll page. */
   cleanups.push(bindBottomNavSweep({ reduced, getLenis: () => lenis.i }));
 
+  /* ── R60 item 3 (Oscar, 2026-09-04) — THE VERTICAL RHYTHM, DERIVED
+     LIVE FROM THE VIEWPORT AND FROM THE INK.
+     Three rules, bottom-up:
+       a. the carousel's BOTTOM edge sits CT_ROW_BOTTOM_GAP (80) above the
+          viewport's bottom at the resting state;
+       b. the label's INK BOTTOM sits CT_LABEL_GAP (48) above the
+          carousel's TOP edge;
+       c. the intro and the CTA row, as one block, are CENTRED between the
+          nav's bottom and the label's INK TOP — equal space above the
+          intro's first-line ink and below the CTA row's bottom edge.
+     WHY THE INK AND NOT THE BOXES: both (b) and (c) are specified ink-to-
+     edge, and a text box is not its ink — the label's 14px caps sit 5.4px
+     below its 18px line box's top and 2px above its bottom, and the
+     intro's 90px caps sit ~9px below theirs. Measuring boxes would put
+     every gap out by those amounts. The offsets come from canvas metrics
+     on the elements' own computed fonts (actualBoundingBox for the ink,
+     fontBoundingBox for the line box's own baseline), so they follow any
+     later type change without being restated here.
+     RE-DERIVED on resize, and after fonts settle — the metrics are
+     meaningless until the real faces are loaded. */
+  const layoutEls = {
+    logos: document.querySelector('[data-ct-logos]'),
+    label: document.querySelector('[data-ct-label]'),
+    cluster: document.querySelector('[data-ct-cluster]'),
+    intro: document.querySelector('[data-ct-intro]'),
+    bar: document.querySelector('.home__topbar--about'),
+  };
+  const inkCtx = document.createElement('canvas').getContext('2d');
+  /** ink top/bottom of `txt` measured from the element's own line box top */
+  const inkOffsets = (el, txt) => {
+    const s = getComputedStyle(el);
+    inkCtx.font = `${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
+    const m = inkCtx.measureText(txt);
+    const lh = parseFloat(s.lineHeight) || parseFloat(s.fontSize);
+    const fa = m.fontBoundingBoxAscent; const fd = m.fontBoundingBoxDescent;
+    const baseline = (lh - (fa + fd)) / 2 + fa;
+    return { top: baseline - m.actualBoundingBoxAscent, bottom: baseline + m.actualBoundingBoxDescent };
+  };
+  const layoutRhythm = () => {
+    const { logos, label, cluster, intro, bar } = layoutEls;
+    if (!(logos instanceof HTMLElement) || !(label instanceof HTMLElement)
+      || !(cluster instanceof HTMLElement) || !(intro instanceof HTMLElement)
+      || isMobileViewport()) return;
+    const vh = window.innerHeight;
+    /* a. the row */
+    const rowTop = vh - CT_ROW_BOTTOM_GAP - CT_ROW_H;
+    logos.style.top = `${rowTop}px`;
+    /* b. the label — its INK bottom CT_LABEL_GAP above the row's top */
+    const li = inkOffsets(label, label.textContent || 'W');
+    const labelTop = rowTop - CT_LABEL_GAP - li.bottom;
+    label.style.top = `${labelTop}px`;
+    const labelInkTop = labelTop + li.top;
+    /* c. the intro + CTA block, centred between the nav's bottom and it */
+    const navBottom = bar instanceof HTMLElement ? bar.getBoundingClientRect().height : 71;
+    const ii = inkOffsets(intro, 'LET');
+    const blockH = cluster.offsetHeight - ii.top; /* first-line ink → CTA bottom */
+    const gap = (labelInkTop - navBottom - blockH) / 2;
+    cluster.style.top = `${navBottom + gap - ii.top}px`;
+    /* the measured gaps, for the DEV handle and the report */
+    layoutRhythm.last = {
+      vh,
+      rowTop, rowBottom: rowTop + CT_ROW_H, rowBottomGap: vh - (rowTop + CT_ROW_H),
+      labelTop, labelInkBottom: labelTop + li.bottom, labelInkTop,
+      labelInkToRow: rowTop - (labelTop + li.bottom),
+      clusterTop: navBottom + gap - ii.top,
+      introInkTop: navBottom + gap,
+      ctaBottom: navBottom + gap - ii.top + cluster.offsetHeight,
+      gapAbove: +gap.toFixed(2),
+      gapBelow: +(labelInkTop - (navBottom + gap - ii.top + cluster.offsetHeight)).toFixed(2),
+      fits: gap > 0,
+    };
+  };
+  const fontsForLayout = document.fonts?.ready ?? Promise.resolve();
+  fontsForLayout.then(() => { layoutRhythm(); ScrollTrigger.refresh(); });
+  layoutRhythm();
+  window.addEventListener('resize', layoutRhythm);
+  cleanups.push(() => window.removeEventListener('resize', layoutRhythm));
+
   /* ── R58 item 8 — THE LOGO ROW CLEARS FOR THE FOOTER. The trigger is
      the footer's MEASURED reveal, not a scroll offset: p = the uncovered
      height (the viewport's bottom edge minus the red section's bottom
@@ -433,6 +514,8 @@ export function initContactPage() {
   if (import.meta.env.DEV) {
     window.__contact = {
       gsap,
+      rhythm: () => layoutRhythm.last,
+      relayout: layoutRhythm,
       ScrollTrigger,
       get lenis() { return getLenisInstance(); },
       openModal,

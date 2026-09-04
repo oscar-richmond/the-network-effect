@@ -45,6 +45,18 @@ export const CT_LOGO_ROW_PHASE_PX = -82;
 export const CT_LOGO_ROW_PHASE_DELAY_S =
   -((HERO_LOGO_SET_W + CT_LOGO_ROW_PHASE_PX) / HERO_LOGO_SET_W) * CT_LOGO_ROW_DUR_S; /* −45.72 */
 
+/* R60 item 3 — THE VERTICAL RHYTHM'S CONSTANTS (Oscar, 2026-09-04).
+   The page's rhythm is anchored to the VIEWPORT BOTTOM at the resting
+   state, not to the frame's absolute y positions, so it holds at 1728,
+   in the 1512 shell and at the shorter interiors. contact.js derives
+   every position from these three numbers and from measured INK. */
+/** The carousel's own height (frame 1:157). */
+export const CT_ROW_H = 100;
+/** The carousel's bottom edge above the viewport's bottom, at rest. */
+export const CT_ROW_BOTTOM_GAP = 80;
+/** The label's INK BOTTOM above the carousel's TOP edge. */
+export const CT_LABEL_GAP = 48;
+
 /** The band (frame 1:207): 0–1048 wide, the ground fading in over the
  *  first and last 10% (104.8px each). */
 export const CT_LOGO_BAND_W = 1048;

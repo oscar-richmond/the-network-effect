@@ -572,6 +572,10 @@
    display:none under the seam.
    ═══════════════════════════════════════════════════════════════════ */
 @media (min-width: 1025px) {
+	/* The image's width is the page's own token (R60): the nav's
+	   right-alignment is derived from it, so the two cannot drift. */
+	.landing-v2.contact-page { --ct-image-w: 754px; }
+
 	/* 1 — THE GROUND: brand red from the top of the page (behind the
 	   transparent nav bar — the nav has no ground of its own) to the
 	   footer's top at 1037. The document ground beneath stays #eeeef0:
@@ -606,6 +610,37 @@
 		line-height: 18px;
 	}
 	.landing-v2.contact-page .home__topbar--about .home__topbar-email { display: none; }
+
+	/* R60 item 1 (Oscar, 2026-09-04) — THE NAV GROUP RIGHT-ALIGNS TO THE
+	   IMAGE, this page only. WORK / SERVICES / FOUNDERS shift LEFT as a
+	   group until FOUNDERS' right edge sits 24px before the image's left
+	   edge. Their 32px internal gaps are untouched — only the group moves.
+	   READING CONFIRMED: the brief's two sentences resolve to the second
+	   — the group ENDS 24px before the image BEGINS. Nothing in the code
+	   suggests otherwise; the image is a right-flush 754 box, so its left
+	   edge is the only edge the nav could align to.
+	   DERIVED, not a fixed x: the group's right edge is the image's left
+	   edge less 24, and the image is a right-flush box of --ct-image-w —
+	   so `right: calc(var(--ct-image-w) + 24px)` IS the specification,
+	   read straight off the same token the image's own width uses. They
+	   cannot drift, and it holds at 1728 and in the 1512 shell alike
+	   (both render in design px).
+	   MECHANISM: a page variant on the SHARED nav — the group leaves the
+	   bar's centre column and pins to the bar itself (which is already
+	   position: fixed, so it is the containing block). top/bottom 0 keeps
+	   the group full-height, so its own `align-items: center` still
+	   centres the links on the bar's line exactly as the grid did. No
+	   fork; on the other six pages the selector never matches.
+	   NOTE the first attempt used `justify-self: end` with a margin —
+	   that aligns to the END OF THE GRID COLUMN, not the bar, and landed
+	   the group at 643 instead of 950 (measured). The column is auto-
+	   sized and centred, so it is not a usable reference edge. */
+	.landing-v2.contact-page .home__nav-links {
+		position: absolute;
+		right: calc(var(--ct-image-w) + 24px);
+		top: 0;
+		bottom: 0;
+	}
 
 	/* LET'S CHAT — the twin (frame 1:298): x1562.23; Dazzed SemiBold 18
 	   (the file's "Bold" is the site's 600 cut, R6), −0.02em, uppercase,
@@ -661,6 +696,22 @@
 		outline: 2px solid #eeeef0;
 		outline-offset: -4px;
 	}
+
+	/* R60 item 3 — THE VERTICAL RHYTHM IS ANCHORED TO THE VIEWPORT
+	   BOTTOM, and derived live by contact.js (which measures the ink, not
+	   the boxes) rather than typed here. The constants are named on the
+	   page so the rhythm reads in one place:
+	     · the carousel's BOTTOM sits CT_ROW_BOTTOM_GAP above the viewport
+	       bottom at the resting state;
+	     · the label's INK BOTTOM sits CT_LABEL_GAP above the carousel's
+	       top edge;
+	     · the intro + CTA block is CENTRED between the nav's bottom and
+	       the label's ink top — equal space above the intro's first-line
+	       ink and below the CTA row's bottom edge.
+	   The driver writes .ct__logos/.ct__label/.ct__cluster `top` from
+	   those; the values below are only the pre-JS resting state (the
+	   frame's own y positions), so a failed boot still renders the frame's
+	   composition rather than a collapsed page. */
 
 	/* 6 — THE LABEL (frame 1:215 at y878 → 795): the EYEBROW token —
 	   Dazzed SemiBold 14/18, +0.02em, caps, #161616. The frame draws it
@@ -761,7 +812,7 @@
 		position: absolute;
 		right: 0;
 		top: 0;
-		width: 754px;
+		width: var(--ct-image-w);
 		height: 1037px;
 		overflow: hidden;
 		z-index: 3;
