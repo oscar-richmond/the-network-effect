@@ -195,7 +195,9 @@ export function initStartProject() {
       if (opener instanceof HTMLElement) {
         opener.focus({ preventScroll: true });
         if (document.activeElement !== opener) {
-          const alt = opener.closest('[data-menu]') ? document.querySelector('[data-menu-toggle]') : document.querySelector('.home__logo a, .home__logo');
+          /* the menu toggle is on every page and always focusable — the
+             wordmark is not a link on the landing */
+          const alt = document.querySelector('[data-menu-toggle]');
           if (alt instanceof HTMLElement) alt.focus({ preventScroll: true });
         }
       }

@@ -411,14 +411,15 @@ if (PAGE === 'modal') {
   await f().evaluate(() => { const w = window; w.__lc = { add: 0, remove: 0 }; const A = EventTarget.prototype.addEventListener, R = EventTarget.prototype.removeEventListener; EventTarget.prototype.addEventListener = function (...a) { w.__lc.add++; return A.apply(this, a); }; EventTarget.prototype.removeEventListener = function (...a) { w.__lc.remove++; return R.apply(this, a); }; });
   const MST = `(() => { const m = document.querySelector('[data-sp-modal]'); const twin = document.querySelector('[data-sp-logo]'); const ct = document.querySelector('[data-ct-modal]'); return { open: !!m && m.classList.contains('is-open') && !m.hidden, hidden: m ? m.hidden : null, twin: twin ? (!twin.hidden && +getComputedStyle(twin).opacity > 0.5) : null, overflow: document.body.style.overflow, ct: ct ? ct.classList.contains('is-open') : null, lc: window.__lc.add - window.__lc.remove, active: document.activeElement ? document.activeElement.tagName + ':' + (document.activeElement.textContent || '').trim().slice(0, 12) : null, menu: !!document.querySelector('[data-menu]')?.classList.contains('is-open') }; })()`;
   const viol = []; const hist = []; let mchecks = 0; let lcBase = null;
-  const trig = await f().evaluate(() => [...document.querySelectorAll('[data-start-project]')].map((t, i) => { t.dataset.spQa = String(i); return { i, inMenu: !!t.closest('[data-menu]'), text: t.textContent.replace(/\s+/g, ' ').trim().slice(0, 16) }; }));
+  /* only triggers a visitor can reach: the mobile footer chip is display:none on desktop (a click on it opens the modal but focus can never return to it) */
+  const trig = await f().evaluate(() => [...document.querySelectorAll('[data-start-project]')].map((t, i) => { t.dataset.spQa = String(i); return { i, inMenu: !!t.closest('[data-menu]'), visible: t.offsetParent !== null || !!t.closest('[data-menu]'), text: t.textContent.replace(/\s+/g, ' ').trim().slice(0, 16) }; }).filter((t) => t.visible));
   if (!trig.length) { console.log(JSON.stringify({ vp: `${W}x${H}`, page: 'modal', route: ROUTE, error: 'no triggers' })); await b.close(); process.exit(2); }
   const closers = ['esc', 'cancel', 'backdrop', 'close'];
   const settle = async (ms) => p.waitForTimeout(ms);
   for (let i = 0; i < MOVES; i++) {
     const t = trig[Math.floor(rnd() * trig.length)];
     if (t.inMenu) { await f().evaluate(() => document.querySelector('[data-menu-toggle]').click()); await settle(1300); }
-    await f().evaluate((i2) => { const el = document.querySelector(`[data-sp-qa="${i2}"]`); el.scrollIntoView({ block: 'center' }); el.click(); }, t.i); await settle(Math.round(pick(700, 1100)));
+    await f().evaluate((i2) => { const el = document.querySelector(`[data-sp-qa="${i2}"]`); el.scrollIntoView({ block: 'center' }); el.click(); }, t.i); await settle(Math.round(pick(700, 1100)) + (t.inMenu ? 900 : 0)); /* the menu's 1s retract */
     const o = await f().evaluate(MST); mchecks += 1;
     if (!o.open || !o.twin || o.overflow !== 'hidden') viol.push({ inv: 'M1', move: i, msg: 'modal did not open cleanly', trigger: t, o });
     if (o.menu) viol.push({ inv: 'M4', move: i, msg: 'menu still open over the modal', trigger: t });
@@ -433,6 +434,7 @@ if (PAGE === 'modal') {
     if (c.open || !c.hidden || c.overflow !== '') viol.push({ inv: 'M1', move: i, msg: 'modal did not close cleanly', how, c });
     const back = await f().evaluate((i2) => document.activeElement === document.querySelector(`[data-sp-qa="${i2}"]`), t.i); mchecks += 1;
     if (!back && !t.inMenu) viol.push({ inv: 'M2', move: i, msg: 'focus did not return to the trigger', trigger: t, active: c.active });
+    if (t.inMenu && !/menu-toggle|MENU/.test(c.active || '')) viol.push({ inv: 'M2', move: i, msg: 'menu trigger: focus did not land on the menu toggle', trigger: t, active: c.active });
     if (t.inMenu) { await f().evaluate(() => { const m = document.querySelector('[data-menu]'); if (m.classList.contains('is-open')) document.querySelector('[data-menu-toggle]').click(); }); await settle(1200); }
     if (i >= 2) { if (lcBase == null) lcBase = c.lc; else if (c.lc !== lcBase) viol.push({ inv: 'M3', move: i, msg: 'listener balance drifted across cycles', was: lcBase, now: c.lc }); }
     hist.push(`${t.text} → ${how}`);
