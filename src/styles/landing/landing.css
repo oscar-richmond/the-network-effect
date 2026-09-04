@@ -7207,9 +7207,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    column (2 × 236 + 8). A checkbox group (the input is the truth,
    visually hidden but focusable — the ring paints on the tile via
    :focus-within). Was: #E4E4EA fill at rest, #C1250E selected. */
+/* R57 item 2: ONE TILE PER ROW. At 32px the longest title (NOT SURE
+   YET) measures ~230px against the 188px of text width a two-up cell
+   affords in the 480 column, so two-up forces exactly one tile to
+   wrap while its three neighbours sit on one line — the awkward case
+   the brief rules out. Full-width cells give every title one line
+   with room to spare, and the column still fits the drawer's height
+   without scrolling at 1728 and in the 1512 shell (measured). */
 .landing-v2 .sp-tiles {
 	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-columns: minmax(0, 1fr);
 	gap: 8px;
 }
 .landing-v2 .sp-tile {
@@ -7237,13 +7244,17 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	clip: rect(0 0 0 0);
 	white-space: nowrap;
 }
+/* R57 item 2 (Oscar): 32px Dazzed SemiBold, -0.035em. Was the label
+   tier (14/18, +0.02em) shared with the chips; the tiles are the
+   step's primary choice and now carry their own display size. The
+   chips keep the label tier — that contrast is the point. */
 .landing-v2 .sp-tile__name {
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 600;
 	font-synthesis: none;
-	font-size: 14px;
-	line-height: 18px;
-	letter-spacing: 0.02em;
+	font-size: 32px;
+	line-height: 36px;
+	letter-spacing: -0.035em;
 	text-transform: uppercase;
 }
 .landing-v2 .sp-tile__desc {
@@ -7488,7 +7499,13 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 	.landing-v2 .sp-modal.is-open .sp-modal__panel { opacity: 1; transform: none; transition-duration: 0.35s, 0.35s; }
 	.landing-v2 .sp-modal__scroll { padding: 72px 20px 32px; }
 	.landing-v2 .sp-modal__index { left: 24px; }
+	/* R57 items 2 + 3, MOBILE: the tiles stay TWO-UP here (the mobile
+	   design's own ruling — a full-width 32px tile per row would push
+	   the step past the fold), so the title steps down to 22/26 to fit
+	   the 139px cell without wrapping; and the chip row stays PACKED
+	   (space-between would strand the wrapped second line). */
 	.landing-v2 .sp-tiles { grid-template-columns: 1fr 1fr; }
+	.landing-v2 .sp-tile__name { font-size: 22px; line-height: 26px; }
 	.landing-v2 .sp-tile { min-height: 96px; padding: 16px; }
 	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
 	.landing-v2 .sp-chip { min-height: 44px; }
