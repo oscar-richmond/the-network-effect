@@ -7172,12 +7172,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 .landing-v2 .sp-label__opt { font-weight: 500; text-transform: none; letter-spacing: 0; color: #6b6b70; }
 .landing-v2 .sp-group { margin: 0 0 32px; padding: 0; border: 0; min-width: 0; }
-/* THE TILES — the More Info chip family at rest (#E4E4EA), the
-   floating-CTA variant when selected (#C1250E fill, #161616 ink):
-   name in the label tier, descriptor in serif beneath. Two per row in
-   the drawer's 480 column (2 × 236 + 8). A checkbox group (the input
-   is the truth, visually hidden but focusable — the ring paints on
-   the tile via :focus-within). */
+/* THE TILES — R44 items 4 + 6: ONE resting treatment shared with the
+   chips — transparent, a 1px brand-black outline (inset shadow: no
+   layout shift), brand-black ink (the "choose one or more" helper's
+   ink) — and ONE selected treatment: #232A89 fill, white ink (the
+   name and the descriptor inherit). Two per row in the drawer's 480
+   column (2 × 236 + 8). A checkbox group (the input is the truth,
+   visually hidden but focusable — the ring paints on the tile via
+   :focus-within). Was: #E4E4EA fill at rest, #C1250E selected. */
 .landing-v2 .sp-tiles {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -7191,12 +7193,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	min-height: 108px;
 	padding: 20px 24px;
 	box-sizing: border-box;
-	background: var(--landing-svc-btn-fill, #e4e4ea);
+	background: transparent;
 	color: #161616;
+	box-shadow: inset 0 0 0 1px #161616;
 	cursor: pointer;
-	transition: background-color 0.25s ease-out, color 0.25s ease-out;
+	transition: background-color 0.25s ease-out, color 0.25s ease-out, box-shadow 0.25s ease-out;
 }
-.landing-v2 .sp-tile.is-selected { background: #c1250e; color: #161616; }
+.landing-v2 .sp-tile.is-selected { background: #c1250e; color: #161616; box-shadow: inset 0 0 0 1px #c1250e; }
 .landing-v2 .sp-tile__input,
 .landing-v2 .sp-chip__input {
 	position: absolute;
@@ -7228,8 +7231,11 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    floating-CTA ring ink (#161616 inset). */
 .landing-v2 .sp-tile:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
 .landing-v2 .sp-tile.is-selected:focus-within { outline: 2px solid #161616; outline-offset: -2px; }
-/* WHO ARE YOU — a single-select chip row (radios): the More Info
-   chip family (38 tall, 16 pads, Dazzed 16 caps). */
+/* WHO ARE YOU — a single-select chip row (radios). R44 item 4: the
+   tiles' resting treatment (black outline, black ink) and the tiles'
+   LABEL TIER — Dazzed SemiBold 14/18 +0.02em uppercase, identical to
+   IMMERSE / CONNECT / NOT SURE YET (was 16/16, blue on #E4E4EA); 38
+   tall on 16 pads as before. Selected: blue fill, white ink. */
 .landing-v2 .sp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .landing-v2 .sp-chip {
 	position: relative;
@@ -7238,18 +7244,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	height: 38px;
 	padding: 0 16px;
 	box-sizing: border-box;
-	background: var(--landing-svc-btn-fill, #e4e4ea);
-	color: var(--landing-accent-blue, #232a89);
+	background: transparent;
+	color: #161616;
+	box-shadow: inset 0 0 0 1px #161616;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 600;
 	font-synthesis: none;
-	font-size: 16px;
-	line-height: 1;
+	font-size: 14px;
+	line-height: 18px;
+	letter-spacing: 0.02em;
 	text-transform: uppercase;
 	cursor: pointer;
-	transition: background-color 0.25s ease-out, color 0.25s ease-out;
+	transition: background-color 0.25s ease-out, color 0.25s ease-out, box-shadow 0.25s ease-out;
 }
-.landing-v2 .sp-chip.is-selected { background: #c1250e; color: #161616; }
+.landing-v2 .sp-chip.is-selected { background: #c1250e; color: #161616; box-shadow: inset 0 0 0 1px #c1250e; }
 .landing-v2 .sp-chip:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
 .landing-v2 .sp-chip.is-selected:focus-within { outline: 2px solid #161616; outline-offset: -2px; }
 /* FIELDS — hairline-underline inputs on the 2px divider grammar
