@@ -188,7 +188,10 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M1.5 5.4L4 7.9L8.5 2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <span>Email copied</span>
+        {/* R66 item 3: "COPIED", uppercase — the CSS applies the label
+            tier's transform, and the text is authored in caps so a screen
+            reader hears the same word the eye does. */}
+        <span>COPIED</span>
       </div>
       </div>
     </form>

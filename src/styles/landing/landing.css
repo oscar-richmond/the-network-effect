@@ -7312,8 +7312,23 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    Oscar's call is that the consistent container reads better than the
    consistent padding. Sized to the longest label (AGENCY) plus the
    family's 16px pads, so nothing is ever cramped. */
-.landing-v2 .sp-chips { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
-.landing-v2 .sp-chip { flex: 0 0 auto; width: var(--sp-chip-w, 96px); justify-content: center; }
+/* R66 item 1 (Oscar, 2026-09-04) — ONE DATED RULING, reconciling the two
+   before it: the chips are EQUAL WIDTH **and** they FILL THE ROW. R57
+   distributed content-sized chips across the full width; R61 made them
+   equal but packed from the left. This is both — four equal chips, 8px
+   apart, spanning exactly the tile grid above.
+   DERIVED FROM THE GRID, not typed: a four-column grid with an 8px gap
+   gives each chip (content width − 3 × 8) ÷ 4 automatically, and because
+   the row is the same width as the tile grid, its left edge sits on the
+   tiles' left edge and OTHER's right edge lands exactly on the right edge
+   of the CONNECT / UNSURE column. Nothing to recompute at a different
+   size, on mobile full-screen, or if the tile grid ever changes. */
+.landing-v2 .sp-chips {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+.landing-v2 .sp-chip { width: auto; justify-content: center; }
 
 .landing-v2 .sp-chip {
 	position: relative;
@@ -7435,6 +7450,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	justify-content: center;
 	align-items: center;
 }
+/* R66 item 2 (Oscar, 2026-09-04): the label sits SB_LABEL_NUDGE lower
+   inside every drawer button. This is an explicit OPTICAL correction ON
+   TOP of the geometric centring above — the centring method is
+   untouched, so the nudge survives any future type change and can be
+   tuned or removed on its own. The container does not move or resize:
+   the offset is on the label, not the box. */
+.landing-v2 .sp-actions .ne-cta > * {
+	position: relative;
+	top: var(--sp-label-nudge, 1px);
+}
 .landing-v2 .sp-btn--primary {
 	background: #232a89;
 	color: #ffffff;
@@ -7485,6 +7510,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    copied" in Dazzed Medium 12 white, cursor-bound via a JS transform.
    Fixed and inside the drawer, so it paints above the modal's own tier
    without needing one of its own. */
+/* R66 item 3 (Oscar, 2026-09-04): SQUARE and UPPERCASE. The pill radius
+   is gone (border-radius 0) and the word reads "COPIED" in the site's
+   LABEL TIER — Dazzed SemiBold 12, +0.02em, uppercase; the tier is 14px
+   elsewhere (sp-label, the chips, the eyebrow), and 12 is kept here so
+   the tip's box does not grow, with the tier's weight and tracking
+   applied so it reads as the same family. Size, fill, position, timing
+   and animation are otherwise identical.
+   SCOPE: this is the DRAWER'S OWN instance. The holding page's tooltip
+   is a SEPARATE implementation (.holding-final__copy-tip in
+   holding-page.css, driven by holding-deck-form.js) — the behaviour was
+   ported here, never the stylesheet, so nothing about this rule can
+   reach it. The holding page is LIVE on the launch domain and is
+   untouched; /contact's own .ct-copy-tip is likewise a separate rule and
+   keeps its pill. */
 .landing-v2 .sp-copy-tip {
 	position: fixed;
 	top: 0;
@@ -7495,12 +7534,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	gap: 8px;
 	padding: 10px 16px 10px 14px;
 	background: #161616;
-	border-radius: 999px;
+	border-radius: 0;
 	color: #ffffff;
 	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 500;
+	font-weight: 600;
+	font-synthesis: none;
 	font-size: 12px;
 	line-height: 1;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
 	white-space: nowrap;
 	pointer-events: none;
 }
@@ -7621,11 +7663,12 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 	/* R57 items 2 + 3, MOBILE: the tiles stay TWO-UP here (the mobile
 	   design's own ruling — a full-width 32px tile per row would push
 	   the step past the fold), so the title steps down to 22/26 to fit
-	   the 139px cell without wrapping; and the chip row stays PACKED
-	   (space-between would strand the wrapped second line). */
+	   the 139px cell without wrapping. The chip row needs no mobile
+	   override since R66 — the four-column grid fills whatever width it
+	   is given, so it spans the content column at 390 as it does at
+	   1728, in one row, without wrapping. */
 	.landing-v2 .sp-tiles { grid-template-columns: 1fr 1fr; }
 	.landing-v2 .sp-tile__name { font-size: 22px; line-height: 26px; }
-	.landing-v2 .sp-chips { justify-content: flex-start; }
 	.landing-v2 .sp-tile { min-height: 96px; padding: 16px; }
 	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
 	.landing-v2 .sp-chip { min-height: 44px; }

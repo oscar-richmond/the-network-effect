@@ -161,7 +161,7 @@ export function initStartProject() {
         const copy = navigator.clipboard
           ? navigator.clipboard.writeText(email).then(() => {
             showTip(link, x, y);
-            if (live instanceof HTMLElement) live.textContent = 'Email copied';
+            if (live instanceof HTMLElement) live.textContent = 'Email address copied';
           }).catch(() => {})
           : Promise.resolve();
         copy.finally(() => { window.location.href = link.href; });
