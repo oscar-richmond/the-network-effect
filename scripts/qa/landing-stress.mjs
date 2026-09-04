@@ -58,6 +58,10 @@
  *   W3 the right machinery per view (list handle / Lenis / stage /
  *   body overflow), W4 ScrollTrigger count flat, W5 aria-pressed.
  *
+ * --page case --case <slug> (R37): a case study's random walk with the
+ *     floating START A PROJECT chip's invariants X1–X5 (hidden at the
+ *     top / shown in range / hidden past the last image / never two
+ *     states / 40-40 position stable) plus N1 and page errors.
  * --page services (R36): the /services random walk with the shared R36
  *     checks — N1 the bottom nav sweep, C1–C6 the closing statement band
  *     (grounds equal / white→red bounds / monotonic / nav-over-red / dwell /
@@ -109,7 +113,8 @@ const FOCUS = arg('--focus', '');
 const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await (await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
 const pageErrs = []; p.on('pageerror', (e) => pageErrs.push(String(e.message).slice(0, 120)));
-await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : PAGE === 'services' ? '/services?splash=0&forcehover' : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
+const CASE = arg('--case', 'wilderness-reserve');
+await p.goto(BASE + (PAGE === 'founders' ? '/founders?splash=0&forcehover' : PAGE === 'work' ? '/work?splash=0&forcehover' : PAGE === 'services' ? '/services?splash=0&forcehover' : PAGE === 'case' ? `/work/${CASE}?splash=0&forcehover` : '/?splash=0&forcehover'), { waitUntil: 'networkidle', timeout: 90000 }); await p.waitForTimeout(3500);
 const s = W >= 1728 ? 1 : W / 1728;
 const f = () => p.frames().find((fr) => fr.url().includes('framed=1')) ?? p.mainFrame();
 
@@ -375,6 +380,62 @@ if (PAGE === 'founders') {
     if (rnd() < 0.25) { await p.waitForTimeout(Math.round(pick(200, 700))); check(await snap(), 'pause'); await r36('pause'); }
   }
   const summary = { vp: `${W}x${H}`, page: 'founders', moves: MOVES, seed: SEED, maxPos: MAX, checks: fchecks + r36Checks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
+  if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
+  console.log(JSON.stringify(summary));
+  await b.close();
+  process.exit(viol.length ? 2 : 0);
+}
+/* ══ R37 — CASE-STUDY MODE (--page case --case <slug>): the floating
+   START A PROJECT chip's invariants on the generic random walk:
+   X1  at the top (y < 2, settled) the chip is hidden (visibility hidden,
+       every unit at opacity 0 or swept, tabindex −1);
+   X2  in range (y ≥ 2 and the stream's last image bottom > vh, settled
+       ≥ 900ms) the chip is shown (visible, every unit opacity 1, no
+       tabindex, pointer events on);
+   X3  past the last image (its bottom ≤ vh, settled) the chip is hidden;
+   X4  never two states — no unit carries both nav-char-in and
+       nav-char-out, and the host's data-float-state matches the driver;
+   X5  position stable — whenever shown, right = vw − 40 and bottom =
+       vh − 40 (±0.5), the box never moves. Plus N1 (the bottom nav
+       sweep) and page errors. */
+if (PAGE === 'case') {
+  await p.mouse.move(W * 0.5, H * 0.6);
+  const viol = []; const hist = [];
+  const CSTATE = `(() => {
+    const host = document.querySelector('[data-cs-float]'); const cta = document.querySelector('[data-cs-float-cta]'); if (!host || !cta) return { absent: true };
+    const units = [...cta.querySelectorAll('.cr-char'), ...cta.querySelectorAll('[data-char-ripple-arrow]')];
+    const ops = units.map((u) => +getComputedStyle(u).opacity);
+    const both = units.filter((u) => u.classList.contains('nav-char-in') && u.classList.contains('nav-char-out')).length;
+    const items = document.querySelectorAll('[data-cs-lb-item]'); const last = items[items.length - 1]; const lb = last ? last.getBoundingClientRect().bottom : null;
+    const r = cta.getBoundingClientRect(); const hr = host.getBoundingClientRect();
+    return { y: scrollY, vh: innerHeight, vw: innerWidth, max: document.documentElement.scrollHeight - innerHeight, vis: getComputedStyle(host).visibility, state: host.dataset.floatState, drv: window.__csFloat ? window.__csFloat.state() : null, minOp: Math.min(...ops), maxOp: Math.max(...ops), both, ti: cta.getAttribute('tabindex'), pe: cta.style.pointerEvents, lastB: lb, right: innerWidth - r.right, bottom: innerHeight - r.bottom, hostRight: innerWidth - hr.right, hostBottom: innerHeight - hr.bottom, lbOpen: document.querySelector('[data-cs-lightbox]')?.classList.contains('is-open') }; })()`;
+  const check = async (tag) => {
+    const st = await f().evaluate(CSTATE); if (st.absent) { viol.push({ inv: 'X0', tag, msg: 'floating CTA absent' }); return st; }
+    const bs = await f().evaluate(R36STATE); r36Checks_(bs, tag, null, (v) => viol.push({ ...v, move: hist.length }));
+    const settled = /pause/.test(tag);
+    const push = (inv, msg, extra) => viol.push({ inv, tag, y: Math.round(st.y), msg, ...extra, move: hist.length, recent: hist.slice(-6) });
+    if (st.both > 0) push('X4', 'unit carries both sweep classes', { both: st.both });
+    if (st.state !== st.drv) push('X4', 'host state differs from the driver', { state: st.state, drv: st.drv });
+    if (settled) {
+      const expectShown = st.y >= 2 && st.lastB > st.vh && !st.lbOpen;
+      if (!expectShown) { if (st.vis !== 'hidden' || st.maxOp > 0.01 || st.ti !== '-1') push(st.y < 2 ? 'X1' : 'X3', 'chip not hidden', { vis: st.vis, maxOp: st.maxOp, ti: st.ti, lastB: st.lastB }); }
+      else { if (st.vis !== 'visible' || st.minOp < 0.99 || st.ti !== null || st.pe === 'none') push('X2', 'chip not shown in range', { vis: st.vis, minOp: st.minOp, ti: st.ti, pe: st.pe, lastB: st.lastB }); }
+    }
+    if (st.vis === 'visible' && (Math.abs(st.hostRight - 40) > 0.5 || Math.abs(st.hostBottom - 40) > 0.5)) push('X5', 'chip not at 40/40', { right: st.hostRight, bottom: st.hostBottom });
+    return st;
+  };
+  const maxS = await f().evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  for (let i = 0; i < MOVES; i++) {
+    const dir = rnd() < 0.5 ? -1 : 1; const dist = Math.round(pick(80, 2600)); const kind = rnd();
+    if (kind < 0.12) { await p.mouse.wheel(0, dir * dist * s); await p.waitForTimeout(Math.round(pick(20, 90))); await p.mouse.wheel(0, -dir * Math.round(dist * pick(0.4, 1.3)) * s); hist.push(`rev ${dir * dist}`); }
+    else if (kind < 0.22) { const y = Math.round(pick(0, maxS)); await f().evaluate((v) => window.scrollTo(0, v), y); hist.push(`jump ${y}`); }
+    else if (kind < 0.30) { await f().evaluate(() => window.scrollTo(0, 0)); hist.push('top'); }
+    else if (kind < 0.38) { /* the exit threshold: walk across the last image's bottom slowly, both ways */ const st0 = await f().evaluate(CSTATE); const yEdge = st0.y + (st0.lastB - st0.vh); const from = Math.round(yEdge - pick(200, 700)), to = Math.round(yEdge + pick(200, 700)); await f().evaluate((v) => window.scrollTo(0, v), Math.max(0, from)); await p.waitForTimeout(300); for (let k = 0; k < 8; k++) { await p.mouse.wheel(0, ((to - from) / 8) * s); await p.waitForTimeout(Math.round(pick(30, 120))); await check('mid'); } for (let k = 0; k < 8; k++) { await p.mouse.wheel(0, -((to - from) / 8) * s); await p.waitForTimeout(Math.round(pick(30, 120))); await check('mid'); } hist.push(`edge ${from}..${to}`); }
+    else { const steps = Math.round(pick(1, 6)); for (let k = 0; k < steps; k++) { await p.mouse.wheel(0, dir * Math.round(dist / steps) * s); await p.waitForTimeout(Math.round(pick(8, 40))); await check('mid'); } hist.push(`wheel ${dir * dist}/${steps}`); }
+    await p.waitForTimeout(80); await check('after-move');
+    if (rnd() < 0.45) { const pause = Math.round(pick(1000, 1500)); await p.waitForTimeout(pause); await check('pause'); hist[hist.length - 1] += ` +pause${pause}`; }
+  }
+  const summary = { vp: `${W}x${H}`, page: 'case', study: CASE, moves: MOVES, seed: SEED, maxScroll: maxS, checks: r36Checks, violations: viol.length, byInvariant: viol.reduce((m, v) => { m[v.inv] = (m[v.inv] || 0) + 1; return m; }, {}), pageErrors: pageErrs, first: viol.slice(0, 5) };
   if (OUT) fs.writeFileSync(OUT, JSON.stringify({ summary, violations: viol, log: hist }, null, 1));
   console.log(JSON.stringify(summary));
   await b.close();

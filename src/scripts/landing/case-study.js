@@ -39,6 +39,7 @@ import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { bindBottomNavSweep } from './nav-motion.js';
+import { initFloatCta } from './float-cta.js';
 import { isMobileViewport } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
@@ -294,6 +295,19 @@ export function initCaseStudy() {
      Scroll locks through Lenis + body overflow while open; focus
      moves to close and returns to the opener. Media swaps ride the
      house blur-fade; video items autoplay muted-looped. */
+  /* ── R37: the floating START A PROJECT chip — desktop only (the host
+     is display:none under the seam); its range is derived from the
+     stream's LAST image, so every study (and every future one) gets
+     the same behaviour from its own structure. */
+  const floatCta = isMobileViewport() ? null : initFloatCta({
+    reduced,
+    host: document.querySelector('[data-cs-float]'),
+    cta: document.querySelector('[data-cs-float-cta]'),
+    lastImage: () => { const items = document.querySelectorAll('[data-cs-lb-item]'); return items[items.length - 1] ?? null; },
+  });
+  if (floatCta) cleanups.push(floatCta.cleanup);
+  if (import.meta.env.DEV && floatCta) window.__csFloat = floatCta;
+
   const lightbox = document.querySelector('[data-cs-lightbox]');
   if (lightbox instanceof HTMLElement) {
     /* Same icon button as the MORE WORK pager — same affordance
@@ -447,6 +461,7 @@ export function initCaseStudy() {
     const openLb = (i, opener) => {
       lbOpen = true;
       lbOpener = opener ?? null;
+      floatCta?.suspend(true); /* R37: the chip leaves while the lightbox is open */
       showMedia(i, true);
       lightbox.hidden = false;
       void lightbox.offsetWidth; /* commit hidden state, then frost in */
@@ -460,6 +475,7 @@ export function initCaseStudy() {
     const closeLb = () => {
       if (!lbOpen) return;
       lbOpen = false;
+      floatCta?.suspend(false);
       lightbox.classList.remove('is-open');
       schedule(() => {
         lightbox.hidden = true;

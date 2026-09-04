@@ -57,31 +57,36 @@ export function ensureNavLinkChars() {
   /* Mobile: the links are display:none and never sweep — leave the
      served DOM untouched (the byte-identical baseline rule). */
   if (isMobileViewport()) return;
-  getSweptNavParts().forEach((link) => {
-    const label = link.querySelector('[data-char-ripple]');
-    if (!(label instanceof HTMLElement)) return;
-    if (label.dataset.charRippleWired || label.querySelector('.cr-char')) return;
-    /* The .cr-sr/.cr-char styles normally arrive with char-ripple's
-       wiring — hover-gated, so inject here too (one flag, no-op when
-       char-ripple already has). */
-    ensureCharRippleStyles();
-    label.dataset.charRippleWired = '1';
-    const text = label.textContent ?? '';
-    const sr = document.createElement('span');
-    sr.className = 'cr-sr';
-    sr.textContent = text;
-    const box = document.createElement('span');
-    box.className = 'cr-chars';
-    box.setAttribute('aria-hidden', 'true');
-    for (const ch of text) {
-      const s = document.createElement('span');
-      s.className = 'cr-char';
-      s.textContent = ch === ' ' ? ' ' : ch;
-      box.appendChild(s);
-    }
-    label.textContent = '';
-    label.append(sr, box);
-  });
+  getSweptNavParts().forEach((link) => ensureRippleChars(link.querySelector('[data-char-ripple]')));
+}
+
+/** The char wrap for ONE label (R37: shared with the case-study
+ *  floating CTA — any element that must sweep on a hover-less machine
+ *  needs its chars whether or not char-ripple wired it). Idempotent:
+ *  the wired flag is respected both ways. */
+export function ensureRippleChars(label) {
+  if (!(label instanceof HTMLElement)) return;
+  if (label.dataset.charRippleWired || label.querySelector('.cr-char')) return;
+  /* The .cr-sr/.cr-char styles normally arrive with char-ripple's
+     wiring — hover-gated, so inject here too (one flag, no-op when
+     char-ripple already has). */
+  ensureCharRippleStyles();
+  label.dataset.charRippleWired = '1';
+  const text = label.textContent ?? '';
+  const sr = document.createElement('span');
+  sr.className = 'cr-sr';
+  sr.textContent = text;
+  const box = document.createElement('span');
+  box.className = 'cr-chars';
+  box.setAttribute('aria-hidden', 'true');
+  for (const ch of text) {
+    const s = document.createElement('span');
+    s.className = 'cr-char';
+    s.textContent = ch === ' ' ? ' ' : ch;
+    box.appendChild(s);
+  }
+  label.textContent = '';
+  label.append(sr, box);
 }
 
 export function ensureLogoChars() {

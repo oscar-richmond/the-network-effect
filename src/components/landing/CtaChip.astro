@@ -1,0 +1,31 @@
+---
+/**
+ * THE CTA CHIP — the button family as ONE component with NAMED
+ * VARIANTS (R37, Oscar 2026-09-04). The family's DNA is the footer's
+ * START A PROJECT chip (LandingFooter.astro, frame 13:381): Dazzed
+ * SemiBold 16 uppercase on a 1:1 line box, an 8px label → arrow gap,
+ * the 12.4px arrow (the label's measured cap ink: ascent 12.16 +
+ * descent 0.19) drawn with currentColor so it can never desync from
+ * the label, the char-ripple hover on the label AND the arrow.
+ *
+ * Variants (landing.css, .ne-cta--*):
+ *   chip   — the footer chip's own treatment (38 tall, 16 side pads,
+ *            #EEEEF0 fill, accent-blue ink). The footer keeps its
+ *            component-local markup; this is the same recipe.
+ *   float  — the case-study floating CTA (R37): brand-red #C1250E
+ *            fill, brand-black #161616 ink, 24 left of the text / 24
+ *            right of the arrow / 16 above and below the label's INK.
+ *
+ * Props: href, label, variant ('chip' | 'float'), class, plus any
+ * data-* passthrough. Renders an <a>; the label lives in a
+ * data-char-ripple span (the hover surface is the anchor itself).
+ */
+const { href, label, variant = 'chip', class: className = '', ...rest } = Astro.props;
+---
+
+<a class={`ne-cta ne-cta--${variant}${className ? ` ${className}` : ''}`} href={href} data-char-ripple-trigger {...rest}>
+  <span class="ne-cta__label" data-char-ripple>{label}</span>
+  <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow>
+    <path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" />
+  </svg>
+</a>

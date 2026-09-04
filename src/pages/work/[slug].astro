@@ -25,6 +25,7 @@
  */
 import SiteShell from '../../layouts/SiteShell.astro';
 import LandingFooter from '../../components/landing/LandingFooter.astro';
+import CtaChip from '../../components/landing/CtaChip.astro';
 import { asset } from '../../utils/asset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
@@ -296,6 +297,18 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       blend element, positioned via left/top, never transform).
       aria-hidden: decoration; case-study.js gates + drives it. */}
   <div class="cs-gallery-cursor" data-cs-gallery-cursor aria-hidden="true">( VIEW GALLERY + )</div>
+
+  {/* ── FLOATING CTA (R37, Oscar 2026-09-04): the template's fixed
+      START A PROJECT chip (CtaChip `float`), 40/40 from the right and
+      bottom edges — hidden at the top, in from the first scroll, out
+      once the stream's last image has fully entered (float-cta.js,
+      driven from case-study.js; hidden while the lightbox is open).
+      DESTINATION: the footer's live mailto to the canonical address
+      (the working instance; /contact's inert START A PROJECT is the
+      unresolved one — flagged for Oscar's ruling). */}
+  <div class="cs-float" data-cs-float>
+    <CtaChip variant="float" href="mailto:hello@networkeffectagency.co.uk" label="START A PROJECT" data-cs-float-cta />
+  </div>
 
   {/* ── LIGHTBOX (Oscar's rev): click any stream image -> centred
       pop-up over a frosted backdrop (the page grey at 50% over a

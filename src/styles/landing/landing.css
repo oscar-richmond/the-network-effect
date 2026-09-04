@@ -326,6 +326,107 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	outline-color: #232a89;
 }
 
+/* ══ THE CTA CHIP FAMILY (CtaChip.astro; R37, Oscar 2026-09-04) ═══
+   One component, named variants. The DNA is the footer's START A
+   PROJECT chip (13:381): Dazzed SemiBold 16 uppercase on a 1:1 line
+   box, 8 between the label and the arrow, the 12.4 arrow = the
+   label's measured cap ink (ascent 12.16 + descent 0.19), drawn with
+   currentColor. `chip` is that recipe; `float` is the case-study
+   floating CTA. Hover = the shared char-ripple (label + arrow). */
+.landing-v2 .ne-cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;                 /* the family's label → arrow gap (token) */
+	width: max-content;
+	box-sizing: border-box;
+	border: 0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 16px;          /* the family's label size (token) */
+	line-height: 1;
+	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.landing-v2 .ne-cta__arrow {
+	display: block;
+	flex: none;
+	width: 12.4px;            /* the label's cap ink (token) */
+	height: 12.4px;
+}
+
+/* chip — the footer chip's own treatment. */
+.landing-v2 .ne-cta--chip {
+	height: 38px;
+	padding: 0 16px;
+	background: #eeeef0;
+	color: var(--landing-accent-blue, #232a89);
+}
+
+/* float — R37: brand-red fill, brand-black ink (the arrow inherits
+   it). PADDING TO THE INK: 24 left of the text, 24 right of the
+   arrow, 16 above and below the label's ink. Edges used: the ink's
+   CAP TOP (Dazzed 600 16px caps: actualBoundingBoxAscent 12.16) and
+   its DEEPEST INK (the J of PROJECT, actualBoundingBoxDescent 0.19).
+   On the 16px line box the baseline sits at 14.0 (the font's 15/3
+   ascent/descent, centred: (16 − 18)/2 + 15), so the cap top is 1.84
+   below the box top and the ink bottom 1.81 above the box bottom —
+   the vertical pads were derived as 16 − 1.84 / 16 − 1.81 and then
+   MEASURED (canvas metrics against the rendered box: the inline
+   label box sits 1px lower than the derivation assumed), so the pads
+   are corrected by that pixel: 13.16 / 15.19 → ink top 16.0, ink
+   bottom 16.0; the box is 16 + 12.35 + 16 = 44.35 tall. */
+.landing-v2 .ne-cta--float {
+	padding: 13.16px 24px 15.19px 24px;
+	background: #c1250e;
+	color: #161616;
+}
+
+/* The arrow's box (12.4 = the cap span, the family token) sits on the
+   cap top / baseline exactly: flex centring lands it 1.04px high on
+   the 18px content box (measured), so it takes a 1px layout offset —
+   position, not transform (the chip is a plain box; nothing to
+   isolate, but the house rule stands). */
+.landing-v2 .ne-cta--float .ne-cta__arrow {
+	position: relative;
+	top: 1px;
+}
+
+/* Focus ring (the three-ink pattern): this chip floats over
+   arbitrary grounds, so its ring sits INSIDE the fill (offset −2,
+   the filled-box precedent) where the ground is always the red —
+   the label's own #161616: 3.08:1 on #C1250E (the non-text UI floor
+   3:1; the light ink would be 5.09:1, the accent 2.0:1 — reported). */
+.landing-v2 .ne-cta--float:focus-visible {
+	outline: 2px solid #161616;
+	outline-offset: -2px;
+}
+
+/* ── The case-study floating host (R37): fixed 40/40 from the
+   right and bottom viewport edges (design px — the shell's iframe IS
+   the viewport, so it scales with the interior). z265: above the
+   page content tier (main 260), below the nav (270), the modals and
+   the lightbox (400), the menu (500) and the transition cover
+   (10000). A plain fixed box — no blend, no filter, no transform —
+   so it never isolates anything beneath it and paints its own
+   colours true over blended content. Visibility is JS-owned
+   (float-cta.js): hidden until the first scroll, hidden again once
+   the stream's last image has fully entered. ≤1024: not rendered. */
+.landing-v2 .cs-float {
+	position: fixed;
+	right: 40px;
+	bottom: 40px;
+	z-index: 265;
+	visibility: hidden;
+}
+
+@media (max-width: 1024px) {
+	.landing-v2 .cs-float { display: none; }
+}
+
 /* RESTORED (A2a, 2026-08-27): the 13:381 footer rebuild introduced
    the __dlink/__dchip/__ritem family without extending these rules,
    so every desktop footer stop fell back to the UA ring — the
