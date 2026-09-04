@@ -7049,6 +7049,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	--sp-drawer-w: calc(100vw / 3);
 	--sp-drawer-in-s: 0.62s;
 	--sp-drawer-out-s: 0.48s;
+	--sp-progress-s: 0.42s;
 	--sp-ease: var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 .landing-v2 .sp-modal[hidden] { display: none !important; }
@@ -7143,6 +7144,26 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 .landing-v2 .sp-modal__close svg { display: block; width: 16px; height: 16px; }
 .landing-v2 .sp-modal__close:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
+/* PROGRESS — R44 item 8: 2px (the divider grammar) brand blue, flush
+   to the drawer's bottom edge, full width; the bar's width is the
+   step (⅓ / ⅔ / full — --sp-progress from the driver) and tweens
+   between steps at the house beat. */
+.landing-v2 .sp-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 2px;
+	pointer-events: none;
+	z-index: 1;
+}
+.landing-v2 .sp-progress__bar {
+	display: block;
+	height: 100%;
+	width: var(--sp-progress, 33.3333%);
+	background: #232a89;
+	transition: width var(--sp-progress-s) var(--sp-ease);
+}
 /* The step headline — the card-title tier: Serrif Condensed Medium
    34/38 (the Section serif; the landing's card titles). */
 .landing-v2 .sp-modal__title {
@@ -7373,9 +7394,9 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 .landing-v2 .sp-modal__logo:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 /* the floating chip leaves while the modal is open (its z-order rule) */
 html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
-/* RM: no crossfades, no slide */
+/* RM: no crossfades, no slide, no progress tween */
 @media (prefers-reduced-motion: reduce) {
-	.landing-v2 .sp-step, .landing-v2 .sp-modal__panel, .landing-v2 .sp-modal__backdrop, .landing-v2 .sp-tile, .landing-v2 .sp-chip { transition: none; }
+	.landing-v2 .sp-step, .landing-v2 .sp-modal__panel, .landing-v2 .sp-modal__backdrop, .landing-v2 .sp-tile, .landing-v2 .sp-chip, .landing-v2 .sp-progress__bar { transition: none; }
 }
 /* MOBILE (≤1024): the contact modal's full-screen behaviour AS BEFORE
    R44 — the panel fills the viewport (no third-width drawer, no slide:

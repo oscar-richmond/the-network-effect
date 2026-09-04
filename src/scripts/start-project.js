@@ -17,7 +17,8 @@
  * (SP_STEP_OUT_MS / SP_STEP_IN_MS), the /0N index updating at the
  * swap. R44: the panel is a full-height DRAWER, so the R40 height
  * tween is retired — the steps crossfade in place and the scroll
- * wrapper returns to its top. The
+ * wrapper returns to its top; the PROGRESS BAR (--sp-progress on the
+ * panel: ⅓ / ⅔ / full, error holds ⅔) tweens at SP_PROGRESS_MS. The
  * slide durations are CSS tunables (--sp-drawer-in-s / -out-s); the
  * close guard still waits SP_CLOSE_MS. RM: instant swaps, no tweens.
  *
@@ -30,7 +31,9 @@ import { getLenisInstance } from './landing/site-scroll.js';
 
 export const SP_STEP_OUT_MS = 360;
 export const SP_STEP_IN_MS = 420;
+export const SP_PROGRESS_MS = 420; /* the progress bar's tween (CSS --sp-progress-s) */
 export const SP_CLOSE_MS = 620; /* the frost-out and the drawer's slide-out guard (CSS --sp-drawer-out-s 0.48s inside it) */
+export const SP_PROGRESS = { 1: '33.3333%', 2: '66.6667%', success: '100%', error: '66.6667%' };
 export const SP_QUERY_KEY = 'project';
 export const SP_HASH = '#start-project';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -80,6 +83,8 @@ export function initStartProject() {
 
   /* ── steps */
   const setIndex = (s) => { if (index instanceof HTMLElement) index.textContent = s === '1' ? '/01' : s === '2' ? '/02' : ''; };
+  const setProgress = (s) => { if (panel instanceof HTMLElement) panel.style.setProperty('--sp-progress', SP_PROGRESS[s] || SP_PROGRESS[1]); };
+  setProgress(step);
   const focusFirst = (s) => {
     if (!open) return; /* a closed modal never takes focus (the post-close reset swaps steps silently) */
     const el = steps.get(s); if (!(el instanceof HTMLElement)) return;
@@ -90,7 +95,7 @@ export function initStartProject() {
     if (next === step || animating) return;
     const from = steps.get(step); const to = steps.get(next);
     if (!(from instanceof HTMLElement) || !(to instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
-    step = next; setIndex(next);
+    step = next; setIndex(next); setProgress(next);
     const toTop = () => { if (scroll instanceof HTMLElement) scroll.scrollTop = 0; };
     if (reduced || instant) {
       from.hidden = true; to.hidden = false; toTop(); focusFirst(next); return;
@@ -262,7 +267,7 @@ export function initStartProject() {
   if (params.get(SP_QUERY_KEY) === '1' || window.location.hash === SP_HASH) schedule(() => openModal(null), 400);
 
   if (import.meta.env.DEV) {
-    window.__startProject = { open: () => openModal(null), close: closeModal, isOpen: () => open, step: () => step, showStep, validateStep1, validateStep2, sending: () => sending };
+    window.__startProject = { open: () => openModal(null), close: closeModal, isOpen: () => open, step: () => step, showStep, validateStep1, validateStep2, sending: () => sending, progress: () => panel instanceof HTMLElement ? panel.style.getPropertyValue('--sp-progress') : '' };
   }
 
   return () => {

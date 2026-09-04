@@ -71,6 +71,10 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
       <button type="button" class="sp-modal__close" data-sp-close aria-label="Close">
         <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 2 L14 14 M14 2 L2 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="butt" /></svg>
       </button>
+      {/* R44 item 8: the progress bar — 2px brand blue, flush to the
+          drawer's bottom edge, ⅓ / ⅔ / full across the steps (the
+          driver writes --sp-progress). */}
+      <div class="sp-progress" data-sp-progress aria-hidden="true"><span class="sp-progress__bar"></span></div>
       <div class="sp-modal__scroll" data-sp-scroll>
 
       {/* ── /01 */}
