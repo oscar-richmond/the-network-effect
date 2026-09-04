@@ -32,6 +32,7 @@ import { createCoverSwap } from '../cover-swap.js';
 export const GRID_REVEAL_THRESHOLD_T = 0.25; /* of the row's tallest tile entered */
 export const GRID_REVEAL_MS = 600;           /* the veil's fade / the image's un-blur */
 export const GRID_REVEAL_BLUR_PX = 12;       /* the image's blur under the veil */
+export const GRID_ROW_INK_GAP_PX = 120;      /* R39 item 1b: name ink bottom → next row's image top */
 const LINE_STAGGER_S = 0.12;
 
 export function initWorkGrid() {
@@ -108,6 +109,41 @@ export function initWorkGrid() {
     });
   }
 
+  /* ── R39 item 1b: THE ROW GAP — 120 from each row's lowest NAME INK
+     bottom to the next row's image top. Per row (rows differ in
+     height and their names land on different baselines): the lowest
+     ink bottom among the row's names (the last line's baseline + the
+     text's measured descent) → margin-bottom = GRID_ROW_INK_GAP_PX −
+     (row bottom − ink bottom); the flex gap is zeroed while JS owns
+     it. Fonts-gated, re-derived on resize. */
+  const gapRows = Array.from(grid.querySelectorAll('[data-work-grid-row]')).filter((el) => el instanceof HTMLElement);
+  const inkBottomOf = (nameEl) => {
+    const r = nameEl.getBoundingClientRect(); const cs = getComputedStyle(nameEl);
+    const c = document.createElement('canvas').getContext('2d'); if (!c) return r.bottom;
+    c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = c.measureText(nameEl.textContent || '');
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.2;
+    const asc = m.fontBoundingBoxAscent ?? parseFloat(cs.fontSize) * 0.9; const desc = m.fontBoundingBoxDescent ?? parseFloat(cs.fontSize) * 0.2;
+    /* the LAST line's baseline: the box bottom − half-leading − descent */
+    const baseline = r.bottom - (lh - (asc + desc)) / 2 - desc;
+    return baseline + (m.actualBoundingBoxDescent || 0);
+  };
+  const deriveRowGaps = () => {
+    grid.style.setProperty('--work-grid-rowgap', '0px');
+    gapRows.forEach((row, i) => {
+      if (i === gapRows.length - 1) { row.style.marginBottom = ''; return; }
+      const names = Array.from(row.querySelectorAll('.work-gtile__name')).filter((el) => el instanceof HTMLElement);
+      if (!names.length) return;
+      const ink = Math.max(...names.map(inkBottomOf));
+      const rowBottom = row.getBoundingClientRect().bottom;
+      row.style.marginBottom = `${Math.max(0, GRID_ROW_INK_GAP_PX - (rowBottom - ink)).toFixed(2)}px`;
+      row.dataset.inkGap = String(GRID_ROW_INK_GAP_PX);
+    });
+  };
+  (document.fonts?.ready ?? Promise.resolve()).then(() => { if (!disposed) deriveRowGaps(); });
+  window.addEventListener('resize', deriveRowGaps);
+  cleanups.push(() => { window.removeEventListener('resize', deriveRowGaps); grid.style.removeProperty('--work-grid-rowgap'); gapRows.forEach((row) => { row.style.marginBottom = ''; delete row.dataset.inkGap; }); });
+
   /* ── R38 item 6: THE ROW REVEAL — red containers resolving to images.
      Per row, from that row's MEASURED geometry: the threshold is a
      quarter of the row's TALLEST tile entered (row top + tallest/4 ≤
@@ -167,7 +203,7 @@ export function initWorkGrid() {
 
   if (import.meta.env.DEV) {
     window.__workGrid = {
-      rows: () => rows.map((r) => ({ resolved: r.classList.contains('is-resolved'), threshold: +rowThreshold(r).toFixed(1), top: +r.getBoundingClientRect().top.toFixed(1), tiles: tilesOf(r).map((t) => t.dataset.slug) })),
+      rows: () => rows.map((r) => ({ resolved: r.classList.contains('is-resolved'), threshold: +rowThreshold(r).toFixed(1), top: +r.getBoundingClientRect().top.toFixed(1), tiles: tilesOf(r).map((t) => t.dataset.slug), inkBottom: +Math.max(...Array.from(r.querySelectorAll('.work-gtile__name')).map(inkBottomOf)).toFixed(2), marginBottom: r.style.marginBottom })),
     };
   }
 

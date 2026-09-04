@@ -647,11 +647,19 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 		   (1680 − 11 × 8) / 12 = 132.67 per column → 3-col 414, 6-col
 		   836 (were 402 / 828); the spans are unchanged. */
 		--work-grid-gutter: 8px;
-		--work-grid-rowgap: 96px;   /* Oscar: 96 to start, tunable (the reference's ~250 paces sixteen projects) */
-		/* R38 item 3: the first row begins 80 below the TOGGLE GROUP'S
-		   bottom — work-view.js derives this from the placed toggle
-		   (bottom + 80 − the 296 head); 140 is the 1728 pre-JS value. */
-		--work-grid-top: 140px;
+		/* R39 item 1b (Oscar, 2026-09-04): the gap between rows is 120
+		   measured from the BOTTOM INK of a row's client names to the TOP
+		   of the next row's images — supersedes the 96 box-to-box token.
+		   work-grid.js measures each row's lowest name ink (canvas
+		   metrics, the last line's baseline + the ink's descent) and
+		   writes the row's margin-bottom so that ink → next images = 120;
+		   this token is the pre-JS / no-JS box gap only. */
+		--work-grid-rowgap: 120px;
+		/* R38 item 3 → R39 item 1a (Oscar, 2026-09-04): the first row
+		   begins 120 below the TOGGLE GROUP'S bottom (was 80, same day) —
+		   work-view.js derives this from the placed toggle (bottom + 120
+		   − the 296 head); 180 is the 1728 pre-JS value. */
+		--work-grid-top: 180px;
 		position: relative;
 		background: #eeeef0;
 		padding-bottom: 120px;
