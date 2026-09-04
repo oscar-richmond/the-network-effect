@@ -7381,6 +7381,23 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    chip stays red; CANCEL / BACK = the ghost (text) variant, so the
    pair never reads as identical. */
 .landing-v2 .sp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 40px; }
+/* R57 items 4 + 5 (Oscar) — THE DRAWER'S FOUR BUTTONS DIVERGE FROM THE
+   CTA FAMILY, DELIBERATELY. NEXT and SEND carry NO ARROW (the family
+   keeps one), and all four centre their label on exactly 24px of
+   padding either side, so each box is its label + 48 and nothing else.
+   WHY THE LABEL WAS OFF-CENTRE: it was not stray padding — the pads
+   were already 24/24. The arrow sat inside the box as a second content
+   item (8px gap + 12.4px glyph), so the label occupied the left of a
+   box 20.4px wider than it needed and read as shifted; measured
+   before, NEXT had 24 to the left of its label and 44.4 to the right.
+   Removing the arrow removes the asymmetry at its source.
+   = TRAIL: this divergence is INTENDED and must not be "corrected" by
+   a future consistency pass. The site's CTA family (More Info, VIEW
+   ALL WORK, the float chip, the contact pair) keeps its arrow and its
+   own padding ruling — see the ne-cta block at the top of this sheet.
+   The drawer's buttons are form controls inside a panel, not
+   navigational CTAs, and Oscar ruled them arrow-free here. = */
+.landing-v2 .sp-actions .ne-cta { justify-content: center; }
 .landing-v2 .sp-btn--primary {
 	padding: 13.16px 24px 15.19px;
 	background: #232a89;

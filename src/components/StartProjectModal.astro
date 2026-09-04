@@ -108,10 +108,9 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         </fieldset>
         <div class="sp-actions">
           <button type="button" class="ne-cta ne-cta--ghost" data-sp-cancel data-char-ripple-trigger><span data-char-ripple>CANCEL</span></button>
-          <button type="button" class="ne-cta sp-btn--primary" data-sp-next data-char-ripple-trigger>
-            <span data-char-ripple>NEXT</span>
-            <svg class="ne-cta__arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow><path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
-          </button>
+          {/* R57 item 4: NO ARROW (see the sp-actions note in landing.css —
+              the drawer's buttons diverge from the CTA family by ruling). */}
+          <button type="button" class="ne-cta sp-btn--primary" data-sp-next data-char-ripple-trigger><span data-char-ripple>NEXT</span></button>
         </div>
       </section>
 
