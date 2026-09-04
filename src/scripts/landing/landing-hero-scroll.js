@@ -179,8 +179,45 @@ const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
    bottom 38 after the fade completes, so no light ground ever sits
    under it in either direction. The fade is long complete by the time
    the section is fully in (a viewport later). Old → new, 1728:
-   entrance 1716.6 → 2043.3, fade 1675.3..1883.3 → 2043.3..2251.3. */
-const HERO_BOUNDARY_CARD = 2;         /* the third image to clear: the right slot */
+   entrance 1716.6 → 2043.3, fade 1675.3..1883.3 → 2043.3..2251.3.
+   R32 (Oscar, 2026-09-04) — THE ANCHOR IS THE MIDDLE IMAGE'S CENTRE
+   (supersedes R31's right-card edge, and with it R26/R21/R18):
+   the moment the MIDDLE card — slot 1 — is HALFWAY off the top, i.e.
+   its vertical CENTRE crosses y=0, the ground fade STARTS and WHO WE
+   ARE begins entering, together.
+   WHY THE FOUR EARLIER RULINGS MISSED, measured at the 1117 interior
+   by binary search on the live rects (each commit's own code, the
+   middle centre crossing at 1651.5 throughout):
+     49b5457 before  fade +24    entrance +452
+     120d988 (R18)   fade +24    entrance +355
+     b0fff11 (R21)   fade +24    entrance +281
+     21cd0e9 (R26)   fade +24    entrance +65
+     50eb6af (R31)   fade +392   entrance +392
+   Every edit DID move the live numbers — there is no dead path, no
+   cached geometry, no owning outer timeline and no clamp: the fade is
+   this trigger's start and the entrance IS the runway's end (the
+   section is in flow after the spacer, so `total` places it). What
+   the rulings kept missing is the ANCHOR ITSELF: each named a card
+   EXIT — a bottom edge crossing y=0 — and never the middle card's
+   CENTRE. R31 read "the last to clear" as the boundary and moved both
+   events 368 later than R26 had them, which is the regression Oscar
+   is looking at. The gap is structural, not incidental:
+     exitAt(2) − centreAt(1) = 80 (the stagger) + cardH/2 = 392 at 1728.
+   So the anchor is now taken from the SAME tween inverse the exit
+   wipes use (scrollWhenCardCentreAt), not from an exit or an offset:
+   if the stagger, the rest top or the card aspect ever change, the
+   boundary follows them. New, 1728: entrance and fade start 1651.3
+   (was 2043.3), fade 1651.3..1859.3. CONSEQUENCE, reported not hidden:
+   the runway ends 392 earlier, so the spacer and the document are 392
+   shorter and every section below shifts up by exactly that (their
+   spacing to each other is untouched). The fade keeps its RATE
+   (cardH/3 = 208) and the entrance keeps its own choreography — only
+   the trigger moved. The cards still finish their exits after the
+   boundary (the last at +392); the section rises over them as they
+   go, on the darkening ground, which is what "begins entering" means
+   here. The GL pause gate stays at exitEnd — by then all three cards
+   are long clear. */
+const HERO_BOUNDARY_CARD = 1;         /* the MIDDLE image — the anchor is its CENTRE */
 /* The first ink's crossing is DERIVED, not the static 260: the label
    sits 200 into the section and lags by DRIFT_HEADLINE_PX (60) as the
    section's top enters, but that lag DECAYS over the section's entry
@@ -968,6 +1005,9 @@ export function initLandingHeroScroll() {
       /** Scroll position at which card i's top edge sits at screen y
        *  during its rise (the inverse of the tween above). */
       const scrollWhenCardTopAt = (i, y) => startAt(i) + (restTop - y);
+      /** Scroll position at which card i's CENTRE sits at screen y —
+       *  the same inverse, half a card up (R32's anchor). */
+      const scrollWhenCardCentreAt = (i, y) => scrollWhenCardTopAt(i, y - cardH / 2);
       /* Headline (right-anchored, 408..1548): first covered by the
          MIDDLE card (587..1142, starts 80 after the left); intro
          (180..903): first covered by the LEFT card (24..579). Each
@@ -992,15 +1032,19 @@ export function initLandingHeroScroll() {
         buildExitWipe([logos], logos.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
       }
 
+      /* THE BOUNDARY (R32) — the MIDDLE image halfway off the top: its
+         CENTRE crossing y=0, read from the cards' own tween inverse.
+         Both events hang on this one number. */
+      const boundaryAt = scrollWhenCardCentreAt(HERO_BOUNDARY_CARD, 0);
+
       /* THE GROUND — light → the founders' #161616, scrubbed on the
-         cards' own mapping. R31: it STARTS at the boundary — the RIGHT
-         card's bottom edge crossing y=0 (exitAt(2)) — and keeps its
-         R21 rate, the cardH/3 span (/old's two-thirds-out → full-exit
-         length), so it completes 208 after the boundary at 1728. The
-         founders section (z 260 over this fixed stage) enters at the
-         SAME scroll, its ground riding this tween (R27 below).
-         backgroundColor on the stage's ground layer isolates nothing. */
-      const fadeStart = exitAt(HERO_BOUNDARY_CARD);
+         cards' own mapping. R32: it STARTS at the boundary above and
+         keeps its R21 rate, the cardH/3 span (/old's two-thirds-out →
+         full-exit length), so it completes 208 after the boundary at
+         1728. The founders section (z 260 over this fixed stage)
+         enters at the SAME scroll, its ground riding this tween (R27
+         below). backgroundColor on the ground layer isolates nothing. */
+      const fadeStart = boundaryAt;
       const fadeEnd = fadeStart + cardH / 3;
       /* R27 (Oscar, 2026-09-03) — THE SEAM CLASS, fixed at the mechanism:
          an incoming section that paints its OWN opaque ground at a fixed
@@ -1057,24 +1101,26 @@ export function initLandingHeroScroll() {
       });
       triggers.push(gate);
 
-      /* R31: the runway ends AT the boundary — WHO WE ARE's top crosses
-         the viewport bottom as the right card's bottom edge crosses
-         y=0, the same scroll the fade starts (R26's ink-at-the-middle-
-         card, R21's −111 lead, R18's 0.9-of-fade gate: all superseded).
-         The first-ink distance is still derived (the label's offset +
-         the decaying entry drift) — for the report and the safety
-         table, not as an anchor. */
+      /* R32: the runway ends AT the boundary — WHO WE ARE's top crosses
+         the viewport bottom as the MIDDLE card's centre crosses y=0,
+         the same scroll the fade starts (R31's right-card edge, R26's
+         ink-at-the-middle-card, R21's −111 lead, R18's 0.9-of-fade
+         gate: all superseded). The first-ink distance is still derived
+         (the label's offset + the decaying entry drift) — for the
+         report and the safety table, not as an anchor. */
       const foundersSection = document.querySelector('[data-landing-founders]');
       const foundersLabel = document.querySelector('[data-landing-founders-label]');
       const foundersLabelTop = foundersLabel instanceof HTMLElement && foundersLabel.offsetTop > 0
         ? foundersLabel.offsetTop : HERO_FOUNDERS_LABEL_TOP_FALLBACK_PX;
       const foundersEntryPx = Math.max(vh, foundersSection instanceof HTMLElement ? foundersSection.offsetHeight : 0);
       const foundersFirstInkPx = (foundersLabelTop + DRIFT_HEADLINE_PX) * foundersEntryPx / (foundersEntryPx + DRIFT_HEADLINE_PX);
-      const foundersEnterAt = exitAt(HERO_BOUNDARY_CARD);
+      const foundersEnterAt = boundaryAt;
       total = foundersEnterAt;
       cardBeats = {
         foundersEnterAt: +foundersEnterAt.toFixed(1),
+        boundaryAt: +boundaryAt.toFixed(1),
         boundaryCard: HERO_BOUNDARY_CARD,
+        centreAt: [0, 1, 2].map((i) => +scrollWhenCardCentreAt(i, 0).toFixed(1)),
         foundersFirstInkPx: +foundersFirstInkPx.toFixed(1),
         restTop,
         cardH: +cardH.toFixed(1),
