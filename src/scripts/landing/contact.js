@@ -177,9 +177,13 @@ export function initContactPage() {
     if (closeBtn instanceof HTMLElement) closeBtn.focus();
   };
 
-  const closeModal = () => {
+  const closeModal = ({ silent = false } = {}) => {
     if (!modalOpen || !(modal instanceof HTMLElement)) return;
     modalOpen = false;
+    /* R40: a close forced by a SIBLING modal opening must not return
+       focus — the sibling owns focus now (a late refocus would pull it
+       out of the open modal). */
+    if (silent) opener = null;
     modal.classList.remove('is-open');
     logoTwin?.classList.remove('is-open');
     const finish = () => {
@@ -200,12 +204,14 @@ export function initContactPage() {
     cleanups.push(() => openBtn.removeEventListener('click', onOpen));
   }
   if (closeBtn instanceof HTMLElement) {
-    closeBtn.addEventListener('click', closeModal);
-    cleanups.push(() => closeBtn.removeEventListener('click', closeModal));
+    const onCloseClick = () => closeModal();
+    closeBtn.addEventListener('click', onCloseClick);
+    cleanups.push(() => closeBtn.removeEventListener('click', onCloseClick));
   }
   if (backdrop instanceof HTMLElement) {
-    backdrop.addEventListener('click', closeModal);
-    cleanups.push(() => backdrop.removeEventListener('click', closeModal));
+    const onBackdropClick = () => closeModal();
+    backdrop.addEventListener('click', onBackdropClick);
+    cleanups.push(() => backdrop.removeEventListener('click', onBackdropClick));
   }
   const onKey = (e) => {
     if (!modalOpen) return;
@@ -213,7 +219,7 @@ export function initContactPage() {
   };
   document.addEventListener('keydown', onKey);
   document.addEventListener('keydown', onTrapKey);
-  const onSiblingOpen = (e) => { if (e.detail !== 'schedule') closeModal(); };
+  const onSiblingOpen = (e) => { if (e.detail !== 'schedule') closeModal({ silent: true }); };
   document.addEventListener('ne:modal-open', onSiblingOpen);
   cleanups.push(() => {
     document.removeEventListener('keydown', onKey);
