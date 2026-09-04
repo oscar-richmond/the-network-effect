@@ -90,7 +90,8 @@ import '../styles/fonts.css';
               <span class="sv6-pillar__name" data-sv6-line>{p.title.split(' — ')[1]}</span>
               <span class="sv6-pillar__num" data-sv6-line>/{p.title.split(' — ')[0]}</span>
             </h2>
-            <p class="sv6-pillar__sub" data-sv6-line>{p.subtitle}</p>
+            {/* R36 item 5: the landing reel's two authored lines (data). */}
+            <p class="sv6-pillar__sub" data-sv6-line>{p.subtitleLines[0]}<br />{p.subtitleLines[1]}</p>
           </div>
         </section>
 

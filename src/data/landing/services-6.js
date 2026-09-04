@@ -65,7 +65,9 @@ export const SV6_PILLARS = [
   {
     key: 'immerse',
     title: '01 — IMMERSE',
-    subtitle: 'Activate Experiences & Cultural Moments.',
+    /* R36 item 5 (Oscar, 2026-09-04): the landing WHAT WE DO expanded
+       subtitle — the reel's two authored lines, one source (was 'Activate Experiences & Cultural Moments.'). */
+    subtitleLines: SERVICES_REEL_PILLARS[0].desc,
     headerImg: A('pillar-immerse.png'),
     /* 38:2597 — Dazzed Bold 56/54/−3.5% uppercase ink, the 26-space
        leading indent, 1630 measure; bar 10×155. */
@@ -92,7 +94,9 @@ export const SV6_PILLARS = [
   {
     key: 'connect',
     title: '02 — CONNECT',
-    subtitle: 'Talent Strategy & Partnerships',
+    /* R36 item 5 (Oscar, 2026-09-04): the landing WHAT WE DO expanded
+       subtitle — the reel's two authored lines, one source (was 'Talent Strategy & Partnerships'). */
+    subtitleLines: SERVICES_REEL_PILLARS[1].desc,
     headerImg: A('pillar-connect.png'),
     statement: 'CONNECTING TALENT WITH BRANDS THROUGH MEANINGFUL LONG-TERM COMMERCIAL AND CULTURAL RELATIONSHIPS.',
     barH: 150,
@@ -117,7 +121,9 @@ export const SV6_PILLARS = [
   {
     key: 'amplify',
     title: '03 — AMPLIFY',
-    subtitle: 'Narrative & Media Studio',
+    /* R36 item 5 (Oscar, 2026-09-04): the landing WHAT WE DO expanded
+       subtitle — the reel's two authored lines, one source (was 'Narrative & Media Studio'). */
+    subtitleLines: SERVICES_REEL_PILLARS[2].desc,
     headerImg: A('pillar-amplify.png'),
     statement: 'CREATING STORIES, PLATFORMS AND CONTENT. THAT DEEPEN RELATIONSHIPS AND AMPLIFY CULTURE.',
     barH: 96,

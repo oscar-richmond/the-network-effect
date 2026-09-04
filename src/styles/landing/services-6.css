@@ -217,17 +217,19 @@
 		mix-blend-mode: difference;
 	}
 
-	/* Subtitle: the landing 34/38/-3% tier - matched to its true
-	   WHAT WE DO equivalent (.landing-sreel__desc): Serrif Condensed
-	   Medium, the Section serif cut (also this subtitle's shipped
-	   face, one size up). One line; white difference kept. */
+	/* Subtitle — R36 item 5 (Oscar, 2026-09-04): the landing WHAT WE DO
+	   EXPANDED subtitle exactly (.landing-sreel__desc open state, R13):
+	   Serrif Condensed Medium 28/32/−0.03em, TWO authored lines (the
+	   reel's own breaks, via the data). Supersedes the 34/38 one-line
+	   ruling. White difference kept; the 16 below the title row stays
+	   (frame +200 → +264 = the 48 box + 16). */
 	.landing-v2 .sv6-pillar__sub {
 		margin: 16px 0 0;
 		font-family: var(--font-serif-cond);
 		font-weight: 500;
 		font-synthesis: none;
-		font-size: 34px;
-		line-height: 38px;
+		font-size: 28px;
+		line-height: 32px;
 		letter-spacing: -0.03em;
 		white-space: nowrap;
 		color: #fff;
