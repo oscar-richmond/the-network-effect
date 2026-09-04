@@ -240,6 +240,7 @@ if (PAGE === 'founders') {
     return { st: window.__founders ? window.__founders.state() : null,
       band: R(sw), portrait: R(q('[data-fd-portrait]')), sweepFilter: scs ? scs.filter : null, vw: innerWidth, vh: innerHeight,
       stageBottom: stageEl ? +stageEl.getBoundingClientRect().bottom.toFixed(1) : null,
+      stageClipB: stageEl ? (+(/inset\\(0px 0px ([\\d.]+)px(?: 0px)?\\)/.exec(getComputedStyle(stageEl).clipPath) || [0, 0])[1]) : 0,
       rowOps: [...document.querySelectorAll('[data-footer-row-scrub] .landing-footer__ritem')].map((e) => +getComputedStyle(e).opacity),
       slides: sl, sweepVisible: scs ? scs.visibility !== 'hidden' : false, sweepRemain: clipPct,
       divBlend: div ? getComputedStyle(div).mixBlendMode : null, labBlend: lab ? getComputedStyle(lab).mixBlendMode : null,
@@ -274,11 +275,16 @@ if (PAGE === 'founders') {
       if (st.st.pos >= st.st.sweepEnd + 1 && (st.band.l > 1 || st.band.w < st.vw - 1)) viol.push({ inv: 'F6', tag, pos: Math.round(st.st.pos), msg: 'band not full width after the sweep', band: st.band });
       if (st.sweepFilter && st.sweepFilter !== 'none') viol.push({ inv: 'F6', tag, pos: Math.round(st.st.pos), msg: 'sweep carries a filter (edges must be crisp)', filter: st.sweepFilter });
     }
-    /* F7 (R32) — through the footer reveal the ground below the band is exactly the strip (stage bottom − band bottom = viewport bottom − portrait bottom), and the row items stay in stagger order */
+    /* F7 (R32; R36 item 3) — through the footer reveal the VISIBLE ground below the band is the strip collapsing first (max(0, strip − reveal): the stage's bottom edge clips up through it while the band holds), then zero — the band's bottom edge is the reveal line; the footer's exposure equals the reveal throughout; and the row items stay in stagger order */
     if (st.band && st.portrait && st.st.pos > st.st.footerStart) {
       /* the portrait rides the stage during the reveal, so its RESTING bottom is 80 + its height, not its live rect */
-      const strip = st.stageBottom - st.band.b; const expected = st.vh - (80 + st.portrait.h);
-      if (Math.abs(strip - expected) > 1.5) viol.push({ inv: 'F7', tag, pos: Math.round(st.st.pos), msg: 'ground below the band differs from the strip during the reveal', strip: +strip.toFixed(1), expected: +expected.toFixed(1) });
+      const reveal = Math.min(st.st.pos - st.st.footerStart, 830);
+      const strip0 = st.vh - (80 + st.portrait.h);
+      const visibleBottom = st.stageBottom - (st.stageClipB || 0);
+      const ground = visibleBottom - st.band.b; const expected = Math.max(0, strip0 - reveal);
+      if (Math.abs(ground - expected) > 1.5) viol.push({ inv: 'F7', tag, pos: Math.round(st.st.pos), msg: 'ground below the band differs from the collapsing strip during the reveal', ground: +ground.toFixed(1), expected: +expected.toFixed(1), reveal: +reveal.toFixed(1) });
+      const exposed = st.vh - visibleBottom;
+      if (Math.abs(exposed - reveal) > 1.5) viol.push({ inv: 'F7', tag, pos: Math.round(st.st.pos), msg: 'footer exposure differs from the reveal', exposed: +exposed.toFixed(1), reveal: +reveal.toFixed(1) });
       if (st.rowOps && st.rowOps.length) { for (let k = 1; k < st.rowOps.length; k++) if (st.rowOps[k] > st.rowOps[k - 1] + 0.001) viol.push({ inv: 'F7', tag, pos: Math.round(st.st.pos), msg: 'footer row stagger out of order', rowOps: st.rowOps }); }
     }
     /* F5 — purity: the same pos must reproduce the same visual state.

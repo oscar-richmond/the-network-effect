@@ -626,11 +626,31 @@ export function initFoundersPage() {
     applyTextWipe(sweepT);
     setActiveSlide(textTe >= 0.5 ? 1 : 0);
 
-    /* Release + footer reveal — the unchanged grammar. */
+    /* Release + footer reveal. */
     if (content instanceof HTMLElement) {
       content.style.transform = `translate3d(0, ${(-rise).toFixed(1)}px, 0)`;
     }
-    stage.style.transform = `translate3d(0, ${(-reveal).toFixed(1)}px, 0)`;
+    /* R36 item 3 (Oscar, 2026-09-04): THE BAND'S BOTTOM EDGE IS THE
+       REVEAL LINE. DIAGNOSED: the stage (100dvh, its own #eeeef0
+       ground) rode up as one block, so the ground strip below the
+       band — the portrait's deliberate bottom margin (196 at 1728, 73
+       in the shell) — travelled with it and led the footer as a white
+       block for the whole 830. Now the reveal has two legs on one
+       axis: first the stage's bottom edge is CLIPPED upward through
+       the strip (the band holds still, the footer appears beneath the
+       shrinking strip), then, once the clip line reaches the band's
+       bottom, the stage rides up with that clip held — the band's
+       bottom edge IS the moving edge over the footer. The footer's
+       exposure equals `reveal` in both legs (continuous, 1:1,
+       reversible); the end state exposes the same 830. The strip is
+       measured live from the two rects (both ride the transform, so
+       the difference is invariant). */
+    const strip = Math.max(0, stage.getBoundingClientRect().bottom
+      - (sweep instanceof HTMLElement ? sweep.getBoundingClientRect().bottom : stage.getBoundingClientRect().bottom));
+    const clipB = Math.min(reveal, strip);
+    const rideUp = Math.max(0, reveal - strip);
+    stage.style.clipPath = reveal > 0.01 ? `inset(0 0 ${clipB.toFixed(1)}px 0)` : '';
+    stage.style.transform = `translate3d(0, ${(-rideUp).toFixed(1)}px, 0)`;
     applyFooterRow(reveal, vh);
     setNav(reveal >= FOOTER_REVEAL_PX - NAV_EXIT_EPSILON_PX);
     maybePlayFooter();
@@ -823,6 +843,7 @@ export function initFoundersPage() {
         dwellEnd: dwellEnd(), sweepStart: sweepStart(), sweepEnd: sweepEnd(),
         releaseStart: releaseStart(), footerStart: footerStart(), maxPos: maxPos(),
         activeSlide, slotPitch, colRollMax, blockShift: [...blockShift],
+        strip: Math.max(0, stage.getBoundingClientRect().bottom - (sweep instanceof HTMLElement ? sweep.getBoundingClientRect().bottom : stage.getBoundingClientRect().bottom)),
         colBuildOrder: [...colBuildOrder], rowCount: [...rowCount],
       }),
     };
