@@ -7284,7 +7284,10 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	outline: none;
 	transition: border-color 0.25s ease-out;
 }
-.landing-v2 .sp-input::placeholder { color: #8f8f95; opacity: 1; }
+/* R44 item 7b: placeholders one tier below the input's 24/28 — the
+   tile-descriptor tier, Serrif 18/22 — in the muted grey, on every
+   field including the textarea (the worst offender at 24). */
+.landing-v2 .sp-input::placeholder { font-size: 18px; line-height: 22px; letter-spacing: -0.02em; color: #8f8f95; opacity: 1; }
 .landing-v2 .sp-input:focus { border-bottom-color: #161616; }
 .landing-v2 .sp-input[aria-invalid="true"] { border-bottom-color: #c1250e; }
 .landing-v2 .sp-input--area { resize: vertical; min-height: 92px; }
@@ -7394,6 +7397,7 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
 	.landing-v2 .sp-chip { min-height: 44px; }
 	.landing-v2 .sp-input { font-size: 18px; line-height: 24px; }
+	.landing-v2 .sp-input::placeholder { font-size: 16px; line-height: 22px; }
 	.landing-v2 .sp-modal__logo { left: 16px; font-size: 18px; letter-spacing: 0.04em; font-family: var(--font-logo); }
 }
 /* RM, at the is-open rules' own specificity and AFTER the mobile block
