@@ -253,7 +253,15 @@ const rhythm = (card) => {
         delay and plays the clip with the card's texts. */}
     <span class="landing-svc-card__btnclip lr-clip" style={`top:${rhythm(card).btnTop}px`}>
       <span class="landing-svc-card__btninner lr-inner">
-        <a class="landing-svc-card__btn" href={`${base}services#${card.id}`} data-char-ripple-trigger>
+        {/* R53 (pre-launch sweep, 2026-09-04): the MOBILE pillar id, not
+            the desktop one. This whole stack renders below the seam only
+            (measured: the button is display:none at 1728, visible at 390),
+            and `#immerse` / `#connect` / `#amplify` are the ids of the
+            DESKTOP .sv6-pillar sections, which /services hides on mobile —
+            so all three links landed a visitor at the top of the page with
+            nothing scrolled. The mobile sections carry `m-` ids
+            (services.astro renders `id={`m-${p.id}`}` on .sv-pillar). */}
+        <a class="landing-svc-card__btn" href={`${base}services#m-${card.id}`} data-char-ripple-trigger>
           <span data-char-ripple>MORE INFO</span>
           <img
             src={asset('/assets/landing/services-stack/more-arrow.svg')}
