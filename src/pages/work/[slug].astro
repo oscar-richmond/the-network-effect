@@ -26,6 +26,7 @@
 import SiteShell from '../../layouts/SiteShell.astro';
 import LandingFooter from '../../components/landing/LandingFooter.astro';
 import CtaChip from '../../components/landing/CtaChip.astro';
+import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 import { asset } from '../../utils/asset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
@@ -304,9 +305,10 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       once the stream's last image has fully entered (float-cta.js,
       driven from case-study.js; hidden while the lightbox is open).
       DESTINATION (R40): the site-wide START A PROJECT form modal — one
-      behaviour everywhere; the href is the modal's deep link. */}
+      behaviour everywhere; the href is the modal's deep link. R41: while
+      the modal is off (any build) it is the live mailto, as built. */}
   <div class="cs-float" data-cs-float>
-    <CtaChip variant="float" href="#start-project" label="START A PROJECT" data-cs-float-cta data-start-project />
+    <CtaChip variant="float" href={START_PROJECT_MODAL ? '#start-project' : START_PROJECT_MAILTO} label="START A PROJECT" data-cs-float-cta data-start-project={START_PROJECT_MODAL ? '' : undefined} />
   </div>
 
   {/* ── LIGHTBOX (Oscar's rev): click any stream image -> centred

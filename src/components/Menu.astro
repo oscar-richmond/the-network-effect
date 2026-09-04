@@ -42,6 +42,7 @@ const defaultImage = asset(`/assets/images/menu/${flatLinks[0]?.image ?? 'home.p
    sites through the helper means a future mailto/external href
    inherits the handling automatically. */
 const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`);
+import { START_PROJECT_MODAL } from '../data/flags.js';
 ---
 
 <div class="site-menu" data-menu id="site-menu" aria-hidden="true">
@@ -113,7 +114,8 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
                 SCHEDULE A CALL lives on /contact (the modal is that
                 page's machinery) — from the menu it navigates
                 there. START A PROJECT opens the site-wide form modal
-                (R40) — the menu closes as it opens. */}
+                (R40) — the menu closes as it opens; while the modal is
+                off (R41, any build) it is the placeholder it was. */}
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
                 <a class="landing-svc-card__btn" href={linkHref('contact')} data-char-ripple-trigger>
@@ -124,10 +126,17 @@ const linkHref = (href: string) => (href.includes(':') ? href : `${base}${href}`
             </span>
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
+                {START_PROJECT_MODAL ? (
                 <a class="landing-svc-card__btn" href="#start-project" data-start-project data-char-ripple-trigger>
                   <span data-char-ripple>START A PROJECT</span>
                   <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
                 </a>
+                ) : (
+                <span class="landing-svc-card__btn is-placeholder" data-hover data-char-ripple-trigger>
+                  <span data-char-ripple>START A PROJECT</span>
+                  <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+                </span>
+                )}
               </span>
             </span>
           </div>

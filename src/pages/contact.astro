@@ -36,6 +36,7 @@ import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/contact.css';
 import '../styles/fonts.css';
+import { START_PROJECT_MODAL } from '../data/flags.js';
 ---
 
 <SiteShell title="Contact — The Network Effect" bodyClass="landing-v2 contact-page">
@@ -69,11 +70,19 @@ import '../styles/fonts.css';
         <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
       </button>
       {/* R40 (Oscar, 2026-09-04): START A PROJECT opens the site-wide form
-          modal (was the inert placeholder). */}
+          modal (was the inert placeholder). R41: while the modal is off
+          (any build) it is that placeholder again. */}
+      {START_PROJECT_MODAL ? (
       <button type="button" class="ct-cta ct-cta--start" data-start-project data-char-ripple-trigger>
         <span data-char-ripple>START A PROJECT</span>
         <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
       </button>
+      ) : (
+      <span class="ct-cta ct-cta--start is-placeholder" data-hover data-char-ripple-trigger>
+        <span data-char-ripple>START A PROJECT</span>
+        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
+      </span>
+      )}
       {/* EMAIL US — the HOLDING PAGE's contact UX ported (Oscar's
           rev 3: a bare mailto is a silent no-op without a mail
           client): click COPIES the address and confirms via the

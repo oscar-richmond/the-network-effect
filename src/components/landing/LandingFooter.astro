@@ -65,6 +65,7 @@ interface Props {
 const { theme = 'blue', rowEntrance = 'static' } = Astro.props;
 const arrowNe = asset(theme === 'light' ? '/assets/landing/closing/arrow-ne-dark.svg' : '/assets/landing/closing/arrow-ne.svg');
 const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark.svg' : '/assets/landing/closing/arrow-up.svg');
+import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 ---
 
 <footer
@@ -91,7 +92,8 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
     <a
       class="landing-footer__start"
       data-footer-col
-      href="#start-project" data-start-project
+      href={START_PROJECT_MODAL ? '#start-project' : START_PROJECT_MAILTO}
+      data-start-project={START_PROJECT_MODAL ? '' : undefined}
       data-char-ripple-trigger
     >
       <span data-char-ripple>START A PROJECT</span>
@@ -174,8 +176,9 @@ const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark
         site's other arrows are separate asset-file instances with
         deliberate per-theme variants — untouched. */}
     {/* R40: opens the site-wide form modal (the href is the deep link — the
-        no-JS fallback opens it on load). Was the live mailto. */}
-    <a class="landing-footer__dchip" data-footer-col href="#start-project" data-start-project data-char-ripple-trigger>
+        no-JS fallback opens it on load). R41: while the modal is off
+        (any build) this is the live mailto it was. */}
+    <a class="landing-footer__dchip" data-footer-col href={START_PROJECT_MODAL ? '#start-project' : START_PROJECT_MAILTO} data-start-project={START_PROJECT_MODAL ? '' : undefined} data-char-ripple-trigger>
       <span data-char-ripple>START A PROJECT</span>
       <svg class="landing-footer__dchip-arrow" viewBox="0 0 12 12" width="12.4" height="12.4" aria-hidden="true" data-char-ripple-arrow>
         <path d="M2 10 L10 2 M3.6 2 H10 V8.4" fill="none" stroke="currentColor" stroke-width="1.6" />

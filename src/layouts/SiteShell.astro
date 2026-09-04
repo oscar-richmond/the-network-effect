@@ -21,6 +21,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Menu from '../components/Menu.astro';
 import StartProjectModal from '../components/StartProjectModal.astro';
+import { START_PROJECT_MODAL } from '../data/flags.js';
 import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
 import '../styles/landing/mobile.css';
 
@@ -137,8 +138,10 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
 
   {/* START A PROJECT — the site-wide form modal (R40): a sibling of the
       menu at z400 (the lightbox tier), its logo twin at z401; every
-      [data-start-project] on the page opens it. */}
-  <StartProjectModal />
+      [data-start-project] on the page opens it. R41: behind the
+      START_PROJECT_MODAL flag — on locally, off in a build (the
+      triggers fall back to their shipped behaviour). */}
+  {START_PROJECT_MODAL && <StartProjectModal />}
 
   {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
   <div class="landing-grain" aria-hidden="true"></div>
