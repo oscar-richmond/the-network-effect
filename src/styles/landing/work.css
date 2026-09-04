@@ -740,23 +740,14 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 		filter: blur(6px);
 		transition: filter 0.45s cubic-bezier(0.42, 0, 0.24, 1);
 	}
-	/* R38 item 6 — THE ROW REVEAL: a row's tiles arrive as BRAND-RED
-	   containers (the veil, opaque, over a blurred image); when a
-	   QUARTER of the row's tallest tile has entered the viewport the
-	   row RESOLVES — the veil fades out over GRID_REVEAL_MS while the
-	   image un-blurs from GRID_REVEAL_BLUR_PX (the house blur
-	   treatment) — all tiles in the row together, and back to red the
-	   same way on the way up (work-grid.js measures the row). Replaces
-	   the R35 fade-rise entrance (one job, one effect). RM: no veil. */
-	.landing-v2 .work-gtile__veil {
-		position: absolute;
-		inset: 0;
-		z-index: 2;
-		background: #c1250e;
-		opacity: 1;
-		pointer-events: none;
-	}
-	.landing-v2 .work-grid__row.is-resolved .work-gtile__veil { opacity: 0; }
+	/* R38 item 6 — THE ROW REVEAL, R41 (Oscar, 2026-09-04): the BRAND-RED
+	   veil is REMOVED — the reveal is the blur alone now. When a QUARTER
+	   of the row's tallest tile has entered the viewport the row
+	   RESOLVES: its images un-blur from GRID_REVEAL_BLUR_PX over
+	   GRID_REVEAL_MS (the house blur treatment), all tiles in the row
+	   together, and back to blur the same way on the way up
+	   (work-grid.js measures the row). Still replaces the R35 fade-rise
+	   entrance (one job, one effect). RM: no blur. */
 	.landing-v2 .work-grid__row:not(.is-resolved) .work-gtile__media img[data-gtile-base] { filter: blur(var(--work-reveal-blur, 12px)); }
 	.landing-v2 .work-gtile--l6 .work-gtile__media,
 	.landing-v2 .work-gtile--l6r .work-gtile__media,
@@ -847,9 +838,8 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
    its 1px box never extends the document (it sits after the stage). */
 .landing-v2 [data-work-view-live] { top: 0; left: 0; }
 
-/* RM (R38 item 6): images present immediately — no red state, no blur. */
+/* RM (R38 item 6): images present immediately — no blur. */
 @media (prefers-reduced-motion: reduce) {
-	.landing-v2 .work-gtile__veil { display: none; }
 	.landing-v2 .work-grid__row:not(.is-resolved) .work-gtile__media img[data-gtile-base] { filter: none; }
 }
 
@@ -875,10 +865,9 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	}
 	.landing-v2 .work-viewtoggle.is-visible { opacity: 1; transform: none; }
 
-	/* R38 item 6: the fade-rise entrance is RETIRED — the red resolve is
-	   the entrance. The veil and the image's blur transition on the
-	   row's state (both ways). */
-	.landing-v2 .work-gtile__veil { transition: opacity var(--work-reveal-s, 0.6s) var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); }
+	/* R38 item 6: the fade-rise entrance is RETIRED — the blur resolve is
+	   the entrance (R41: no red veil). The image's blur transitions on
+	   the row's state, both ways. */
 	.landing-v2 .work-gtile__media img[data-gtile-base] { transition: filter var(--work-reveal-s, 0.6s) var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); }
 
 	/* (R38 item 5: the 1.02 hover scale retired — the cover-swap is the

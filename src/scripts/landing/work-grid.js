@@ -12,12 +12,12 @@
  *     the time this boots);
  *   · (the header is the SHARED one since R39 — the view controller
  *     reveals it once per page life; switches never touch it);
- *   · the row reveal (R38) — red containers resolving to their images
- *     per row at a quarter of the tallest tile entered, reversible;
+ *   · the row reveal (R38; R41 without the red veil) — rows blur-
+ *     resolving at a quarter of the tallest tile entered, reversible;
  *   · the hover swap (R38) — the cover-swap wipe to a second image;
  *   · the footer's entrance on a scroll trigger (a flow page's
  *     grammar; the wrap is idempotent in footer-motion).
- * RM: no red state (images present), no hover swap, the header still
+ * RM: no blur (images present), no hover swap, the header still
  * reveals (the page's load beat).
  */
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
@@ -127,10 +127,10 @@ export function initWorkGrid() {
   window.addEventListener('resize', deriveRowGaps);
   cleanups.push(() => { window.removeEventListener('resize', deriveRowGaps); grid.style.removeProperty('--work-grid-rowgap'); gapRows.forEach((row) => { row.style.marginBottom = ''; delete row.dataset.inkGap; }); });
 
-  /* ── R38 item 6: THE ROW REVEAL — red containers resolving to images.
+  /* ── R38 item 6 (R41: no red veil): THE ROW REVEAL — rows blur-resolving.
      Per row, from that row's MEASURED geometry: the threshold is a
      quarter of the row's TALLEST tile entered (row top + tallest/4 ≤
-     the viewport bottom) — resolve; above it — red again (mirrored,
+     the viewport bottom) — resolve; above it — blurred again (mirrored,
      scroll-driven, reversible). All tiles in a row resolve together
      (Oscar's default). Tunables: GRID_REVEAL_THRESHOLD_T, the
      duration and blur as CSS vars (GRID_REVEAL_MS / GRID_REVEAL_BLUR_PX).

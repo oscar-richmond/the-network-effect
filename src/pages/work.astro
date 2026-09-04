@@ -307,13 +307,14 @@ const gridRows = GRID_ROWS.map((row) =>
               <a class={cls} href={`/work/${p.slug}`} data-work-link data-work-gtile data-slug={p.slug} data-tile={String(t)} data-hover-img={asset(WORK_GRID_HOVER[p.slug] ?? p.workImg)} aria-label={`${name} — view project`}>
                 {/* R38 item 5: the base image + the cover-swap overlay (hidden
                     at rest; the hover wipes the second image in over it —
-                    work-grid.js). R38 item 6: the red veil that resolves. */}
-                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /><span class="work-gtile__veil" aria-hidden="true"></span></figure>
+                    work-grid.js). R38 item 6 / R41: the row reveal is the
+                    image's own blur — the red veil is removed. */}
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /></figure>
                 <p class="work-gtile__name">{name}</p>
               </a>
             ) : (
               <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-hover-img={asset(WORK_GRID_HOVER[p.slug] ?? p.workImg)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
-                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /><span class="work-gtile__veil" aria-hidden="true"></span></figure>
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /></figure>
                 <p class="work-gtile__name">{name}</p>
               </span>
             );
