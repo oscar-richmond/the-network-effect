@@ -28,6 +28,7 @@ import { applyNavSweep, ensureRippleChars, sweepUnits, NAV_CHAR_STAGGER_S } from
 
 export const FLOAT_SHOW_AT_PX = 2;      /* "as soon as the user starts scrolling" */
 export const FLOAT_HIDE_AFTER_MS = 800; /* the exit sweep's length: 0.3s + the stagger tail */
+export const FLOAT_SETTLE_MS = 200;     /* the post-input re-evaluation */
 
 /**
  * @param {{ reduced?: boolean, host: HTMLElement | null, cta: HTMLElement | null, lastImage: () => HTMLElement | null }} opts
@@ -73,7 +74,11 @@ export function initFloatCta({ reduced = false, host, cta, lastImage }) {
     if (!(last instanceof HTMLElement)) return true;
     return last.getBoundingClientRect().bottom > (window.innerHeight || 0);
   };
-  const evaluate = () => setShown(inRange());
+  /* one extra evaluation after the input stops: a smooth scroll's last
+     sub-pixel step can land without a scroll event (measured: the driver
+     read 2.x on its last event while scrollY settled at 1) */
+  let settleTimer = 0;
+  const evaluate = () => { setShown(inRange()); window.clearTimeout(settleTimer); settleTimer = window.setTimeout(() => setShown(inRange()), FLOAT_SETTLE_MS); };
   /* boot: hidden, no sweep (the box is visibility:hidden from CSS) */
   host.dataset.floatState = 'hidden';
   host.style.visibility = 'hidden';
@@ -91,6 +96,7 @@ export function initFloatCta({ reduced = false, host, cta, lastImage }) {
       window.removeEventListener('scroll', evaluate);
       window.removeEventListener('resize', evaluate);
       window.clearTimeout(hideTimer);
+      window.clearTimeout(settleTimer);
       host.style.visibility = '';
       delete host.dataset.floatState;
     },
