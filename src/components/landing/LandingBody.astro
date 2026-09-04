@@ -139,11 +139,16 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
                   The /services sv-rows machinery (red fill + rolling
                   marquee + edge gradients) is DETACHED from this page:
                   no [data-sv-rows] host, no treatment spans — the
-                  shared module and /services are untouched. Rows stay
-                  focusable (keyboard = hover). */}
+                  shared module and /services are untouched. A11y batch
+                  item 3: the rows are NOT focusable any more — they
+                  carried tabindex="0" with no role, no name and no
+                  action, 33 silent tab stops on this page and on
+                  /services before the footer; the hover preview is a
+                  pointer affordance and the focus handlers stay wired
+                  but idle. */}
               <div class="landing-sreel__list" data-sreel-list>
                 {p.services.map((svc) => (
-                  <div class="landing-sreel__row" data-sreel-row tabindex="0">
+                  <div class="landing-sreel__row" data-sreel-row>
                     <span class="landing-sreel__rowline" aria-hidden="true"></span>
                     <span class="landing-sreel__svc" data-sreel-text>{svc.t}</span>
                   </div>
