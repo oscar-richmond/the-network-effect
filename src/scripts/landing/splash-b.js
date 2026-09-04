@@ -76,8 +76,38 @@ export const SB_CONTENT_AT_LEGACY = 7.5;
 export const SB_MINI_SCALE = 0.42;
 /* The pile's size at the centre — version A's HE_BURST_SCALE. */
 export const SB_STACK_SCALE = 0.55;
+/* R65 item 2b (Oscar, 2026-09-04) — THE STACK'S VARIATION.
+   DIAGNOSED first: only two cards read in the pile because all three
+   arrived at the SAME size in the SAME place with no offset, so each
+   later card completely occluded the one beneath and the stack looked
+   like a single card with one edge showing. Nothing was broken — there
+   was simply nothing to see.
+   THE VARIATION is deliberate, not random: each card in arrival order
+   steps DOWN in scale and alternates its rotation, so every one of the
+   six shows a corner. A step and an angle per card, applied by index —
+   so adding or removing a card changes nothing else. */
+export const SB_STACK_SCALE_STEP = 0.055;   /* each later card this much smaller */
+export const SB_STACK_ROT_DEG = 5;          /* the base angle; sign alternates */
+export const SB_STACK_OFFSET_PX = 26;       /* the per-card positional drift */
 /* The beat the pile holds before it sorts — version A's HE_STACK_HOLD. */
-export const SB_STACK_HOLD = 1.0;      /* the centred row, as a fraction of the hero's */
+export const SB_STACK_HOLD = 1.0;
+/* R65 item 2c — THE DISCARDS. Three extra images arrive FIRST, the
+   hero's three stack on top of them, and the first three then clear
+   before the travel begins.
+   THEIR EXIT, recommended and used: a BLUR-FADE that also drops them a
+   little — they dissolve downward out of the pile rather than sliding
+   anywhere, which reads as the stack resolving to what it wanted rather
+   than as three cards glitching out. A plain fade was the alternative
+   and reads as a dropped frame at this speed; sliding them out from
+   under the pile competes with the travel that follows.
+   It completes BEFORE the sort — SB_SORT_AT is derived from it below. */
+export const SB_DISCARD_OUT_AT_OFFSET = 0.25; /* after the pile completes */
+export const SB_DISCARD_OUT_DUR = 0.55;
+export const SB_DISCARD_OUT_STAGGER = 0.07;
+export const SB_DISCARD_OUT_Y = 40;           /* the downward drift, px */
+export const SB_DISCARD_OUT_BLUR = 14;        /* px */
+/* The gap between the discards clearing and the sort starting. */
+export const SB_SORT_GAP = 0.2;      /* the centred row, as a fraction of the hero's */
 export const SB_OPEN_STAGGER = 0.12;    /* three windows appearing — three events */
 export const SB_TRAVEL_STAGGER = 0.08;  /* echoes the hero's own left/middle/right order */
 export const SB_IMG_SCALE_FROM = 2;     /* the reference's inner-image scale */
@@ -89,14 +119,26 @@ export const SB_GROUND_OUT_DUR = 0.6;   /* red resolving to the hero's ground */
    so retiming either beat carries the wipe with it. */
 /* The sort begins once the pile has assembled and held. Derived, so
    retiming the stack carries the sort and the line's wipe with it. */
-export const SB_STACK_TOTAL = 2 * SB_OPEN_STAGGER + SB_OPEN_DUR;
-export const SB_SORT_AT = SB_OPEN_AT + SB_STACK_TOTAL + SB_STACK_HOLD;
+/* SIX cards arrive now, not three (R65 item 2c). */
+export const SB_STACK_N = 6;
+export const SB_STACK_TOTAL = (SB_STACK_N - 1) * SB_OPEN_STAGGER + SB_OPEN_DUR;
+/* the discards clear after the pile has completed and held a moment… */
+export const SB_DISCARD_OUT_AT = SB_OPEN_AT + SB_STACK_TOTAL + SB_DISCARD_OUT_AT_OFFSET;
+export const SB_DISCARD_OUT_TOTAL = 2 * SB_DISCARD_OUT_STAGGER + SB_DISCARD_OUT_DUR;
+/* …and only then does the sort begin — derived, so no overlap is possible. */
+export const SB_SORT_AT = Math.max(
+  SB_OPEN_AT + SB_STACK_TOTAL + SB_STACK_HOLD,
+  SB_DISCARD_OUT_AT + SB_DISCARD_OUT_TOTAL + SB_SORT_GAP,
+);
 export const SB_HEADLINE_AT = SB_SORT_AT + SB_TRAVEL_DUR;
 export const SB_CONTENT_AT = SB_HEADLINE_AT + 0.5;
 export const SB_LINE_WIPE_AT = SB_OPEN_AT;
 export const SB_LINE_WIPE_DUR = SB_SORT_AT - SB_OPEN_AT;
-export const SB_READY_TIMEOUT_MS = 2500;
-export const SB_FAILSAFE_MS = 15000;
+/* R65 item 2c: SIX images decode now, not three — the gate's budget and
+   the failsafe both move up to cover them (and the sequence itself is
+   ~2.2s longer). */
+export const SB_READY_TIMEOUT_MS = 3500;
+export const SB_FAILSAFE_MS = 20000;
 
 /** The reference's CustomEase 'hop' — cubic-bezier(0.9, 0, 0.1, 1) — as
  *  a plain solver, so no Club plugin is needed. Newton with a bisection
@@ -131,6 +173,8 @@ export function initSplashB(splashRoot) {
   const countEl = document.querySelector('[data-sb-count]');
   const bar = document.querySelector('[data-sb-bar]');
   const sbCards = Array.from(document.querySelectorAll('[data-sb-card]'));
+  /* R65 item 2c: the three that arrive first and are thrown away. */
+  const sbDiscards = Array.from(document.querySelectorAll('[data-sb-discard]'));
   const heroCards = Array.from(document.querySelectorAll('[data-landing-hero-card]'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -297,6 +341,11 @@ export function initSplashB(splashRoot) {
   /* the centred row is the hero's row IN MINIATURE — filled in once the
      hero has placed itself, so the travel is a pure place-and-scale */
   let miniW = 0, miniH = 0, gap = 0, miniLeft = () => 0, miniTop = 0;
+  /* R65: the pile's arrival order and its per-card variation are built in
+     deriveMini (they need the placed rects) and read by the timeline — so
+     they are declared here, in the scope both share. */
+  let pileOrder = [];
+  let vary = () => ({ s: SB_STACK_SCALE, rot: 0, dx: 0, dy: 0 });
   const deriveMini = () => {
     const cardW = rects[0].width;
     const cardH = rects[0].height;
@@ -316,14 +365,42 @@ export function initSplashB(splashRoot) {
        (compositor transforms only, resolved once, one owner). */
     const centreLeft = vw / 2 - cardW / 2;
     const centreTop = vh / 2 - cardH / 2;
+    /* R65 items 2b + 2c — THE PILE, SIX DEEP AND VARIED.
+       ARRIVAL ORDER is discard 1, 2, 3 then hero LEFT, RIGHT, MIDDLE —
+       the middle last so it lands on top, version A's own reorder kept.
+       Each card's index in that order drives its variation: a scale step
+       down, an alternating rotation and a small positional drift, so no
+       card completely covers the one beneath it and all six read. The
+       hero cards' FINAL state is still exactly x:0 y:0 scale:1 rotation:0
+       against their own landing box, so the sort remains a plain return
+       to zero and the landing stays pixel-exact. */
+    pileOrder = [...sbDiscards, sbCards[0], sbCards[2], sbCards[1]];
+    vary = (el) => {
+      const k = pileOrder.indexOf(el);
+      const s = SB_STACK_SCALE - k * SB_STACK_SCALE_STEP;
+      const rot = (k % 2 ? 1 : -1) * SB_STACK_ROT_DEG * (1 - k / (pileOrder.length * 1.6));
+      const drift = SB_STACK_OFFSET_PX * (k - (pileOrder.length - 1) / 2) / (pileOrder.length - 1) * 2;
+      return { s, rot, dx: drift, dy: -drift * 0.55 };
+    };
+    /* the discards borrow the middle card's box so they pile in the same
+       place; they never travel, so the box is only a size */
+    gsap.set(sbDiscards, {
+      top: rects[1].top, left: rects[1].left, width: rects[1].width, height: rects[1].height,
+      transformOrigin: '50% 50%',
+      x: (i, el) => centreLeft - rects[1].left + vary(el).dx,
+      y: (i, el) => centreTop - rects[1].top + vary(el).dy,
+      rotation: (i, el) => vary(el).rot,
+      scale: 0,
+    });
     gsap.set(sbCards, {
       top: (i) => rects[i].top,
       left: (i) => rects[i].left,
       width: (i) => rects[i].width,
       height: (i) => rects[i].height,
       transformOrigin: '50% 50%',
-      x: (i) => centreLeft - rects[i].left,
-      y: (i) => centreTop - rects[i].top,
+      x: (i) => centreLeft - rects[i].left + vary(sbCards[i]).dx,
+      y: (i) => centreTop - rects[i].top + vary(sbCards[i]).dy,
+      rotation: (i) => vary(sbCards[i]).rot,
       scale: 0,
       clipPath: 'none',
     });
@@ -367,7 +444,9 @@ export function initSplashB(splashRoot) {
      If the cards are still not placed when the timeout fires there is
      nothing to travel to, so the sequence is skipped and the hero
      simply appears; a red screen with no exit is never an outcome. */
-  const imgs = sbCards.map((c) => c.querySelector('img')).filter(Boolean);
+  /* R65 item 2c: SIX images now — the gate and the failsafe cover them
+     all, not just the hero three. */
+  const imgs = [...sbCards, ...sbDiscards].map((c) => c.querySelector('img')).filter(Boolean);
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   const decoded = Promise.all(imgs.map((im) => (im.decode ? im.decode().catch(() => {}) : Promise.resolve())));
   const placed = new Promise((resolve) => {
@@ -413,18 +492,34 @@ export function initSplashB(splashRoot) {
        centre, one after another, piling on top of each other. Version
        A's order — LEFT, RIGHT, then the MIDDLE last so it lands on top
        of the pile (hero-entry.js's own reorder, kept). */
-    const stackEls = [sbCards[0], sbCards[2], sbCards[1]];
-    tl.to(stackEls, {
-      scale: SB_STACK_SCALE, ease: 'power2.out',
+    tl.to(pileOrder, {
+      scale: (i, el) => vary(el).s, ease: 'power2.out',
       duration: SB_OPEN_DUR, stagger: SB_OPEN_STAGGER,
     }, SB_OPEN_AT);
     tl.to(imgs, { scale: 1, duration: SB_OPEN_DUR, ease: 'power2.out', stagger: SB_OPEN_STAGGER }, SB_OPEN_AT);
+
+    /* ── THE DISCARDS CLEAR (R65 item 2c): a blur-fade that drops them a
+       little, so the pile resolves to the hero's three. Timed to finish
+       before the sort — SB_SORT_AT is derived from this beat, so the two
+       can never overlap. They are removed from the DOM on completion, so
+       nothing of them can survive into the settle. */
+    if (sbDiscards.length) {
+      tl.to(sbDiscards, {
+        opacity: 0,
+        y: `+=${SB_DISCARD_OUT_Y}`,
+        filter: `blur(${SB_DISCARD_OUT_BLUR}px)`,
+        duration: SB_DISCARD_OUT_DUR,
+        ease: 'power2.in',
+        stagger: SB_DISCARD_OUT_STAGGER,
+        onComplete: () => sbDiscards.forEach((d) => d.remove()),
+      }, SB_DISCARD_OUT_AT);
+    }
 
     /* ── THE SORT: a plain return to zero — x, y and scale only, on the
        compositor, with the destination already the element's own layout
        box. Per-frame deltas verified monotonic with no reversals. */
     tl.to(sbCards, {
-      x: 0, y: 0, scale: 1, ease: 'power3.inOut',
+      x: 0, y: 0, scale: 1, rotation: 0, ease: 'power3.inOut',
       duration: SB_TRAVEL_DUR, stagger: SB_TRAVEL_STAGGER,
     }, SB_SORT_AT);
 

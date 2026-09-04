@@ -28,6 +28,13 @@ const heroCards = [
   asset('/assets/landing/hero/hero-2.jpg'),
   asset('/assets/landing/hero/hero-3.jpg'),
 ];
+
+/* R65 item 2c: the discard pool — placeholder, see the markup note. */
+const SB_DISCARDS = [
+  asset('/assets/landing/closing/tile-1.jpg'),
+  asset('/assets/landing/network/strip-2.jpg'),
+  asset('/assets/landing/closing/tile-4.jpg'),
+];
 ---
 
 {/* THE GATE. BaseLayout's pre-paint script arms the splash only for `/`
@@ -55,7 +62,22 @@ const heroCards = [
   {/* THE THREE — each opens from a point via clip-path, then travels.
       Placed and sized entirely by splash-b.js from the live hero. */}
   {heroCards.map((src, i) => (
-    <div class="splash-b__card" data-sb-card style={`z-index:${10 + i}`}>
+    <div class="splash-b__card" data-sb-card style={`z-index:${20 + i}`}>
+      <img src={src} alt="" decoding="async" loading="eager" />
+    </div>
+  ))}
+
+  {/* R65 item 2c (Oscar, 2026-09-04) — THE THREE DISCARDS. They arrive
+      FIRST, are stacked under the hero's three, and clear before the
+      travel. PLACEHOLDER PENDING OSCAR'S SELECTION: chosen from the
+      unflagged pool already on the site — the closing section's tiles
+      and the network strip — picked to be visually distinct from the
+      hero three (an interior, a landscape and a crowd against the hero's
+      still life, portrait and helicopter) so the swap reads clearly.
+      Below the hero cards in z, so the hero three land on top of the
+      pile as they arrive. */}
+  {SB_DISCARDS.map((src, i) => (
+    <div class="splash-b__card splash-b__card--discard" data-sb-discard style={`z-index:${10 + i}`}>
       <img src={src} alt="" decoding="async" loading="eager" />
     </div>
   ))}
