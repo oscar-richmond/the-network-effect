@@ -58,8 +58,11 @@
  *
  * FIRST VISIT ONLY: it rides the splash's own gate — splash.js's
  * `ne-splash-seen` sessionStorage key, so it plays when the splash
- * plays. `?entry=1` forces it (and the splash with it), `?entry=0`
- * suppresses it and leaves the shipped card entrance.
+ * plays. `?entry=1` forces it by opening that gate (LandingSplash's
+ * pre-paint script); `?entry=0` suppresses it (splash.js) and leaves
+ * the shipped card entrance. There is no exported helper for this: an
+ * earlier one was never imported, so its documented contract was
+ * simply false — the sweep caught it.
  *
  * REDUCED MOTION: no pile, no sort, no red — `skip()` puts the hero on
  * its normal ground immediately and hands straight to the page beats.
@@ -101,14 +104,6 @@ export const HE_FAILSAFE_MS = 12000;
 const HE_N = 3;
 const HE_FLY_TOTAL = (HE_N - 1) * HE_FLY_STAGGER + HE_FLY_DUR;
 const HE_TEXT_TOTAL = (HE_N - 1) * HE_TEXT_STAGGER + HE_TEXT_DUR;
-
-/** `?entry=1` forces, `?entry=0` suppresses; otherwise it rides the splash. */
-export function heroEntryWanted() {
-  const forced = new URLSearchParams(window.location.search).get('entry');
-  if (forced === '1') return true;
-  if (forced === '0') return false;
-  return null; /* no opinion — the caller's splash gate decides */
-}
 
 /**
  * @param {{ onSettled: () => void }} opts  onSettled runs the page's own

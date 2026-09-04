@@ -36,8 +36,26 @@ const entryArmed = HERO_ENTRY && !HERO_ENTRY_SPLASH;
   <script is:inline>
     (function () {
       try {
-        if (document.documentElement.getAttribute('data-ne-splash') === 'on') {
-          document.documentElement.setAttribute('data-ne-entry', 'on');
+        var d = document.documentElement;
+        /* `?entry=0` suppresses the entry — so it must NOT arm the red
+           ground either. Arming regardless left the red up with nothing
+           to clear it (splash.js hands straight to the page beats, and
+           only the entry's settle removes the stage): a red screen with
+           the hero behind it. */
+        if (new URLSearchParams(location.search).get('entry') === '0') return;
+        /* `?entry=1` FORCES the entry, even on a return visit in the same
+           tab. The entry rides the splash's gate, so forcing it means
+           opening that gate here — BaseLayout's pre-paint script has
+           already decided by now, and this body script still runs before
+           any deferred module. (Without this the flag was inert: it only
+           ever appeared to work because the tests passed &splash=1 too.) */
+        if (new URLSearchParams(location.search).get('entry') === '1'
+            && d.getAttribute('data-ne-splash') !== 'on') {
+          d.setAttribute('data-ne-splash', 'on');
+          d.classList.add('splash-active');
+        }
+        if (d.getAttribute('data-ne-splash') === 'on') {
+          d.setAttribute('data-ne-entry', 'on');
         }
       } catch (e) {}
     })();

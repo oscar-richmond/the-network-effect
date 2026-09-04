@@ -311,6 +311,8 @@ export function initSplash(root) {
        with it — is dead code and never reaches the bundle. */
     if (!HERO_ENTRY || reduced) { playPageBeats(); return; }
     if (new URLSearchParams(window.location.search).get('entry') === '0') { playPageBeats(); return; }
+    /* (`?entry=1` forces from the OTHER side — heroEntryWanted() below
+       makes this load take the splash's slot even on a return visit.) */
     if (!document.querySelector('[data-he-stage]')) { playPageBeats(); return; }
     import('./hero-entry.js')
       .then(({ initHeroEntry }) => { if (!disposed) cleanupHeroEntry = initHeroEntry({ onSettled: playPageBeats }); else playPageBeats(); })
