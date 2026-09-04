@@ -28,10 +28,27 @@ if [ "$BRANCH" = "production" ]; then
   exit 1
 fi
 
+# BUILD ENV, per deployment (R72, Oscar 2026-09-04). Vercel builds this
+# remotely, so a local `export` never reaches the build — flags that must
+# differ on staging have to be passed with the deployment itself.
+# --build-env is scoped to THIS deployment: it does not write project
+# environment variables, so a later production build is completely
+# unaffected by anything set here. That is the whole reason it is used
+# rather than `vercel env add`.
+#
+#   PUBLIC_LANDING_SPLASH_B=1  builds /landing-splash-b as a real route on
+#   staging so the alternate splash is reviewable. The main landing page
+#   is untouched and keeps its own splash.
+STAGE_BUILD_ENV=(--build-env PUBLIC_LANDING_SPLASH_B=1)
+
+# Anything passed after `npm run stage --` is forwarded verbatim.
+EXTRA=("$@")
+
 echo "→ Deploying a PREVIEW build (branch: $BRANCH)…"
+echo "  build env: ${STAGE_BUILD_ENV[*]}"
 # --yes skips the interactive scope/link prompts; the deployment URL is
 # the last line of stdout.
-DEPLOY_URL="$(vercel deploy --yes | tail -1)"
+DEPLOY_URL="$(vercel deploy --yes "${STAGE_BUILD_ENV[@]}" "${EXTRA[@]}" | tail -1)"
 
 if [ -z "$DEPLOY_URL" ]; then
   echo "No deployment URL returned — aborting before aliasing." >&2
