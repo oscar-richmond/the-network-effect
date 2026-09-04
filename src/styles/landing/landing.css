@@ -7568,7 +7568,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	letter-spacing: -0.02em;
 	color: #161616;
 }
-.landing-v2 .sp-mail { color: #161616; text-decoration: underline; text-underline-offset: 3px; }
+/* R74 (Oscar, 2026-09-04): the address must not break MID-WORD. In the
+   error state it renders inside a sentence, and at the drawer's 480px of
+   content width the default breaking split it as
+   "hello@netwo / rkeffectagency.co.uk" — an address broken across two
+   lines reads as a typo and cannot be copied by eye. nowrap keeps it
+   whole: it moves to its own line when the sentence runs out of room,
+   which is what a reader needs. Caught on a screenshot of the deployed
+   error state, not by a measurement. */
+.landing-v2 .sp-mail {
+	color: #161616;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	white-space: nowrap;
+}
 .landing-v2 .sp-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
 /* R61 item 7: the copy confirmation — the HOLDING PAGE's tooltip
    treatment, reused verbatim (holding-page.css .holding-final__copy-tip,
