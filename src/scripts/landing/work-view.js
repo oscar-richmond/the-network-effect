@@ -1,7 +1,7 @@
 /**
- * /work — THE VIEW CONTROLLER (R35, Oscar 2026-09-03): LIST (the
- * default — the fixed-viewport driver, work-page.js) or GRID (a normal
- * document, work-grid.js), and the switch between them.
+ * /work — THE VIEW CONTROLLER (R35, Oscar 2026-09-03): GRID (the
+ * default since R38 — a normal document, work-grid.js) or LIST (the
+ * fixed-viewport driver, work-page.js), and the switch between them.
  *
  * THE STRUCTURAL RULE: switching is a FULL TEARDOWN of the outgoing
  * view — its listeners, rAF loop, ScrollTriggers, cursor instance,
@@ -14,7 +14,10 @@
  * PERSISTENCE: the choice lives in sessionStorage (WORK_VIEW_STORAGE_KEY)
  * and in the URL (?view=grid|list — WORK_VIEW_QUERY_KEY); the query
  * wins on load, both are written on a switch (replaceState — no
- * history entries). Deep-linkable and shareable.
+ * history entries). Deep-linkable and shareable. R38 (Oscar,
+ * 2026-09-04): GRID is the default (WORK_VIEW_DEFAULT); ?view=list is
+ * the override; a page landing on grid never boots the list driver
+ * (boot() runs exactly one view).
  *
  * THE TRANSITION: a blur-crossfade in the house vocabulary, sequenced
  * — the outgoing view blur-fades out (SWITCH_OUT_MS), the page scrolls
@@ -40,6 +43,12 @@ export const SWITCH_IN_MS = 420;
    are the pre-JS approximation. */
 const TOGGLE_GAP_PX = 32; /* R38: the group's top below the title's bottom ink */
 
+/* R38 item 2 (Oscar, 2026-09-04): GRID is the default view; LIST is
+   what the user switches to. The query wins on load (?view=list is
+   the override now; ?view=grid still honoured), then the session's
+   stored choice, then the default. Persisting mirrors it: list writes
+   ?view=list, grid clears the key. */
+export const WORK_VIEW_DEFAULT = 'grid';
 const readInitialView = () => {
   const q = new URLSearchParams(window.location.search).get(WORK_VIEW_QUERY_KEY);
   if (q === 'grid' || q === 'list') return q;
@@ -47,14 +56,14 @@ const readInitialView = () => {
     const stored = window.sessionStorage.getItem(WORK_VIEW_STORAGE_KEY);
     if (stored === 'grid' || stored === 'list') return stored;
   } catch (e) { /* storage unavailable: the default */ }
-  return 'list';
+  return WORK_VIEW_DEFAULT;
 };
 
 const persist = (view) => {
   try { window.sessionStorage.setItem(WORK_VIEW_STORAGE_KEY, view); } catch (e) { /* ignore */ }
   const url = new URL(window.location.href);
-  if (view === 'grid') url.searchParams.set(WORK_VIEW_QUERY_KEY, 'grid');
-  else url.searchParams.delete(WORK_VIEW_QUERY_KEY);
+  if (view === WORK_VIEW_DEFAULT) url.searchParams.delete(WORK_VIEW_QUERY_KEY);
+  else url.searchParams.set(WORK_VIEW_QUERY_KEY, view);
   window.history.replaceState(window.history.state, '', url);
 };
 

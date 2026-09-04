@@ -256,11 +256,11 @@ const gridRows = GRID_ROWS.map((row) =>
       K's INK in WORK and its top 32 below the title's bottom INK — both
       measured from the rendered glyphs, not the boxes. */}
   <div class="work-viewtoggle" data-work-viewtoggle role="group" aria-label="Featured work view">
-    <button type="button" class="work-viewtoggle__btn" data-work-view="grid" aria-pressed="false" aria-label="Grid view">
+    <button type="button" class="work-viewtoggle__btn is-active" data-work-view="grid" aria-pressed="true" aria-label="Grid view">
       <svg class="work-viewtoggle__icon" viewBox="0 0 16 12" width="16" height="12" aria-hidden="true"><rect x="0" y="0" width="10" height="2" /><rect x="13" y="0" width="3" height="2" /><rect x="6" y="5" width="10" height="2" /><rect x="0" y="9" width="2" height="3" /><rect x="5" y="10" width="11" height="2" /></svg>
       <span class="work-viewtoggle__label">GRID</span>
     </button>
-    <button type="button" class="work-viewtoggle__btn is-active" data-work-view="list" aria-pressed="true" aria-label="List view">
+    <button type="button" class="work-viewtoggle__btn" data-work-view="list" aria-pressed="false" aria-label="List view">
       <svg class="work-viewtoggle__icon" viewBox="0 0 16 12" width="16" height="12" aria-hidden="true"><rect x="0" y="0" width="16" height="2" /><rect x="0" y="5" width="16" height="2" /><rect x="0" y="10" width="16" height="2" /></svg>
       <span class="work-viewtoggle__label">ROW</span>
     </button>

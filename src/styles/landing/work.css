@@ -569,9 +569,10 @@ body.work-page {
 
 /* ══════════════════════════════════════════════════════════════════
    R35 (Oscar, 2026-09-03) — THE GRID VIEW + THE VIEW TOGGLE.
-   LIST stays the default; GRID is a normal scrolling document shown
-   when the body carries .work-view-grid (work-view.js flips it on a
-   full teardown/boot). Desktop only — the mobile page keeps its list
+   GRID is the default since R38 (2026-09-04): a normal scrolling
+   document shown when the body carries .work-view-grid (work-view.js
+   flips it on a full teardown/boot; the SSR state is the list — the
+   controller applies the default before the first paint of the boot). Desktop only — the mobile page keeps its list
    and never shows the toggle. Every dimension here is px on the 1728
    grammar (no vw): the 1512 shell renders it as a scaled 1728.
    ══════════════════════════════════════════════════════════════════ */
