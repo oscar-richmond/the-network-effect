@@ -25,6 +25,7 @@ import { bindBottomNavSweep } from './nav-motion.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
+import { createCoverSwap } from '../cover-swap.js';
 
 /* The entrance's tunables: a row's tiles arrive GRID_TILE_STAGGER_MS
    apart; when more than one row is already in view at boot, the rows
@@ -38,6 +39,8 @@ export function initWorkGrid() {
   const grid = document.querySelector('[data-work-grid]');
   if (!(grid instanceof HTMLElement)) return () => {};
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    || new URLSearchParams(window.location.search).has('forcehover');
   const cleanups = [];
   const timeouts = [];
   let disposed = false;
@@ -72,6 +75,39 @@ export function initWorkGrid() {
       playLineRevealElement(line);
     });
   });
+
+  /* ── R38 item 5: THE HOVER SWAP — the /services row-hover cover-swap
+     (cover-swap.js, the shared runner: one run in flight per tile, the
+     latest target lands, so rapid hops never stack or half-swap) on
+     every LIVE tile: enter → wipe the hover image in; leave → wipe the
+     original back in the same left → right read. Keyboard focus does
+     the same. RM: no swap (the runner is not wired). */
+  if (!reduced && fineHover) {
+    grid.querySelectorAll('a[data-work-gtile]').forEach((tile) => {
+      if (!(tile instanceof HTMLElement)) return;
+      const wrap = tile.querySelector('.work-gtile__media');
+      const baseEl = tile.querySelector('[data-gtile-base]');
+      const overEl = tile.querySelector('[data-gtile-over]');
+      const alt = tile.dataset.hoverImg;
+      if (!(wrap instanceof HTMLElement) || !(baseEl instanceof HTMLImageElement) || !(overEl instanceof HTMLImageElement) || !alt) return;
+      const original = baseEl.getAttribute('src') || '';
+      const swap = createCoverSwap({ wrap, baseEl, overEl });
+      const enter = () => swap.swapTo(alt);
+      const leave = () => swap.swapTo(original);
+      tile.addEventListener('pointerenter', enter);
+      tile.addEventListener('pointerleave', leave);
+      tile.addEventListener('focus', enter);
+      tile.addEventListener('blur', leave);
+      cleanups.push(() => {
+        tile.removeEventListener('pointerenter', enter);
+        tile.removeEventListener('pointerleave', leave);
+        tile.removeEventListener('focus', enter);
+        tile.removeEventListener('blur', leave);
+        swap.reset();
+        if (baseEl.getAttribute('src') !== original) baseEl.setAttribute('src', original);
+      });
+    });
+  }
 
   /* ── The tiles' entrance. */
   const rows = Array.from(grid.querySelectorAll('[data-work-grid-row]')).filter((el) => el instanceof HTMLElement);

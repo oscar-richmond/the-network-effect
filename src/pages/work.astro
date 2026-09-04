@@ -30,7 +30,7 @@
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
-import { WORK_PROJECTS, WORK_EXTRAS } from '../data/landing/featured-work.js';
+import { WORK_PROJECTS, WORK_EXTRAS, WORK_GRID_HOVER } from '../data/landing/featured-work.js';
 import { LIVE_CASE_SLUGS } from '../data/landing/case-studies.js';
 import { asset } from '../utils/asset.js';
 import '../styles/home.css';
@@ -290,13 +290,16 @@ const gridRows = GRID_ROWS.map((row) =>
             const name = p.title.join(' ');
             const cls = `work-gtile work-gtile--${mod}`;
             return live ? (
-              <a class={cls} href={`/work/${p.slug}`} data-work-link data-work-gtile data-slug={p.slug} data-tile={String(t)} aria-label={`${name} — view project`}>
-                <figure class="work-gtile__media"><img src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /></figure>
+              <a class={cls} href={`/work/${p.slug}`} data-work-link data-work-gtile data-slug={p.slug} data-tile={String(t)} data-hover-img={asset(WORK_GRID_HOVER[p.slug] ?? p.workImg)} aria-label={`${name} — view project`}>
+                {/* R38 item 5: the base image + the cover-swap overlay (hidden
+                    at rest; the hover wipes the second image in over it —
+                    work-grid.js). R38 item 6: the red veil that resolves. */}
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /><span class="work-gtile__veil" aria-hidden="true"></span></figure>
                 <p class="work-gtile__name">{name}</p>
               </a>
             ) : (
-              <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
-                <figure class="work-gtile__media"><img src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /></figure>
+              <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-hover-img={asset(WORK_GRID_HOVER[p.slug] ?? p.workImg)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /><span class="work-gtile__veil" aria-hidden="true"></span></figure>
                 <p class="work-gtile__name">{name}</p>
               </span>
             );

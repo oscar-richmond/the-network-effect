@@ -676,10 +676,28 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	.landing-v2 .work-gtile.is-placeholder { cursor: default; }
 
 	.landing-v2 .work-gtile__media {
+		position: relative; /* R38: the containing block for the cover-swap overlay and the red veil */
 		margin: 0;
 		overflow: hidden;
 		background: #e4e4ea;
 		aspect-ratio: 1 / 1;
+	}
+	/* R38 item 5 — the HOVER SWAP: the /services row-hover cover-swap
+	   (cover-swap.js) ported tile by tile. The overlay image wipes in
+	   left → right over the base with its blur settling 6 → 0 while the
+	   base blurs up beneath (`.is-covering`), then the base adopts the
+	   new src and the overlay retires; leaving runs the same wipe back
+	   to the original. Replaces the R35 1.02 scale hover (the VIEW CASE
+	   STUDY cursor stays). GRID ONLY. */
+	.landing-v2 .work-gtile__media img[data-gtile-over] {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+	}
+	.landing-v2 .work-gtile__media img[data-gtile-over][hidden] { display: none; }
+	.landing-v2 .work-gtile__media.is-covering img[data-gtile-base] {
+		filter: blur(6px);
+		transition: filter 0.45s cubic-bezier(0.42, 0, 0.24, 1);
 	}
 	.landing-v2 .work-gtile--l6 .work-gtile__media,
 	.landing-v2 .work-gtile--l6r .work-gtile__media,
@@ -779,9 +797,9 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 /* ── ENTRANCES (no-preference): the toggle enters with the header;
    the tiles take the featured-card fade-rise (24px, 0.8s, the
    holding ease), rows top to bottom, tiles staggered within a row by
-   work-grid.js's inline transition-delay. Hover: a slow 1.02 scale
-   on the image inside the clipped tile (live tiles only). RM: every
-   tile present, no scale. */
+   work-grid.js's inline transition-delay. Hover (R38): the cover-swap
+   image wipe, JS-driven (live tiles only). RM: every tile present,
+   no swap. */
 @media (prefers-reduced-motion: no-preference) {
 	.landing-v2 .work-viewtoggle {
 		opacity: 0;
@@ -797,7 +815,6 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	}
 	.landing-v2 .work-gtile.is-visible { opacity: 1; transform: none; }
 
-	.landing-v2 .work-gtile__media img { transition: transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)); }
-	.landing-v2 a.work-gtile:hover .work-gtile__media img,
-	.landing-v2 a.work-gtile:focus-visible .work-gtile__media img { transform: scale(1.02); }
+	/* (R38 item 5: the 1.02 hover scale retired — the cover-swap is the
+	   hover now, work-grid.js.) */
 }

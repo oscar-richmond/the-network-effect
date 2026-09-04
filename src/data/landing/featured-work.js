@@ -209,3 +209,23 @@ export const WORK_PROJECTS = FEATURED_CARDS.map((c) => ({
   ...c,
   workImg: c.workImg ?? c.img.src, // PLACEHOLDER pending Oscar's drop
 }));
+
+/* ═══ /work GRID — HOVER IMAGES (R38 item 5, Oscar 2026-09-04) ═══
+   Each grid tile swaps to a SECOND image on hover (the /services
+   row-hover cover-swap, cover-swap.js). ALL PLACEHOLDER pending real
+   assets: one distinct image per tile from the site's UNFLAGGED pool
+   (case-study streams, the founders column, the closing tiles, the
+   network strip, the services stack) — none of the elevated-rights
+   images (Top Boy / Adolescence / adidas / Depp / Lagerfeld / the
+   named-person portraits) are used as a swap. Keyed by slug. */
+export const WORK_GRID_HOVER = {
+  'animol': '/assets/landing/case/wilderness-reserve/stream-2.jpg',
+  'wilderness-reserve': '/assets/landing/case/wilderness-reserve/stream-4.jpg',
+  'tbc-ashley-walters': '/assets/landing/founders-page/col-2.png',
+  'top-boy': '/assets/landing/network/strip-3.jpg',
+  'pavilion-club': '/assets/landing/case/pavilion-club/stream-4.jpg',
+  'yoxman-food-festival': '/assets/landing/case/yoxman/stream-5.jpg',
+  'pavilion-summit': '/assets/landing/case/pavilion-summit/stream-2.jpg',
+  'thunder-aviation': '/assets/landing/closing/tile-2.jpg',
+  'adolescence': '/assets/landing/services-stack/connect.jpg',
+};
