@@ -785,9 +785,14 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	}
 
 	/* Keyboard: the ground-correct ring (the list tiles' own). */
+	/* A11y batch item 7: the accent ring measured 1.76:1 where a tile
+	   meets the grid's dark edge. Two-tone — light ring, dark halo —
+	   so it clears 3:1 on the grey (the halo, 15:1) and on the black
+	   (the ring, 17:1). */
 	.landing-v2 .work-gtile:focus-visible {
-		outline: 2px solid #232a89;
+		outline: 2px solid #eeeef0;
 		outline-offset: 2px;
+		box-shadow: 0 0 0 4px #161616;
 	}
 
 	/* ── THE VIEW TOGGLE — two MORE INFO-family chips (38px, the

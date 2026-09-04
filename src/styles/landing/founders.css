@@ -94,9 +94,14 @@ body.founders-page {
 	outline-offset: -3px;
 }
 
+/* A11y batch item 7: the accent ring measured 1.69:1 on the thumb's
+   #030907 ground. TWO-TONE now — a light ring with a dark halo — so
+   one of the two clears 3:1 against any ground it lands on: here the
+   #eeeef0 reads 18:1 on the near-black. */
 .landing-v2 .fd-ind__thumb:focus-visible {
-	outline: 3px solid #232a89;
+	outline: 3px solid #eeeef0;
 	outline-offset: 2px;
+	box-shadow: 0 0 0 5px #161616;
 }
 
 /* Label row — divider 16×0.5 + "/ 0N Founder" Serrif 12; top is
