@@ -14,8 +14,14 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="0;url=/" />
-    <link rel="canonical" href="/" />
-    <title>The Network Effect</title>
+    {/* SEO batch item 4: this stub is a 200, not a 301 (output: 'static',
+        no adapter), so without these it is indexable as a duplicate of
+        "/" — it carried a RELATIVE canonical and the same title. Both
+        fixed; the real redirect is the vercel.json entry added in the
+        same pass. */}
+    <link rel="canonical" href="https://networkeffectagency.co.uk/" />
+    <meta name="robots" content="noindex, follow" />
+    <title>Redirecting to The Network Effect</title>
     <script>window.location.replace('/');</script>
   </head>
   <body></body>

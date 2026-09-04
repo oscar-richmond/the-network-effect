@@ -28,12 +28,26 @@ import '../styles/landing/mobile.css';
 interface Props {
   title?: string;
   bodyClass?: string;
+  description?: string;
+  canonicalPath?: string;
+  ogImage?: string;
+  noindex?: boolean;
 }
 
-const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
+/* SEO batch: the shell forwards the head's per-route fields — it used
+   to pass only title and bodyClass, which is why every page inherited
+   the layout's default description. */
+const {
+  title = 'The Network Effect',
+  bodyClass = 'landing-v2',
+  description,
+  canonicalPath,
+  ogImage,
+  noindex,
+} = Astro.props;
 ---
 
-<BaseLayout title={title} bodyClass={bodyClass} htmlClass="js">
+<BaseLayout title={title} bodyClass={bodyClass} htmlClass="js" description={description} canonicalPath={canonicalPath} ogImage={ogImage} noindex={noindex}>
   {/* A11y batch item 4 (Oscar, 2026-09-04): THE SKIP LINK — the first
       tab stop on every route, visible only while focused (the pill
       family, top-left, above the nav tier). Its target is #main: each

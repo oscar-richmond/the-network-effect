@@ -9,6 +9,13 @@ interface Props {
   description?: string;
   bodyClass?: string;
   htmlClass?: string;
+  /** Absolute-from-root path this page should declare as canonical.
+   *  Defaults to the request's own pathname. */
+  canonicalPath?: string;
+  /** Social card image, absolute from root. */
+  ogImage?: string;
+  /** Keep the page out of the index (redirect stubs, archived routes). */
+  noindex?: boolean;
 }
 
 const {
@@ -16,9 +23,26 @@ const {
   description = 'A relationship-led agency.',
   bodyClass = '',
   htmlClass = '',
+  canonicalPath,
+  ogImage = '/assets/landing/hero/hero-1.jpg',
+  noindex = false,
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
+
+/* ── SEO batch items 1 + 2 (Oscar, 2026-09-04) ───────────────────────
+   Every route shared one title and the layout's default description
+   ("A relationship-led agency.") — never overridden — with no Open
+   Graph, no Twitter tags, no canonical and no robots directive. For an
+   agency whose distribution is referral-led, every link pasted into
+   WhatsApp, Slack or LinkedIn rendered as a bare URL.
+   CANONICAL HOST: Astro.site is the one source. NOTE it is configured
+   as networkeffectagency.COM while the live domain is .CO.UK — flagged,
+   not silently changed here, because the value also feeds the holding
+   layout's canonical and changing it is a deploy-facing decision.
+   Set ASTRO_SITE (or fix astro.config.mjs) before launch. */
+const canonicalURL = new URL(canonicalPath ?? Astro.url.pathname, Astro.site ?? 'https://networkeffectagency.co.uk');
+const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.co.uk');
 ---
 
 <!doctype html>
@@ -30,10 +54,25 @@ const base = import.meta.env.BASE_URL;
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL.href} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <link rel="icon" href={`${base}favicon.ico`} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    {/* Open Graph + Twitter — one card definition, fed per route. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="The Network Effect" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL.href} />
+    <meta property="og:image" content={ogImageURL.href} />
+    <meta property="og:image:alt" content="The Network Effect" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL.href} />
     <script is:inline define:vars={{ base }}>
       /**
        * Scale-shell boot — 15" (and any sub-1728) viewport support.

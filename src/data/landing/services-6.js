@@ -19,8 +19,10 @@
  * Oscar's per-row content drop.
  *
  * FLAGS from extraction, for Oscar:
- * · IMMERSE rows list "Industry-leading Events" TWICE (rows 5 and
- *   11) — the frame's own copy, kept verbatim.
+ * · IMMERSE rows listed "Industry-leading Events" TWICE (rows 5 and
+ *   11) — the frame's own slip. RESOLVED 2026-09-04: row 11 now carries
+ *   Oscar's approved substitution, "Exceptional Culinary Experiences",
+ *   the same fix the desktop landing already had.
  * · The frame's hover mock shows the row highlight in the BLUE
  *   #232A89 with blue dividers; per Oscar's instruction the built
  *   highlight is the #C1250E accent (the `accent` fields below).
@@ -87,7 +89,13 @@ export const SV6_PILLARS = [
       'Leadership Summits & Conferences',
       'Experiential Campaigns',
       'Music & Food Festivals',
-      'Industry-leading Events',
+      /* SEO/content batch item 6 (Oscar, 2026-09-04): the SECOND
+      "Industry-leading Events" is replaced with Oscar's already-approved
+      substitution. The duplicate is the FRAME's own slip (the file lists
+      the row twice), and the substitution was approved for exactly this
+      slip on the desktop landing build — it is now applied on every
+      surface that carried the repeat, so the three lists agree. */
+      'Exceptional Culinary Experiences',
       'Health & Wellbeing Retreats',
     ],
   },

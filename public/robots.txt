@@ -1,0 +1,26 @@
+# The Network Effect — robots (SEO batch, Oscar 2026-09-04)
+#
+# The site had no robots.txt and no sitemap. Everything public is
+# crawlable; the routes below are deliberately NOT, and each is listed
+# with its reason so nothing here is a mystery later:
+#   /holding, /holding-2, /holding-3  the pre-launch holding pages —
+#       still deployed and still served on the launch domain by the edge
+#       middleware, so they must never be indexed as content
+#   /old, /old/services              the archived pre-rebuild site
+#   /about-3                         redirected to "/" (astro.config)
+#   /landing                         a redirect stub for "/"
+#   /scale-shell                     the iframe host for sub-1728
+#       viewports — a shell, never a page
+#   /api/                            the form endpoints
+User-agent: *
+Allow: /
+Disallow: /holding
+Disallow: /holding-2
+Disallow: /holding-3
+Disallow: /old
+Disallow: /about-3
+Disallow: /landing
+Disallow: /scale-shell
+Disallow: /api/
+
+Sitemap: https://networkeffectagency.co.uk/sitemap.xml

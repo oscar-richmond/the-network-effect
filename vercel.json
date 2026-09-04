@@ -1,13 +1,36 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/landing",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/about-3",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "networkeffectagency.co.uk" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "networkeffectagency.co.uk"
+        }
+      ],
       "destination": "/holding-3"
     },
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "www.networkeffectagency.co.uk" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "www.networkeffectagency.co.uk"
+        }
+      ],
       "destination": "/holding-3"
     }
   ]

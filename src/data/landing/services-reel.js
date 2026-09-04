@@ -45,7 +45,9 @@ export const SERVICES_REEL_PILLARS = [
       { t: 'Leadership Summits & Conferences', img: ps(2) },
       { t: 'Experiential Campaigns', img: pc(4) },
       { t: 'Music & Food Festivals', img: yx(1) },
-      { t: 'Industry-leading Events', img: ps(3) },
+      /* item 6: was a second 'Industry-leading Events' — the frame's
+         slip; Oscar's approved substitution, as on every other surface. */
+      { t: 'Exceptional Culinary Experiences', img: ps(3) },
       { t: 'Health & Wellbeing Retreats', img: wr(3) },
     ],
   },

@@ -45,7 +45,12 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
     402-frame mobile grammar — 16px margins etc. — to THIS page while
     the other pages keep the 24px interim mobile layout until their
     own redesigns land. No desktop rule keys on it. */}
-<SiteShell title="The Network Effect" bodyClass={`landing-v2 landing-home${splash === 'b' ? ' splash-variant-b' : ''}`}>
+<SiteShell
+  title="The Network Effect — Built on Trust. Powered by Access."
+  description="A relationship-led agency connecting talent, brands and audiences through experiences, strategic partnerships and media."
+  canonicalPath="/"
+  bodyClass={`landing-v2 landing-home${splash === 'b' ? ' splash-variant-b' : ''}`}
+>
   {/* Entry sequence — first visit only, pre-paint decision inside. */}
   {splash === 'b' ? <LandingSplashB /> : <LandingSplash />}
 
