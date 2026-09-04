@@ -1,0 +1,76 @@
+---
+/**
+ * SPLASH VARIANT B (R49, Oscar 2026-09-04) — MARKUP ONLY.
+ *
+ * Ported from the supplied reference component (counter + hairline
+ * progress + clip-path image open). Ours differs in three ways, all
+ * Oscar's: the ground is BRAND RED, the counter is Serrif Condensed,
+ * and where the reference opens ONE image to full bleed we open THREE
+ * across the middle and then TRAVEL them into the landing hero's real
+ * resting row.
+ *
+ * The three that open are STAND-INS, not the hero's own cards: the card
+ * wrappers' transforms belong to the scroll module's scrubbed exit and
+ * are mirrored every frame by the WebGL planes, so the sequence lands
+ * these on the real cards' measured rects and hands over (the same
+ * construction hero-entry.js uses, for the same reason). They carry the
+ * hero's OWN three images so the settle is the hero's real composition.
+ *
+ * Rendered only when LANDING_SPLASH_B is on (dev): a production build
+ * emits none of this, and the route that uses it does not exist there.
+ */
+import { asset } from '../../utils/asset.js';
+
+/* the hero's own three images — the settle must BE the hero, not a
+   lookalike (LandingHero.astro's heroCards, same order) */
+const heroCards = [
+  asset('/assets/landing/hero/hero-1.jpg'),
+  asset('/assets/landing/hero/hero-2.jpg'),
+  asset('/assets/landing/hero/hero-3.jpg'),
+];
+---
+
+{/* THE GATE. BaseLayout's pre-paint script arms the splash only for `/`
+    and `/landing` (`if (!/^\/(?:landing\/?)?$/.test(pathname)) return`),
+    so this route would never get one. Rather than widen that regex —
+    which lives in BaseLayout and would change the emitted script on
+    every production page — this component arms it for itself. It is
+    flag-gated, so a production build emits none of this. `?splash=0`
+    still suppresses, for viewing the page without the sequence. */}
+<script is:inline>
+  (function () {
+    try {
+      if (new URLSearchParams(location.search).get('splash') === '0') return;
+      document.documentElement.setAttribute('data-ne-splash', 'on');
+    } catch (e) {}
+  })();
+</script>
+
+<div class="splash-b" data-splash-b aria-hidden="true">
+  {/* THE GROUND — brand red behind the whole sequence (the reference's
+      near-black). Its own layer, so nothing fights the hero's ground,
+      which the scroll fade already owns. */}
+  <div class="splash-b__ground" data-sb-ground></div>
+
+  {/* THE THREE — each opens from a point via clip-path, then travels.
+      Placed and sized entirely by splash-b.js from the live hero. */}
+  {heroCards.map((src, i) => (
+    <div class="splash-b__card" data-sb-card style={`z-index:${10 + i}`}>
+      <img src={src} alt="" decoding="async" loading="eager" />
+    </div>
+  ))}
+
+  {/* THE COUNTER — the reference's geometry verbatim: bottom-left,
+      transform-origin left bottom, scaling 0.25 → 1 as it counts.
+      Serrif Condensed Medium per Oscar. Digits are fixed-width cells:
+      the face's numerals are PROPORTIONAL ("1" is 134px where "0" is
+      244px at 400px), so a live count would lurch on almost every tick
+      against a left origin — tabular figures, which this face does
+      carry, hold every digit at one advance. */}
+  <div class="splash-b__counter" data-sb-counter>
+    <p class="splash-b__count" data-sb-count>0</p>
+  </div>
+
+  {/* THE HAIRLINE — draws scaleX 0 → 1 across the same 3s. */}
+  <div class="splash-b__bar" data-sb-bar><span class="splash-b__bar-fill" data-sb-barfill></span></div>
+</div>

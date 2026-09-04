@@ -1,0 +1,28 @@
+---
+/**
+ * /landing-splash-b (R49, Oscar 2026-09-04) — THE SAME LANDING PAGE,
+ * WITH THE ALTERNATE SPLASH.
+ *
+ * There is deliberately nothing here but the route. The page itself is
+ * LandingBody — exactly the component `/` renders — so the two cannot
+ * drift: every section, every boot call and the whole scroll
+ * architecture exist once. The only difference between the two routes
+ * is the `splash` prop below.
+ *
+ * WHY A REST ROUTE. A plain page would be emitted whatever the flag
+ * said; `Astro.rewrite` only changes what it CONTAINS. `getStaticPaths`
+ * returning nothing is what actually stops the file existing, so with
+ * LANDING_SPLASH_B off a production build has no such path at all —
+ * verified against dist. Nothing anywhere links to it either way.
+ *
+ * To preview it on staging once approved: PUBLIC_LANDING_SPLASH_B=1.
+ */
+import LandingBody from '../../components/landing/LandingBody.astro';
+import { LANDING_SPLASH_B } from '../../data/flags.js';
+
+export function getStaticPaths() {
+  return LANDING_SPLASH_B ? [{ params: { slug: undefined } }] : [];
+}
+---
+
+<LandingBody splash="b" />

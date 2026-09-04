@@ -1,0 +1,275 @@
+---
+/**
+ * THE LANDING PAGE'S BODY — extracted so the two splash variants can be
+ * compared without the page itself forking (R49, Oscar 2026-09-04).
+ *
+ * `/` and `/landing-splash-b` BOTH render this component. Every section,
+ * every boot call and the whole scroll architecture live here exactly
+ * once, so the two routes cannot drift: the ONLY difference between them
+ * is which splash component is rendered and which splash module boots,
+ * both selected by the single `splash` prop below.
+ *
+ * The markup and the boot script below are index.astro's, moved verbatim
+ * — only the import paths are re-based for this directory. The original
+ * page's rendered HTML is unchanged (verified against the pre-extraction
+ * build).
+ */
+import LandingSplashB from './LandingSplashB.astro';
+
+interface Props { splash?: 'a' | 'b' }
+const { splash = 'a' } = Astro.props;
+import SiteShell from '../../layouts/SiteShell.astro';
+import LandingSplash from './LandingSplash.astro';
+import LandingHero from './LandingHero.astro';
+import LandingFounders from './LandingFounders.astro';
+import LandingNetwork from './LandingNetwork.astro';
+import LandingFeatured from './LandingFeatured.astro';
+import LandingServicesStack from './LandingServicesStack.astro';
+import LandingAccess from './LandingAccess.astro';
+import LandingClosing from './LandingClosing.astro';
+import ClosingStatement from './ClosingStatement.astro';
+import LandingFooter from './LandingFooter.astro';
+import '../../styles/home.css';
+import '../../styles/landing/landing.css';
+/* (services-v2.css no longer rides along — R10, 2026-09-02: the
+   /services sv-rows hover machinery is detached from this page, and
+   every rule in that sheet is .landing-v2 .sv-* namespaced, so
+   nothing here matched it once the row spans went.) */
+import '../../styles/fonts.css';
+import { asset } from '../../utils/asset.js';
+import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
+---
+
+
+{/* landing-home (mobile rebuild, 2026-08-13): scopes the Figma
+    402-frame mobile grammar — 16px margins etc. — to THIS page while
+    the other pages keep the 24px interim mobile layout until their
+    own redesigns land. No desktop rule keys on it. */}
+<SiteShell title="The Network Effect" bodyClass={`landing-v2 landing-home${splash === 'b' ? ' splash-variant-b' : ''}`}>
+  {/* Entry sequence — first visit only, pre-paint decision inside. */}
+  {splash === 'b' ? <LandingSplashB /> : <LandingSplash />}
+
+  <LandingHero />
+
+  {/* First content section — slides up over the held full-screen
+      video; see the arrival note in landing.css. */}
+  <LandingFounders />
+
+  {/* Our Network — REORDERED here (frame 16:113, 2026-08-13): dark
+      follows dark straight out of the founders band. The -100dvh
+      overlap + transparent-until-pin arrival machinery is untouched
+      — it now rides the founders track's exit window instead of the
+      featured fade. Internal behaviour (carousels, speeds,
+      industry-hover) byte-unchanged. */}
+  <LandingNetwork />
+
+  {/* Services — the ROW-LIST redesign (frame 18:1694, 2026-08-24):
+      normal flow now — header (WHAT WE DO / FROM ACCESS–TO IMPACT /
+      the pillars note) + three pillar row lists whose active row
+      (scroll-driven, or hover/focus while the pointer is over the
+      list) indents with the text slide — one treatment for both
+      sources since R10 (2026-09-02; the /services sv-rows hover
+      machinery is no longer used on this page). The OLD
+      stacked-cards markup below survives UNTOUCHED for MOBILE (the
+      shipped build) and hides ≥1025; the new block is desktop-only.
+      THE FADE-TO-BLACK lives on this section's tail now (its third
+      home — landing-services.js, constants verbatim): services is
+      the one light→dark boundary in the current order, and Featured
+      Work arrives black-over-black. */}
+  <section class="landing-outro" aria-label="Our services" data-landing-services>
+    <div class="landing-services__stage" data-services-stage>
+      <div class="landing-services__center" data-services-center>
+        <h2 class="landing-services__title" data-landing-services-title>
+          <span class="landing-services__line" data-landing-services-line1
+            ><span class="landing-services__serrif">OUR SERVICES<span data-services-stop>.</span></span> <span data-services-from>FROM</span></span
+          >
+          <span class="landing-services__line" data-landing-services-line2>ACCESS. TO IMPACT.</span>
+        </h2>
+      </div>
+      <LandingServicesStack />
+    </div>
+
+    {/* ══ THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26) —
+        desktop only (display:none ≤1024; mobile keeps the stack
+        above, untouched). The STAGING (8ec705a) stack mechanics are
+        the base — rise, fix, divider-fill progress, roll-over wipes,
+        band compaction, opaque-panel occlusion — with the NEW REEL
+        between each pillar's fix and the next rise: the services
+        list scrolls behind a gradient blur, the active row (level
+        with the WE BUILD label) drives the image via the
+        case-study gallery wipe. landing-services-reel.js drives it;
+        RM keeps this markup as the static expanded layout.
+        NOTE (flagged): the FROM ACCESS TO IMPACT statement is NOT
+        in the new frame — it retires from the landing desktop here. */}
+    <div class="landing-sreel" data-sreel>
+      <div class="landing-sreel__stage" data-sreel-stage>
+        <p class="landing-sreel__wwd" data-sreel-wwd>WHAT WE DO</p>
+        {/* RESTORED (Oscar 2026-08-26; recovered from 07edb92^ where
+            the reel rebuild retired them — copy, faces and relations
+            verbatim): the hero-scale mixed pair 100/92 (−4% serif /
+            −5% sans, 325 lead) resting 100 below the WHAT WE DO
+            title, the pillars note 248 below it. The INTRO beat
+            travels both UP AND OUT past the fixed label before
+            pillar 1 rises (the resting rule and the exit reconcile:
+            one is arrival, the other is the scroll-through). */}
+        <div class="landing-sreel__intro" data-sreel-intro>
+          <h2 class="landing-sreel__st">
+            <span class="landing-sreel__st-line landing-sreel__st-serif" data-sreel-introline>FROM ACCESS</span>
+            <span class="landing-sreel__st-line landing-sreel__st-sans" data-sreel-introline>TO IMPACT</span>
+          </h2>
+          <p class="landing-sreel__note" data-sreel-introline
+            >Our work is structured across three connected pillars: Immerse / Connect / Amplify.</p>
+        </div>
+        {SERVICES_REEL_PILLARS.map((p, i) => (
+          <div class="landing-sreel__pillar" data-sreel-pillar data-i={String(i)}>
+            <div class="landing-sreel__divider" aria-hidden="true"><span class="landing-sreel__fill" data-sreel-fill></span></div>
+            <h3 class="landing-sreel__titlerow" data-sreel-titlerow>
+              <span class="landing-sreel__title" data-sreel-text>{p.name}</span>
+              <span class="landing-sreel__num" data-sreel-text>{p.num}</span>
+            </h3>
+            <p class="landing-sreel__desc" data-sreel-desc data-sreel-text>{p.desc[0]}<br />{p.desc[1]}</p>
+            <p class="landing-sreel__wlabel" data-sreel-wlabel data-sreel-text>{p.label}</p>
+            <div class="landing-sreel__listwin" data-sreel-listwin>
+              {/* TWO-SOURCE ACTIVE STATE (Oscar 2026-08-27; simplified
+                  R10, 2026-09-02): scroll AND hover/focus now produce
+                  the SAME row treatment — the text slide (one class,
+                  one set of constants; landing-services-reel.js
+                  arbitrates which source owns it) — and the pillar's
+                  big image follows the treated row in both modes.
+                  The /services sv-rows machinery (red fill + rolling
+                  marquee + edge gradients) is DETACHED from this page:
+                  no [data-sv-rows] host, no treatment spans — the
+                  shared module and /services are untouched. Rows stay
+                  focusable (keyboard = hover). */}
+              <div class="landing-sreel__list" data-sreel-list>
+                {p.services.map((svc) => (
+                  <div class="landing-sreel__row" data-sreel-row tabindex="0">
+                    <span class="landing-sreel__rowline" aria-hidden="true"></span>
+                    <span class="landing-sreel__svc" data-sreel-text>{svc.t}</span>
+                  </div>
+                ))}
+                <span class="landing-sreel__rowline landing-sreel__rowline--end" aria-hidden="true"></span>
+              </div>
+              {/* THE REEL FADE — gradient-masked backdrop blur, top
+                  edge on the pillar title's top: rows dissolve out
+                  through it, never a bare clip. */}
+              <div class="landing-sreel__listfade" aria-hidden="true"></div>
+            </div>
+            {/* MORE INFO → /services (the established chip family). */}
+            <a class="landing-sreel__btn" href="/services" data-sreel-btn data-char-ripple-trigger>
+              <span data-char-ripple>MORE INFO</span>
+              <svg class="landing-sreel__btn-arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" data-char-ripple-arrow>
+                <path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" />
+              </svg>
+            </a>
+            <figure class="landing-sreel__img" data-sreel-imgwin aria-hidden="true">
+              <img data-sreel-img src={asset(p.img)} alt="" loading="lazy" decoding="async" />
+            </figure>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Featured Work — horizontal gallery on the DARK ground (frame
+      18:1694): follows services IN FLOW now — the −100dvh overlap is
+      retired ≥1025 (landing.css) because the services tail carries
+      the fade-to-black and this section arrives black-over-black
+      (landing-services.js, constants verbatim). */}
+  <LandingFeatured />
+
+  {/* We Create Access — light-on-light after Featured Work; the
+      -100dvh overlap (moved here from Our Network in the reorder)
+      keeps the featured departure overlapped exactly as before. */}
+  <LandingAccess />
+
+  {/* Closing section + footer — plain document flow, no runway
+      (Figma 21:2392). Both carry z260, the exit gate over the fixed
+      hero stage. */}
+  <LandingClosing />
+  {/* R36 item 7: the shared closing statement + red tail (was inside
+      LandingClosing) — same flow position, byte-identical output. */}
+  <ClosingStatement />
+  {/* R16 (Oscar 2026-09-02): the GREY/WHITE footer theme (frame
+      L3MtStuayLmiag1JOIzDfJ 3:67 — colour-identical to the existing
+      'light' colourway) on the landing, following the red statement
+      band. The other pages keep blue pending Oscar's global ruling. */}
+  <LandingFooter theme="light" />
+  {/* Footer-reveal spacer: the footer overlaps the closing section's
+      bottom (negative margin) and pins BEHIND it (z259 < 260) at the
+      viewport bottom; this transparent, click-through spacer keeps
+      the document height so the page ends exactly at full reveal. */}
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
+</SiteShell>
+
+<script>
+  import { initLandingHeroScroll } from '../../scripts/landing/landing-hero-scroll.js';
+  import { initLandingFounders } from '../../scripts/landing/landing-founders.js';
+  import { initCharRipple } from '../../scripts/char-ripple.js';
+  import { initLandingServices } from '../../scripts/landing/landing-services.js';
+  import { initLandingServicesReel } from '../../scripts/landing/landing-services-reel.js';
+  import { initLandingNetwork } from '../../scripts/landing/landing-network.js';
+  import { initLandingFeatured } from '../../scripts/landing/landing-featured.js';
+  import { initLandingAccess } from '../../scripts/landing/landing-access.js';
+  import { initLandingClosing } from '../../scripts/landing/landing-closing.js';
+  import { initNavEntrance } from '../../scripts/landing/nav-motion.js';
+  import { initSplash } from '../../scripts/landing/splash.js';
+
+  /* The splash boots FIRST so it owns the load before any section
+     schedules its own arrival. It only exists when the pre-paint
+     decision in LandingSplash.astro turned it on. */
+  const splashEl = document.querySelector('[data-landing-splash]');
+  /* R49: which splash owns this load. `/` boots the shipped sequence;
+     `/landing-splash-b` (dev-only, unlinked) boots the variant. One
+     script serves both routes — the branch is the only difference. */
+  const splashVariantB = document.body.classList.contains('splash-variant-b');
+  /* variant B renders its OWN root in place of the shipped one, so the
+     gate has to look for whichever is actually on the page */
+  const sbEl = document.querySelector('[data-splash-b]');
+  const rootEl = splashVariantB ? sbEl : splashEl;
+  let cleanupSplash = () => {};
+  if (document.documentElement.getAttribute('data-ne-splash') === 'on' && rootEl instanceof HTMLElement) {
+    if (splashVariantB) {
+      import('../../scripts/landing/splash-b.js').then(({ initSplashB }) => { cleanupSplash = initSplashB(rootEl); });
+    } else {
+      cleanupSplash = initSplash(rootEl);
+    }
+  }
+
+  let cleanupLandingHero = initLandingHeroScroll();
+  let cleanupLandingFounders = initLandingFounders();
+  let cleanupCharRipple = initCharRipple();
+  let cleanupLandingServices = initLandingServices();
+  let cleanupLandingReel = initLandingServicesReel();
+  let cleanupLandingNetwork = initLandingNetwork();
+  let cleanupLandingFeatured = initLandingFeatured();
+  let cleanupLandingAccess = initLandingAccess();
+  let cleanupLandingClosing = initLandingClosing();
+  let cleanupNavEntrance = initNavEntrance();
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupLandingHero();
+    cleanupLandingFounders();
+    cleanupCharRipple();
+    cleanupLandingServices();
+    cleanupLandingReel();
+    cleanupLandingNetwork();
+    cleanupLandingFeatured();
+    cleanupLandingAccess();
+    cleanupLandingClosing();
+    cleanupNavEntrance();
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    cleanupLandingHero = initLandingHeroScroll();
+    cleanupLandingFounders = initLandingFounders();
+    cleanupCharRipple = initCharRipple();
+    cleanupLandingServices = initLandingServices();
+    cleanupLandingReel = initLandingServicesReel();
+    cleanupLandingNetwork = initLandingNetwork();
+    cleanupLandingFeatured = initLandingFeatured();
+    cleanupLandingAccess = initLandingAccess();
+    cleanupLandingClosing = initLandingClosing();
+    cleanupNavEntrance = initNavEntrance();
+  });
+</script>

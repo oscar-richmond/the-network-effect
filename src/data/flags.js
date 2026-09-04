@@ -57,3 +57,15 @@ export const HERO_ENTRY = heroEntryOverride === '1' ? true : heroEntryOverride =
  */
 const heroEntrySplashOverride = import.meta.env.PUBLIC_HERO_ENTRY_SPLASH;
 export const HERO_ENTRY_SPLASH = heroEntrySplashOverride === '1' ? true : heroEntrySplashOverride === '0' ? false : false;
+
+/**
+ * LANDING_SPLASH_B (R49, Oscar 2026-09-04): the alternate splash
+ * variant and the /landing-splash-b route that renders it.
+ *
+ * ON under `astro dev`, OFF in every build — the route is not emitted
+ * at all in production, and nothing anywhere links to it. Same
+ * mechanism as HERO_ENTRY. Override with PUBLIC_LANDING_SPLASH_B=1 to
+ * build it (staging preview once approved), =0 to force it off.
+ */
+const splashBOverride = import.meta.env.PUBLIC_LANDING_SPLASH_B;
+export const LANDING_SPLASH_B = splashBOverride === '1' ? true : splashBOverride === '0' ? false : !!import.meta.env.DEV;

@@ -7648,3 +7648,118 @@ html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry {
 @media (max-width: 1024px) {
 	html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry { display: none; }
 }
+
+/* ══ SPLASH VARIANT B (R49, Oscar 2026-09-04) ════════════════════════
+   The supplied reference's preloader, ported. Its geometry is kept
+   exactly — the counter bottom-left on a LEFT BOTTOM origin scaling
+   0.25 → 1, the hairline drawing across the foot — with Oscar's three
+   changes: the ground is BRAND RED, the counter is Serrif Condensed,
+   and three images open instead of one.
+   Dev only: the route that renders this does not exist in a build.
+   z 11000 — the shipped splash's own tier: above the wipe (10000), the
+   canvas cursor (9999), the grain (9000) and every modal. */
+/* Display-gated on the sequence actually running, so a load that never
+   starts it (no splash, reduced motion, below the seam, a failed boot)
+   never shows a red screen with nothing to clear it — the lesson the
+   hero entry animation taught. splash-b.js adds `sb-on` as it arms. */
+.splash-b {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 11000;
+	overflow: hidden;
+	pointer-events: none;
+}
+html.sb-on .splash-b { display: block; }
+/* NOTE: the BODY's variant marker is `splash-variant-b`, deliberately
+   NOT `splash-b` — the stage above owns that name, and a body carrying
+   it matched `.splash-b { display: none }` and hid the entire page. */
+.splash-b__ground {
+	position: absolute;
+	inset: 0;
+	background: #c1250e;
+}
+/* THE THREE — placed, sized and clipped entirely by splash-b.js; the
+   only thing CSS owns is the paint. */
+.splash-b__card {
+	position: absolute;
+	overflow: hidden;
+	clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);
+	will-change: clip-path, top, left, width, height;
+}
+.splash-b__card img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	will-change: transform;
+}
+/* THE COUNTER — the reference's box verbatim. */
+.splash-b__counter {
+	position: absolute;
+	top: 50svh;
+	left: 2rem;
+	transform: translateY(-50%) scale(0.25);
+	transform-origin: left bottom;
+	will-change: transform;
+	z-index: 2;
+}
+.splash-b__count {
+	margin: 0;
+	display: flex;
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: clamp(2.5rem, 25vw, 25rem);
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: #eeeef0;
+	/* TABULAR FIGURES, and they matter here: this face's numerals are
+	   proportional — measured at 400px, "1" is 134 where "0" is 244, so
+	   "11" (266) to "88" (456) is a 190px swing. Against a left-bottom
+	   origin the counter would lurch on almost every tick. The face does
+	   carry tnum; with it every digit holds one 242px advance. */
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: 'tnum' 1;
+}
+/* one cell per digit, so a digit's slide-out is its own transform */
+.splash-b__digit { display: inline-block; will-change: transform; }
+/* THE HAIRLINE — the reference's bar and its fill. */
+.splash-b__bar {
+	position: absolute;
+	left: 2rem;
+	bottom: 6rem;
+	width: calc(100% - 4rem);
+	height: 1.5px;
+	background: rgba(238, 238, 240, 0.35);
+	transform: scaleX(0);
+	transform-origin: left;
+	will-change: transform;
+	overflow: hidden;
+	z-index: 2;
+}
+.splash-b__bar-fill {
+	position: absolute;
+	inset: 0;
+	background: #eeeef0;
+	transform: scaleX(0);
+	transform-origin: left;
+	will-change: transform;
+}
+/* While the sequence owns the screen the hero's own cards stay dark;
+   they take over at the settle with no transition, because the
+   stand-ins land on their exact rects (the entry animation's handoff). */
+html.sb-on .landing-v2.landing-home .landing-hero__card img {
+	opacity: 0 !important;
+	transform: none !important;
+	transition: none !important;
+}
+html.sb-landed .landing-v2.landing-home .landing-hero__card img {
+	opacity: 1 !important;
+	transform: none !important;
+	transition: none !important;
+}
+/* Desktop only, and never under reduced motion — splash-b.js refuses to
+   run in both cases; these keep the frame before it decides clean. */
+@media (max-width: 1024px) { .splash-b { display: none; } }
+@media (prefers-reduced-motion: reduce) { .splash-b { display: none; } }
