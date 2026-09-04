@@ -56,19 +56,17 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
       ><span class="ct__intro-indent" aria-hidden="true"></span>{CONTACT_INTRO.line1}<br /><span class="ct__intro-serrif">{CONTACT_INTRO.line2}</span></h1
     >
 
-    {/* Three 64px primary CTAs (file widths 292/230/163, 16px
-        gaps). SCHEDULE opens the call modal; START A PROJECT opens
-        the site-wide form modal (R40 — one behaviour everywhere);
-        EMAIL US is the established enquiry mailto. */}
+    {/* R43 (Oscar, 2026-09-04): SCHEDULE A CALL is REMOVED from the page.
+        The row is now the TWO 64px primary CTAs — START A PROJECT (the
+        site-wide form modal when its flag is on, R40/R41; otherwise the
+        styled placeholder) and EMAIL US (the established enquiry
+        mailto, click-to-copy) — and with the schedule chip gone START A
+        PROJECT is the row's first item, so the pair sits on the page's
+        own left margin (24) with the intro above and the socials below.
+        The schedule modal's markup and machinery stay in place, inert
+        and unreachable (contact.js only wires an opener when the button
+        exists), so restoring the CTA is a one-block change. */}
     <div class="ct__ctas" data-ct-ctas>
-      <button type="button" class="ct-cta ct-cta--schedule" data-ct-open data-char-ripple-trigger>
-        {/* Robbo crop — standing founder sign-off caveat. */}
-        <span class="ct-cta__profile" aria-hidden="true">
-          <img src={asset('/assets/landing/contact/robbo-profile.png')} alt="" loading="eager" decoding="async" />
-        </span>
-        <span data-char-ripple>SCHEDULE A CALL</span>
-        <img class="ct-cta__arrow" src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-      </button>
       {/* R40 (Oscar, 2026-09-04): START A PROJECT opens the site-wide form
           modal (was the inert placeholder). R41: while the modal is off
           (any build) it is that placeholder again. */}
