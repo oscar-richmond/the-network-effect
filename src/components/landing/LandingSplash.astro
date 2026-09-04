@@ -18,8 +18,31 @@
  *
  * Z 11000 — above the wipe's cover (10000), the canvas cursor
  * (9999), grain (9000), the topbar (600) and every modal.
+ *
+ * R48 (Oscar, 2026-09-04): when the hero ENTRY animation is on and its
+ * black splash is off, this component also emits a tiny PRE-PAINT
+ * script that promotes the splash's own decision into
+ * `data-ne-entry="on"` on <html>. The landing's CSS keys the red
+ * ground off that attribute, so the first painted frame is red rather
+ * than the light hero — the flash window the head comment above is all
+ * about. It lives HERE, not in BaseLayout, and behind the flag, so a
+ * production build emits NOTHING of it: the served HTML of every page
+ * stays byte-identical to the shipped site.
  */
+import { HERO_ENTRY, HERO_ENTRY_SPLASH } from '../../data/flags.js';
+const entryArmed = HERO_ENTRY && !HERO_ENTRY_SPLASH;
 ---
+{entryArmed && (
+  <script is:inline>
+    (function () {
+      try {
+        if (document.documentElement.getAttribute('data-ne-splash') === 'on') {
+          document.documentElement.setAttribute('data-ne-entry', 'on');
+        }
+      } catch (e) {}
+    })();
+  </script>
+)}
 
 
 

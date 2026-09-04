@@ -28,6 +28,7 @@
  * this one line (plus the poster, if he sends one).
  */
 import { asset } from '../../utils/asset.js';
+import { HERO_ENTRY } from '../../data/flags.js';
 import {
   HERO_LOGO_BRANDS,
   HERO_LOGO_SET_W,
@@ -45,6 +46,18 @@ const heroCards = [
   asset('/assets/landing/hero/hero-1.jpg'),
   asset('/assets/landing/hero/hero-2.jpg'),
   asset('/assets/landing/hero/hero-3.jpg'),
+];
+
+/* R47 (Oscar, 2026-09-04) — THE ENTRY ANIMATION's extra images: the
+   /about-3 hero's own flash stack, still in the repo from that build
+   (stack-02 never existed — the original set is 01 / 03 / 04). Six
+   images pile up, these three drop out, the three hero cards above
+   stay. Rendered only when HERO_ENTRY is on (dev); a production build
+   emits none of this markup. */
+const heroEntryFlash = [
+  asset('/assets/about-hero/stack/stack-01.png'),
+  asset('/assets/about-hero/stack/stack-03.png'),
+  asset('/assets/about-hero/stack/stack-04.png'),
 ];
 ---
 
@@ -142,6 +155,34 @@ const heroCards = [
       </div>
     ))}
   </div>
+
+  {/* R47 — THE ENTRY STAGE (dev only, desktop only, first visit): the
+      red ground, the six-image pile at the centre and the two phrases
+      either side of it. Its own layer inside the hero stage, above the
+      cards (120) and below the logo row's chrome; removed from the DOM
+      the moment the sort lands, so nothing here survives into the
+      scroll sequence. The stand-in cards carry the sort and land on
+      the real cards' rects — see hero-entry.js on why the real cards
+      cannot carry it themselves. */}
+  {HERO_ENTRY && (
+    <div class="landing-hero__entry" data-he-stage aria-hidden="true">
+      <div class="landing-hero__entry-bg" data-he-ground></div>
+      <div class="landing-hero__entry-header" data-he-header>
+        <p class="landing-hero__entry-text" data-he-text>BUILT ON TRUST.</p>
+        <p class="landing-hero__entry-text" data-he-text>POWERED BY ACCESS.</p>
+      </div>
+      {heroEntryFlash.map((src) => (
+        <div class="landing-hero__entry-flash" data-he-flash>
+          <img src={src} alt="" decoding="async" loading="eager" />
+        </div>
+      ))}
+      {heroCards.map((src, i) => (
+        <div class="landing-hero__entry-card" data-he-card style={`z-index:${[10, 12, 11][i]}`}>
+          <img src={src} alt="" decoding="async" loading="eager" />
+        </div>
+      ))}
+    </div>
+  )}
 
   {/* VIDEO — MOBILE ONLY now (R8): desktop hides it and runs the
       three-image hero above; the mobile build keeps its band

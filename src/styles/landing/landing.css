@@ -7431,3 +7431,220 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 	.landing-v2 .sp-modal.is-open .sp-modal__panel,
 	.landing-v2 .sp-modal__panel { transition: none; }
 }
+
+/* ══ THE HERO ENTRY ANIMATION (R47, Oscar 2026-09-04) ═════════════════
+   Restored from the /about-3 hero (live at /old). Desktop only, dev
+   only (the HERO_ENTRY flag decides whether the markup exists at all),
+   first visit only (it rides the splash's own gate).
+
+   THE STAGE sits inside the hero's fixed stage, above the cards (120)
+   and the logo row (110) and below the nav's own fixed layer (260), so
+   the splash's logo handoff into the nav composites over it exactly as
+   it does over the normal ground. It is REMOVED from the DOM when the
+   sort lands — nothing here is present during the scroll sequence.
+
+   BLEND NOTE: nothing in this subtree blends. The two phrases are
+   plain ink; the pile is plain images. The one element that DOES blend
+   over this ground is the nav wordmark (mix-blend-mode: difference on
+   its own fixed layer, never inside this subtree) — over #C1250E the
+   difference of white gives rgb(62, 218, 241), so while the red is up
+   the wordmark reads cyan. That is arithmetic, not a rendering this
+   tab can confirm; it is reported for Oscar's ruling and is the only
+   composite the red ground changes. */
+/* DISPLAY-GATED ON THE ENTRY ACTUALLY RUNNING. The markup is rendered
+   by the component whenever the flag is on, but the entry only plays
+   on a load the SPLASH owns — so on every other load (a return visit
+   in the same tab, `?splash=0`, `?entry=0`, reduced motion, below the
+   seam) the stage must not exist as far as the page is concerned.
+   `display: none` here and `block` under html.he-on does that: nothing
+   paints, nothing is measured, and the landing's DOM dumps are
+   identical to the shipped page. (Found the hard way: without this the
+   red ground sat over the hero on any no-splash load.) */
+.landing-v2.landing-home .landing-hero__entry {
+	display: none;
+	position: absolute;
+	inset: 0;
+	z-index: 130;
+	pointer-events: none;
+	overflow: hidden;
+}
+html.he-on .landing-v2.landing-home .landing-hero__entry { display: block; }
+/* THE RED GROUND — brand red, opaque, under the pile; it fades out at
+   the sort's landing (HE_GROUND_OUT_DUR) to reveal the hero's own. */
+.landing-v2.landing-home .landing-hero__entry-bg {
+	position: absolute;
+	inset: 0;
+	background: #c1250e;
+	z-index: 0;
+}
+/* THE TWO PHRASES — the original's header verbatim: an absolute flex
+   row on the viewport's centre line, space-around, so they sit either
+   side of the pile that lands at the centre. */
+.landing-v2.landing-home .landing-hero__entry-header {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 100%;
+	transform: translateY(-50%);
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	z-index: 20;
+	pointer-events: none;
+}
+.landing-v2.landing-home .landing-hero__entry-text {
+	margin: 0;
+	padding: 10px;
+	width: max-content;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-synthesis: none;
+	font-size: 16px;
+	line-height: 1.2;
+	letter-spacing: 0.08em;
+	white-space: nowrap;
+	color: #161616;
+}
+/* THE PILE — the stand-in cards and the three extra images. Both are
+   absolutely placed and sized by hero-entry.js (the cards from the
+   real cards' live rects, the extras from the viewport centre). */
+.landing-v2.landing-home .landing-hero__entry-card,
+.landing-v2.landing-home .landing-hero__entry-flash {
+	position: absolute;
+	overflow: hidden;
+	will-change: transform;
+}
+.landing-v2.landing-home .landing-hero__entry-flash { z-index: 5; }
+.landing-v2.landing-home .landing-hero__entry-card img,
+.landing-v2.landing-home .landing-hero__entry-flash img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+/* The real cards stay dark until the stand-ins land on them: the
+   splash's own card entrance (the fade+rise on the inner img) is
+   suppressed while the entry owns the screen, and the cards appear at
+   `he-landed` with no transition — the two boxes are the same box, so
+   the swap is invisible. */
+html.he-on .landing-v2.landing-home .landing-hero__card img {
+	opacity: 0 !important;
+	transform: none !important;
+	transition: none !important;
+}
+/* THE HANDOFF, at the sort's landing: the real cards become visible in
+   the same frame the stand-ins reach their rects — instantly, with no
+   transition, so the splash's own fade+rise (which would otherwise
+   play here and read as the images vanishing and coming back) never
+   runs. Source order beats the he-on rule above at equal specificity;
+   the class stays on the root for the life of the page. */
+html.he-landed .landing-v2.landing-home .landing-hero__card img {
+	opacity: 1 !important;
+	transform: none !important;
+	transition: none !important;
+}
+/* RM: the entry never runs (hero-entry.js skips), and nothing here
+   should paint even for the frame before it does. */
+@media (prefers-reduced-motion: reduce) {
+	.landing-v2.landing-home .landing-hero__entry { display: none; }
+}
+/* MOBILE (≤1024): the entry is DESKTOP ONLY — the mobile hero is the
+   video, untouched. `display: none` takes the whole subtree out of the
+   layout (and out of the DOM dumps, so the mobile build stays
+   byte-identical); hero-entry.js also refuses to run below the seam,
+   so the page's normal beats play there exactly as they do today. */
+@media (max-width: 1024px) {
+	.landing-v2 .landing-hero__entry { display: none; }
+}
+
+/* R47 — THE BLEND, WALKED AND RESOLVED. The nav's wordmark, its links
+   and LET'S CHAT are white on mix-blend-mode: difference, on their own
+   fixed layer (z260) ABOVE the entry stage (z130), so the entry's
+   ground is what they composite against. Over the hero's normal
+   #EEEEF0 that difference resolves to rgb(17, 17, 15) — the near-black
+   the design intends. Over BRAND RED #C1250E it resolves to
+   rgb(62, 218, 241), a cyan: verified twice, by the arithmetic
+   (255 − 193, 255 − 37, 255 − 14) and in a rendered capture of the
+   assembled pile.
+   So the blend is SUSPENDED for exactly the red phase: the same parts
+   paint rgb(17, 17, 15) flat — the identical colour the blend gives on
+   the normal ground, so restoring it at the sort's landing is a
+   no-op to the eye. The canvas cursor's dot is the same white-on-
+   difference element and takes the same treatment. Nothing else on the
+   page blends over this ground: the entry's own subtree has no blend
+   at all (its two phrases are plain ink), and the splash's logo twin
+   has already handed off and been removed before the red is up.
+   NOTE, found by pixel-sampling rather than by reading the CSS: the
+   difference is applied TWICE — once on `.home__topbar` itself
+   (home.css) and again on each item — so suspending it on the items
+   alone left the bar differencing the flat ink back against the red
+   (measured rgb(173, 20, 1), all but invisible). Both levels are
+   suspended here. */
+html.he-on .home__topbar,
+html.he-on .landing-v2 .home__topbar--about .home__logo,
+html.he-on .landing-v2 .home__topbar--about .home__topbar-email,
+html.he-on .landing-v2 .home__topbar--about .home__nav-link,
+html.he-on .landing-v2 .home__topbar--about .home__menu-cta .home__menu-toggle,
+html.he-on .landing-v2 .home__topbar--about .home__menu-cta [data-menu-label-menu],
+html.he-on .landing-v2 .home__topbar--about .home__menu-cta [data-menu-label-close],
+html.he-on .landing-v2 .home__topbar--about .home__menu-cta .home__menu-toggle-close-text,
+html.he-on .landing-v2 .home__topbar--about .home__menu-cta .home__menu-toggle-x {
+	mix-blend-mode: normal;
+	color: rgb(17, 17, 15);
+}
+html.he-on .canvas-cursor {
+	mix-blend-mode: normal;
+}
+
+/* R48 — LANDING STRAIGHT ONTO THE RED (the black logo splash hidden).
+   `data-ne-entry="on"` is set PRE-PAINT (BaseLayout's inline script,
+   armed by the HERO_ENTRY / HERO_ENTRY_SPLASH flags), so these rules
+   apply in the very first frame: the splash's black cover and its
+   travelling wordmark never paint, and the entry's red ground is
+   already up. Nothing here deletes the splash — its markup, module and
+   sequence are intact and come back with PUBLIC_HERO_ENTRY_SPLASH=1.
+   The pile's own elements rest at scale 0 until the module places
+   them, so the first frame is the red ground alone. */
+html[data-ne-entry='on'] .splash-v2,
+html[data-ne-entry='on'] .splash-v2__logo {
+	display: none !important;
+}
+html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry {
+	display: block;
+}
+.landing-v2.landing-home .landing-hero__entry-card,
+.landing-v2.landing-home .landing-hero__entry-flash {
+	transform: scale(0);
+}
+/* The two phrases are placed by the timeline's fromTo; until it runs
+   they must not paint (the pre-paint red frame is the ground alone). */
+.landing-v2.landing-home .landing-hero__entry-text { opacity: 0; }
+/* R48 item 2 — THE ENTRY'S OWN TYPE: Serrif Condensed Medium 28 /
+   −0.015em, on 32 (the house's own pairing at this size — the services
+   pillar subtitle is 28/32). BOTH phrases take it, so the entry reads
+   as one serif voice; the RESTING hero keeps its mixed treatment
+   (BUILT ON TRUST. in Serrif, POWERED BY ACCESS. in Dazzed, 90/88) and
+   is untouched — these are separate elements, so the scoping is
+   structural, not a specificity fight. */
+.landing-v2.landing-home .landing-hero__entry-text {
+	font-family: var(--font-serif-cond);
+	font-weight: 500;
+	font-synthesis: none;
+	font-size: 28px;
+	line-height: 32px;
+	letter-spacing: -0.015em;
+	text-transform: none;
+	color: #161616;
+}
+
+/* R48 — the pre-paint red must lose to the two paths that never run
+   the entry. `html[data-ne-entry='on'] …` outranks the plain guards
+   above, so both are restated here at matching strength: reduced
+   motion gets the hero on its normal ground, and below the seam the
+   mobile hero is untouched. */
+@media (prefers-reduced-motion: reduce) {
+	html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry { display: none; }
+}
+@media (max-width: 1024px) {
+	html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry { display: none; }
+}

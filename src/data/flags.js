@@ -20,3 +20,40 @@ export const START_PROJECT_MODAL = override === '1' ? true : override === '0' ? 
 
 /** The canonical enquiry address — the chips' destination while the modal is off. */
 export const START_PROJECT_MAILTO = 'mailto:hello@networkeffectagency.co.uk';
+
+/**
+ * HERO_ENTRY (R47, Oscar 2026-09-04): the landing hero's ENTRY
+ * ANIMATION — the six-image pile at the centre on a BRAND-RED ground,
+ * "BUILT ON TRUST." / "POWERED BY ACCESS." either side of it, the three
+ * extra images dropping out and the three hero images sorting into
+ * their resting row. Restored from the /about-3 hero (still live at
+ * /old).
+ *
+ * ON under `astro dev`, OFF in every build — so it is visible on
+ * localhost only and STAGING renders exactly as it does today (the
+ * current splash and card entrance, no red, no pile, no sort).
+ *
+ * THE SINGLE SWITCH to enable it on staging once approved: set
+ * PUBLIC_HERO_ENTRY=1 in the Vercel project (Preview scope) and
+ * redeploy. PUBLIC_HERO_ENTRY=0 forces it off anywhere, including dev.
+ */
+const heroEntryOverride = import.meta.env.PUBLIC_HERO_ENTRY;
+export const HERO_ENTRY = heroEntryOverride === '1' ? true : heroEntryOverride === '0' ? false : !!import.meta.env.DEV;
+
+/**
+ * HERO_ENTRY_SPLASH (R48, Oscar 2026-09-04): does the BLACK LOGO
+ * SPLASH still play in front of the entry animation?
+ *
+ * OFF by default, so with the entry on the page lands STRAIGHT ONTO
+ * the red ground and the image stack — no black cover, no wordmark
+ * ripple across it, no logo travel. The splash's code is untouched and
+ * fully re-enablable: this only decides whether its VISIBLE sequence
+ * runs. TO SWITCH THE BLACK SPLASH BACK ON: set
+ * PUBLIC_HERO_ENTRY_SPLASH=1 (a build env var), or flip this default
+ * to `true`. It has no meaning unless HERO_ENTRY is also on.
+ *
+ * NOTE this changes NOTHING in production: HERO_ENTRY is off in every
+ * build, and on that path the splash runs exactly as it ships today.
+ */
+const heroEntrySplashOverride = import.meta.env.PUBLIC_HERO_ENTRY_SPLASH;
+export const HERO_ENTRY_SPLASH = heroEntrySplashOverride === '1' ? true : heroEntrySplashOverride === '0' ? false : false;

@@ -30,13 +30,15 @@
  * also checked directly as a belt.
  */
 
-import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
+import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S, ensureNavLinkChars } from './nav-motion.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { isMobileViewport } from './viewport.js';
 
 /* ── The register (every duration a named constant). */
 const MIN_MS = 1200;        // floor, so a warm cache still reads as a beat
 const MAX_MS = 4000;        // failsafe — proceed regardless past this
+import { HERO_ENTRY, HERO_ENTRY_SPLASH } from '../../data/flags.js';
+
 const LOGO_RIPPLE_AT_MS = 120;  // wordmark ripple starts
 const LINE_START_AT_MS = 420;   // the loading line begins after the ripple
 const LINE_SETTLE_MS = 420;     // the eased run-in to 100% when ready
@@ -54,6 +56,9 @@ const CARDS_ENTERED_MS = 1150;
 const EASE = 'cubic-bezier(0.66, 0, 0.34, 1)';
 
 const SEEN_KEY = 'ne-splash-seen';
+/* R47: the entry rides THIS key — it plays when the splash plays
+   (first visit per tab), and `?entry=1` / `?entry=0` force it either
+   way independently of `?splash`. */
 
 /** Should this load show the splash? `?splash=1` forces, `?splash=0` suppresses. */
 export function splashWanted() {
@@ -178,6 +183,7 @@ export function initSplash(root) {
   );
 
   let disposed = false;
+  let cleanupHeroEntry = null;
   const timers = [];
   const wait = (ms) => new Promise((r) => timers.push(setTimeout(r, ms)));
 
@@ -188,8 +194,15 @@ export function initSplash(root) {
 
   /* The page's own entrance beats, re-anchored here (they used to
      self-start on fonts.ready): the hero video settles, the headline
-     arrives, and the nav ripples in AFTER the logo has landed. */
-  const playPageEntrance = () => {
+     arrives, and the nav ripples in AFTER the logo has landed.
+     R47: when the HERO ENTRY ANIMATION is on (dev only), these beats
+     do not run as the cover lifts — the entry owns the screen first
+     (its red ground, the six-image pile, the sort into the row) and
+     these play at its landing, unchanged. The splash itself is
+     untouched either way: the cover, the loading line and the logo's
+     travel and handoff into the nav all run exactly as they do now,
+     so the handoff stays pixel-exact. */
+  const playPageBeats = () => {
     const video = document.querySelector('[data-landing-hero-video]');
     if (video instanceof HTMLElement) video.classList.add('is-entered');
     /* R8: the desktop cards' fade+rise (landing.css states); the hero
@@ -245,6 +258,65 @@ export function initSplash(root) {
     }, reduced ? 0 : NAV_AFTER_LOGO_MS));
   };
 
+  /* R47 — THE SEAM WITH THE ENTRY ANIMATION. Recommended and built:
+     the entry runs AFTER the splash clears, in place of the page's
+     entrance beat, not instead of the splash's reveal. The splash
+     keeps its whole sequence — cover, loading line, the wordmark's
+     travel and the atomic handoff into the nav (untouched, so it
+     stays pixel-exact) — and the cover lifts onto the entry's red
+     ground instead of onto the settled hero. The beats above then run
+     at the sort's landing, in their normal order. Off (any build, RM,
+     ?entry=0, or a load without the flag) this is a straight call and
+     the page behaves exactly as it does today. */
+  /* R48 — THE BLACK SPLASH, HIDDEN (not deleted). With the entry on
+     and HERO_ENTRY_SPLASH off, the cover, the wordmark's ripple across
+     it, the loading line and the logo's TRAVEL are all skipped: the
+     page lands straight on the red ground (painted pre-paint by
+     BaseLayout's inline gate) and the entry starts. Every line of that
+     sequence is still here and comes back with the flag.
+     THE NAV, which the travel used to place: with no travel there is
+     no handoff, so the nav ARRIVES ON ITS OWN — the wordmark included
+     — with the established char ripple (the same sweep units and
+     stagger playPageBeats uses for MENU and LET'S CHAT; it excludes
+     the logo only because the travel had already delivered it). */
+  const coverHidden = HERO_ENTRY && !HERO_ENTRY_SPLASH;
+  const rippleNavIn = () => {
+    ensureLogoChars();
+    const parts = [
+      navLogo,
+      document.querySelector('[data-menu-label-menu]'),
+      ...document.querySelectorAll('.home__nav-link'),
+      document.querySelector('.home__topbar-email'),
+    ];
+    parts.forEach((part) => {
+      if (!(part instanceof HTMLElement)) return;
+      part.style.opacity = '';
+      part.style.pointerEvents = '';
+      const units = sweepUnits(part);
+      units.forEach((u, i) => {
+        if (reduced) { u.style.opacity = ''; return; }
+        u.classList.remove('nav-char-out', 'nav-char-in');
+        void u.offsetWidth;
+        u.style.animationDelay = `${(i * NAV_CHAR_STAGGER_S).toFixed(2)}s`;
+        u.classList.add('nav-char-in');
+      });
+    });
+  };
+
+  const playPageEntrance = () => {
+    /* Flag off (every build), reduced motion, `?entry=0`, or no entry
+       markup: this is a straight synchronous call and the page behaves
+       exactly as it does today. HERO_ENTRY is a build-time constant, so
+       with it false the whole branch below — and the dynamic import
+       with it — is dead code and never reaches the bundle. */
+    if (!HERO_ENTRY || reduced) { playPageBeats(); return; }
+    if (new URLSearchParams(window.location.search).get('entry') === '0') { playPageBeats(); return; }
+    if (!document.querySelector('[data-he-stage]')) { playPageBeats(); return; }
+    import('./hero-entry.js')
+      .then(({ initHeroEntry }) => { if (!disposed) cleanupHeroEntry = initHeroEntry({ onSettled: playPageBeats }); else playPageBeats(); })
+      .catch(() => playPageBeats());
+  };
+
   const finish = () => {
     if (disposed) return;
     html.classList.remove('splash-active');
@@ -265,6 +337,27 @@ export function initSplash(root) {
     document.dispatchEvent(new CustomEvent('splash:complete'));
   };
 
+  /* ── R48: THE COVER-HIDDEN PATH — straight onto the red. No cover,
+     no ripple across it, no loading line, no travel: the nav arrives
+     on its own ripple, the splash's chrome is cleared in the same
+     frame, and the entry takes the screen. Reduced motion below still
+     wins (it returns before this) so RM never sees red. */
+  if (coverHidden && !reduced) {
+    ensureLogoChars();
+    if (logo instanceof HTMLElement) logo.remove();
+    if (line instanceof HTMLElement) line.remove();
+    /* AFTER the boot chain: index.astro calls initNavEntrance() after
+       initSplash(), and that zeroes every nav part's opacity before
+       bowing out to the splash — a ripple fired synchronously here
+       would be wiped by it a moment later (measured: the wordmark
+       stayed at opacity 0 for the life of the page). One frame's
+       deferral puts the ripple after the whole boot. */
+    requestAnimationFrame(() => { if (!disposed) rippleNavIn(); });
+    playPageEntrance();
+    finish();
+    return () => { disposed = true; timers.forEach(clearTimeout); cleanupHeroEntry?.(); };
+  }
+
   /* ── REDUCED MOTION: a brief opaque beat, then straight through.
      Never a naked unstyled load, never a ripple/sweep/travel. */
   if (reduced) {
@@ -275,10 +368,12 @@ export function initSplash(root) {
       if (disposed) return;
       root.style.transition = 'none';
       root.style.opacity = '0';
-      playPageEntrance();
+      /* R47: reduced motion never runs the entry — the hero is present
+         immediately on its normal ground. */
+      playPageBeats();
       finish();
     })();
-    return () => { disposed = true; timers.forEach(clearTimeout); };
+    return () => { disposed = true; timers.forEach(clearTimeout); cleanupHeroEntry?.(); };
   }
 
   (async () => {
@@ -375,6 +470,7 @@ export function initSplash(root) {
 
   return () => {
     disposed = true;
+    cleanupHeroEntry?.();
     timers.forEach(clearTimeout);
     html.classList.remove('splash-active');
     html.removeAttribute('aria-busy');
