@@ -34,6 +34,13 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
 ---
 
 <BaseLayout title={title} bodyClass={bodyClass} htmlClass="js">
+  {/* A11y batch item 4 (Oscar, 2026-09-04): THE SKIP LINK — the first
+      tab stop on every route, visible only while focused (the pill
+      family, top-left, above the nav tier). Its target is #main: each
+      page's <main>, and on the landing page the hero's exposed copy
+      block. tabindex="-1" on those targets is what lets the jump
+      actually move focus, not just the scroll. */}
+  <a class="skip-link" href="#main">Skip to content</a>
   {/* Top nav — the existing chrome and menu behaviour, unchanged. */}
   <header class="home__topbar home__topbar--about">
     <nav class="home__menu-cta" aria-label="Site">

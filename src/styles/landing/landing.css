@@ -7375,6 +7375,36 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	border: 0;
 }
 .landing-v2 .landing-sr:focus { outline: none; }
+
+/* THE SKIP LINK: off-canvas until focused, then the pill family at
+   the 24 margin, above the nav tier (270) and the menu (500), below
+   the transition cover. Solid ink on the light fill — no blend, and
+   it is nobody's ancestor. */
+.landing-v2 .skip-link {
+	position: fixed;
+	top: 16px;
+	left: 24px;
+	z-index: 600;
+	padding: 10px 16px;
+	border-radius: 999px;
+	background: #161616;
+	color: #eeeef0;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 600;
+	font-size: 13px;
+	letter-spacing: 0.02em;
+	text-decoration: none;
+	transform: translateY(calc(-100% - 24px));
+	opacity: 0;
+	pointer-events: none;
+}
+.landing-v2 .skip-link:focus-visible {
+	transform: none;
+	opacity: 1;
+	pointer-events: auto;
+	outline: 2px solid #eeeef0;
+	outline-offset: -4px;
+}
 /* STEP TRANSITION — the house blur-crossfade: out 0.36s, in 0.42s
    (SP_STEP_OUT_MS / SP_STEP_IN_MS). R44: the drawer is full height,
    so the panel no longer tweens its height between steps — the steps
