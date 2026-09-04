@@ -7221,16 +7221,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    column (2 × 236 + 8). A checkbox group (the input is the truth,
    visually hidden but focusable — the ring paints on the tile via
    :focus-within). Was: #E4E4EA fill at rest, #C1250E selected. */
-/* R57 item 2: ONE TILE PER ROW. At 32px the longest title (NOT SURE
-   YET) measures ~230px against the 188px of text width a two-up cell
-   affords in the 480 column, so two-up forces exactly one tile to
-   wrap while its three neighbours sit on one line — the awkward case
-   the brief rules out. Full-width cells give every title one line
-   with room to spare, and the column still fits the drawer's height
-   without scrolling at 1728 and in the 1512 shell (measured). */
+/* R61 item 1 (Oscar, 2026-09-04): BACK TO A 2×2 GRID at 24px. This
+   supersedes R57's one-per-row-at-32 ruling (2026-09-04, earlier the
+   same day), which existed only because 32px made the longest title too
+   wide for a two-up cell. At 24 it fits: see the label shortening in
+   the markup. */
 .landing-v2 .sp-tiles {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr);
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 8px;
 }
 .landing-v2 .sp-tile {
@@ -7258,16 +7256,15 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	clip: rect(0 0 0 0);
 	white-space: nowrap;
 }
-/* R57 item 2 (Oscar): 32px Dazzed SemiBold, -0.035em. Was the label
-   tier (14/18, +0.02em) shared with the chips; the tiles are the
-   step's primary choice and now carry their own display size. The
-   chips keep the label tier — that contrast is the point. */
+/* R61 item 1: 24px Dazzed SemiBold, −0.035em (was 32; the tracking and
+   the weight are unchanged). The chips keep the 14/18 label tier — that
+   contrast is still the point. */
 .landing-v2 .sp-tile__name {
 	font-family: 'Dazzed', var(--font-display, sans-serif);
 	font-weight: 600;
 	font-synthesis: none;
-	font-size: 32px;
-	line-height: 36px;
+	font-size: 24px;
+	line-height: 28px;
 	letter-spacing: -0.035em;
 	text-transform: uppercase;
 }
@@ -7307,19 +7304,16 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    LABEL TIER — Dazzed SemiBold 14/18 +0.02em uppercase, identical to
    IMMERSE / CONNECT / NOT SURE YET (was 16/16, blue on #E4E4EA); 38
    tall on 16 pads as before. Selected: blue fill, white ink. */
-/* R57 item 3: the row spans the CONTENT COLUMN — its first chip's
-   left edge on the tiles' left edge, its last chip's right edge where
-   the tiles and NEXT end, with equal gaps between.
-   MECHANISM: space-between over CONTENT-SIZED chips, not equal-width
-   ones. These four labels differ in length (BRAND / TALENT / AGENCY /
-   OTHER), and equal-width cells would give each a different amount of
-   air around its word — the eye reads that as four differently-padded
-   buttons. Content-sized keeps one padding value everywhere (the
-   family's 16) and spends the slack in the gaps, which are equal and
-   therefore invisible as a rhythm. Mobile keeps the packed row below
-   (the chips wrap to two lines there and space-between would strand
-   the second). */
-.landing-v2 .sp-chips { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+/* R61 item 2 (Oscar, 2026-09-04): EQUAL-WIDTH CHIPS, 8px apart, packed
+   from the content column's left edge — NOT distributed across the full
+   width. This supersedes R57's full-width space-between ruling (earlier
+   the same day) and its reasoning with it: the four labels do differ in
+   length, and equal cells do give each a different amount of air, but
+   Oscar's call is that the consistent container reads better than the
+   consistent padding. Sized to the longest label (AGENCY) plus the
+   family's 16px pads, so nothing is ever cramped. */
+.landing-v2 .sp-chips { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
+.landing-v2 .sp-chip { flex: 0 0 auto; width: var(--sp-chip-w, 96px); justify-content: center; }
 
 .landing-v2 .sp-chip {
 	position: relative;
@@ -7395,25 +7389,53 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    chip stays red; CANCEL / BACK = the ghost (text) variant, so the
    pair never reads as identical. */
 .landing-v2 .sp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 40px; }
-/* R57 items 4 + 5 (Oscar) — THE DRAWER'S FOUR BUTTONS DIVERGE FROM THE
-   CTA FAMILY, DELIBERATELY. NEXT and SEND carry NO ARROW (the family
-   keeps one), and all four centre their label on exactly 24px of
-   padding either side, so each box is its label + 48 and nothing else.
-   WHY THE LABEL WAS OFF-CENTRE: it was not stray padding — the pads
-   were already 24/24. The arrow sat inside the box as a second content
-   item (8px gap + 12.4px glyph), so the label occupied the left of a
-   box 20.4px wider than it needed and read as shifted; measured
-   before, NEXT had 24 to the left of its label and 44.4 to the right.
-   Removing the arrow removes the asymmetry at its source.
+/* R61 item 6b: in the success and error states the single button is
+   LEFT-ALIGNED — its left edge flush with the text block above it (both
+   are in the step's normal flow at the scroll wrapper's 48 inset), not
+   right-aligned as the two-button rows are. */
+.landing-v2 .sp-step--done .sp-actions { justify-content: flex-start; }
+/* R61 items 3 + 4 — THE VERTICAL CENTRING, DIAGNOSED ONCE AND FIXED IN
+   ONE PLACE, and the pads to 32.
+   THE SHARED CAUSE: every button in this flow inherited the float
+   chip's R37 vertical pads — 13.16px top, 15.19px bottom. Those two
+   differ by 2.03px, which puts the label's line box, and with it its
+   ink, exactly 1.01px ABOVE the button's centre. Measured before, on
+   every button: ink 15.19 above / 17.19 below on NEXT, 15.00 / 17.00 on
+   CANCEL — an offset of −1.00px in both cases, and the same on BACK,
+   SEND, CLOSE and TRY AGAIN because they all take the same rule. It was
+   not the arrow's removal and not a missing align-items: the pads were
+   derived in R37 to land THAT chip's ink 16px from its own box edges,
+   which is not the same thing as centring, and the asymmetry travelled
+   with the rule.
+   THE FIX is to stop expressing the vertical position as padding at
+   all: the button gets an explicit height and centres its label as a
+   flex item, so the line box is centred by construction and cannot
+   drift with the label. And because the cap ink is itself centred
+   within its own line box to within 0.02px at this size (baseline 14.0
+   on a 16px line box, cap ascent ~12.0, descent ~0.2 — ink centre
+   8.015 against a line-box centre of 8.0), centring the line box IS
+   centring the cap: the result is optical, not merely geometric.
+   ITEM 4: 32px either side, up from 24 — the widths follow.
+   ═ TRAIL: this divergence from the CTA family is INTENDED. NEXT and
+   SEND carry NO ARROW (the family keeps one) and the pads are this
+   flow's own; the family's instances are untouched. Do not "correct"
+   either in a consistency pass. ═
    = TRAIL: this divergence is INTENDED and must not be "corrected" by
    a future consistency pass. The site's CTA family (More Info, VIEW
    ALL WORK, the float chip, the contact pair) keeps its arrow and its
    own padding ruling — see the ne-cta block at the top of this sheet.
    The drawer's buttons are form controls inside a panel, not
    navigational CTAs, and Oscar ruled them arrow-free here. = */
-.landing-v2 .sp-actions .ne-cta { justify-content: center; }
+/* Every button in every state of this flow — CANCEL, NEXT, BACK, SEND,
+   CLOSE (success) and TRY AGAIN (error) — takes this one rule. (The
+   bare X close carries no label and is already centred both ways.) */
+.landing-v2 .sp-actions .ne-cta {
+	height: 44.35px; /* the shipped box height, kept */
+	padding: 0 32px;
+	justify-content: center;
+	align-items: center;
+}
 .landing-v2 .sp-btn--primary {
-	padding: 13.16px 24px 15.19px;
 	background: #232a89;
 	color: #ffffff;
 }
@@ -7426,6 +7448,25 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	box-shadow: inset 0 0 0 2px #e0e0e7;
 }
 .landing-v2 .ne-cta--ghost:focus-visible { outline: 2px solid #232a89; outline-offset: 2px; }
+/* R61 item 5 (Oscar): NEXT is the BLACK primary — the variant already in
+   the button family (the drawer's own tiles and the /contact CTA row use
+   the same #161616 fill with #ffffff ink; white on #161616 measures
+   17.9:1, comfortably past 4.5:1 for this 16px label). SEND stays blue.
+   So the four read as a set: NEXT black primary, SEND blue primary,
+   CANCEL and BACK the shared ghost — transparent with a 2px #E0E0E7
+   inset edge and #161616 ink. */
+.landing-v2 .sp-btn--black {
+	background: #161616;
+	color: #ffffff;
+}
+.landing-v2 .sp-btn--black:focus-visible { outline: 2px solid #eeeef0; outline-offset: -4px; }
+/* R61 item 6a (Oscar): 16px between the error headline's ink and the
+   copy beneath it. The headline's own 32px bottom margin governed the
+   two before; this is measured INK TO INK — the title's 34/38 line box
+   carries ~2px below its ink and the copy's ~5px above, so the box gap
+   that yields 16 of ink measured 15.57, so it is TUNED to 9.43 — which
+   lands the ink gap on 16.00. Applied to the done/error states only. */
+.landing-v2 .sp-step--done .sp-modal__title--done { margin-bottom: 9.43px; }
 .landing-v2 .sp-copy {
 	margin: 0;
 	font-family: var(--font-serif-cond);
@@ -7438,6 +7479,40 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 .landing-v2 .sp-mail { color: #161616; text-decoration: underline; text-underline-offset: 3px; }
 .landing-v2 .sp-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
+/* R61 item 7: the copy confirmation — the HOLDING PAGE's tooltip
+   treatment, reused verbatim (holding-page.css .holding-final__copy-tip,
+   by way of the /contact port): the #161616 pill, the tick + "Email
+   copied" in Dazzed Medium 12 white, cursor-bound via a JS transform.
+   Fixed and inside the drawer, so it paints above the modal's own tier
+   without needing one of its own. */
+.landing-v2 .sp-copy-tip {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 16px 10px 14px;
+	background: #161616;
+	border-radius: 999px;
+	color: #ffffff;
+	font-family: 'Dazzed', var(--font-display, sans-serif);
+	font-weight: 500;
+	font-size: 12px;
+	line-height: 1;
+	white-space: nowrap;
+	pointer-events: none;
+}
+.landing-v2 .sp-copy-tip[hidden] { display: none !important; }
+.landing-v2 .sp-copy-tip svg { display: block; width: 10px; height: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+	.landing-v2 .sp-copy-tip {
+		opacity: 0;
+		transition: opacity 0.2s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+	.landing-v2 .sp-copy-tip.is-in { opacity: 1; }
+}
 
 /* ── A11y batch (Oscar, 2026-09-04) ─────────────────────────────────
    THE VISUALLY-HIDDEN UTILITY: present for assistive technology,

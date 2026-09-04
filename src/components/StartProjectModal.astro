@@ -55,7 +55,13 @@ const PILLARS = [
   { key: 'immerse', name: 'IMMERSE', desc: 'Experiences & cultural moments' },
   { key: 'connect', name: 'CONNECT', desc: 'Partnerships & talent' },
   { key: 'amplify', name: 'AMPLIFY', desc: 'Narrative & media' },
-  { key: 'unsure', name: 'NOT SURE YET', desc: 'We’ll help you find the shape' },
+  /* R61 item 1: "UNSURE" replaces "NOT SURE YET" — Oscar's option, taken.
+     WHY: at 24px in a two-up cell the longer label needs ~172px of the
+     188px a cell affords, which fits but leaves the tile visibly tighter
+     than its three neighbours and wraps the moment the drawer narrows.
+     "UNSURE" balances the grid — four short titles, one weight — and the
+     descriptor beneath still carries the meaning. */
+  { key: 'unsure', name: 'UNSURE', desc: 'We’ll help you find the shape' },
 ];
 const WHO = ['BRAND', 'TALENT', 'AGENCY', 'OTHER'];
 const MAILTO = `mailto:${CONTACT_EMAIL}`;
@@ -110,7 +116,7 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
           <button type="button" class="ne-cta ne-cta--ghost" data-sp-cancel data-char-ripple-trigger><span data-char-ripple>CANCEL</span></button>
           {/* R57 item 4: NO ARROW (see the sp-actions note in landing.css —
               the drawer's buttons diverge from the CTA family by ruling). */}
-          <button type="button" class="ne-cta sp-btn--primary" data-sp-next data-char-ripple-trigger><span data-char-ripple>NEXT</span></button>
+          <button type="button" class="ne-cta sp-btn--black" data-sp-next data-char-ripple-trigger><span data-char-ripple>NEXT</span></button>
         </div>
       </section>
 
@@ -161,12 +167,29 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
       </section>
       <section class="sp-step sp-step--done" data-sp-step="error" hidden>
         <h2 class="sp-modal__title sp-modal__title--done">Something didn’t send.</h2>
-        <p class="sp-copy">Try again in a moment, or email us at <a class="sp-mail" href={MAILTO} data-char-ripple-trigger><span data-char-ripple>{CONTACT_EMAIL}</span></a></p>
+        {/* R61 item 7: the address COPIES on click and confirms with the
+            holding page's tooltip — data-sp-copy is the hook; it stays a
+            real mailto so the browser's own context menu still offers
+            "Copy link" / "Open link", and so keyboard users get the
+            anchor's native activation. See start-project.js. */}
+        <p class="sp-copy">Try again in a moment, or email us at <a class="sp-mail" href={MAILTO} data-sp-copy data-sp-email={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>{CONTACT_EMAIL}</span></a></p>
         <div class="sp-actions">
           <button type="button" class="ne-cta sp-btn--primary" data-sp-retry data-char-ripple-trigger><span data-char-ripple>TRY AGAIN</span></button>
         </div>
       </section>
       <p class="sp-live" data-sp-live aria-live="polite"></p>
+      {/* R61 item 7: the copy confirmation — the HOLDING PAGE's tooltip,
+          reused: the same #161616 pill with the same tick glyph and the
+          same "Email copied" wording, the same cursor-bound placement and
+          the same 2600ms dismiss. It lives INSIDE the drawer's panel so
+          it paints above it (the modal is z400; a body-level tip would
+          need its own tier). */}
+      <div class="sp-copy-tip" data-sp-copy-tip aria-hidden="true" hidden>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.5 5.4L4 7.9L8.5 2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>Email copied</span>
+      </div>
       </div>
     </form>
   </div>

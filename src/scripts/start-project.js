@@ -102,6 +102,90 @@ export function initStartProject() {
      hears the step's title on arrival instead of an unlabelled
      checkbox. The ring's modality is fixed independently in the sheet
      (:has(:focus-visible)). */
+  /* ── R61 item 7 (Oscar, 2026-09-04) — THE EMAIL COPIES TO THE CLIPBOARD.
+     REUSED: the holding page's implementation (holding-deck-form.js /
+     .holding-final__copy-tip), by way of the /contact port that already
+     carries it verbatim — the same #161616 pill with the same tick and
+     the same "Email copied" wording, the same cursor-bound placement
+     with the same 14/18 offsets, the same 2600ms dismiss and 220ms fade,
+     the same mobile branch that pins the tip under the link instead of
+     following a pointer that isn't there, and the same aria-live
+     announcement. Constants copied with it so the three surfaces read
+     identically.
+     THE MAILTO STAYS, and the click still fires it after the copy — the
+     holding page behaves exactly this way, and Oscar's instinct matches
+     it: a bare mailto is a silent no-op for anyone without a desktop
+     mail client (his own report), so the copy is what actually helps,
+     while the href keeps the browser's context menu and long-press
+     offering the address. KEYBOARD: the element is an anchor, so Enter
+     activates it natively and runs the same handler; Space scrolls by
+     default on an anchor, so it is handled explicitly here. */
+  const COPY_RESET_MS = 2600;
+  const TIP_OFFSET_X = 14;
+  const TIP_OFFSET_Y = 18;
+  const TIP_FADE_OUT_MS = 220;
+  const MOBILE_TIP_GAP = 24;
+  const copyTip = modal.querySelector('[data-sp-copy-tip]');
+  const wireCopy = () => {
+    const links = Array.from(modal.querySelectorAll('[data-sp-copy]'));
+    if (!links.length || !(copyTip instanceof HTMLElement)) return;
+    let hideTimer = 0; let removeTimer = 0; let tracking = false;
+    const place = (x, y) => { copyTip.style.transform = `translate3d(${x + TIP_OFFSET_X}px, ${y + TIP_OFFSET_Y}px, 0)`; };
+    const onMove = (e) => place(e.clientX, e.clientY);
+    const stopTracking = () => { if (tracking) { window.removeEventListener('mousemove', onMove); tracking = false; } };
+    const hideTip = () => {
+      stopTracking();
+      if (live instanceof HTMLElement) live.textContent = '';
+      copyTip.classList.remove('is-in');
+      removeTimer = window.setTimeout(() => { copyTip.hidden = true; }, TIP_FADE_OUT_MS);
+    };
+    const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
+    const showTip = (link, x, y) => {
+      window.clearTimeout(hideTimer); window.clearTimeout(removeTimer);
+      copyTip.hidden = false;
+      if (isMobile()) {
+        const r = link.getBoundingClientRect(); const w = copyTip.offsetWidth;
+        const cx = Math.min(Math.max(r.left + r.width / 2 - w / 2, 8), window.innerWidth - w - 8);
+        copyTip.style.transform = `translate3d(${cx}px, ${r.bottom + MOBILE_TIP_GAP}px, 0)`;
+      } else place(x, y);
+      void copyTip.offsetWidth;
+      copyTip.classList.add('is-in');
+      if (!isMobile() && !tracking) { window.addEventListener('mousemove', onMove); tracking = true; }
+      hideTimer = window.setTimeout(hideTip, COPY_RESET_MS);
+    };
+    links.forEach((link) => {
+      if (!(link instanceof HTMLAnchorElement)) return;
+      const email = link.dataset.spEmail;
+      if (!email) return;
+      const run = (x, y) => {
+        const copy = navigator.clipboard
+          ? navigator.clipboard.writeText(email).then(() => {
+            showTip(link, x, y);
+            if (live instanceof HTMLElement) live.textContent = 'Email copied';
+          }).catch(() => {})
+          : Promise.resolve();
+        copy.finally(() => { window.location.href = link.href; });
+      };
+      const onClick = (e) => {
+        e.preventDefault();
+        const r = link.getBoundingClientRect();
+        const pointer = e.clientX !== 0 || e.clientY !== 0;
+        run(pointer ? e.clientX : r.left, pointer ? e.clientY : r.bottom);
+      };
+      const onKey = (e) => {
+        if (e.key !== ' ') return; /* Enter already activates the anchor */
+        e.preventDefault();
+        const r = link.getBoundingClientRect();
+        run(r.left, r.bottom);
+      };
+      link.addEventListener('click', onClick);
+      link.addEventListener('keydown', onKey);
+      cleanups.push(() => { link.removeEventListener('click', onClick); link.removeEventListener('keydown', onKey); });
+    });
+    cleanups.push(() => { stopTracking(); window.clearTimeout(hideTimer); window.clearTimeout(removeTimer); });
+  };
+  wireCopy();
+
   const focusFirst = (s) => {
     if (!open) return; /* a closed modal never takes focus (the post-close reset swaps steps silently) */
     const el = steps.get(s); if (!(el instanceof HTMLElement)) return;
