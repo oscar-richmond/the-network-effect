@@ -51,6 +51,10 @@ import '../styles/fonts.css';
 
 <SiteShell title="The Founders — The Network Effect" bodyClass="landing-v2 founders-page">
   <main class="fd-stage" data-founders-stage aria-label="The founders">
+    {/* A11y batch item 9: the page's own h1 (the wordmark is no longer
+        one). The founders' names are the visible headings, per slide;
+        this names the page. Visually hidden, zero layout. */}
+    <h1 class="landing-sr">The Founders</h1>
     {/* THE CONTENT WRAPPER (Oscar's rev 2): carries its OWN opaque
         ground so the difference names blend correctly at rest AND
         while the release translates it (a transformed ancestor

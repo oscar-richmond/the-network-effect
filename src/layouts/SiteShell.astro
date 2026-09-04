@@ -64,15 +64,20 @@ const { title = 'The Network Effect', bodyClass = 'landing-v2' } = Astro.props;
         </span>
       </button>
     </nav>
-    {/* Logo links home (Oscar's rev). The h1 stays the styled/blend/
-        sweep element (and /landing's only h1); the anchor inside is
+    {/* Logo links home (Oscar's rev). The wordmark box stays the
+        styled/blend/sweep element; the anchor inside is
         the click surface — nav-motion builds the entrance chars
         INSIDE it so the link survives the char wrap. */}
     {/* NAV RESPEC (frame 17:1637, 2026-08-24): the SSR text is the
         MOBILE wordmark; on desktop ensureLogoChars() swaps it to
         "TheNetworkEffect" (Serrif Medium 24 — landing.css) before
         any wrap or reveal, so the mobile DOM stays byte-identical. */}
-    <h1 class="home__logo"><a class="home__logo-link" href="/">THE NETWORK EFFECT</a></h1>
+    {/* A11y batch item 9: a <div>, not an <h1> — the wordmark is the
+        site's name on every route, not the page's title, and as an h1
+        it gave every page two top-level headings (or, on the landing
+        page, the wrong one). Each page now carries its own h1. The
+        class is what everything targets; nothing keyed on the tag. */}
+    <div class="home__logo"><a class="home__logo-link" href="/">THE NETWORK EFFECT</a></div>
     {/* THREE DIRECT LINKS (R29, Oscar 2026-09-03 — FOUNDERS rejoins
         the frame 1:643 pair as the third item, same markup and
         treatment): WORK · SERVICES · FOUNDERS, 16px on the 32px gap
