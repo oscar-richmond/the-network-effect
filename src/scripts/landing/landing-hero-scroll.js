@@ -216,8 +216,36 @@ const HERO_GROUND_DARK = '#161616'; /* the founders section's ground */
    boundary (the last at +392); the section rises over them as they
    go, on the darkening ground, which is what "begins entering" means
    here. The GL pause gate stays at exitEnd — by then all three cards
-   are long clear. */
-const HERO_BOUNDARY_CARD = 1;         /* the MIDDLE image — the anchor is its CENTRE */
+   are long clear.
+   R33 (Oscar, 2026-09-04) — THE ANCHOR MOVES TO THE TOP EDGE
+   (supersedes R32's centre; the card is the same one): both events
+   fire the moment the SECOND CARD TO LEAVE first begins to go off
+   the top — its TOP EDGE crossing y=0, the instant any part of it is
+   off-screen.
+   WHICH CARD, stated once so it cannot cost another round: the cards
+   start left / middle / right, 80 apart, and run at one speed to one
+   height, so they BEGIN and FINISH in that order. The second to leave
+   is therefore slot 1 — the MIDDLE card — which is also what a viewer
+   reading left to right calls "the second image". The two readings
+   name the same card here; there is no second candidate to flag.
+   (Top-edge crossings at the 1117 interior: left 1259.3, middle
+   1339.3, right 1419.3.)
+   The derivation stays the tween inverse — scrollWhenCardTopAt, the
+   sibling of R32's centre helper and the same function the exit wipes
+   use — so the boundary still follows the stagger, the rest top and
+   the card aspect. New, 1728: both events at 1339.3 (R32: 1651.3,
+   R31: 2043.3); the move is exactly −cardH/2 = −312 from R32.
+   THE OVERLAP GROWS, reported not hidden: the last card now finishes
+   its exit 80 + cardH = 704 after the boundary (was 392), so the
+   arriving section rides up over a hero that is still leaving for
+   about two thirds of a viewport. The fade's RATE is untouched
+   (cardH/3 = 208), and because the fade and the entrance still start
+   together the ink margin is unchanged: the ground reaches #161616 at
+   +208 and WHO WE ARE's first ink crosses the viewport bottom at
+   +246.7 (1117) / +245.5 (994, 942) — 38 clear, measured both
+   directions. The runway ends 312 earlier again: the document is 312
+   shorter and every section below shifts up by exactly that. */
+const HERO_BOUNDARY_CARD = 1;         /* the SECOND CARD TO LEAVE — the middle image */
 /* The first ink's crossing is DERIVED, not the static 260: the label
    sits 200 into the section and lags by DRIFT_HEADLINE_PX (60) as the
    section's top enters, but that lag DECAYS over the section's entry
@@ -1032,13 +1060,14 @@ export function initLandingHeroScroll() {
         buildExitWipe([logos], logos.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
       }
 
-      /* THE BOUNDARY (R32) — the MIDDLE image halfway off the top: its
-         CENTRE crossing y=0, read from the cards' own tween inverse.
-         Both events hang on this one number. */
-      const boundaryAt = scrollWhenCardCentreAt(HERO_BOUNDARY_CARD, 0);
+      /* THE BOUNDARY (R33) — the second card to leave (the middle image)
+         FIRST GOING OFF the top: its TOP EDGE crossing y=0, read from
+         the cards' own tween inverse. Both events hang on this one
+         number. (R32 used the same card's CENTRE, cardH/2 later.) */
+      const boundaryAt = scrollWhenCardTopAt(HERO_BOUNDARY_CARD, 0);
 
       /* THE GROUND — light → the founders' #161616, scrubbed on the
-         cards' own mapping. R32: it STARTS at the boundary above and
+         cards' own mapping. R33: it STARTS at the boundary above and
          keeps its R21 rate, the cardH/3 span (/old's two-thirds-out →
          full-exit length), so it completes 208 after the boundary at
          1728. The founders section (z 260 over this fixed stage)
@@ -1101,9 +1130,10 @@ export function initLandingHeroScroll() {
       });
       triggers.push(gate);
 
-      /* R32: the runway ends AT the boundary — WHO WE ARE's top crosses
-         the viewport bottom as the MIDDLE card's centre crosses y=0,
-         the same scroll the fade starts (R31's right-card edge, R26's
+      /* R33: the runway ends AT the boundary — WHO WE ARE's top crosses
+         the viewport bottom as the middle card's TOP EDGE crosses y=0,
+         the same scroll the fade starts (R32's centre of the same card,
+         R31's right-card edge, R26's
          ink-at-the-middle-card, R21's −111 lead, R18's 0.9-of-fade
          gate: all superseded). The first-ink distance is still derived
          (the label's offset + the decaying entry drift) — for the
@@ -1120,6 +1150,7 @@ export function initLandingHeroScroll() {
         foundersEnterAt: +foundersEnterAt.toFixed(1),
         boundaryAt: +boundaryAt.toFixed(1),
         boundaryCard: HERO_BOUNDARY_CARD,
+        topAt: [0, 1, 2].map((i) => +scrollWhenCardTopAt(i, 0).toFixed(1)),
         centreAt: [0, 1, 2].map((i) => +scrollWhenCardCentreAt(i, 0).toFixed(1)),
         foundersFirstInkPx: +foundersFirstInkPx.toFixed(1),
         restTop,
