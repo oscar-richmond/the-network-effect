@@ -7293,7 +7293,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    LABEL TIER — Dazzed SemiBold 14/18 +0.02em uppercase, identical to
    IMMERSE / CONNECT / NOT SURE YET (was 16/16, blue on #E4E4EA); 38
    tall on 16 pads as before. Selected: blue fill, white ink. */
-.landing-v2 .sp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* R57 item 3: the row spans the CONTENT COLUMN — its first chip's
+   left edge on the tiles' left edge, its last chip's right edge where
+   the tiles and NEXT end, with equal gaps between.
+   MECHANISM: space-between over CONTENT-SIZED chips, not equal-width
+   ones. These four labels differ in length (BRAND / TALENT / AGENCY /
+   OTHER), and equal-width cells would give each a different amount of
+   air around its word — the eye reads that as four differently-padded
+   buttons. Content-sized keeps one padding value everywhere (the
+   family's 16) and spends the slack in the gaps, which are equal and
+   therefore invisible as a rhythm. Mobile keeps the packed row below
+   (the chips wrap to two lines there and space-between would strand
+   the second). */
+.landing-v2 .sp-chips { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
 .landing-v2 .sp-chip {
 	position: relative;
 	display: inline-flex;
@@ -7506,6 +7519,7 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
 	   (space-between would strand the wrapped second line). */
 	.landing-v2 .sp-tiles { grid-template-columns: 1fr 1fr; }
 	.landing-v2 .sp-tile__name { font-size: 22px; line-height: 26px; }
+	.landing-v2 .sp-chips { justify-content: flex-start; }
 	.landing-v2 .sp-tile { min-height: 96px; padding: 16px; }
 	.landing-v2 .sp-fields { grid-template-columns: 1fr; }
 	.landing-v2 .sp-chip { min-height: 44px; }
