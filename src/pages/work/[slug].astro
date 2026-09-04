@@ -195,6 +195,9 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               class="cs-row__img"
               data-cs-lb-item
               style={row.framing?.[i] ? `--cs-img-pos:${row.framing[i]}` : undefined}
+              tabindex="0"
+              role="button"
+              aria-label={`Open image ${study.ourWork.stream.slice(0, r).reduce((n, x) => n + x.imgs.length, 0) + i + 1} in the gallery`}
             >
               {src.endsWith('.mp4') || src.endsWith('.webm') ? (
                 /* Video rows (Oscar's rev): autoplay requires muted;

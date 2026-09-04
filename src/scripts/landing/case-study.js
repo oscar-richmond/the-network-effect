@@ -458,9 +458,27 @@ export function initCaseStudy() {
       if (!swapAnim) runSwapSequence();
     };
 
+    /* A11y batch item 6 (Oscar, 2026-09-04): while the dialog is open
+       the rest of the document is INERT — every body child that is
+       not the lightbox's own ancestor — so neither Tab nor a screen
+       reader's virtual cursor can reach the page behind; released on
+       close. `inert` is the platform's own mechanism (all evergreen
+       browsers), no synthetic tabindex juggling. */
+    let inerted = [];
+    const setPageInert = (on) => {
+      if (on) {
+        inerted = Array.from(document.body.children).filter((el) => el instanceof HTMLElement && !el.contains(lightbox) && !el.inert);
+        inerted.forEach((el) => { el.inert = true; });
+      } else {
+        inerted.forEach((el) => { el.inert = false; });
+        inerted = [];
+      }
+    };
+
     const openLb = (i, opener) => {
       lbOpen = true;
       lbOpener = opener ?? null;
+      setPageInert(true);
       floatCta?.suspend(true); /* R37: the chip leaves while the lightbox is open */
       showMedia(i, true);
       lightbox.hidden = false;
@@ -483,8 +501,12 @@ export function initCaseStudy() {
       }, 380);
       lenis.i?.start();
       document.body.style.overflow = '';
-      if (lbOpener instanceof HTMLElement) lbOpener.focus?.();
+      setPageInert(false);
+      /* Focus returns to the opener — a focusable figure now (tabindex
+         0, role button), so this call lands rather than falling to body. */
+      if (lbOpener instanceof HTMLElement) lbOpener.focus?.({ preventScroll: true });
     };
+    cleanups.push(() => setPageInert(false));
 
     const onStreamClick = (e) => {
       const fig = e.target instanceof Element ? e.target.closest('[data-cs-lb-item]') : null;
@@ -495,6 +517,20 @@ export function initCaseStudy() {
     };
     page.addEventListener('click', onStreamClick);
     cleanups.push(() => page.removeEventListener('click', onStreamClick));
+
+    /* The opener on the keyboard: Enter or Space on a focused stream
+       figure opens it, the same path as a click. */
+    const onStreamKey = (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const fig = e.target instanceof Element ? e.target.closest('[data-cs-lb-item]') : null;
+      if (!(fig instanceof HTMLElement)) return;
+      e.preventDefault();
+      const figs = Array.from(page.querySelectorAll('[data-cs-lb-item]'));
+      const i = figs.indexOf(fig);
+      if (i >= 0) openLb(i, fig);
+    };
+    page.addEventListener('keydown', onStreamKey);
+    cleanups.push(() => page.removeEventListener('keydown', onStreamKey));
 
     const onLbClick = (e) => {
       const t = e.target instanceof Element ? e.target : null;
@@ -508,6 +544,16 @@ export function initCaseStudy() {
 
     const onLbKey = (e) => {
       if (!lbOpen) return;
+      if (e.key === 'Tab') {
+        /* The focus trap: Tab cycles the dialog's own controls. */
+        const items = Array.from(lightbox.querySelectorAll('button:not([disabled]), a[href]')).filter((el) => el instanceof HTMLElement && el.getClientRects().length > 0);
+        if (!items.length) return;
+        const first = items[0]; const last = items[items.length - 1];
+        const active = document.activeElement; const inside = items.includes(active);
+        if (e.shiftKey) { if (!inside || active === first) { e.preventDefault(); last.focus(); } }
+        else if (!inside || active === last) { e.preventDefault(); first.focus(); }
+        return;
+      }
       if (e.key === 'Escape') { e.preventDefault(); closeLb(); }
       else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showMedia(navIdx() + 1); }
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showMedia(navIdx() - 1); }
