@@ -408,11 +408,12 @@ if (PAGE === 'case') {
     const both = units.filter((u) => u.classList.contains('nav-char-in') && u.classList.contains('nav-char-out')).length;
     const items = document.querySelectorAll('[data-cs-lb-item]'); const last = items[items.length - 1]; const lb = last ? last.getBoundingClientRect().bottom : null;
     const r = cta.getBoundingClientRect(); const hr = host.getBoundingClientRect();
-    return { y: scrollY, vh: innerHeight, vw: innerWidth, max: document.documentElement.scrollHeight - innerHeight, vis: getComputedStyle(host).visibility, state: host.dataset.floatState, drv: window.__csFloat ? window.__csFloat.state() : null, minOp: Math.min(...ops), maxOp: Math.max(...ops), both, ti: cta.getAttribute('tabindex'), pe: cta.style.pointerEvents, lastB: lb, right: innerWidth - r.right, bottom: innerHeight - r.bottom, hostRight: innerWidth - hr.right, hostBottom: innerHeight - hr.bottom, lbOpen: document.querySelector('[data-cs-lightbox]')?.classList.contains('is-open') }; })()`;
+    return { y: scrollY, vh: innerHeight, vw: innerWidth, max: document.documentElement.scrollHeight - innerHeight, vis: getComputedStyle(host).visibility, state: host.dataset.floatState, drv: window.__csFloat ? window.__csFloat.state() : null, since: window.__csFloat ? Math.round(window.__csFloat.since()) : 0, minOp: Math.min(...ops), maxOp: Math.max(...ops), both, ti: cta.getAttribute('tabindex'), pe: cta.style.pointerEvents, lastB: lb, right: innerWidth - r.right, bottom: innerHeight - r.bottom, hostRight: innerWidth - hr.right, hostBottom: innerHeight - hr.bottom, lbOpen: document.querySelector('[data-cs-lightbox]')?.classList.contains('is-open') }; })()`;
   const check = async (tag) => {
     const st = await f().evaluate(CSTATE); if (st.absent) { viol.push({ inv: 'X0', tag, msg: 'floating CTA absent' }); return st; }
     const bs = await f().evaluate(R36STATE); r36Checks_(bs, tag, null, (v) => viol.push({ ...v, move: hist.length }));
-    const settled = /pause/.test(tag);
+    /* the chip's sweeps run ~0.9s after a state change (which follows the LENIS settle, not the input) — assert states only once the driver has been in its state for over a second */
+    const settled = /pause/.test(tag) && st.since > 1000;
     const push = (inv, msg, extra) => viol.push({ inv, tag, y: Math.round(st.y), msg, ...extra, move: hist.length, recent: hist.slice(-6) });
     if (st.both > 0) push('X4', 'unit carries both sweep classes', { both: st.both });
     if (st.state !== st.drv) push('X4', 'host state differs from the driver', { state: st.state, drv: st.drv });

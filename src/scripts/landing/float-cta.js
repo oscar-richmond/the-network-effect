@@ -39,6 +39,7 @@ export function initFloatCta({ reduced = false, host, cta, lastImage }) {
   let shown = false;
   let suspended = false;
   let hideTimer = 0;
+  let changedAt = 0; /* the last state change (the harness reads settledness from it) */
   const units = () => sweepUnits(cta);
   /* Both sweeps run LEFT TO RIGHT (Oscar's ruling for this element):
      the applier's entry order for the in, and the same order with the
@@ -51,6 +52,7 @@ export function initFloatCta({ reduced = false, host, cta, lastImage }) {
   const setShown = (next) => {
     if (next === shown) return;
     shown = next;
+    changedAt = performance.now();
     window.clearTimeout(hideTimer);
     if (next) {
       host.dataset.floatState = 'shown';
@@ -84,6 +86,7 @@ export function initFloatCta({ reduced = false, host, cta, lastImage }) {
   return {
     suspend: (on) => { suspended = !!on; evaluate(); },
     state: () => (shown ? 'shown' : 'hidden'),
+    since: () => performance.now() - changedAt,
     cleanup: () => {
       window.removeEventListener('scroll', evaluate);
       window.removeEventListener('resize', evaluate);
