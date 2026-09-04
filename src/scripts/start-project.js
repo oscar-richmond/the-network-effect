@@ -92,11 +92,22 @@ export function initStartProject() {
   const setIndex = (s) => { if (index instanceof HTMLElement) index.textContent = s === '1' ? '/01' : s === '2' ? '/02' : ''; };
   const setProgress = (s) => { if (panel instanceof HTMLElement) panel.style.setProperty('--sp-progress', SP_PROGRESS[s] || SP_PROGRESS[1]); };
   setProgress(step);
+  /* R57 item 1b (Oscar, 2026-09-04): focus lands on the STEP'S HEADING,
+     not its first control. Focusing the first tile's checkbox put a
+     focus ring on IMMERSE the instant the drawer opened by mouse — the
+     ring was correct behaviour on a wrongly-chosen target. The heading
+     carries tabindex="-1", so it takes focus without joining the tab
+     order; the trap, the tab loop and the step order are unchanged (the
+     next Tab still lands on the first control), and a screen reader now
+     hears the step's title on arrival instead of an unlabelled
+     checkbox. The ring's modality is fixed independently in the sheet
+     (:has(:focus-visible)). */
   const focusFirst = (s) => {
     if (!open) return; /* a closed modal never takes focus (the post-close reset swaps steps silently) */
     const el = steps.get(s); if (!(el instanceof HTMLElement)) return;
-    const first = el.querySelector('input:not([tabindex="-1"]), textarea, button');
-    if (first instanceof HTMLElement) first.focus({ preventScroll: true });
+    const heading = el.querySelector('.sp-modal__title');
+    const target = heading instanceof HTMLElement ? heading : el.querySelector('input:not([tabindex="-1"]), textarea, button');
+    if (target instanceof HTMLElement) target.focus({ preventScroll: true });
   };
   const showStep = (next, { instant = false } = {}) => {
     if (next === step || animating) return;

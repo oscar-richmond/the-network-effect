@@ -79,7 +79,9 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
 
       {/* ── /01 */}
       <section class="sp-step" data-sp-step="1">
-        <h2 class="sp-modal__title" id="sp-title" data-sp-title>What kind of project?</h2>
+        {/* R57 item 1b: tabindex -1 — the drawer moves initial focus HERE,
+            not onto the first tile (which painted a ring at open). */}
+        <h2 class="sp-modal__title" id="sp-title" data-sp-title tabindex="-1">What kind of project?</h2>
         <fieldset class="sp-group" data-sp-pillars aria-describedby="sp-pillars-err">
           <legend class="sp-label">Choose one or more</legend>
           <div class="sp-tiles">
@@ -115,7 +117,7 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
 
       {/* ── /02 */}
       <section class="sp-step" data-sp-step="2" hidden>
-        <h2 class="sp-modal__title" data-sp-title2>Tell us more.</h2>
+        <h2 class="sp-modal__title" data-sp-title2 tabindex="-1">Tell us more.</h2>
         {/* R44 item 7: placeholders on every field — drafts in the site's
             voice, my-edit-pending (Oscar); one tier below the input's text. */}
         <div class="sp-fields">

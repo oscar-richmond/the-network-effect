@@ -7177,6 +7177,12 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	color: #161616;
 }
 .landing-v2 .sp-modal__title--done { margin-top: 64px; }
+/* R57 item 1b: the heading is a PROGRAMMATIC focus target (tabindex
+   -1), so it must not paint a ring when the drawer hands it focus —
+   that would just move the opening frame's blue outline from the
+   first tile onto the headline. It cannot be tabbed to, so there is
+   no keyboard case to preserve. */
+.landing-v2 .sp-modal__title[tabindex="-1"]:focus { outline: none; }
 /* Labels — the eyebrow tier: Dazzed SemiBold 14 caps. */
 .landing-v2 .sp-label {
 	display: block;
@@ -7248,10 +7254,29 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	line-height: 22px;
 	letter-spacing: -0.02em;
 }
-/* rings per ground: at rest the accent ring outside; on a BLUE fill a
-   white ring inset (white on #232A89 = 11.9:1). */
-.landing-v2 .sp-tile:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
-.landing-v2 .sp-tile.is-selected:focus-within { outline: 2px solid #ffffff; outline-offset: -4px; }
+/* R57 item 1 (Oscar, 2026-09-04) — THE RING IS KEYBOARD-ONLY.
+   DIAGNOSED: the blue outline on IMMERSE at open was indeed the focus
+   ring, and it was right that focus had moved into the drawer — but
+   the ring was hung on :focus-within, which knows nothing about
+   modality. Clicking a tile focuses its hidden checkbox through the
+   label, so :focus-within matched on every mouse click too (measured:
+   mouse-open -> input.sp-tile__input focused, ring painted on IMMERSE;
+   mouse click -> ring painted again).
+   BOTH remedies in the brief applied, and both were needed:
+   (a) :has(:focus-visible) — the ring now follows the browser's own
+       modality heuristic, so a pointer never paints it and a keyboard
+       always does; and
+   (b) the drawer no longer moves initial focus onto the first tile at
+       all — it goes to the step's heading (see start-project.js), so
+       the opening frame has no ring to suppress in the first place.
+   THE DOUBLE LINE on click was these two painting at once: the
+   selected tile's own edge (the blue fill, whose 1px inset shadow is
+   the same blue and so invisible against it) PLUS this white inset
+   ring. Resolved to ONE indicator each — selection is the fill, the
+   ring is keyboard focus only, and they never stack because the
+   pointer path never rings. */
+.landing-v2 .sp-tile:has(:focus-visible) { outline: 2px solid #232a89; outline-offset: 2px; }
+.landing-v2 .sp-tile.is-selected:has(:focus-visible) { outline: 2px solid #ffffff; outline-offset: -4px; }
 /* WHO ARE YOU — a single-select chip row (radios). R44 item 4: the
    tiles' resting treatment (black outline, black ink) and the tiles'
    LABEL TIER — Dazzed SemiBold 14/18 +0.02em uppercase, identical to
@@ -7279,8 +7304,8 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	transition: background-color 0.25s ease-out, color 0.25s ease-out, box-shadow 0.25s ease-out;
 }
 .landing-v2 .sp-chip.is-selected { background: #232a89; color: #ffffff; box-shadow: inset 0 0 0 1px #232a89; }
-.landing-v2 .sp-chip:focus-within { outline: 2px solid #232a89; outline-offset: 2px; }
-.landing-v2 .sp-chip.is-selected:focus-within { outline: 2px solid #ffffff; outline-offset: -4px; }
+.landing-v2 .sp-chip:has(:focus-visible) { outline: 2px solid #232a89; outline-offset: 2px; }
+.landing-v2 .sp-chip.is-selected:has(:focus-visible) { outline: 2px solid #ffffff; outline-offset: -4px; }
 /* FIELDS — hairline-underline inputs on the 2px divider grammar
    (#e0e0e7, the tables' rule): label above, the input's text in
    Serrif Condensed 24/28, the rule beneath turning ink on focus and
