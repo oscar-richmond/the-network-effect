@@ -1,6 +1,20 @@
 ---
 import '../styles/global.css';
 import '../styles/canvas-cursor.css';
+/* R77 (Oscar, 2026-09-05): the four faces EVERY landing page renders,
+   preloaded from the head so their fetch starts with the HTML instead
+   of after the stylesheet has parsed and laid text out. Measured cold
+   on staging: without this the fonts arrived 270–1430ms after first
+   paint. `?url` resolves to the SAME hashed asset fonts.css emits, so
+   nothing is downloaded twice (verified in dist). Dazzed 500 is used on
+   /work and /founders only and is deliberately not here — a preload a
+   page never uses logs a console warning on every other route; it
+   arrives right behind these on the same connection. */
+import fontSerrifCond from '../assets/fonts/SerrifCondensed-Medium-subset.woff2?url';
+import fontDazzedRegular from '../assets/fonts/Dazzed-TRIAL-Regular.woff2?url';
+import fontDazzedSemiBold from '../assets/fonts/Dazzed-TRIAL-SemiBold.woff2?url';
+import fontDazzedBold from '../assets/fonts/Dazzed-TRIAL-Bold.woff2?url';
+const FONT_PRELOADS = [fontSerrifCond, fontDazzedRegular, fontDazzedSemiBold, fontDazzedBold];
 /* page-transition cover CSS is INLINE in <head> below — it must be
    present before first paint (see the pre-paint hold block). */
 
@@ -58,6 +72,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
     {noindex && <meta name="robots" content="noindex, follow" />}
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <link rel="icon" href={`${base}favicon.ico`} />
+    {FONT_PRELOADS.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     {/* Open Graph + Twitter — one card definition, fed per route. */}
