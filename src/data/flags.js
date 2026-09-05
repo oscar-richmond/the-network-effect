@@ -82,3 +82,23 @@ export const LANDING_SPLASH_B = splashBOverride === '1' ? true : splashBOverride
  * PUBLIC_ARCHIVE=1 builds them anyway.
  */
 export const ARCHIVE_ROUTES = import.meta.env.DEV || import.meta.env.PUBLIC_ARCHIVE === '1';
+
+/**
+ * SPLASH_B_ON_ROOT (R75, Oscar 2026-09-05) — serve the ALTERNATE SPLASH
+ * on "/" itself, not only at /landing-splash-b.
+ *
+ * Oscar's overnight ruling was option A: ship splash-B as its own route
+ * and leave the home page's shipped splash alone. On review he asked for
+ * splash-B to BE the splash — so this supersedes that ruling for
+ * staging, and the later instruction wins.
+ *
+ * OFF everywhere by default, INCLUDING dev, so localhost and any
+ * production build keep the shipped splash and /landing-splash-b stays
+ * the place to compare the two side by side. stage.sh sets
+ * PUBLIC_SPLASH_B_ON_ROOT=1 per deployment, so staging alone serves it.
+ *
+ * The switch is one prop: LandingBody renders the identical page either
+ * way, so nothing about the home page changes except which splash
+ * component boots.
+ */
+export const SPLASH_B_ON_ROOT = import.meta.env.PUBLIC_SPLASH_B_ON_ROOT === '1';

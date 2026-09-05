@@ -48,9 +48,13 @@ fi
 #
 # HERO_ENTRY is deliberately NOT set: the main landing page keeps the
 # splash it ships with today.
+#   PUBLIC_SPLASH_B_ON_ROOT=1  makes the alternate splash the splash on
+#   "/" itself (R75). /landing-splash-b stays up, so the two can still be
+#   compared, but the home page now opens with the one under review.
 STAGE_BUILD_ENV=(
   --build-env PUBLIC_LANDING_SPLASH_B=1
   --build-env PUBLIC_START_PROJECT=1
+  --build-env PUBLIC_SPLASH_B_ON_ROOT=1
 )
 
 # Anything passed after `npm run stage --` is forwarded verbatim.

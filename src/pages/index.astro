@@ -18,13 +18,20 @@
  * /landing-splash-b can render the IDENTICAL page with a different
  * splash without forking a line of it. The two routes therefore cannot
  * drift: the only difference between them is LandingBody's `splash`
- * prop. This page passes nothing, so it gets the shipped splash.
+ * prop. R75: that prop is now flag-driven — the shipped splash by
+ * default, the alternate one on staging.
  * Verified: this route's built markup is unchanged by the extraction.
  *
  * STAGING ONLY. The root serves the holding page; this route is not
  * promoted anywhere until Oscar says so. See docs/ENVIRONMENTS.md.
  */
 import LandingBody from '../components/landing/LandingBody.astro';
+import { SPLASH_B_ON_ROOT } from '../data/flags.js';
 ---
 
-<LandingBody />
+{/* R75 (Oscar, 2026-09-05): which splash the home page boots. The flag is
+    OFF by default — including in dev and in any production build — so
+    this renders the shipped splash exactly as before, and staging alone
+    serves the alternate one (stage.sh passes it per deployment). The page
+    itself is identical either way; only the splash component differs. */}
+<LandingBody splash={SPLASH_B_ON_ROOT ? 'b' : 'a'} />
