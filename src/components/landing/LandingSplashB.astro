@@ -48,7 +48,29 @@ const SB_DISCARDS = [
   (function () {
     try {
       if (new URLSearchParams(location.search).get('splash') === '0') return;
-      document.documentElement.setAttribute('data-ne-splash', 'on');
+      var d = document.documentElement;
+      d.setAttribute('data-ne-splash', 'on');
+      /* R78 (Oscar, 2026-09-05) — A FAILSAFE THAT DOES NOT DEPEND ON THE
+         MODULE, the page cover's own construction ("FAILSAFE 1 of 3").
+         Since R76 the stage is on screen from first paint, revealed by
+         the attribute above rather than by splash-b.js — so if that
+         module never arrives (a hung chunk fetch, blocked JS) nothing
+         would ever clear the red: its 20s failsafe lives INSIDE it. The
+         module marks `sb-on` on <html> the moment it arms; if that mark
+         is absent after SB_BOOT_FAILSAFE_MS the sequence is not coming,
+         and this hands the page back — stage hidden, gate and scroll
+         lock released. Once `sb-on` is present the module owns the load
+         and this does nothing. Cold on the CDN the chunk arms in ~1.5s;
+         six seconds is a hung fetch, not a slow one. */
+      var SB_BOOT_FAILSAFE_MS = 6000;
+      setTimeout(function () {
+        if (d.classList.contains('sb-on') || d.classList.contains('sb-landed')) return;
+        var st = document.querySelector('[data-splash-b]');
+        if (st) st.style.display = 'none';
+        d.removeAttribute('data-ne-splash');
+        d.classList.remove('splash-active');
+        d.style.overflow = ''; document.body && (document.body.style.overflow = '');
+      }, SB_BOOT_FAILSAFE_MS);
     } catch (e) {}
   })();
 </script>
