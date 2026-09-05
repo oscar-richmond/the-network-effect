@@ -240,7 +240,16 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   let cleanupSplash = () => {};
   if (document.documentElement.getAttribute('data-ne-splash') === 'on' && rootEl instanceof HTMLElement) {
     if (splashVariantB) {
-      import('../../scripts/landing/splash-b.js').then(({ initSplashB }) => { cleanupSplash = initSplashB(rootEl); });
+      import('../../scripts/landing/splash-b.js')
+        .then(({ initSplashB }) => { cleanupSplash = initSplashB(rootEl); })
+        /* R76: the stage is now on screen from first paint (see the
+           .splash-b note in landing.css), so a chunk that fails to load
+           would otherwise leave a red screen and a locked scroll with
+           nothing to clear either. Tear both down and let the page be. */
+        .catch(() => {
+          rootEl.remove();
+          document.documentElement.classList.remove('splash-active', 'sb-on');
+        });
     } else {
       cleanupSplash = initSplash(rootEl);
     }

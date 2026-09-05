@@ -7989,10 +7989,32 @@ html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry {
    Dev only: the route that renders this does not exist in a build.
    z 11000 — the shipped splash's own tier: above the wipe (10000), the
    canvas cursor (9999), the grain (9000) and every modal. */
-/* Display-gated on the sequence actually running, so a load that never
-   starts it (no splash, reduced motion, below the seam, a failed boot)
-   never shows a red screen with nothing to clear it — the lesson the
-   hero entry animation taught. splash-b.js adds `sb-on` as it arms. */
+/* R76 (Oscar, 2026-09-05) — REVEALED PRE-PAINT, on the same attribute
+   the shipped cover uses, for the same reason.
+
+   Before: the stage showed only under `html.sb-on`, which splash-b.js
+   adds as it arms. But that module is reached through a DYNAMIC import
+   inside LandingBody's module script — two async hops after first paint,
+   one of them a network round trip for the chunk on a deployed build.
+   For that whole window nothing covered the page: Oscar saw the grey
+   ground, the nav and "Built on Trust" paint FIRST, then the red arrive.
+   Reproduced deterministically by holding the chunk back 2.5s — stage
+   `display: none` throughout, page grey on screen.
+
+   The shipped cover never had this problem because `.splash-v2` is
+   revealed by `html[data-ne-splash='on']`, an attribute BaseLayout's
+   head script sets BEFORE first paint (and LandingSplashB's own inline
+   gate sets for its route). So this stage now keys on exactly that: the
+   red ground and the counter's resting "0" are the first frame, with no
+   dependence on when any script runs. `sb-on` is kept as the module's
+   own marker.
+
+   The refusal cases the old gating protected against still can't strand
+   a red screen: reduced motion and ≤1024 are forced off below with
+   !important (the module refuses both, and they must never show a
+   frame); every other refusal path runs settle(), which removes the
+   stage; and LandingBody now clears the stage if the chunk itself fails
+   to load. */
 .splash-b {
 	display: none;
 	position: fixed;
@@ -8001,6 +8023,7 @@ html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry {
 	overflow: hidden;
 	pointer-events: none;
 }
+html[data-ne-splash='on'] .splash-b,
 html.sb-on .splash-b { display: block; }
 /* NOTE: the BODY's variant marker is `splash-variant-b`, deliberately
    NOT `splash-b` — the stage above owns that name, and a body carrying
@@ -8141,6 +8164,9 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
    landing page's — no extra element, no extra paint, nothing behind the
    cards. Verified by comparing the two pages' hero subtrees. */
 /* Desktop only, and never under reduced motion — splash-b.js refuses to
-   run in both cases; these keep the frame before it decides clean. */
-@media (max-width: 1024px) { .splash-b { display: none; } }
-@media (prefers-reduced-motion: reduce) { .splash-b { display: none; } }
+   run in both cases; these keep the frame before it decides clean.
+   R76: !important, because the stage is now revealed pre-paint by the
+   gate attribute at a higher specificity than these — without it a
+   phone with the gate armed would paint red and have nothing clear it. */
+@media (max-width: 1024px) { .splash-b { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .splash-b { display: none !important; } }
