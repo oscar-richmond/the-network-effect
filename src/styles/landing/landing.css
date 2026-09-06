@@ -152,44 +152,40 @@
    the ground exactly as before whenever the class is absent. The
    arrow is currentColor; the focus ring is currentColor; the sweep
    classes ride the .cr-char descendants — all follow.
-   R50 item 2 (Oscar, 2026-09-04) — THE INK IS #EEEEF0, NOT #161616.
-   Black on this red measures 3.05:1. The 34px wordmark scraped a pass
-   against the 3:1 large-text allowance, but the 16px nav links and
-   LET'S CHAT need 4.5:1 and did not reach it. #EEEEF0 — already in the
-   palette, and the page's own ground colour — measures 5.12:1 on the
-   red and clears every item in the group. (White was the other
-   candidate at 5.93:1; #EEEEF0 wins because it is the ink the rest of
-   the site's dark grounds already use, so the nav reads as the same
-   component rather than a brighter one for this band only.) */
+   R50 item 2 (Oscar, 2026-09-04) made this ink #EEEEF0 for contrast —
+   SUPERSEDED by R79 below, on both pages.
+
+   R79 (Oscar, 2026-09-05) — THE INK IS BRAND BLACK, #161616, and the
+   same on the landing and on /services. This restores the 2026-09-02
+   ruling and is the ink the whole closing sequence is designed around.
+
+   WHY THE LIGHT INK HAD TO GO, beyond the look: this state switches on
+   while the band's ground is still WHITE, so #EEEEF0 put light ink on
+   a light ground for the first stretch of the sequence — measured
+   1.0:1, and on screen the nav simply vanished for about a second
+   before reappearing white over the red. Oscar reported it on both
+   pages. Black removes the failure by construction: over that white
+   ground the difference blend's own result is (17,17,15), one step
+   from solid #161616, so the switch is invisible in both directions
+   and the nav is continuously legible from the white through the fade
+   to the red.
+
+   /services additionally starts the state EARLIER — at the bottom of
+   the WE CREATE rows rather than the band's top (`solidNavFrom`, see
+   services-6.js). That is a positioning difference, not an ink one;
+   both pages render #161616 here.
+
+   FLAGGED, measured: #161616 on #C1250E is 3.05:1. The 34px wordmark
+   clears the 3:1 large-text floor; the 12px nav links and LET'S CHAT
+   do not reach 4.5:1 on the red. That is the trade R50 was trying to
+   avoid — but R50's remedy cost the nav entirely for the white
+   stretch, which is worse than a legible 3.05:1. Oscar's design call,
+   recorded rather than silently applied. */
 .landing-v2 .home__topbar--about .home__logo.is-over-red,
 .landing-v2 .home__topbar--about .home__nav-link.is-over-red,
 .landing-v2 .home__topbar--about .home__topbar-email.is-over-red,
 .landing-v2 .home__topbar--about .home__topbar-email.is-over-red:hover {
 	mix-blend-mode: normal;
-	color: #eeeef0;
-}
-
-/* R79 (Oscar, 2026-09-05) — ON /SERVICES THE SOLID INK IS BRAND BLACK.
-   Oscar's ruling for the closing sequence on this page: past the WE
-   CREATE rows the nav is #161616 with the blend off, and stays black
-   to the foot of the page. This supersedes R50 item 2 HERE ONLY — the
-   landing page's own red band keeps #EEEEF0 above, untouched.
-
-   Scoped to the body's `services-6` class, so it cannot reach the
-   landing. Paired with `solidNavFrom` in services-6.js, which starts
-   the state at the rows' bottom instead of the band's top; black is
-   what makes that early start work, because over the white ground
-   there the difference blend already renders (17,17,15) and the
-   switch is invisible in both directions.
-
-   FLAGGED, measured: #161616 on #C1250E is 3.05:1. The 34px wordmark
-   clears the 3:1 large-text floor; the 12px nav links and LET'S CHAT
-   do not reach 4.5:1 on the red. Oscar's design call, recorded here
-   rather than silently applied. */
-.landing-v2.services-6 .home__topbar--about .home__logo.is-over-red,
-.landing-v2.services-6 .home__topbar--about .home__nav-link.is-over-red,
-.landing-v2.services-6 .home__topbar--about .home__topbar-email.is-over-red,
-.landing-v2.services-6 .home__topbar--about .home__topbar-email.is-over-red:hover {
 	color: #161616;
 }
 
