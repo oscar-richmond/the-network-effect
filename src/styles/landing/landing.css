@@ -8190,3 +8190,58 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
    phone with the gate armed would paint red and have nothing clear it. */
 @media (max-width: 1024px) { .splash-b { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { .splash-b { display: none !important; } }
+
+
+/* ── EMAIL COPY CONFIRMATION (R82, Oscar 2026-09-05) ─────────────────
+   The chip shown when an address link copies itself before handing off
+   to the mail client (scripts/email-copy.js, bound from the footer so
+   it reaches every route). Deliberately the SAME object as the
+   drawer's COPIED chip — square, uppercase Dazzed, black on the page's
+   light ground — because it says the same thing in the same moment;
+   two different confirmations for one action is how a system starts to
+   feel assembled rather than designed. /contact's own tooltip predates
+   both and is pointer-tracked; it stays as it is.
+   Fixed-positioned at the pointer, above everything, and never
+   interactive — it is a receipt, not a control. */
+.email-copy-tip {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 12000;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 10px;
+	background: #161616;
+	color: #eeeef0;
+	font-family: var(--font-sans, 'Dazzed', system-ui, sans-serif);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	line-height: 1;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.22s ease;
+}
+
+.email-copy-tip.is-in { opacity: 1; }
+
+.email-copy-tip__tick { font-size: 10px; line-height: 1; }
+
+/* The spoken half of the same confirmation. Clipped to a pixel rather
+   than display:none — a hidden live region announces nothing. */
+.email-copy-announcer {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.email-copy-tip { transition: none; }
+}

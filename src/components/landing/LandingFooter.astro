@@ -66,6 +66,7 @@ const { theme = 'blue', rowEntrance = 'static' } = Astro.props;
 const arrowNe = asset(theme === 'light' ? '/assets/landing/closing/arrow-ne-dark.svg' : '/assets/landing/closing/arrow-ne.svg');
 const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark.svg' : '/assets/landing/closing/arrow-up.svg');
 import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
 ---
 
 <footer
@@ -132,9 +133,12 @@ import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 
   {/* Bottom row — absolute lefts per the file. */}
   <div class="landing-footer__row" data-footer-row data-footer-legacy>
-    {/* File copy, mailto'd as written — differs from the site's
-        established address; see header. */}
-    <a class="landing-footer__rowitem landing-footer__rowitem--email" href="mailto:hello@networkeffectagency.co.uk" data-char-ripple-trigger><span data-char-ripple>HELLO@NETWORKEFFECTAGENCY.CO.UK</span></a>
+    {/* R82 (Oscar, 2026-09-05): the address COPIES on click and then
+        opens the mail client with To and Subject already filled — the
+        same contract as /contact's EMAIL US, so the site behaves one
+        way. CONTACT_MAILTO carries the subject; the bare mailto that
+        was here carried none. */}
+    <a class="landing-footer__rowitem landing-footer__rowitem--email" href={CONTACT_MAILTO} data-email-copy={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>HELLO@NETWORKEFFECTAGENCY.CO.UK</span></a>
     <div class="landing-footer__social">
       {/* Hrefs from the shared source (data/landing/socials.js). */}
       {FOOTER_SOCIALS.map((soc) => (
@@ -187,7 +191,7 @@ import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
     <div class="landing-footer__dgroup landing-footer__dgroup--email" data-footer-col>
       {/* The frame's "Email adress" typo corrected (reported). */}
       <p class="landing-footer__dlabel">Email address</p>
-      <a class="landing-footer__dlink" href="mailto:hello@networkeffectagency.co.uk" data-char-ripple-trigger><span data-char-ripple>Hello@networkeffectagency.co.uk</span></a>
+      <a class="landing-footer__dlink" href={CONTACT_MAILTO} data-email-copy={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>Hello@networkeffectagency.co.uk</span></a>
     </div>
     <div class="landing-footer__dgroup landing-footer__dgroup--social" data-footer-col>
       <p class="landing-footer__dlabel">Social media</p>
@@ -250,4 +254,12 @@ import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
      its end so the footer is uncovered — see footer-focus.js. */
   import { initFooterFocus } from '../../scripts/landing/footer-focus.js';
   initFooterFocus();
+
+  /* R82 (Oscar, 2026-09-05): the address links COPY and then open the
+     mail client with To and Subject filled. Booted here because the
+     footer is on every route, which makes this the site-wide binding
+     without a new global script. It is a no-op where no link is
+     marked. /contact keeps its own richer, pointer-tracked version. */
+  import { initEmailCopy } from '../../scripts/email-copy.js';
+  initEmailCopy();
 </script>
