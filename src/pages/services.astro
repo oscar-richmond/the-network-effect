@@ -400,6 +400,11 @@ import '../styles/fonts.css';
   import { initServicesV2 } from '../scripts/landing/services-v2.js';
   import { initServices6 } from '../scripts/landing/services-6.js';
   import { isMobileViewport } from '../scripts/landing/viewport.js';
+  /* R81 (Oscar, 2026-09-05): #immerse / #connect / #amplify land with
+     the pillar's header image on the viewport's top edge. Booted for
+     BOTH builds — it resolves the hash to whichever pillar markup is
+     rendered at this width. */
+  import { initPillarAnchor } from '../scripts/landing/pillar-anchor.js';
 
   const boot = () => {
     const fns = [initCharRipple(), initNavEntrance()];
@@ -409,6 +414,9 @@ import '../styles/fonts.css';
     } else {
       fns.push(initServices6());
     }
+    /* After the build's own driver, so the sections it pins have been
+       registered before the anchor measures them. */
+    fns.push(initPillarAnchor());
     return () => fns.forEach((fn) => fn());
   };
 

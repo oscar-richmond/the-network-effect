@@ -102,6 +102,14 @@ export function ensureStyles() {
     .cr-char.is-rippling-in {
       animation: cr-blur-in var(--char-ripple-duration, 0.6s) ease-in-out 1 both;
     }
+    /* SOLO (R80, Oscar 2026-09-05): a control with no text label —
+       the contact page's Instagram and LinkedIn icons — pulses as a
+       single unit. Same keyframes, same tunables, same gate as the
+       lettered pulse, so the icons and the CTAs beside them are the
+       one effect rather than a lookalike. */
+    [data-char-ripple-solo].is-rippling {
+      animation: cr-blur var(--char-ripple-duration, 0.6s) ease-in-out 1;
+    }
     @keyframes cr-blur {
       0% { filter: blur(0); }
       50% { filter: blur(var(--char-ripple-blur, 3px)); }
@@ -193,6 +201,32 @@ export function initCharRipple(root = document) {
 
     trigger.addEventListener('mouseenter', onEnter);
     cleanups.push(() => { trigger.removeEventListener('mouseenter', onEnter); trigger.removeEventListener('animationend', onEnd); });
+  });
+
+  /* ── SOLO PULSES (R80, Oscar 2026-09-05). An icon-only control has
+     no characters to stagger, so it pulses as one unit on its
+     trigger's hover. Everything else is shared with the lettered
+     path: the same `cr-blur` keyframes, the same duration and blur
+     custom properties, the same hover/pointer gate above (so these
+     icons behave exactly as the EMAIL US and START A PROJECT labels
+     beside them do), and the same remove-on-animationend contract, so
+     a finished pulse leaves no rule behind. */
+  root.querySelectorAll('[data-char-ripple-solo]').forEach((el) => {
+    if (!(el instanceof HTMLElement) || el.dataset.charRippleWired) return;
+    el.dataset.charRippleWired = '1';
+    const trigger = el.closest('[data-char-ripple-trigger]') ?? el;
+    const onEnter = () => {
+      el.classList.remove('is-rippling');
+      void el.offsetWidth; /* force reflow so a re-hover mid-pulse restarts */
+      el.classList.add('is-rippling');
+    };
+    const onEnd = (e) => { if (e.target === el) el.classList.remove('is-rippling'); };
+    trigger.addEventListener('mouseenter', onEnter);
+    trigger.addEventListener('animationend', onEnd);
+    cleanups.push(() => {
+      trigger.removeEventListener('mouseenter', onEnter);
+      trigger.removeEventListener('animationend', onEnd);
+    });
   });
 
   return () => cleanups.forEach((fn) => fn());

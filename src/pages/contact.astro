@@ -134,12 +134,12 @@ const ctLogosDoubled = [...CT_LOGO_BRANDS, ...CT_LOGO_BRANDS];
           mobile build never showed the chips and still does not. */}
       {SOCIAL_LINKS.map((soc) => (
         soc.href ? (
-          <a class="ct-social" href={soc.href} target="_blank" rel="noopener" aria-label={soc.label}>
-            <img src={asset(`/assets/landing/contact/social-${soc.key}-white.svg`)} alt="" width="24" height="24" />
+          <a class="ct-social" href={soc.href} target="_blank" rel="noopener" aria-label={soc.label} data-char-ripple-trigger>
+            <img src={asset(`/assets/landing/contact/social-${soc.key}-white.svg`)} alt="" width="24" height="24" data-char-ripple-solo />
           </a>
         ) : (
-          <span class="ct-social is-placeholder" data-hover aria-label={`${soc.label} — profile link coming soon`}>
-            <img src={asset(`/assets/landing/contact/social-${soc.key}-white.svg`)} alt="" width="24" height="24" />
+          <span class="ct-social is-placeholder" data-hover aria-label={`${soc.label} — profile link coming soon`} data-char-ripple-trigger>
+            <img src={asset(`/assets/landing/contact/social-${soc.key}-white.svg`)} alt="" width="24" height="24" data-char-ripple-solo />
           </span>
         )
       ))}

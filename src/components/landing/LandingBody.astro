@@ -165,8 +165,15 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
                   through it, never a bare clip. */}
               <div class="landing-sreel__listfade" aria-hidden="true"></div>
             </div>
-            {/* MORE INFO → /services (the established chip family). */}
-            <a class="landing-sreel__btn" href="/services" data-sreel-btn data-char-ripple-trigger>
+            {/* MORE INFO → THIS PILLAR on /services (R81, Oscar
+                2026-09-05). All three used to point at bare
+                /services, so whichever you pressed you arrived at the
+                top of the page. The hash matches the pillar section's
+                id there, and pillar-anchor.js lands it with the
+                header image on the viewport's top edge — the native
+                jump does nothing on that page, because Lenis owns the
+                scroll position. */}
+            <a class="landing-sreel__btn" href={`/services#${p.name.toLowerCase()}`} data-sreel-btn data-char-ripple-trigger>
               <span data-char-ripple>MORE INFO</span>
               <svg class="landing-sreel__btn-arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" data-char-ripple-arrow>
                 <path d="M1.77477 12L0.917669 11.0884L0.0605699 10.2313L8.33333 2.15152L2.16746e-07 2.15151L0 0H12V12L9.84848 12L9.84848 3.66667L1.77477 12Z" fill="currentColor" />
