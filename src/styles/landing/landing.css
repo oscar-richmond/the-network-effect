@@ -169,6 +169,30 @@
 	color: #eeeef0;
 }
 
+/* R79 (Oscar, 2026-09-05) — ON /SERVICES THE SOLID INK IS BRAND BLACK.
+   Oscar's ruling for the closing sequence on this page: past the WE
+   CREATE rows the nav is #161616 with the blend off, and stays black
+   to the foot of the page. This supersedes R50 item 2 HERE ONLY — the
+   landing page's own red band keeps #EEEEF0 above, untouched.
+
+   Scoped to the body's `services-6` class, so it cannot reach the
+   landing. Paired with `solidNavFrom` in services-6.js, which starts
+   the state at the rows' bottom instead of the band's top; black is
+   what makes that early start work, because over the white ground
+   there the difference blend already renders (17,17,15) and the
+   switch is invisible in both directions.
+
+   FLAGGED, measured: #161616 on #C1250E is 3.05:1. The 34px wordmark
+   clears the 3:1 large-text floor; the 12px nav links and LET'S CHAT
+   do not reach 4.5:1 on the red. Oscar's design call, recorded here
+   rather than silently applied. */
+.landing-v2.services-6 .home__topbar--about .home__logo.is-over-red,
+.landing-v2.services-6 .home__topbar--about .home__nav-link.is-over-red,
+.landing-v2.services-6 .home__topbar--about .home__topbar-email.is-over-red,
+.landing-v2.services-6 .home__topbar--about .home__topbar-email.is-over-red:hover {
+	color: #161616;
+}
+
 /* The BAR carries difference too (home.css) — an item at normal
    inside it would still be inverted by the bar (measured (171,15,8)
    over the red). While over the red the bar's blend is off as well;

@@ -28,7 +28,7 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 gsap.registerPlugin(ScrollTrigger);
 
 /** @param {{ reduced?: boolean }} [opts] @returns {() => void} cleanup */
-export function initClosingStatement({ reduced = false } = {}) {
+export function initClosingStatement({ reduced = false, solidNavFrom = null } = {}) {
   /* ── THE STATEMENT DWELL (R4, 2026-08-26): the shared centred
      sticky hold (statement-dwell.js — one mechanism with the
      /services statements). Layout, not motion — runs under RM;
@@ -145,12 +145,35 @@ export function initClosingStatement({ reduced = false } = {}) {
     const navSwitchY = () => (topbar instanceof HTMLElement
       ? topbar.getBoundingClientRect().height * NAV_RED_SWITCH_T
       : 35.5);
+    /* R79 (Oscar, 2026-09-05) — WHERE THE SOLID STATE BEGINS.
+       By default the section's own top: the band arrives and the nav
+       goes solid as it crosses the nav's midpoint.
+
+       `solidNavFrom` moves that boundary EARLIER, to the BOTTOM of the
+       element passed in. /services uses it to start at the end of the
+       WE CREATE rows, which is Oscar's ruling and also fixes a real
+       defect: R50 made the solid ink #EEEEF0, and the switch fires
+       while the ground is still WHITE, so for the ~120px between the
+       rows and the band the nav was light ink on a light ground —
+       measured 1.0:1, and on screen the nav simply vanished. Starting
+       at the rows' bottom with the ink black (the /services override
+       in landing.css) keeps the nav readable across the whole
+       stretch, and the switch itself is invisible in BOTH directions:
+       over that white ground the difference blend's own result is
+       (17,17,15), one step from the solid #161616.
+
+       The OFF edge is unchanged — the band's bottom crossing the same
+       line — so the pair stays symmetric and scrolling back up
+       reverts at exactly the boundary it engaged at. */
+    const solidTopY = () => (solidNavFrom instanceof HTMLElement
+      ? solidNavFrom.getBoundingClientRect().bottom
+      : section.getBoundingClientRect().top);
     const onRedScroll = () => {
       const r = section.getBoundingClientRect();
       const y = navSwitchY();
       /* The band (section + tail) covers the nav's midpoint. */
       const bandBottom = tail instanceof HTMLElement ? tail.getBoundingClientRect().bottom : r.bottom;
-      setSolid(r.top <= y && bandBottom > y);
+      setSolid(solidTopY() <= y && bandBottom > y);
     };
     window.addEventListener('scroll', onRedScroll, { passive: true });
     window.addEventListener('resize', onRedScroll);

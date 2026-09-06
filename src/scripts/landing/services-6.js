@@ -245,7 +245,14 @@ export function initServices6() {
 
   /* ── The closing statement (R36 item 7): the shared driver — dwell,
      white → red scrub, nav-over-red, entrance (closing-statement.js). */
-  cleanups.push(initClosingStatement({ reduced }));
+  /* R79 (Oscar, 2026-09-05): the nav goes SOLID BLACK from the end of
+     the last rows table — WE CREATE, the one ending "Design Systems &
+     Brand Assets" — and stays solid to the foot of the page, rather
+     than switching at the red band's own top. Scoped to the desktop
+     build's own tables (`.sv6`): the legacy mobile markup carries the
+     same data attribute and must not be picked up. */
+  const sv6Rows = document.querySelectorAll('.sv6 [data-sv-rows]');
+  cleanups.push(initClosingStatement({ reduced, solidNavFrom: sv6Rows[sv6Rows.length - 1] ?? null }));
 
   /* ── Galleries — the featured pattern: derived travel, sticky
      pin, 1:1 scrub. With the frame's six 273px boxes the strip
