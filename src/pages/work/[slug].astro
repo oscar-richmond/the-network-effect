@@ -106,7 +106,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       <h1 class="cs-hero__title" data-cs-hero-title>{title}</h1>
       <p class="cs-hero__subtitle" data-cs-hero-subtitle>{study.subtitle}</p>
       <figure class="cs-hero__img" data-cs-hero-img>
-        <img src={study.heroImg} srcset={imageSrcset(study.heroImg, [1200], 2048)} sizes="(max-width: 1359px) 100vw, 1728px" alt={`${title} — hero image`} decoding="async" />
+        <img src={study.heroImg} srcset={imageSrcset(study.heroImg, [1200, 1400], 2048)} sizes="(max-width: 1359px) 100vw, 1728px" alt={`${title} — hero image`} decoding="async" />
       </figure>
     </header>
 
