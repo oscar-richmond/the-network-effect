@@ -170,22 +170,6 @@
 	/* (the drawer's band rules moved to shared-narrow.css with the
 	   rebuild, 2026-09-07) */
 
-	/* ── CASE STUDIES ────────────────────────────────────────────── */
-	/* the stream's PAIR rows: the phone build already has a considered
-	   layout for them — a 130px thumbnail beside a wide image, 232px
-	   tall, mirrored for wide-first pairs. That is the structure the
-	   band keeps (D3: scale, never fork); what changes is proportion.
-	   A 130px thumb in a 1024px row reads as a stamp, so the thumb is
-	   200px and the row 320px tall. Same weight as the phone's rules —
-	   !important, both variants — so the mirrored pair follows too. */
-	.landing-v2.landing-v2.landing-v2 .cs-row--pair .cs-row__img {
-		height: 320px;
-	}
-	.landing-v2.landing-v2.landing-v2 .cs-row--pair:not(.cs-row--wide-first) .cs-row__img:first-child,
-	.landing-v2.landing-v2.landing-v2 .cs-row--pair.cs-row--wide-first .cs-row__img:last-child {
-		width: 200px !important;
-	}
-
 	/* ── /FOUNDERS ───────────────────────────────────────────────── */
 	/* the phone's normal-scroll structure, kept — the mobile swap owns
 	   the founder switch and its entrance, so the desktop's crossfading
@@ -205,8 +189,4 @@
 @media (min-width: 768px) and (max-width: 1359px) {
 	/* the services stack's pillars note and the case facts at the band */
 	.landing-v2.landing-v2.landing-home .landing-services__note { font-size: 20px; line-height: 30px; max-width: 36em; }
-	.landing-v2.landing-v2 .cs-facts__para,
-	.landing-v2.landing-v2 .cs-facts__rowcopy { font-size: 20px; line-height: 30px; }
-	.landing-v2.landing-v2 .cs-facts__row { display: grid; grid-template-columns: 200px 1fr; column-gap: 24px; align-items: start; }
-	.landing-v2.landing-v2 .cs-facts__rowcopy { margin-top: 0; }
 }

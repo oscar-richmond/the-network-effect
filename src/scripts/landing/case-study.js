@@ -42,7 +42,6 @@ import { bindBottomNavSweep } from './nav-motion.js';
 import { initFloatCta } from './float-cta.js';
 import { isMobileViewport } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
-import { initCarouselIndicators } from './carousel-indicator.js';
 import { initStatementBar } from './statement-bar.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -66,7 +65,8 @@ export function initCaseStudy() {
      seam — the shared component observes them. Above the RM gate:
      the thumb follows the user's own swipe (feedback, not motion). */
   if (isMobileViewport()) {
-    cleanups.push(initCarouselIndicators(page));
+    /* (the rebuild, 2026-09-07: the retired mobile build's swipe
+       indicators are gone with their markup) */
     /* THE MOBILE PASS (2026-09-07): a stream video with a phone-encoded
        sibling (data-src-m, 480w — [slug].astro) plays that one here; the
        desktop keeps the original. */
@@ -118,7 +118,9 @@ export function initCaseStudy() {
   const viewport = document.querySelector('[data-cs-more-viewport]');
   const prevBtn = document.querySelector('[data-cs-pager="prev"]');
   const nextBtn = document.querySelector('[data-cs-pager="next"]');
-  if (track instanceof HTMLElement && prevBtn instanceof HTMLButtonElement && nextBtn instanceof HTMLButtonElement) {
+  /* THE REBUILD (2026-09-07): below the seam the MORE WORK rail is native
+     scroll with snap (case-study-narrow.css) — the pager is the desktop's. */
+  if (track instanceof HTMLElement && prevBtn instanceof HTMLButtonElement && nextBtn instanceof HTMLButtonElement && !isMobileViewport()) {
     const CARD_STEP_PX = 844; // 836 card + 8 gap
     const PER_VIEW = 2;
     const count = track.children.length;
@@ -307,7 +309,9 @@ export function initCaseStudy() {
      is display:none under the seam); its range is derived from the
      stream's LAST image, so every study (and every future one) gets
      the same behaviour from its own structure. */
-  const floatCta = isMobileViewport() ? null : initFloatCta({
+  /* The rebuild (2026-09-07): the chip floats at every width — the phone's
+     insets are case-study-narrow.css's. */
+  const floatCta = initFloatCta({
     reduced,
     host: document.querySelector('[data-cs-float]'),
     cta: document.querySelector('[data-cs-float-cta]'),
@@ -646,12 +650,13 @@ export function initCaseStudy() {
      The CSS height/top remain only as the no-JS fallback. Layout,
      not choreography — runs under RM too. Desktop only: the bar is
      display:none under the seam and the mobile DOM keeps its bytes. */
-  if (!isMobileViewport()) {
-    cleanups.push(initStatementBar(
-      document.querySelector('[data-cs-bar]'),
-      document.querySelector('[data-cs-intro]'),
-    ));
-  }
+  /* The rebuild (2026-09-07): the bar spans the statement's ink at every
+     width (statement-bar.js measures; the narrow bar is 6px at the right
+     of the statement's measure). */
+  cleanups.push(initStatementBar(
+    document.querySelector('[data-cs-bar]'),
+    document.querySelector('[data-cs-intro]'),
+  ));
 
   if (reduced) {
     /* RM: static page; sticky remains (it's layout). The hidden
@@ -671,8 +676,9 @@ export function initCaseStudy() {
        its wiring is width-gated, not removed.) */
     const isMob = isMobileViewport();
     const heroTitle = document.querySelector('[data-cs-hero-title]');
-    const heroSub = isMob ? document.querySelector('[data-cs-hero-subtitle]') : null;
-    [heroTitle, heroSub].forEach((line, i) => {
+    /* (the rebuild, 2026-09-07: the subtitle is gone — the desktop's hero
+       carries the title alone, at every width) */
+    [heroTitle].forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
@@ -840,10 +846,15 @@ export function initCaseStudy() {
     const footer = document.querySelector('[data-landing-footer]');
     if (footer instanceof HTMLElement) {
       const wrapped = wrapFooterReveals(footer);
+      /* THE REBUILD (2026-09-07): the narrow build reveals the footer from
+         behind the page too (the sticky footer + the spacer, with a
+         measured height — shared-narrow.css); its trigger reads the
+         SPACER, which is in flow: 200 into the reveal. */
+      const spacer = document.querySelector('.landing-footer-spacer');
       triggers.push(ScrollTrigger.create({
-        trigger: footer,
+        trigger: isMobileViewport() && spacer ? spacer : footer,
         start: () => (isMobileViewport()
-          ? 'top 85%' /* mobile plain-flow footer — the desktop pin formula can never fire (landing-closing lesson) */
+          ? (spacer ? 'top bottom-=200' : 'top 85%')
           : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),

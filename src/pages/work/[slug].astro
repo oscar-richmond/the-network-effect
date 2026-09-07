@@ -36,6 +36,10 @@ import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
 import '../../styles/landing/landing.css';
 import '../../styles/landing/case-study.css';
+/* THE REBUILD (2026-09-07): the template below the seam — the desktop's
+   sections at phone and tablet proportions, type from the tokens only.
+   Imported after case-study.css. */
+import '../../styles/landing/case-study-narrow.css';
 import '../../styles/fonts.css';
 
 export function getStaticPaths() {
@@ -107,7 +111,6 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
         motivated it — one less blended chain. */}
     <header class="cs-hero">
       <h1 class="cs-hero__title" data-cs-hero-title>{title}</h1>
-      <p class="cs-hero__subtitle" data-cs-hero-subtitle>{study.subtitle}</p>
       <figure class="cs-hero__img" data-cs-hero-img>
         <img src={study.heroImg} srcset={imageSrcset(study.heroImg, [1200, 1400], 2048)} sizes="(max-width: 1359px) 100vw, 1728px" alt={`${title} — hero image`} decoding="async" />
       </figure>
@@ -152,39 +155,9 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       </div>
     </section>
 
-    {/* ── C. WHAT WE DID — MOBILE-ONLY since the 36:1827 rebuild
-        (the desktop frame replaces it with the facts table above;
-        display:none ≥1025 in case-study.css — the mobile build is a
-        separate composition, out of the rebuild's scope). */}
-    {/* data-m-carousel / data-carousel-strip / the indicator (mobile
-        rebuild 2026-08-13): the columns swipe horizontally on mobile
-        with the shared 100px indicator (carousel-indicator.js). */}
-    <section class="cs-did" aria-label="What we did" data-cs-did data-m-carousel>
-      <h2 class="cs-did__label" data-cs-did-line>WHAT WE DID</h2>
-      <span class="m-carousel-ind" data-carousel-ind aria-hidden="true">
-        <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
-      </span>
-      {/* A real flex ROW (Oscar's rev): the columns used to be three
-          absolutely-positioned lefts (1083/1292/1515), so any item
-          wider than the gap between them overlapped its neighbour —
-          "Health & Wellbeing Retreats" into "Commercial Management".
-          Now they share the row with a guaranteed 24px gutter. */}
-      <div class="cs-did__cols" data-carousel-strip>
-      {['immerse', 'connect', 'amplify'].map((pillar, c) => (
-        <div class={`cs-did__col cs-did__col--${c + 1}`}>
-          <h3 class="cs-did__pillar" data-cs-did-line data-cs-col={String(c)}>{pillar.toUpperCase()}</h3>
-          <ul class="cs-did__list">
-            {(study.whatWeDid[pillar] ?? []).map((item) => (
-              <li data-cs-did-line data-cs-col={String(c)}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      </div>
-    </section>
-
-    <div class="cs-divider" aria-hidden="true"></div>
-
+    {/* (THE REBUILD, 2026-09-07: the retired mobile build's WHAT WE DID
+        columns and its divider are gone — the desktop's facts table above
+        is the section at every width.) */}
     {/* ── D. THE IMAGE STREAM (36:1827: full-measure rows on the
         12.27 gap — the row grammar lives in the data). THE STICKY
         RAIL IS RETIRED ON DESKTOP (the frame has no rail — the
@@ -195,32 +168,6 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
         machinery is REMOVED from case-study.js and the sticky
         geometry from case-study.css — not hidden, gone. */}
     <section class="cs-work" aria-label="Our work" data-cs-work>
-      <div class="cs-rail-seg cs-rail-seg--1">
-        <div class="cs-rail-sticky" data-cs-rail>
-          <h2 class="cs-rail__label"><span class="cs-serrif">OUR</span> WORK</h2>
-          <p class="cs-rail__desc">{study.ourWork.desc}</p>
-        </div>
-      </div>
-      <div class="cs-rail-seg cs-rail-seg--2">
-        <div class="cs-rail-sticky" data-cs-rail>
-          {/* One or more labelled bullet blocks (Oscar's rev): most
-              studies carry a single KEY IMPACT list; Pavilion Summit
-              carries FEATURED SPEAKERS + SCOPE. Data-driven so a new
-              study stays a pure data drop. */}
-          {study.railBlocks.map((block, bi) => (
-            <Fragment>
-              <h2 class="cs-rail__label" style={bi > 0 ? 'margin-top:40px' : undefined}>
-                <span class="cs-serrif">{block.serrif}</span> {block.rest}
-              </h2>
-              <ul class="cs-rail__bullets">
-                {block.items.map((item) => (
-                  <li>{item}</li>
-                ))}
-              </ul>
-            </Fragment>
-          ))}
-        </div>
-      </div>
       {study.ourWork.stream.map((row, r) => (
         <div
           class={`cs-row cs-row--${row.layout}${row.layout === 'pair' && !row.narrowFirst ? ' cs-row--wide-first' : ''}${r >= 3 ? ' cs-row--s2' : ''}`}
@@ -277,12 +224,6 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           mobile the file stacks the words (MORE indented 37, the
           landing stacked-header grammar mirrored). */}
       <h2 class="cs-more__title" data-cs-more-title><span class="cs-more__t1">MORE</span> <span class="cs-serrif">WORK</span></h2>
-      {/* Mobile-only VIEW ALL chip (file 7:121) — the /work page's
-          own affordance replaces the desktop pager below the seam. */}
-      <a class="cs-more__viewall" href="/work" data-char-ripple-trigger>
-        <span data-char-ripple>VIEW ALL</span>
-        <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="9" height="9" data-char-ripple-arrow />
-      </a>
       <div class="cs-more__pager">
         <button type="button" class="cs-more__arrow" data-cs-pager="prev" aria-label="Previous projects" disabled>
           <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">
@@ -311,9 +252,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
-                <span class="cs-more__cardindex">{m.index}</span>
               </span>
-              <span class="cs-more__carddesc">{m.desc}</span>
             </a>
             ) : (
             <span
@@ -328,19 +267,13 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
-                <span class="cs-more__cardindex">{m.index}</span>
               </span>
-              <span class="cs-more__carddesc">{m.desc}</span>
             </span>
             )
           ))}
         </div>
       </div>
       <div class="cs-more__fade" aria-hidden="true"></div>
-      {/* Mobile swipe indicator — the file's 200×1 (7:118). */}
-      <span class="m-carousel-ind m-carousel-ind--wide" data-carousel-ind aria-hidden="true">
-        <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
-      </span>
     </section>
   </main>
 
