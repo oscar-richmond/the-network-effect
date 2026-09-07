@@ -46,7 +46,8 @@ export const landingMenuLinks = [
   /* THE MOBILE PASS (2026-09-07): the desktop nav's order — Work,
      Services, Founders — after Home; Contact leaves the list (the
      menu's LET'S CHAT CTA is that route, as on the desktop nav). */
-  { href: '', label: 'Home', image: 'Home.jpg' },
+  /* Home leaves the list (2026-09-07): the desktop nav has no Home item —
+     the wordmark is the way home, as it is above the seam. */
   { href: 'work', label: 'Work', image: 'Work.jpg' },
   { href: 'services', label: 'Services', image: 'Services.jpg' },
   { href: 'founders', label: 'Founders', image: 'Founders.jpg' },

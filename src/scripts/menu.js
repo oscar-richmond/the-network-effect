@@ -514,13 +514,18 @@ export function initMenu(scope = document) {
     if (event.key !== 'Tab' || !root.classList.contains('is-open')) return;
     const items = menuFocusables();
     if (!items.length) return;
-    const first = items[0];
-    const last = items[items.length - 1];
-    const active = document.activeElement;
-    const inside = items.includes(active);
-    if (event.shiftKey) {
-      if (!inside || active === first) { event.preventDefault(); last.focus(); }
-    } else if (!inside || active === last) { event.preventDefault(); first.focus(); }
+    /* THE MENU FIX (2026-09-07): every Tab is ours while the menu is
+       open. Deferring to the browser's own order between the ends let
+       focus leave the panel — WebKit never tabs to links at all (Safari's
+       default), and in the band the native next stop after the toggle is
+       the wordmark behind the overlay — so the cycle is walked here:
+       toggle → links → CTAs → footer links → toggle, both directions. */
+    event.preventDefault();
+    const idx = items.indexOf(document.activeElement);
+    const next = event.shiftKey
+      ? (idx <= 0 ? items.length - 1 : idx - 1)
+      : (idx < 0 || idx === items.length - 1 ? 0 : idx + 1);
+    items[next].focus({ preventScroll: true });
   };
 
   toggle.addEventListener('click', onToggleClick);

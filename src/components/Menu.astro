@@ -198,7 +198,10 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
 <script>
   import { initMenu } from '../scripts/menu.js';
 
+  let booted = false;
   const bootMenu = () => {
+    if (booted) return;
+    booted = true;
     const cleanup = initMenu(document);
 
     document.addEventListener('astro:before-swap', () => {
@@ -206,8 +209,15 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
     });
   };
 
+  /* THE MENU FIX (2026-09-07): a splash-active load boots the menu when
+     the splash announces `splash:complete` — splash-B now sends it from
+     its settle like the shipped splash did — and, as a belt, once its
+     failsafe horizon has passed (splash-B's hard stop is 20s; the boot
+     itself is idempotent), so a splash that never announces can never
+     leave the burger without a handler again. */
   if (document.documentElement.classList.contains('splash-active')) {
     document.addEventListener('splash:complete', bootMenu, { once: true });
+    window.setTimeout(bootMenu, 22000);
   } else {
     bootMenu();
   }

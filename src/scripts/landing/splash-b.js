@@ -441,6 +441,14 @@ export function initSplashB(splashRoot) {
     stage?.remove();
     unlockScroll();
     playPageBeats();
+    /* THE MENU FIX (2026-09-07): Menu.astro defers its boot behind
+       `splash:complete` whenever the page loads splash-active — the
+       shipped splash dispatched it at its end; this variant never did, so
+       on every root load the burger had no handler at all (measured on
+       staging in WebKit and Chromium: aria-expanded stayed false after the
+       splash). settle() is this sequence's single exit (natural end,
+       skip, failsafe), so the event fires exactly once here. */
+    document.dispatchEvent(new CustomEvent('splash:complete'));
   };
   const skip = () => { if (tl) tl.kill(); settle(); };
 

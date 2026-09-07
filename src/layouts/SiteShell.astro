@@ -162,12 +162,12 @@ const {
       (data/menu.js drives /old routes) — the new build's own menu
       isn't designed yet. When it lands, add WORK -> /work there.
       Not building or modifying the /old menu now (scope rule). */}
-  {/* The new build's items in two rows (Oscar's rev 2026-08-07: 3 + 2;
-      the mobile pass, 2026-09-07: four items, 2 + 2 — Home / Work then
-      Services / Founders, the desktop nav's order; Contact is the
-      LET'S CHAT CTA below them). Row layout/spacing in landing.css. */}
+  {/* The new build's items: ONE row — Work / Services / Founders, the
+      desktop nav's three in its order (the menu fix, 2026-09-07; was
+      3 + 2, then 2 + 2 with a Home row). Contact is the LET'S CHAT CTA
+      below them; the wordmark is home. Row layout/spacing in landing.css. */}
   <Menu
-    rows={[landingMenuLinks.slice(0, 2), landingMenuLinks.slice(2)]}
+    rows={[landingMenuLinks]}
     footerLinks={landingMenuFooterLinks}
   />
 
