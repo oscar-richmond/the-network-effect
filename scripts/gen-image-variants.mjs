@@ -25,9 +25,11 @@ const JOBS = [
 	[/^assets\/landing\/work\/work-page-\d+\.jpg$/, [1200], 82],
 	/* case-study streams + heroes (2000–2048w): full rows ~1100, pair thumbs ~400 */
 	[/^assets\/landing\/case\/[^/]+\/stream-\d+\.jpg$/, [600, 1200], 82],
-	[/^assets\/landing\/case\/[^/]+\/hero\.jpg$/, [1200], 82],
+	[/^assets\/landing\/case\/[^/]+\/hero\.jpg$/, [1200, 1400], 82],
 	/* /services pillars (1254w PNG, ~2.2MB each): a JPEG at the phone's need */
-	[/^assets\/landing\/services-6\/pillar-[a-z]+\.png$/, [860, 1200], 82],
+	/* the 1300 is allowed to upscale (the 1254 / 878 sources): a 430×3 phone
+	   needs 1290 for a full-bleed frame, and the alternative is the PNG */
+	[/^assets\/landing\/services-6\/pillar-[a-z]+\.png$/, [860, 1200, 1300], 82, { upscale: [1300] }],
 	/* the access tiles (779w): the phone's half-width tiles need ~500 */
 	[/^assets\/landing\/access\/access-\d+\.jpg$/, [600], 82],
 	/* the menu overlay's blurred ground on phones (1218w, ~1MB each) */
@@ -47,15 +49,16 @@ const walk = (dir, out = []) => {
 
 const files = walk(ROOT).map((p) => p.slice(ROOT.length + 1));
 let made = 0, kept = 0, skipped = 0;
-for (const [re, widths, quality] of JOBS) {
+for (const [re, widths, quality, opts = {}] of JOBS) {
 	for (const rel of files.filter((f) => re.test(f))) {
 		const src = join(ROOT, rel);
 		const meta = await sharp(src).metadata();
 		for (const w of widths) {
 			const out = join(ROOT, dirname(rel), `${basename(rel, extname(rel))}-w${w}.jpg`);
 			if (!force && existsSync(out)) { kept += 1; continue; }
-			if (meta.width < w) { skipped += 1; console.log(`  skip ${rel} → w${w} (source is ${meta.width})`); continue; }
-			await sharp(src).resize({ width: w, withoutEnlargement: true }).jpeg({ quality, mozjpeg: true }).toFile(out);
+			const up = (opts.upscale || []).includes(w);
+			if (meta.width < w && !up) { skipped += 1; console.log(`  skip ${rel} → w${w} (source is ${meta.width})`); continue; }
+			await sharp(src).resize({ width: w, withoutEnlargement: !up }).jpeg({ quality, mozjpeg: true }).toFile(out);
 			made += 1;
 			console.log(`  ${rel} → ${basename(out)} (${(statSync(out).size / 1024).toFixed(0)}KB)`);
 		}
