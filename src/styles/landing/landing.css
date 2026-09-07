@@ -8327,3 +8327,52 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 	body.landing-v2.landing-home > .landing-footer { order: 9; }
 	body.landing-v2.landing-home > .landing-footer-spacer { order: 10; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — the narrow build's footer takes the
+   desktop footer's content and small-text grammar: Serrif Condensed
+   500 in natural case (the desktop's dlink / ritem tiers, sized for
+   the thumb), the index's live links, the legal pair, the light
+   ground it already had. The blocks are the legacy mobile markup
+   (data-footer-legacy), so nothing here reaches ≥1360.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2 .landing-footer__label {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 16px;
+		text-transform: none;
+	}
+	.landing-v2 .landing-footer__link {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 22px;
+		line-height: 28px;
+		text-transform: none;
+	}
+	.landing-v2 .landing-footer__rowitem {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 20px;
+		text-transform: none;
+		min-height: 24px;
+	}
+	.landing-v2 .landing-footer__rowitem--siteby span { text-transform: none; }
+	.landing-v2 .landing-footer__legal {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+	.landing-v2 .landing-footer__row { gap: 32px; }
+}
+@media (max-width: 1359px) {
+	/* "Site By Selfhood Studios": the row item's flex gap plus the authored
+	   space read as a double gap on this build */
+	.landing-v2 .landing-footer__rowitem--siteby { gap: 0; }
+}

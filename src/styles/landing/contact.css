@@ -892,3 +892,111 @@
 		.landing-v2 .ct__image.is-visible { opacity: 1; filter: blur(0); }
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — the RED contact design on the
+   narrow build. The desktop moved to the red ground with black chips
+   (R58); the phone had stayed on the grey with the light pair. Here:
+   the red on the page's main, the chips black with white ink, the
+   two social squares in the row (48px — the touch floor), the nav
+   solid black over the red (the desktop's own contact rule), the
+   founders photograph beneath (R58's mobile media, kept), then the
+   WE'VE WORKED WITH label and the rolling logo row — the desktop's
+   marks and marquee, static under reduced motion. Desktop untouched.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.contact-page main[data-contact] { background: #c1250e; }
+	.landing-v2.contact-page .ct { padding-bottom: 48px; }
+	.landing-v2.contact-page .ct__ctas {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px;
+	}
+	.landing-v2.contact-page .ct-cta {
+		height: 48px;
+		min-height: 48px;
+		padding: 0 16px;
+		gap: 8px;
+		background: #161616;
+		color: #ffffff;
+	}
+	.landing-v2.contact-page .ct-cta__arrow { width: 12px; height: 12px; }
+	.landing-v2.contact-page .ct-cta:focus-visible {
+		outline: 2px solid #eeeef0;
+		outline-offset: -4px;
+	}
+	.landing-v2.contact-page .ct-social { display: flex; }
+	/* the nav over the red: the desktop's contact rule, restated for
+	   the burger build */
+	.landing-v2.contact-page .home__topbar--about { mix-blend-mode: normal; }
+	.landing-v2.contact-page .home__topbar--about .home__logo,
+	.landing-v2.contact-page .home__topbar--about .home__menu-toggle {
+		mix-blend-mode: normal;
+		color: #161616;
+	}
+	/* the label + the rolling row, in flow under the photograph */
+	.landing-v2.contact-page .ct__label {
+		display: block;
+		position: static;
+		margin: 48px 0 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 18px;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2.contact-page .ct__logos {
+		display: block;
+		position: relative;
+		left: auto;
+		top: auto;
+		margin: 20px calc(-1 * var(--m-margin-safe-r, var(--m-margin, 24px))) 0 calc(-1 * var(--m-margin-safe-l, var(--m-margin, 24px)));
+		width: auto;
+		height: 100px;
+		overflow: hidden;
+		z-index: 1;
+	}
+	.landing-v2.contact-page .ct__logos-track {
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: flex;
+		width: max-content;
+		will-change: transform;
+	}
+	.landing-v2.contact-page .ct__logo-cell {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 160px;
+		height: 100px;
+		margin-right: 32px;
+		background: rgba(255, 255, 255, 0.04);
+	}
+	.landing-v2.contact-page .ct__logo-cell img { display: block; max-width: none; }
+	.landing-v2.contact-page .ct__logos-band {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		background: linear-gradient(90deg, #c1250e 0%, rgba(193, 37, 14, 0) 12%, rgba(193, 37, 14, 0) 88%, #c1250e 100%);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.contact-page .ct__logos-track[data-direction='right'] {
+			animation: landing-network-marquee-right var(--ct-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--ct-logo-row-delay, 0s);
+		}
+		.landing-v2.contact-page .ct__logos-track[data-direction='left'] {
+			animation: landing-network-marquee-left var(--ct-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--ct-logo-row-delay, 0s);
+		}
+	}
+}

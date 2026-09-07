@@ -1,4 +1,5 @@
 import { SOCIAL_LINKS } from './landing/socials.js';
+import { CONTACT_MAILTO } from './landing/contact.js';
 
 /** @typedef {{ href: string, label: string, image: string }} MenuLink */
 
@@ -42,13 +43,15 @@ export const menuLinks = [
 export const landingMenuLinks = [
   /* Home -> the root now (release restructure). linkHref('')
      resolves to base = '/'. */
+  /* THE MOBILE PASS (2026-09-07): the desktop nav's order — Work,
+     Services, Founders — after Home; Contact leaves the list (the
+     menu's LET'S CHAT CTA is that route, as on the desktop nav). */
   { href: '', label: 'Home', image: 'Home.jpg' },
-  { href: 'founders', label: 'Founders', image: 'Founders.jpg' },
-  { href: 'services', label: 'Services', image: 'Services.jpg' },
   { href: 'work', label: 'Work', image: 'Work.jpg' },
+  { href: 'services', label: 'Services', image: 'Services.jpg' },
+  { href: 'founders', label: 'Founders', image: 'Founders.jpg' },
   /* Contact points at the new /contact page (2026-08-08 — was the
      LET'S CHAT mailto while no page existed). */
-  { href: 'contact', label: 'Contact', image: 'contact.png' },
 ];
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */
@@ -93,7 +96,7 @@ export const landingMenuFooterLinks = [
     external: true,
   },
   {
-    href: `mailto:${CONTACT_EMAIL}`,
+    href: CONTACT_MAILTO, /* the site-wide prefilled mailto (the mobile pass) */
     label: CONTACT_EMAIL,
   },
 ];

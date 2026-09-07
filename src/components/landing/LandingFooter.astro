@@ -78,18 +78,20 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
   {/* Index columns */}
   <div class="landing-footer__cols" data-footer-legacy>
     <nav class="landing-footer__col" data-footer-col aria-label="Site index">
-      <p class="landing-footer__label">SITE INDEX</p>
-      <a class="landing-footer__link" href="/" data-footer-top data-char-ripple-trigger><span data-char-ripple>HOME</span></a>
+      <p class="landing-footer__label">Site Index</p>
+      {/* THE MOBILE PASS (2026-09-07): the desktop footer's index — live
+          Services and Selected Work, no Clients (there is no such page),
+          natural case (the desktop's small-text grammar). */}
+      <a class="landing-footer__link" href="/" data-footer-top data-char-ripple-trigger><span data-char-ripple>Home</span></a>
       {/* Placeholders — pages don't exist yet. */}
-      <span class="landing-footer__link is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>SERVICES</span></span>
-      <span class="landing-footer__link is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>CLIENTS</span></span>
+      <a class="landing-footer__link" href="/services" data-char-ripple-trigger><span data-char-ripple>Services</span></a>
     </nav>
     <nav class="landing-footer__col landing-footer__col--2" data-footer-col aria-label="More">
       {/* RESOLVED (2026-08-08): /founders exists — the grey label is
           a LINK now, the white link treatment (the ambiguity flag in
           the header is settled). */}
-      <a class="landing-footer__link" href="/founders" data-char-ripple-trigger><span data-char-ripple>THE FOUNDERS</span></a>
-      <span class="landing-footer__link is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>SELECTED WORK</span></span>
+      <a class="landing-footer__link" href="/founders" data-char-ripple-trigger><span data-char-ripple>The Founders</span></a>
+      <a class="landing-footer__link" href="/work" data-char-ripple-trigger><span data-char-ripple>Selected Work</span></a>
     </nav>
     <a
       class="landing-footer__start"
@@ -141,23 +143,29 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
         same contract as /contact's EMAIL US, so the site behaves one
         way. CONTACT_MAILTO carries the subject; the bare mailto that
         was here carried none. */}
-    <a class="landing-footer__rowitem landing-footer__rowitem--email" href={CONTACT_MAILTO} data-email-copy={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>HELLO@NETWORKEFFECTAGENCY.CO.UK</span></a>
+    <a class="landing-footer__rowitem landing-footer__rowitem--email" href={CONTACT_MAILTO} data-email-copy={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>Hello@networkeffectagency.co.uk</span></a>
     <div class="landing-footer__social">
       {/* Hrefs from the shared source (data/landing/socials.js). */}
       {FOOTER_SOCIALS.map((soc) => (
         soc.href ? (
-          <a class="landing-footer__rowitem" href={soc.href} target="_blank" rel="noopener" data-char-ripple-trigger><span data-char-ripple>{soc.label.toUpperCase()}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></a>
+          <a class="landing-footer__rowitem" href={soc.href} target="_blank" rel="noopener" data-char-ripple-trigger><span data-char-ripple>{soc.label}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></a>
         ) : (
-          <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>{soc.label.toUpperCase()}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
+          <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>{soc.label}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
         )
       ))}
     </div>
+    {/* THE MOBILE PASS: Terms & Conditions / Privacy Policy — the desktop
+        row's pair, the same standing placeholders until the pages land. */}
+    <div class="landing-footer__legal">
+      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Terms &amp; Conditions</span></span>
+      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Privacy Policy</span></span>
+    </div>
     <button type="button" class="landing-footer__rowitem landing-footer__rowitem--top" data-footer-top data-char-ripple-trigger>
-      <span data-char-ripple>BACK TO TOP</span>
+      <span data-char-ripple>Back to top</span>
       <img src={arrowUp} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
     </button>
     <p class="landing-footer__rowitem landing-footer__rowitem--copyright">©2026 All rights reserved</p>
-    <p class="landing-footer__rowitem landing-footer__rowitem--siteby">site by  <span>SELFHOOD STUDIOS</span></p>
+    <p class="landing-footer__rowitem landing-footer__rowitem--siteby">Site By <span>Selfhood Studios</span></p>
   </div>
 
   {/* ══ THE NEW DESKTOP FOOTER (frame 13:381, 2026-08-26) — the

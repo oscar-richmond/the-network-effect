@@ -1,6 +1,7 @@
 ---
 import { menuLinks, menuFooterLinks as defaultFooterLinks } from '../data/menu.js';
 import { asset } from '../utils/asset.js';
+import { CONTACT_EMAIL } from '../data/landing/contact.js';
 import '../styles/menu.css';
 
 /**
@@ -111,15 +112,15 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
                 CTAs). Same class, not copied values, so the style
                 and spacing can never drift from the source.
 
-                SCHEDULE A CALL lives on /contact (the modal is that
-                page's machinery) — from the menu it navigates
-                there. START A PROJECT opens the site-wide form modal
+                LET'S CHAT (the desktop nav's own CTA label — the mobile
+                pass, 2026-09-07; was SCHEDULE A CALL) navigates to
+                /contact. START A PROJECT opens the site-wide form modal
                 (R40) — the menu closes as it opens; while the modal is
                 off (R41, any build) it is the placeholder it was. */}
             <span class="site-menu__ctaclip lr-clip">
               <span class="lr-inner">
                 <a class="landing-svc-card__btn" href={linkHref('contact')} data-char-ripple-trigger>
-                  <span data-char-ripple>SCHEDULE A CALL</span>
+                  <span data-char-ripple>LET’S CHAT</span>
                   <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
                 </a>
               </span>
@@ -150,6 +151,7 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
                     href={linkHref(link.href)}
                     class="site-menu__footer-link"
                     data-char-ripple-trigger
+                    data-email-copy={link.href.startsWith('mailto:') ? CONTACT_EMAIL : undefined}
                     {...(link.external
                       ? { target: '_blank', rel: 'noopener noreferrer' }
                       : {})}
