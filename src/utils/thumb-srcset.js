@@ -18,10 +18,20 @@
  * can never 404 — the full-size file is always the last candidate.
  */
 import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { asset } from './asset.js';
 
+/* THE DISK LOOKUP resolves from the PROJECT ROOT (process.cwd() — where
+   astro dev and astro build both run, locally and on Vercel), NOT from
+   import.meta.url: during `astro build` this module is bundled into a
+   server chunk whose URL is nowhere near public/, so a URL-relative
+   lookup found nothing and every static build shipped without a single
+   variant (measured on the 2026-09-07 staging deploy: 0 references in
+   the built HTML, all present on the dev server). */
+const PUBLIC_DIR = join(process.cwd(), 'public');
+
 const variantPath = (clean, w) => clean.replace(/\.(jpg|jpeg|png)$/i, `-w${w}.jpg`);
-const onDisk = (variant) => existsSync(new URL(`../../public${variant}`, import.meta.url));
+const onDisk = (variant) => existsSync(join(PUBLIC_DIR, variant));
 const cleanPath = (path) => {
   const stripped = String(path).replace(/^https?:\/\/[^/]+/, '');
   return stripped.startsWith('/') ? stripped : `/${stripped}`;

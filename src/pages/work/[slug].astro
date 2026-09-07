@@ -28,6 +28,7 @@ import LandingFooter from '../../components/landing/LandingFooter.astro';
 import CtaChip from '../../components/landing/CtaChip.astro';
 import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { asset } from '../../utils/asset.js';
 import { thumbSrcset, imageSrcset } from '../../utils/thumb-srcset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
@@ -73,7 +74,7 @@ const moreWork = WORK_PROJECTS.filter((p) => p.slug !== study.base.slug).map((p)
    is filesystem-side at build time, so it costs the browser nothing. */
 const posterFor = (src) => {
   const rel = src.replace('.mp4', '-poster.jpg').replace('.webm', '-poster.jpg');
-  const onDisk = new URL(`../../../public${rel.startsWith('/') ? rel : `/${rel}`}`, import.meta.url);
+  const onDisk = join(process.cwd(), 'public', rel.startsWith('/') ? rel.slice(1) : rel); /* from the project root — see thumb-srcset.js */
   return existsSync(onDisk) ? rel : undefined;
 };
 /* THE MOBILE PASS (2026-09-07): a phone-encoded sibling (`<name>-m.mp4`, 480w)
@@ -81,7 +82,9 @@ const posterFor = (src) => {
    stream plays. The desktop keeps the original. */
 const mobileVideoFor = (src) => {
   const rel = src.replace(/\.(mp4|webm)$/, '-m.$1');
-  const onDisk = new URL(`../../../public${rel.startsWith('/') ? rel : `/${rel}`}`, import.meta.url);
+  /* from the project root — see thumb-srcset.js: a URL-relative lookup
+     resolves nowhere inside a built server chunk */
+  const onDisk = join(process.cwd(), 'public', rel.startsWith('/') ? rel.slice(1) : rel);
   return existsSync(onDisk) ? rel : undefined;
 };
 const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z';
