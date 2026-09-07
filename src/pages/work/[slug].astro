@@ -28,7 +28,7 @@ import LandingFooter from '../../components/landing/LandingFooter.astro';
 import CtaChip from '../../components/landing/CtaChip.astro';
 import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 import { existsSync } from 'node:fs';
-import { asset } from '../../utils/asset.js';
+import { asset, thumbSrcset } from '../../utils/asset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
@@ -286,7 +286,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-live="true"
             >
               <figure class="cs-more__imgwin">
-                <img src={m.workImg} alt="" loading="lazy" decoding="async" />
+                <img src={m.workImg} srcset={thumbSrcset(m.workImg, 680, 2000)} sizes="(max-width: 767px) 2000px, (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
@@ -303,7 +303,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-a4-note="unbuilt study: inert placeholder — no href, unfocusable"
             >
               <figure class="cs-more__imgwin">
-                <img src={m.workImg} alt="" loading="lazy" decoding="async" />
+                <img src={m.workImg} srcset={thumbSrcset(m.workImg, 680, 2000)} sizes="(max-width: 767px) 2000px, (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>

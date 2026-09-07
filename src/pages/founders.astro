@@ -42,7 +42,7 @@
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { FOUNDERS_SLIDES, FOUNDERS_CTA } from '../data/landing/founders-page.js';
-import { asset } from '../utils/asset.js';
+import { asset, thumbSrcset } from '../utils/asset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/founders.css';
@@ -348,7 +348,7 @@ import '../styles/fonts.css';
             aria-current={idx === 1 ? 'true' : 'false'}
             aria-label={`View founder: ${FOUNDERS_SLIDES[idx].name}`}
           >
-            <img src={asset(FOUNDERS_SLIDES[idx].img)} alt="" loading="eager" decoding="async" />
+            <img src={asset(FOUNDERS_SLIDES[idx].img)} srcset={thumbSrcset(FOUNDERS_SLIDES[idx].img, 176, 870)} sizes="(max-width: 767px) 870px, 88px" alt="" loading="eager" decoding="async" />
           </button>
         ))}
       </nav>

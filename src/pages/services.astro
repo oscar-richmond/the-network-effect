@@ -48,7 +48,7 @@ import LandingFooter from '../components/landing/LandingFooter.astro';
 import ClosingStatement from '../components/landing/ClosingStatement.astro';
 import { SERVICES_HERO, SERVICES_PILLARS, SERVICES_ACCESS } from '../data/landing/services-v2.js';
 import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER, SV6_HOVER_IMGS } from '../data/landing/services-6.js';
-import { asset } from '../utils/asset.js';
+import { asset, thumbSrcset } from '../utils/asset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/services-v2.css';
@@ -161,7 +161,7 @@ import '../styles/fonts.css';
                 <div class="sv6-gal__strip" data-sv6-gal-strip>
                   {SV6_GALLERIES[pi].imgs.map((src, bi) => (
                     <figure class="sv6-gal__box" data-sv6-gal-box>
-                      <img src={asset(src)} alt="" loading="lazy" decoding="async" />
+                      <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 4000px, (max-width: 1359px) 46vw, 389px" alt="" loading="lazy" decoding="async" />
                       <figcaption class="sv6-gal__label">{SV6_GALLERIES[pi].labels[bi]}</figcaption>
                       {bi < SV6_GALLERIES[pi].imgs.length - 1 && (
                         <span class="sv6-gal__arrow" aria-hidden="true">
@@ -321,7 +321,7 @@ import '../styles/fonts.css';
             <div class="sv-gallery" data-sv-gallery>
               {p.gallery.map((src) => (
                 <figure class="sv-gallery__tile" data-sv-tile>
-                  <img src={asset(src)} alt="" loading="lazy" decoding="async" />
+                  <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 4000px, (max-width: 1359px) 46vw, 389px" alt="" loading="lazy" decoding="async" />
                 </figure>
               ))}
             </div>
@@ -360,7 +360,7 @@ import '../styles/fonts.css';
       <div class="sv-gallery sv-gallery--dark" data-sv-gallery>
         {SERVICES_ACCESS.gallery.map((src) => (
           <figure class="sv-gallery__tile" data-sv-tile>
-            <img src={asset(src)} alt="" loading="lazy" decoding="async" />
+            <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 4000px, (max-width: 1359px) 46vw, 389px" alt="" loading="lazy" decoding="async" />
           </figure>
         ))}
       </div>
