@@ -130,11 +130,16 @@
 		background: #eeeef0;
 		color: #161616;
 	}
-	.landing-v2.landing-v2.landing-home .landing-footer,
-	.landing-v2.landing-v2.case-page .landing-footer,
-	.landing-v2.landing-v2.services-6 .landing-footer,
-	.landing-v2.landing-v2.contact-page .landing-footer,
-	.landing-v2.landing-v2.founders-page .landing-footer {
+	/* body-qualified (0,4,1): landing.css's desktop schema —
+	   .landing-v2:not(.work-page):not(.founders-page) .landing-footer —
+	   is (0,4,0) and imports later, so an equal-specificity rule here
+	   lost to its 830 constants (measured: the band's footer pinned 174
+	   too high, its chip under the closing stage). */
+	body.landing-v2.landing-v2.landing-home .landing-footer,
+	body.landing-v2.landing-v2.case-page .landing-footer,
+	body.landing-v2.landing-v2.services-6 .landing-footer,
+	body.landing-v2.landing-v2.contact-page .landing-footer,
+	body.landing-v2.landing-v2.founders-page .landing-footer {
 		position: sticky;
 		/* Pinned with its bottom at the viewport bottom (the desktop's
 		   construction) — or, when the footer is TALLER than the viewport
@@ -145,11 +150,11 @@
 		margin-top: calc(-1 * var(--footer-h, 600px));
 		z-index: 259;
 	}
-	.landing-v2.landing-v2.landing-home .landing-footer-spacer,
-	.landing-v2.landing-v2.case-page .landing-footer-spacer,
-	.landing-v2.landing-v2.services-6 .landing-footer-spacer,
-	.landing-v2.landing-v2.contact-page .landing-footer-spacer,
-	.landing-v2.landing-v2.founders-page .landing-footer-spacer {
+	body.landing-v2.landing-v2.landing-home .landing-footer-spacer,
+	body.landing-v2.landing-v2.case-page .landing-footer-spacer,
+	body.landing-v2.landing-v2.services-6 .landing-footer-spacer,
+	body.landing-v2.landing-v2.contact-page .landing-footer-spacer,
+	body.landing-v2.landing-v2.founders-page .landing-footer-spacer {
 		display: block;
 		height: var(--footer-h, 600px);
 		pointer-events: none;
@@ -446,6 +451,17 @@
 	.landing-v2.landing-v2 .home__nav-link:focus-visible {
 		outline: 2px solid currentColor;
 		outline-offset: 2px;
+	}
+	/* the touch floor: a 44px hit area on the 16px ink (the chips' own
+	   ::after convention; no ground, so the blend is untouched) */
+	.landing-v2.landing-v2 .home__nav-link { position: relative; }
+	.landing-v2.landing-v2 .home__nav-link::after {
+		content: '';
+		position: absolute;
+		left: -8px;
+		right: -8px;
+		top: -14px;
+		bottom: -14px;
 	}
 	.landing-v2.landing-v2 header.home__topbar .home__topbar-email { grid-column: 3; }
 }

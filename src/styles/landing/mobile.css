@@ -349,45 +349,6 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   CAROUSEL INDICATOR — the shared component (file Groups 355-358):
-   1px track, #E4E4EA, radius 2, 100px wide; a 32px #232A89 thumb
-   whose x tracks swipe progress (carousel-indicator.js writes
-   --ci-x). Used by every mobile carousel on the landing (services
-   lists now; featured work + tiles in Part 2).
-   ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1359px) {
-	.landing-v2 .m-carousel-ind {
-		display: block;
-		position: relative;
-		width: 100px;
-		height: 1px;
-		border-radius: 2px;
-		background: #e4e4ea;
-		flex: none;
-	}
-
-	/* Featured work's wider track (file 0:338: 200×1). The JS measures
-	   track/thumb live, so no travel constant changes. */
-	.landing-v2 .m-carousel-ind--wide { width: 200px; }
-
-	.landing-v2 .m-carousel-ind__thumb {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 32px;
-		height: 1px;
-		border-radius: 2px;
-		background: #232a89;
-		transform: translateX(var(--ci-x, 0px));
-		will-change: transform;
-	}
-}
-
-@media (min-width: 1360px) {
-	.landing-v2 .m-carousel-ind { display: none; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
    HORIZONTAL-PAN CONTAINMENT (Oscar's device report, R1 item 9).
    ROOT CAUSE: fixed-position layers ESCAPE the body's overflow-x
    clip (their containing block is the viewport, not body), and iOS

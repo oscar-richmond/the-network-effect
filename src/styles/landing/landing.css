@@ -477,10 +477,6 @@
 	visibility: hidden;
 }
 
-@media (max-width: 1359px) {
-	.landing-v2 .cs-float { display: none; }
-}
-
 /* RESTORED (A2a, 2026-08-27): the 13:381 footer rebuild introduced
    the __dlink/__dchip/__ritem family without extending these rules,
    so every desktop footer stop fell back to the UA ring — the
@@ -1134,7 +1130,6 @@
 	--landing-svc-divider: #e0e0e7;
 	--landing-svc-btn-fill: #e4e4ea;
 }
-
 
 /* Cards — rigid, opaque, post-stack internals (offsets from the
    card's own divider). Default transform = PARKED (the RM frame);
@@ -3043,47 +3038,6 @@
 	}
 }
 
-/* Sub-1024: vertical card list (the closing-section flow-stack
-   register); the 15-inch shell remains the primary story. */
-@media (max-width: 1359px) {
-	.landing-v2 .landing-featured {
-		margin-top: 0;
-		height: auto;
-	}
-
-	.landing-v2 .landing-featured__stage {
-		position: static;
-		height: auto;
-		overflow: visible;
-		padding: 96px 24px 64px;
-	}
-
-	.landing-v2 .landing-featured__hl,
-	.landing-v2 .landing-featured__viewall {
-		position: static;
-	}
-
-	.landing-v2 .landing-featured__hl { display: block; }
-	.landing-v2 .landing-featured__viewall { margin: 24px 0 40px; }
-
-	.landing-v2 .landing-featured__strip {
-		position: static;
-		flex-direction: column;
-		gap: 40px;
-		padding-left: 0;
-		transform: none !important;
-	}
-
-	.landing-v2 .landing-featured__card {
-		width: 100%;
-		height: auto;
-	}
-
-	.landing-v2 .landing-featured__imgwin { width: 100%; }
-	.landing-v2 .landing-featured__titleblock { position: static; transform: none; margin-top: 16px; }
-	.landing-v2 .landing-featured__desc { position: static; margin-top: 8px; width: auto; }
-}
-
 /* ── Nav-at-bottom sweeps (landing-closing.js): the menu hover's
    char-blur vocabulary — exit blurs out right-to-left, entry blurs
    back in left-to-right. Filters live on the chars (descendants of
@@ -3192,60 +3146,6 @@
    the blocks here refine them.
    ══════════════════════════════════════════════════════════════════ */
 
-/* The mobile Access block must NOT exist on desktop — the scrub's
-   geometry (and the baseline fingerprints) never see it. Outside the
-   media query so the default is airtight at every width above the
-   seam. */
-.landing-v2 .landing-access__mobile { display: none; }
-
-@media (max-width: 1359px) {
-	/* Touch has no hover: portrait names render permanently (A3). The
-	   difference blend stays — over the portrait imagery it composites
-	   exactly as the desktop hover state does. */
-	.landing-v2 .landing-founders__portrait-name {
-		opacity: 1;
-	}
-
-	/* (Part-2 rebuild 2026-08-13: the old mobile neutraliser for the
-	   cards' hidden state is retired — landing-featured.js now runs a
-	   mobile entrance that adds .is-visible, so the desktop hidden
-	   state + reveal apply verbatim on mobile.) */
-}
-
-
-
-/* ═══════════════════════════════════════════════════════════════════
-   LANDING-HOME MOBILE — the Figma 402-frame rebuild, PART 1 (file
-   5cEi5ABu06aABOVemHVoAy frame 0:12; 2026-08-13). Scoped to
-   .landing-home so only this page takes the new 16px grammar; the
-   earlier <=1024 blocks above remain the base and these override by
-   source order. Sections covered: hero, founders band, services
-   cards. Featured-onward keeps the interim mobile form until Part 2.
-   ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1359px) {
-}
-
-/* The mobile-only service internals must not exist above the seam. */
-@media (min-width: 1360px) {
-	.landing-v2 .landing-svc-card__m-listblock,
-	.landing-v2 .landing-svc-card__m-img { display: none; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   LANDING-HOME MOBILE, PART 2 — featured work through the footer
-   (frame 0:12, y4766-9326; rebuild 2026-08-13). Same contract as the
-   Part-1 block above: .landing-home-scoped, <=1024, overriding the
-   interim mobile rules by source order + specificity.
-   ══════════════════════════════════════════════════════════════════ */
-
-
-
-
-
-
-
-
-
 @media (max-width: 1359px) {
 	/* ═══ R1 FIX ROUND (Oscar's device review, 2026-08-13) ═══════════ */
 
@@ -3257,30 +3157,6 @@
 	}
 
 }
-
-/* R1 item 10 — services mobile entrance states (m-entrance adds
-   .is-visible per element; the titlerow/heading use the line-reveal
-   instead — no CSS here, the clips carry their own hidden state). */
-@media (max-width: 1359px) and (prefers-reduced-motion: no-preference) {
-	.landing-v2.landing-home .landing-svc-card__m-img,
-	.landing-v2.landing-home .landing-svc-card__desc,
-	.landing-v2.landing-home .landing-svc-card__m-listblock,
-	.landing-v2.landing-home .landing-svc-card__btnclip {
-		opacity: 0;
-		transform: translateY(16px);
-		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
-	}
-
-	.landing-v2.landing-home .landing-svc-card__m-img.is-visible,
-	.landing-v2.landing-home .landing-svc-card__desc.is-visible,
-	.landing-v2.landing-home .landing-svc-card__m-listblock.is-visible,
-	.landing-v2.landing-home .landing-svc-card__btnclip.is-visible {
-		opacity: 1;
-		transform: none;
-	}
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════
    MOBILE ORDER RESTORE (frame 16:113 desktop reorder, 2026-08-13).
@@ -3894,7 +3770,6 @@
 .landing-v2 .landing-founders__label,
 .landing-v2 .landing-network__label { display: none; }
 
-
 /* ══════════════════════════════════════════════════════════════════
    NAV RESPEC (file NgsyYiyjKRFhtPHyjc0aL4 frame 17:899, node
    17:1637, 2026-08-24; page origin = frame y118 — Top bar −5..35 +
@@ -4022,7 +3897,6 @@
 		top: -0.42px;
 	}
 }
-
 
 /* ══════════════════════════════════════════════════════════════════
    TYPE SYSTEM PASS (TNE Font Style Guide — Oscar's application list,
@@ -4225,7 +4099,6 @@
 		text-transform: none;
 	}
 }
-
 
 /* ══════════════════════════════════════════════════════════════════
    SERVICES + FEATURED REDESIGN (file NgsyYiyjKRFhtPHyjc0aL4 frame
@@ -4447,7 +4320,6 @@
 	}
 }
 
-
 /* ── FOUNDERS R3 (Oscar, 2026-08-25) ─────────────────────────────
    Headline box widened so BUILDING joins line 1 (measured: the line
    needs 200 indent + 754.6 text = 954.6 at the 56/50/−3.5% face);
@@ -4474,7 +4346,6 @@
 		background: #232326;
 	}
 }
-
 
 /* ══════════════════════════════════════════════════════════════════
    WE CREATE ACCESS — HORIZONTAL ROWS (file CpGcHLnIKga7iufELZpYQ5
@@ -4681,17 +4552,6 @@
 	.landing-v2.landing-home .landing-access__wordslot--top.is-on { left: calc(50% - 270px - 172px); }
 	.landing-v2.landing-home .landing-access__wordslot--bottom.is-on { left: calc(50% + 272px - 172px); }
 }
-
-/* The new desktop subtree must not exist below the seam (mobile is
-   the shipped rows build, byte-identical). */
-@media (max-width: 1359px) {
-	.landing-v2 .landing-access__rowwrap,
-	.landing-v2 .landing-access__words,
-	.landing-v2 .landing-access__dheadline {
-		display: none;
-	}
-}
-
 
 /* ═══ THE SERVICES REEL (frames 29:859 expanded / 30:1191 stacked,
    2026-08-26) — desktop only; ≤1024 keeps the shipped mobile stack.
@@ -4942,8 +4802,6 @@
 		position: relative;
 		display: inline-block;
 	}
-
-
 
 	.landing-v2.landing-home .landing-sreel__desc {
 		position: absolute;
@@ -6251,7 +6109,6 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 }
 @media (prefers-reduced-motion: reduce) { .splash-b { display: none !important; } }
 
-
 /* ── EMAIL COPY CONFIRMATION (R82, Oscar 2026-09-05) ─────────────────
    The chip shown when an address link copies itself before handing off
    to the mail client (scripts/email-copy.js, bound from the footer so
@@ -6322,9 +6179,6 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 	.landing-v2 .landing-footer__rowitem--siteby { gap: 0; }
 }
 
-
-
-
 /* ═══════════════════════════════════════════════════════════════════
    THE MOBILE PASS (2026-09-07) — TOUCH TARGETS on the narrow build.
    The 38px chip family (the More Info button grammar: the founders
@@ -6336,12 +6190,7 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 1359px) {
 	.landing-v2 .landing-svc-card__btn,
-	.landing-v2 .landing-featured__viewall,
-	.landing-v2 .work-m__btn,
-	.landing-v2 .work-pill,
-	.landing-v2 .fd-slide__btn,
-	.landing-v2 .fd-slide__m-swapbtn,
-	.landing-v2 .cs-more__viewall {
+	.landing-v2 .landing-featured__viewall {
 		min-height: 44px;
 		box-sizing: border-box;
 	}

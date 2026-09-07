@@ -366,4 +366,13 @@
 	}
 	.landing-v2.landing-v2 .ct__chat-arrow { display: block; flex: none; width: 12px; height: 12px; }
 	.landing-v2.landing-v2 .ct__chat:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+	/* the touch floor: a 44px hit area on the 16px ink (no ground — the blend is untouched) */
+	.landing-v2.landing-v2 .ct__chat::after {
+		content: '';
+		position: absolute;
+		left: -8px;
+		right: -8px;
+		top: -14px;
+		bottom: -14px;
+	}
 }
