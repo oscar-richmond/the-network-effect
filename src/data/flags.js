@@ -102,3 +102,11 @@ export const ARCHIVE_ROUTES = import.meta.env.DEV || import.meta.env.PUBLIC_ARCH
  * component boots.
  */
 export const SPLASH_B_ON_ROOT = import.meta.env.PUBLIC_SPLASH_B_ON_ROOT === '1';
+
+/* THE TYPE SPECIMEN (the foundation task, 2026-09-07) — /type-specimen renders
+   every role of the type scale system at the current viewport beside the
+   desktop's literals. Dev-only: the route's getStaticPaths returns no path
+   unless this is on, so a production build has no such page. Set
+   PUBLIC_TYPE_SPECIMEN=1 to carry it to a preview. */
+const typeSpecimenOverride = import.meta.env.PUBLIC_TYPE_SPECIMEN;
+export const TYPE_SPECIMEN = typeSpecimenOverride === '1' ? true : typeSpecimenOverride === '0' ? false : !!import.meta.env.DEV;

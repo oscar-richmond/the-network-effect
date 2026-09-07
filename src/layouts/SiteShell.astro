@@ -30,6 +30,11 @@ import '../styles/landing/mobile.css';
    later in the cascade. Strictly min/max-gated: the phone (≤767) and
    the shell (≥1360) never see it. */
 import '../styles/landing/tablet.css';
+/* THE TYPE TOKENS (the foundation task, 2026-09-07): the scale system's one
+   source — every role at every band. Nothing reads them yet; Prompt 2
+   replaces the mobile and tablet literals with them. Custom properties on
+   :root, so the desktop renders exactly as before. */
+import '../styles/type-tokens.css';
 
 interface Props {
   title?: string;

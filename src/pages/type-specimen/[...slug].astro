@@ -1,0 +1,122 @@
+---
+/**
+ * THE TYPE SPECIMEN — dev-only (the foundation task, 2026-09-07).
+ *
+ * Every type role of the scale system, rendered THREE ways at the current
+ * viewport: the band's tokens (what Prompt 2 will apply below the seam),
+ * the desktop's literal values scaled by 100vw ÷ 1728 (what the shell does —
+ * the naive alternative, unreadable at phone widths), and the desktop's
+ * literal values unscaled (the reference, clipped at narrow widths). The
+ * computed size / leading / tracking of the token sample is printed live.
+ *
+ * Gated like /landing-splash-b: getStaticPaths returns no path unless the
+ * TYPE_SPECIMEN flag is on (dev, or PUBLIC_TYPE_SPECIMEN=1), so a production
+ * build has no such route. No layout, no nav — a bare document.
+ */
+import { TYPE_SPECIMEN } from '../../data/flags.js';
+import '../../styles/fonts.css';
+import '../../styles/type-tokens.css';
+
+export function getStaticPaths() {
+  return TYPE_SPECIMEN ? [{ params: { slug: undefined } }] : [];
+}
+
+/* role · sample copy (the site's own) · desktop [size, leading, tracking em] */
+const ROLES = [
+  ['statement', 'The network effect exists to connect people, brands and talent in ways that create long-term cultural and commercial value.', [100, 88, -0.04]],
+  ['display', 'POWERED BY ACCESS.', [90, 79.2, -0.05]],
+  ['display-serif', 'BUILT ON TRUST.', [90, 82.8, -0.04]],
+  ['heading', 'NEARLY 20 YEARS BUILDING GLOBAL RELATIONSHIPS MEETS 30 YEARS AT THE HEART OF MUSIC, FILM AND TELEVISION.', [56, 54, -0.035]],
+  ['heading-serif', 'Talent / Brands / Business / Culture', [56, 50, -0.035]],
+  ['term', 'Talent / Hospitality / TV & Film / Music', [48, 52, 0]],
+  ['keyword', 'CULTURE · TRUST · BEHAVIOUR', [48, 48, 0]],
+  ['lede', 'We connect Talent, Brands & Audiences through Experiences, Strategic Partnerships & Media.', [36, 40, -0.0286]],
+  ['title', 'TheNetworkEffect · Wilderness Reserve', [34, 38, -0.03]],
+  ['note', 'Our work is structured across three connected pillars: Immerse / Connect / Amplify.', [32, 35.4, -0.027]],
+  ['subtitle', 'Activate Experiences & Cultural Moments', [28, 32, -0.03]],
+  ['row', 'Talent-Led Experiences · Immersive Brand Worlds · Brand Launches', [26, 32, -0.02]],
+  ['index', '/01  /02  /03', [24, 24, 0]],
+  ['tile', 'IMMERSE · CONNECT · AMPLIFY', [24, 28, -0.035]],
+  ['body', 'Over seven years, Rob helped transform Wilderness Reserve from a private country estate into one of Britain’s leading luxury hospitality destinations. Working across commercial strategy, brand development, partnerships, events and audience growth, he played a key role in building the business into a recognised lifestyle brand.', [21, 28, -0.015]],
+  ['body-sans', 'Where we can reach you. First and last is fine. The brief, the moment, the ambition.', [18, 27, 0]],
+  ['label', 'WORK · SERVICES · FOUNDERS · LET’S CHAT · START A PROJECT · WE BUILD', [16, 16, -0.02]],
+  ['eyebrow', 'WHO WE ARE · OUR WORK · FOUNDER: PARTNERSHIPS, STRATEGY & EXPERIENCES', [14, 16, 0]],
+  ['small', 'Site Index · Home · Services · The Founders · Selected Work · Hello@networkeffectagency.co.uk · ©2026 All rights reserved', [14, 16, 0]],
+  ['micro', 'Skip to content · COPIED', [13, 19.5, 0.02]],
+];
+const SIZES = [390, 430, 768, 1024, 1359, 1728];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <title>Type specimen — The Network Effect</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #eeeef0; color: #161616; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body { font-family: var(--font-type-sans); padding: 24px; }
+    .top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; margin-bottom: 8px; }
+    .top h1 { margin: 0; font: 600 16px/1 var(--font-type-sans); text-transform: uppercase; letter-spacing: 0.02em; }
+    .top p { margin: 0; font: 400 13px/1.4 var(--font-type-sans); color: #5f5d59; }
+    .vp { font: 500 13px/1 ui-monospace, Menlo, monospace; color: #161616; }
+    .legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 20px 0 8px; font: 600 11px/1.2 var(--font-type-sans); text-transform: uppercase; letter-spacing: 0.06em; color: #5f5d59; border-bottom: 1px solid #c9c7c1; padding-bottom: 6px; }
+    .role { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 18px 0; border-bottom: 1px solid #dad7d1; align-items: start; }
+    .role > div { min-width: 0; overflow: hidden; }
+    .meta { font: 500 11px/1.4 ui-monospace, Menlo, monospace; color: #5f5d59; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meta b { color: #c1250e; font-weight: 600; }
+    .s { margin: 0; overflow-wrap: anywhere; }
+    .token { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: var(--s); line-height: var(--lh); letter-spacing: var(--ls); }
+    .shell { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: calc(var(--ds) * 100vw / 1728); line-height: calc(var(--dlh) / var(--ds)); letter-spacing: var(--dls); }
+    .ref { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: calc(var(--ds) * 1px); line-height: calc(var(--dlh) / var(--ds)); letter-spacing: var(--dls); white-space: nowrap; }
+    @media (max-width: 767px) { .legend, .role { grid-template-columns: 1fr; } .role .c3 { display: none; } .legend .c3 { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>Type specimen</h1>
+    <p>Viewport <span class="vp" data-vp></span> · body token <span class="vp" data-body></span> · tokens from <code>src/styles/type-tokens.css</code></p>
+  </div>
+  <div class="legend"><div>This band’s tokens (computed live)</div><div>Desktop literal × 100vw ÷ 1728 (the shell’s naive scaling)</div><div class="c3">Desktop literal, unscaled (reference)</div></div>
+  {ROLES.map(([role, sample, [ds, dlh, dls]]) => {
+    const isSerif = ['display-serif', 'heading-serif', 'term', 'lede', 'title', 'note', 'subtitle', 'row', 'body', 'small'].includes(role);
+    const weight = role === 'body-sans' ? 400 : isSerif ? 500 : 600;
+    const upper = ['statement', 'display', 'display-serif', 'heading', 'keyword', 'tile', 'label', 'eyebrow'].includes(role);
+    const vars = `--f:var(--type-${role}-face);--w:var(--type-${role}-weight);--c:var(--type-${role}-case);--s:var(--type-${role}-size);--lh:var(--type-${role}-lh);--ls:var(--type-${role}-ls);--ds:${ds};--dlh:${dlh};--dls:${dls}em`;
+    return (
+      <section class="role" style={vars} data-role={role}>
+        <div>
+          <div class="meta"><b>{role}</b> · {isSerif ? 'Serrif Condensed' : 'Dazzed'} {weight} {upper ? 'caps' : ''} · <span data-computed>…</span></div>
+          <p class="s token" data-sample>{sample}</p>
+        </div>
+        <div>
+          <div class="meta">desktop {ds}/{dlh} {dls}em × {'(vw ÷ 1728)'}</div>
+          <p class="s shell">{sample}</p>
+        </div>
+        <div class="c3">
+          <div class="meta">desktop {ds}/{dlh} {dls}em</div>
+          <p class="s ref">{sample}</p>
+        </div>
+      </section>
+    );
+  })}
+  <script>
+    const vp = document.querySelector('[data-vp]');
+    const bodyOut = document.querySelector('[data-body]');
+    const print = () => {
+      vp.textContent = `${innerWidth} × ${innerHeight}`;
+      const b = getComputedStyle(document.documentElement).getPropertyValue('--type-body-size').trim();
+      bodyOut.textContent = b;
+      document.querySelectorAll('[data-role]').forEach((sec) => {
+        const s = sec.querySelector('[data-sample]');
+        const c = getComputedStyle(s);
+        sec.querySelector('[data-computed]').textContent = `${parseFloat(c.fontSize).toFixed(1)} / ${parseFloat(c.lineHeight).toFixed(1)} · ${c.letterSpacing === 'normal' ? '0' : (parseFloat(c.letterSpacing) / parseFloat(c.fontSize)).toFixed(3) + 'em'}`;
+      });
+    };
+    print();
+    addEventListener('resize', print);
+  </script>
+</body>
+</html>
