@@ -222,6 +222,37 @@ export function initSplashB(splashRoot) {
   const sbDiscards = Array.from(document.querySelectorAll('[data-sb-discard]'));
   const heroCards = Array.from(document.querySelectorAll('[data-landing-hero-card]'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* THE MOBILE PASS (2026-09-07): the sequence runs on the NARROW build
+     too. The phone hero has no card row — its media is the VIDEO in the
+     lower half of the viewport — so the count, the hairline and the red
+     are the same, and where the desktop opens three windows and sorts
+     them onto the hero's row, the phone opens ONE (the middle card,
+     carrying the hero's own image) and travels it onto the video's
+     measured visible rect; it fades there as the ground clears, handing
+     over to the playing video. The two other hero cards and the three
+     discards leave the DOM at init on this build. The wide path is
+     byte-identical. */
+  const narrow = !window.matchMedia(WIDE_QUERY).matches;
+  const videoEl = document.querySelector('.landing-hero__video');
+  const videoRect = () => {
+    if (!(videoEl instanceof HTMLElement)) return null;
+    const r = videoEl.getBoundingClientRect();
+    const cp = getComputedStyle(videoEl).clipPath || '';
+    const m = cp.match(/inset\(([^)]+)\)/);
+    let t = 0, rr = 0, b = 0, l = 0;
+    if (m) {
+      const p = m[1].trim().split(/\s+/).map((v) => parseFloat(v) || 0);
+      [t, rr, b, l] = p.length === 1 ? [p[0], p[0], p[0], p[0]]
+        : p.length === 2 ? [p[0], p[1], p[0], p[1]]
+        : p.length === 3 ? [p[0], p[1], p[2], p[1]] : p;
+    }
+    return { left: r.left + l, top: r.top + t, width: r.width - l - rr, height: r.height - t - b };
+  };
+  if (narrow) {
+    [sbCards[0], sbCards[2], ...sbDiscards].forEach((el) => el?.remove());
+    sbDiscards.length = 0;
+    sbCards.splice(2, 1); sbCards.splice(0, 1);
+  }
 
   let tl = null;
   let done = false;
@@ -357,6 +388,13 @@ export function initSplashB(splashRoot) {
   const wrapHeadline = () => {
     if (headlineWrapped) return;
     headlineWrapped = true;
+    if (narrow) {
+      document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
+        if (!(p instanceof HTMLElement)) return;
+        p.dataset.revealDelay = String(2 * HEADLINE_LINE_STAGGER_S + 0.39);
+        wrapWordRevealElement(p);
+      });
+    }
     document.querySelectorAll('[data-landing-hero-headline-text] .landing-hero__headline-line')
       .forEach((el, i) => {
         if (!(el instanceof HTMLElement)) return;
@@ -414,8 +452,8 @@ export function initSplashB(splashRoot) {
   document.documentElement.classList.remove('splash-active');
   void splashRoot;
 
-  if (reduced || !(stage instanceof HTMLElement) || sbCards.length !== 3 || heroCards.length !== 3
-      || !window.matchMedia(WIDE_QUERY).matches) {
+  if (reduced || !(stage instanceof HTMLElement) || sbCards.length !== (narrow ? 1 : 3)
+      || (!narrow && heroCards.length !== 3)) {
     skip();
     return () => {};
   }
@@ -427,6 +465,12 @@ export function initSplashB(splashRoot) {
      below, not an assumption here. */
   let rects = [];
   const cardsPlaced = () => {
+    if (narrow) {
+      const r = videoRect();
+      if (!r || r.width < 1 || r.height < 1) return false;
+      rects = [r];
+      return true;
+    }
     const wrap = document.querySelector('.landing-hero__cards');
     if (!wrap || !wrap.classList.contains('is-placed')) return false;
     const r = heroCards.map((c) => c.getBoundingClientRect());
@@ -473,8 +517,8 @@ export function initSplashB(splashRoot) {
        return to zero and the landing stays pixel-exact.
        ARRIVAL ORDER: the three discards, then hero LEFT, RIGHT and the
        MIDDLE last so it lands on top — version A's own reorder, kept. */
-    pileOrder = [...sbDiscards, sbCards[0], sbCards[2], sbCards[1]];
-    gsap.set(sbDiscards, {
+    pileOrder = narrow ? [...sbCards] : [...sbDiscards, sbCards[0], sbCards[2], sbCards[1]];
+    if (sbDiscards.length) gsap.set(sbDiscards, {
       top: rects[1].top, left: rects[1].left, width: rects[1].width, height: rects[1].height,
       transformOrigin: '50% 50%',
       x: centreLeft - rects[1].left,
@@ -566,6 +610,14 @@ export function initSplashB(splashRoot) {
   });
 
   function build() {
+    /* the narrow build opens one window, so its sort follows that one
+       opening (the desktop's waits for its six); every later beat is
+       derived from the sort exactly as the constants are on wide */
+    const sortAt = narrow ? SB_OPEN_AT + SB_OPEN_DUR + SB_SORT_GAP : SB_SORT_AT;
+    const textAt = sortAt + SB_TRAVEL_DUR;
+    const logosAt = textAt + SB_INTRO_SETTLE_S;
+    const contentAt = textAt + 0.5;
+    const lineWipeDur = sortAt - SB_LINE_WIPE_AT;
     const counter = { value: 0 };
     tl = gsap.timeline({ onComplete: settle });
 
@@ -627,27 +679,28 @@ export function initSplashB(splashRoot) {
     tl.to(sbCards, {
       x: 0, y: 0, scale: 1, ease: 'power3.inOut',
       duration: SB_TRAVEL_DUR, stagger: SB_TRAVEL_STAGGER,
-    }, SB_SORT_AT);
+    }, sortAt);
 
 
     /* R54 item 7: the line WIPES AWAY left → right — its left edge
        travels right until it meets the right end — starting as the
        images appear and finishing exactly as the travel begins. The
        second line that used to ride over the first is gone. */
-    if (bar instanceof HTMLElement) tl.to(bar, { clipPath: 'inset(0 0 0 100%)', duration: SB_LINE_WIPE_DUR, ease: hop }, SB_LINE_WIPE_AT);
+    if (bar instanceof HTMLElement) tl.to(bar, { clipPath: 'inset(0 0 0 100%)', duration: lineWipeDur, ease: hop }, SB_LINE_WIPE_AT);
     /* the red resolves to the hero's own ground as the three come home */
-    if (ground instanceof HTMLElement) tl.to(ground, { opacity: 0, duration: SB_GROUND_OUT_DUR, ease: 'power1.inOut' }, SB_SORT_AT + SB_TRAVEL_DUR - SB_GROUND_OUT_DUR);
+    if (ground instanceof HTMLElement) tl.to(ground, { opacity: 0, duration: SB_GROUND_OUT_DUR, ease: 'power1.inOut' }, sortAt + SB_TRAVEL_DUR - SB_GROUND_OUT_DUR);
 
     /* ── the headline, then the nav and the rest — OUR vocabulary on the
        reference's clock. The hero's own modules own these reveals. */
+    if (narrow) tl.to(sbCards, { opacity: 0, duration: 0.5, ease: 'power1.inOut' }, textAt - 0.1);
     tl.add(() => {
       playHeroText();
       document.dispatchEvent(new CustomEvent('landing-splash-b:headline'));
-    }, SB_TEXT_AT);
-    tl.add(playLogos, SB_LOGOS_AT);
-    tl.add(() => { rippleNavIn(); document.dispatchEvent(new CustomEvent('landing-splash-b:content')); }, SB_CONTENT_AT);
+    }, textAt);
+    tl.add(playLogos, logosAt);
+    tl.add(() => { rippleNavIn(); document.dispatchEvent(new CustomEvent('landing-splash-b:content')); }, contentAt);
     /* hold the timeline open to the last beat so onComplete is the settle */
-    tl.to({}, { duration: 0.5 }, SB_CONTENT_AT + 1);
+    tl.to({}, { duration: 0.5 }, contentAt + 1);
   }
 
   if (import.meta.env.DEV) {

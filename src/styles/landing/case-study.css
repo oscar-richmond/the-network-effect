@@ -1293,3 +1293,84 @@ body.case-page {
 	font-weight: 600;
 	font-synthesis: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — the OUR WORK facts on the narrow
+   build. The desktop replaced WHAT WE DID with this section (36:1827);
+   phones catch up: the label + paragraph, then the four rows stacked
+   on 1px rules (label above copy). WHAT WE DID and the rail's first
+   segment (its label + paragraph were this section's copy) retire on
+   this build. Desktop untouched (its block is ≥1360).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2 .cs-facts {
+		display: block;
+		position: relative;
+		margin: 64px var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+	}
+	.landing-v2 .cs-facts__head { position: static; }
+	.landing-v2 .cs-facts__label {
+		position: static;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 16px;
+		letter-spacing: 0;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .cs-facts__para {
+		margin: 16px 0 0;
+		width: auto;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 17px;
+		line-height: 26px;
+		letter-spacing: -0.015em;
+		color: #161616;
+	}
+	.landing-v2 .cs-facts__table {
+		position: static;
+		margin-top: 32px;
+		height: auto;
+	}
+	.landing-v2 .cs-facts__divider { display: none; }
+	.landing-v2 .cs-facts__row {
+		position: static;
+		left: auto;
+		top: auto;
+		width: auto;
+		padding: 16px 0;
+		border-top: 1px solid #161616;
+	}
+	.landing-v2 .cs-facts__row:last-of-type { border-bottom: 1px solid #161616; }
+	.landing-v2 .cs-facts__rowlabel {
+		position: static;
+		margin: 0;
+		width: auto;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 16px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .cs-facts__rowcopy {
+		margin: 8px 0 0;
+		width: auto;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 17px;
+		line-height: 24px;
+		letter-spacing: -0.015em;
+		color: #161616;
+	}
+	.landing-v2 .cs-did,
+	.landing-v2 .cs-did + .cs-divider,
+	.landing-v2 .cs-rail-seg--1 { display: none; }
+}

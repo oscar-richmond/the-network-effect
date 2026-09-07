@@ -240,3 +240,24 @@
 		line-height: 40px;
 	}
 }
+
+/* ── THE MOBILE PASS (2026-09-07): the hero's proposition line, now on
+   the narrow build, at the band's intro tier; it sits below the band's
+   taller 40/44 headline ─────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-v2.landing-home .landing-hero__intro {
+		top: calc(49px + 25svh + 44px + 32px);
+		left: 15%;
+		right: 15%;
+	}
+	.landing-v2.landing-v2.landing-home .landing-hero__intro-text p {
+		font-size: 24px;
+		line-height: 30px;
+	}
+	/* the services stack's pillars note and the case facts at the band */
+	.landing-v2.landing-v2.landing-home .landing-services__note { font-size: 20px; line-height: 30px; max-width: 36em; }
+	.landing-v2.landing-v2 .cs-facts__para,
+	.landing-v2.landing-v2 .cs-facts__rowcopy { font-size: 20px; line-height: 30px; }
+	.landing-v2.landing-v2 .cs-facts__row { display: grid; grid-template-columns: 200px 1fr; column-gap: 24px; align-items: start; }
+	.landing-v2.landing-v2 .cs-facts__rowcopy { margin-top: 0; }
+}

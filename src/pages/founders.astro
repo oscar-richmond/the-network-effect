@@ -48,6 +48,10 @@ import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/founders.css';
 import '../styles/fonts.css';
+/* THE MOBILE PASS: does a biography paragraph restate the slide's
+   statement or serif line? (case-, quote- and whitespace-insensitive) */
+const normCopy = (t) => String(t || '').replace(/[’']/g, "'").replace(/\s+/g, ' ').trim().toLowerCase();
+const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => normCopy(x) === normCopy(para));
 ---
 
 <SiteShell
@@ -184,9 +188,14 @@ import '../styles/fonts.css';
             transition stagger (data-fd-el); hidden ≤1024. */}
         <p class="fd-slide__role" data-fd-el>{slide.roleLine}</p>
         <h3 class="fd-slide__staticname" data-fd-el>{slide.name}</h3>
-        <div class="fd-slide__bio2" data-fd-el>
+        {/* THE MOBILE PASS (2026-09-07): the biography paragraphs render on
+            the narrow build too (founders.css). A paragraph that restates
+            the phone's own statement or serif line (Ashley's two do,
+            verbatim) is marked and hidden there; a block of only echoes
+            collapses. Desktop unchanged (the classes are inert ≥1360). */}
+        <div class:list={['fd-slide__bio2', { 'fd-slide__bio2--allecho': slide.bioParas.every((para) => isEcho(slide, para)) }]} data-fd-el>
           {slide.bioParas.map((para) => (
-            <p class="fd-slide__bio2-para">{para}</p>
+            <p class:list={['fd-slide__bio2-para', { 'fd-slide__bio2-para--echo': isEcho(slide, para) }]}>{para}</p>
           ))}
         </div>
         <div class="fd-slide__rel" data-fd-el>

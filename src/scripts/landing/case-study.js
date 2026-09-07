@@ -693,7 +693,9 @@ export function initCaseStudy() {
        label/para convention (65%, once); the TABLE ROWS reveal in
        row order on the house 0.12 row stagger (the reel/access row
        treatment), one-shot at 75%. */
-    const factLines = isMob ? [] : Array.from(document.querySelectorAll('[data-cs-facts-line]'));
+    /* THE MOBILE PASS (2026-09-07): the facts render on the narrow build
+       too (case-study.css), so their reveals run on both widths. */
+    const factLines = Array.from(document.querySelectorAll('[data-cs-facts-line]'));
     factLines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
@@ -708,7 +710,7 @@ export function initCaseStudy() {
         onEnter: () => factLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l)),
       }));
     }
-    const factRows = isMob ? [] : Array.from(document.querySelectorAll('[data-cs-fact-row]'));
+    const factRows = Array.from(document.querySelectorAll('[data-cs-fact-row]'));
     factRows.forEach((row, r) => {
       row.querySelectorAll('[data-cs-fact-line]').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;

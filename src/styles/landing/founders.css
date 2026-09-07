@@ -1115,3 +1115,53 @@ body.founders-page {
 		display: none;
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — the desktop's per-founder copy on the
+   narrow build: the role eyebrow above the name, the second biography
+   paragraph(s) after the serif paragraph (the network line is the
+   phone's own advantage list, already there). The
+   phone's own blocks (name, statement, portrait, second photograph,
+   the advantage list, the CTAs) keep their places; the blocks after
+   the serif paragraph step down two orders to make room.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.founders-page .fd-slide__role {
+		display: block;
+		order: -1;
+		align-self: center;
+		margin: 0 0 12px;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 12px;
+		line-height: 16px;
+		letter-spacing: 0.02em;
+		text-align: center;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.founders-page .fd-slide__bio2 {
+		display: block;
+		order: 5;
+		align-self: stretch;
+		margin: 24px 0 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 17px;
+		line-height: 26px;
+		letter-spacing: -0.015em;
+		color: #161616;
+	}
+	.founders-page .fd-slide__bio2-para { margin: 0; }
+	.founders-page .fd-slide__bio2-para--echo,
+	.founders-page .fd-slide__bio2--allecho { display: none; }
+	.founders-page .fd-slide__bio2-para + .fd-slide__bio2-para { margin-top: 16px; }
+	/* the network line (fd-slide__rel) stays desktop-only: the phone's own
+	   advantage list below carries the same content with its indices */
+	.landing-v2 .fd-slide__m-img2 { order: 7; }
+	.landing-v2 .fd-slide__listlabel { order: 8; }
+	.landing-v2 .fd-slide__list { order: 9; }
+	.landing-v2 .fd-slide__m-ctarow { order: 10; }
+}

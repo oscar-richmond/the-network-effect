@@ -36,8 +36,25 @@
  * placeholders, flagged.
  */
 import { asset } from '../../utils/asset.js';
+import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
 
 const base = import.meta.env.BASE_URL;
+
+/* THE MOBILE PASS (2026-09-07): the phone's swipe columns derive from
+   the reel's lists — the desktop's current content, one source — in
+   columns of four (the file's own column depth). This supersedes the
+   file-verbatim columns below: CONNECT gains the four rows the desktop
+   has (Ambassador Programmes, Influencer & Creator Partnerships,
+   Community & Membership Engagement, Network-led Business Development)
+   and AMPLIFY loses its two boundary repeats. Column widths follow the
+   longest item at the strip's 14px Serrif measure. */
+const reelCols = (i) => {
+  const items = SERVICES_REEL_PILLARS[i].services.map((sv) => sv.t);
+  const cols = [];
+  const per = items.length % 4 === 1 ? 3 : 4; /* nine rows read as 3 × 3, not 4 + 4 + 1 */
+  for (let k = 0; k < items.length; k += per) cols.push(items.slice(k, k + per));
+  return cols.map((col) => ({ w: Math.round(Math.max(...col.map((t) => t.length)) * 7.8 + 24), items: col }));
+};
 
 const cards = [
   {
@@ -125,26 +142,15 @@ const cards = [
 const mobileCards = {
   immerse: {
     img: asset('/assets/landing/mobile/svc-immerse-m.jpg'),
-    cols: [
-      { w: 167, items: ['Talent-Led Experiences', 'Immersive Brand Worlds', 'Brand Launches', 'Fashion & Media Events'] },
-      { w: 274, items: ['Industry-leading Events', 'Cultural Programming', 'Brand Collaborations', 'Leadership Summits & Conferences'] },
-      { w: 215, items: ['Experiential Campaigns', 'Music & Food Festivals', 'Exceptional Culinary Experiences', 'Health & Wellbeing Retreats'] },
-    ],
+    cols: reelCols(0),
   },
   connect: {
     img: asset('/assets/landing/mobile/svc-connect-m.jpg'),
-    cols: [
-      { w: 263, items: ['Strategic Brand Partnerships', 'Celebrity & Talent Partnerships', 'Cultural Introductions', 'Commercial Relationship Development'] },
-      { w: 270, items: ['Long-term Partnership Strategy', 'Story-led Collaborations', 'Sponsorship Strategy & Acquisition', 'Brand-to-brand Collaborations'] },
-    ],
+    cols: reelCols(1),
   },
   amplify: {
     img: asset('/assets/landing/mobile/svc-amplify-m.jpg'),
-    cols: [
-      { w: 212, items: ['Social-first Content', 'Photography & Film Production', 'Design Systems & Brand Assets', 'Brand Storytelling'] },
-      { w: 128, items: ['Brand Storytelling', 'Campaign Creative', 'Creative Direction', 'Podcasts'] },
-      { w: 157, items: ['Podcasts', 'Documentary Formats', 'Original Content Series'] },
-    ],
+    cols: reelCols(2),
   },
 };
 
