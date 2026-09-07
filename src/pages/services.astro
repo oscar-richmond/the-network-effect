@@ -52,6 +52,7 @@ import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/services-v2.css';
 import '../styles/landing/services-6.css';
+import '../styles/landing/services-narrow.css';
 import '../styles/fonts.css';
 ---
 
@@ -160,7 +161,7 @@ import '../styles/fonts.css';
                 <div class="sv6-gal__strip" data-sv6-gal-strip>
                   {SV6_GALLERIES[pi].imgs.map((src, bi) => (
                     <figure class="sv6-gal__box" data-sv6-gal-box>
-                      <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 240px, (max-width: 1359px) 300px, 389px" alt="" loading="lazy" decoding="async" />
+                      <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 62vw, (max-width: 1359px) 22vw, 389px" alt="" loading="lazy" decoding="async" />
                       <figcaption class="sv6-gal__label">{SV6_GALLERIES[pi].labels[bi]}</figcaption>
                       {bi < SV6_GALLERIES[pi].imgs.length - 1 && (
                         <span class="sv6-gal__arrow" aria-hidden="true">
@@ -214,9 +215,8 @@ import '../styles/fonts.css';
     <div class="sv6-darkband" data-sv6-darkband aria-hidden="true"></div>
   </main>
 
-  {/* THE MOBILE PASS (2026-09-07): the legacy mobile build (the pre-sv6
-      page, ≤1359 only) is retired — the option-6 build above renders on
-      every width now (services-6.css carries its narrow block). */}
+  {/* The option-6 build above renders on every width — services-narrow.css
+      carries the phone and the band (the rebuild, 2026-09-07). */}
   {/* Desktop footer — the GREY/WHITE theme (Oscar's global ruling,
       2026-09-02; was the 38:2562 blue). AFTER the legacy block so the
       legacy driver's unscoped .landing-footer queries keep finding

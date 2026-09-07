@@ -54,6 +54,10 @@ const FRAG_LINE_H_PX = 88;
    The threshold reads the measured --sv6-hero-inset; the EXIT keeps
    the edge-contact-leave timing untouched (asymmetric by design). */
 const SV6_HERO_REST_INSET_PX = 24;
+/* THE REBUILD (2026-09-07), narrow-scoped: the fragment dwell's hold —
+   the desktop's ST_DWELL_HOLD_PX (300) reads long under a thumb; 240
+   keeps the hold legible inside one flick. */
+const FRAG_HOLD_PX_M = 240;
 const SV6_TEXT_ENTER_EXPAND_PX = 4;
 /* The landing's bottom pair (audit fix, 2026-08-27 — this build had
    NEITHER behaviour: the nav exit and idle snap only ever lived in
@@ -110,7 +114,9 @@ export function initServices6() {
        measured). The row at the viewport centre is the one active
        row on touch; keyboard focus keeps its parity handlers. */
     reduced, isMob: false, fineHover: narrow ? false : fineHover, schedule, root: page,
-    fixedImg: !narrow, controllers: svImgCtl, moveGate: !narrow, treatment: 'indent', tap: !narrow,
+    /* fixedImg on every width (the rebuild): the frame is CSS-placed here
+       too — the phone's top-right, the band's centre-right. */
+    fixedImg: true, controllers: svImgCtl, moveGate: !narrow, treatment: 'indent', tap: !narrow,
   }));
 
   /* ── SCROLL-ACTIVE ROWS (R3): between hovers, the row under the
@@ -125,7 +131,9 @@ export function initServices6() {
   const SV6_SLIDE_S = 0.5;
   const SV6_SLIDE_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
   if (!reduced) {
-    page.style.setProperty('--sv6-slide-x', `${SV6_SLIDE_X_PX}px`);
+    /* the narrow build's indent is its own token (services-narrow.css:
+       16 phone / 24 band — the desktop's 40 for the narrower measure) */
+    page.style.setProperty('--sv6-slide-x', `${narrow ? readPx('--sv-slide-x', 16) : SV6_SLIDE_X_PX}px`);
     page.style.setProperty('--sv6-slide-s', `${SV6_SLIDE_S}s`);
     page.style.setProperty('--sv6-slide-ease', SV6_SLIDE_EASE);
     svImgCtl.forEach((ctl) => {
@@ -232,7 +240,7 @@ export function initServices6() {
   /* ── The dark band — CONNECT image bottom → AMPLIFY image top. */
   const band = page.querySelector('[data-sv6-darkband]');
   const sizeBand = () => {
-    if (narrow) return; /* the band is display:none; the sections carry the ground */
+    /* (the rebuild: the band is the desktop's own layer on every width) */
     const connect = page.querySelector('#connect');
     const amplify = page.querySelector('#amplify');
     if (!(band instanceof HTMLElement) || !(connect instanceof HTMLElement) || !(amplify instanceof HTMLElement)) return;
@@ -263,7 +271,12 @@ export function initServices6() {
         const tb = document.querySelector('.home__topbar');
         return tb instanceof HTMLElement ? tb.getBoundingClientRect().bottom : 0;
       },
-      inkLines: () => Array.from(sec.querySelectorAll('[data-sv6-frag-line]')),
+      /* narrow (the rebuild): the lines sit on a grid with no baked
+         paddings, so box centring is ink centring — the closing
+         statement's own narrow rule; the hold is the narrow constant. */
+      inkLines: narrow ? undefined : () => Array.from(sec.querySelectorAll('[data-sv6-frag-line]')),
+      allowNarrow: narrow,
+      holdPx: narrow ? FRAG_HOLD_PX_M : undefined,
     }));
   });
   cleanups.push(() => fragCleanups.forEach((fn) => fn()));
@@ -337,7 +350,7 @@ export function initServices6() {
      (statement-bar.js; Oscar's spanning rule, 2026-08-27). The SSR
      barH inline heights remain only as the no-JS fallback. Layout,
      not choreography — runs under RM too. */
-  if (!narrow) page.querySelectorAll('[data-sv6-st]').forEach((sec) => {
+  page.querySelectorAll('[data-sv6-st]').forEach((sec) => {
     cleanups.push(initStatementBar(
       sec.querySelector('[data-sv6-bar]'),
       sec.querySelector('[data-sv6-statement]'),
@@ -595,9 +608,13 @@ export function initServices6() {
     let wrapped = { wordEls: [], img: null };
     if (footer instanceof HTMLElement) {
       wrapped = wrapFooterReveals(footer);
+      /* narrow: the footer sits under the page until the spacer scrolls it
+         clear (the sticky uncover) — the cue is the spacer 200 into the
+         viewport, the landing's narrow footer cue. */
+      const spacer = narrow ? document.querySelector('.sv6-footspacer') : null;
       triggers.push(ScrollTrigger.create({
-        trigger: footer,
-        start: 'top 90%',
+        trigger: spacer ?? footer,
+        start: spacer ? 'top bottom-=200' : 'top 90%',
         once: true,
         onEnter: () => playFooterReveals(wrapped, (fn, ms) => schedule(fn, ms)),
       }));
@@ -616,7 +633,9 @@ export function initServices6() {
   /* R36 (Oscar, 2026-09-04): the SHARED bottom binder (nav-motion.js)
      — sweep, hysteresis and the idle snap inside the footer's height,
      one implementation on every document-scroll page. */
-  if (!narrow) cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
+  /* every width (the rebuild): the sweep is the band's; the idle snap
+     gates itself off on narrow viewports (nav-motion.js). */
+  cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
 
   if (import.meta.env.DEV) {
     window.__services6 = {
