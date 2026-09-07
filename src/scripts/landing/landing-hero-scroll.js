@@ -621,7 +621,7 @@ export function initLandingHeroScroll() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* MOBILE (<=1024, the viewport.js seam): the SAME machine runs —
+  /* NARROW (≤ MOBILE_MAX_WIDTH, the viewport.js seam): the SAME machine runs —
      headline travel, line reveals, exit wipes, video expansion are all
      measurement-driven, so they follow the mobile CSS composition.
      What differs is ownership of the DERIVED layout: on mobile the

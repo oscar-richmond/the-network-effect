@@ -24,6 +24,12 @@ import StartProjectModal from '../components/StartProjectModal.astro';
 import { START_PROJECT_MODAL } from '../data/flags.js';
 import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
 import '../styles/landing/mobile.css';
+/* R85 (Oscar, 2026-09-06): the TABLET band, 768–1359 — the narrow
+   build's structure at tablet proportions. Imported directly after
+   mobile.css so it layers over the phone rules at equal specificity,
+   later in the cascade. Strictly min/max-gated: the phone (≤767) and
+   the shell (≥1360) never see it. */
+import '../styles/landing/tablet.css';
 
 interface Props {
   title?: string;

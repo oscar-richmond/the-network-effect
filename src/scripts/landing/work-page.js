@@ -67,6 +67,7 @@
  * swaps instant, footer content static, no custom cursor, no snap.
  * <=1024px: the CSS stacked list is the page; no machinery boots.
  */
+import { isMobileViewport } from './viewport.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
@@ -150,7 +151,7 @@ export function initWorkPage() {
   stage.addEventListener('click', onLinkClick);
   cleanups.push(() => stage.removeEventListener('click', onLinkClick));
 
-  /* <=1024 (the viewport.js seam) — the 402-frame rebuild: the page
+  /* The NARROW build (≤ MOBILE_MAX_WIDTH, viewport.js) — the 402-frame rebuild: the page
      is the NATIVE VERTICAL LIST (.work-m, its own markup in file
      order); no driver, no docking metas, no cursor, no band. This
      branch wires:
@@ -162,7 +163,12 @@ export function initWorkPage() {
      2. ENTRANCES — header lines via the shared line-reveal path,
         pills on the load beat, then one once-only trigger per entry
         (image → meta stagger via the CSS delays). */
-  if ((window.innerWidth || 1728) <= 1024) {
+  /* R83: the NARROW build, read from the one seam constant. This was a
+     bare `innerWidth <= 1024` — the only numeric seam literal left in
+     the build after the zoning moved to viewport.js — and it meant the
+     tablet band (768–1359) ran the DESKTOP branch against a stage the
+     stylesheet had hidden: no entry triggers, a blank grid. */
+  if (isMobileViewport()) {
     /* THE CHIP ROW (2026-08-26): the desktop filter pills are gone
        from the page markup (frame 35:1524 has none), but the MOBILE
        list keeps its working chips — so this branch now BUILDS the
@@ -709,7 +715,7 @@ export function initWorkPage() {
      from it (plus resize). NOTE the driver was already FINITE (the
      infinite loop was retired in an earlier rev), so no wrap logic
      existed to simplify beyond this. The MOBILE chip row lives in
-     the <=1024 branch above, which now builds its own markup.) */
+     the narrow branch above, which now builds its own markup.) */
 
   /* ── Keyboard: focusing a tile brings it to the anchor. */
   const onFocusIn = (e) => {
