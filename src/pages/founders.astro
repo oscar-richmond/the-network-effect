@@ -23,35 +23,26 @@
  * them, never an ancestor). The stage is the /work fixed-viewport
  * shape.
  *
- * MOBILE (≤1024 — Figma cqJWAceQKUmyuhF1ZxYXLI frame 13:948
- * "iPhone 16 & 17 Pro - 5", 2026-08-14 rev 2; supersedes the 6:10
- * stacked build): NONE of the above exists — normal document
- * scroll, ONE founder profile shown at a time (Ashley lands first,
- * per the file). Switching happens via the thumb band riding a
- * sticky rail inside the first portrait (the images ARE the CTAs;
- * active carries the desktop indicator's 3px #232A89 stroke — see
- * the band comment in the markup for the pin grammar) or the name
- * chip beside FEATURED WORK — each swap replays the entrance
- * vocabulary. Mobile-only
- * anatomy (label/portrait/Serrif statement/second image/swap chip)
- * is desktop-hidden; see founders.css's mobile block +
- * founders-page.js's narrow branch.
+ * NARROW (the rebuild, 2026-09-07 — founders-narrow.css +
+ * founders-page.js's narrow branch): the SAME DOM on normal document
+ * scroll — the portrait frame sticky under the bar, the two blocks
+ * scrolling beneath it with the wipe, the indicator in the frame's
+ * corner, the column as a horizontal strip, the sweep as a full-bleed
+ * band, the footer's sticky uncover. The old mobile-only anatomy is
+ * retired.
  *
  * IMAGERY pending founder sign-off. STAGING ONLY.
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
-import { FOUNDERS_SLIDES, FOUNDERS_CTA } from '../data/landing/founders-page.js';
+import { FOUNDERS_SLIDES } from '../data/landing/founders-page.js';
 import { asset } from '../utils/asset.js';
-import { thumbSrcset, variantOr, gateSrcset, gateSizes } from '../utils/thumb-srcset.js';
+import { imageSrcset } from '../utils/thumb-srcset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/founders.css';
+import '../styles/landing/founders-narrow.css';
 import '../styles/fonts.css';
-/* THE MOBILE PASS: does a biography paragraph restate the slide's
-   statement or serif line? (case-, quote- and whitespace-insensitive) */
-const normCopy = (t) => String(t || '').replace(/[’']/g, "'").replace(/\s+/g, ' ').trim().toLowerCase();
-const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => normCopy(x) === normCopy(para));
 ---
 
 <SiteShell
@@ -85,10 +76,10 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
         a WHITE FLASH on this surface — Oscar's defect report).
         Combined coverage never drops below full. */}
     <div class="fd-portrait" data-fd-portrait aria-hidden="true">
-      {/* the mobile pass: the desktop portraits, thumbs and columns take the
-          narrow gate (thumb-srcset.js) — the phone never draws them */}
-      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} srcset={gateSrcset(asset(FOUNDERS_SLIDES[1].img), 870)} sizes={gateSizes(870)} alt="" loading="eager" decoding="async" />
-      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} srcset={gateSrcset(asset(FOUNDERS_SLIDES[0].img), 870)} sizes={gateSizes(870)} alt="" loading="eager" decoding="async" />
+      {/* the rebuild: the 870 variant serves the narrow frame, the desktop
+          keeps the full file (its sizes branch out-sizes every candidate) */}
+      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} srcset={imageSrcset(FOUNDERS_SLIDES[1].img, [870], 1728)} sizes="(max-width: 767px) 100vw, (max-width: 1359px) 40vw, 1728px" alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} srcset={imageSrcset(FOUNDERS_SLIDES[0].img, [870], 1728)} sizes="(max-width: 767px) 100vw, (max-width: 1359px) 40vw, 1728px" alt="" loading="eager" decoding="async" />
     </div>
 
     {/* ── Indicator — repositioned (Oscar, 2026-08-26): 24 from the
@@ -110,7 +101,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
             aria-current={i === 0 ? 'true' : 'false'}
             aria-label={`Go to founder ${slide.number}: ${slide.name}`}
           >
-            <img src={asset(slide.img)} srcset={gateSrcset(asset(slide.img), 870)} sizes={gateSizes(870)} alt="" loading="eager" decoding="async" />
+            <img src={asset(slide.img)} srcset={imageSrcset(slide.img, [176, 870], 1728)} sizes="(max-width: 1359px) 80px, 1728px" alt="" loading="eager" decoding="async" />
           </button>
         ))}
       </div>
@@ -136,7 +127,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
         {[0, 1].map(() => (
           FOUNDERS_SLIDES[0].colImgs.map((src) => (
             <div class="fd-col__slot">
-              <img src={asset(src)} srcset={gateSrcset(asset(src), 960)} sizes={gateSizes(960)} alt="" loading="eager" decoding="async" />
+              <img src={asset(src)} alt="" loading="eager" decoding="async" />
             </div>
           ))
         ))}
@@ -145,42 +136,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
 
     {/* ── Slides' text (bio, button, list) + the travelling name. */}
     {FOUNDERS_SLIDES.map((slide, i) => (
-      <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'} data-m-active={i === 1 ? 'true' : 'false'}>
-        {/* MOBILE-ONLY anatomy (Figma cqJWAceQKUmyuhF1ZxYXLI frame
-            13:948, 2026-08-14 rev 2): the centred name label, the
-            per-slide portrait, the Serrif statement, the second
-            image and the swap chip are mobile elements —
-            display:none above the seam (founders.css), no
-            data-fd-el, so the desktop driver and its stagger order
-            never see them. Mobile shows ONE slide at a time
-            (data-m-active — desktop ignores it; SSR lands Ashley,
-            the file's landing state) and sequences elements with
-            flex order (label → bio → portrait → statement → image
-            2 → list → CTA row); the DOM keeps the desktop's order. */}
-        <h2 class="fd-slide__m-label">{slide.name}</h2>
-        {/* Portrait + the NAME LABELS (Oscar's rev 4, 2026-08-14):
-            the difference labels live INSIDE the portrait and ride
-            sticky rails — starting 24px under the image top,
-            PINNING at the viewport middle while scrolling through,
-            and parking 24px above the image bottom — fully
-            reversible, native position:sticky (no scroll JS).
-            BAKED per slide: the founder's NAME always left,
-            "Founder 0N" (the data numbering — Robbo 01, Ashley 02)
-            always right. Separate rails so each blended label
-            carries sticky+blend on ITSELF (an isolating wrapper
-            would white them out — but note the img shares any
-            ancestor group, so entrance isolation is harmless: the
-            blend backdrop is the img either way). The face thumbs
-            are SEPARATE — the fixed dock below the slides. */}
-        <figure class="fd-slide__m-portrait">
-          <img src={variantOr(slide.img, 870)} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
-          <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
-            <span class="fd-m-switch-label fd-m-switch-label--l">{slide.name}</span>
-          </div>
-          <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
-            <span class="fd-m-switch-label fd-m-switch-label--r">Founder {slide.number}</span>
-          </div>
-        </figure>
+      <div class="fd-slide" data-fd-slide data-slide={String(i)} data-active={i === 0 ? 'true' : 'false'}>
         {/* ── FRAME 6:67 DESKTOP TEXT BLOCK (2026-08-26): role line
             (710,245), STATIC name 48/50 (710,287 — the frame's
             treatment; the travelling difference name still runs,
@@ -190,14 +146,9 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
             transition stagger (data-fd-el); hidden ≤1024. */}
         <p class="fd-slide__role" data-fd-el>{slide.roleLine}</p>
         <h3 class="fd-slide__staticname" data-fd-el>{slide.name}</h3>
-        {/* THE MOBILE PASS (2026-09-07): the biography paragraphs render on
-            the narrow build too (founders.css). A paragraph that restates
-            the phone's own statement or serif line (Ashley's two do,
-            verbatim) is marked and hidden there; a block of only echoes
-            collapses. Desktop unchanged (the classes are inert ≥1360). */}
-        <div class:list={['fd-slide__bio2', { 'fd-slide__bio2--allecho': slide.bioParas.every((para) => isEcho(slide, para)) }]} data-fd-el>
+        <div class="fd-slide__bio2" data-fd-el>
           {slide.bioParas.map((para) => (
-            <p class:list={['fd-slide__bio2-para', { 'fd-slide__bio2-para--echo': isEcho(slide, para) }]}>{para}</p>
+            <p class="fd-slide__bio2-para">{para}</p>
           ))}
         </div>
         <div class="fd-slide__rel" data-fd-el>
@@ -214,93 +165,6 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
             </p>
           ))}
         </div>
-        {/* Bio — bold block + Serrif block with the 24px gap
-            (Oscar's rev 2; was a continuous flow). MOBILE-ONLY now
-            (frame 6:67 replaced the desktop bio; ≥1025 hidden, no
-            data-fd-el so the desktop stagger never sees it). */}
-        <div class="fd-slide__bio">
-          <p class="fd-slide__bio-text fd-slide__bio-text--bold"
-            ><span class="fd-slide__bio-indent" aria-hidden="true"></span>{slide.bioBold}</p
-          >
-          <p class="fd-slide__bio-text fd-slide__bio-text--serrif">{slide.bioSerrif}</p>
-        </div>
-        {/* CTA row — desktop renders the wrapper as display:contents
-            (the button's absolute anchoring is untouched); mobile
-            lays FEATURED WORK + the swap chip as the file's 16px-gap
-            row. The chip carries the OTHER founder's name and swaps
-            the profile (founders-page.js narrow branch). */}
-        <div class="fd-slide__m-ctarow">
-          <a class="fd-slide__btn" data-fd-el href={FOUNDERS_CTA.href} data-char-ripple-trigger tabindex={i === 0 ? undefined : -1}>
-            <span data-char-ripple>{FOUNDERS_CTA.label}</span>
-            <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="12" height="12" data-char-ripple-arrow />
-          </a>
-          <button
-            type="button"
-            class="fd-slide__m-swapbtn"
-            data-fd-m-swap
-            data-target={String((i + 1) % FOUNDERS_SLIDES.length)}
-            aria-label={`View founder: ${FOUNDERS_SLIDES[(i + 1) % FOUNDERS_SLIDES.length].name}`}
-          >
-            <span>{FOUNDERS_SLIDES[(i + 1) % FOUNDERS_SLIDES.length].name}</span>
-            <img src={asset('/assets/landing/contact/cta-arrow.svg')} alt="" width="9" height="9" />
-          </button>
-        </div>
-        {/* MOBILE-ONLY now (≥1025 hidden — the frame's relationships
-            rows replace these on desktop; the approved indexed list
-            stays the mobile rendering). */}
-        <p class="fd-slide__listlabel">{slide.listLabel}</p>
-        <p class="fd-slide__list">
-          {slide.list.map((item, j) => (
-            <Fragment>
-              {/* Mobile wraps the list NATURALLY (the file's wrap
-                  grammar) — the desktop's authored breaks become
-                  plain separators there: the --m sep is desktop-
-                  hidden (base CSS), the <br>s are mobile-hidden. */}
-              {/* The sep's LEADING spaces are no-break (a line may
-                  END with a slash — the file's line 2 — but never
-                  START with one); the FINAL char is a normal space
-                  so mobile (white-space lifted) can break after it.
-                  NBSP advances = space advances and desktop keeps
-                  pre, so the desktop render is untouched. */}
-              {j > 0 && slide.list[j - 1].breakAfter && (
-                <Fragment>
-                  <span class="fd-slide__list-sep fd-slide__list-sep--m" aria-hidden="true">{'\u00A0\u00A0/\u00A0 '}</span>
-                  <br />
-                </Fragment>
-              )}
-              {j > 0 && !slide.list[j - 1].breakAfter && (
-                <span class="fd-slide__list-sep" aria-hidden="true">{'\u00A0\u00A0/\u00A0 '}</span>
-              )}
-              {/* An item's text may carry its OWN break (\n) — one
-                  item, one index, split across two lines with the
-                  index after the last word (Oscar's rev 5:
-                  "INDUSTRY / RELATIONSHIPS /03"). The space after
-                  the <br> is the words' separator once mobile hides
-                  the break (line-start spaces collapse on desktop). */}
-              <span class="fd-slide__list-item"
-                >{item.text.split('\n').map((part, k) => (
-                  <Fragment>{k > 0 && <Fragment><br />{' '}</Fragment>}{part}</Fragment>
-                ))}<sup class="fd-slide__list-index">{item.index}</sup></span
-              >
-            </Fragment>
-          ))}
-        </p>
-        {/* MOBILE Serrif statement — the file places the founder's
-            Serrif close AFTER the portrait as its own block (13:948
-            y930, now RIGHT-ALIGNED); same data field the desktop bio
-            renders (the bio's Serrif line hides on mobile — one
-            shown per breakpoint, never both). The leading spacer
-            mirrors the bio-indent grammar (the file keeps the lead
-            run). */}
-        <p class="fd-slide__m-serif"
-          ><span class="fd-slide__m-serif-indent" aria-hidden="true"></span>{slide.bioSerrif}</p
-        >
-        {/* MOBILE second image — the file's 370×370 slot under the
-            statement (13:1002). Ashley's is the file's new shot;
-            Robbo's is a flagged placeholder (see the data). */}
-        <figure class="fd-slide__m-img2" aria-hidden="true">
-          <img src={asset(slide.img2)} alt="" loading="lazy" decoding="async" />
-        </figure>
       </div>
     ))}
 
@@ -340,32 +204,6 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
     </figure>
     </div>
 
-    {/* MOBILE thumb dock (rev 4): the face CTAs sit fixed 32px from
-        the viewport bottom at all times — EXCEPT over the footer,
-        where the dock takes the site's blurred exit (opacity 0 +
-        blur 6, footer-page-js IO toggle) so it never blocks the
-        footer, re-entering in place on the way back up. The dock
-        wrapper owns fixed + blur (no blends inside — the labels
-        live in the portraits); the inner cluster owns the entrance.
-        Active stroke = JS (shared across both slides; Ashley lands). */}
-    <div class="fd-m-switchdock" data-fd-m-dock>
-      <nav class="fd-m-switch" data-fd-m-switch aria-label="Founder profiles">
-        {[1, 0].map((idx) => (
-          <button
-            type="button"
-            class="fd-m-switch__thumb"
-            data-fd-m-thumb
-            data-slide={String(idx)}
-            data-founder={FOUNDERS_SLIDES[idx].id}
-            aria-current={idx === 1 ? 'true' : 'false'}
-            aria-label={`View founder: ${FOUNDERS_SLIDES[idx].name}`}
-          >
-            <img src={asset(FOUNDERS_SLIDES[idx].img)} srcset={thumbSrcset(FOUNDERS_SLIDES[idx].img, 176, 870)} sizes="(max-width: 767px) 58px, 88px" alt="" loading="eager" decoding="async" />
-          </button>
-        ))}
-      </nav>
-    </div>
-
     <p class="fd-sr-live" data-fd-live aria-live="polite"></p>
   </main>
 
@@ -378,6 +216,9 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
         one-shot) — a page-scoped flag on the shared component. */}
     <LandingFooter theme="light" rowEntrance="scrub" />
   </div>
+  {/* the narrow build's uncover travel (founders-narrow.css; hidden in the
+      driver's fixed viewport) */}
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
 </SiteShell>
 
 <script>

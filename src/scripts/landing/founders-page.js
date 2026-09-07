@@ -46,7 +46,7 @@ import { NARROW_QUERY } from './viewport.js';
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createNavSweep } from './nav-motion.js';
-import { wrapWordRevealElement, wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { FOUNDERS_SLIDES } from '../../data/landing/founders-page.js';
 import { getLenisInstance } from './site-scroll.js';
 
@@ -183,10 +183,10 @@ export function initFoundersPage() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const narrow = window.matchMedia(NARROW_QUERY).matches;
   if (narrow) {
-    /* MOBILE (frame 13:948 rev 2, 2026-08-14): normal document
-       scroll — none of the driver below engages. One profile at a
-       time; the narrow branch owns the swap + entrance replay. */
-    return initFoundersMobile(stage, reduced);
+    /* THE NARROW BUILD (the rebuild, 2026-09-07): normal document scroll —
+       none of the driver below engages; the narrow branch owns the sticky
+       frame's wipe, the strip, the sweep and the entrances. */
+    return initFoundersNarrow(stage, reduced);
   }
 
   const content = stage.querySelector('[data-fd-content]');
@@ -859,250 +859,267 @@ export function initFoundersPage() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MOBILE (≤1024) — frame 13:948 rev 4 (2026-08-14): one founder
-   profile shown at a time (data-m-active; Ashley lands), swapped via
-   the fixed thumb dock or the CTA-row name chip. Every swap scrolls
-   home and REPLAYS the entrance vocabulary (word-reveal on the
-   blended lines, staggered fade-rise on the media) — the same
-   grammar the m-entrance one-shot used, owned here because replays
-   need resets.
+   THE NARROW BUILD (the rebuild, 2026-09-07) — the desktop
+   choreography's counterpart on normal document scroll (founders-
+   narrow.css). The portrait frame is STICKY under the bar; the two
+   blocks scroll beneath it; every visual is a pure function of
+   scrollY (reversible):
+     · THE WIPE — Robbo's layer wipes left-to-right off Ashley (the
+       desktop's clip + sin-curve edge blur, FD_REVEAL_BLUR_PX) as the
+       scroll crosses from Robbo's block to Ashley's: t runs from the
+       strip's top reaching the frame's bottom to Ashley's name
+       reaching the reading line; the indicator label rolls 01 → 02 and
+       the active stroke moves at t = 0.5 (the desktop's midpoint).
+     · THE STRIP — the column's images, rolled one set across the
+       strip's pass through the viewport; its slots build in left to
+       right as it enters (FD_COL_BUILD_STAGGER_MS, the desktop's).
+     · THE SWEEP — the WHO WE ARE photograph wipes in left-to-right
+       (the sweep's clip) over its own arrival: t from the band's top at
+       the viewport bottom to FD_SWEEP_ENTER_T of the viewport.
+     · ENTRANCES — each block's rows on the desktop's line-clip
+       vocabulary at FD_ROW_STAGGER_S, as the block enters.
+     · THE THUMBS glide the page to each founder's block; #ashley /
+       #robbo land there.
+     · THE FOOTER — the shared sticky uncover; its reveal on the spacer
+       cue (200 into the viewport). The desktop's scrubbed bottom row
+       joins the one-shot here (LOGGED: the scrub is the driver's).
+   RM: the wipe and the sweep are discrete at their midpoints; the
+   entrances are states. */
+const FD_SWEEP_ENTER_T = 0.7;      /* of the viewport height: the sweep is edge to edge here (retimed for the narrow build) */
+const FD_WIPE_LEAD_PX = 24;        /* the reading line: this far under the frame */
 
-   The name labels' pin behaviour (24px under the image top → pinned
-   at the viewport middle → parked 24px above the image bottom) and
-   their copy (name LEFT, "Founder 0N" RIGHT, the data numbering)
-   are pure CSS/markup — baked per slide. This controller toggles
-   slides, follows the dock's active stroke, wires thumbs + chips to
-   swapTo, and blurs the dock out over the footer (IO below).
-
-   WRAP TIMING: the word wrap groups lines from live offsetTop, so a
-   display:none slide can't be wrapped — each slide wraps lazily the
-   first time it is shown (post fonts.ready, pre-play). A swap that
-   lands before fonts resolve shows that slide statically (media
-   forced visible, lines never wrapped) rather than risking
-   fallback-metric grouping. */
-
-const M_LINE_STAGGER_S = 0.12; /* = m-entrance LINE_STAGGER_S */
-const M_MEDIA_AT_MS = 400; /* = m-entrance MEDIA_AT_MS */
-const M_MEDIA_STAGGER_MS = 120; /* = m-entrance MEDIA_STAGGER_MS */
-
-/**
- * @param {HTMLElement} stage
- * @param {boolean} reduced
- * @returns {() => void}
- */
-function initFoundersMobile(stage, reduced) {
+function initFoundersNarrow(stage, reduced) {
+  const portrait = stage.querySelector('[data-fd-portrait]');
+  const imgOver = stage.querySelector('[data-fd-img-over]');
   const slides = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-slide]')));
-  const thumbs = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-m-thumb]')));
-  const dock = stage.querySelector('[data-fd-m-dock]');
-  const cluster = stage.querySelector('[data-fd-m-switch]');
-  const swapBtns = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-m-swap]')));
+  const thumbs = /** @type {HTMLElement[]} */ (Array.from(stage.querySelectorAll('[data-fd-thumb]')));
+  const labelRow = stage.querySelector('[data-fd-labelrow]');
+  const label = stage.querySelector('[data-fd-label]');
   const live = stage.querySelector('[data-fd-live]');
+  const colWrap = stage.querySelector('.fd-col');
+  const colTrack = stage.querySelector('[data-fd-coltrack]');
+  const colSlots = colTrack instanceof HTMLElement
+    ? Array.from(colTrack.querySelectorAll('.fd-col__slot')).filter((el) => el instanceof HTMLElement)
+    : [];
+  const sweep = stage.querySelector('[data-fd-sweep]');
+  const footerWrap = document.querySelector('[data-fd-footer]');
+  const footerEl = footerWrap?.querySelector('[data-landing-footer]');
+  const spacer = document.querySelector('.landing-footer-spacer');
 
-  /* The desktop SSR gives the inactive slide's link tabindex=-1 —
-     meaningless here (the inactive slide is display:none, out of the
-     tab order by itself) and it would lock Ashley's landing CTA out
-     of keyboard reach. */
-  stage.querySelectorAll('.fd-slide__btn').forEach((btn) => btn.removeAttribute('tabindex'));
-
-  const lineSels = ['.fd-slide__m-label', '.fd-slide__bio-text--bold', '.fd-slide__m-serif'];
-  /* VISUAL top-to-bottom order (the CTA row sits after the list in
-     flex order but before it in the DOM) — the stagger reads down
-     the page. The name labels ride with the portrait; the thumb
-     dock is NOT here — it's shared, enters once, persists. */
-  const mediaSels = [
-    '.fd-slide__m-portrait',
-    '.fd-m-switch-label--l',
-    '.fd-m-switch-label--r',
-    '.fd-slide__m-img2',
-    '.fd-slide__listlabel',
-    '.fd-slide__list',
-    '.fd-slide__m-ctarow',
-  ];
-  const parts = slides.map((slide) => ({
-    lines: /** @type {HTMLElement[]} */ (
-      lineSels.map((sel) => slide.querySelector(sel)).filter((el) => el instanceof HTMLElement)
-    ),
-    media: /** @type {HTMLElement[]} */ (
-      mediaSels.map((sel) => slide.querySelector(sel)).filter((el) => el instanceof HTMLElement)
-    ),
-  }));
-
-  /* R21: the deep link on mobile — #robbo shows Robbo's profile;
-     #ashley / no hash = the file's landing state (Ashley). */
-  let active = /^#robbo$/i.test(window.location.hash || '') ? 0 : 1; /* Ashley lands (the file's state; SSR matches) */
   let disposed = false;
-  let fontsDone = false;
-  /** @type {ReturnType<typeof setTimeout>[]} */
   const timeouts = [];
-  /** @type {(() => void)[]} */
+  const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const cleanups = [];
+  const readPx = (prop, fallback) => {
+    const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+    return Number.isFinite(v) ? v : fallback;
+  };
 
-  /* BACK TO TOP (2026-08-27): this page was the one script that never
-     wired [data-footer-top], so the mobile legacy footer's button was
-     inert here while every other page scrolled home. The established
-     handler, verbatim (case-study.js / contact.js): real route
-     anchors — the footer's HOME, href="/" — navigate untouched; the
-     back-to-top BUTTON carries no href and gets the smooth scroll.
-     Mobile-only: desktop /founders is a fixed-viewport driver whose
-     footer family has no back-to-top at all. */
+  /* the desktop's tab rule is the driver's — both blocks are in flow */
+  stage.querySelectorAll('[tabindex="-1"]').forEach((el) => { if (el !== stage) el.removeAttribute('tabindex'); });
+  /* the footer's bottom row joins the one-shot reveal (the scrub is the driver's) */
+  footerWrap?.querySelector('[data-footer-row-scrub]')?.removeAttribute('data-footer-row-scrub');
+
+  /* ── geometry, re-derived on resize */
+  const vh = () => window.innerHeight || 844;
+  const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
+  const ind = stage.querySelector('[data-fd-ind]');
+  const frameTop = () => (portrait instanceof HTMLElement ? (parseFloat(getComputedStyle(portrait).top) || readPx('--nav-h', 64)) : readPx('--nav-h', 64));
+  const frameBottom = () => frameTop() + (portrait instanceof HTMLElement ? portrait.offsetHeight : 0);
+  let wipeStartY = 0;
+  let wipeEndY = 1;
+  const measure = () => {
+    const fb = frameBottom();
+    /* the indicator's anchor line: the frame's bottom less the inset (the
+       desktop's placeIndicator, on the sticky frame) */
+    if (ind instanceof HTMLElement) ind.style.top = `${(fb - readPx('--fd-ind-bottom', 16)).toFixed(1)}px`;
+    /* the frame is sticky: its bottom sits at fb in the viewport once
+       stuck — an element reaches it when scrollY = docTop − fb */
+    /* the window opens as Robbo's block LEAVES the reading area (its
+       bottom passing the frame's bottom) and closes as Ashley's name
+       reaches the reading line — the strip's pass sits inside it */
+    const robboEnd = slides[0] ? docTop(slides[0]) + slides[0].offsetHeight : 0;
+    const ashleyTop = slides[1] ? docTop(slides[1]) : robboEnd + 400;
+    wipeStartY = robboEnd - fb;
+    wipeEndY = Math.max(wipeStartY + 1, ashleyTop - fb - FD_WIPE_LEAD_PX);
+  };
+
+  /* ── the entrances: the desktop's line-clip rows at FD_ROW_STAGGER_S */
+  const REVEAL_TEXT_SEL = '.fd-slide__role, .fd-slide__staticname, .fd-slide__bio2-para, .fd-slide__rel-label';
+  const REVEAL_ROW_SEL = '.fd-slide__rel-row';
+  const slideParts = slides.map((slide) => Array.from(slide.querySelectorAll(`${REVEAL_TEXT_SEL}, ${REVEAL_ROW_SEL}`))
+    .filter((el) => el instanceof HTMLElement && getComputedStyle(el).display !== 'none'));
+  const wrappedSlide = [false, false];
+  const playedSlide = [false, false];
+  const ensureWrapped = (i) => {
+    if (wrappedSlide[i] || reduced) return;
+    wrappedSlide[i] = true;
+    slideParts[i].forEach((el) => wrapLineRevealElement(el));
+    let row = 0;
+    slideParts[i].forEach((el) => {
+      el.querySelectorAll('.lr-inner').forEach((inner) => {
+        if (inner instanceof HTMLElement) inner.style.transitionDelay = `${(row * FD_ROW_STAGGER_S).toFixed(2)}s`;
+        row += 1;
+      });
+    });
+  };
+  const playSlide = (i) => {
+    /* never before the wrap (a play with no clips would mark the block
+       played and leave its later-wrapped rows hidden) */
+    if (playedSlide[i] || reduced || !wrappedSlide[i]) return;
+    playedSlide[i] = true;
+    slideParts[i].forEach((el) => playLineRevealElement(el));
+  };
+
+  /* ── the strip: the build as it enters, the roll on the scroll */
+  colSlots.forEach((s) => s.style.setProperty('--fd-build-s', `${FD_COL_BUILD_S}s`));
+  let colBuilt = false;
+  const buildColumn = () => {
+    if (colBuilt) return;
+    colBuilt = true;
+    if (reduced) { colSlots.forEach((s) => s.classList.add('is-visible')); return; }
+    colSlots.forEach((el, k) => schedule(() => el.classList.add('is-visible'), k * FD_COL_BUILD_STAGGER_MS));
+  };
+  const setWidth = () => {
+    if (!(colTrack instanceof HTMLElement) || colSlots.length < 2) return 0;
+    const n = Math.round(colSlots.length / 2);
+    return (colSlots[n] ? colSlots[n].offsetLeft : colTrack.scrollWidth / 2);
+  };
+
+  /* ── the frame (every visual a pure f(scrollY)) */
+  let activeSlide = 0;
+  let announced = -1;
+  const announce = (i) => {
+    if (announced === i || !(live instanceof HTMLElement)) return;
+    announced = i;
+    live.textContent = `Founder ${FOUNDERS_SLIDES[i].number} of 02: ${FOUNDERS_SLIDES[i].name}`;
+  };
+  const setActiveSlide = (i) => {
+    if (activeSlide === i) return;
+    activeSlide = i;
+    thumbs.forEach((t, j) => t.setAttribute('aria-current', j === i ? 'true' : 'false'));
+    slides.forEach((s, j) => { s.dataset.active = j === i ? 'true' : 'false'; });
+    label?.classList.toggle('is-second', i === 1);
+    announce(i);
+  };
+  const frame = () => {
+    const y = window.scrollY || 0;
+    const h = vh();
+    /* THE WIPE */
+    const raw = clamp((y - wipeStartY) / (wipeEndY - wipeStartY), 0, 1);
+    const t = reduced ? (raw < 0.5 ? 0 : 1) : raw;
+    if (imgOver instanceof HTMLElement) {
+      imgOver.style.clipPath = t <= 0 ? '' : `inset(0 0 0 ${(t * 100).toFixed(2)}%)`;
+      imgOver.style.visibility = t >= 1 ? 'hidden' : '';
+      imgOver.style.filter = t > 0.001 && t < 0.999
+        ? `blur(${(FD_REVEAL_BLUR_PX * Math.sin(Math.PI * t)).toFixed(2)}px)`
+        : '';
+    }
+    if (labelRow instanceof HTMLElement) {
+      labelRow.style.transform = t > 0.001 ? `translate3d(0, ${(readPx('--fd-ind-travel', 44) * t).toFixed(1)}px, 0)` : '';
+    }
+    setActiveSlide(t >= 0.5 ? 1 : 0);
+    /* THE STRIP — one set across its pass */
+    if (colWrap instanceof HTMLElement && colTrack instanceof HTMLElement) {
+      const r = colWrap.getBoundingClientRect();
+      const p = clamp((h - r.top) / (h + r.height), 0, 1);
+      const roll = reduced ? 0 : setWidth() * p;
+      colTrack.style.transform = roll > 0.01 ? `translate3d(${(-roll).toFixed(2)}px, 0, 0)` : '';
+      if (r.top < h * 0.9) buildColumn();
+    }
+    /* THE SWEEP */
+    if (sweep instanceof HTMLElement) {
+      const r = sweep.getBoundingClientRect();
+      const sRaw = clamp((h - r.top) / (h * FD_SWEEP_ENTER_T), 0, 1);
+      const sT = reduced ? (sRaw < 0.5 ? 0 : 1) : sRaw;
+      sweep.style.clipPath = `inset(0 ${((1 - sT) * 100).toFixed(3)}% 0 0)`;
+      sweep.style.visibility = sT <= 0.0001 ? 'hidden' : 'visible';
+    }
+    /* THE BLOCKS' ROWS — as each block enters */
+    slides.forEach((slide, i) => {
+      if (playedSlide[i]) return;
+      const r = slide.getBoundingClientRect();
+      if (r.top < h * 0.85) playSlide(i);
+    });
+  };
+  let raf = 0;
+  const onScroll = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(); }); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  const onResize = () => { measure(); frame(); };
+  window.addEventListener('resize', onResize);
+  cleanups.push(() => {
+    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', onResize);
+    window.cancelAnimationFrame(raf);
+  });
+
+  /* ── the thumbs glide to the founder's block (the desktop's glide) */
+  const glideToSlide = (i, instant = false) => {
+    const slide = slides[i];
+    if (!(slide instanceof HTMLElement)) return;
+    const target = Math.max(0, docTop(slide) - frameBottom() - FD_WIPE_LEAD_PX);
+    const lenis = getLenisInstance();
+    if (instant) { window.scrollTo(0, target); lenis?.scrollTo(target, { immediate: true, force: true }); return; }
+    if (lenis) lenis.scrollTo(target, { duration: 1.0, easing: (x) => 1 - Math.pow(1 - x, 3) });
+    else window.scrollTo({ top: target, behavior: reduced ? 'auto' : 'smooth' });
+  };
+  thumbs.forEach((t) => {
+    const onClick = () => glideToSlide(Number(t.dataset.slide));
+    t.addEventListener('click', onClick);
+    cleanups.push(() => t.removeEventListener('click', onClick));
+  });
+
+  /* ── the footer's reveal on the spacer cue (the landing's narrow cue) */
+  let wrappedFooter = null;
+  let footerIo = null;
+
+  const fontsReady = document.fonts?.ready ?? Promise.resolve();
+  fontsReady.then(() => {
+    if (disposed) return;
+    ensureWrapped(0);
+    ensureWrapped(1);
+    measure();
+    /* the deep link: /founders#ashley lands on her block, #robbo on his */
+    const hash = window.location.hash || '';
+    if (/^#ashley$/i.test(hash)) glideToSlide(1, true);
+    else if (/^#robbo$/i.test(hash)) glideToSlide(0, true);
+    frame();
+    if (footerEl instanceof HTMLElement) {
+      wrappedFooter = wrapFooterReveals(footerEl);
+      const play = () => { if (wrappedFooter) playFooterReveals(wrappedFooter, schedule); };
+      if (reduced || typeof IntersectionObserver !== 'function' || !(spacer instanceof HTMLElement)) { play(); return; }
+      footerIo = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) { play(); footerIo?.disconnect(); footerIo = null; }
+      }, { rootMargin: '0px 0px -200px 0px', threshold: 0 });
+      footerIo.observe(spacer);
+    }
+  });
+  cleanups.push(() => { footerIo?.disconnect(); footerIo = null; });
+
+  /* the back-to-top links (the shared footer contract) */
   const topLinks = Array.from(document.querySelectorAll('[data-footer-top]'));
   const onTopClick = (e) => {
     const el = e.currentTarget;
     if (el instanceof HTMLAnchorElement && el.getAttribute('href')?.startsWith('/')) return;
     e.preventDefault();
     const lenis = getLenisInstance();
-    if (lenis) lenis.scrollTo(0, { duration: 1.2, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    if (lenis) lenis.scrollTo(0, { duration: 1.2, easing: (x) => 1 - Math.pow(1 - x, 3) });
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   topLinks.forEach((el) => el.addEventListener('click', onTopClick));
   cleanups.push(() => topLinks.forEach((el) => el.removeEventListener('click', onTopClick)));
 
-  const wrappedSlides = new Set();
-  const staticSlides = new Set();
+  measure();
+  frame();
+  announce(activeSlide);
 
-  const applyActive = (idx) => {
-    active = idx;
-    slides.forEach((s) => {
-      s.dataset.mActive = s.dataset.slide === String(idx) ? 'true' : 'false';
-    });
-    /* The dock is shared across slides — the stroke follows here. */
-    thumbs.forEach((t) => {
-      t.setAttribute('aria-current', t.dataset.slide === String(idx) ? 'true' : 'false');
-    });
-    if (live instanceof HTMLElement) {
-      live.textContent = `Founder: ${FOUNDERS_SLIDES[idx].name}`;
-    }
-  };
-
-  const ensureWrapped = (idx) => {
-    if (wrappedSlides.has(idx) || staticSlides.has(idx)) return;
-    wrappedSlides.add(idx);
-    parts[idx].lines.forEach((line, i) => {
-      line.dataset.revealDelay = String(i * M_LINE_STAGGER_S);
-      wrapWordRevealElement(line);
-    });
-  };
-
-  /* Rewind a slide's revealed state without animating: the inner
-     transitions (which carry the wrap's per-word delays) are
-     suppressed for the flip and restored verbatim. Runs in the same
-     task as the show — no paintable revealed frame. */
-  const resetSlide = (idx) => {
-    parts[idx].lines.forEach((line) => {
-      line.querySelectorAll(':scope > .lr-clip').forEach((clip) => {
-        const inner = clip.querySelector('.lr-inner');
-        if (inner instanceof HTMLElement) {
-          const t = inner.style.transition;
-          inner.style.transition = 'none';
-          clip.classList.remove('lr-visible');
-          void inner.offsetHeight;
-          inner.style.transition = t;
-        } else {
-          clip.classList.remove('lr-visible');
-        }
-      });
-    });
-    parts[idx].media.forEach((el) => {
-      el.style.transition = 'none';
-      el.classList.remove('is-visible');
-      void el.offsetHeight;
-      el.style.transition = '';
-    });
-  };
-
-  /* SYNCHRONOUS play — the pre-reveal state is committed with a
-     forced reflow first, so the class flips transition from it.
-     Deliberately NOT rAF-scheduled: throttled/embedded contexts
-     starve rAF entirely (caught live — the replay silently never
-     ran), while a reflow is deterministic everywhere. */
-  const playSlide = (idx) => {
-    void stage.offsetHeight;
-    parts[idx].lines.forEach((line) => playLineRevealElement(line));
-    parts[idx].media.forEach((el, i) => {
-      timeouts.push(
-        setTimeout(() => el.classList.add('is-visible'), M_MEDIA_AT_MS + i * M_MEDIA_STAGGER_MS),
-      );
-    });
-  };
-
-  const swapTo = (idx) => {
-    if (disposed || idx === active || !slides[idx]) return;
-    applyActive(idx);
-    window.scrollTo(0, 0);
-    if (reduced) return;
-    if (!fontsDone) {
-      /* Pre-fonts tap (sub-100ms window): show statically rather
-         than wrap against fallback metrics. */
-      staticSlides.add(idx);
-      parts[idx].media.forEach((el) => el.classList.add('is-visible'));
-      return;
-    }
-    ensureWrapped(idx); /* needs the slide VISIBLE — after applyActive */
-    resetSlide(idx);
-    playSlide(idx);
-  };
-
-  /* ── Wire the CTAs (the thumbs ARE the CTAs, plus the name chip). */
-  thumbs.forEach((t) => {
-    const onClick = () => swapTo(Number(t.dataset.slide));
-    t.addEventListener('click', onClick);
-    cleanups.push(() => t.removeEventListener('click', onClick));
-  });
-  swapBtns.forEach((b) => {
-    const onClick = () => swapTo(Number(b.dataset.target));
-    b.addEventListener('click', onClick);
-    cleanups.push(() => b.removeEventListener('click', onClick));
-  });
-
-  applyActive(active);
-
-  /* ── Footer clearance: the dock blurs out (the site's exit
-     vocabulary) as soon as the footer enters the viewport, and
-     blurs back in when it leaves on the way up — it must never
-     block the footer. Applies under reduced motion too (it's an
-     occlusion fix, not theatre). */
-  if (dock instanceof HTMLElement) {
-    const footer = document.querySelector('[data-landing-footer]');
-    if (footer && typeof IntersectionObserver === 'function') {
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            dock.classList.toggle('is-footer-hidden', entry.isIntersecting);
-          });
-        },
-        { threshold: 0 },
-      );
-      io.observe(footer);
-      cleanups.push(() => io.disconnect());
-    }
-  }
-
-  if (reduced) {
-    /* Hidden states are no-preference-gated; the classes keep the
-       DOM state coherent (the /work rule). Swaps still work — they
-       just cut, no theatre. */
-    parts.forEach((p) => p.media.forEach((el) => el.classList.add('is-visible')));
-    if (cluster instanceof HTMLElement) cluster.classList.add('is-visible');
-  } else {
-    /* Landing entrance: the section owns the first viewport, so it
-       plays on arrival (fonts-gated wrap first — the established
-       order). The dock enters ONCE at the media stagger's tail and
-       persists across swaps. */
-    const fontsReady = document.fonts?.ready ?? Promise.resolve();
-    fontsReady.then(() => {
-      if (disposed) return;
-      fontsDone = true;
-      if (!staticSlides.has(active)) ensureWrapped(active);
-      playSlide(active);
-      if (cluster instanceof HTMLElement) {
-        timeouts.push(
-          setTimeout(
-            () => cluster.classList.add('is-visible'),
-            M_MEDIA_AT_MS + parts[active].media.length * M_MEDIA_STAGGER_MS,
-          ),
-        );
-      }
-    });
+  if (import.meta.env.DEV) {
+    window.__founders = {
+      narrow: true,
+      state: () => ({ scrollY: window.scrollY, wipeStartY, wipeEndY, frameBottom: frameBottom(), activeSlide, setWidth: setWidth() }),
+      measure,
+      frame,
+    };
   }
 
   return () => {

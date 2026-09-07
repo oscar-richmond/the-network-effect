@@ -131,19 +131,5 @@
 		margin-bottom: 0;
 	}
 
-	/* ── /FOUNDERS ───────────────────────────────────────────────── */
-	/* the phone's normal-scroll structure, kept — the mobile swap owns
-	   the founder switch and its entrance, so the desktop's crossfading
-	   portrait stays out. What changes is proportion: the switch thumbs
-	   and labels scale to the width. */
-	.landing-v2.landing-v2 .fd-m-switch__thumb {
-		width: 88px;
-		height: 66px;
-	}
-	.landing-v2.landing-v2 .fd-m-switch-label {
-		font-size: 18px;
-		line-height: 26px;
-	}
-
 }
 
