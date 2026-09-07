@@ -630,3 +630,413 @@
 	font-weight: 600;
 	font-synthesis: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — the option-6 build on the NARROW
+   build (phone + tablet band). Until now phones served the pre-sv6
+   page (its title above the viewport at load, rows the desktop has
+   since cut, an ACCESS and a NETWORK section the desktop page does
+   not have). This block renders the SAME DOM the desktop draws, at
+   the phone's own tiers — the ones the legacy mobile page had
+   established: hero 32/34 serif+sans stacked, statements 26/30,
+   pillar titles 28/32 with the /0N at 14, subtitles 16/22, rows in
+   Serrif Condensed 18/24 on 1px dividers, the fragment statements at
+   the landing's mobile dline tier (30/30 −4%, flowing left-set). The
+   dark band is painted per section (the desktop's absolute band
+   layer needs the driver; here the CONNECT run — statement, table,
+   gallery, fragment — and the AMPLIFY pillar top carry #161616
+   themselves, gaps as padding so the ground is continuous). The
+   galleries are native swipe strips with scroll-snap; the tables
+   keep the sv-rows tap-to-activate and the scroll-active row's
+   indent. Desktop (≥1360) untouched.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2 .sv6 {
+		display: block;
+		position: relative;
+		background: #eeeef0;
+		color: #161616;
+		overflow-x: clip;
+	}
+	.landing-v2 .sv6-footwrap { display: contents; }
+	.landing-v2 .sv6-footspacer { display: none; }
+
+	/* ── HERO ── the phone's 32/34 tiers, the two faces stacked */
+	.landing-v2 .sv6-hero {
+		padding: 128px var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+	}
+	.landing-v2 .sv6-hero__title {
+		margin: 0;
+		white-space: normal;
+		font-size: 32px;
+		line-height: 34px;
+		text-transform: uppercase;
+	}
+	.landing-v2 .sv6-hero__t-serif,
+	.landing-v2 .sv6-hero__t-sans { display: block; }
+	.landing-v2 .sv6-hero__t-serif {
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		letter-spacing: -0.04em;
+	}
+	.landing-v2 .sv6-hero__t-sans {
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		letter-spacing: -0.05em;
+	}
+	.landing-v2 .sv6-hero__desc {
+		margin: 16px 0 0;
+		width: auto;
+		max-width: 36em;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 17px;
+		line-height: 26px;
+		letter-spacing: -0.015em;
+		color: #161616;
+	}
+
+	/* ── PILLAR HEADERS ── the image frame at the phone's height, the
+	   margin-to-full-bleed expansion kept (services-6.js scrubs the
+	   same var; its rest value is the page margin here) */
+	.landing-v2 .sv6-pillar {
+		position: relative;
+		margin-top: 64px;
+		height: 240px;
+		overflow: hidden;
+		--sv6-hero-inset: var(--m-margin, 24px);
+	}
+	.landing-v2 .sv6-pillar#amplify {
+		background: #161616;
+		margin-top: 0;
+		padding-top: 64px;
+		height: 304px; /* 64 of dark run above the 240 frame */
+	}
+	.landing-v2 .sv6-pillar__img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		clip-path: inset(0 var(--sv6-hero-inset) 0 var(--sv6-hero-inset));
+	}
+	.landing-v2 .sv6-pillar#amplify .sv6-pillar__img { top: 64px; height: 240px; }
+	.landing-v2 .sv6-pillar__text {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		padding-left: calc(var(--sv6-hero-inset) + 16px);
+		padding-right: calc(var(--sv6-hero-inset) + 16px);
+		pointer-events: none;
+	}
+	.landing-v2 .sv6-pillar#amplify .sv6-pillar__text { top: 64px; }
+	.landing-v2 .sv6-pillar__titlerow {
+		position: relative;
+		margin: 0;
+		white-space: nowrap;
+		font-size: 28px;
+		line-height: 32px;
+	}
+	.landing-v2 .sv6-pillar__name {
+		position: relative;
+		display: inline-block;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 28px;
+		line-height: 32px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+	.landing-v2 .sv6-pillar__num {
+		position: absolute;
+		left: calc(100% + 6px);
+		top: 1px;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 14px;
+		line-height: 14px;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+	.landing-v2 .sv6-pillar__sub {
+		margin: 10px 0 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 16px;
+		line-height: 22px;
+		letter-spacing: -0.03em;
+		white-space: normal;
+		color: #fff;
+		mix-blend-mode: difference;
+	}
+
+	/* ── STATEMENTS ── 26/30 uppercase with the red bar at the right */
+	.landing-v2 .sv6-st {
+		position: relative;
+		margin: 48px 0 0;
+		padding: 0 var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+	}
+	.landing-v2 .sv6-st--dark {
+		margin-top: 0;
+		padding-top: 48px;
+		background: #161616;
+	}
+	.landing-v2 .sv6-st__text {
+		margin: 0;
+		max-width: none;
+		padding-right: 22px;
+		font-weight: 600;
+		font-size: 26px;
+		line-height: 30px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .sv6-st--dark .sv6-st__text { color: #eeeef0; }
+	.landing-v2 .sv6-st__indent {
+		display: inline-block;
+		width: 52px;
+		height: 1px;
+	}
+	.landing-v2 .sv6-st__bar {
+		position: absolute;
+		right: var(--m-margin-safe-r, var(--m-margin, 24px));
+		top: 0;
+		bottom: 0;
+		width: 6px;
+		height: auto !important; /* the SSR barH is the desktop's; here the bar spans the block */
+		background: #c1250e;
+	}
+	.landing-v2 .sv6-st--dark .sv6-st__bar { top: 48px; }
+
+	/* ── TABLES ── the sv-rows contract at the phone: label above,
+	   rows on 1px dividers, tap-to-activate + the scroll-active
+	   row's 16px indent (the desktop's 40) */
+	.landing-v2 .sv6-table {
+		margin-top: 40px;
+		padding: 0 var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+	}
+	.landing-v2 .sv6-table--dark {
+		margin-top: 0;
+		padding-top: 40px;
+		background: #161616;
+	}
+	.landing-v2 .sv6-table .sv-rows__label {
+		position: static;
+		margin: 0 0 12px;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: 16px;
+		line-height: 20px;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .sv6-table .sv-rows__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		width: auto;
+	}
+	.landing-v2 .sv6-table .sv-rows__row {
+		position: relative;
+		display: block;
+		height: auto;
+		min-height: 52px;
+		padding: 14px 0;
+		cursor: pointer;
+	}
+	.landing-v2 .sv6-table .sv-rows__divider {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: #161616;
+	}
+	.landing-v2 .sv6-table .sv-rows__endline {
+		position: relative;
+		margin: 0;
+		width: auto;
+		height: 1px;
+	}
+	.landing-v2 .sv6-table .sv-rows__inner {
+		position: static;
+		display: block;
+		top: auto;
+		height: auto;
+		padding: 0;
+		transition: transform var(--sv6-slide-s, 0.5s) var(--sv6-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+	.landing-v2 .sv6-table .sv-rows__row.is-sactive .sv-rows__inner,
+	.landing-v2 .sv6-table .sv-rows__row.is-hactive .sv-rows__inner {
+		transform: translateX(16px);
+	}
+	.landing-v2 .sv6-table .sv-rows__text {
+		display: block;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: 18px;
+		line-height: 24px;
+		letter-spacing: -0.02em;
+		text-transform: none;
+		white-space: normal;
+		color: #161616;
+	}
+	.landing-v2 .sv6-table .sv-rows__img { display: none; }
+	.landing-v2 .sv6-table--dark .sv-rows__divider { background: #2f2f2f; }
+	.landing-v2 .sv6-table--dark .sv-rows__text,
+	.landing-v2 .sv6-table--dark .sv-rows__label { color: #eeeef0; }
+
+	/* ── GALLERIES ── native swipe strips; the desktop's pin + scrub
+	   stands aside (services-6.js skips it on this build) */
+	.landing-v2 .sv6-gal {
+		margin-top: 64px;
+		height: auto;
+	}
+	.landing-v2 .sv6-gal.sv6-on-dark {
+		margin-top: 0;
+		padding-top: 64px;
+		background: #161616;
+	}
+	.landing-v2 .sv6-gal__stage {
+		position: static;
+		height: auto;
+		overflow: visible;
+	}
+	.landing-v2 .sv6-gal__title {
+		margin: 0;
+		padding: 0 var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+		font-weight: 600;
+		font-size: 26px;
+		line-height: 30px;
+		letter-spacing: -0.035em;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .sv6-on-dark .sv6-gal__title { color: #eeeef0; }
+	.landing-v2 .sv6-gal__titleline { display: block; }
+	.landing-v2 .sv6-gal__strip {
+		display: flex;
+		gap: 8px;
+		width: auto;
+		margin-top: 32px;
+		padding: 0 var(--m-margin-safe-r, var(--m-margin, 24px)) 4px var(--m-margin-safe-l, var(--m-margin, 24px));
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x mandatory;
+		scroll-padding-left: var(--m-margin-safe-l, var(--m-margin, 24px));
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		will-change: auto;
+	}
+	.landing-v2 .sv6-gal__strip::-webkit-scrollbar { display: none; }
+	.landing-v2 .sv6-gal__box {
+		position: relative;
+		margin: 0;
+		width: 240px;
+		flex: none;
+		scroll-snap-align: start;
+	}
+	.landing-v2 .sv6-gal__box img {
+		width: 240px;
+		height: 281px;
+		object-fit: cover;
+		display: block;
+	}
+	.landing-v2 .sv6-gal__label {
+		display: block;
+		margin: 16px 0 0;
+		width: 100%;
+		font-weight: 600;
+		font-size: 12px;
+		line-height: 16px;
+		text-align: center;
+		text-transform: uppercase;
+		color: #161616;
+	}
+	.landing-v2 .sv6-on-dark .sv6-gal__label { color: #eeeef0; }
+	.landing-v2 .sv6-gal__arrow { display: none; }
+
+	/* ── FRAGMENT STATEMENTS ── the landing's mobile dline tier,
+	   flowing left-set (the authored x/y are the 1728 frame's) */
+	.landing-v2 .sv6-frag {
+		position: relative;
+		margin-top: 64px;
+	}
+	.landing-v2 .sv6-frag--dark {
+		margin-top: 0;
+		padding: 64px 0;
+		background: #161616;
+	}
+	.landing-v2 .sv6-frag__stage {
+		position: relative;
+		height: auto;
+		padding: 0 var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+	}
+	.landing-v2 .sv6-frag__line {
+		display: inline;
+		position: static;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 30px;
+		line-height: 30px;
+		letter-spacing: -0.04em;
+		text-transform: uppercase;
+		white-space: normal;
+		color: #161616;
+	}
+	.landing-v2 .sv6-frag__line::after { content: ' '; }
+	.landing-v2 .sv6-frag--dark .sv6-frag__line { color: #fff; }
+
+	/* the dark band layer is the desktop's; the grounds above stand in */
+	.landing-v2 .sv6-darkband { display: none; }
+
+	/* the closing statement: the page's section gap */
+	.landing-v2 .sv6 { padding-bottom: 0; }
+	.landing-v2 .sv6 .landing-closing-st { margin-top: 64px; }
+
+	/* entrances — the desktop's, restated for this build */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2 .sv6-gal__box {
+			opacity: 0;
+			transform: translateY(24px);
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+		.landing-v2 .sv6-gal__box.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+		.landing-v2 .sv6-st__bar {
+			transform: scaleY(0);
+			transform-origin: top;
+			transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+		.landing-v2 .sv6-st__bar.is-visible { transform: none; }
+		.landing-v2 .sv6-pillar__img {
+			opacity: 0;
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+		.landing-v2 .sv6-pillar__img.is-visible { opacity: 1; }
+		.landing-v2 .sv6-table .sv-rows__inner { transition: transform var(--sv6-slide-s, 0.5s) var(--sv6-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1)), opacity 0.6s ease-out; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2 .sv6-pillar { --sv6-hero-inset: 0px; }
+		.landing-v2 .sv6-table .sv-rows__inner { transition: none; }
+	}
+}

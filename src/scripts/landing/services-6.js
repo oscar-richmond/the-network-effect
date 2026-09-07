@@ -33,6 +33,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
+import { isMobileViewport } from './viewport.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
@@ -67,6 +68,19 @@ export function initServices6() {
   const timeouts = [];
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* THE MOBILE PASS (2026-09-07): this driver runs on BOTH builds now
+     (the legacy mobile page retired). narrow = the phone/tablet build:
+     the tables take the tap path (sv-rows), the galleries are native
+     swipe strips (no pin/scrub), the fragment dwell, the statement
+     bars, the dark-band layer and the bottom nav sweep stand aside —
+     services-6.css paints their equivalents. The pillar expansion
+     keeps its scrub; its rest inset is the page margin here. */
+  const narrow = isMobileViewport();
+  const readPx = (prop, fallback) => {
+    const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+    return Number.isFinite(v) ? v : fallback;
+  };
+  const restInset = narrow ? readPx('--m-margin', SV6_HERO_REST_INSET_PX) : SV6_HERO_REST_INSET_PX;
   const fineHover =
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');
@@ -85,8 +99,13 @@ export function initServices6() {
      their rules from services-6.css). The shared machinery keeps the
      full treatment for its other hosts. */
   cleanups.push(initSvRowsSections({
-    reduced, isMob: false, fineHover, schedule, root: page,
-    fixedImg: true, controllers: svImgCtl, moveGate: true, treatment: 'indent',
+    /* narrow: neither hover nor the tap path — a tapped row here would
+       indent with nothing to reveal (the frame is hidden ≤1359), and it
+       fought the scroll-active indent below (two rows indented at once,
+       measured). The row at the viewport centre is the one active
+       row on touch; keyboard focus keeps its parity handlers. */
+    reduced, isMob: false, fineHover: narrow ? false : fineHover, schedule, root: page,
+    fixedImg: !narrow, controllers: svImgCtl, moveGate: !narrow, treatment: 'indent', tap: !narrow,
   }));
 
   /* ── SCROLL-ACTIVE ROWS (R3): between hovers, the row under the
@@ -208,6 +227,7 @@ export function initServices6() {
   /* ── The dark band — CONNECT image bottom → AMPLIFY image top. */
   const band = page.querySelector('[data-sv6-darkband]');
   const sizeBand = () => {
+    if (narrow) return; /* the band is display:none; the sections carry the ground */
     const connect = page.querySelector('#connect');
     const amplify = page.querySelector('#amplify');
     if (!(band instanceof HTMLElement) || !(connect instanceof HTMLElement) || !(amplify instanceof HTMLElement)) return;
@@ -267,6 +287,7 @@ export function initServices6() {
   };
   const galTweens = [];
   const buildGals = () => {
+    if (narrow) return; /* native swipe strips on the narrow build */
     gals.forEach((gal) => {
       const stage = gal.querySelector('[data-sv6-gal-stage]');
       const strip = gal.querySelector('[data-sv6-gal-strip]');
@@ -311,7 +332,7 @@ export function initServices6() {
      (statement-bar.js; Oscar's spanning rule, 2026-08-27). The SSR
      barH inline heights remain only as the no-JS fallback. Layout,
      not choreography — runs under RM too. */
-  page.querySelectorAll('[data-sv6-st]').forEach((sec) => {
+  if (!narrow) page.querySelectorAll('[data-sv6-st]').forEach((sec) => {
     cleanups.push(initStatementBar(
       sec.querySelector('[data-sv6-bar]'),
       sec.querySelector('[data-sv6-statement]'),
@@ -442,7 +463,7 @@ export function initServices6() {
         });
       };
       const expand = gsap.fromTo(sec,
-        { '--sv6-hero-inset': '24px' },
+        { '--sv6-hero-inset': `${restInset}px` },
         {
           '--sv6-hero-inset': '0px',
           ease: 'power1.inOut',
@@ -475,7 +496,7 @@ export function initServices6() {
               );
               if (self.direction >= 0) {
                 if (Number.isFinite(inset)
-                  && inset <= SV6_HERO_REST_INSET_PX - SV6_TEXT_ENTER_EXPAND_PX) playTexts();
+                  && inset <= restInset - SV6_TEXT_ENTER_EXPAND_PX) playTexts();
               } else if (self.progress < 0.999) {
                 hideTexts();
               }
@@ -590,7 +611,7 @@ export function initServices6() {
   /* R36 (Oscar, 2026-09-04): the SHARED bottom binder (nav-motion.js)
      — sweep, hysteresis and the idle snap inside the footer's height,
      one implementation on every document-scroll page. */
-  cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
+  if (!narrow) cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
 
   if (import.meta.env.DEV) {
     window.__services6 = {

@@ -145,17 +145,35 @@
 		margin-bottom: 0;
 	}
 
-	/* ── /SERVICES (the legacy build at tablet proportions) ──────── */
-	/* pillar headers: taller — the phone's frame was cut for a 390
-	   measure; at 768+ the same crop is a letterbox */
-	.landing-v2.landing-v2 .sv-pillar__frame {
-		aspect-ratio: 16 / 10;
-		min-height: 360px;
-	}
-	.landing-v2.landing-v2 .sv-pillar__title {
+	/* ── /SERVICES (the option-6 build at tablet proportions — the mobile
+	   pass, 2026-09-07; the legacy build this block used to scale is
+	   retired) ────────────────────────────────────────────────────── */
+	/* pillar headers: taller — the phone's 240 frame is a letterbox at
+	   768+; the driver's expansion scrubs the same inset var */
+	.landing-v2.landing-v2 .sv6-pillar { height: 400px; }
+	.landing-v2.landing-v2 .sv6-pillar#amplify { height: 464px; }
+	.landing-v2.landing-v2 .sv6-pillar#amplify .sv6-pillar__img { height: 400px; }
+	.landing-v2.landing-v2 .sv6-pillar__titlerow,
+	.landing-v2.landing-v2 .sv6-pillar__name {
 		font-size: 44px;
 		line-height: 46px;
 	}
+	.landing-v2.landing-v2 .sv6-pillar__num { font-size: 18px; line-height: 18px; top: 3px; }
+	.landing-v2.landing-v2 .sv6-pillar__sub { font-size: 22px; line-height: 28px; }
+	/* hero, statements, gallery titles and the fragment statements sit
+	   between the phone's tiers and the desktop's */
+	.landing-v2.landing-v2 .sv6-hero__title { font-size: 48px; line-height: 50px; }
+	.landing-v2.landing-v2 .sv6-hero__desc { font-size: 24px; line-height: 32px; }
+	.landing-v2.landing-v2 .sv6-st__text,
+	.landing-v2.landing-v2 .sv6-gal__title { font-size: 36px; line-height: 40px; }
+	.landing-v2.landing-v2 .sv6-st__indent { width: 96px; }
+	.landing-v2.landing-v2 .sv6-frag__line { font-size: 44px; line-height: 44px; }
+	.landing-v2.landing-v2 .sv6-table .sv-rows__text { font-size: 22px; line-height: 28px; }
+	.landing-v2.landing-v2 .sv6-gal__box,
+	.landing-v2.landing-v2 .sv6-gal__box img { width: 300px; }
+	.landing-v2.landing-v2 .sv6-gal__box img { height: 352px; }
+	/* the closing statement (both pages) at the band's dline tier */
+	.landing-v2.landing-v2 .landing-closing-st__line { font-size: 44px; line-height: 44px; }
 
 	/* ── /CONTACT ────────────────────────────────────────────────── */
 	/* the CTAs on one row, as on the desktop, now there is width */

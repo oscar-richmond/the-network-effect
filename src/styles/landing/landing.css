@@ -8264,7 +8264,7 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
    sequence on the NARROW build (phone + tablet band). The desktop
    composition above is untouched (its block is ≥1360). The nine
    authored lines FLOW here — inline, a space after each — at the
-   mobile display tier: Dazzed 600 40/40 −4% uppercase, ink #161616
+   mobile dline tier (the access headline's): Dazzed 600 30/30 −4% uppercase, ink #161616
    (Oscar's ink ruling holds on the red). Ground: red is the RM /
    no-JS ground as on desktop; under motion closing-statement.js
    lands it white and scrubs to red over CLOSING_FADE_PX_M (400)
@@ -8291,8 +8291,8 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 		font-family: 'Dazzed', var(--font-display, sans-serif);
 		font-weight: 600;
 		font-synthesis: none;
-		font-size: 40px;
-		line-height: 40px;
+		font-size: 30px;
+		line-height: 30px;
 		letter-spacing: -0.04em;
 		text-transform: uppercase;
 		white-space: normal;

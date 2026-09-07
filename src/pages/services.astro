@@ -43,10 +43,8 @@
  * STAGING ONLY — nothing promoted anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
-import LandingNetwork from '../components/landing/LandingNetwork.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import ClosingStatement from '../components/landing/ClosingStatement.astro';
-import { SERVICES_HERO, SERVICES_PILLARS, SERVICES_ACCESS } from '../data/landing/services-v2.js';
 import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER, SV6_HOVER_IMGS } from '../data/landing/services-6.js';
 import { asset } from '../utils/asset.js';
 import { thumbSrcset } from '../utils/thumb-srcset.js';
@@ -216,173 +214,9 @@ import '../styles/fonts.css';
     <div class="sv6-darkband" data-sv6-darkband aria-hidden="true"></div>
   </main>
 
-  {/* ═════════ THE LEGACY BUILD — MOBILE ONLY (≤1024) ═════════
-      The previous page, byte-identical for the out-of-scope mobile
-      build: display:contents under the seam (geometry-invisible
-      wrapper), display:none above it. services-v2.js initialises
-      only below the seam. */}
-  <div class="sv-legacy" data-sv-legacy>
-  <div class="sv" data-services-v2>
-    <section class="sv-hero" data-sv-hero aria-label="From access to impact">
-      <div class="sv-hero__stage" data-sv-hero-stage>
-        <div class="sv-hero__track" data-sv-hero-track aria-hidden="true">
-          {SERVICES_HERO.wave.map((item) => (
-            <div
-              class="sv-hero__item"
-              data-sv-wave-speed={String(item.speed)}
-              style={`left:${item.x}px;top:calc(100% + ${item.y}px);width:${item.w}px;height:${item.h}px`}
-            >
-              <img src={asset(`/assets/pillar-waves/${item.file}.jpg`)} alt="" loading="eager" decoding="async" />
-            </div>
-          ))}
-        </div>
-        <canvas class="sv-hero__canvas" data-sv-hero-canvas aria-hidden="true"></canvas>
-      </div>
-      <div class="sv-hero__textwrap" data-sv-hero-text>
-        <h1 class="sv-hero__title" data-sv-hero-title>
-          <span class="sv-hero__title-serif">FROM ACCESS</span>
-          <span class="sv-hero__title-sans">TO IMPACT.</span>
-        </h1>
-        <p class="sv-hero__subtitle" data-sv-hero-subtitle>{SERVICES_HERO.subtitle}</p>
-      </div>
-    </section>
-
-    {SERVICES_PILLARS.map((p) => (
-      <Fragment>
-        <section class="sv-pillar" id={`m-${p.id}`} aria-label={`${p.num} — ${p.name}`}>
-          <div class="sv-pillar__frame" data-sv-pillar-frame>
-            <img class="sv-pillar__img" data-sv-pillar-img src={asset(p.fullImg)} alt="" loading="lazy" decoding="async" />
-          </div>
-          <div class="sv-pillar__text" aria-hidden="false">
-            <h2 class="sv-pillar__title" data-sv-pillar-title>{p.num} — {p.name}</h2>
-            <p class="sv-pillar__sub" data-sv-pillar-sub>{p.sub}</p>
-          </div>
-        </section>
-
-        <div class="sv-intro" data-sv-intro data-sv-dwell>
-          <div class="sv-st-stage" data-sv-dwell-stage>
-            <p class="sv-intro__statement" data-sv-statement
-              ><span class="sv-intro__indent" aria-hidden="true"></span>{p.statement}</p
-            >
-            {p.statementSub && <p class="sv-intro__sub" data-sv-statement-sub>{p.statementSub}</p>}
-            <div class="sv-intro__bar" data-sv-bar aria-hidden="true"></div>
-          </div>
-        </div>
-
-        <section
-          class="sv-rows"
-          data-sv-rows
-          style={`--sv-accent:${p.accent}`}
-          aria-label={`${p.name} services`}
-        >
-          <p class="sv-rows__label">{p.label}</p>
-          <ul class="sv-rows__list" data-sv-rows-list>
-            {p.rows.map((row) => (
-              <li
-                class="sv-rows__row"
-                data-sv-row
-                data-index={row.index}
-                data-text={row.text}
-                data-img={asset(row.img ?? p.hoverImg)}
-              >
-                <span class="sv-rows__divider" aria-hidden="true"></span>
-                <span class="sv-rows__inner">
-                  <span class="sv-rows__index">{row.index} /</span>
-                  <span class="sv-rows__text">{row.text}</span>
-                </span>
-                <span class="sv-rows__fill" aria-hidden="true"></span>
-                <span class="sv-rows__marq" data-sv-marq aria-hidden="true"></span>
-                <span class="sv-rows__edges" aria-hidden="true"></span>
-              </li>
-            ))}
-          </ul>
-          <div class="sv-rows__endline" data-sv-rows-end aria-hidden="true">
-            <span class="sv-rows__divider"></span>
-          </div>
-          <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
-            <img data-sv-img-base src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" />
-            <img data-sv-img-over src={asset(p.hoverImg)} alt="" loading="lazy" decoding="async" hidden />
-          </div>
-        </section>
-
-        {p.gallery && (
-          <Fragment>
-            <div class="sv-galhead" data-sv-galhead>
-              <h3 class="sv-galhead__title" data-sv-galhead-title>
-                {p.galleryTitle.map((line) => (
-                  <span class="sv-galhead__line">{line}</span>
-                ))}
-              </h3>
-              {p.galleryNote && (
-                <p class="sv-galhead__note" data-sv-galhead-note
-                  ><span class="sv-galhead__note-serrif">{p.galleryNote.serrif}</span><br />{p.galleryNote.bold}</p
-                >
-              )}
-            </div>
-            <div class="sv-gallery" data-sv-gallery>
-              {p.gallery.map((src) => (
-                <figure class="sv-gallery__tile" data-sv-tile>
-                  <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 4000px, (max-width: 1359px) 46vw, 389px" alt="" loading="lazy" decoding="async" />
-                </figure>
-              ))}
-            </div>
-            <div class="sv-flow" data-sv-flow>
-              {p.flow.map((block, i) => (
-                <Fragment>
-                  {i > 0 && (
-                    <span class="sv-flow__arrow" aria-hidden="true">
-                      <img src={asset('/assets/landing/services/flow-arrow.svg')} alt="" width="16" height="32" />
-                    </span>
-                  )}
-                  <span class="sv-flow__block" data-sv-flow-block>
-                    {block.map((line) => (
-                      <span class="sv-flow__line">{line}</span>
-                    ))}
-                  </span>
-                </Fragment>
-              ))}
-            </div>
-          </Fragment>
-        )}
-      </Fragment>
-    ))}
-
-    <div class="sv-fade-runway" data-sv-fade-runway aria-hidden="true"></div>
-
-    <div class="sv-access" data-sv-access>
-      <div class="sv-st-dwell" data-sv-dwell>
-        <div class="sv-st-stage" data-sv-dwell-stage>
-          <p class="sv-access__statement" data-sv-access-statement
-            ><span class="sv-intro__indent" aria-hidden="true"></span>{SERVICES_ACCESS.statement}</p
-          >
-          <p class="sv-access__note" data-sv-access-note>{SERVICES_ACCESS.note}</p>
-        </div>
-      </div>
-      <div class="sv-gallery sv-gallery--dark" data-sv-gallery>
-        {SERVICES_ACCESS.gallery.map((src) => (
-          <figure class="sv-gallery__tile" data-sv-tile>
-            <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 4000px, (max-width: 1359px) 46vw, 389px" alt="" loading="lazy" decoding="async" />
-          </figure>
-        ))}
-      </div>
-      <div class="sv-toggles" data-sv-toggles>
-        {SERVICES_ACCESS.toggles.map((pair) => (
-          <span class="sv-toggles__pair" data-sv-toggle>
-            <span>{pair[0]}</span>
-            <img src={asset('/assets/landing/services/toggle-arrows-a.svg')} alt="" width="24" height="12" />
-            <span>{pair[1]}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-
-    <LandingNetwork entry="prev-exit" />
-  </div>
-
-  <LandingFooter theme="light" />
-  <div class="landing-footer-spacer" aria-hidden="true"></div>
-  </div>
-
+  {/* THE MOBILE PASS (2026-09-07): the legacy mobile build (the pre-sv6
+      page, ≤1359 only) is retired — the option-6 build above renders on
+      every width now (services-6.css carries its narrow block). */}
   {/* Desktop footer — the GREY/WHITE theme (Oscar's global ruling,
       2026-09-02; was the 38:2562 blue). AFTER the legacy block so the
       legacy driver's unscoped .landing-footer queries keep finding
@@ -397,10 +231,7 @@ import '../styles/fonts.css';
 <script>
   import { initCharRipple } from '../scripts/char-ripple.js';
   import { initNavEntrance } from '../scripts/landing/nav-motion.js';
-  import { initLandingNetwork } from '../scripts/landing/landing-network.js';
-  import { initServicesV2 } from '../scripts/landing/services-v2.js';
   import { initServices6 } from '../scripts/landing/services-6.js';
-  import { isMobileViewport } from '../scripts/landing/viewport.js';
   /* R81 (Oscar, 2026-09-05): #immerse / #connect / #amplify land with
      the pillar's header image on the viewport's top edge. Booted for
      BOTH builds — it resolves the hash to whichever pillar markup is
@@ -409,12 +240,9 @@ import '../styles/fonts.css';
 
   const boot = () => {
     const fns = [initCharRipple(), initNavEntrance()];
-    if (isMobileViewport()) {
-      /* The legacy build (mobile only) — its own driver + network. */
-      fns.push(initServicesV2(), initLandingNetwork());
-    } else {
-      fns.push(initServices6());
-    }
+    /* THE MOBILE PASS (2026-09-07): one driver for both builds — it
+       branches on the width itself (its narrow path). */
+    fns.push(initServices6());
     /* After the build's own driver, so the sections it pins have been
        registered before the anchor measures them. */
     fns.push(initPillarAnchor());

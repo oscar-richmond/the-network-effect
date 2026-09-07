@@ -263,7 +263,7 @@ const rhythm = (card) => {
             so all three links landed a visitor at the top of the page with
             nothing scrolled. The mobile sections carry `m-` ids
             (services.astro renders `id={`m-${p.id}`}` on .sv-pillar). */}
-        <a class="landing-svc-card__btn" href={`${base}services#m-${card.id}`} data-char-ripple-trigger>
+        <a class="landing-svc-card__btn" href={`${base}services#${card.id}`} data-char-ripple-trigger>
           <span data-char-ripple>MORE INFO</span>
           <img
             src={asset('/assets/landing/services-stack/more-arrow.svg')}

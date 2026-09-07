@@ -47,7 +47,7 @@ const ROW_BAND_CENTRE_PX = 34;
    the shared `.is-active` fill/marquee/text-out rules engage; the host
    maps `.is-hactive` to its slide transform). The marquee tracks are
    not built in indent mode (nothing rolls). Existing hosts unchanged. */
-export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false, treatment = 'full' }) {
+export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false, treatment = 'full', tap = true }) {
   const cleanups = [];
   const activeClass = treatment === 'indent' ? 'is-hactive' : 'is-active';
   const rowSections = Array.from(root.querySelectorAll('[data-sv-rows]'));
@@ -264,7 +264,10 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
         if (moveGate) section.removeEventListener('pointermove', onMove);
         section.removeEventListener('pointerleave', onLeave);
       });
-    } else if (isTouchPrimary()) {
+    } else if (tap && isTouchPrimary()) {
+      /* tap = false (the sv6 tables on the narrow build): no tap path —
+         the row would indent with nothing to reveal; the scroll-active
+         row is the touch affordance there. Every other host keeps it. */
       /* A3 (mobile brief): TAP-TO-ACTIVATE — the rows are
          non-navigating showcases, so the tap owns activation
          outright: tap a row -> fill + marquee + the docked image
