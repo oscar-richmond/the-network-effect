@@ -658,8 +658,21 @@ export function initLandingHeroScroll() {
     }
     return VIDEO_BAND_TOP_PX;
   };
-  const vMargin = isMob ? VIDEO_MARGIN_PX_M : VIDEO_MARGIN_PX;
-  const headlineLeft = isMob ? HEADLINE_LEFT_MARGIN_M : HEADLINE_LEFT_MARGIN;
+  /* R85 (Oscar, 2026-09-06): the margins are READ from the page's own
+     tokens, with the constants as the fallback. The tablet band
+     (768–1359) sets --landing-video-margin and --m-margin to 32 on top
+     of the phone's 16; this machine was writing the clip inset inline
+     from VIDEO_MARGIN_PX_M every frame, so the video's edge stayed at
+     16 while every other block moved to 32 — the token existed, the
+     script did not consult it. At 1728 the token is 24 = the constant;
+     at ≤767 it is 16 = the constant; both are byte-identical by
+     construction. */
+  const readPx = (prop, fallback) => {
+    const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+    return Number.isFinite(v) ? v : fallback;
+  };
+  const vMargin = isMob ? readPx('--landing-video-margin', VIDEO_MARGIN_PX_M) : VIDEO_MARGIN_PX;
+  const headlineLeft = isMob ? readPx('--m-margin', HEADLINE_LEFT_MARGIN_M) : HEADLINE_LEFT_MARGIN;
 
   /* R8: the cards' rest geometry — written as inline layout (top/left/
      width/height) so the GL planes can read the rest top back from
