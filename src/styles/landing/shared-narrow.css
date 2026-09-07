@@ -132,7 +132,8 @@
 	}
 	.landing-v2.landing-v2.landing-home .landing-footer,
 	.landing-v2.landing-v2.case-page .landing-footer,
-	.landing-v2.landing-v2.services-6 .landing-footer {
+	.landing-v2.landing-v2.services-6 .landing-footer,
+	.landing-v2.landing-v2.contact-page .landing-footer {
 		position: sticky;
 		/* Pinned with its bottom at the viewport bottom (the desktop's
 		   construction) — or, when the footer is TALLER than the viewport
@@ -145,7 +146,8 @@
 	}
 	.landing-v2.landing-v2.landing-home .landing-footer-spacer,
 	.landing-v2.landing-v2.case-page .landing-footer-spacer,
-	.landing-v2.landing-v2.services-6 .landing-footer-spacer {
+	.landing-v2.landing-v2.services-6 .landing-footer-spacer,
+	.landing-v2.landing-v2.contact-page .landing-footer-spacer {
 		display: block;
 		height: var(--footer-h, 600px);
 		pointer-events: none;

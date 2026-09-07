@@ -38,6 +38,17 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* Bottom behaviours — the landing constants. */
 const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
+/* THE REBUILD (2026-09-07): the narrow build's footer publishes its
+   measured height (LandingFooter's --footer-h); the desktop keeps the
+   frame's 830. */
+const readPx = (prop, fallback) => {
+  const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+  return Number.isFinite(v) ? v : fallback;
+};
+const footerHeight = () => (isMobileViewport() ? readPx('--footer-h', FOOTER_H_PX) : FOOTER_H_PX);
+/* the band from 1024 carries the desktop's split composition
+   (contact-narrow.css sets --ct-split) — the rhythm derives there too */
+const isSplit = () => readPx('--ct-split', 0) === 1;
 
 const CAL_EMBED_SRC = 'https://app.cal.com/embed/embed.js';
 
@@ -76,14 +87,9 @@ export function initContactPage() {
   const centreTwin = () => {
     if (twinCentred || !(logoTwin instanceof HTMLElement)) return;
     twinCentred = true;
-    /* NAV RESPEC (2026-08-24): the desktop wordmark is
-       "TheNetworkEffect" at left 24 (contact.css) — no centring
-       margin. Mobile keeps the shipped centred twin unchanged. */
-    if (!isMobileViewport()) {
-      logoTwin.textContent = 'TheNetworkEffect';
-      return;
-    }
-    logoTwin.style.marginLeft = `${(-logoTwin.offsetWidth / 2).toFixed(1)}px`;
+    /* NAV RESPEC (2026-08-24): the wordmark is "TheNetworkEffect" at the
+       left margin — no centring margin (every width since the rebuild). */
+    logoTwin.textContent = 'TheNetworkEffect';
   };
 
   /* cal.com — first-open lazy mount (see header). */
@@ -393,7 +399,7 @@ export function initContactPage() {
     const { logos, label, cluster, intro, bar } = layoutEls;
     if (!(logos instanceof HTMLElement) || !(label instanceof HTMLElement)
       || !(cluster instanceof HTMLElement) || !(intro instanceof HTMLElement)
-      || isMobileViewport()) return;
+      || (isMobileViewport() && !isSplit())) return;
     const vh = window.innerHeight;
     /* a. the row */
     const rowTop = vh - CT_ROW_BOTTOM_GAP - CT_ROW_H;
@@ -441,12 +447,14 @@ export function initContactPage() {
      motion too (there is no entrance there, and the row still sits
      above the footer). Desktop only — the row is display:none under
      the seam. */
+  /* (the rebuild: every width — the row sits above the footer's uncover
+     on the narrow build too, its height the measured one) */
   const logos = document.querySelector('[data-ct-logos]');
-  if (logos instanceof HTMLElement && !isMobileViewport()) {
+  if (logos instanceof HTMLElement) {
     const clamp01 = (v) => Math.min(1, Math.max(0, v));
     const updateLogosFade = () => {
       const uncovered = window.innerHeight - page.getBoundingClientRect().bottom;
-      const p = clamp01(uncovered / FOOTER_H_PX);
+      const p = clamp01(uncovered / footerHeight());
       const o = 1 - clamp01((p - CT_LOGOS_FADE_START) / (CT_LOGOS_FADE_END - CT_LOGOS_FADE_START));
       logos.style.setProperty('--ct-logos-fade', o.toFixed(3));
       logos.style.visibility = o <= 0 ? 'hidden' : '';
@@ -481,10 +489,8 @@ export function initContactPage() {
       schedule(() => cta.classList.add('is-visible'), 300 + i * 60);
     });
 
-    /* Media — blur/fade at the hero-image beat: the image section
-       (desktop, R58) and the founders slot (mobile). */
+    /* Media — blur/fade at the hero-image beat: the image section (R58). */
     schedule(() => {
-      document.querySelector('[data-ct-media]')?.classList.add('is-visible');
       document.querySelector('[data-ct-image]')?.classList.add('is-visible');
     }, 300);
     /* R58: the label and the logo row follow the row items — 540 / 600;
@@ -498,10 +504,14 @@ export function initContactPage() {
     const footer = document.querySelector('[data-landing-footer]');
     if (footer instanceof HTMLElement) {
       const wrapped = wrapFooterReveals(footer);
+      /* narrow: the footer sits under the page until the spacer scrolls it
+         clear (the sticky uncover) — the cue is the spacer 200 into the
+         viewport, the landing's narrow footer cue. */
+      const spacer = isMobileViewport() ? document.querySelector('.landing-footer-spacer') : null;
       triggers.push(ScrollTrigger.create({
-        trigger: footer,
-        start: () => (isMobileViewport()
-          ? 'top 85%' /* mobile plain-flow footer — the desktop pin formula can never fire (landing-closing lesson) */
+        trigger: spacer ?? footer,
+        start: () => (spacer
+          ? 'top bottom-=200'
           : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),

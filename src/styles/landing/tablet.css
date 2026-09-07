@@ -131,17 +131,6 @@
 		margin-bottom: 0;
 	}
 
-	/* ── /CONTACT ────────────────────────────────────────────────── */
-	/* the CTAs on one row, as on the desktop, now there is width */
-	.landing-v2.landing-v2 .ct__ctas {
-		flex-direction: row;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 12px;
-	}
-	/* (the drawer's band rules moved to shared-narrow.css with the
-	   rebuild, 2026-09-07) */
-
 	/* ── /FOUNDERS ───────────────────────────────────────────────── */
 	/* the phone's normal-scroll structure, kept — the mobile swap owns
 	   the founder switch and its entrance, so the desktop's crossfading

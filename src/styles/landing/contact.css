@@ -51,25 +51,6 @@
 	color: #161616;
 }
 
-/* Line 2's serif face is the MOBILE build's shipped treatment (that
-   page is a separate pass, byte-identical here); the >=1025 respec
-   below neutralises it to the frame's all-Dazzed pair. */
-.landing-v2 .ct__intro-serrif {
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
-}
-
-@media (min-width: 1360px) {
-	.landing-v2 .ct__intro-serrif {
-		font-family: inherit;
-		font-weight: inherit;
-		font-synthesis: auto;
-		letter-spacing: inherit;
-	}
-}
-
 .landing-v2 .ct__intro-indent {
 	display: inline-block;
 	/* R58: LINE TWO's indent — the frame's ten leading spaces put the
@@ -105,25 +86,6 @@
    rev), and landing.css is the sheet every new-build page loads,
    so one definition serves both surfaces. Only this page's LAYOUT
    of them (.ct__ctas above) stays here. */
-
-/* Media — frame 51:2877: the founders photo in the 409×231 slot at
-   (1295, 418) — frame-fixed now (the centring retires). The frame's
-   internal crop is centre ±2%, so plain cover is faithful. */
-.landing-v2 .ct__media {
-	position: absolute;
-	left: 1295px;
-	top: 418px;
-	width: 409px;
-	height: 231px;
-	object-fit: cover;
-	display: block;
-	overflow: hidden;
-}
-/* R58: the founders slot is MOBILE-ONLY now — the desktop composition's
-   image is the .ct__image section (frame 1:208). */
-@media (min-width: 1360px) {
-	.landing-v2 .ct__media { display: none; }
-}
 
 /* ── Social icon chips (51:2862) — 48px squares, the More Info
    family fill, 16 apart, icons 24 centred. The family's hover is
@@ -161,15 +123,6 @@
 .landing-v2 .ct-social:focus-visible {
 	outline: 2px solid #eeeef0;
 	outline-offset: -4px;
-}
-
-/* DESKTOP ONLY — and this rule must come AFTER the base above, not
-   before it: at equal specificity the later rule wins, and a hide
-   written first is simply overridden (measured: the chips rendered at
-   390 and pushed mobile /contact 128px taller). The mobile build never
-   showed these chips and still does not. */
-@media (max-width: 1359px) {
-	.landing-v2 .ct-social { display: none; }
 }
 
 /* ── SCHEDULE A CALL modal — the lightbox machinery, brand-black
@@ -448,20 +401,6 @@
 		transform: none;
 	}
 
-	/* The media keeps its centring transform — the entrance rides
-	   opacity + blur instead of the rise (a translate would fight
-	   translateY(-50%)). */
-	.landing-v2 .ct__media {
-		opacity: 0;
-		filter: blur(6px);
-		transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
-			filter 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
-	}
-
-	.landing-v2 .ct__media.is-visible {
-		opacity: 1;
-		filter: blur(0);
-	}
 }
 
 /* RM: the modal opens/closes INSTANTLY — no blur/opacity
@@ -474,21 +413,6 @@
 	.landing-v2 .ct-modal__logo {
 		transition: none;
 	}
-}
-
-/* ── Sub-1024 — buttons stack; the modal goes full-screen (the
-   lightbox's mobile behaviour); ghosts are desktop dressing. */
-@media (max-width: 1359px) {
-	.landing-v2 .ct { height: auto; padding: 160px 24px 64px; }
-	.landing-v2 .ct__cluster { position: static; transform: none; }
-	.landing-v2 .ct__intro { width: auto; }
-	.landing-v2 .ct__intro-indent { width: 0; }
-	.landing-v2 .ct__ctas { margin-top: 32px; flex-direction: column; align-items: flex-start; }
-	.landing-v2 .ct__media { position: static; transform: none; margin-top: 32px; width: 100%; height: auto; aspect-ratio: 409 / 231; }
-	.landing-v2 .ct-modal__band { top: 0; }
-	.landing-v2 .ct-modal__ghost { display: none; }
-	.landing-v2 .ct-modal__window { left: 0; top: 0; width: 100%; height: 100%; }
-	.landing-v2 .ct-modal__close { left: auto; right: 16px; top: 16px; }
 }
 
 /* ── Copy-confirmation pill — the HOLDING page's tooltip treatment
@@ -541,39 +465,6 @@
 
 	.landing-v2 .ct-copy-tip.is-in { opacity: 1; }
 }
-
-/* ── MOBILE refinements (mobile brief, 2026-08-10). ─────────────── */
-@media (max-width: 1359px) {
-	.landing-v2 .ct__intro {
-		font-size: 30px;
-		line-height: 34px;
-		letter-spacing: normal; /* the desktop respec's −5% is 1728-only; mobile keeps its shipped tracking */
-	}
-
-	/* CTA rows: real tap targets. */
-	/* Page-weight batch item 9 (Oscar, 2026-09-04): the selector said
-	   .ct__cta — a class that exists nowhere. The CTAs are .ct-cta (a
-	   single hyphen, the component) inside .ct__ctas (the double-hyphen
-	   layout box), so this rule matched nothing and the mobile touch
-	   floor it was meant to guarantee was never applied.
-	   HEIGHT CHANGE, reported: the mobile CTAs render 64px tall (the
-	   shipped base), so a 44px minimum was already exceeded and fixing
-	   the selector changes NO rendered height at 390, 402 or 430. It is
-	   corrected because a dead rule is worse than none — it reads as
-	   cover for a floor that is not actually being held anywhere. */
-	.landing-v2 .ct-cta { min-height: 44px; }
-
-	/* Full-screen modal chrome: 44px close clear of the notch. */
-	.landing-v2 .ct-modal__close {
-		height: 44px;
-		top: max(12px, var(--safe-top, 0px));
-		right: max(12px, var(--safe-right, 0px));
-	}
-
-	/* The cal window scrolls its own content; keep momentum. */
-	.landing-v2 .ct-modal__cal { -webkit-overflow-scrolling: touch; }
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════
    R58 — THE CONTACT REDESIGN (Oscar, 2026-09-04), frame 1:90 as the
@@ -850,14 +741,6 @@
 	}
 }
 
-/* Under the seam nothing of the desktop composition exists. */
-@media (max-width: 1359px) {
-	.landing-v2 .ct__label,
-	.landing-v2 .ct__logos,
-	.landing-v2 .ct__image,
-	.landing-v2 .ct__chat { display: none; }
-}
-
 /* ENTRANCES (no-preference), re-anchored to the new layout — the live
    vocabulary: the intro's word reveal at 0; the four row items on the
    pills' fade-rise from 300 at 60 apart (START A PROJECT, EMAIL US,
@@ -890,113 +773,5 @@
 				filter 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 		}
 		.landing-v2 .ct__image.is-visible { opacity: 1; filter: blur(0); }
-	}
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   THE MOBILE PASS (2026-09-07) — the RED contact design on the
-   narrow build. The desktop moved to the red ground with black chips
-   (R58); the phone had stayed on the grey with the light pair. Here:
-   the red on the page's main, the chips black with white ink, the
-   two social squares in the row (48px — the touch floor), the nav
-   solid black over the red (the desktop's own contact rule), the
-   founders photograph beneath (R58's mobile media, kept), then the
-   WE'VE WORKED WITH label and the rolling logo row — the desktop's
-   marks and marquee, static under reduced motion. Desktop untouched.
-   ═══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1359px) {
-	.landing-v2.contact-page main[data-contact] { background: #c1250e; }
-	.landing-v2.contact-page .ct { padding-bottom: 48px; }
-	.landing-v2.contact-page .ct__ctas {
-		flex-direction: row;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 12px;
-	}
-	.landing-v2.contact-page .ct-cta {
-		height: 48px;
-		min-height: 48px;
-		padding: 0 16px;
-		gap: 8px;
-		background: #161616;
-		color: #ffffff;
-	}
-	.landing-v2.contact-page .ct-cta__arrow { width: 12px; height: 12px; }
-	.landing-v2.contact-page .ct-cta:focus-visible {
-		outline: 2px solid #eeeef0;
-		outline-offset: -4px;
-	}
-	.landing-v2.contact-page .ct-social { display: flex; }
-	/* the nav over the red: the desktop's contact rule, restated for
-	   the burger build */
-	.landing-v2.contact-page .home__topbar--about { mix-blend-mode: normal; }
-	.landing-v2.contact-page .home__topbar--about .home__logo,
-	.landing-v2.contact-page .home__topbar--about .home__menu-toggle {
-		mix-blend-mode: normal;
-		color: #161616;
-	}
-	/* the label + the rolling row, in flow under the photograph */
-	.landing-v2.contact-page .ct__label {
-		display: block;
-		position: static;
-		margin: 48px 0 0;
-		font-family: 'Dazzed', var(--font-display, sans-serif);
-		font-weight: 600;
-		font-synthesis: none;
-		font-size: 14px;
-		line-height: 18px;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		color: #161616;
-	}
-	.landing-v2.contact-page .ct__logos {
-		display: block;
-		position: relative;
-		left: auto;
-		top: auto;
-		margin: 20px -24px 0; /* the .ct block's own 24px padding, both builds (the band's 32 token overflowed it by 8) */
-		width: auto;
-		height: 100px;
-		overflow: hidden;
-		z-index: 1;
-	}
-	.landing-v2.contact-page .ct__logos-track {
-		position: absolute;
-		left: 0;
-		top: 0;
-		display: flex;
-		width: max-content;
-		will-change: transform;
-	}
-	.landing-v2.contact-page .ct__logo-cell {
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		width: 160px;
-		height: 100px;
-		margin-right: 32px;
-		background: rgba(255, 255, 255, 0.04);
-	}
-	.landing-v2.contact-page .ct__logo-cell img { display: block; max-width: none; }
-	.landing-v2.contact-page .ct__logos-band {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-		background: linear-gradient(90deg, #c1250e 0%, rgba(193, 37, 14, 0) 12%, rgba(193, 37, 14, 0) 88%, #c1250e 100%);
-	}
-	@media (prefers-reduced-motion: no-preference) {
-		.landing-v2.contact-page .ct__logos-track[data-direction='right'] {
-			animation: landing-network-marquee-right var(--ct-logo-row-dur, 48s) linear infinite;
-			animation-delay: var(--ct-logo-row-delay, 0s);
-		}
-		.landing-v2.contact-page .ct__logos-track[data-direction='left'] {
-			animation: landing-network-marquee-left var(--ct-logo-row-dur, 48s) linear infinite;
-			animation-delay: var(--ct-logo-row-delay, 0s);
-		}
 	}
 }
