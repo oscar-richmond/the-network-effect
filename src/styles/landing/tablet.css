@@ -64,6 +64,10 @@
 	   four. The token is the one rule here that needs the extra class. */
 	.landing-v2.landing-v2.landing-v2 {
 		--m-margin: 32px;
+		/* the landing's hero video reads its own inset token (the phone
+		   sets both to 16 in one rule); it follows the margin here so
+		   the video's edge and every other block's edge agree at 32 */
+		--landing-video-margin: 32px;
 		--m-margin-safe-l: max(var(--m-margin), var(--safe-left, 0px));
 		--m-margin-safe-r: max(var(--m-margin), var(--safe-right, 0px));
 	}
