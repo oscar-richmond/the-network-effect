@@ -7489,7 +7489,20 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    15.19 pads) — .ne-cta--float itself is untouched, the case-study
    chip stays red; CANCEL / BACK = the ghost (text) variant, so the
    pair never reads as identical. */
-.landing-v2 .sp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 40px; }
+/* R84 (Oscar, 2026-09-06) — THE SEND ROW'S GAP DERIVES FROM THE INTERIOR.
+   Step 2 is 862px of content at any height: 48 of top padding, the
+   index and title, four fields (564), this 40px gap, the 44px row, 56
+   of bottom padding. At the 16" reference (1117) it fits with room. At
+   the shortest interior in the shell zone — a 1366×768 laptop with
+   browser chrome, which the shell turns into 1728×835 — it overflowed
+   by exactly 27px and the panel scrolled to reach SEND. This gap is the
+   one discretionary space in the column, so it absorbs the shortfall:
+   full 40px whenever the interior allows, shrinking only below 862px
+   of height, never under 13px. 100dvh inside the shell's iframe IS the
+   interior. At 1117 the calc resolves to 295 and clamps to 40 — the
+   reference is untouched by construction; at 835 it resolves to 13 and
+   the content is exactly 835. Measured, not tuned. */
+.landing-v2 .sp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: clamp(13px, calc(100dvh - 822px), 40px); }
 /* R61 item 6b: in the success and error states the single button is
    LEFT-ALIGNED — its left edge flush with the text block above it (both
    are in the step's normal flow at the scroll wrapper's 48 inset), not
