@@ -45,7 +45,6 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport } from './viewport.js';
-import { initMobileEntrance } from './m-entrance.js';
 import { featuredUnitBottomCrossAt } from './landing-featured.js';
 
 /* R27 item 2 (Oscar, 2026-09-03) — THE MUCH EARLIER ENTRANCE: this
@@ -156,26 +155,11 @@ const collapseStartExitPx = (vw) => Math.min(
 /** Word pairs — shared source (mobile renders all six statically). */
 const PAIRS = ACCESS_PAIRS;
 
-/* ── MOBILE ROWS (the 402-frame rebuild, 2026-08-13) ────────────────
-   The desktop's opposed COLUMNS become two opposed horizontal ROWS:
-   360×240 items on a 368px pitch (file 0:299-0:328 — the file's
-   neighbour positions are exactly one pitch apart), top row
-   travelling RIGHT, bottom LEFT, autonomously. ONE clock drives an
-   offset both rows consume with opposite signs, and the top row's
-   DOM order is reversed (Astro), so the centred pair is a desktop
-   pair BY CONSTRUCTION — never by tuned coincidence. The highlight
-   slots sit at 50vw+60 (top) and 50vw−60 (bottom), decoded from the
-   file. Rhythm: pairs DWELL centred (words in), then TRAVEL one
-   pitch on the holding curve (words retire at departure, the next
-   pair's words rise on arrival). All tunables: */
-const ACCESS_M_PITCH_PX = 368; // 360 item + 8 gap
-const ACCESS_M_SET = 6; // pairs per row; rendered twice for the wrap
-const ACCESS_M_DWELL_MS = 2200; // centred hold per pair
-const ACCESS_M_TRAVEL_MS = 900; // one-pitch travel
-const ACCESS_M_CENTRE_SHIFT_PX = 60; // highlight slots: 50vw ± this
-const ACCESS_M_DIM_BLUR_PX = 4; // off-centre soften (desktop veil grammar)
-const ACCESS_M_VEIL_ALPHA = 0.25; // off-centre white veil strength
-const ACCESS_M_WORD_SWAP_MS = 450; // word retire/reveal transition (CSS twin)
+/* THE REBUILD (2026-09-07): below the seam the section runs THIS
+   choreography at phone geometry — see buildNarrow at the end of the
+   file. The retired mobile design's clock-driven rows (and their
+   ACCESS_M_* constants) are gone. The narrow build's runway and exit
+   are tokens (landing-narrow.css: --ac-step, --ac-exit). */
 
 export function initLandingAccess() {
   const section = document.querySelector('[data-landing-access]');
@@ -185,172 +169,8 @@ export function initLandingAccess() {
     return () => {};
   }
 
-  /* MOBILE (the viewport.js seam): the opposed-column scrub, veils
-     and the GL wave never boot (zero WebGL contexts on phones, A4) —
-     the ROWS mechanic runs instead (constants block above). The
-     reduced-motion return upstream means this code never runs under
-     RM: the static markup/CSS frame (pair 1 centred, words in) is
-     the RM rendering. */
-  if (isMobileViewport()) {
-    const tracks = {
-      top: section.querySelector('[data-access-mtrack="top"]'),
-      bottom: section.querySelector('[data-access-mtrack="bottom"]'),
-    };
-    const inners = {
-      top: section.querySelector('[data-access-mword-inner="top"]'),
-      bottom: section.querySelector('[data-access-mword-inner="bottom"]'),
-    };
-    const mrows = section.querySelector('[data-access-mrows]');
-
-    /* Entrance (R1 revision): the welded mixed-face headline takes
-       the fade-rise — it's PLAIN INK on mobile (the interim block
-       already flattened its blend for the flat ground), and no
-       reveal wrap survives welded spans. The rows block fade-rises
-       too (its words blend against the row's own imagery, inside
-       the risen group — safe). */
-    const cleanupEnt = initMobileEntrance(section, {
-      media: [
-        section.querySelector('[data-access-headline]'),
-        mrows,
-      ].filter((el) => el instanceof HTMLElement),
-    });
-
-    if (!(tracks.top instanceof HTMLElement) || !(tracks.bottom instanceof HTMLElement) || !(mrows instanceof HTMLElement)) {
-      return cleanupEnt;
-    }
-
-    const setW = ACCESS_M_PITCH_PX * ACCESS_M_SET;
-    const mod = (v) => ((v % setW) + setW) % setW;
-    const items = {
-      top: Array.from(tracks.top.children).filter((el) => el instanceof HTMLElement),
-      bottom: Array.from(tracks.bottom.children).filter((el) => el instanceof HTMLElement),
-    };
-    const ease = gsap.parseEase('power2.inOut');
-
-    /* Track x for a continuous rightward offset (top) / leftward
-       (bottom), wrapped so the doubled strip always covers the
-       viewport. Derivations in the constants block; the centre reads
-       live, so resize needs no rebuild. */
-    const xTop = (off) => {
-      const rest = window.innerWidth / 2 + ACCESS_M_CENTRE_SHIFT_PX - 180 - (ACCESS_M_SET - 1) * ACCESS_M_PITCH_PX;
-      return -setW + mod(rest + off);
-    };
-    const xBottom = (off) => {
-      const rest = window.innerWidth / 2 - ACCESS_M_CENTRE_SHIFT_PX - 180;
-      return -setW + mod(rest - off);
-    };
-
-    const applyX = (off) => {
-      tracks.top.style.transform = `translateX(${xTop(off).toFixed(2)}px)`;
-      tracks.bottom.style.transform = `translateX(${xBottom(off).toFixed(2)}px)`;
-    };
-
-    /* Continuous dim: veil/blur proportional to each item's distance
-       from its row's highlight slot (the desktop veil grammar). */
-    const applyDim = () => {
-      ['top', 'bottom'].forEach((key) => {
-        const centre = window.innerWidth / 2 + (key === 'top' ? 1 : -1) * ACCESS_M_CENTRE_SHIFT_PX;
-        items[key].forEach((item) => {
-          const r = item.getBoundingClientRect();
-          const t = Math.min(1, Math.abs(r.left + r.width / 2 - centre) / ACCESS_M_PITCH_PX);
-          const veil = item.lastElementChild;
-          if (veil instanceof HTMLElement) veil.style.opacity = t.toFixed(3);
-          const img = item.firstElementChild;
-          if (img instanceof HTMLElement) {
-            img.style.filter = t > 0.02 ? `blur(${(t * ACCESS_M_DIM_BLUR_PX).toFixed(2)}px)` : 'none';
-          }
-        });
-      });
-    };
-
-    const setWords = (pairIdx) => {
-      if (inners.top instanceof HTMLElement) inners.top.textContent = PAIRS[pairIdx][0];
-      if (inners.bottom instanceof HTMLElement) inners.bottom.textContent = PAIRS[pairIdx][1];
-    };
-    const retireWords = () => {
-      [inners.top, inners.bottom].forEach((el) => el?.classList.add('is-out'));
-    };
-    const revealWords = (pairIdx) => {
-      setWords(pairIdx);
-      [inners.top, inners.bottom].forEach((el) => {
-        if (!(el instanceof HTMLElement)) return;
-        void el.offsetHeight; /* commit the swapped text while hidden */
-        el.classList.remove('is-out');
-      });
-    };
-
-    /* The clock: dwell → travel(+1 pitch, eased) → dwell…; only ticks
-       while the rows are on screen (IntersectionObserver). */
-    let steps = 0;
-    let phase = 'dwell';
-    let phaseStart = 0;
-    let raf = 0;
-
-    const tick = (now) => {
-      if (!phaseStart) phaseStart = now;
-      const elapsed = now - phaseStart;
-      if (phase === 'dwell') {
-        if (elapsed >= ACCESS_M_DWELL_MS) {
-          phase = 'travel';
-          phaseStart = now;
-          retireWords();
-        }
-        applyX(steps * ACCESS_M_PITCH_PX);
-      } else {
-        const p = Math.min(elapsed / ACCESS_M_TRAVEL_MS, 1);
-        applyX((steps + ease(p)) * ACCESS_M_PITCH_PX);
-        applyDim();
-        if (p >= 1) {
-          steps += 1;
-          phase = 'dwell';
-          phaseStart = now;
-          revealWords(steps % ACCESS_M_SET);
-        }
-      }
-      raf = requestAnimationFrame(tick);
-    };
-
-    const start = () => {
-      if (!raf) {
-        phaseStart = 0;
-        raf = requestAnimationFrame(tick);
-      }
-    };
-    const stop = () => {
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    };
-
-    applyX(0);
-    applyDim();
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => (entry.isIntersecting ? start() : stop()));
-      },
-      { rootMargin: '10% 0px' },
-    );
-    io.observe(mrows);
-
-    if (import.meta.env.DEV) {
-      window.__landingAccessM = {
-        state: () => ({ steps, phase, pair: steps % ACCESS_M_SET, running: !!raf }),
-        constants: {
-          pitch: ACCESS_M_PITCH_PX,
-          dwellMs: ACCESS_M_DWELL_MS,
-          travelMs: ACCESS_M_TRAVEL_MS,
-          centreShift: ACCESS_M_CENTRE_SHIFT_PX,
-        },
-      };
-    }
-
-    return () => {
-      stop();
-      io.disconnect();
-      cleanupEnt();
-    };
-  }
+  /* NARROW (the rebuild, 2026-09-07): the same build at phone geometry. */
+  if (isMobileViewport()) return buildNarrow(section);
 
   /* ── DESKTOP — the horizontal rows build. ─────────────────────── */
   const stage = section.querySelector('[data-access-stage]');
@@ -707,6 +527,263 @@ export function initLandingAccess() {
     revealTrigger?.kill();
     headlineTrigger?.kill();
     if (stage instanceof HTMLElement) stage.style.top = '';
+    gsap.killTweensOf(state);
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE NARROW BUILD (the mobile + tablet rebuild, 2026-09-07) — the
+   desktop's composition and choreography at the phone's geometry. ONE
+   shared progress drives everything, exactly as above: two rows travel
+   in opposite directions and land on the six pairs together, the
+   landed cells sharp and the rest veiled, the difference words riding
+   the landed cells; then the exit — the words fade, the rows collapse
+   to nothing and the fragmented headline blurs out.
+
+   WHAT DIFFERS, and why (each logged in the rebuild report):
+   - GEOMETRY from the stylesheet: the cell width, pitch and the landed
+     offsets are the rendered cells' (landing-narrow.css sets them per
+     band); the runway and the exit are tokens (--ac-step, --ac-exit —
+     300 for the desktop's 400 and 1650, retimed for the shorter
+     travel). The rows' base positions are measured, not authored.
+   - THE PIN is top-anchored (the stage is 100svh and the whole
+     composition fits it), so the desktop's read-hold and bottom-
+     anchored rise — devices for a stage taller than the viewport —
+     are not needed.
+   - THE VEILS tint without a backdrop blur; the dim is a filter on the
+     cell's own image (cheaper on a phone's GPU than fourteen backdrop
+     filters, and the same read: sharp when landed, soft otherwise).
+   - NO SNAP: the desktop's idle snap to pair rests rides Lenis's
+     wheel scroll; under touch momentum it fights the finger. The pairs
+     still land — the scrub is 1:1 — they simply need no assist.
+   - THE ENTRANCE is the desktop's: the label and the seven lines
+     word-reveal in reading order as the section enters; the rows slide
+     in from the sides; the words fade up through the state gate.
+   ═══════════════════════════════════════════════════════════════════ */
+const NARROW_DIM_BLUR_PX = 4;
+const NARROW_WORD_FULL_T = 140 / 648;   /* the desktop's WORD_FULL_PX as a pitch fraction */
+const NARROW_WORD_WINDOW_T = 290 / 648; /* the desktop's WORD_WINDOW_PX as a pitch fraction */
+
+function buildNarrow(section) {
+  const stage = section.querySelector('[data-access-stage]');
+  const rows = {
+    top: section.querySelector('[data-access-row="top"]'),
+    bottom: section.querySelector('[data-access-row="bottom"]'),
+  };
+  const veilrows = {
+    top: section.querySelector('[data-access-veils="top"]'),
+    bottom: section.querySelector('[data-access-veils="bottom"]'),
+  };
+  if (!(stage instanceof HTMLElement) || !(rows.top instanceof HTMLElement) || !(rows.bottom instanceof HTMLElement)) return () => {};
+  const cells = {
+    top: Array.from(rows.top.children).filter((el) => el instanceof HTMLElement),
+    bottom: Array.from(rows.bottom.children).filter((el) => el instanceof HTMLElement),
+  };
+  const veils = {
+    top: Array.from(veilrows.top?.children ?? []),
+    bottom: Array.from(veilrows.bottom?.children ?? []),
+  };
+  const wordSlots = Array.from(section.querySelectorAll('[data-access-wordslot]')).filter((el) => el instanceof HTMLElement);
+  const readPx = (prop, fallback) => {
+    const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+    return Number.isFinite(v) ? v : fallback;
+  };
+  const STEP_PX = readPx('--ac-step', 300);
+  const EXIT_PX_N = readPx('--ac-exit', 300);
+  const RUNWAY = STEPS * STEP_PX;
+  const TOTAL = RUNWAY + EXIT_PX_N;
+  const vw = () => window.innerWidth || 390;
+  const movers = [rows.top, rows.bottom, veilrows.top, veilrows.bottom].filter((el) => el instanceof HTMLElement);
+
+  /* the geometry, measured from the rendered cells with the rows at rest */
+  const g = { cellW: 0, pitch: 0, rowH: 0, landTop: 0, landBottom: 0, baseTop: 0, baseBottom: 0 };
+  const measure = () => {
+    gsap.set(movers, { x: 0 });
+    const c0 = cells.top[0].getBoundingClientRect();
+    const c1 = cells.top[1]?.getBoundingClientRect();
+    g.cellW = c0.width;
+    g.pitch = c1 ? c1.left - c0.left : c0.width + 8;
+    g.rowH = c0.height;
+    const shift = readPx('--ac-land-shift', vw() * 0.11);
+    g.landTop = vw() / 2 - shift;
+    g.landBottom = vw() / 2 + shift;
+    const sl = stage.getBoundingClientRect().left;
+    g.baseTop = rows.top.getBoundingClientRect().left - sl;
+    g.baseBottom = rows.bottom.getBoundingClientRect().left - sl;
+  };
+  measure();
+
+  const state = { p: 0, travelP: 0, exitT: 0, wordFactor: 0 };
+  const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
+
+  const updateRow = (row, shift) => {
+    const base = row === 'top' ? g.baseTop : g.baseBottom;
+    const landed = row === 'top' ? g.landTop : g.landBottom;
+    const dead = g.pitch * BLUR_DEAD_FRACTION;
+    cells[row].forEach((cell, i) => {
+      const centre = base + i * g.pitch + g.cellW / 2 + shift;
+      const isPad = cell.hasAttribute('data-pad');
+      const t = isPad ? 1 : clamp01((Math.abs(centre - landed) - dead) / (g.pitch - dead));
+      const veil = veils[row][i];
+      if (veil instanceof HTMLElement) veil.style.background = `rgba(${VEIL_RGB},${(VEIL_ALPHA * t).toFixed(3)})`;
+      const img = cell.querySelector('img');
+      if (img instanceof HTMLElement) img.style.filter = t < 0.05 ? '' : `blur(${(NARROW_DIM_BLUR_PX * t).toFixed(2)}px)`;
+    });
+  };
+  const updateWords = (shiftTop, shiftBottom) => {
+    const exitFade = Math.max(0, 1 - state.exitT / EXIT_WORD_FADE_T);
+    const full = g.pitch * NARROW_WORD_FULL_T;
+    const win = g.pitch * NARROW_WORD_WINDOW_T;
+    wordSlots.forEach((slot) => {
+      const row = slot.dataset.row;
+      const k = Number(slot.dataset.pair) || 0;
+      const idx = row === 'top' ? TOP_PAIR_INDEX(k) : BOTTOM_PAIR_INDEX(k);
+      const base = row === 'top' ? g.baseTop : g.baseBottom;
+      const shift = row === 'top' ? shiftTop : shiftBottom;
+      const left = base + idx * g.pitch + shift;
+      slot.style.left = `${left.toFixed(1)}px`;
+      const dist = Math.abs(left + g.cellW / 2 - (row === 'top' ? g.landTop : g.landBottom));
+      const near = dist <= full ? 1 : dist >= win ? 0 : 1 - (dist - full) / (win - full);
+      slot.style.opacity = (near * exitFade * state.wordFactor).toFixed(3);
+    });
+  };
+  const collapseEls = [
+    ...section.querySelectorAll('.landing-access__rowwrap, .landing-access__veilwrap'),
+    ...cells.top, ...cells.bottom,
+    ...veils.top, ...veils.bottom,
+  ].filter((el) => el instanceof HTMLElement);
+  const collapseImgs = [...cells.top, ...cells.bottom].map((c) => c.querySelector('img')).filter((el) => el instanceof HTMLElement);
+  const headlineEls = [
+    section.querySelector('.landing-access__dlabel'),
+    ...section.querySelectorAll('[data-access-dline]'),
+  ].filter((el) => el instanceof HTMLElement);
+  let lastCollapseH = -1;
+  const applyCollapse = (exitPx) => {
+    const cT = clamp01(exitPx / EXIT_PX_N);
+    const h = g.rowH * (1 - cT);
+    if (Math.abs(h - lastCollapseH) < 0.05) return;
+    lastCollapseH = h;
+    headlineEls.forEach((el) => {
+      el.style.opacity = cT <= 0 ? '' : (1 - cT).toFixed(3);
+      el.style.filter = cT <= 0 ? '' : `blur(${(ACCESS_HEADLINE_EXIT_BLUR_PX * cT).toFixed(2)}px)`;
+      el.style.visibility = cT >= 1 ? 'hidden' : '';
+    });
+    const clear = h >= g.rowH - 0.05;
+    const px = h <= 0.05 ? '0px' : `${h.toFixed(1)}px`;
+    [...collapseEls, ...collapseImgs].forEach((el) => { el.style.height = clear ? '' : px; });
+  };
+  const applyProgress = (rawP) => {
+    state.p = rawP;
+    const rel = rawP * TOTAL;
+    state.travelP = Math.min(rel / RUNWAY, 1);
+    state.exitT = Math.max(0, (rel - RUNWAY) / EXIT_PX_N);
+    const shift = state.travelP * STEPS * g.pitch + state.exitT * EXIT_PX_N;
+    gsap.set([rows.top, veilrows.top].filter(Boolean), { x: -shift });
+    gsap.set([rows.bottom, veilrows.bottom].filter(Boolean), { x: shift });
+    updateRow('top', -shift);
+    updateRow('bottom', shift);
+    updateWords(-shift, shift);
+    applyCollapse(state.exitT * EXIT_PX_N);
+  };
+  wordSlots.forEach((slot) => slot.classList.remove('is-on'));
+  applyProgress(0);
+
+  /* the entrance: the rows park offscreen along their travel and slide
+     in on the house curve as the composition enters */
+  const entryGroups = {
+    top: [section.querySelector('.landing-access__rowwrap--top'), section.querySelector('.landing-access__veilwrap--top')].filter((el) => el instanceof HTMLElement),
+    bottom: [section.querySelector('.landing-access__rowwrap--bottom'), section.querySelector('.landing-access__veilwrap--bottom')].filter((el) => el instanceof HTMLElement),
+  };
+  let entered = false;
+  const parkOffscreen = () => {
+    const pad = 24;
+    const parkTop = vw() - g.baseTop + pad;
+    const parkBottom = -(g.baseBottom + (cells.bottom.length - 1) * g.pitch + g.cellW + pad);
+    entryGroups.top.forEach((el) => { el.style.transform = `translateX(${parkTop.toFixed(1)}px)`; });
+    entryGroups.bottom.forEach((el) => { el.style.transform = `translateX(${parkBottom.toFixed(1)}px)`; });
+  };
+  parkOffscreen();
+  const timeouts = [];
+  const playEntrance = () => {
+    if (entered) return;
+    entered = true;
+    const all = [...entryGroups.top, ...entryGroups.bottom];
+    all.forEach((el) => { el.style.transition = ENTRY_CURVE; });
+    void section.offsetWidth;
+    all.forEach((el) => { el.style.transform = 'translateX(0px)'; });
+    timeouts.push(setTimeout(() => { all.forEach((el) => { el.style.transition = ''; el.style.transform = ''; }); }, 1400));
+  };
+
+  const trigger = ScrollTrigger.create({
+    trigger: section,
+    start: 'top top',
+    end: `+=${TOTAL}`,
+    scrub: true,
+    invalidateOnRefresh: true,
+    onUpdate: (self) => applyProgress(self.progress),
+  });
+
+  const dlines = Array.from(section.querySelectorAll('[data-access-dline]'));
+  let headlineTrigger = null;
+  let revealTrigger = null;
+  let disposed = false;
+  const fontsReady = document.fonts?.ready ?? Promise.resolve();
+  fontsReady.then(() => {
+    if (disposed) return;
+    dlines.forEach((line, i) => {
+      if (!(line instanceof HTMLElement)) return;
+      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+      wrapWordRevealElement(line);
+    });
+    headlineTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: 'top 70%',
+      once: true,
+      onEnter: () => { dlines.forEach((line) => { if (line instanceof HTMLElement) playLineRevealElement(line); }); },
+    });
+    revealTrigger = ScrollTrigger.create({
+      trigger: section,
+      start: 'top 45%',
+      once: true,
+      onEnter: () => {
+        playEntrance();
+        timeouts.push(setTimeout(() => {
+          gsap.to(state, {
+            wordFactor: 1,
+            duration: 0.6,
+            ease: 'power1.out',
+            onUpdate: () => {
+              const shift = state.travelP * STEPS * g.pitch + state.exitT * EXIT_PX_N;
+              updateWords(-shift, shift);
+            },
+          });
+        }, WORDS_AT_MS));
+      },
+    });
+  });
+
+  let lastW = vw();
+  const onResize = () => {
+    if (vw() === lastW) return; /* the URL bar's height-only resizes */
+    lastW = vw();
+    lastCollapseH = -1;
+    measure();
+    if (!entered) parkOffscreen();
+    applyProgress(state.p);
+  };
+  window.addEventListener('resize', onResize);
+
+  if (import.meta.env.DEV) {
+    window.__landingAccess = { state: () => ({ ...state }), geo: () => ({ ...g, STEP_PX, EXIT_PX_N, TOTAL }), trigger: () => trigger };
+  }
+
+  return () => {
+    disposed = true;
+    timeouts.forEach(clearTimeout);
+    window.removeEventListener('resize', onResize);
+    trigger.kill();
+    headlineTrigger?.kill();
+    revealTrigger?.kill();
     gsap.killTweensOf(state);
   };
 }

@@ -20,7 +20,11 @@
  * emits none of this, and the route that uses it does not exist there.
  */
 import { asset } from '../../utils/asset.js';
-import { gateSrcset, gateSizes } from '../../utils/thumb-srcset.js';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
+
+/* the hero cards' own sizes (LandingHero.astro) — the stand-ins land on
+   those rects, so they need the same pixels */
+const HERO_CARD_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 33vw, 1728px';
 
 /* the hero's own three images — the settle must BE the hero, not a
    lookalike (LandingHero.astro's heroCards, same order) */
@@ -86,9 +90,7 @@ const SB_DISCARDS = [
       Placed and sized entirely by splash-b.js from the live hero. */}
   {heroCards.map((src, i) => (
     <div class="splash-b__card" data-sb-card style={`z-index:${20 + i}`}>
-      {/* the mobile pass: the phone opens the MIDDLE card only — the other
-          two never draw there, so they take the narrow gate */}
-      <img src={src} srcset={i === 1 ? undefined : gateSrcset(src, 1024)} sizes={i === 1 ? undefined : gateSizes(1024)} alt="" decoding="async" loading="eager" />
+      <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" />
     </div>
   ))}
 
@@ -103,7 +105,7 @@ const SB_DISCARDS = [
       pile as they arrive. */}
   {SB_DISCARDS.map((src, i) => (
     <div class="splash-b__card splash-b__card--discard" data-sb-discard style={`z-index:${10 + i}`}>
-      <img src={src} srcset={gateSrcset(src, 1100)} sizes={gateSizes(1100)} alt="" decoding="async" loading="eager" />
+      <img src={src} alt="" decoding="async" loading="eager" />
     </div>
   ))}
 

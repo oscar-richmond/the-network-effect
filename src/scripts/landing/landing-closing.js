@@ -29,7 +29,6 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { isMobileViewport } from './viewport.js';
-import { initCarouselIndicators } from './carousel-indicator.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -103,15 +102,8 @@ export function initLandingClosing() {
   const maxScroll = () =>
     (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
   const inSnapZone = () => {
-    /* MOBILE keeps the shipped slide-anchored zone byte-identical
-       (the statement section is display:none under the seam — its
-       zero rect would read the exit condition permanently true,
-       the exact bug class the old anchor comment warned about). */
-    if (isMobileViewport()) {
-      const slide = closing.querySelector('.landing-closing__m-slide');
-      if (!(slide instanceof HTMLElement) || slide.getBoundingClientRect().height <= 0) return false;
-      return slide.getBoundingClientRect().bottom <= SNAP_ZONE_TILE_BOTTOM_PX;
-    }
+    /* The rebuild (2026-09-07): the statement section renders below the
+       seam now, so one rule serves every width. */
     const st = document.querySelector('[data-closing-st]');
     if (st instanceof HTMLElement && st.getBoundingClientRect().height > 0) {
       const r = st.getBoundingClientRect();
@@ -121,14 +113,10 @@ export function initLandingClosing() {
   };
   const cleanupBottom = bindBottomNavSweep({ reduced, inSnapZone, getLenis: getLenisInstance });
 
-  /* Mobile tile-carousel indicator (Part-2 rebuild) — swipe feedback,
-     not motion, so it lives above the RM return. */
-  const cleanupInd = isMobileViewport() ? initCarouselIndicators(closing) : () => {};
 
   const cleanupBase = () => {
     topLinks.forEach((el) => el.removeEventListener('click', onTopClick));
     cleanupBottom();
-    cleanupInd();
   };
 
   if (reduced) {
@@ -142,12 +130,7 @@ export function initLandingClosing() {
   /* Headline anchoring is pure CSS now (left-anchored on the tiles'
      24px margin, Oscar's rev 2) — no runtime derivation. */
   const intro = closing.querySelector('[data-closing-intro]');
-  /* The mobile carousel slides (Part-2 rebuild) join the tile
-     entrance: on desktop they're display:none, so the added class is
-     inert; on mobile they fade-rise on the tiles' slots. */
-  const tiles = Array.from(
-    closing.querySelectorAll('[data-closing-tile], .landing-closing__m-slide'),
-  );
+  const tiles = Array.from(closing.querySelectorAll('[data-closing-tile]'));
   const kws = Array.from(closing.querySelectorAll('[data-closing-kw]'));
   const footerCols = Array.from(footer.querySelectorAll('[data-footer-col]'));
   const footerImg = footer.querySelector('[data-footer-img]');
@@ -241,7 +224,6 @@ export function initLandingClosing() {
     }));
 
     triggers.push(ScrollTrigger.create({
-      trigger: footer,
       /* The footer pins BEHIND the closing section (the reveal), so
          a viewport-percentage start would fire while it's still
          covered: fire ~200px into the actual reveal instead. The
@@ -251,14 +233,16 @@ export function initLandingClosing() {
          footer's move to 830 and skewed this trigger 19px; deriving
          from the element kills that class of drift; 830 is only the
          no-layout fallback). */
-      /* MOBILE: no pin — the footer is plain flow, so the desktop
-         formula (innerHeight − footerH − 200, i.e. the top rising
-         past the viewport) can sit beyond the document's end and
-         never fire, leaving the footer text in its clips forever. A
-         plain in-view start is the correct trigger there. */
+      /* THE REBUILD (2026-09-07): the narrow build reveals the footer
+         from behind the red tail too (a sticky footer under the closing
+         tier, the spacer keeping the document's height — the desktop's
+         construction with a measured height). Its trigger reads the
+         SPACER, which is in flow: 200 into the reveal is the spacer's
+         top 200 above the viewport bottom. */
+      trigger: isMobileViewport() && document.querySelector('.landing-footer-spacer') ? document.querySelector('.landing-footer-spacer') : footer,
       start: () =>
         isMobileViewport()
-          ? 'top 85%'
+          ? (document.querySelector('.landing-footer-spacer') ? 'top bottom-=200' : 'top 85%')
           : `top ${(window.innerHeight - (footer.offsetHeight || 830) - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {

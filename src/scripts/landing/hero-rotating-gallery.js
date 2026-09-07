@@ -262,7 +262,11 @@ export function createHeroRotatingGallery(cardEls, opts) {
   let viewport = { width: 1, height: 1 };
 
   const resize = () => {
-    screen = { width: window.innerWidth, height: window.innerHeight };
+    /* the rebuild (2026-09-07): the STAGE's box, not the window's — on the
+       phone the stage is 100svh and innerHeight moves with the URL bar,
+       which would skew every plane against its DOM card; on the desktop
+       the fixed stage IS the viewport, so the numbers are identical. */
+    screen = { width: opts.mount.clientWidth || window.innerWidth, height: opts.mount.clientHeight || window.innerHeight };
     renderer.setSize(screen.width, screen.height);
     camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
     const fov = camera.fov * (Math.PI / 180);

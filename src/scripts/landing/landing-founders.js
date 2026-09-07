@@ -143,35 +143,11 @@ const HEADLINE_INK_INSET_PX = 8;
  */
 export const FOUNDERS_RELEASE_PX = EXIT_BLUR_ASHLEY_PX + EXIT_PHOTO_BLUR_LAG_PX;
 
-/**
- * MOBILE expansion (the Figma 402-frame rebuild, 2026-08-13): the
- * sofa photo scrubs from its rest crop (file 0:25 — the 254×306
- * window at 402) to the full-bleed 402×400 keyframe (0:58/0:62),
- * reversible, as the grid scrolls through the lower viewport. The
- * grid-space's height is the push: it grows 306→400 in step, so the
- * services heading below rides down rather than being overlapped.
- * The inner img counter-zooms between the file's two crops (460w →
- * 608w source widths, expressed as %-of-window so the tween is fluid
- * across 360–430). Portraits fade + drift left over the first 60% —
- * the file's expanded keyframe shows the photo alone. Scroll px are
- * the scrub's denominator (the page's grammar; ease:none).
- */
-/* R1 item 4a (Oscar's device pass): the scrub STARTS LATER so the
-   resting grid holds through its arrival — both ends are his
-   fine-tune knobs. START is the grid-top viewport line that arms
-   the scrub ('top 45%' = begins once the grid has climbed to the
-   viewport's upper half; was 75%); LEN is the scroll distance of
-   the full expansion. */
-const FD_M_SCRUB_START = 'top 45%';
-const FD_M_EXPAND_PX = 340;
-const FD_M_TARGET_H = 400;
-/* R1 item 4b: the grid's rest margin below (94 = 400−306). The scrub
-   drains it to 0 while the height grows by the same 94, so the dark
-   band's bottom NEVER moves and the fully-expanded image lands flush
-   on it — no dark strip below, at any viewport height. */
-const FD_M_IMG_FROM = { left: '-47.25%', width: '181.1%' };
-const FD_M_IMG_TO = { left: '-29.6%', width: '151.2%' };
-const FD_M_FADE_PORTION = 0.6;
+/* THE REBUILD (2026-09-07): below the seam the section runs the desktop's
+   ENTRY DRIFT only (see the narrow branch in init) — the amplitudes above,
+   scaled to the phone's shorter travel. The retired mobile design's photo
+   expansion (its FD_M_* constants) is gone. */
+const DRIFT_SCALE_NARROW = 0.6;
 
 /**
  * WHO WE ARE → OUR NETWORK handoff (Oscar, 2026-08-27). ONE line
@@ -468,78 +444,42 @@ export function initLandingFounders() {
       };
     }
   } else {
-    /* ── MOBILE: the in-place photo expansion (constants block above).
-       Anchors animate as left/right px — width stays `auto`, so the
-       full-bleed end state is exact at ANY viewport width without a
-       resize rebuild (only ScrollTrigger's own refresh re-measures).
-       The rest anchors are MEASURED from the computed style (the CSS
-       calc resolved), not re-derived, so CSS stays the one source of
-       the rest geometry. immediateRender is left on: the from-state
-       equals the CSS rest state byte-for-byte, so the seed writes are
-       no-ops. Portraits tween opacity/x — their difference-blended
-       hover names are display:none on mobile, so the blend-isolation
-       rule doesn't bind here. */
-    const grid = section.querySelector('[data-fd-grid]');
-    const photo = section.querySelector('.landing-founders__photo');
-    const photoImg = photo?.querySelector('img');
-    /* The fade targets the CROP SPANS, not the figures: the entrance's
-       .is-visible fade owns the figures' opacity, and a scrub tween on
-       the same element+property records whatever opacity it first
-       renders against (0 if the entrance timeout hasn't landed) and
-       then pins it — the collision class this codebase keeps meeting.
-       Separate elements, the two fades multiply cleanly. */
-    const portraits = [
-      section.querySelector('.landing-founders__portrait--robbo .landing-founders__portrait-crop'),
-      section.querySelector('.landing-founders__portrait--ashley .landing-founders__portrait-crop'),
-    ].filter((el) => el instanceof HTMLElement);
-
-    if (grid instanceof HTMLElement && photo instanceof HTMLElement && photoImg) {
-      const cs = getComputedStyle(photo);
-      const baseLeft = parseFloat(cs.left) || 0;
-      const baseRight = parseFloat(cs.right) || 0;
-      const baseH = photo.offsetHeight || 306;
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: grid,
-          start: FD_M_SCRUB_START,
-          end: `+=${FD_M_EXPAND_PX}`,
-          scrub: true,
-        },
-      });
-
-      tl.fromTo(
-        photo,
-        { left: baseLeft, right: baseRight, height: baseH },
-        { left: 0, right: 0, height: FD_M_TARGET_H, duration: 1, ease: 'none' },
-        0,
-      );
-      tl.fromTo(
-        photoImg,
-        { ...FD_M_IMG_FROM },
-        { ...FD_M_IMG_TO, duration: 1, ease: 'none' },
-        0,
-      );
-      /* Height grows exactly as the rest margin drains (item 4b) —
-         the band bottom is stationary and the image ends flush. */
-      tl.to(grid, {
-        height: FD_M_TARGET_H,
-        marginBottom: 0,
-        duration: 1,
-        ease: 'none',
-      }, 0);
-      if (portraits.length) {
-        /* immediateRender:false — the entrance's .is-visible fade owns
-           opacity until the scrub's first real update. */
-        tl.to(
-          portraits,
-          { opacity: 0, x: -24, duration: FD_M_FADE_PORTION, ease: 'none', immediateRender: false },
-          0,
-        );
-      }
-
-      driftTweens.push(tl);
-    }
+    /* ── NARROW (the rebuild, 2026-09-07): the desktop's ENTRY DRIFT and
+       nothing else. Each layer lags at its own amplitude — scaled to the
+       phone's shorter travel (DRIFT_SCALE_NARROW) — and lands at rest as
+       the section fills the viewport: one viewport of scroll from the
+       track's top. The sticky hold and the blur exit are NOT carried:
+       they encode a section that fits a 1117 viewport, and at the
+       phone's height this one is taller than the screen, so it scrolls
+       on in flow and Our Network follows it. REJECTED: shrinking the
+       images until the section pins (the photo becomes a stamp); pinning
+       the headline alone (a partial pin reads as a bug). Portraits still
+       drift via `top` (the blend note above) — they sit position:
+       relative below the seam, so 0 is their rest. */
+    const entryPx = window.innerHeight || SECTION_ENTRY_PX_FALLBACK;
+    const spec = [
+      { el: section.querySelector('[data-landing-founders-label]'), px: DRIFT_HEADLINE_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, mode: 'top' },
+      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, mode: 'top' },
+    ];
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: track,
+        start: 'top bottom',
+        end: `+=${entryPx}`,
+        scrub: true,
+      },
+    });
+    spec.forEach(({ el, px, mode }) => {
+      if (!(el instanceof HTMLElement)) return;
+      const amp = px * DRIFT_SCALE_NARROW;
+      if (mode === 'top') tl.fromTo(el, { top: amp }, { top: 0, duration: entryPx, ease: 'none' }, 0);
+      else tl.fromTo(el, { y: amp }, { y: 0, duration: entryPx, ease: 'none' }, 0);
+    });
+    driftTweens.push(tl);
   }
 
   /* Wrap after fonts so the clip boxes measure the real glyphs (the

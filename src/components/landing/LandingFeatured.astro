@@ -39,14 +39,20 @@ import { asset } from '../../utils/asset.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
 import GradualBlur from '../GradualBlur.astro';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
+
+/* THE REBUILD (2026-09-07): the cards render on every width — a 680
+   variant for the phone's 78vw card and the tablet's 380; the desktop's
+   sizes branch is larger than any candidate, so it keeps the full file. */
+const CARD_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 380px, 1728px';
+const cardSrcset = (src) => imageSrcset(src, [680], 2000);
 ---
 
-{/* data-m-carousel / data-carousel-strip / data-carousel-ind (mobile
-    rebuild 2026-08-13): the mobile swipe-carousel wiring contract
-    (carousel-indicator.js). Attributes only — inert on desktop, where
-    landing-featured.js never boots the indicator module. */}
+{/* THE REBUILD (2026-09-07): below the seam this same markup is a
+    touch-scrolled rail (landing-narrow.css) — the desktop's staggered
+    strip, panned by the finger instead of scrubbed by the page. */}
 <section class="landing-featured" data-landing-featured aria-label="Featured work">
-  <div class="landing-featured__stage" data-featured-stage data-m-carousel>
+  <div class="landing-featured__stage" data-featured-stage>
     <h2 class="landing-featured__header">
       <span class="landing-featured__hl landing-featured__hl--featured" data-featured-line>FEATURED</span>
       <span class="landing-featured__hl landing-featured__hl--work" data-featured-line>WORK</span>
@@ -86,6 +92,8 @@ import GradualBlur from '../GradualBlur.astro';
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
               src={card.img.src}
+              srcset={cardSrcset(card.img.src)}
+              sizes={CARD_SIZES}
               alt=""
               loading="lazy"
               decoding="async"
@@ -120,6 +128,8 @@ import GradualBlur from '../GradualBlur.astro';
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
               src={card.img.src}
+              srcset={cardSrcset(card.img.src)}
+              sizes={CARD_SIZES}
               alt=""
               loading="lazy"
               decoding="async"
@@ -147,12 +157,9 @@ import GradualBlur from '../GradualBlur.astro';
       ))}
     </div>
 
-    {/* MOBILE swipe indicator — the file's 200×1 element (0:337) at
-        the strip's foot; the shared component at its --wide width.
-        display:none above the seam (mobile.css). */}
-    <span class="m-carousel-ind m-carousel-ind--wide" data-carousel-ind aria-hidden="true">
-      <span class="m-carousel-ind__thumb" data-carousel-thumb></span>
-    </span>
+    {/* (The retired mobile design's swipe indicator is gone with the
+        2026-09-07 rebuild: the desktop has none — its "more" affordance
+        is the blurred right edge below, which the phone keeps.) */}
 
     {/* Right-edge blur (Oscar's rev 2 — the FULL Access treatment):
         the same-colour gradient TINT under the GradualBlur band

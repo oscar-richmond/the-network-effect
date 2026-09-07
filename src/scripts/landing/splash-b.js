@@ -47,7 +47,6 @@
  * settles if the timeline itself never completes. Nobody is stranded on
  * red. REDUCED MOTION skips the whole thing.
  */
-import { WIDE_QUERY } from './viewport.js';
 import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
@@ -222,37 +221,11 @@ export function initSplashB(splashRoot) {
   const sbDiscards = Array.from(document.querySelectorAll('[data-sb-discard]'));
   const heroCards = Array.from(document.querySelectorAll('[data-landing-hero-card]'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* THE MOBILE PASS (2026-09-07): the sequence runs on the NARROW build
-     too. The phone hero has no card row — its media is the VIDEO in the
-     lower half of the viewport — so the count, the hairline and the red
-     are the same, and where the desktop opens three windows and sorts
-     them onto the hero's row, the phone opens ONE (the middle card,
-     carrying the hero's own image) and travels it onto the video's
-     measured visible rect; it fades there as the ground clears, handing
-     over to the playing video. The two other hero cards and the three
-     discards leave the DOM at init on this build. The wide path is
-     byte-identical. */
-  const narrow = !window.matchMedia(WIDE_QUERY).matches;
-  const videoEl = document.querySelector('.landing-hero__video');
-  const videoRect = () => {
-    if (!(videoEl instanceof HTMLElement)) return null;
-    const r = videoEl.getBoundingClientRect();
-    const cp = getComputedStyle(videoEl).clipPath || '';
-    const m = cp.match(/inset\(([^)]+)\)/);
-    let t = 0, rr = 0, b = 0, l = 0;
-    if (m) {
-      const p = m[1].trim().split(/\s+/).map((v) => parseFloat(v) || 0);
-      [t, rr, b, l] = p.length === 1 ? [p[0], p[0], p[0], p[0]]
-        : p.length === 2 ? [p[0], p[1], p[0], p[1]]
-        : p.length === 3 ? [p[0], p[1], p[2], p[1]] : p;
-    }
-    return { left: r.left + l, top: r.top + t, width: r.width - l - rr, height: r.height - t - b };
-  };
-  if (narrow) {
-    [sbCards[0], sbCards[2], ...sbDiscards].forEach((el) => el?.remove());
-    sbDiscards.length = 0;
-    sbCards.splice(2, 1); sbCards.splice(0, 1);
-  }
+  /* THE REBUILD (2026-09-07): ONE sequence at every width. The narrow
+     build's hero is the desktop's row of three now (the mobile pass's
+     one-window-onto-the-video branch went with the video hero), so the
+     three windows open and sort onto the hero's measured cards on the
+     phone and the tablet exactly as they do at 1728. */
 
   let tl = null;
   let done = false;
@@ -388,13 +361,6 @@ export function initSplashB(splashRoot) {
   const wrapHeadline = () => {
     if (headlineWrapped) return;
     headlineWrapped = true;
-    if (narrow) {
-      document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
-        if (!(p instanceof HTMLElement)) return;
-        p.dataset.revealDelay = String(2 * HEADLINE_LINE_STAGGER_S + 0.39);
-        wrapWordRevealElement(p);
-      });
-    }
     document.querySelectorAll('[data-landing-hero-headline-text] .landing-hero__headline-line')
       .forEach((el, i) => {
         if (!(el instanceof HTMLElement)) return;
@@ -460,8 +426,7 @@ export function initSplashB(splashRoot) {
   document.documentElement.classList.remove('splash-active');
   void splashRoot;
 
-  if (reduced || !(stage instanceof HTMLElement) || sbCards.length !== (narrow ? 1 : 3)
-      || (!narrow && heroCards.length !== 3)) {
+  if (reduced || !(stage instanceof HTMLElement) || sbCards.length !== 3 || heroCards.length !== 3) {
     skip();
     return () => {};
   }
@@ -473,12 +438,6 @@ export function initSplashB(splashRoot) {
      below, not an assumption here. */
   let rects = [];
   const cardsPlaced = () => {
-    if (narrow) {
-      const r = videoRect();
-      if (!r || r.width < 1 || r.height < 1) return false;
-      rects = [r];
-      return true;
-    }
     const wrap = document.querySelector('.landing-hero__cards');
     if (!wrap || !wrap.classList.contains('is-placed')) return false;
     const r = heroCards.map((c) => c.getBoundingClientRect());
@@ -525,7 +484,7 @@ export function initSplashB(splashRoot) {
        return to zero and the landing stays pixel-exact.
        ARRIVAL ORDER: the three discards, then hero LEFT, RIGHT and the
        MIDDLE last so it lands on top — version A's own reorder, kept. */
-    pileOrder = narrow ? [...sbCards] : [...sbDiscards, sbCards[0], sbCards[2], sbCards[1]];
+    pileOrder = [...sbDiscards, sbCards[0], sbCards[2], sbCards[1]];
     if (sbDiscards.length) gsap.set(sbDiscards, {
       top: rects[1].top, left: rects[1].left, width: rects[1].width, height: rects[1].height,
       transformOrigin: '50% 50%',
@@ -618,10 +577,7 @@ export function initSplashB(splashRoot) {
   });
 
   function build() {
-    /* the narrow build opens one window, so its sort follows that one
-       opening (the desktop's waits for its six); every later beat is
-       derived from the sort exactly as the constants are on wide */
-    const sortAt = narrow ? SB_OPEN_AT + SB_OPEN_DUR + SB_SORT_GAP : SB_SORT_AT;
+    const sortAt = SB_SORT_AT;
     const textAt = sortAt + SB_TRAVEL_DUR;
     const logosAt = textAt + SB_INTRO_SETTLE_S;
     const contentAt = textAt + 0.5;
@@ -700,7 +656,6 @@ export function initSplashB(splashRoot) {
 
     /* ── the headline, then the nav and the rest — OUR vocabulary on the
        reference's clock. The hero's own modules own these reveals. */
-    if (narrow) tl.to(sbCards, { opacity: 0, duration: 0.5, ease: 'power1.inOut' }, textAt - 0.1);
     tl.add(() => {
       playHeroText();
       document.dispatchEvent(new CustomEvent('landing-splash-b:headline'));

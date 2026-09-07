@@ -32,7 +32,6 @@
 
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S, ensureNavLinkChars } from './nav-motion.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
-import { isMobileViewport } from './viewport.js';
 
 /* ── The register (every duration a named constant). */
 const MIN_MS = 1200;        // floor, so a warm cache still reads as a beat
@@ -92,38 +91,22 @@ const raf2 = () => new Promise((r) => requestAnimationFrame(() => requestAnimati
 function readiness(root) {
   const fonts = document.fonts?.ready ?? Promise.resolve();
 
-  const video = document.querySelector('[data-landing-hero-video]');
-  const videoReady = !(video instanceof HTMLVideoElement)
-    ? Promise.resolve()
-    : video.readyState >= 3
-      ? Promise.resolve()
-      : new Promise((r) => {
-          const done = () => {
-            video.removeEventListener('canplaythrough', done);
-            video.removeEventListener('loadeddata', done);
-            r();
-          };
-          video.addEventListener('canplaythrough', done, { once: true });
-          video.addEventListener('loadeddata', done, { once: true });
-        });
 
-  /* R8 (Oscar 2026-09-02): DESKTOP readiness gates on the three hero
-     CARD images decoding — the video is mobile's hero now, so its
-     canplaythrough only gates under the seam. The card imgs are
-     display:none there and are left out (decode() would force-fetch
-     ~480KB of desktop assets on a phone). */
-  const mobile = isMobileViewport();
+  /* R8 (Oscar 2026-09-02): readiness gates on the three hero CARD
+     images decoding. The rebuild (2026-09-07): the cards are the hero at
+     every width now, so the narrow build gates on them too (the mobile
+     pass's video gate went with the video). */
   /* R14: the logo row's SVGs (eager, a few KB each) are NOT part of
      the gate — a late mark is invisible under the row's own entrance,
      and first paint must never wait on nine extra requests. */
   const heroImgs = Array.from(document.querySelectorAll('.landing-hero img')).filter(
-    (img) => !img.closest('[data-landing-hero-logos]') && (mobile ? !img.closest('[data-landing-hero-cards]') : true),
+    (img) => !img.closest('[data-landing-hero-logos]'),
   );
   const imgsReady = Promise.all(
     heroImgs.map((img) => (img.decode ? img.decode().catch(() => {}) : Promise.resolve())),
   );
 
-  return Promise.all([fonts, mobile ? videoReady : Promise.resolve(), imgsReady]).then(raf2);
+  return Promise.all([fonts, imgsReady]).then(raf2);
 }
 
 /**

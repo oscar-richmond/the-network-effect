@@ -24,13 +24,17 @@ import LandingHero from './LandingHero.astro';
 import LandingFounders from './LandingFounders.astro';
 import LandingNetwork from './LandingNetwork.astro';
 import LandingFeatured from './LandingFeatured.astro';
-import LandingServicesStack from './LandingServicesStack.astro';
 import LandingAccess from './LandingAccess.astro';
 import LandingClosing from './LandingClosing.astro';
 import ClosingStatement from './ClosingStatement.astro';
 import LandingFooter from './LandingFooter.astro';
 import '../../styles/home.css';
 import '../../styles/landing/landing.css';
+/* THE REBUILD (2026-09-07): the landing page BELOW THE SEAM — the desktop
+   composition at phone and tablet proportions, type from the tokens only.
+   Imported after landing.css so its narrow rules layer over the desktop
+   sheet's; every rule is max-width-gated, so the desktop never sees it. */
+import '../../styles/landing/landing-narrow.css';
 /* (services-v2.css no longer rides along — R10, 2026-09-02: the
    /services sv-rows hover machinery is detached from this page, and
    every rule in that sheet is .landing-v2 .sv-* namespaced, so
@@ -68,40 +72,19 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
       industry-hover) byte-unchanged. */}
   <LandingNetwork />
 
-  {/* Services — the ROW-LIST redesign (frame 18:1694, 2026-08-24):
-      normal flow now — header (WHAT WE DO / FROM ACCESS–TO IMPACT /
-      the pillars note) + three pillar row lists whose active row
-      (scroll-driven, or hover/focus while the pointer is over the
-      list) indents with the text slide — one treatment for both
-      sources since R10 (2026-09-02; the /services sv-rows hover
-      machinery is no longer used on this page). The OLD
-      stacked-cards markup below survives UNTOUCHED for MOBILE (the
-      shipped build) and hides ≥1025; the new block is desktop-only.
-      THE FADE-TO-BLACK lives on this section's tail now (its third
-      home — landing-services.js, constants verbatim): services is
-      the one light→dark boundary in the current order, and Featured
-      Work arrives black-over-black. */}
+  {/* Services — THE REEL at every width (the rebuild, 2026-09-07): the
+      desktop's reel markup below is the only services markup now. The
+      retired mobile stack (three cards under an OUR SERVICES title with
+      swipe strips — its own copy, its own component) is gone; below the
+      seam landing-services.js drives this same markup in flow
+      (landing-narrow.css lays it out), above it landing-services-reel.js
+      runs the pinned reel exactly as before. THE FADE-TO-BLACK lives on
+      this section's tail on both: services is the one light→dark
+      boundary in the order, and Featured Work arrives black-over-black. */}
   <section class="landing-outro" aria-label="Our services" data-landing-services>
-    <div class="landing-services__stage" data-services-stage>
-      <div class="landing-services__center" data-services-center>
-        <h2 class="landing-services__title" data-landing-services-title>
-          <span class="landing-services__line" data-landing-services-line1
-            ><span class="landing-services__serrif">OUR SERVICES<span data-services-stop>.</span></span> <span data-services-from>FROM</span></span
-          >
-          <span class="landing-services__line" data-landing-services-line2>ACCESS. TO IMPACT.</span>
-        </h2>
-        {/* THE MOBILE PASS (2026-09-07): the reel's pillars note — the
-            desktop intro beat's second line — under the mobile title,
-            so the three-pillar structure is stated on both builds. This
-            block is the narrow build's (the stage hides ≥1360). */}
-        <p class="landing-services__note" data-landing-services-note>Our work is structured across three connected pillars: Immerse / Connect / Amplify.</p>
-      </div>
-      <LandingServicesStack />
-    </div>
-
     {/* ══ THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26) —
-        desktop only (display:none ≤1024; mobile keeps the stack
-        above, untouched). The STAGING (8ec705a) stack mechanics are
+        every width since the 2026-09-07 rebuild (in flow below the seam
+        — landing-services.js). The STAGING (8ec705a) stack mechanics are
         the base — rise, fix, divider-fill progress, roll-over wipes,
         band compaction, opaque-panel occlusion — with the NEW REEL
         between each pillar's fix and the next rise: the services

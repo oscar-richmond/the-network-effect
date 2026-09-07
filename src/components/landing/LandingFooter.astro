@@ -42,8 +42,6 @@
  * The landing uses it after the red statement band; the other pages
  * stay blue pending the global ruling.
  */
-import { asset } from '../../utils/asset.js';
-import { thumbSrcset } from '../../utils/thumb-srcset.js';
 import { SOCIAL_LINKS } from '../../data/landing/socials.js';
 
 /* The footer renders Linkedin before Instagram (frame order). */
@@ -64,8 +62,6 @@ interface Props {
 }
 
 const { theme = 'blue', rowEntrance = 'static' } = Astro.props;
-const arrowNe = asset(theme === 'light' ? '/assets/landing/closing/arrow-ne-dark.svg' : '/assets/landing/closing/arrow-ne.svg');
-const arrowUp = asset(theme === 'light' ? '/assets/landing/closing/arrow-up-dark.svg' : '/assets/landing/closing/arrow-up.svg');
 import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
 ---
@@ -75,104 +71,13 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
   data-landing-footer
   aria-label="Site footer"
 >
-  {/* Index columns */}
-  <div class="landing-footer__cols" data-footer-legacy>
-    <nav class="landing-footer__col" data-footer-col aria-label="Site index">
-      <p class="landing-footer__label">Site Index</p>
-      {/* THE MOBILE PASS (2026-09-07): the desktop footer's index — live
-          Services and Selected Work, no Clients (there is no such page),
-          natural case (the desktop's small-text grammar). */}
-      <a class="landing-footer__link" href="/" data-footer-top data-char-ripple-trigger><span data-char-ripple>Home</span></a>
-      {/* Placeholders — pages don't exist yet. */}
-      <a class="landing-footer__link" href="/services" data-char-ripple-trigger><span data-char-ripple>Services</span></a>
-    </nav>
-    <nav class="landing-footer__col landing-footer__col--2" data-footer-col aria-label="More">
-      {/* RESOLVED (2026-08-08): /founders exists — the grey label is
-          a LINK now, the white link treatment (the ambiguity flag in
-          the header is settled). */}
-      <a class="landing-footer__link" href="/founders" data-char-ripple-trigger><span data-char-ripple>The Founders</span></a>
-      <a class="landing-footer__link" href="/work" data-char-ripple-trigger><span data-char-ripple>Selected Work</span></a>
-    </nav>
-    <a
-      class="landing-footer__start"
-      data-footer-col
-      href={START_PROJECT_MODAL ? '#start-project' : START_PROJECT_MAILTO}
-      data-start-project={START_PROJECT_MODAL ? '' : undefined}
-      data-char-ripple-trigger
-    >
-      <span data-char-ripple>START A PROJECT</span>
-      <img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow />
-    </a>
-  </div>
-
-  {/* Masked image — topmost visible layer, exact crop. */}
-  <figure class="landing-footer__img" data-footer-img data-footer-legacy aria-hidden="true">
-    <img
-      src={asset('/assets/landing/closing/footer-image.jpg')}
-      srcset={thumbSrcset('/assets/landing/closing/footer-image.jpg', 486, 880)}
-      sizes="(max-width: 767px) 100px, (max-width: 1359px) 243px, 880px"
-      alt=""
-      loading="lazy"
-      decoding="async"
-      style="width:243px;height:304px;left:-2px;top:-1px"
-    />
-  </figure>
-
-  {/* Big statement — line 1 carries the file's deliberate leading
-      indent, reproduced as an inline spacer element (text-indent
-      breaks the reveal wrap's line grouping; the spacer rides inside
-      line 1's clip as an atom, and works identically un-wrapped). */}
-  <div class="landing-footer__statement" data-footer-statement data-footer-legacy>
-    <p class="landing-footer__st-line" data-footer-st-line
-      ><span class="landing-footer__st-indent" aria-hidden="true"></span>Culture rarely moves in public first.</p
-    >
-    {/* Oscar's rev: "Through people." rides line 2 after "quietly.";
-        "Through relationships." holds line 3, left aligned. */}
-    <p class="landing-footer__st-line" data-footer-st-line
-      >It moves quietly. <span class="landing-footer__st-serrif">Through people.</span></p
-    >
-    <p class="landing-footer__st-line" data-footer-st-line
-      ><span class="landing-footer__st-serrif">Through relationships.</span></p
-    >
-  </div>
-
-  {/* Bottom row — absolute lefts per the file. */}
-  <div class="landing-footer__row" data-footer-row data-footer-legacy>
-    {/* R82 (Oscar, 2026-09-05): the address COPIES on click and then
-        opens the mail client with To and Subject already filled — the
-        same contract as /contact's EMAIL US, so the site behaves one
-        way. CONTACT_MAILTO carries the subject; the bare mailto that
-        was here carried none. */}
-    <a class="landing-footer__rowitem landing-footer__rowitem--email" href={CONTACT_MAILTO} data-email-copy={CONTACT_EMAIL} data-char-ripple-trigger><span data-char-ripple>Hello@networkeffectagency.co.uk</span></a>
-    <div class="landing-footer__social">
-      {/* Hrefs from the shared source (data/landing/socials.js). */}
-      {FOOTER_SOCIALS.map((soc) => (
-        soc.href ? (
-          <a class="landing-footer__rowitem" href={soc.href} target="_blank" rel="noopener" data-char-ripple-trigger><span data-char-ripple>{soc.label}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></a>
-        ) : (
-          <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>{soc.label}</span><img src={arrowNe} alt="" width="10.5" height="10.5" data-char-ripple-arrow /></span>
-        )
-      ))}
-    </div>
-    {/* THE MOBILE PASS: Terms & Conditions / Privacy Policy — the desktop
-        row's pair, the same standing placeholders until the pages land. */}
-    <div class="landing-footer__legal">
-      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Terms &amp; Conditions</span></span>
-      <span class="landing-footer__rowitem is-placeholder" data-hover data-char-ripple-trigger><span data-char-ripple>Privacy Policy</span></span>
-    </div>
-    <button type="button" class="landing-footer__rowitem landing-footer__rowitem--top" data-footer-top data-char-ripple-trigger>
-      <span data-char-ripple>Back to top</span>
-      <img src={arrowUp} alt="" width="11.31" height="10.48" data-char-ripple-arrow />
-    </button>
-    <p class="landing-footer__rowitem landing-footer__rowitem--copyright">©2026 All rights reserved</p>
-    <p class="landing-footer__rowitem landing-footer__rowitem--siteby">Site By <span>Selfhood Studios</span></p>
-  </div>
-
-  {/* ══ THE NEW DESKTOP FOOTER (frame 13:381, 2026-08-26) — the
-      global structure; the legacy blocks above keep the untouched
-      MOBILE footer and hide ≥1025. Small text: serif 14/16
-      capitalize. Reveal attrs reuse the shipped machinery
-      (footer-motion.js walks data-footer-col + data-footer-st-line). */}
+  {/* ══ THE FOOTER (frame 13:381, 2026-08-26) — the global structure
+      at EVERY width since the 2026-09-07 rebuild (the retired mobile
+      footer — statement first, a full-width button, an image, BACK TO
+      TOP — is gone; shared-narrow.css lays this structure out below
+      the seam). Small text: serif 14/16 capitalize. Reveal attrs reuse
+      the shipped machinery (footer-motion.js walks data-footer-col +
+      data-footer-st-line). */}
   <div class="landing-footer__dtop" data-footer-desktop>
     <nav class="landing-footer__dgroup landing-footer__dgroup--index" data-footer-col aria-label="Site index">
       <p class="landing-footer__dlabel">Site Index</p>
@@ -273,4 +178,28 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
      marked. /contact keeps its own richer, pointer-tracked version. */
   import { initEmailCopy } from '../../scripts/email-copy.js';
   initEmailCopy();
+  /* THE REBUILD (2026-09-07): below the seam the footer reveals from
+     behind the closing tier exactly as on the desktop — a sticky
+     footer with a negative top margin and a spacer holding the
+     document's height. The desktop's 830 is a literal; the narrow
+     footer's height is measured here and published as --footer-h on
+     the body (the footer and the spacer both read it), then the
+     triggers below it are refreshed. Nothing runs above the seam. */
+  import { isMobileViewport } from '../../scripts/landing/viewport.js';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  {
+    let last = '';
+    const publish = () => {
+      const footer = document.querySelector('.landing-footer');
+      if (!(footer instanceof HTMLElement) || !isMobileViewport()) return;
+      const next = `${Math.round(footer.offsetHeight)}px`;
+      if (next === last) return;
+      last = next;
+      document.body.style.setProperty('--footer-h', next);
+      ScrollTrigger.refresh();
+    };
+    (document.fonts?.ready ?? Promise.resolve()).then(() => { publish(); requestAnimationFrame(publish); });
+    window.addEventListener('resize', publish);
+    window.addEventListener('load', publish);
+  }
 </script>

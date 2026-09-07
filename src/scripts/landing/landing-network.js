@@ -147,9 +147,11 @@ export function initLandingNetwork() {
     return () => {};
   }
 
-  /* ── Industry hover wiring (house hover gate + ?forcehover escape;
-     touch gets the resting state only — tapping a term does nothing,
-     per the recommendation). Keyboard mirrors hover via focusin. */
+  /* ── Industry hover wiring (house hover gate + ?forcehover escape).
+     Keyboard mirrors hover via focusin. THE REBUILD (2026-09-07): touch
+     gets the same interaction as a TAP — a term dims the rest and swaps
+     the strip, a second tap (or a tap outside the list) clears it — the
+     closest touch-native form of the desktop's hover. */
   const canHover =
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');
@@ -161,7 +163,7 @@ export function initLandingNetwork() {
      the always-full under layer. DESKTOP HOVER ONLY: the mobile
      build has no strip swap, so its DOM stays exactly as shipped
      (width-gated as well as hover-gated). */
-  const stripOvers = canHover && !isMobileViewport() && strip instanceof HTMLElement
+  const stripOvers = (canHover || isTouchPrimary()) && strip instanceof HTMLElement
     ? Array.from(strip.querySelectorAll('img'))
     : [];
   const stripUnders = stripOvers.map((over) => {
@@ -258,10 +260,10 @@ export function initLandingNetwork() {
     const onClick = (e) => {
       const term = e.target instanceof Element && e.target.closest('[data-network-term]');
       if (term instanceof HTMLElement) {
-        /* Dim-only on touch (2026-08-26): the logo shuffle this used
-           to drive is removed; the strip swap is hover/keyboard. */
+        /* The rebuild (2026-09-07): the tap swaps the strip too — the
+           desktop's hover, as a tap (was dim-only). */
         if (term.classList.contains('is-active')) deactivate();
-        else activate(term, false);
+        else activate(term);
       }
     };
     const onDocClick = (e) => {
@@ -318,19 +320,19 @@ export function initLandingNetwork() {
      (marquee swaps + the term interaction, including the tap path)
      stays live; everything below is the desktop arrival. */
   if (isMobileViewport()) {
-    /* Part-2 rebuild: the section still linearises (no pin, no media
-       parking), but arrives via the shared mobile entrance — text +
-       rows + strip fade-rise on the founders slots (.is-visible
-       states in the landing-home mobile block; marquees/strip carry
-       no blends, so the transform rise is safe). */
+    /* THE REBUILD (2026-09-07): the section is in flow (no pin — it
+       follows WHO WE ARE, which no longer pins below the seam either),
+       and arrives with the desktop's own vocabulary: the title, subtitle
+       and sector lines WORD-REVEAL in place (the shared entrance's line
+       wrap — the desktop's mechanism, one trigger instead of the
+       desktop's pin-anchored pair), and the photo strip fade-rises
+       (.is-visible, landing-narrow.css). The retired logo rows take no
+       part: the desktop removed them (R9). */
     const cleanupEnt = initMobileEntrance(section, {
-      media: [
-        section.querySelector('[data-landing-network-title]'),
-        section.querySelector('[data-landing-network-subtitle]'),
-        section.querySelector('[data-landing-network-body]'),
-        ...section.querySelectorAll('[data-landing-network-row]'),
-        section.querySelector('[data-landing-network-strip]'),
-      ].filter((el) => el instanceof HTMLElement),
+      lines: Array.from(section.querySelectorAll(
+        '[data-landing-network-title] .landing-network__line, [data-landing-network-subtitle] .landing-network__line, [data-landing-network-body] .landing-network__line',
+      )),
+      media: [section.querySelector('[data-landing-network-strip]')].filter((el) => el instanceof HTMLElement),
     });
     return () => {
       swapTimeouts.forEach(clearTimeout);

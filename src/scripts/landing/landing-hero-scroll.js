@@ -14,12 +14,19 @@
  *   - `scrub: true` throughout, `ease: 'none'` where the motion must
  *     track the finger 1:1.
  *
- * The port keeps the original's constants and geometry (400px of
- * travel, rest at x=290, 130px of scroll per revealed line, the
- * yPercent 110 -> 0 line reveal with a 0.6 stagger) so the new page
- * moves like the old one. What is NEW is the third beat: the video's
- * expansion, and the way it is deliberately overlapped with the tail of
- * the second so the whole thing reads as one gesture.
+ * The port keeps the original's constants and geometry (the yPercent
+ * 110 -> 0 line reveal, the exit-wipe vocabulary) so the new page moves
+ * like the old one. The hero's own beat is the THREE-IMAGE ROW (R8): the
+ * cards rest below the copy, rise up and over it on scroll (the WebGL
+ * planes mirror them), and the ground fades to the founders' dark.
+ *
+ * THE REBUILD (2026-09-07 — the mobile + tablet rebuild to the desktop):
+ * ONE composition at every width. The narrow build used to run its own
+ * video hero here (a fixed video expanding from a band to full bleed —
+ * the retired mobile design); it now runs THIS choreography with its
+ * geometry read from the page's tokens (landing-narrow.css sets
+ * --hero-* per band). The desktop sets no token, so every read falls
+ * back to the shipped constant: the desktop path is byte-identical.
  */
 import { DRIFT_HEADLINE_PX } from './landing-founders.js';
 import gsap from 'gsap';
@@ -38,8 +45,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ── Ported constants (values from the /about-3 hero) ──────────────── */
 
-/** Scroll px over which the headline travels from centre to rest. */
-const HEADLINE_MOVE_PX = 400;
 
 /**
  * The travelled headline's final left margin (Oscar's rev — was a
@@ -50,8 +55,6 @@ const HEADLINE_MOVE_PX = 400;
  */
 const HEADLINE_LEFT_MARGIN = 24;
 
-/** Scroll px consumed per revealed line of the secondary copy. */
-const REVEAL_LINE_PX = 130; /* retired for the intro (R7) — kept for the beats' history */
 /* R7 (Oscar, 2026-09-02): the intro joins the headline's splash
    entrance a slight beat behind it. The headline's lines stagger at
    the founders' 0.12s (splash.js); the intro starts this much after
@@ -59,49 +62,7 @@ const REVEAL_LINE_PX = 130; /* retired for the intro (R7) — kept for the beats
 const HEADLINE_LINE_STAGGER_S = 0.12;
 const INTRO_AFTER_HEADLINE_S = 0.15;
 
-/* ── New constants (the video beat) ───────────────────────────────── */
 
-/**
- * Dead scroll after the copy finishes revealing, before the video beat
- * would begin — the "settles" in Oscar's spec. Kept SHORT, and then
- * deliberately eaten into by VIDEO_LEAD_IN below: a true pause reads as
- * two separate moves, which is the one thing the brief rules out.
- */
-const SETTLE_PX = 150;
-
-/**
- * How far the video's expansion starts BEFORE the settle ends. The
- * overlap is what makes the sequence read as one continuous gesture
- * rather than "text finishes, then video starts": the frame is already
- * opening while the last line is still landing.
- */
-const VIDEO_LEAD_IN = 120;
-
-/** Scroll px over which the video opens from band to full screen. */
-const VIDEO_EXPAND_PX = 700;
-
-/** Scroll px the video holds at full screen before the hero ends. */
-const VIDEO_HOLD_PX = 300;
-
-/**
- * The video band's top edge as a fraction of viewport height. This is
- * now INDEPENDENT of the headline (previously it was derived from the
- * headline's bottom edge — but Oscar's centring rev makes the headline
- * centre against the video, so that derivation would be circular).
- * 0.625 reproduces the previous rendered geometry at 1728x1000
- * exactly (625px), so the video's opening state is unchanged there.
- *
- * R3 (Oscar, 2026-08-26): the DESKTOP band top is now PX-ANCHORED —
- * the foot of the rest chain — so the authored gaps hold at ANY
- * viewport height, including the scale shell's short interiors. The
- * fraction remains for MOBILE only (its own 0.5 constant below).
- * (The chain's VALUES are R20's — Oscar's ruling 2026-09-02, the one
- * set: wordmark → cap 120, headline → intro 48, intro → logo row
- * 120, row → cards 80 — see HERO_INTRO_TO_LOGOS_PX and the intro rule
- * in landing.css; the R3/R4/R7/R14 numbers this note used to carry
- * are superseded.)
- */
-const VIDEO_BAND_TOP_FRACTION = 0.625; /* mobile-path denominator only */
 /* R5 (Oscar, 2026-09-02): the foot of the chain is now MEASURED —
    see bandTopFor: intro rest bottom + HERO_INTRO_TO_BAND_PX. The
    659.6 (= 389.6 + the old 3×50 intro + 120) is the fallback only. */
@@ -257,21 +218,6 @@ const HERO_BOUNDARY_CARD = 1;         /* the SECOND CARD TO LEAVE — the middle
    (246.7 at 1117, 245.5 at the 994/942 interiors). */
 const HERO_FOUNDERS_LABEL_TOP_FALLBACK_PX = 200;
 
-/** The band's side margins, matching --landing-video-margin. */
-const VIDEO_MARGIN_PX = 24;
-
-/* ── Mobile values (the Figma 402-frame rebuild, 2026-08-13) ──────────
-   The frame's grammar is 16px side margins (landing.css sets
-   --landing-video-margin to match on .landing-home), and the file
-   drops the intro copy entirely — Beat 2 is skipped below, and the
-   tagline travels to the 16px margin. The file only draws the
-   EXPANDED video keyframe (402×874 full-bleed), so the REST band's
-   top fraction is the build's call: 0.5 places the band across the
-   lower half — clear of the two-line tagline with the file's
-   breathing room — and is flagged as such in the build report. */
-const VIDEO_BAND_TOP_FRACTION_M = 0.5;
-const VIDEO_MARGIN_PX_M = 16;
-const HEADLINE_LEFT_MARGIN_M = 16;
 
 /* Lenis smoothing now lives in site-scroll.js (SCROLL_LERP 0.065,
    the house value) — ONE source of truth for every native-scroll
@@ -331,40 +277,7 @@ function wrapIntroLines(introTextEl) {
 
 /** Builds a clip-path inset string in pure px (never mixed units —
  * GSAP interpolates a single consistent format cleanly). */
-function insetPx(top, right, bottom, left) {
-  return `inset(${top}px ${right}px ${bottom}px ${left}px)`;
-}
 
-/**
- * Vertically centres the headline block in the band between the nav
- * bar's measured bottom edge and the video band's top (Oscar's rev —
- * not viewport centring). CSS carries a calc() approximation of the
- * same midpoint for first paint; this refines it from the MEASURED
- * rects so it holds if either element moves, and the resize rebuild
- * re-derives it. The block keeps its CSS translateY(-50%), so only
- * the midpoint needs computing here.
- */
-function refineHeadlineCentring(
-  headlineText,
-  bandFrac = VIDEO_BAND_TOP_FRACTION,
-  vh = window.innerHeight,
-  wordmarkAnchor = false,
-) {
-  if (!(headlineText instanceof HTMLElement)) return;
-  /* Desktop: the topbar box bottom (shipped derivation, untouched).
-     Mobile (R1 item 1): the WORDMARK'S OWN bottom — Oscar's spec is
-     "between the bottom of the nav wordmark and the top of the
-     video", measured live so it holds across widths and dvh. */
-  const anchorEl = wordmarkAnchor
-    ? document.querySelector('.home__logo')
-    : document.querySelector('.home__topbar');
-  const navBottom = anchorEl instanceof HTMLElement
-    ? anchorEl.getBoundingClientRect().bottom
-    : 0;
-  const videoTop = Math.round(vh * bandFrac);
-  const bandCentre = navBottom + (videoTop - navBottom) / 2;
-  headlineText.style.marginTop = `${bandCentre}px`;
-}
 
 /**
  * Baseline of a line box, in page coords: CSS centres the font's
@@ -608,7 +521,6 @@ export function initLandingHeroScroll() {
   const headlineText = document.querySelector('[data-landing-hero-headline-text]');
   const intro = document.querySelector('[data-landing-hero-intro]');
   const introText = document.querySelector('[data-landing-hero-intro-text]');
-  const video = document.querySelector('[data-landing-hero-video]');
   const cards = Array.from(document.querySelectorAll('[data-landing-hero-card]')).filter(
     (el) => el instanceof HTMLElement,
   );
@@ -621,58 +533,71 @@ export function initLandingHeroScroll() {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* NARROW (≤ MOBILE_MAX_WIDTH, the viewport.js seam): the SAME machine runs —
-     headline travel, line reveals, exit wipes, video expansion are all
-     measurement-driven, so they follow the mobile CSS composition.
-     What differs is ownership of the DERIVED layout: on mobile the
-     headline sits under the topbar and the intro flows BELOW it
-     (landing.css owns both), so refineHeadlineCentring, the intro
-     width-match and the headline-span-pinned leading (derive/align/
-     correct) are skipped — they encode the desktop side-by-side
-     composition. vh comes from the stage's rendered height (100svh on
-     mobile) so the band and runway never re-derive on URL-bar
-     collapse; the resize rebuild fires on WIDTH change only for the
-     same reason. */
+  /* NARROW (≤ MOBILE_MAX_WIDTH, the viewport.js seam): the SAME machine,
+     the SAME beats (the rebuild, 2026-09-07). What the flag still
+     decides: vh comes from the stage's rendered height (100svh on the
+     phone) so the runway never re-derives on URL-bar collapse, and the
+     resize rebuild fires on WIDTH change only, for the same reason. */
   const isMob = isMobileViewport();
 
-  /* Regime-resolved geometry (mobile constants block above). Desktop
-     resolves to the shipped values — bit-identical behaviour. */
-  const bandFrac = isMob ? VIDEO_BAND_TOP_FRACTION_M : VIDEO_BAND_TOP_FRACTION;
-  /* Desktop: the band top is DERIVED (R5, Oscar 2026-09-02) — the
-     intro's measured rest bottom + HERO_INTRO_TO_BAND_PX, so the
-     authored 120 below the intro holds through type changes (the
-     38px intro is 66px shorter than the 48px block the old constant
-     encoded). Measured inside the fonts-gated build (the intro is
-     laid out — visibility:hidden, not display:none — and its <p>
-     box carries no transform on desktop), re-derived by the resize
-     rebuild; VIDEO_BAND_TOP_PX remains only as the fallback when
-     nothing measurable exists. Mobile keeps its fraction of the
-     stage height. */
-  const bandTopFor = (vh) => {
-    if (isMob) return Math.round(vh * bandFrac);
-    if (introText instanceof HTMLElement && hero instanceof HTMLElement) {
-      const bottom = introText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top;
-      if (Number.isFinite(bottom) && bottom > 0) {
-        return Math.round((bottom + HERO_INTRO_TO_BAND_PX) * 10) / 10;
-      }
-    }
-    return VIDEO_BAND_TOP_PX;
-  };
-  /* R85 (Oscar, 2026-09-06): the margins are READ from the page's own
-     tokens, with the constants as the fallback. The tablet band
-     (768–1359) sets --landing-video-margin and --m-margin to 32 on top
-     of the phone's 16; this machine was writing the clip inset inline
-     from VIDEO_MARGIN_PX_M every frame, so the video's edge stayed at
-     16 while every other block moved to 32 — the token existed, the
-     script did not consult it. At 1728 the token is 24 = the constant;
-     at ≤767 it is 16 = the constant; both are byte-identical by
-     construction. */
+  /* THE GEOMETRY TOKENS — read from the page's own custom properties
+     (landing-narrow.css sets them per band on .landing-home); the
+     shipped constants are the fallback, which is what the desktop gets
+     (it sets none), so its path is byte-identical. */
   const readPx = (prop, fallback) => {
     const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
     return Number.isFinite(v) ? v : fallback;
   };
-  const vMargin = isMob ? readPx('--landing-video-margin', VIDEO_MARGIN_PX_M) : VIDEO_MARGIN_PX;
-  const headlineLeft = isMob ? readPx('--m-margin', HEADLINE_LEFT_MARGIN_M) : HEADLINE_LEFT_MARGIN;
+  const introToLogos = readPx('--hero-intro-to-logos', HERO_INTRO_TO_LOGOS_PX);
+  const logoRowH = readPx('--hero-logo-row-h', HERO_LOGO_ROW_H_PX);
+  const logosToCards = readPx('--hero-logos-to-cards', HERO_LOGOS_TO_CARDS_PX);
+  const introToBand = introToLogos + logoRowH + logosToCards;
+  const cardMargin = readPx('--hero-card-margin', HERO_CARD_MARGIN_PX);
+  const cardGap = readPx('--hero-card-gap', HERO_CARD_GAP_PX);
+  const cardStagger = readPx('--hero-card-stagger', HERO_CARD_STAGGER_PX);
+  /* > 0 = the CENTRED ROW regime (the phone): each card is this fraction
+     of the viewport width and the row is centred on the middle card, the
+     outer two peeking in from the edges — the desktop's row of three,
+     cropped by the phone's width instead of shrunk to thumbnails. 0 (the
+     desktop, the tablet) = three across between the margins. */
+  const cardFrac = readPx('--hero-card-frac', 0);
+  /* > 0 = the intro's top is DERIVED here (the headline's measured
+     bottom + this gap) — on the narrow build the headline wraps, so its
+     height is not a constant the stylesheet can chain from. 0 = the
+     stylesheet owns it (the desktop's px rest chain). */
+  const headlineToIntro = readPx('--hero-headline-to-intro', 0);
+  /* The band's top is DERIVED (R5, Oscar 2026-09-02) — the intro's
+     measured rest bottom + the chain below it (intro → logo row → cards),
+     so the authored gaps hold through type changes. Measured inside the
+     fonts-gated build (the intro is laid out — visibility:hidden, not
+     display:none), re-derived by the resize rebuild; VIDEO_BAND_TOP_PX
+     remains only as the fallback when nothing measurable exists. */
+  const bandTopFor = (vh) => {
+    void vh;
+    if (introText instanceof HTMLElement && hero instanceof HTMLElement) {
+      const bottom = introText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top;
+      if (Number.isFinite(bottom) && bottom > 0) {
+        return Math.round((bottom + introToBand) * 10) / 10;
+      }
+    }
+    return VIDEO_BAND_TOP_PX;
+  };
+  const headlineLeft = HEADLINE_LEFT_MARGIN;
+  /* THE PHONE'S INTRO WRAPS NATURALLY: the desktop's two authored lines
+     are locked by a <br> the reveal wrap honours as a hard break; at the
+     phone's measure the first authored line is wider than the viewport,
+     so the break goes (the tablet, at the desktop's proportions, keeps
+     it). Once, before the first wrap caches the paragraph's markup. */
+  if (cardFrac > 0 && introText instanceof HTMLElement) {
+    introText.querySelectorAll('br').forEach((br) => br.replaceWith(document.createTextNode(' ')));
+  }
+  /* THE INTRO'S REST (narrow only): the headline's bottom + the gap
+     token, written inline like the logo row's and the cards' tops. */
+  const placeIntro = () => {
+    if (!(headlineToIntro > 0) || !(introText instanceof HTMLElement) || !(headlineText instanceof HTMLElement)) return;
+    const bottom = headlineText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top;
+    if (Number.isFinite(bottom) && bottom > 0) introText.style.top = `${Math.round((bottom + headlineToIntro) * 10) / 10}px`;
+  };
 
   /* R8: the cards' rest geometry — written as inline layout (top/left/
      width/height) so the GL planes can read the rest top back from
@@ -681,26 +606,28 @@ export function initLandingHeroScroll() {
      written inline (the same measured foot the cards derive from);
      the flash guard lifts with it. Desktop only. */
   const placeLogos = () => {
-    if (isMob || !(logos instanceof HTMLElement)) return null;
+    if (!(logos instanceof HTMLElement)) return null;
     const bottom = introText instanceof HTMLElement
       ? introText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top
       : VIDEO_BAND_TOP_PX - HERO_INTRO_TO_BAND_PX;
-    const top = Math.round((bottom + HERO_INTRO_TO_LOGOS_PX) * 10) / 10;
+    const top = Math.round((bottom + introToLogos) * 10) / 10;
     logos.style.top = `${top}px`;
     logos.classList.add('is-placed');
     return top;
   };
 
   const placeCards = (vh) => {
-    if (isMob || cards.length !== 3) return null;
+    if (cards.length !== 3) return null;
+    placeIntro();
     placeLogos();
     const vw = window.innerWidth || 1728;
-    const cardW = (vw - 2 * HERO_CARD_MARGIN_PX - 2 * HERO_CARD_GAP_PX) / 3;
+    const cardW = cardFrac > 0 ? Math.round(vw * cardFrac) : (vw - 2 * cardMargin - 2 * cardGap) / 3;
     const cardH = cardW * HERO_CARD_ASPECT;
     const restTop = bandTopFor(vh);
+    const rowLeft = cardFrac > 0 ? (vw - cardW) / 2 - (cardW + cardGap) : cardMargin;
     gsap.set(cards, {
       top: restTop,
-      left: (i) => HERO_CARD_MARGIN_PX + i * (cardW + HERO_CARD_GAP_PX),
+      left: (i) => rowLeft + i * (cardW + cardGap),
       width: cardW,
       height: cardH,
       y: 0,
@@ -720,7 +647,7 @@ export function initLandingHeroScroll() {
   let gallery = null;
   let galleryDisposed = false;
   const startGallery = () => {
-    if (gallery || galleryDisposed || isMob || cards.length !== 3) return;
+    if (gallery || galleryDisposed || cards.length !== 3) return;
     gallery = createHeroRotatingGallery(cards, {
       mount: hero,
       restTopOf: (el) => parseFloat(el.style.top) || 0,
@@ -755,20 +682,12 @@ export function initLandingHeroScroll() {
     let disposed = false;
     fontsReady.then(() => {
       if (disposed) return;
-      if (isMob) {
-        refineHeadlineCentring(
-          headlineText,
-          bandFrac,
-          hero.clientHeight || window.innerHeight,
-          true,
-        );
-      }
       if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
         introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
         deriveIntroLineHeight(headlineText, introText);
         alignIntroToHeadline(headlineText, introText);
       }
-      if (headlineText instanceof HTMLElement) {
+      if (!isMob && headlineText instanceof HTMLElement) {
         const lines = headlineText.querySelectorAll('.landing-hero__headline-line');
         lines.forEach((line) => {
           if (!(line instanceof HTMLElement)) return;
@@ -809,42 +728,12 @@ export function initLandingHeroScroll() {
        edge (x reset first), so the end state is exact at any width. */
     let sequenceEnd = 0;
 
-    /* R2 (Oscar, 2026-08-24): the DESKTOP headline no longer moves —
-       the frame's offset composition IS the resting state, start to
-       finish (Beat 1 skipped whole, sequenceEnd stays 0 so the intro
-       reveal begins with the first scroll). MOBILE keeps the shipped
-       travel to the 16px margin. */
-    if (headlineText instanceof HTMLElement && isMob) {
-      /* MOBILE too (R1 item 1): centre the tagline between the
-         measured nav bottom and the band top — live-derived, so it
-         holds across widths and dvh (the stage's svh height is the
-         band's own denominator). */
-      refineHeadlineCentring(headlineText, bandFrac, vh, isMob);
-      const lines = Array.from(
-        headlineText.querySelectorAll('.landing-hero__headline-line'),
-      ).filter((el) => el instanceof HTMLElement);
-
-      lines.forEach((line) => gsap.set(line, { x: 0 }));
-      const deltas = lines.map(
-        (line) => headlineLeft - line.getBoundingClientRect().left,
-      );
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: spacer,
-          start: 'top top',
-          end: `top+=${HEADLINE_MOVE_PX} top`,
-          scrub: true,
-        },
-      });
-      lines.forEach((line, i) => {
-        tl.fromTo(line, { x: 0 }, { x: deltas[i], ease: 'none', duration: 1 }, 0);
-      });
-      tweens.push(tl);
-      if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
-
-      sequenceEnd = HEADLINE_MOVE_PX;
-    }
+    /* R2 (Oscar, 2026-08-24): the headline no longer moves — the frame's
+       offset composition IS the resting state, start to finish (Beat 1
+       skipped whole, sequenceEnd stays 0 so the intro reveal begins with
+       the first scroll). The rebuild (2026-09-07) retired the narrow
+       build's travel to the margin with its video hero: one resting
+       composition at every width. */
 
     /* ── Beat 2: the secondary copy reveals, line by line ───────────
        Match the copy block's width to the headline's so the two sides
@@ -852,11 +741,9 @@ export function initLandingHeroScroll() {
        exactly this. */
     let revealEnd = sequenceEnd;
 
-    /* MOBILE: the 402 frame has NO intro copy — the element is
-       display:none (landing.css .landing-home) and Beat 2 is skipped
-       whole: wrapping/revealing a hidden block would measure zero
-       rects and pad the runway with dead scroll. */
-    if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
+    /* Every width now carries the intro (the rebuild, 2026-09-07 — the
+       narrow build used to hide it and skip this beat). */
+    if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
       /* Frame 16:113: the intro is its own fixed 452px block at x225
          (CSS) — the old width-match + derived leading + alignment trio
          encoded the retired side-by-side composition and no longer
@@ -898,25 +785,10 @@ export function initLandingHeroScroll() {
       }
     }
 
-    /* ── Beat 3: the video opens to full screen ─────────────────────
-       Starts VIDEO_LEAD_IN before the settle ends, so the frame is
-       already moving while the last line lands — the overlap is what
-       joins the two beats into one gesture.
-
-       The tween drives the clip inset from the opening band to zero.
-       Because the element is always laid out full-viewport, driving the
-       TOP inset to 0 both fills the screen AND walks the visible band's
-       centre onto the viewport centre — they arrive together, which is
-       the "centred as it covers everything" the brief describes.
-
-       ease power1.inOut INSIDE a scrub: scroll still maps linearly to
-       progress (the finger stays in control), while the ease shapes the
-       motion so the frame leaves and arrives softly rather than
-       starting and stopping abruptly. */
-    let videoEnd = revealEnd;
+    /* ── Beat 3: THE THREE-IMAGE ROW rises over the copy (R8) ───────
+       The one beat at every width since the rebuild (2026-09-07). */
     /** The last scroll px of the hero's own choreography (before the
-     *  +vh runway pad): mobile = the video hold's end; desktop = the
-     *  cards' EXIT_END. */
+     *  +vh runway pad): the cards' boundary (R33). */
     let total = revealEnd;
     /** Desktop beat map for the DEV handle. */
     let cardBeats = null;
@@ -924,10 +796,8 @@ export function initLandingHeroScroll() {
     /* ── Text exit wipes (see the ported constants above) ──────────
        The shipped bottom-up blur+fade per line, keyed to a COVERING
        edge: `coverAt(y)` returns the scroll position at which that
-       edge sits at screen y. Mobile keys it to the video's clip-top
-       (inverting the expansion's power1.inOut analytically); desktop
-       to the covering CARD's top edge (R8 — /old's own keying: the
-       block's first coverer). Two cascades, one per block. The wipes
+       edge sits at screen y — the covering CARD's top edge (R8 — /old's
+       own keying: the block's first coverer). One cascade per block. The wipes
        touch only opacity/filter: the reveal owns the .lr-inner
        transforms, so nothing contests. No blends in this text. */
     const buildExitWipe = (lines, rect, coverAt) => {
@@ -962,50 +832,11 @@ export function initLandingHeroScroll() {
     const headlineLines = headlineText instanceof HTMLElement
       ? Array.from(headlineText.querySelectorAll('.landing-hero__headline-line')).reverse()
       : [];
-    const introClips = !isMob && introText instanceof HTMLElement
+    const introClips = introText instanceof HTMLElement
       ? Array.from(introText.querySelectorAll('.lr-clip')).reverse()
       : [];
 
-    if (isMob && video instanceof HTMLElement) {
-      /* ── Beat 3 (MOBILE): the video opens to full screen ───────────
-         Untouched by R8 — mobile keeps its video hero until the new
-         mobile designs land. Starts VIDEO_LEAD_IN before the settle
-         ends; the tween drives the clip inset from the opening band
-         to zero with power1.inOut INSIDE the scrub. */
-      const bandTop = bandTopFor(vh);
-      const videoStart = Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN);
-      videoEnd = videoStart + VIDEO_EXPAND_PX;
-
-      const tween = gsap.fromTo(
-        video,
-        { clipPath: insetPx(bandTop, vMargin, 0, vMargin) },
-        {
-          clipPath: insetPx(0, 0, 0, 0),
-          ease: 'power1.inOut',
-          scrollTrigger: {
-            trigger: spacer,
-            start: `top+=${videoStart} top`,
-            end: `top+=${videoEnd} top`,
-            scrub: true,
-          },
-        },
-      );
-      tweens.push(tween);
-      if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
-
-      const invertPower1InOut = (e) =>
-        e < 0.5 ? Math.sqrt(e / 2) : 1 - Math.sqrt((1 - e) / 2);
-      /** Scroll position at which the video's top edge sits at screen y. */
-      const scrollWhenVideoTopAt = (y) => {
-        const clamped = Math.min(Math.max(y, 0), bandTop);
-        const eased = 1 - clamped / bandTop;
-        return videoStart + invertPower1InOut(eased) * VIDEO_EXPAND_PX;
-      };
-      if (headlineText instanceof HTMLElement) {
-        buildExitWipe(headlineLines, headlineText.getBoundingClientRect(), scrollWhenVideoTopAt);
-      }
-      total = videoEnd + VIDEO_HOLD_PX;
-    } else if (!isMob && cards.length === 3) {
+    if (cards.length === 3) {
       /* ── Beat 3 (DESKTOP, R8): THE THREE-IMAGE HERO ──────────────
          /old's about-scroll.js Phase 1, verbatim in structure. The
          row rests (placeCards) until pinScrollY, then each card's y
@@ -1018,7 +849,7 @@ export function initLandingHeroScroll() {
       const geo = placeCards(vh);
       const { cardH, restTop } = geo;
       const pinScrollY = Math.max(0, restTop - (vh - cardH) / 2);
-      const startOffsets = [0, HERO_CARD_STAGGER_PX, HERO_CARD_STAGGER_PX * 2];
+      const startOffsets = [0, cardStagger, cardStagger * 2];
       const startAt = (i) => revealEnd + pinScrollY + startOffsets[i];
       const exitAt = (i) => startAt(i) + restTop + cardH;
       const exitEnd = exitAt(2) + HERO_CARD_EXIT_BUFFER_PX;
@@ -1053,11 +884,15 @@ export function initLandingHeroScroll() {
          MIDDLE card (587..1142, starts 80 after the left); intro
          (180..903): first covered by the LEFT card (24..579). Each
          block is gone before ANY card reaches it — /old's rule. */
+      /* The centred-row regime (the phone): the MIDDLE card is every
+         block's first coverer — the outer two cover only the margins. */
+      const coverIntro = cardFrac > 0 ? 1 : 0;
+      const coverLogos = cardFrac > 0 ? 1 : 0;
       if (headlineText instanceof HTMLElement) {
         buildExitWipe(headlineLines, headlineText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(1, y));
       }
       if (introText instanceof HTMLElement) {
-        buildExitWipe(introClips, introText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
+        buildExitWipe(introClips, introText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(coverIntro, y));
       }
       /* R14 — THE LOGO ROW'S EXIT (proposal, flagged for review): the
          row leaves WITH the hero content, on the text-wipe vocabulary
@@ -1070,7 +905,7 @@ export function initLandingHeroScroll() {
          ever sit over dark ground. Tunables: WIPE_LEAD / EXIT_BLUR_PX
          (shared with the text — one vocabulary). */
       if (logos instanceof HTMLElement) {
-        buildExitWipe([logos], logos.getBoundingClientRect(), (y) => scrollWhenCardTopAt(0, y));
+        buildExitWipe([logos], logos.getBoundingClientRect(), (y) => scrollWhenCardTopAt(coverLogos, y));
       }
 
       /* THE BOUNDARY (R33) — the second card to leave (the middle image)
@@ -1221,10 +1056,7 @@ export function initLandingHeroScroll() {
           };
         })(),
         beats: {
-          headlineEnd: HEADLINE_MOVE_PX,
           revealEnd,
-          videoStart: isMob ? Math.max(0, revealEnd + SETTLE_PX - VIDEO_LEAD_IN) : null,
-          videoEnd: isMob ? videoEnd : null,
           cards: cardBeats,
           total,
           spacerHeight: total + vh,

@@ -67,27 +67,13 @@
 		/* the landing's hero video reads its own inset token (the phone
 		   sets both to 16 in one rule); it follows the margin here so
 		   the video's edge and every other block's edge agree at 32 */
-		--landing-video-margin: 32px;
 		--m-margin-safe-l: max(var(--m-margin), var(--safe-left, 0px));
 		--m-margin-safe-r: max(var(--m-margin), var(--safe-right, 0px));
 	}
 
 	/* ── LANDING ─────────────────────────────────────────────────── */
-	/* the hero headline: between the phone's 28/32 and the desktop's 48 */
-	.landing-v2.landing-v2.landing-home .landing-hero__headline-line,
-	.landing-v2.landing-v2 .landing-hero__headline-line {
-		font-size: 40px;
-		line-height: 44px;
-	}
-	/* the intro line: the phone's 26/28 was sized for a 390 measure; at
-	   768+ the same size runs to a single long line, so it steps to the
-	   desktop's 24 with tablet leading */
-	.landing-v2.landing-v2.landing-home .landing-hero__intro-text,
-	.landing-v2.landing-v2 .landing-hero__intro-text,
-	.landing-v2.landing-v2 [data-landing-hero-intro-text] {
-		font-size: 24px;
-		line-height: 30px;
-	}
+	/* (the hero's band rules moved to landing-narrow.css with the
+	   rebuild, 2026-09-07 — the desktop composition at every width) */
 	/* the featured carousel: one-and-a-half cards in view instead of
 	   one, so it reads as a carousel rather than a stack — the card
 	   keeps the phone's swipe, indicator and tap behaviour */
@@ -172,8 +158,6 @@
 	.landing-v2.landing-v2 .sv6-gal__box,
 	.landing-v2.landing-v2 .sv6-gal__box img { width: 300px; }
 	.landing-v2.landing-v2 .sv6-gal__box img { height: 352px; }
-	/* the closing statement (both pages) at the band's dline tier */
-	.landing-v2.landing-v2 .landing-closing-st__line { font-size: 44px; line-height: 44px; }
 
 	/* ── /CONTACT ────────────────────────────────────────────────── */
 	/* the CTAs on one row, as on the desktop, now there is width */
@@ -183,26 +167,8 @@
 		align-items: center;
 		gap: 12px;
 	}
-	/* the drawer: half the width in landscape (the desktop's third,
-	   widened for the narrower page), full width in portrait as on the
-	   phone. The entrance is the phone's rise-and-fade either way. */
-	.landing-v2.landing-v2 .sp-modal__panel {
-		width: min(100%, 640px);
-		margin-left: auto;
-	}
-	@media (orientation: portrait) {
-		.landing-v2.landing-v2 .sp-modal__panel { width: 100%; }
-	}
-	.landing-v2.landing-v2 .sp-modal__scroll {
-		padding: 72px 40px 40px;
-	}
-	/* the ✕ is the one control in the drawer under the 44px touch floor
-	   (measured 40px; the chips and buttons already clear it). The hit
-	   area grows, the glyph does not — the mobile block's own pattern. */
-	.landing-v2.landing-v2 .sp-modal__close {
-		min-width: 44px;
-		min-height: 44px;
-	}
+	/* (the drawer's band rules moved to shared-narrow.css with the
+	   rebuild, 2026-09-07) */
 
 	/* ── CASE STUDIES ────────────────────────────────────────────── */
 	/* the stream's PAIR rows: the phone build already has a considered
@@ -234,26 +200,9 @@
 		line-height: 26px;
 	}
 
-	/* ── THE MENU OVERLAY: the phone's 30px links have room to grow ── */
-	.landing-v2.landing-v2 .site-menu__body .site-menu__link {
-		font-size: 40px;
-		line-height: 40px;
-	}
 }
 
-/* ── THE MOBILE PASS (2026-09-07): the hero's proposition line, now on
-   the narrow build, at the band's intro tier; it sits below the band's
-   taller 40/44 headline ─────────────────────────────────────────── */
 @media (min-width: 768px) and (max-width: 1359px) {
-	.landing-v2.landing-v2.landing-home .landing-hero__intro {
-		top: calc(49px + 25svh + 44px + 32px);
-		left: 15%;
-		right: 15%;
-	}
-	.landing-v2.landing-v2.landing-home .landing-hero__intro-text p {
-		font-size: 24px;
-		line-height: 30px;
-	}
 	/* the services stack's pillars note and the case facts at the band */
 	.landing-v2.landing-v2.landing-home .landing-services__note { font-size: 20px; line-height: 30px; max-width: 36em; }
 	.landing-v2.landing-v2 .cs-facts__para,

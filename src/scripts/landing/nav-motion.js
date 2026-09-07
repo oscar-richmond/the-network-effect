@@ -16,7 +16,7 @@
  * elements, the safe blend shape. Reduced motion: instant states.
  * Keyframes/classes (cr-nav-in / cr-nav-out) live in landing.css.
  */
-import { isMobileViewport } from './viewport.js';
+import { isPhoneViewport } from './viewport.js';
 import { ensureStyles as ensureCharRippleStyles } from '../char-ripple.js';
 
 export const NAV_CHAR_STAGGER_S = 0.03;
@@ -58,9 +58,10 @@ export function getSweptNavParts() {
  *  respected both ways, and char-ripple boots before the page
  *  scripts, so a hover machine's wrap is never doubled. */
 export function ensureNavLinkChars() {
-  /* Mobile: the links are display:none and never sweep — leave the
-     served DOM untouched (the byte-identical baseline rule). */
-  if (isMobileViewport()) return;
+  /* The phone: the links are display:none (the menu carries them) and
+     never sweep — leave the served DOM untouched. The band shows the
+     desktop's links (the rebuild, 2026-09-07), so it takes the chars. */
+  if (isPhoneViewport()) return;
   getSweptNavParts().forEach((link) => ensureRippleChars(link.querySelector('[data-char-ripple]')));
 }
 
@@ -100,11 +101,11 @@ export function ensureLogoChars() {
      clickable-logo rev) — build the chars THERE so the anchor
      survives; the sweep still finds .cr-char under .home__logo. */
   const host = logo.querySelector('.home__logo-link') ?? logo;
-  /* NAV RESPEC (frame 17:1637): the DESKTOP wordmark is
-     "TheNetworkEffect" — swapped here, before the wrap and before
-     any reveal, so SSR keeps the mobile text and the mobile DOM
-     stays byte-identical. Load-time seam, like the section modules. */
-  if (!isMobileViewport()) host.textContent = 'TheNetworkEffect';
+  /* NAV RESPEC (frame 17:1637): the wordmark is "TheNetworkEffect" —
+     swapped here, before the wrap and before any reveal, on EVERY width
+     since the rebuild (2026-09-07; the SSR text stays the spaced form
+     for a no-JS render). */
+  host.textContent = 'TheNetworkEffect';
   const text = host.textContent;
   host.textContent = '';
   const sr = document.createElement('span');

@@ -37,7 +37,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport } from './viewport.js';
-import { initCarouselIndicators } from './carousel-indicator.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 
@@ -170,24 +169,24 @@ export function initLandingFeatured() {
   section.addEventListener('click', onCardClick);
   const removeGate = () => section.removeEventListener('click', onCardClick);
 
-  /* MOBILE (the viewport.js seam) — the 402-frame rebuild: a native
-     swipe carousel with the shared 200px indicator, plus the section's
-     one-shot arrival (header line-reveals + card fade-rises, the
-     founders slots). BEFORE the RM return: the indicator follows the
-     user's own swipe (feedback, not motion), so RM keeps it; the
+  /* NARROW (the rebuild, 2026-09-07): the desktop's strip as a
+     touch-scrolled rail (landing-narrow.css — the same cards, the same
+     height stagger, no descriptions), with the section's arrival in the
+     desktop's vocabulary: the header line-reveals, the chip and the
+     cards fade-rise on the founders slots. The pinned scrub is not
+     carried (logged): a fixed-viewport driver under touch momentum
+     fights the finger; the rail is native scroll with snap. The
+     retired design's swipe indicator is gone with its markup. The
      entrance module gates itself on RM internally. */
   if (isMobileViewport()) {
-    const cleanupInd = initCarouselIndicators(section);
     const header = Array.from(section.querySelectorAll('[data-featured-line]'));
     const media = [
       section.querySelector('[data-featured-viewall]'),
       ...section.querySelectorAll('[data-featured-card]'),
-      section.querySelector('[data-carousel-ind]'),
     ].filter((el) => el instanceof HTMLElement);
     const cleanupEnt = initMobileEntrance(section, { lines: header, media });
     return () => {
       removeGate();
-      cleanupInd();
       cleanupEnt();
     };
   }

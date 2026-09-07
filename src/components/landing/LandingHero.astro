@@ -18,14 +18,8 @@
  * sits at right:290 and reveals line by line as the headline settles.
  * Same geometry, same reveal technique (line-reveal.js clip spans).
  *
- * The video replaces the old hero's three bleeding image cards. It is a
- * FIXED, full-viewport element that is CLIPPED down to its opening
- * band — see landing.css and landing-hero-scroll.js for why the
- * expansion is a clip-path animation rather than a box resize.
- *
- * PLACEHOLDER ASSET: the video src below is a stand-in from the
- * existing library. Oscar is supplying the real file — swapping it is
- * this one line (plus the poster, if he sends one).
+ * The three-image row (R8) is the hero's media at EVERY width since the
+ * rebuild of 2026-09-07 — the narrow build's video hero is retired.
  */
 import { asset } from '../../utils/asset.js';
 import { HERO_ENTRY } from '../../data/flags.js';
@@ -35,13 +29,18 @@ import {
   HERO_LOGO_ROW_DUR_S,
   HERO_LOGO_ROW_PHASE_DELAY_S,
 } from '../../data/landing/hero-logos.js';
-import { gateSrcset, gateSizes } from '../../utils/thumb-srcset.js';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
+
+/* THE REBUILD (2026-09-07): the cards render at every width. Below the
+   seam a 780 variant serves the phone's 78vw card and the tablet's third;
+   the desktop's sizes branch is deliberately larger than any candidate so
+   it keeps resolving to the full file, exactly as the plain src did. */
+const HERO_CARD_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 33vw, 1728px';
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */
 const heroLogosDoubled = [...HERO_LOGO_BRANDS, ...HERO_LOGO_BRANDS];
 
-const heroVideo = asset('/assets/videos/louis-vuitton.mp4');
 /* R8: the desktop three-image hero (see the markup note). */
 const heroCards = [
   asset('/assets/landing/hero/hero-1.jpg'),
@@ -170,7 +169,7 @@ const heroEntryFlash = [
   <div class="landing-hero__cards" data-landing-hero-cards aria-hidden="true">
     {heroCards.map((src) => (
       <div class="landing-hero__card" data-landing-hero-card>
-        <img src={src} srcset={gateSrcset(src, 1024)} sizes={gateSizes(1024)} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+        <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
       </div>
     ))}
   </div>
@@ -203,22 +202,9 @@ const heroEntryFlash = [
     </div>
   )}
 
-  {/* VIDEO — MOBILE ONLY now (R8): desktop hides it and runs the
-      three-image hero above; the mobile build keeps its band
-      expansion untouched (its own ruling comes with the new mobile
-      designs). Always laid out full-viewport there; what changes on
-      scroll is the CLIP, not the box. See landing.css. */}
-  <video
-    class="landing-hero__video"
-    data-landing-hero-video
-    src={heroVideo}
-    autoplay
-    muted
-    loop
-    playsinline
-    preload="auto"
-    aria-hidden="true"
-  ></video>
+  {/* THE REBUILD (2026-09-07): the narrow build's video hero is RETIRED —
+      the phone and the tablet render this same composition (headline,
+      intro, logo row, the three cards) from landing-narrow.css. */}
 </div>
 
 {/* The runway. Height is set by landing-hero-scroll.js from the

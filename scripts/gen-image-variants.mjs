@@ -30,6 +30,10 @@ const JOBS = [
 	/* the 1300 is allowed to upscale (the 1254 / 878 sources): a 430×3 phone
 	   needs 1290 for a full-bleed frame, and the alternative is the PNG */
 	[/^assets\/landing\/services-6\/pillar-[a-z]+\.png$/, [860, 1200, 1300], 82, { upscale: [1300] }],
+	/* the hero cards (910–960w): the phone's 78vw card at 2× and the tablet's third */
+	[/^assets\/landing\/hero\/hero-\d\.jpg$/, [780], 82],
+	/* the closing tiles (~420w): the phone's half-width tiles at 2× */
+	[/^assets\/landing\/closing\/tile-\d\.jpg$/, [600], 82, { upscale: [600] }],
 	/* the access tiles (779w): the phone's half-width tiles need ~500 */
 	[/^assets\/landing\/access\/access-\d+\.jpg$/, [600], 82],
 	/* the menu overlay's blurred ground on phones (1218w, ~1MB each) */

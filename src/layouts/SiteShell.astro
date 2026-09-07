@@ -35,6 +35,11 @@ import '../styles/landing/tablet.css';
    replaces the mobile and tablet literals with them. Custom properties on
    :root, so the desktop renders exactly as before. */
 import '../styles/type-tokens.css';
+/* THE REBUILD (2026-09-07): the SHARED CHROME below the seam — the closing
+   statement, the footer, the nav, the menu and the drawer at phone and
+   tablet proportions, type from the tokens only. Imported after the
+   tokens; every rule is max-width gated. */
+import '../styles/landing/shared-narrow.css';
 
 interface Props {
   title?: string;
