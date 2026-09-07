@@ -43,7 +43,7 @@ import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { FOUNDERS_SLIDES, FOUNDERS_CTA } from '../data/landing/founders-page.js';
 import { asset } from '../utils/asset.js';
-import { thumbSrcset } from '../utils/thumb-srcset.js';
+import { thumbSrcset, variantOr, gateSrcset, gateSizes } from '../utils/thumb-srcset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/founders.css';
@@ -85,8 +85,10 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
         a WHITE FLASH on this surface — Oscar's defect report).
         Combined coverage never drops below full. */}
     <div class="fd-portrait" data-fd-portrait aria-hidden="true">
-      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} alt="" loading="eager" decoding="async" />
-      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} alt="" loading="eager" decoding="async" />
+      {/* the mobile pass: the desktop portraits, thumbs and columns take the
+          narrow gate (thumb-srcset.js) — the phone never draws them */}
+      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} srcset={gateSrcset(asset(FOUNDERS_SLIDES[1].img), 870)} sizes={gateSizes(870)} alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} srcset={gateSrcset(asset(FOUNDERS_SLIDES[0].img), 870)} sizes={gateSizes(870)} alt="" loading="eager" decoding="async" />
     </div>
 
     {/* ── Indicator — repositioned (Oscar, 2026-08-26): 24 from the
@@ -108,7 +110,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
             aria-current={i === 0 ? 'true' : 'false'}
             aria-label={`Go to founder ${slide.number}: ${slide.name}`}
           >
-            <img src={asset(slide.img)} alt="" loading="eager" decoding="async" />
+            <img src={asset(slide.img)} srcset={gateSrcset(asset(slide.img), 870)} sizes={gateSizes(870)} alt="" loading="eager" decoding="async" />
           </button>
         ))}
       </div>
@@ -134,7 +136,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
         {[0, 1].map(() => (
           FOUNDERS_SLIDES[0].colImgs.map((src) => (
             <div class="fd-col__slot">
-              <img src={asset(src)} alt="" loading="eager" decoding="async" />
+              <img src={asset(src)} srcset={gateSrcset(asset(src), 960)} sizes={gateSizes(960)} alt="" loading="eager" decoding="async" />
             </div>
           ))
         ))}
@@ -171,7 +173,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
             blend backdrop is the img either way). The face thumbs
             are SEPARATE — the fixed dock below the slides. */}
         <figure class="fd-slide__m-portrait">
-          <img src={asset(slide.img)} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+          <img src={variantOr(slide.img, 870)} alt="" aria-hidden="true" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
           <div class="fd-m-rail fd-m-rail--label" aria-hidden="true">
             <span class="fd-m-switch-label fd-m-switch-label--l">{slide.name}</span>
           </div>
@@ -358,7 +360,7 @@ const isEcho = (slide, para) => [slide.bioBold, slide.bioSerrif].some((x) => nor
             aria-current={idx === 1 ? 'true' : 'false'}
             aria-label={`View founder: ${FOUNDERS_SLIDES[idx].name}`}
           >
-            <img src={asset(FOUNDERS_SLIDES[idx].img)} srcset={thumbSrcset(FOUNDERS_SLIDES[idx].img, 176, 870)} sizes="(max-width: 767px) 870px, 88px" alt="" loading="eager" decoding="async" />
+            <img src={asset(FOUNDERS_SLIDES[idx].img)} srcset={thumbSrcset(FOUNDERS_SLIDES[idx].img, 176, 870)} sizes="(max-width: 767px) 58px, 88px" alt="" loading="eager" decoding="async" />
           </button>
         ))}
       </nav>

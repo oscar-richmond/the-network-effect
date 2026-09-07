@@ -67,6 +67,14 @@ export function initCaseStudy() {
      the thumb follows the user's own swipe (feedback, not motion). */
   if (isMobileViewport()) {
     cleanups.push(initCarouselIndicators(page));
+    /* THE MOBILE PASS (2026-09-07): a stream video with a phone-encoded
+       sibling (data-src-m, 480w — [slug].astro) plays that one here; the
+       desktop keeps the original. */
+    page.querySelectorAll('video[data-src-m]').forEach((v) => {
+      if (!(v instanceof HTMLVideoElement) || !v.dataset.srcM) return;
+      v.src = v.dataset.srcM;
+      v.load();
+    });
   }
 
   /* Live-slug gating for the more-work cards. On the PAGE element,

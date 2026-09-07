@@ -26,6 +26,7 @@
  * exports, placeholder until licensed finals.
  */
 import { asset } from '../../utils/asset.js';
+import { gateSrcset, gateSizes } from '../../utils/thumb-srcset.js';
 
 const tiles = [
   { src: asset('/assets/landing/closing/tile-1.jpg'), w: 417, h: 519, x: -3, y: -42 },
@@ -79,6 +80,8 @@ const keywords = [
       <figure class="landing-closing__tile" data-closing-tile>
         <img
           src={t.src}
+          srcset={gateSrcset(t.src, 900)}
+          sizes={gateSizes(900)}
           alt=""
           loading="lazy"
           decoding="async"

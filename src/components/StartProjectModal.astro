@@ -128,17 +128,17 @@ const MAILTO = `mailto:${CONTACT_EMAIL}`;
         <div class="sp-fields">
           <div class="sp-field">
             <label class="sp-label" for="sp-name">Your name</label>
-            <input class="sp-input" id="sp-name" name="name" type="text" autocomplete="name" required placeholder="First and last is fine." aria-describedby="sp-name-err" />
+            <input class="sp-input" id="sp-name" name="name" type="text" autocomplete="name" autocapitalize="words" enterkeyhint="next" required placeholder="First and last is fine." aria-describedby="sp-name-err" />
             <p class="sp-error" id="sp-name-err" data-sp-error="name" role="alert"></p>
           </div>
           <div class="sp-field">
             <label class="sp-label" for="sp-email">Your email</label>
-            <input class="sp-input" id="sp-email" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="Where we can reach you." aria-describedby="sp-email-err" />
+            <input class="sp-input" id="sp-email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required placeholder="Where we can reach you." aria-describedby="sp-email-err" />
             <p class="sp-error" id="sp-email-err" data-sp-error="email" role="alert"></p>
           </div>
           <div class="sp-field">
             <label class="sp-label" for="sp-company">Company or brand <span class="sp-label__opt">(optional)</span></label>
-            <input class="sp-input" id="sp-company" name="company" type="text" autocomplete="organization" placeholder="The name on the door." aria-describedby="sp-company-err" />
+            <input class="sp-input" id="sp-company" name="company" type="text" autocomplete="organization" autocapitalize="words" enterkeyhint="next" placeholder="The name on the door." aria-describedby="sp-company-err" />
             <p class="sp-error" id="sp-company-err" data-sp-error="company" role="alert"></p>
           </div>
           <div class="sp-field">

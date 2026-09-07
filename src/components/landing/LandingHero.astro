@@ -35,6 +35,7 @@ import {
   HERO_LOGO_ROW_DUR_S,
   HERO_LOGO_ROW_PHASE_DELAY_S,
 } from '../../data/landing/hero-logos.js';
+import { gateSrcset, gateSizes } from '../../utils/thumb-srcset.js';
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */
@@ -169,7 +170,7 @@ const heroEntryFlash = [
   <div class="landing-hero__cards" data-landing-hero-cards aria-hidden="true">
     {heroCards.map((src) => (
       <div class="landing-hero__card" data-landing-hero-card>
-        <img src={src} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+        <img src={src} srcset={gateSrcset(src, 1024)} sizes={gateSizes(1024)} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
       </div>
     ))}
   </div>

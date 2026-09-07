@@ -954,7 +954,7 @@
 		position: relative;
 		left: auto;
 		top: auto;
-		margin: 20px calc(-1 * var(--m-margin-safe-r, var(--m-margin, 24px))) 0 calc(-1 * var(--m-margin-safe-l, var(--m-margin, 24px)));
+		margin: 20px -24px 0; /* the .ct block's own 24px padding, both builds (the band's 32 token overflowed it by 8) */
 		width: auto;
 		height: 100px;
 		overflow: hidden;

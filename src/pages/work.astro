@@ -33,6 +33,7 @@ import LandingFooter from '../components/landing/LandingFooter.astro';
 import { WORK_PROJECTS, WORK_EXTRAS, WORK_GRID_HOVER } from '../data/landing/featured-work.js';
 import { LIVE_CASE_SLUGS } from '../data/landing/case-studies.js';
 import { asset } from '../utils/asset.js';
+import { imageSrcset, gateSrcset, gateSizes } from '../utils/thumb-srcset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/work.css';
@@ -117,6 +118,8 @@ const gridRows = GRID_ROWS.map((row) =>
         >
           <img
             src={p.workImg}
+            srcset={gateSrcset(p.workImg, 2000)}
+            sizes={gateSizes(2000)}
             alt=""
             loading={i < 3 ? 'eager' : 'lazy'}
             decoding="async"
@@ -137,6 +140,8 @@ const gridRows = GRID_ROWS.map((row) =>
         >
           <img
             src={p.workImg}
+            srcset={gateSrcset(p.workImg, 2000)}
+            sizes={gateSizes(2000)}
             alt=""
             loading={i < 3 ? 'eager' : 'lazy'}
             decoding="async"
@@ -165,12 +170,12 @@ const gridRows = GRID_ROWS.map((row) =>
             {live ? (
               <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${p.title.join(' ')} — view project`}>
                 <figure class="work-m__img">
-                  <img src={p.workImg} alt="" loading="lazy" decoding="async" width="1024" height="616" />
+                  <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) calc(50vw - 44px), 1024px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
                 </figure>
               </a>
             ) : (
               <figure class="work-m__img">
-                <img src={p.workImg} alt="" loading="lazy" decoding="async" width="1024" height="616" />
+                <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) calc(50vw - 44px), 1024px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
               </figure>
             )}
             <h2 class="work-m__title">
@@ -314,12 +319,12 @@ const gridRows = GRID_ROWS.map((row) =>
                     at rest; the hover wipes the second image in over it —
                     work-grid.js). R38 item 6 / R41: the row reveal is the
                     image's own blur — the red veil is removed. */}
-                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /></figure>
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} srcset={gateSrcset(p.workImg, 2000)} sizes={gateSizes(2000)} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} srcset={gateSrcset(p.workImg, 2000)} sizes={gateSizes(2000)} alt="" hidden decoding="async" /></figure>
                 <p class="work-gtile__name">{name}</p>
               </a>
             ) : (
               <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-hover-img={asset(WORK_GRID_HOVER[p.slug] ?? p.workImg)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
-                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} alt="" hidden decoding="async" /></figure>
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} srcset={gateSrcset(p.workImg, 2000)} sizes={gateSizes(2000)} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} srcset={gateSrcset(p.workImg, 2000)} sizes={gateSizes(2000)} alt="" hidden decoding="async" /></figure>
                 <p class="work-gtile__name">{name}</p>
               </span>
             );

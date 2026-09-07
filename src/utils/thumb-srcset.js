@@ -1,31 +1,59 @@
 /**
- * R86 (Oscar, 2026-09-06) — srcset for the SMALL boxes only. SERVER-SIDE:
- * imported by .astro frontmatter, never by a client script (it reads
- * the disk).
+ * Responsive image helpers (server-only — they read the disk at build time).
  *
- * Four render sites were feeding full-size files to thumbnails: the
- * case-study rail (2000w for a 340px box), the founders switch thumbs
- * (870w for 64–88px), the footer image (880w for 243px), the legacy
- * services gallery tiles (up to 3072w for 381px in the tablet band).
- * Each gets one 2×-of-box JPEG variant beside the original and a
- * srcset/sizes pair, so a tablet at DPR 2 fetches the variant and the
- * 1728 desktop still fetches the original. Content images were measured
- * at ≤1.6× oversupply and are left alone.
+ * thumbSrcset(path, variantWidth, fullWidth)  one variant + the full file
+ * imageSrcset(path, widths, fullWidth)        every existing variant + the full
+ * gateSrcset(url, fullWidth) / gateSizes(fullWidth)
+ *   THE MOBILE PASS (2026-09-07): an image the narrow build never shows
+ *   (display:none there) still downloads — Chrome fetches hidden images,
+ *   lazy or not. A srcset whose narrow candidate is a 1×1 GIF declared at
+ *   8w, with sizes "1px" below the seam, makes the phone pick the GIF and
+ *   every wide viewport pick the real file (its sizes branch is the full
+ *   width, so the largest candidate — the original — wins, exactly as the
+ *   plain src did). No wrapper element, no layout change, no JS.
+ *   NOT for images whose src a script swaps (srcset outranks src).
  *
- * THE GUARD. Variants are never upscaled, so a source narrower than the
- * variant width has none — the original IS the right file. This returns
- * undefined unless the variant exists on disk at build time, and the
- * <img> then carries a plain src exactly as before. Without the guard
- * the markup referenced six variants that could not exist and every
- * /services load 404'd twice.
+ * Variants are `<name>-w<W>.jpg` beside the source (scripts/gen-image-variants.mjs).
+ * A variant that is not on disk is simply not offered, so a missing file
+ * can never 404 — the full-size file is always the last candidate.
  */
 import { existsSync } from 'node:fs';
 import { asset } from './asset.js';
 
+const variantPath = (clean, w) => clean.replace(/\.(jpg|jpeg|png)$/i, `-w${w}.jpg`);
+const onDisk = (variant) => existsSync(new URL(`../../public${variant}`, import.meta.url));
+const cleanPath = (path) => {
+  const stripped = String(path).replace(/^https?:\/\/[^/]+/, '');
+  return stripped.startsWith('/') ? stripped : `/${stripped}`;
+};
+
 export function thumbSrcset(path, variantWidth, fullWidth) {
-  const clean = path.startsWith('/') ? path : `/${path}`;
-  const variant = clean.replace(/\.(jpg|png)$/i, `-w${variantWidth}.jpg`);
-  const onDisk = new URL(`../../public${variant}`, import.meta.url);
-  if (!existsSync(onDisk)) return undefined;
+  const clean = cleanPath(path);
+  const variant = variantPath(clean, variantWidth);
+  if (!onDisk(variant)) return undefined;
   return `${asset(variant)} ${variantWidth}w, ${asset(clean)} ${fullWidth}w`;
+}
+
+export function imageSrcset(path, widths, fullWidth) {
+  const clean = cleanPath(path);
+  const parts = [];
+  for (const w of widths) {
+    const variant = variantPath(clean, w);
+    if (onDisk(variant)) parts.push(`${asset(variant)} ${w}w`);
+  }
+  if (!parts.length) return undefined;
+  parts.push(`${asset(clean)} ${fullWidth}w`);
+  return parts.join(', ');
+}
+
+/** The narrow-build gate — a 1×1 transparent GIF the phone picks instead of a desktop-only image. */
+export const GATE_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+export const gateSrcset = (url, fullWidth) => `${GATE_GIF} 8w, ${url} ${fullWidth}w`;
+export const gateSizes = (fullWidth) => `(max-width: 1359px) 1px, ${fullWidth}px`;
+
+/** The `-w<W>.jpg` variant's path when it exists, else the original — for a src that is phone-only. */
+export function variantOr(path, w) {
+  const clean = cleanPath(path);
+  const variant = variantPath(clean, w);
+  return asset(onDisk(variant) ? variant : clean);
 }

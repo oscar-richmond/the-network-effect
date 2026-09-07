@@ -29,6 +29,7 @@
  */
 import { asset } from '../../utils/asset.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
+import { imageSrcset, gateSrcset, gateSizes } from '../../utils/thumb-srcset.js';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 
@@ -84,7 +85,7 @@ const bottomStrip = [
       <div class="landing-access__row landing-access__row--top" data-access-row="top">
         {topStrip.map((cell) => (
           <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`} data-pad={cell.pad ? '' : undefined}>
-            <img src={cell.src} alt="" loading="eager" decoding="async" />
+            <img src={cell.src} srcset={gateSrcset(cell.src, 1000)} sizes={gateSizes(1000)} alt="" loading="eager" decoding="async" />
           </figure>
         ))}
       </div>
@@ -93,7 +94,7 @@ const bottomStrip = [
       <div class="landing-access__row landing-access__row--bottom" data-access-row="bottom">
         {bottomStrip.map((cell) => (
           <figure class={`landing-access__cell${cell.pair === 0 ? ' is-prime' : ''}`} data-pad={cell.pad ? '' : undefined}>
-            <img src={cell.src} alt="" loading="eager" decoding="async" />
+            <img src={cell.src} srcset={gateSrcset(cell.src, 1000)} sizes={gateSizes(1000)} alt="" loading="eager" decoding="async" />
           </figure>
         ))}
       </div>
@@ -216,7 +217,7 @@ const bottomStrip = [
                 .reverse()
                 .map((src) => (
                   <figure class="landing-access__m-item">
-                    <img src={src} alt="" loading="lazy" decoding="async" />
+                    <img src={src} srcset={imageSrcset(src, [600], 1000)} sizes="(max-width: 767px) calc(50vw - 28px), (max-width: 1359px) 33vw, 1px" alt="" loading="lazy" decoding="async" />
                     <span class="landing-access__m-veil"></span>
                   </figure>
                 )),
@@ -235,7 +236,7 @@ const bottomStrip = [
             {[0, 1].map(() =>
               [a(8), a(11), a(5), a(12), a(14), a(4)].map((src) => (
                 <figure class="landing-access__m-item">
-                  <img src={src} alt="" loading="lazy" decoding="async" />
+                  <img src={src} srcset={imageSrcset(src, [600], 1000)} sizes="(max-width: 767px) calc(50vw - 28px), (max-width: 1359px) 33vw, 1px" alt="" loading="lazy" decoding="async" />
                   <span class="landing-access__m-veil"></span>
                 </figure>
               )),

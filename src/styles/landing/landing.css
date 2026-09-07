@@ -8461,3 +8461,42 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 		color: #eeeef0;
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — TOUCH TARGETS on the narrow build.
+   The 38px chip family (the More Info button grammar: the founders
+   band's pair, MORE INFO, VIEW ALL, VIEW CASE STUDY, the /work filter
+   pills, the founders page's pair) and the 16×40 burger sat under the
+   44px floor. The chips grow to 44 (the /contact chips' own rule; the
+   label stays centred), the burger and the wordmark link take a 44px
+   hit area without moving their ink.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2 .landing-founders__btn,
+	.landing-v2 .landing-svc-card__btn,
+	.landing-v2 .landing-featured__viewall,
+	.landing-v2 .work-m__btn,
+	.landing-v2 .work-pill,
+	.landing-v2 .fd-slide__btn,
+	.landing-v2 .fd-slide__m-swapbtn,
+	.landing-v2 .cs-more__viewall {
+		min-height: 44px;
+		box-sizing: border-box;
+	}
+	.landing-v2 .home__menu-toggle {
+		position: relative;
+	}
+	.landing-v2 .home__menu-toggle::before {
+		content: '';
+		position: absolute;
+		top: -2px;
+		bottom: -2px;
+		left: -14px;
+		right: -14px;
+	}
+	.landing-v2 .home__logo-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+	}
+}

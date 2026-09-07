@@ -33,6 +33,15 @@ export const SWAP_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)';
  *   onCoverStart?: (src: string) => void,
  * }} opts
  */
+/* THE MOBILE PASS (2026-09-07): an image that carries the narrow-build
+   gate (thumb-srcset.js — a srcset whose phone candidate is a 1×1 GIF)
+   ignores src assignments while the srcset stands, so the runner drops
+   the srcset before it writes a src. Above the seam the srcset had
+   resolved to the very file src names, so nothing visible changes. */
+const assignSrc = (el, url) => {
+  if (el.hasAttribute('srcset')) { el.removeAttribute('srcset'); el.removeAttribute('sizes'); }
+  el.src = url;
+};
 export function createCoverSwap(opts = {}) {
   const { wrap, baseEl, overEl, onCoverStart } = opts;
   const noop = { swapTo() {}, showInstant() {}, reset() {} };
@@ -64,7 +73,7 @@ export function createCoverSwap(opts = {}) {
     running = true;
     onCoverStart?.(target);
     wrap.classList.add('is-covering');
-    overEl.src = target;
+    assignSrc(overEl, target);
     overEl.hidden = false;
     overEl.style.transition = 'none';
     overEl.style.clipPath = 'inset(0 100% 0 0)';
@@ -78,7 +87,7 @@ export function createCoverSwap(opts = {}) {
       /* Fully covered — hand the image to the base and drop the
          blur class with transitions OFF, so no visible un-blur
          follows; only then retire the overlay. */
-      baseEl.src = overEl.src;
+      assignSrc(baseEl, overEl.src);
       baseEl.style.transition = 'none';
       wrap.classList.remove('is-covering');
       void baseEl.offsetWidth;
@@ -105,7 +114,7 @@ export function createCoverSwap(opts = {}) {
       pendingSrc = null;
       shownSrc = src;
       baseEl.style.transition = 'none';
-      baseEl.src = src;
+      assignSrc(baseEl, src);
       void baseEl.offsetWidth;
       baseEl.style.transition = '';
     },

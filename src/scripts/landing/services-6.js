@@ -81,6 +81,11 @@ export function initServices6() {
     return Number.isFinite(v) ? v : fallback;
   };
   const restInset = narrow ? readPx('--m-margin', SV6_HERO_REST_INSET_PX) : SV6_HERO_REST_INSET_PX;
+  /* retimed for the narrow build: the pillar frame is 240 tall there and
+     the inset 24, so the desktop's 700px of scroll for the expansion
+     reads as a slow drag under the thumb; 420 completes it inside one
+     flick. Desktop keeps 700 (the hero's VIDEO_EXPAND_PX). */
+  const expandPx = narrow ? 420 : 700;
   const fineHover =
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');
@@ -475,7 +480,7 @@ export function initServices6() {
               const entry = Math.min(vh * 0.85, docTop - 8);
               return `top ${Math.round(entry)}px`;
             },
-            end: '+=700', /* the hero's VIDEO_EXPAND_PX, reused */
+            end: () => `+=${expandPx}`, /* the hero's VIDEO_EXPAND_PX (700) on wide; 420 on narrow */
             scrub: true,
             invalidateOnRefresh: true,
             onUpdate: (self) => {

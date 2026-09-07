@@ -29,7 +29,7 @@ import CtaChip from '../../components/landing/CtaChip.astro';
 import { START_PROJECT_MODAL, START_PROJECT_MAILTO } from '../../data/flags.js';
 import { existsSync } from 'node:fs';
 import { asset } from '../../utils/asset.js';
-import { thumbSrcset } from '../../utils/thumb-srcset.js';
+import { thumbSrcset, imageSrcset } from '../../utils/thumb-srcset.js';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
@@ -76,6 +76,14 @@ const posterFor = (src) => {
   const onDisk = new URL(`../../../public${rel.startsWith('/') ? rel : `/${rel}`}`, import.meta.url);
   return existsSync(onDisk) ? rel : undefined;
 };
+/* THE MOBILE PASS (2026-09-07): a phone-encoded sibling (`<name>-m.mp4`, 480w)
+   when one exists — case-study.js swaps it in below the seam before the
+   stream plays. The desktop keeps the original. */
+const mobileVideoFor = (src) => {
+  const rel = src.replace(/\.(mp4|webm)$/, '-m.$1');
+  const onDisk = new URL(`../../../public${rel.startsWith('/') ? rel : `/${rel}`}`, import.meta.url);
+  return existsSync(onDisk) ? rel : undefined;
+};
 const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z';
 ---
 
@@ -98,7 +106,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
       <h1 class="cs-hero__title" data-cs-hero-title>{title}</h1>
       <p class="cs-hero__subtitle" data-cs-hero-subtitle>{study.subtitle}</p>
       <figure class="cs-hero__img" data-cs-hero-img>
-        <img src={study.heroImg} alt={`${title} — hero image`} decoding="async" />
+        <img src={study.heroImg} srcset={imageSrcset(study.heroImg, [1200], 2048)} sizes="(max-width: 1359px) 100vw, 1728px" alt={`${title} — hero image`} decoding="async" />
       </figure>
     </header>
 
@@ -234,9 +242,18 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
                    playsinline for iOS; looped. NOTE: the current
                    build's stream is ALL stills (the file's exports) —
                    this renders the moment a video lands in the data. */
-                <video src={src} poster={posterFor(src)} preload="none" autoplay muted loop playsinline></video>
+                <video src={src} data-src-m={mobileVideoFor(src)} poster={posterFor(src)} preload="none" autoplay muted loop playsinline></video>
               ) : (
-                <img src={src} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" />
+                <img
+                  src={src}
+                  srcset={imageSrcset(src, [600, 1200], 2048)}
+                  sizes={(row.layout === 'full' || (row.narrowFirst ? i === 1 : i === 0))
+                    ? '(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) calc(100vw - 64px), 2048px'
+                    : '(max-width: 767px) 130px, (max-width: 1359px) 200px, 2048px'}
+                  alt=""
+                  loading={r === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
               )}
             </figure>
           ))}
@@ -287,7 +304,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-live="true"
             >
               <figure class="cs-more__imgwin">
-                <img src={m.workImg} srcset={thumbSrcset(m.workImg, 680, 2000)} sizes="(max-width: 767px) 2000px, (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
+                <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
@@ -304,7 +321,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-a4-note="unbuilt study: inert placeholder — no href, unfocusable"
             >
               <figure class="cs-more__imgwin">
-                <img src={m.workImg} srcset={thumbSrcset(m.workImg, 680, 2000)} sizes="(max-width: 767px) 2000px, (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
+                <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>

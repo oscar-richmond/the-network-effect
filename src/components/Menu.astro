@@ -1,6 +1,7 @@
 ---
 import { menuLinks, menuFooterLinks as defaultFooterLinks } from '../data/menu.js';
 import { asset } from '../utils/asset.js';
+import { variantOr } from '../utils/thumb-srcset.js';
 import { CONTACT_EMAIL } from '../data/landing/contact.js';
 import '../styles/menu.css';
 
@@ -177,8 +178,18 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
             being fetched eagerly on EVERY route for a panel most visits
             never open. The overlay's own open animation gives the fetch
             more than enough time. */}
-        <img src={defaultImage} alt="" data-menu-image-el data-menu-image-base loading="lazy" decoding="async" />
-        <img src={defaultImage} alt="" data-menu-image-over decoding="async" hidden />
+        {/* THE MOBILE PASS (2026-09-07): below the seam the image is the
+            blurred ground under the links, so a 600w variant serves it
+            (the source wins there; menu.js's src swaps are the desktop's
+            and keep working above the seam, where no source matches). */}
+        <picture>
+          <source media="(max-width: 1359px)" srcset={variantOr(defaultImage, 600)} />
+          <img src={defaultImage} alt="" data-menu-image-el data-menu-image-base loading="lazy" decoding="async" />
+        </picture>
+        <picture>
+          <source media="(max-width: 1359px)" srcset={variantOr(defaultImage, 600)} />
+          <img src={defaultImage} alt="" data-menu-image-over decoding="async" hidden />
+        </picture>
       </div>
     </div>
   </div>
