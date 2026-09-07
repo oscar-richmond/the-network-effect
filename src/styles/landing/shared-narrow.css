@@ -116,7 +116,11 @@
 		top: auto;
 		height: auto;
 		margin-top: 0;
-		padding: 48px var(--m-margin-safe-r, var(--m-margin)) 32px var(--m-margin-safe-l, var(--m-margin));
+		/* The top clears the fixed bar: a footer taller than the viewport
+		   pins at the viewport TOP (the sticky rule below), so its first
+		   row would otherwise sit under the bar (ADAPTED: the desktop's
+		   footer is always shorter than its viewport). */
+		padding: calc(var(--nav-h, 64px) + 32px) var(--m-margin-safe-r, var(--m-margin)) 32px var(--m-margin-safe-l, var(--m-margin));
 		--footer-muted: #6c6c6e;
 		background: var(--landing-accent-blue, #232a89);
 		color: #ffffff;
@@ -126,13 +130,20 @@
 		background: #eeeef0;
 		color: #161616;
 	}
-	.landing-v2.landing-v2.landing-home .landing-footer {
+	.landing-v2.landing-v2.landing-home .landing-footer,
+	.landing-v2.landing-v2.case-page .landing-footer {
 		position: sticky;
-		top: calc(100svh - var(--footer-h, 600px));
+		/* Pinned with its bottom at the viewport bottom (the desktop's
+		   construction) — or, when the footer is TALLER than the viewport
+		   (a phone), with its top at the viewport top, so the reveal shows
+		   its first row and the tail scrolls in at the end; otherwise the
+		   top (100svh − h) px could never be seen. */
+		top: max(0px, calc(100svh - var(--footer-h, 600px)));
 		margin-top: calc(-1 * var(--footer-h, 600px));
 		z-index: 259;
 	}
-	.landing-v2.landing-v2.landing-home .landing-footer-spacer {
+	.landing-v2.landing-v2.landing-home .landing-footer-spacer,
+	.landing-v2.landing-v2.case-page .landing-footer-spacer {
 		display: block;
 		height: var(--footer-h, 600px);
 		pointer-events: none;
@@ -299,7 +310,7 @@
 }
 @media (min-width: 768px) and (max-width: 1359px) {
 	.landing-v2.landing-v2 .landing-footer {
-		padding-top: 64px;
+		padding-top: calc(var(--nav-h, 71px) + 32px); /* clears the bar on a short (landscape) viewport */
 	}
 	/* the desktop's four groups across */
 	.landing-v2.landing-v2 .landing-footer__dtop {
@@ -331,8 +342,10 @@
    the bar. THE BAND has the room: the desktop's bar, no burger.
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 1359px) {
+	/* the fixed bar's height — the footer's clearance reads it */
+	.landing-v2.landing-v2 { --nav-h: 64px; }
 	.landing-v2.landing-v2 .home__topbar--about {
-		height: 64px;
+		height: var(--nav-h);
 		padding: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) auto;
@@ -396,8 +409,9 @@
 	}
 }
 @media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-v2 { --nav-h: 71px; }
 	.landing-v2.landing-v2 .home__topbar--about {
-		height: 71px;
+		height: var(--nav-h);
 		grid-template-columns: 1fr auto 1fr;
 		column-gap: 24px;
 	}

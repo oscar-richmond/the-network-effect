@@ -1,0 +1,316 @@
+/* ═══════════════════════════════════════════════════════════════════
+   /WORK BELOW THE SEAM — the mobile + tablet rebuild to the desktop
+   (Oscar, 2026-09-07). Imported by work.astro after work.css; every
+   rule is max-width gated, so the desktop never sees it; type from the
+   type tokens only.
+
+   BOTH VIEWS, the desktop's: the shared header (FEATURED / WORK at the
+   display tier, WORK stepped in as on the desktop) and the GRID · ROW
+   toggle in flow at the top; the GRID as the default — the desktop's
+   three row compositions with their size mix (the 6-column landscapes,
+   the 3-column squares, portraits and landscape), two-up on the phone
+   (the wide modules take the full measure) and on the desktop's own
+   12-column grid on the tablet, the row reveal (the image's blur
+   resolving as the row enters — work-grid.js) and the names in the
+   serif at the row tier; the ROW view as a vertical list of the same
+   nine projects with their names at the title tier and descriptions at
+   the body tier (LOGGED: the desktop's row view is a pinned horizontal
+   carousel with docking metas — a fixed-viewport driver that fights
+   touch momentum; the list carries its content and order). Music and
+   Culture is the grid's portrait tile as on the desktop; placeholders
+   stay inert. The footer reveals from BEHIND in both views — the
+   desktop grid view's sticky-with-a-spacer schema (LOGGED: the list's
+   pinned stage slides up over a fixed layer on the desktop; in flow
+   the same sticky uncover stands in).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.work-page {
+		--wk-pad-top: 96px;
+		--wk-header-gap: 24px;
+		--wk-content-gap: 40px;
+		--wk-row-gap: 40px;
+	}
+	body.landing-v2.work-page { overflow: auto; }
+
+	/* ── the shared header, in flow ── */
+	.landing-v2.work-page .work-header {
+		display: block;
+		position: static;
+		left: auto;
+		right: auto;
+		top: auto;
+		height: auto;
+		padding: var(--wk-pad-top) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		z-index: auto;
+		pointer-events: auto;
+	}
+	.landing-v2.work-page .work-header .work-page__hl {
+		position: static;
+		left: auto;
+		top: auto;
+		display: block;
+		margin: 0;
+		font-family: var(--type-display-face);
+		font-weight: var(--type-display-weight);
+		font-synthesis: none;
+		font-size: var(--type-display-size);
+		line-height: var(--type-display-lh);
+		letter-spacing: var(--type-display-ls);
+		text-transform: var(--type-display-case);
+		white-space: nowrap;
+		color: #161616;
+	}
+	.landing-v2.work-page .work-header .work-page__hl--work {
+		text-indent: 3em; /* the desktop's 268 at 90 */
+	}
+	.landing-v2.work-page .work-stage__left { display: none; }
+
+	/* ── the toggle: below the header, right-aligned (the desktop's
+	   right edge on WORK's K), the two chips at the label tier ── */
+	.landing-v2.work-page .work-viewtoggle {
+		display: flex;
+		position: static;
+		left: auto;
+		top: auto;
+		justify-content: flex-end;
+		gap: 12px;
+		margin: var(--wk-header-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		z-index: auto;
+	}
+	.landing-v2.work-page .work-viewtoggle__btn {
+		position: relative;
+		height: 38px;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0 16px;
+		border: 0;
+		background: var(--landing-svc-btn-fill, #e4e4ea);
+		color: var(--landing-accent-blue, #232a89);
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+		cursor: pointer;
+	}
+	.landing-v2.work-page .work-viewtoggle__btn::after {
+		content: '';
+		position: absolute;
+		inset: -3px 0;
+	}
+	.landing-v2.work-page .work-viewtoggle__icon {
+		display: block;
+		flex: none;
+		fill: currentColor;
+	}
+	.landing-v2.work-page .work-viewtoggle__btn.is-active {
+		background: var(--landing-accent-blue, #232a89);
+		color: #ffffff;
+		cursor: default;
+	}
+
+	/* ── the grid ── */
+	.landing-v2.work-page .work-grid {
+		--work-grid-gutter: 8px;
+		position: relative;
+		background: #eeeef0;
+		padding: 0 0 64px;
+		z-index: 260; /* the content tier over the sticky footer */
+	}
+	.landing-v2.work-page .work-grid__head { display: none; }
+	.landing-v2.work-page .work-grid__rows {
+		display: flex;
+		flex-direction: column;
+		gap: var(--wk-row-gap);
+		padding: var(--wk-content-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+	}
+	.landing-v2.work-page .work-grid__row {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--wk-row-gap) var(--work-grid-gutter);
+		align-items: start;
+		margin-bottom: 0;
+	}
+	.landing-v2.work-page .work-gtile {
+		display: block;
+		grid-column: span 1;
+		text-decoration: none;
+		color: #161616;
+	}
+	.landing-v2.work-page .work-gtile--l6,
+	.landing-v2.work-page .work-gtile--l6r {
+		grid-column: 1 / -1;
+	}
+	.landing-v2.work-page .work-gtile.is-placeholder { cursor: default; }
+	.landing-v2.work-page .work-gtile__media {
+		position: relative;
+		margin: 0;
+		overflow: hidden;
+		background: #e4e4ea;
+		aspect-ratio: 1 / 1;
+	}
+	.landing-v2.work-page .work-gtile--l6 .work-gtile__media,
+	.landing-v2.work-page .work-gtile--l6r .work-gtile__media,
+	.landing-v2.work-page .work-gtile--l3 .work-gtile__media {
+		aspect-ratio: 3 / 2;
+	}
+	.landing-v2.work-page .work-gtile--p3 .work-gtile__media {
+		aspect-ratio: 3 / 4;
+	}
+	.landing-v2.work-page .work-gtile__media img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.landing-v2.work-page .work-gtile__media img[data-gtile-over] {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+	}
+	.landing-v2.work-page .work-gtile__media img[data-gtile-over][hidden] { display: none; }
+	/* the row reveal: the image's own blur resolving as the row enters */
+	.landing-v2.work-page .work-grid__row:not(.is-resolved) .work-gtile__media img[data-gtile-base] {
+		filter: blur(var(--work-reveal-blur, 12px));
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.work-page .work-gtile__media img[data-gtile-base] {
+			transition: filter var(--work-reveal-s, 0.6s) cubic-bezier(0.42, 0, 0.24, 1);
+		}
+	}
+	.landing-v2.work-page .work-gtile__name {
+		margin: 12px 0 0;
+		font-family: var(--type-row-face);
+		font-weight: var(--type-row-weight);
+		font-synthesis: none;
+		font-size: var(--type-row-size);
+		line-height: var(--type-row-lh);
+		letter-spacing: var(--type-row-ls);
+		text-transform: var(--type-row-case);
+		color: #161616;
+	}
+
+	/* ── the row view's list ── */
+	.landing-v2.work-page .work-stage {
+		position: relative;
+		z-index: 260; /* the content tier over the sticky footer */
+		height: auto;
+		overflow: visible;
+		background: #eeeef0;
+		will-change: auto;
+		padding: var(--wk-content-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+	}
+	.landing-v2.work-page .work-stage__carousel,
+	.landing-v2.work-page .work-page__metas { display: none; }
+	.landing-v2.work-page .work-m { display: block; }
+	.landing-v2.work-page .work-m__entry { margin: 0 0 var(--wk-row-gap); }
+	.landing-v2.work-page .work-m__entry:last-child { margin-bottom: 0; }
+	.landing-v2.work-page .work-m__imglink { display: block; }
+	.landing-v2.work-page .work-m__img {
+		margin: 0;
+		width: 100%;
+		aspect-ratio: 1024 / 616;
+		overflow: hidden;
+		background: #e4e4ea;
+	}
+	.landing-v2.work-page .work-m__img img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.landing-v2.work-page .work-m__title {
+		margin: 16px 0 0;
+		font-family: var(--type-title-face);
+		font-weight: var(--type-title-weight);
+		font-synthesis: none;
+		font-size: var(--type-title-size);
+		line-height: var(--type-title-lh);
+		letter-spacing: var(--type-title-ls);
+		text-transform: var(--type-title-case);
+		color: #161616;
+	}
+	.landing-v2.work-page .work-m__desc {
+		margin: 8px 0 0;
+		font-family: var(--type-body-face);
+		font-weight: var(--type-body-weight);
+		font-synthesis: none;
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-lh);
+		letter-spacing: var(--type-body-ls);
+		text-transform: var(--type-body-case);
+		color: #161616;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.work-page .work-m__img {
+			opacity: 0;
+			transform: translateY(16px);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.8s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.work-page .work-m__img.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	/* ── the footer: revealed from BEHIND — the desktop grid view's
+	   sticky-with-a-spacer schema (work.css R38/R41), in BOTH views: the
+	   list is in flow here, so the same construction carries it. The
+	   height is the footer's measured --footer-h (LandingFooter's
+	   script); the content tiers (grid 260 / stage 260) stack over the
+	   footer (259) until the spacer scrolls it clear. ── */
+	.landing-v2.landing-v2.work-page .work-footer-wrap { display: contents; }
+	.landing-v2.landing-v2.work-page .work-footer-wrap .landing-footer {
+		position: sticky;
+		top: max(0px, calc(100svh - var(--footer-h, 600px))); /* shared-narrow.css's rule: the top pins when the footer is taller than the viewport */
+		height: auto;
+		margin-top: calc(-1 * var(--footer-h, 600px));
+		z-index: 259;
+	}
+	.landing-v2.landing-v2.work-page .work-footer-spacer {
+		display: block;
+		height: var(--footer-h, 600px);
+		pointer-events: none;
+	}
+	.landing-v2.work-page .work-cursor { display: none; }
+}
+
+/* the band: the desktop's own 12-column rows */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.work-page {
+		--wk-pad-top: 120px;
+		--wk-content-gap: 56px;
+		--wk-row-gap: 56px;
+	}
+	.landing-v2.work-page .work-grid__row {
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+	}
+	.landing-v2.work-page .work-gtile { grid-column: span 3; }
+	.landing-v2.work-page .work-gtile--l6 { grid-column: span 6; }
+	.landing-v2.work-page .work-gtile--l6r { grid-column: 7 / span 6; }
+	.landing-v2.work-page .work-m {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--wk-row-gap) 24px;
+	}
+	.landing-v2.work-page .work-m__entry { margin: 0; }
+}
+
+/* the page's order below the seam: the header, the toggle, then the view
+   (the toggle precedes the header in the DOM for the keyboard path) */
+@media (max-width: 1359px) {
+	body.landing-v2.work-page {
+		display: flex;
+		flex-direction: column;
+	}
+	body.landing-v2.work-page > .work-header { order: 1; }
+	body.landing-v2.work-page > .work-viewtoggle { order: 2; }
+	body.landing-v2.work-page > .work-stage,
+	body.landing-v2.work-page > .work-grid { order: 3; }
+	body.landing-v2.work-page > .work-footer-wrap,
+	body.landing-v2.work-page > .work-footer-wrap > .landing-footer { order: 4; } /* the wrap is display:contents — the footer is the item */
+	body.landing-v2.work-page > .work-footer-spacer { order: 5; }
+}

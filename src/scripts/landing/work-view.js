@@ -30,7 +30,6 @@
  */
 import { initWorkPage } from './work-page.js';
 import { initWorkGrid } from './work-grid.js';
-import { isMobileViewport } from './viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 export const WORK_VIEW_STORAGE_KEY = 'ne:work-view';
@@ -72,7 +71,11 @@ const persist = (view) => {
 };
 
 export function initWorkView() {
-  if (isMobileViewport()) return initWorkPage();
+  /* THE REBUILD (2026-09-07): the controller runs on every width — the
+     grid is the default below the seam too, the list is the row view's
+     counterpart (work-narrow.css lays both out in flow). The toggle's
+     placement below writes custom properties the narrow stylesheet
+     does not read. */
 
   const toggle = document.querySelector('[data-work-viewtoggle]');
   const buttons = Array.from(document.querySelectorAll('[data-work-view]')).filter((el) => el instanceof HTMLButtonElement);

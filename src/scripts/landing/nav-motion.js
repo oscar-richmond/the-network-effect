@@ -16,7 +16,7 @@
  * elements, the safe blend shape. Reduced motion: instant states.
  * Keyframes/classes (cr-nav-in / cr-nav-out) live in landing.css.
  */
-import { isPhoneViewport } from './viewport.js';
+import { isPhoneViewport, isMobileViewport } from './viewport.js';
 import { ensureStyles as ensureCharRippleStyles } from '../char-ripple.js';
 
 export const NAV_CHAR_STAGGER_S = 0.03;
@@ -87,7 +87,10 @@ export function ensureRippleChars(label) {
   for (const ch of text) {
     const s = document.createElement('span');
     s.className = 'cr-char';
-    s.textContent = ch === ' ' ? ' ' : ch;
+    /* A bare space is collapsible inside its inline-block (width 0 —
+       "STARTAPROJECT" on every hover-less machine, the phone always);
+       char-ripple's wrap uses the non-breaking space, so does this. */
+    s.textContent = ch === ' ' ? '\u00a0' : ch;
     box.appendChild(s);
   }
   label.textContent = '';
@@ -255,7 +258,12 @@ export function bindBottomNavSweep({ reduced = false, inSnapZone = null, scrollT
   let lastScrollY = window.scrollY || 0;
   let lastDirDown = false;
   const trySnapToBottom = () => {
-    if (reduced || !lastDirDown || !zone()) return;
+    /* NARROW (the rebuild, 2026-09-07): no idle snap on the phone and the
+       band — a page that moves by itself after a pause fights touch
+       scrolling, and with a footer taller than the viewport the bottom is
+       the footer's TAIL (its head passes under the bar). ADAPTED: the
+       bottom sweep stays; the desktop keeps its 2s glide. */
+    if (reduced || isMobileViewport() || !lastDirDown || !zone()) return;
     const y = window.scrollY || 0;
     if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
     glide(maxScroll());

@@ -169,113 +169,41 @@ export function initWorkPage() {
      tablet band (768–1359) ran the DESKTOP branch against a stage the
      stylesheet had hidden: no entry triggers, a blank grid. */
   if (isMobileViewport()) {
-    /* THE CHIP ROW (2026-08-26): the desktop filter pills are gone
-       from the page markup (frame 35:1524 has none), but the MOBILE
-       list keeps its working chips — so this branch now BUILDS the
-       row it used to share, same markup shape, same slot (after the
-       WORK headline in the left column). Desktop never renders any
-       filter markup. (Char-ripple is touch-gated site-wide, so the
-       chips never needed its wiring on this branch.) */
-    const leftCol = document.querySelector('.work-stage__left');
-    if (leftCol instanceof HTMLElement && !leftCol.querySelector('[data-work-filters]')) {
-      const row = document.createElement('div');
-      row.className = 'work-page__filters';
-      row.setAttribute('role', 'group');
-      row.setAttribute('aria-label', 'Filter projects');
-      row.setAttribute('data-work-filters', '');
-      [['all', 'ALL'], ['immerse', 'IMMERSE'], ['connect', 'CONNECT'], ['amplify', 'AMPLIFY']].forEach(([key, label]) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = `work-pill work-pill--${key}`;
-        b.setAttribute('data-work-filter', key);
-        b.setAttribute('aria-pressed', key === 'all' ? 'true' : 'false');
-        b.setAttribute('data-char-ripple-trigger', '');
-        const span = document.createElement('span');
-        span.setAttribute('data-char-ripple', '');
-        span.textContent = label;
-        b.appendChild(span);
-        row.appendChild(b);
-      });
-      leftCol.appendChild(row);
-    }
-    const pills = Array.from(document.querySelectorAll('[data-work-filter]'));
-    const list = document.querySelector('[data-work-m]');
-    const entries = Array.from(document.querySelectorAll('[data-work-m-entry]'));
-    const reducedM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const SWAP_MS = 220; /* keep in step with work.css .is-swapping */
-
-    const setEntries = (key) => {
-      let shown = 0;
-      entries.forEach((entry) => {
-        const tags = (entry.dataset.tags ?? '').split(' ');
-        const match = key === 'all' || tags.includes(key);
-        entry.classList.toggle('is-filtered-out', !match);
-        if (match) shown += 1;
-      });
-      if (metaLive instanceof HTMLElement) {
-        metaLive.textContent = `${shown} project${shown === 1 ? '' : 's'} shown`;
-      }
-    };
-
-    let mCurrent = 'all';
-    let mSwapping = false;
-    const swapTimeouts = [];
-    const applyFilter = (key) => {
-      if (mSwapping || key === mCurrent) return;
-      mCurrent = key;
-      pills.forEach((p) => {
-        p.setAttribute('aria-pressed', p.dataset.workFilter === key ? 'true' : 'false');
-      });
-      if (reducedM || !(list instanceof HTMLElement)) {
-        setEntries(key);
-        return;
-      }
-      mSwapping = true;
-      list.classList.add('is-swapping');
-      swapTimeouts.push(setTimeout(() => {
-        setEntries(key);
-        list.classList.remove('is-swapping');
-        mSwapping = false;
-      }, SWAP_MS));
-    };
-    const onPillClick = (e) => {
-      const pill = e.target instanceof Element ? e.target.closest('[data-work-filter]') : null;
-      if (pill instanceof HTMLElement) applyFilter(pill.dataset.workFilter ?? 'all');
-    };
-    document.addEventListener('click', onPillClick);
-    cleanups.push(() => {
-      document.removeEventListener('click', onPillClick);
-      swapTimeouts.forEach(clearTimeout);
+    /* NARROW (the rebuild, 2026-09-07): the ROW view's counterpart is the
+       vertical list (.work-m — the nine projects in the carousel's
+       order, image / name / description; work-narrow.css). No driver,
+       no docking metas, no cursor, no filter pills (the desktop has
+       none). This branch wires the entrances only: each entry's name and
+       description word-reveal and its image fade-rises as it enters —
+       the founders slots, once — and the footer's reveal as it comes
+       into view. */
+    const entries = Array.from(document.querySelectorAll('[data-work-m-entry]')).filter((el) => el instanceof HTMLElement);
+    entries.forEach((entry) => {
+      cleanups.push(initMobileEntrance(entry, {
+        lines: [entry.querySelector('.work-m__title'), entry.querySelector('.work-m__desc')].filter((el) => el instanceof HTMLElement),
+        media: [entry.querySelector('.work-m__img')].filter((el) => el instanceof HTMLElement),
+        start: 'top 80%',
+      }));
     });
-
-    /* Entrances (skip whole-sale under RM — CSS renders complete). */
-    if (!reducedM) {
-      const stage = document.querySelector('[data-work-stage]');
-      const header = [
-        document.querySelector('[data-work-hl-featured]'),
-        document.querySelector('[data-work-hl-work]'),
-      ].filter((el) => el instanceof HTMLElement);
-      cleanups.push(
-        initMobileEntrance(stage instanceof HTMLElement ? stage : document.body, {
-          lines: header,
-          media: pills,
-        }),
-      );
-      const entryTriggers = entries.map((entry) =>
-        ScrollTrigger.create({
-          trigger: entry,
-          start: 'top 80%',
-          once: true,
-          onEnter: () => entry.classList.add('is-visible'),
-        }),
-      );
-      cleanups.push(() => entryTriggers.forEach((t) => t.kill()));
-    } else {
-      /* RM: the hidden states are no-preference-gated, but the
-         is-visible class keeps the DOM state coherent for both. */
-      entries.forEach((entry) => entry.classList.add('is-visible'));
+    const reducedM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const footerEl = footer instanceof HTMLElement ? footer.querySelector('[data-landing-footer]') : null;
+    if (footerEl instanceof HTMLElement) {
+      const timeouts = [];
+      cleanups.push(() => timeouts.forEach(clearTimeout));
+      let io = null;
+      (document.fonts?.ready ?? Promise.resolve()).then(() => {
+        const wrapped = wrapFooterReveals(footerEl);
+        const play = () => playFooterReveals(wrapped, (fn, ms) => timeouts.push(setTimeout(fn, ms)));
+        if (reducedM || typeof IntersectionObserver !== 'function') { play(); return; }
+        /* The footer sits UNDER the list until the spacer scrolls it clear
+           (the sticky uncover, work-narrow.css) — the cue is the spacer 200px
+           into the viewport, the landing's narrow footer cue. */
+        const spacer = document.querySelector('[data-work-footer-spacer]');
+        io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { play(); io?.disconnect(); } }, spacer ? { rootMargin: '0px 0px -200px 0px', threshold: 0 } : { threshold: 0.1 });
+        io.observe(spacer ?? footerEl);
+      });
+      cleanups.push(() => io?.disconnect());
     }
-
     return () => cleanups.forEach((fn) => fn());
   }
 
