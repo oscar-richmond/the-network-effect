@@ -65,7 +65,10 @@ export const ST_DWELL_HOLD_PX = 300;
  */
 export function initStatementDwell(section, stage, opts = {}) {
   if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement)) return () => {};
-  if (isMobileViewport()) return () => {};
+  /* THE MOBILE PASS (2026-09-07): the closing statement runs this dwell
+     on the narrow build too — its caller passes allowNarrow. Every
+     other caller (the /services statements) keeps the gate. */
+  if (isMobileViewport() && !opts.allowNarrow) return () => {};
   const holdPx = Number.isFinite(opts.holdPx) ? Math.max(0, opts.holdPx) : ST_DWELL_HOLD_PX;
   const bottomClear = opts.bottomClear !== false;
   const topBoundOf = () => {

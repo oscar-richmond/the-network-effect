@@ -37,6 +37,12 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
      height sees real glyphs. */
   const stDwellSection = document.querySelector('[data-closing-st]');
   const stDwellStage = document.querySelector('[data-closing-st-stage]');
+  /* THE MOBILE PASS (2026-09-07): the sequence runs on BOTH builds now.
+     wide = the 1728 composition (absolute lines, ink-centred dwell,
+     600 of fade); narrow = the phone/tablet build (flowing lines at the
+     mobile tier, box-centred dwell, CLOSING_FADE_PX_M of fade). The
+     wide path is byte-identical to before. */
+  const wide = window.matchMedia(WIDE_QUERY).matches;
   let cleanupDwell = () => {};
   /* Guards teardown-before-fonts: without it the dwell (and the
      frag trigger below) would install AFTER dispose and leak its
@@ -64,7 +70,11 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
            stage box — the box bakes 54px above the lines and a
            180px legacy allowance below (the twice-missed centring's
            mechanism; see statement-dwell). */
-        inkLines: () => Array.from(stDwellStage.querySelectorAll('[data-closing-st-line]')),
+        inkLines: wide ? () => Array.from(stDwellStage.querySelectorAll('[data-closing-st-line]')) : undefined,
+        /* narrow: the helper's gate lifts for this one caller; the
+           lines flow (no baked paddings), so box centring is ink
+           centring within a pixel. */
+        allowNarrow: !wide,
       });
       ScrollTrigger.refresh();
     });
@@ -115,11 +125,15 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
      hold is set to this same value (initStatementDwell holdPx), so
      the text stays fixed for exactly the fade; the runway grows by
      the added 300. One knob. */
-  const CLOSING_FADE_PX = ST_DWELL_HOLD_PX * 2;
+  /* THE MOBILE PASS — retimed for the narrow build: 400 (desktop 600).
+     Under thumb-scroll on an 844px viewport 600 of held scroll reads
+     as a stall; 400 keeps the white → red legible at a flick and the
+     text fixed for the whole of it. Desktop untouched. */
+  const CLOSING_FADE_PX_M = 400;
+  const CLOSING_FADE_PX = wide ? ST_DWELL_HOLD_PX * 2 : CLOSING_FADE_PX_M;
   const CLOSING_RED_HOLD_PX = 0; /* a pause on full red before the reveal — none ruled */
   let cleanupRed = () => {};
-  if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement
-    && window.matchMedia(WIDE_QUERY).matches) {
+  if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement) {
     const section = stDwellSection;
     const stage = stDwellStage;
     const tail = document.querySelector('[data-closing-tail]');
@@ -136,6 +150,8 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
       document.querySelector('.home__logo'),
       ...document.querySelectorAll('.home__nav-link'),
       document.querySelector('.home__topbar-email'),
+      /* the narrow build's burger (its bars are currentColor) */
+      document.querySelector('.home__menu-toggle'),
     ].filter((el) => el instanceof HTMLElement);
     let solid = false;
     const setSolid = (on) => {
@@ -224,7 +240,7 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
      trigger. Desktop only (the section is display:none ≤1024). */
   const fragLines = Array.from(document.querySelectorAll('[data-closing-st-line]'));
   let fragTrigger = null;
-  if (!reduced && fragLines.length && window.matchMedia(WIDE_QUERY).matches) {
+  if (!reduced && fragLines.length) {
     const stFonts = document.fonts?.ready ?? Promise.resolve();
     stFonts.then(() => {
       if (earlyDisposed) return;

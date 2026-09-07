@@ -8258,3 +8258,72 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 @media (prefers-reduced-motion: reduce) {
 	.email-copy-tip { transition: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MOBILE PASS (2026-09-07) — the closing statement and its red
+   sequence on the NARROW build (phone + tablet band). The desktop
+   composition above is untouched (its block is ≥1360). The nine
+   authored lines FLOW here — inline, a space after each — at the
+   mobile display tier: Dazzed 600 40/40 −4% uppercase, ink #161616
+   (Oscar's ink ruling holds on the red). Ground: red is the RM /
+   no-JS ground as on desktop; under motion closing-statement.js
+   lands it white and scrubs to red over CLOSING_FADE_PX_M (400)
+   while the statement holds (statement-dwell, box-centred). The
+   tail is 120 (desktop 180) — the gap from "value." to the footer,
+   which follows in flow on this build (no sticky reveal).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2 .landing-closing-st {
+		display: block;
+		position: relative;
+		z-index: 260;
+		background: #c1250e;
+		padding: 72px var(--m-margin-safe-r, var(--m-margin, 24px)) 0 var(--m-margin-safe-l, var(--m-margin, 24px));
+	}
+	.landing-v2 .landing-closing-st__stage {
+		position: relative;
+		background: #c1250e;
+	}
+	.landing-v2 .landing-closing-st__line {
+		display: inline;
+		position: static;
+		margin: 0;
+		font-family: 'Dazzed', var(--font-display, sans-serif);
+		font-weight: 600;
+		font-synthesis: none;
+		font-size: 40px;
+		line-height: 40px;
+		letter-spacing: -0.04em;
+		text-transform: uppercase;
+		white-space: normal;
+		color: #161616;
+	}
+	/* the lines are adjacent nodes with no whitespace between them */
+	.landing-v2 .landing-closing-st__line::after { content: ' '; }
+	.landing-v2 .landing-closing-tail {
+		display: block;
+		position: relative;
+		z-index: 260;
+		height: 120px;
+		background: #c1250e;
+	}
+	/* the mobile closing's intro paragraph carried this same sentence as
+	   plain text; with the statement live it would read twice in one
+	   screen — it retires on the narrow build */
+	.landing-v2.landing-home .landing-closing__intro { display: none; }
+	/* the burger over the red band: the bar's blend switches off with
+	   the desktop rule above; the burger's bars are currentColor */
+	.landing-v2 .home__topbar--about .home__menu-toggle.is-over-red {
+		mix-blend-mode: normal;
+		color: #161616;
+	}
+}
+/* the landing's narrow build orders the body's children as a flex
+   column (above); the statement and its tail take the closing's slot
+   before the footer, which steps to 9 and its spacer to 10 */
+@media (max-width: 1359px) {
+	body.landing-v2.landing-home > .landing-closing-st,
+	body.landing-v2.landing-home > .landing-closing-tail { order: 8; }
+	body.landing-v2.landing-home > .landing-footer { order: 9; }
+	body.landing-v2.landing-home > .landing-footer-spacer { order: 10; }
+}
