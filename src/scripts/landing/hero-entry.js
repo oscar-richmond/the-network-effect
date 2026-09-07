@@ -70,6 +70,7 @@
  * BUILD FLAG: HERO_ENTRY (src/data/flags.js) — dev only; the markup is
  * not rendered at all in a production build.
  */
+import { WIDE_QUERY } from './viewport.js';
 import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
 
@@ -206,7 +207,7 @@ export function initHeroEntry(opts = {}) {
 
   /* DESKTOP ONLY — the mobile hero is the video; below the seam the
      page's normal beats play untouched. */
-  if (!window.matchMedia('(min-width: 1025px)').matches) {
+  if (!window.matchMedia(WIDE_QUERY).matches) {
     skip();
     return () => {};
   }

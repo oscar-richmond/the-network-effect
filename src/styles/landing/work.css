@@ -274,7 +274,7 @@ body.work-page {
    (work-page.js's mobile branch). The desktop rules above are
    untouched; everything below sits behind the seam.
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	body.work-page { overflow: auto; }
 
 	/* The frame's 16px margin grammar (page-scoped, the landing-home
@@ -538,18 +538,18 @@ body.work-page {
 
 /* The mobile list must not exist above the seam — the desktop
    carousel + travelling metas are the page there. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .work-m { display: none; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* The desktop reveal pins the footer to 811 inside its wrap at
 	   (0,3,0) — the mobile footer's grid restructure needs its
 	   natural height (the rebuilt footer runs ~1090). */
 	.landing-v2 .work-footer-wrap .landing-footer { height: auto; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* R1 item 7 (same misalignment confirmed here): index top-aligns
 	   to the title cap line. */
 	.landing-v2 .work-m__index {
@@ -646,7 +646,7 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	}
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* ── THE GRID: a 12-column grid inside the 24px margins — 1680 →
 	   twelve 132.67px columns on 8px gutters (R38; was 118 on 24).
 	   Tokens are tunables. */
@@ -860,7 +860,7 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 /* Mobile keeps its list and never shows the toggle, the grid, or the
    view announcer (desktop-only machinery — the mobile DOM renders
    byte-identically). */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .work-viewtoggle,
 	.landing-v2 .work-grid,
 	.landing-v2 .work-header,

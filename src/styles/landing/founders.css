@@ -398,7 +398,7 @@ body.founders-page {
    white-name bug); their rails/figure stay z-index-free, and any
    entrance-transform isolation is harmless because the blend
    backdrop (the portrait img) shares the group. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2.founders-page { --m-margin: 16px; }
 	body.founders-page { overflow: auto; }
 
@@ -781,7 +781,7 @@ body.founders-page {
    branch adds .is-visible via the shared m-entrance) — media only:
    the blended text lines are hidden by the word-reveal clip
    mechanism itself, never by opacity (the blend-isolation rule). */
-@media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 1359px) and (prefers-reduced-motion: no-preference) {
 	.landing-v2 .fd-slide__m-portrait,
 	.landing-v2 .fd-slide__m-img2,
 	.landing-v2 .fd-slide__listlabel,
@@ -810,7 +810,7 @@ body.founders-page {
 /* The mobile-only internals must not exist above the seam (the
    label rails live inside the portrait — hidden with it; the thumb
    dock is top-level, so it's listed). */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .fd-slide__m-label,
 	.landing-v2 .fd-slide__m-portrait,
 	.landing-v2 .fd-slide__m-serif,
@@ -833,7 +833,7 @@ body.founders-page {
    and travelling names KEEP RUNNING (not removed unilaterally —
    flagged: the frame draws neither, and the static name below
    duplicates the travelling one; Oscar rules). */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* Portrait: 630×841 flush left at y80 (was top88/right24/bottom
 	   24 right-anchored). Height clamps on short interiors; the name
 	   clamps re-derive from the LIVE rect either way. */
@@ -1105,7 +1105,7 @@ body.founders-page {
 }
 
 /* The new desktop elements must not exist below the seam. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.founders-page .fd-slide__role,
 	.founders-page .fd-slide__staticname,
 	.founders-page .fd-slide__bio2,

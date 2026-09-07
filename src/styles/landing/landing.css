@@ -493,7 +493,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	visibility: hidden;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .cs-float { display: none; }
 }
 
@@ -519,7 +519,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    (the dark-carousel redesign) but kept the light-ground accent
    rings — 1.5:1, effectively invisible. Dark ink there; the mobile
    carousel stays on the light ground and keeps the accent above. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2.landing-home .landing-featured__viewall:focus-visible,
 	.landing-v2.landing-home .landing-featured__card:focus-visible {
 		outline-color: #eeeef0;
@@ -2169,7 +2169,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    neutralised here; hierarchy is position only (the guide's
    fragmented-statement rule). Mobile keeps the shipped 40 boxes and
    accent above. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .landing-closing__hl {
 		font-size: 56px;
 		line-height: 54px;
@@ -2273,7 +2273,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* Desktop keyword scale — Heading / Section (mobile keeps the 28 box
    above; family/case swap applies everywhere the element renders). */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .landing-closing__kw-row {
 		font-size: var(--ts-serif-section-size);
 		line-height: var(--ts-serif-section-lh);
@@ -2307,7 +2307,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .landing-closing-st {
 		display: block;
 		position: relative;
@@ -2404,7 +2404,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    (the ≥1025 block flips the pair); the mobile chip renders its
    served "VIEW ALL" exactly as before. */
 .landing-v2 .landing-featured__viewall-label--d { display: none; }
-@media (min-width: 1025px) { .landing-v2 .landing-closing-tail { display: block; } }
+@media (min-width: 1360px) { .landing-v2 .landing-closing-tail { display: block; } }
 
 .landing-v2 .landing-footer {
 	/* RELATIVE always: every child is absolutely positioned (cols
@@ -2466,13 +2466,13 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 /* ── FOOTER REBUILD (frame 13:381, 2026-08-26): desktop renders the
    NEW structure; the shipped markup stays for the mobile footer (its
    own recent design — untouched) and hides ≥1025. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .landing-footer [data-footer-legacy] { display: none; }
 }
 
 .landing-v2 [data-footer-desktop] { display: none; }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 [data-footer-desktop] { display: block; }
 
 	/* TOP ROW — y40, groups at the frame's x offsets. */
@@ -2871,7 +2871,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* ── Sub-1024 stack (the 15" scale shell remains the primary story;
    this is the sensible direct-visit fallback: everything flows). */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .landing-closing {
 		margin-top: 0;
 		height: auto;
@@ -3156,7 +3156,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* Sub-1024: vertical card list (the closing-section flow-stack
    register); the 15-inch shell remains the primary story. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .landing-featured {
 		margin-top: 0;
 		height: auto;
@@ -3302,7 +3302,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    Closing/footer/featured base fallbacks live earlier in this file;
    the blocks here refine them.
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── HERO ──────────────────────────────────────────────────────
 	   The stage stays fixed (the mechanic needs it) at 100svh: the
 	   band geometry must NOT re-derive when the URL bar collapses —
@@ -3785,7 +3785,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    seam. */
 .landing-v2 .landing-access__mobile { display: none; }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Touch has no hover: portrait names render permanently (A3). The
 	   difference blend stays — over the portrait imagery it composites
 	   exactly as the desktop hover state does. */
@@ -3799,7 +3799,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	   state + reveal apply verbatim on mobile.) */
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Overflow root-causes found by measurement at 390 (the LV-
 	   expansion amplifier: any in-flow overflow widens the mobile
 	   layout viewport, which fixed elements then span — so these are
@@ -3865,7 +3865,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Phase C target floors — HERE, not mobile.css: this file sits
 	   last in the bundle and its own base rules were re-winning. */
 	.landing-v2 .landing-footer__link,
@@ -3886,7 +3886,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    source order. Sections covered: hero, founders band, services
    cards. Featured-onward keeps the interim mobile form until Part 2.
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* The frame's grammar: 16px fixed side margins (was 24). */
 	.landing-v2.landing-home {
 		--m-margin: 16px;
@@ -4239,7 +4239,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 /* The mobile-only service internals must not exist above the seam. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .landing-svc-card__m-listblock,
 	.landing-v2 .landing-svc-card__m-img { display: none; }
 }
@@ -4250,7 +4250,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    Part-1 block above: .landing-home-scoped, <=1024, overriding the
    interim mobile rules by source order + specificity.
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── SECTION 4: FEATURED WORK (0:141/0:137/0:144/0:337) ──────── */
 	.landing-v2.landing-home .landing-featured__stage {
 		position: relative; /* the VIEW ALL anchor; still un-sticky */
@@ -4411,7 +4411,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── SECTION 5: OUR NETWORK (0:290/0:293/0:294/0:167) ──────────
 	   Dark band; type to the file, marquees at the 102.4×64 mobile
 	   cell (pitch 110.4 — landing-network.js mirrors it on swap),
@@ -4580,7 +4580,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── SECTION 6: WE CREATE ACCESS — THE ROWS (0:299-0:329) ──────
 	   Geometry decoded from the file: rows 240 tall on a 368 pitch
 	   (360 + 8), 16px between rows, highlight slots at 50vw ± 60.
@@ -4739,7 +4739,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── SECTION 7: CLOSING (0:295/0:336/0:159/0:333/0:330) ──────── */
 	.landing-v2.landing-home .landing-closing__stage {
 		position: static;
@@ -4881,14 +4881,14 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 }
 
 /* The Part-2 mobile-only internals must not exist above the seam. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .landing-closing__m-carousel,
 	.landing-v2 .landing-access__mobile .landing-access__m-rows {
 		display: none;
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── SECTION 8: THE MOBILE FOOTER (file 0:340) ─────────────────
 	   The SHARED footer's mobile arrangement — scoped to the
 	   component (like the mobile nav), NOT to .landing-home: every
@@ -5027,7 +5027,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── Part-2 fix round A (measured at 402) ────────────────────── */
 	/* The interim block's own hl/card margins double the file's
 	   offsets — zero them; the header/strip carry the geometry. */
@@ -5046,7 +5046,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-closing { padding-left: 0; padding-right: 0; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── Part-2 fix round B (measured at 402) ────────────────────── */
 	/* The desktop footer REVEAL (sticky + −811 + z259, the (0,4,0)
 	   rule above) had been silently beating the interim's plain-flow
@@ -5073,7 +5073,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	.landing-v2.landing-home .landing-closing__intro { text-align: left; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ── Part-2 fix round C ──────────────────────────────────────── */
 	/* position:relative (for the edge-fade pseudo) re-armed the
 	   desktop rows' absolute tops (635/767) as relative offsets —
@@ -5096,7 +5096,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* ═══ R1 FIX ROUND (Oscar's device review, 2026-08-13) ═══════════ */
 
 	/* Item 3: the burger's optical centre rides the wordmark's
@@ -5160,7 +5160,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 /* R1 item 10 — services mobile entrance states (m-entrance adds
    .is-visible per element; the titlerow/heading use the line-reveal
    instead — no CSS here, the clips carry their own hidden state). */
-@media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 1359px) and (prefers-reduced-motion: no-preference) {
 	.landing-v2.landing-home .landing-svc-card__m-img,
 	.landing-v2.landing-home .landing-svc-card__desc,
 	.landing-v2.landing-home .landing-svc-card__m-listblock,
@@ -5182,7 +5182,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* R1 item 10 — the two welded flowing headlines take the fade-rise
    (plain ink on mobile; no wrap survives welded mixed-face spans). */
-@media (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 1359px) and (prefers-reduced-motion: no-preference) {
 	.landing-v2.landing-home .landing-services__title,
 	.landing-v2.landing-home .landing-access__headline {
 		opacity: 0;
@@ -5207,7 +5207,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    unaffected; mobile sections carry no colliding margins (verified
    against the pre-change rect baseline — byte-identical).
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	body.landing-v2.landing-home {
 		display: flex;
 		flex-direction: column;
@@ -5233,7 +5233,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    keep their shipped geometry — the respec is the landing page's
    alone. Guide: TNE_Font_Style_Guide (Figma % tracking → em).
    ══════════════════════════════════════════════════════════════════ */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* ── HERO (16:889): the offset two-part composition replaces the
 	   centred stack. Headline block at x553, centre 0.2318·vh (frame
 	   341−118 chrome of the 962 design viewport); travel/settle
@@ -5859,7 +5859,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* 71px bar centres the row's content on y=35.5 (frame 1:643,
 	   2026-08-26 — supersedes the 64/32 build). */
 	.landing-v2 .home__topbar--about {
@@ -5993,7 +5993,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
                     mixed display heading, not as a label — left
                     untouched, flagged.
    · MICRO          card indexes /01… → 10/12/0. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* ── HERO 100/88 ── At 100px the 72px-drawn block (950w at x553)
 	   grows past the canvas, so the GEOMETRY keeps the frame's
 	   OPTICAL CENTRE instead of its left edge: block centre x1028
@@ -6171,7 +6171,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    itself retired by the reel rebuild (2026-08-26) and its rules are
    deleted; the FEATURED half below is live. */
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26): the
 	   section = the 100dvh sticky stage + the JS runway
 	   (--sreel-runway, set by landing-services-reel.js) + the
@@ -6393,7 +6393,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    old FEATURED WORK fill (#232326) on hover/focus — plain :hover
    (no hover-media gate: Oscar's machine reports hover:none
    system-wide). Desktop only; mobile keeps the shipped states. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2.landing-home .landing-founders__headline {
 		width: 980px;
 	}
@@ -6436,7 +6436,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
    hierarchy from position only ✓ the fragmented-statement rule.
    Words = Serrif Regular 56/50/−3.5% (no named guide style —
    flagged); label = the 12/14 label family at the frame's −1.5%. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* Section = stage + the pinned runway (5×400 pair steps + the
 	   1900 side exit). Sticky releases at the section bottom. */
 	.landing-v2.landing-home .landing-access {
@@ -6621,7 +6621,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 
 /* The new desktop subtree must not exist below the seam (mobile is
    the shipped rows build, byte-identical). */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .landing-access__rowwrap,
 	.landing-v2 .landing-access__words,
 	.landing-v2 .landing-access__dheadline {
@@ -6640,7 +6640,7 @@ html[data-ne-splash='on'] .landing-v2 .landing-hero__video.is-entered {
 	display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2.landing-home .landing-sreel {
 		display: block;
 		position: relative;
@@ -7749,7 +7749,7 @@ html.sp-modal-open .landing-v2 .cs-float { visibility: hidden !important; }
    the rise-and-fade entrance it shipped with), 16px+ inputs (no iOS
    zoom), 44px targets; the mobile designs re-rule this. The index
    keeps its shipped 24 inset below the seam. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .sp-modal__panel {
 		width: 100%;
 		opacity: 0;
@@ -7904,7 +7904,7 @@ html.he-landed .landing-v2.landing-home .landing-hero__card img {
    layout (and out of the DOM dumps, so the mobile build stays
    byte-identical); hero-entry.js also refuses to run below the seam,
    so the page's normal beats play there exactly as they do today. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .landing-hero__entry { display: none; }
 }
 
@@ -7996,7 +7996,7 @@ html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry {
 @media (prefers-reduced-motion: reduce) {
 	html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry { display: none; }
 }
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	html[data-ne-entry='on'] .landing-v2.landing-home .landing-hero__entry { display: none; }
 }
 
@@ -8188,7 +8188,7 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
    R76: !important, because the stage is now revealed pre-paint by the
    gate attribute at a higher specificity than these — without it a
    phone with the gate armed would paint red and have nothing clear it. */
-@media (max-width: 1024px) { .splash-b { display: none !important; } }
+@media (max-width: 1359px) { .splash-b { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { .splash-b { display: none !important; } }
 
 

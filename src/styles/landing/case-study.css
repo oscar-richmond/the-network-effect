@@ -474,7 +474,7 @@ body.case-page {
    extraction — properties marked INFERRED are mapped from the
    frame's box geometry + style-named layers to the guide's named
    styles, flagged in the build report, pending re-extraction. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* Mobile-only sections off above the seam: the subtitle (the
 	   frame's hero has none), what-we-did + its divider and the two
 	   rail segments (replaced by the facts table), and the more-work
@@ -879,7 +879,7 @@ body.case-page {
 
 /* ── Sub-1024 stack: the rail interleaves ABOVE its own image group
    via flex order; everything flows. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .cs-hero { padding-top: 160px; }
 	.landing-v2 .cs-hero__title { margin: 0 24px; }
 	.landing-v2 .cs-hero__subtitle { margin: 12px 24px 0; width: auto; }
@@ -939,7 +939,7 @@ body.case-page {
 
 /* ── MOBILE refinements (mobile brief, 2026-08-10) over the fallback
    block above. ──────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* What-we-did: the absolute columns row (left 1083) is desktop
 	   geometry — static stack on mobile; every column fits 342px
 	   (widest item 273px), the 16px ink-clearance rule is moot in a
@@ -977,7 +977,7 @@ body.case-page {
 	.landing-v2 .cs-lightbox__arrow { display: none; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Type floor (Phase C): the More-Work card indices rendered 10px. */
 	.landing-v2 .cs-more__cardindex { font-size: 12px; }
 }
@@ -990,7 +990,7 @@ body.case-page {
    16px margin grammar page-scoped. Yoxman is the frame's instance —
    everything below is the study-agnostic grammar.
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2.case-page { --m-margin: 16px; }
 
 	/* ── HERO (7:46/7:47/7:48): title 30/30 + subtitle Serrif 14/14,
@@ -1281,7 +1281,7 @@ body.case-page {
 }
 
 /* The mobile-only affordances must not exist above the seam. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .cs-more__viewall { display: none; }
 }
 

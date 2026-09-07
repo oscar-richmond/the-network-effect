@@ -44,14 +44,14 @@
    the viewport edge, while the reveal keeps its full bleed inside the
    section. Mobile only, and .sv-legacy is display:none above the seam, so
    the 1728 reference cannot be touched by this. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .sv {
 		overflow-x: clip;
 		overflow-y: visible;
 	}
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .sv6 { display: block; }
 	.landing-v2 .sv6-footwrap { display: contents; }
 	.landing-v2 .sv6-footspacer { display: block; }

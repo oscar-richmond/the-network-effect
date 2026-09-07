@@ -232,7 +232,7 @@
 .landing-v2 .sv-st-stage,
 .landing-v2 .sv-st-dwell { display: contents; }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .sv-st-dwell { display: block; position: relative; }
 	.landing-v2 .sv-st-stage { display: block; position: relative; }
 }
@@ -852,7 +852,7 @@
 
 /* ── Sub-1024 fallback — simplified static stack (the 15" scale
    shell remains the primary story; desktop-first staging). */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .sv-hero { height: auto; }
 	.landing-v2 .sv-hero__stage { position: static; height: auto; padding: 160px 24px 64px; }
 	.landing-v2 .sv-hero__track { display: none; }
@@ -874,7 +874,7 @@
 
 /* ── MOBILE refinements (mobile brief, 2026-08-10) over the fallback
    block above. ──────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* The mixed-face split renders as TWO 34px lines here (family/case
 	   follow desktop; sizes stay). Re-centre for the 68px box and keep
 	   the old 12px title→subtitle gap. */
@@ -937,7 +937,7 @@
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Row internals at the 342px measure: the 64px index gap and the
 	   nowrap 16px text ran to 447px (the page-width offender at 390).
 	   The inner flows in the band, text wraps, tighter gap; rows
@@ -966,7 +966,7 @@
 	.landing-v2 .sv-hero__canvas { display: none; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Type floor (Phase C) — this file sits after mobile.css in the
 	   bundle, so the floor must live here to win. */
 	.landing-v2 .sv-rows__index { font-size: 12px; }

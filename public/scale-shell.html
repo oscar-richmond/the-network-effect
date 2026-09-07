@@ -61,7 +61,7 @@
   // Reached mid-life only by an iPad rotating to portrait or a window
   // being dragged narrow; the exit is a full navigation to the bare
   // page, mirroring how the boot entered.
-  var MOBILE_MAX = 1024;
+  var MOBILE_MAX = 1359; /* R83: mirrors viewport.js SHELL_MIN_WIDTH − 1 — move together */
 
   var frame = document.getElementById('ne-scale-frame');
   if (!frame) return;

@@ -61,7 +61,7 @@
 	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .ct__intro-serrif {
 		font-family: inherit;
 		font-weight: inherit;
@@ -96,7 +96,7 @@
 }
 /* The row is its four items, not the column — desktop only, so the
    mobile build's stacked column keeps its shipped full-width box. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .ct__ctas { width: max-content; }
 }
 
@@ -121,7 +121,7 @@
 }
 /* R58: the founders slot is MOBILE-ONLY now — the desktop composition's
    image is the .ct__image section (frame 1:208). */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .ct__media { display: none; }
 }
 
@@ -168,7 +168,7 @@
    written first is simply overridden (measured: the chips rendered at
    390 and pushed mobile /contact 128px taller). The mobile build never
    showed these chips and still does not. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .ct-social { display: none; }
 }
 
@@ -409,7 +409,7 @@
    left 24 on the 64px bar (contact.js swaps the text and skips the
    centring margin above the seam). Mobile keeps the shipped centred
    18px twin untouched. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .ct-modal__logo {
 		left: 24px;
 		height: 71px;
@@ -478,7 +478,7 @@
 
 /* ── Sub-1024 — buttons stack; the modal goes full-screen (the
    lightbox's mobile behaviour); ghosts are desktop dressing. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .ct { height: auto; padding: 160px 24px 64px; }
 	.landing-v2 .ct__cluster { position: static; transform: none; }
 	.landing-v2 .ct__intro { width: auto; }
@@ -543,7 +543,7 @@
 }
 
 /* ── MOBILE refinements (mobile brief, 2026-08-10). ─────────────── */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .ct__intro {
 		font-size: 30px;
 		line-height: 34px;
@@ -581,7 +581,7 @@
    build is a separate pass and byte-identical — every new element is
    display:none under the seam.
    ═══════════════════════════════════════════════════════════════════ */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	/* The image's width is the page's own token (R60): the nav's
 	   right-alignment is derived from it, so the two cannot drift. */
 	.landing-v2.contact-page { --ct-image-w: 754px; }
@@ -851,7 +851,7 @@
 }
 
 /* Under the seam nothing of the desktop composition exists. */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .ct__label,
 	.landing-v2 .ct__logos,
 	.landing-v2 .ct__image,
@@ -873,7 +873,7 @@
 			transform 0.6s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 	.landing-v2 .ct__label.is-visible { opacity: 1; transform: none; }
-	@media (min-width: 1025px) {
+	@media (min-width: 1360px) {
 		.landing-v2 .ct__logos {
 			opacity: 0;
 			transform: translate3d(0, 24px, 0);

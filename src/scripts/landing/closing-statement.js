@@ -20,6 +20,7 @@
  *
  * DEV handle: window.__closingStatement (was __landingClosingRed).
  */
+import { WIDE_QUERY } from './viewport.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initStatementDwell, ST_DWELL_HOLD_PX } from './statement-dwell.js';
@@ -118,7 +119,7 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
   const CLOSING_RED_HOLD_PX = 0; /* a pause on full red before the reveal — none ruled */
   let cleanupRed = () => {};
   if (stDwellSection instanceof HTMLElement && stDwellStage instanceof HTMLElement
-    && window.matchMedia('(min-width: 1025px)').matches) {
+    && window.matchMedia(WIDE_QUERY).matches) {
     const section = stDwellSection;
     const stage = stDwellStage;
     const tail = document.querySelector('[data-closing-tail]');
@@ -223,7 +224,7 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
      trigger. Desktop only (the section is display:none ≤1024). */
   const fragLines = Array.from(document.querySelectorAll('[data-closing-st-line]'));
   let fragTrigger = null;
-  if (!reduced && fragLines.length && window.matchMedia('(min-width: 1025px)').matches) {
+  if (!reduced && fragLines.length && window.matchMedia(WIDE_QUERY).matches) {
     const stFonts = document.fonts?.ready ?? Promise.resolve();
     stFonts.then(() => {
       if (earlyDisposed) return;

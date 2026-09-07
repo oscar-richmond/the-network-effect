@@ -47,6 +47,7 @@
  * settles if the timeline itself never completes. Nobody is stranded on
  * red. REDUCED MOTION skips the whole thing.
  */
+import { WIDE_QUERY } from './viewport.js';
 import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
@@ -414,7 +415,7 @@ export function initSplashB(splashRoot) {
   void splashRoot;
 
   if (reduced || !(stage instanceof HTMLElement) || sbCards.length !== 3 || heroCards.length !== 3
-      || !window.matchMedia('(min-width: 1025px)').matches) {
+      || !window.matchMedia(WIDE_QUERY).matches) {
     skip();
     return () => {};
   }

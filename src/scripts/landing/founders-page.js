@@ -42,6 +42,7 @@
  * lerp). Touch keeps the /work handling.
  */
 
+import { NARROW_QUERY } from './viewport.js';
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createNavSweep } from './nav-motion.js';
@@ -180,7 +181,7 @@ export function initFoundersPage() {
 
   const cleanups = [];
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const narrow = window.matchMedia('(max-width: 1024px)').matches;
+  const narrow = window.matchMedia(NARROW_QUERY).matches;
   if (narrow) {
     /* MOBILE (frame 13:948 rev 2, 2026-08-14): normal document
        scroll — none of the driver below engages. One profile at a

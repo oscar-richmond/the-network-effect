@@ -32,7 +32,7 @@ import {
   CT_LOGOS_FADE_START, CT_LOGOS_FADE_END,
   CT_ROW_H, CT_ROW_BOTTOM_GAP, CT_LABEL_GAP,
 } from '../../data/landing/contact-logos.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, NARROW_QUERY } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -273,7 +273,7 @@ export function initContactPage() {
       copyTip.classList.remove('is-in');
       removeTimer = window.setTimeout(() => { copyTip.hidden = true; }, TIP_FADE_OUT_MS);
     };
-    const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
+    const isMobile = () => window.matchMedia(NARROW_QUERY).matches;
     const showTip = (link, x, y) => {
       window.clearTimeout(hideTimer);
       window.clearTimeout(removeTimer);

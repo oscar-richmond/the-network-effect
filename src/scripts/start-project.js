@@ -33,6 +33,7 @@
  * button holds SENDING (aria-busy) while pending; error keeps the
  * entered data for retry. DEEP LINK: ?project=1 or #start-project.
  */
+import { NARROW_QUERY, WIDE_QUERY } from './landing/viewport.js';
 import { getLenisInstance } from './landing/site-scroll.js';
 import { initViewCaseCursor } from './landing/view-case-cursor.js';
 
@@ -72,7 +73,7 @@ export function initStartProject() {
   let sending = false;
 
   /* ── the logo twin: the desktop wordmark text (the ensureLogoChars discipline) */
-  if (logoTwin instanceof HTMLElement && window.matchMedia('(min-width: 1025px)').matches) logoTwin.textContent = 'TheNetworkEffect';
+  if (logoTwin instanceof HTMLElement && window.matchMedia(WIDE_QUERY).matches) logoTwin.textContent = 'TheNetworkEffect';
 
   const announce = (text) => { if (live instanceof HTMLElement) { live.textContent = ''; schedule(() => { live.textContent = text; }, 30); } };
   const errorEl = (key) => modal.querySelector(`[data-sp-error="${key}"]`);
@@ -139,7 +140,7 @@ export function initStartProject() {
       copyTip.classList.remove('is-in');
       removeTimer = window.setTimeout(() => { copyTip.hidden = true; }, TIP_FADE_OUT_MS);
     };
-    const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
+    const isMobile = () => window.matchMedia(NARROW_QUERY).matches;
     const showTip = (link, x, y) => {
       window.clearTimeout(hideTimer); window.clearTimeout(removeTimer);
       copyTip.hidden = false;
@@ -373,7 +374,7 @@ export function initStartProject() {
   const cursorEl = document.querySelector('[data-sp-cursor]');
   let cursorBooted = false;
   const bootCursor = () => {
-    if (cursorBooted || reduced || !(cursorEl instanceof HTMLElement) || !window.matchMedia('(min-width: 1025px)').matches) return;
+    if (cursorBooted || reduced || !(cursorEl instanceof HTMLElement) || !window.matchMedia(WIDE_QUERY).matches) return;
     cursorBooted = true;
     cursorEl.hidden = false;
     cleanups.push(initViewCaseCursor({ cursorEl, linkSelector: '[data-sp-backdrop]', reduced }));

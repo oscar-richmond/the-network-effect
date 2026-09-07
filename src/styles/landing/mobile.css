@@ -38,7 +38,7 @@
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
   /* ── Ground + overflow discipline. overflow-x is a BELT (the audit
      measures scrollWidth honestly and fixes real offenders); clip,
      not hidden — hidden creates a scroll container and can strand
@@ -67,7 +67,7 @@
    extensions (the filled-chip convention) so the measured gaps stay
    the spec's exact values. .landing-v2-scoped; specificity (0,3,0)
    where landing.css owns desktop rows at (0,2,0). */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .site-menu__container {
 		/* R3 (Oscar): 16px side margins; the content tops out 24px
 		   below the close X (toggle top 7px-or-inset + 40px box);
@@ -246,7 +246,7 @@
 }
 
 /* ── Phase C fixes: tap-target floors + the 12px type floor. ────── */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Topbar + footer text links render 15-16px tall; padding extends
 	   each hit area to 44px effective with negative margin cancelling
 	   the layout growth (the network-terms pattern) — visual layout
@@ -296,7 +296,7 @@
    labels hidden — menu.js's label choreography still runs, unseen);
    LET'S CHAT leaves the mobile topbar per the frame.
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* Wordmark: the file sets Dazzed Heavy (800), not the desktop's
 	   Arial Black — a deliberate mobile-only face change, flagged in
 	   the build report. */
@@ -358,7 +358,7 @@
 }
 
 /* Desktop must never see the burger. */
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .home__menu-burger { display: none; }
 }
 
@@ -369,7 +369,7 @@
    --ci-x). Used by every mobile carousel on the landing (services
    lists now; featured work + tiles in Part 2).
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	.landing-v2 .m-carousel-ind {
 		display: block;
 		position: relative;
@@ -397,7 +397,7 @@
 	}
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1360px) {
 	.landing-v2 .m-carousel-ind { display: none; }
 }
 
@@ -419,7 +419,7 @@
    wide with overflow hidden) — it merely showed through the pan
    gutter these two opened. Desktop: byte-untouched (all <=1024).
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1359px) {
 	/* body-qualified (0,2,1): landing.css's base grain rule sits later
 	   in the bundle and would win the (0,2,0) tie. */
 	body.landing-v2 .landing-grain {
