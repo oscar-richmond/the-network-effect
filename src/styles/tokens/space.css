@@ -54,7 +54,7 @@
     --m-tap-min: 44px;                     /* the touch floor for every control */
     --m-tap-pad-x: 14px; --m-tap-pad-y: 16px; /* the burger's hit extension: 16 + 28 = 44 wide, 12 + 32 = 44 tall */
     --m-hairline: 1px;
-    --m-z-ground: -1; --m-z-content: 1; --m-z-nav: 270; --m-z-menu: 500; --m-z-nav-open: 550; --m-z-drawer: 600; /* nav-open: the bar rides above the open menu so the toggle closes it; the drawer (opened from the menu) still covers the bar */
+    --m-z-ground: -1; --m-z-content: 1; --m-z-nav: 270; --m-z-menu: 500; --m-z-nav-open: 550; --m-z-drawer: 600; --m-z-splash: 11000; /* nav-open: the bar rides above the open menu so the toggle closes it; the drawer (opened from the menu) still covers the bar */
     /* the menu (not drawn in the frame — the current menu on the tokens) */
     --m-menu-top: calc(var(--m-nav-h) + var(--m-space-8));
     --m-menu-row-pitch: 45px;              /* the statement's line pitch (1:326) */
@@ -112,9 +112,43 @@
 --m-stack-title-lh: 13px; --m-stack-index-lh: 6px; /* the compact title's and index's line boxes (1:436, 1:435) */
 --m-stack-band-pad: 8px;               /* title bottom → the next divider */
 --m-stack-compact-px: 160px;           /* the compaction scrub: the next pillar's last 160px of approach (tunable) */
---m-services-tail: calc(var(--m-pillar-tail) + var(--m-ground-fade-h)); /* AMPLIFY's button → Featured Work's top: 80 + the 474 fade zone (5498 → 6052); the stage's own padding, so it is also the stack's HOLD before the release */
+--m-stack-hold: 300px;                 /* the stack's HOLD once AMPLIFY has parked — scroll runway, the desktop's 300 read hold (tunable; not drawn: the frame is the parked state) */
+--m-services-tail: var(--m-ground-fade-h); /* the 474 fade zone (1:279) after AMPLIFY's own 80 tail: button bottom 5498 + 80 + 474 = Featured Work's top 6052 */
+/* ── PART 3 (2026-09-08): Featured Work → the closing ── */
+/* FEATURED WORK (1:280 – 1:324): the band 880 from y6052; the title 229 in; cards 48 below it on an 8 gap; the indicator 48 under the tallest card, centred */
+--m-fw-card-1: 321px 200px; --m-fw-card-2: 340px 420px; --m-fw-card-3: 360px 310px; --m-fw-card-4: 440px 400px; --m-fw-card-5: 400px 249px; /* 1:285, 1:291, 1:299, 1:305, 1:314 — width height */
+--m-fw-card: var(--m-fw-card-1); --m-fw-w: 321px; --m-fw-h: 200px; /* a card's own pair and its two lengths (featured.js splits the pair per card) */
+--m-fw-rail-h: 472px;                  /* the tallest card (420) + its title (24 + 28) */
+--m-fw-tail: 52px;
+--m-fade-anchor-nav: 542px;            /* the nav's foot + the fade (68 + 474): the page layer's fade into an OPAQUE dark band tracks the tail's gradient at the bar's foot — the only place the layer shows there */                     /* the indicator (1:322 at y6879) → the band's end (6932) */
+
+    /* WE CREATE ACCESS (1:336, 1:326; the rows 1:89 / 1:97 / 1:102 and 1:75 / 1:82 / 1:86) */
+--m-access-rows-h: 496px;              /* two 240 rows on the 256 pitch */
+--m-access-pin-top: calc((100svh - var(--m-access-rows-h)) / 2); /* the rows pin centred in the viewport while the pairs travel */
+--m-access-tile-pitch: 368px;          /* 360 + 8 (1:89 at x81 → 1:97 at x449) */
+--m-access-step-px: 400px;             /* scroll per pair transition — the desktop's STEP_SCROLL_PX */
+--m-access-runway: 2000px;             /* five transitions × 400 */
+--m-access-land-offset: 60px;          /* the landed cell's centre: 60 right of the viewport's centre in the top row (1:89), 60 left in the bottom (1:75) */
+--m-access-word-w: 344px; --m-access-word-h: 61px; /* the word's box on the landed cell (1:96, 1:81) */
+--m-access-word-full: 140px; --m-access-word-window: 290px; /* the desktop's word fade: solid within 140 of the landing, gone at 290 */
+--m-access-veil-dead: 184px;           /* the desktop's BLUR_DEAD_FRACTION: no veil within half a pitch of the landing */
+--m-veil: 1;                           /* a cell's veil amount (0 landed → 1 far), written per cell by access.js */
+--m-x: 0px; --m-r: 0px;                /* a statement line's indent from the inset / inset from the right — set per line from statements.js */
+/* MOST BRANDS (1:337 – 1:371, 1:389) */
+--m-brands-line-pitch: 34px;           /* the four 32/30 lines (8448 → 8482 → 8516 → 8549) */
+--m-brands-card-w: 280px; --m-brands-card-pitch: 288px; --m-brands-img-h: 280px; /* 1:344 – 1:368 */
+--m-brands-word-top: 304px; --m-brands-line-top: 340px; /* the keyword and its line below the card's top (1:349, 1:350) */
+--m-brands-line-w: 220px;              /* the keyword line's measure (1:350; 1:364 runs the full 280) */
+--m-brands-rail-h: 394px;              /* the tallest card (1:358: a 54 line) */
+--m-brands-tail: 100px;                /* the indicator (1:389 at y9012) → the red band (9113) */
+/* THE CLOSING (1:372, 1:373) */
+--m-closing-st-h: 630px;               /* fourteen 45 lines */
+--m-closing-st-top: 165px; --m-closing-st-bottom: 85px; /* the statement inside the 880 band (9278 − 9113; 9993 − 9908) */
+--m-closing-pin-top: calc(var(--m-nav-h) + (100svh - var(--m-nav-h) - var(--m-closing-st-h)) / 2); /* centred between the bar's foot and the viewport's bottom (the desktop rule) */
+--m-closing-red-px: 600px;             /* the grey → red scrub while the text is fixed — the desktop's CLOSING_FADE_PX; also the pin's hold */
+--m-closing-nav-switch-t: 0;           /* the nav goes solid as the fade BEGINS: on the light ground the blend's own result is one step from the solid, so the switch is invisible (the desktop's reasoning; its 0.5 is a fraction of the bar's height, not of the fade) */
 /* the footer (1:392, 1:410) */
-    --m-footer-indent: 104px;              /* the statement's first-line indent (1:409 — drawn as leading spaces, measured on the render) */
+--m-footer-indent: 104px;              /* the statement's first-line indent (1:409 — drawn as leading spaces, measured on the render) */
     --m-footer-statement-h: 180px; --m-footer-index-pitch: 30px; --m-footer-link-h: 18px; --m-footer-legal-row-pitch: 40px;
   }
 }

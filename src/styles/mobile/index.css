@@ -15,5 +15,10 @@
 @import './founders.css';
 @import './network.css';
 @import './services.css';
+@import './featured.css';
+@import './access.css';
+@import './brands.css';
+@import './closing.css';
+@import './splash.css';
 @import './pending.css';
 @layer tokens, base, desktop, tablet, mobile;

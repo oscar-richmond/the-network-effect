@@ -9,8 +9,11 @@ import { initMobileHero } from './hero.js';
 import { initMobileFounders } from './founders.js';
 import { initMobileNetwork } from './network.js';
 import { initMobileServices } from './services.js';
+import { initMobileFeatured } from './featured.js';
+import { initMobileAccess } from './access.js';
+import { initMobileClosing } from './closing.js';
 
 export function initMobileLanding() {
-  const offs = [initMobileHero(), initMobileFounders(), initMobileNetwork(), initMobileServices()];
+  const offs = [initMobileHero(), initMobileFounders(), initMobileNetwork(), initMobileServices(), initMobileFeatured(), initMobileAccess(), initMobileClosing()];
   return () => { for (const off of offs) off(); };
 }

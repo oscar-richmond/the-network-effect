@@ -18,9 +18,5 @@
     }
     .landing-v2.founders-page .fd-footer-wrap .landing-footer { height: auto; }
     .landing-v2 .ct { overflow: clip; }
-    /* THE LANDING (Part 2 built the hero → the services stack; Part 3 takes Featured Work
-       onward): Featured Work's desktop −100dvh overlap would pull it up over the stack's
-       tail and fire the ground fade early — it starts where the tail ends until Part 3. */
-    .landing-v2 .landing-featured { position: relative; margin-top: 0; }
   }
 }

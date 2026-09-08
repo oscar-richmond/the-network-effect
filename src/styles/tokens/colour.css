@@ -17,7 +17,7 @@
     --m-color-ink-bright: #f9f9f9;    /* FEATURED WORK (1:321) */
     --m-color-white: #ffffff;         /* the difference-blend text and the burger (1:420, 1:422, 1:77, 1:270) */
     --m-color-blue: #232a89;          /* MORE INFO ink (1:444), the light carousel thumb (1:449, 1:391) */
-    --m-color-muted: #a6a6a8;         /* the footer's labels and statement tail (1:395, 1:401, 1:404, 1:409) — AS DRAWN; the desktop corrected this to #6c6c6e (R50, 2026-09-04) */
+    --m-color-muted: #6c6c6e;         /* the footer's labels and statement tail (1:395, 1:401, 1:404, 1:409) — the frame draws #a6a6a8; RULED to the desktop's corrected value (R50, 2026-09-04; Part 3 ruling 2026-09-08) */
     /* fills and rules */
     --m-color-fill: #e4e4ea;          /* MORE INFO ground (1:442), the light carousel track (1:448) */
     --m-color-fill-dark: #343439;     /* THE FOUNDERS / FEATURED WORK ground (1:65), the dark carousel track (1:323) */

@@ -20,7 +20,6 @@
       overflow: visible;
       z-index: auto;
     }
-    .landing-v2 .landing-outro::after { display: none; }
     /* the desktop shows the reel only from the shell floor (display none beneath it) */
     .landing-v2 .landing-sreel,
     .landing-v2.landing-home .landing-sreel {
@@ -46,9 +45,27 @@
       visibility: visible;
       background: transparent;
     }
-    /* THE TAIL (80 + the 474 fade zone into Featured Work) as CONTENT, not padding: a sticky
-       pillar is constrained by its parent's content box, so this is also the stack's hold */
-    .landing-v2 .landing-sreel__stage::after { content: ''; display: block; order: 4; height: var(--m-services-tail); }
+    /* THE HOLD: a sticky pillar is constrained by its parent's CONTENT box, so the stack's
+       hold is this block after AMPLIFY — opaque on the ground, so nothing transparent shows
+       the page layer between the last panel and the tail */
+    .landing-v2 .landing-sreel__stage::after { content: ''; display: block; order: 4; height: var(--m-stack-hold); background: var(--m-color-ground); }
+    /* THE TAIL (the 474 fade zone into Featured Work, 1:279 — AMPLIFY's own 80 precedes it)
+       on the SECTION, outside the stage, so the pillars have released before it scrolls in:
+       opaque, the frame's gradient from the ground to the band's dark; the page layer beneath
+       fades in step with it at the nav's foot (ground.js, --m-fade-anchor-nav) */
+    .landing-v2 .landing-outro::after {
+      content: '';
+      display: block;
+      position: static;
+      inset: auto;
+      width: auto;
+      height: var(--m-services-tail);
+      opacity: 1;
+      transform: none;
+      z-index: auto;
+      pointer-events: none;
+      background: linear-gradient(180deg, var(--m-color-ground) 0, var(--m-color-ground-dark) 100%);
+    }
     /* FROM ACCESS. / TO IMPACT (1:277 serif left, 1:278 sans right) on a 49 pitch */
     .landing-v2 .landing-sreel__intro {
       order: 1;
