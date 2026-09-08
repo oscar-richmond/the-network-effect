@@ -1,0 +1,189 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer mobile {
+  @media (--mobile) {
+    /* OUR NETWORK (1:56, 1:33, 1:32, 1:16 — mobile rebuild Part 2): the
+       second half of the dark band, in flow after the founders rail. The
+       desktop's sticky stage, parked media and marquees become a static
+       column: TRUSTED BY… and OUR NETWORK right-aligned, the industry list
+       at the term tier with its authored breaks, then the photo strip as a
+       touch rail with the frame's edge gradient (1:572). The section paints
+       the band's dark itself (the band is not a transition zone). */
+    .landing-v2 .landing-network {
+      position: relative;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      background: var(--m-color-ground-dark);
+      overflow: visible;
+      z-index: auto;
+    }
+    .landing-v2 .landing-network__stage {
+      position: static;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: var(--m-network-gap) 0 0;
+      overflow: visible;
+      background: transparent;
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+    /* the desktop's label, logo rows, their fade and its edge gradient have no place in the frame */
+    .landing-v2 .landing-network__label,
+    .landing-v2 .landing-network__marquee,
+    .landing-v2 .landing-network__row-fade,
+    .landing-v2 .landing-network__edge-fade { display: none; }
+    /* the lines rest open: no reveal clip below the seam */
+    .landing-v2 .landing-network__line {
+      display: inline;
+      position: static;
+      white-space: normal;
+      transform: none;
+      opacity: 1;
+      clip-path: none;
+      visibility: visible;
+    }
+    /* TRUSTED BY FOUNDERS AND / BRANDS ACROSS CULTURE AND COMMERCE. (1:56) — eyebrow tier, right, two authored lines */
+    .landing-v2 .landing-network__subtitle {
+      order: 1;
+      position: static;
+      width: auto;
+      max-width: none;
+      margin: 0 var(--m-inset);
+      padding: 0;
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+      font-family: var(--type-eyebrow-face);
+      font-weight: var(--type-eyebrow-weight);
+      font-size: var(--type-eyebrow-size);
+      line-height: var(--type-eyebrow-lh);
+      letter-spacing: var(--type-eyebrow-ls);
+      text-transform: var(--type-eyebrow-case);
+      text-align: right;
+      color: var(--m-color-ink-on-dark);
+    }
+    .landing-v2 .landing-network__subtitle .landing-network__line { display: block; }
+    /* OUR NETWORK (1:33) — heading tier, right, one face */
+    .landing-v2 .landing-network__title {
+      order: 2;
+      position: static;
+      width: auto;
+      max-width: none;
+      margin: var(--m-space-6) var(--m-inset) 0;
+      padding: 0;
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+      font-family: var(--type-heading-face);
+      font-weight: var(--type-heading-weight);
+      font-size: var(--type-heading-size);
+      line-height: var(--type-heading-lh);
+      letter-spacing: var(--type-heading-ls);
+      text-transform: var(--type-heading-case);
+      text-align: right;
+      white-space: nowrap;
+      color: var(--m-color-ink-on-dark);
+    }
+    .landing-v2 .landing-network__title-serrif { font: inherit; letter-spacing: inherit; }
+    /* the industries (1:32) — term tier, one paragraph with the frame's double-space slashes; tap selects (network.js) */
+    .landing-v2 .landing-network__body {
+      order: 3;
+      position: static;
+      width: auto;
+      max-width: none;
+      margin: var(--m-space-6) var(--m-inset) 0;
+      padding: 0;
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+      font-family: var(--type-term-face);
+      font-weight: var(--type-term-weight);
+      font-size: var(--type-term-size);
+      line-height: var(--type-term-lh);
+      letter-spacing: var(--type-term-ls);
+      text-transform: var(--type-term-case);
+      text-align: left;
+      color: var(--m-color-white);
+    }
+    /* the separators: the authored double-space runs collapse to one space each side, widened by word-spacing, so a line can end on its slash and the trailing space hangs (the frame's line 1 ends "TV & Film  /") */
+    .landing-v2 .landing-network__body .landing-network__line + .landing-network__line::before { content: ' / '; white-space: normal; word-spacing: var(--type-term-sep-ws); transition: opacity var(--m-dur-base) var(--m-ease-house); }
+    .landing-v2 .landing-network__sep { white-space: normal; word-spacing: var(--type-term-sep-ws); transition: opacity var(--m-dur-base) var(--m-ease-house); }
+    .landing-v2 .landing-network__term {
+      display: inline;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      letter-spacing: inherit;
+      color: inherit;
+      cursor: pointer;
+      white-space: normal; /* the frame breaks inside a term (Food & / Beverage) */
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity var(--m-dur-base) var(--m-ease-house);
+    }
+    .landing-v2 .landing-network__term:focus-visible { outline: var(--m-hairline) solid var(--m-color-white); outline-offset: var(--m-space-1); }
+    /* the selected state: the chosen term at full ink, every other term and separator dimmed */
+    .landing-v2 .landing-network__body.is-dimming .landing-network__term:not(.is-active),
+    .landing-v2 .landing-network__body.is-dimming .landing-network__sep,
+    .landing-v2 .landing-network__body.is-dimming .landing-network__line + .landing-network__line::before { opacity: var(--m-opacity-term-dim); }
+    /* THE STRIP (1:16): five 272 tiles on a 264 pitch (an 8 overlap), 330 tall, edge to edge; snap per tile */
+    .landing-v2 .landing-network__strip {
+      order: 4;
+      position: relative;
+      top: auto;
+      left: auto;
+      display: flex;
+      width: auto;
+      height: var(--m-strip-h);
+      margin: var(--m-space-9) 0 0;
+      padding: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+      z-index: auto;
+    }
+    .landing-v2 .landing-network__strip::-webkit-scrollbar { display: none; }
+    .landing-v2 .landing-network__strip-win {
+      position: relative;
+      display: block;
+      flex: 0 0 auto;
+      height: var(--m-strip-h);
+      overflow: hidden;
+      scroll-snap-align: start;
+    }
+    .landing-v2 .landing-network__strip-win + .landing-network__strip-win { margin-left: calc(var(--m-strip-pitch) - var(--m-strip-tile-w)); }
+    .landing-v2 .landing-network__strip-win img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      max-width: none;
+      object-fit: cover;
+      object-position: center;
+    }
+    /* 1:572 — the edges over the strip: pseudo-elements on the section (the strip has no wrapper), driven by network.js */
+    .landing-v2 .landing-network::before,
+    .landing-v2 .landing-network::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      height: var(--m-strip-h);
+      pointer-events: none;
+      z-index: var(--m-z-content);
+    }
+    .landing-v2 .landing-network::before { left: 0; width: var(--m-rail-edge-l); opacity: var(--m-rail-edge-l-op); background: linear-gradient(90deg, var(--m-color-ground-dark) 0, var(--m-color-ground-dark-0) 100%); }
+    .landing-v2 .landing-network::after { right: 0; width: var(--m-rail-edge-r); opacity: var(--m-rail-edge-r-op); background: linear-gradient(270deg, var(--m-color-ground-dark) 0, var(--m-color-ground-dark-0) 100%); }
+  }
+}
