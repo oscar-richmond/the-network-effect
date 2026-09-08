@@ -1,0 +1,114 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer mobile {
+  @media (--mobile) {
+    /* MOST BRANDS STRUGGLE… (1:337 — mobile rebuild Part 3 §3): the four
+       lines on a 34 pitch at the frame's indents, then the card rail — 280
+       cards on a 288 pitch, snapping, the light ground's edge gradients —
+       and the indicator right-aligned beneath. The desktop's pinned stage,
+       tiles and keyword columns are removed on the phone (the gate). */
+    .landing-v2 .landing-closing {
+      position: relative;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      overflow: visible;
+      z-index: auto;
+    }
+    .landing-v2 .landing-closing__stage {
+      position: static;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: var(--m-space-section) 0 var(--m-brands-tail);
+      overflow: visible;
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+      background: transparent;
+    }
+    .landing-v2 .m-brands-hl {
+      order: 1;
+      margin: 0 var(--m-inset);
+      padding: 0;
+      font-family: var(--type-heading-face);
+      font-weight: var(--type-heading-weight);
+      font-size: var(--type-heading-size);
+      line-height: var(--type-heading-lh);
+      letter-spacing: var(--type-heading-ls);
+      text-transform: var(--type-heading-case);
+      color: var(--m-color-ink);
+    }
+    .landing-v2 .m-brands-hl__line { display: block; height: var(--m-brands-line-pitch); padding-left: var(--m-x); white-space: nowrap; }
+    /* THE RAIL (1:343): 48 below the lines */
+    .landing-v2 .m-brands-wrap { order: 2; position: relative; height: var(--m-brands-rail-h); margin: calc(var(--m-space-7) - (var(--m-brands-line-pitch) - var(--type-heading-lh) * var(--type-heading-size))) 0 0; }
+    .landing-v2 .m-brands {
+      display: flex;
+      gap: calc(var(--m-brands-card-pitch) - var(--m-brands-card-w));
+      height: 100%;
+      padding: 0 var(--m-inset);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-left: var(--m-inset);
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .landing-v2 .m-brands::-webkit-scrollbar { display: none; }
+    .landing-v2 .m-brands__card { position: relative; flex: 0 0 var(--m-brands-card-w); height: 100%; margin: 0; scroll-snap-align: start; }
+    .landing-v2 .m-brands__card:last-child { margin-right: var(--m-inset); }
+    .landing-v2 .m-brands__img { display: block; width: var(--m-brands-card-w); height: var(--m-brands-img-h); margin: 0; overflow: hidden; }
+    .landing-v2 .m-brands__img img { display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: center; }
+    .landing-v2 .m-brands__word {
+      position: absolute;
+      top: var(--m-brands-word-top);
+      left: 0;
+      width: var(--m-pillar-desc-w);
+      margin: 0;
+      font-family: var(--type-title-face);
+      font-weight: var(--type-title-weight);
+      font-size: var(--type-title-size);
+      line-height: var(--type-title-lh);
+      letter-spacing: var(--type-title-ls);
+      text-transform: var(--type-title-case);
+      color: var(--m-color-ink);
+    }
+    .landing-v2 .m-brands__line {
+      position: absolute;
+      top: var(--m-brands-line-top);
+      left: 0;
+      width: var(--m-brands-line-w);
+      margin: 0;
+      font-family: var(--type-body-face);
+      font-weight: var(--type-body-weight);
+      font-size: var(--type-body-size);
+      line-height: var(--type-body-lh);
+      letter-spacing: var(--type-body-ls);
+      text-transform: var(--type-body-case);
+      color: var(--m-color-ink);
+    }
+    /* the edges on the light ground (the founders rail's grammar) */
+    .landing-v2 .m-brands__edge { position: absolute; top: 0; bottom: 0; pointer-events: none; }
+    .landing-v2 .m-brands__edge--l { left: 0; width: var(--m-rail-edge-l); opacity: 0; background: linear-gradient(90deg, var(--m-color-ground) 0, var(--m-color-ground-0) 100%); }
+    .landing-v2 .m-brands__edge--r { right: 0; width: var(--m-rail-edge-r); opacity: 1; background: linear-gradient(270deg, var(--m-color-ground) 0, var(--m-color-ground-0) 100%); }
+    /* THE INDICATOR (1:389): 100 × 1 right-aligned, 40 under the rail; the thumb rides the rail's scroll */
+    .landing-v2 .landing-closing__stage::before,
+    .landing-v2 .landing-closing__stage::after {
+      content: '';
+      position: absolute;
+      right: var(--m-inset);
+      bottom: var(--m-brands-tail);
+      height: var(--m-indicator-h);
+      border-radius: var(--m-radius-indicator);
+    }
+    .landing-v2 .landing-closing__stage::before { width: var(--m-indicator-w); background: var(--m-color-fill); }
+    .landing-v2 .landing-closing__stage::after { right: calc(var(--m-inset) + var(--m-indicator-w) - var(--m-indicator-thumb)); width: var(--m-indicator-thumb); background: var(--m-color-blue); transform: translateX(var(--m-ind-x)); }
+    .landing-v2 .landing-closing__stage { position: relative; top: auto; left: auto; }
+    .landing-v2 .m-brands-wrap { margin-bottom: var(--m-space-6); }
+  }
+}
