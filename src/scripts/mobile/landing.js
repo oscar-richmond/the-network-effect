@@ -8,8 +8,9 @@
 import { initMobileHero } from './hero.js';
 import { initMobileFounders } from './founders.js';
 import { initMobileNetwork } from './network.js';
+import { initMobileServices } from './services.js';
 
 export function initMobileLanding() {
-  const offs = [initMobileHero(), initMobileFounders(), initMobileNetwork()];
+  const offs = [initMobileHero(), initMobileFounders(), initMobileNetwork(), initMobileServices()];
   return () => { for (const off of offs) off(); };
 }
