@@ -3,10 +3,18 @@
 @layer mobile {
   @media (--mobile) {
     /* THE NAV (1:419) — the wordmark LEFT at the inset, the burger RIGHT at
-       --m-burger-x; fixed; the bar itself is the difference-blend element
-       (its children white), so nothing between the wordmark and the page
-       carries opacity, a transform or a filter — the scale animates the
-       wordmark's font-size (nav.js), never an ancestor. */
+       --m-burger-x; fixed. THE BLEND SITS ON THE ITEMS (the wordmark and the
+       toggle each carry mix-blend-mode: difference), the bar itself blends
+       normally — the desktop's and the previous build's arrangement. The
+       Part 1 form (the bar as the one blend element) rendered the wordmark
+       plain white on the phone — invisible over the light ground, showing
+       only against the menu's dark panel (Oscar 2026-09-08): a fixed
+       element's blend on iOS composites only against what is painted in
+       the root layer, and the page ground had moved to a fixed layer. The
+       ground is now ALSO painted on body (ground.js), so the backdrop is
+       real on every engine. Nothing between an item and the page carries
+       opacity, a transform or a filter; the wordmark's scale is a transform
+       on its INNER link (nav.js), inside the blend element. */
     .landing-v2 .home__topbar,
     .landing-v2 .home__topbar--about {
       position: fixed;
@@ -20,7 +28,8 @@
       padding: 0 var(--m-inset);
       background: transparent;
       color: var(--m-color-white);
-      mix-blend-mode: difference;
+      mix-blend-mode: normal;
+      isolation: auto;
       pointer-events: none;
       transform: none; opacity: 1; filter: none; will-change: auto;
     }
@@ -34,8 +43,8 @@
     .landing-v2 .home__topbar.is-over-red,
     .landing-v2 .home__topbar--about.is-over-red { mix-blend-mode: normal; color: var(--m-color-ink); }
     .landing-v2 .home__topbar--about.is-over-red .home__logo,
-    .landing-v2 .home__topbar--about.is-over-red .home__menu-toggle { color: var(--m-color-ink); }
-    /* the wordmark: TheNetworkEffect, Serrif Condensed, 24 on landing → 18 scrolled (nav.js scrubs font-size) */
+    .landing-v2 .home__topbar--about.is-over-red .home__menu-toggle { color: var(--m-color-ink); mix-blend-mode: normal; }
+    /* the wordmark: TheNetworkEffect, Serrif Condensed, 24 on landing → 18 scrolled (nav.js scales the inner link) */
     .landing-v2 .home__topbar--about .home__logo {
       grid-column: 1;
       grid-row: 1;
@@ -53,11 +62,14 @@
       text-transform: var(--type-nav-case);
       text-align: left;
       color: var(--m-color-white);
-      mix-blend-mode: normal;
+      mix-blend-mode: difference;
       white-space: nowrap;
       pointer-events: auto;
     }
-    .landing-v2 .home__logo-link { display: inline-block; color: inherit; text-decoration: none; }
+    /* the scale rides the link (a transform INSIDE the blend element, so the blend chain is untouched); from its left edge, so the wordmark
+       shrinks in place at the inset; a composited layer, so the shrink is one smooth transform and never re-lays the glyphs out (the
+       font-size scrub vibrated as it re-shaped the text every frame — Oscar 2026-09-08) */
+    .landing-v2 .home__logo-link { display: inline-block; color: inherit; text-decoration: none; transform-origin: 0 50%; will-change: transform; backface-visibility: hidden; }
     /* the desktop's char sweeps (the splash's nav entrance, the menu's logo
        sweep, the services exit) land on the BARE wordmark here — there are
        no chars below the seam (ensureLogoChars returns) — and their `both`
@@ -87,7 +99,7 @@
       border: 0;
       background: transparent;
       color: var(--m-color-white);
-      mix-blend-mode: normal;
+      mix-blend-mode: difference;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }

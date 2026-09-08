@@ -7,20 +7,23 @@
        desktop's sticky stage, parked media and marquees become a static
        column: TRUSTED BY… and OUR NETWORK right-aligned, the industry list
        at the term tier with its authored breaks, then the photo strip as a
-       touch rail with the frame's edge gradient (1:572). The section paints
-       the band's dark itself (the band is not a transition zone). */
+       touch rail with the frame's edge gradient (1:572). TRANSPARENT over the
+       page layer (Oscar 2026-09-08): the section is the band's track, the
+       stage pins inside it and exits on the desktop founders mechanic
+       (band.js, band.css); after the release the track holds bare dark
+       ground while the layer lightens for WHAT WE DO (ground.js). */
     .landing-v2 .landing-network {
       position: relative;
       height: auto;
       min-height: 0;
       margin: 0;
       padding: 0;
-      background: var(--m-color-ground-dark);
+      background: transparent;
       overflow: visible;
       z-index: auto;
     }
     .landing-v2 .landing-network__stage {
-      position: static;
+      position: relative;
       display: flex;
       flex-direction: column;
       height: auto;
@@ -173,17 +176,22 @@
       object-fit: cover;
       object-position: center;
     }
-    /* 1:572 — the edges over the strip: pseudo-elements on the section (the strip has no wrapper), driven by network.js */
-    .landing-v2 .landing-network::before,
-    .landing-v2 .landing-network::after {
+    /* 1:572 — the edges over the strip: pseudo-elements on the stage (the strip has no wrapper), their opacity from
+       rail.js; through the exit they ride the strip's rise and fade on the stage's --m-band-y / --m-band-fade (band.js) */
+    .landing-v2 .landing-network__stage::before,
+    .landing-v2 .landing-network__stage::after {
       content: '';
       position: absolute;
       bottom: 0;
       height: var(--m-strip-h);
       pointer-events: none;
       z-index: var(--m-z-content);
+      transform: translateY(var(--m-band-y, 0px));
+      will-change: transform, opacity;
     }
-    .landing-v2 .landing-network::before { left: 0; width: var(--m-rail-edge-l); opacity: var(--m-rail-edge-l-op); background: linear-gradient(90deg, var(--m-color-ground-dark) 0, var(--m-color-ground-dark-0) 100%); }
-    .landing-v2 .landing-network::after { right: 0; width: var(--m-rail-edge-r); opacity: var(--m-rail-edge-r-op); background: linear-gradient(270deg, var(--m-color-ground-dark) 0, var(--m-color-ground-dark-0) 100%); }
+    .landing-v2 .landing-network__stage::before { left: 0; width: var(--m-rail-edge-l); opacity: calc(var(--m-rail-edge-l-op, 0) * var(--m-band-fade, 1)); background: linear-gradient(90deg, var(--m-color-ground-dark) 0, var(--m-color-ground-dark-0) 100%); }
+    .landing-v2 .landing-network__stage::after { right: 0; width: var(--m-rail-edge-r); opacity: calc(var(--m-rail-edge-r-op, 0) * var(--m-band-fade, 1)); background: linear-gradient(270deg, var(--m-color-ground-dark) 0, var(--m-color-ground-dark-0) 100%); }
+    /* the network section's own ::before/::after above the seam are not drawn here */
+    .landing-v2 .landing-network::before, .landing-v2 .landing-network::after { content: none; }
   }
 }

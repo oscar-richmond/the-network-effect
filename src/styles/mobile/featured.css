@@ -2,21 +2,22 @@
 @layer tokens, base, desktop, mobile, tablet;
 @layer mobile {
   @media (--mobile) {
-    /* FEATURED WORK (1:280 — mobile rebuild Part 3 §1). The band paints its
-       own dark (it is not a transition zone): the fade above it is the
-       services tail's static gradient (1:279), and the Part 1 layer — seen
-       only in the strip behind the nav — fades in step with that gradient's
-       value at the nav's foot (ground.js, anchored on the tail's bottom
-       edge from 68 + 474 to 68), so the strip and the tail always agree.
-       The title, then the five cards at the frame's varied sizes on a
-       snapping rail, top-aligned; the indicator centred under the rail. */
+    /* FEATURED WORK (1:280 — mobile rebuild Part 3 §1; Oscar 2026-09-08). The
+       section is TRANSPARENT over the page layer, which has darkened over the
+       services tail before this ink enters (ground.js); the STAGE paints the
+       band's dark itself — an opaque panel, so when the layer lightens again
+       over this section's own bare tail (the .m-tail after the stage, for WE
+       CREATE ACCESS) the change shows only beneath the stage, never behind
+       its light ink. The title, then the five cards at the frame's varied
+       sizes on a snapping rail, top-aligned; the indicator centred under the
+       rail. */
     .landing-v2 .landing-featured {
       position: relative;
       height: auto;
       min-height: 0;
       margin: 0;
       padding: 0;
-      background: var(--m-color-ground-dark);
+      background: transparent;
       overflow: visible;
       z-index: auto;
     }
@@ -33,8 +34,9 @@
       transform: none;
       opacity: 1;
       visibility: visible;
-      background: transparent;
+      background: var(--m-color-ground-dark);
     }
+    .landing-v2 [data-featured-tail-m] { height: var(--m-featured-tail); }
     /* FEATURED WORK (1:321): the heading tier in the bright ink, one line */
     .landing-v2 .landing-featured__header {
       position: static;
@@ -112,7 +114,7 @@
       filter: none;
       -webkit-tap-highlight-color: transparent;
     }
-    .landing-v2 .landing-featured__card:last-child { margin-right: var(--m-inset); }
+    .landing-v2 .landing-featured__card:last-child { margin-right: 0; } /* the rail's end padding is the 16 — no margin on top of it (the brands rail's rule) */
     /* the frame's five, in its order, at its sizes; the data's other three are not drawn */
     .landing-v2 .landing-featured__card[data-slug="wilderness-reserve"] { order: 1; --m-fw-card: var(--m-fw-card-1); }
     .landing-v2 .landing-featured__card[data-slug="pavilion-club"] { order: 2; --m-fw-card: var(--m-fw-card-2); }

@@ -44,7 +44,7 @@
     /* term — the network sector list (1:32): Serrif Condensed 500 24/27 */
     --type-term-face: var(--m-font-serif-cond); --type-term-weight: 500; --type-term-case: none;
     --type-term-size: 24px; --type-term-lh: 1.125; --type-term-ls: 0;
---type-term-sep-ws: 0.25em;            /* the list's double-space slashes ("  /  "): one extra space either side, as word-spacing so a line's trailing space hangs */
+--type-term-sep-ws: 0;                 /* the slashes at a single space each side (" / ") — Oscar 2026-09-08; the frame's double-space run (0.25em of word-spacing) is retired */
     /* lede — We connect Talent, Brands & Audiences… (1:270): Serrif Condensed 500 20/24 −0.015em, difference white */
     --type-lede-face: var(--m-font-serif-cond); --type-lede-weight: 500; --type-lede-case: none;
     --type-lede-size: 20px; --type-lede-lh: 1.2; --type-lede-ls: -0.015em;

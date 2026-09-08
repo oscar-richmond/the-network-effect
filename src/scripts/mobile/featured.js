@@ -4,16 +4,28 @@
  * desktop's inline crops are written over with gsap.set, reverted with the
  * context); the indicator's thumb (the stage's pseudo-element) translates
  * with the rail's scroll fraction — a ScrollTrigger on the rail.
+ *
+ * THE PIN (Oscar 2026-09-08): the stage fixes with the indicator 80 above
+ * the viewport's bottom, the page's scroll travels the rail across, holds,
+ * then continues (rail-pin.js). The title arrives on the word-clip rise,
+ * the cards fade-rise behind it (reveal.js).
  */
 import { gsap } from 'gsap';
 import { mobileMatch, tokenPx } from './match.js';
+import { bindRailPin } from './rail-pin.js';
+import { bindTextReveal, bindMediaReveal } from './reveal.js';
 
 export function initMobileFeatured() {
   return mobileMatch((ctx) => {
+    const section = document.querySelector('[data-landing-featured]');
     const stage = document.querySelector('[data-featured-stage]');
     const rail = document.querySelector('[data-featured-strip]');
-    if (!(stage instanceof HTMLElement) || !(rail instanceof HTMLElement)) return;
+    if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement) || !(rail instanceof HTMLElement)) return;
     const cards = Array.from(rail.querySelectorAll('[data-featured-card]')).filter((c) => c instanceof HTMLElement);
+    bindTextReveal(ctx, stage.querySelector('.landing-featured__header'));
+    /* the drawn cards in their rendered order (featured.css orders them), so the stagger runs left → right */
+    bindMediaReveal(ctx, cards.filter((c) => getComputedStyle(c).display !== 'none').sort((a, b) => (parseInt(getComputedStyle(a).order, 10) || 0) - (parseInt(getComputedStyle(b).order, 10) || 0)));
+    bindRailPin(ctx, { section, stage, rail, runway: section.querySelector('[data-featured-runway-m]'), tail: '--m-fw-tail' });
     /* each card's size pair (--m-fw-card: "w h") into the two lengths its boxes read */
     const restore = [];
     for (const card of cards) {

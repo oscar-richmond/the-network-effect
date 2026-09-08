@@ -49,23 +49,12 @@
        hold is this block after AMPLIFY — opaque on the ground, so nothing transparent shows
        the page layer between the last panel and the tail */
     .landing-v2 .landing-sreel__stage::after { content: ''; display: block; order: 4; height: var(--m-stack-hold); background: var(--m-color-ground); }
-    /* THE TAIL (the 474 fade zone into Featured Work, 1:279 — AMPLIFY's own 80 precedes it)
-       on the SECTION, outside the stage, so the pillars have released before it scrolls in:
-       opaque, the frame's gradient from the ground to the band's dark; the page layer beneath
-       fades in step with it at the nav's foot (ground.js, --m-fade-anchor-nav) */
-    .landing-v2 .landing-outro::after {
-      content: '';
-      display: block;
-      position: static;
-      inset: auto;
-      width: auto;
-      height: var(--m-services-tail);
-      opacity: 1;
-      transform: none;
-      z-index: auto;
-      pointer-events: none;
-      background: linear-gradient(180deg, var(--m-color-ground) 0, var(--m-color-ground-dark) 100%);
-    }
+    /* THE TAIL (the 474 zone into Featured Work, 1:279 — AMPLIFY's own 80 precedes it) is the
+       .m-tail element on the SECTION after the reel (LandingBody.astro, band.css): bare
+       transparent ground the pillars have released before; the page layer darkens over it
+       (ground.js data-ground-fade-from). The desktop's ::after has no place here. */
+    .landing-v2 .landing-outro::after { content: none; }
+    .landing-v2 .landing-outro .m-tail { height: var(--m-services-tail); }
     /* FROM ACCESS. / TO IMPACT (1:277 serif left, 1:278 sans right) on a 49 pitch */
     .landing-v2 .landing-sreel__intro {
       order: 1;
@@ -119,13 +108,20 @@
       text-align: right;
     }
     .landing-v2 .landing-sreel__note { display: none; }
-    /* WHAT WE DO (1:325) — eyebrow tier, 148 below the statement */
+    /* WHAT WE DO (1:325) — eyebrow tier, 148 below the statement; STICKY 24 under the scrolled wordmark
+       (Oscar 2026-09-08) while the pillars stack beneath it. Its box runs down to the parked stack's
+       foot (--m-stack-h, services.js) so it releases with the stack, as one; the first pillar's
+       negative margin takes that height back out of the flow (the box is transparent and inert). */
     .landing-v2 .landing-sreel__wwd {
       order: 2;
-      position: static;
+      position: sticky;
+      top: var(--m-wwd-pin-top);
       width: auto;
+      height: calc(var(--m-stack-pin-top) - var(--m-wwd-pin-top) + var(--m-stack-h));
+      box-sizing: border-box;
       margin: var(--m-wwd-gap) var(--m-inset) 0;
       padding: 0;
+      pointer-events: none;
       transform: none;
       opacity: 1;
       visibility: visible;
@@ -157,8 +153,16 @@
       z-index: var(--m-z-content);
     }
     .landing-v2 .landing-sreel__pillar + .landing-sreel__pillar { margin-top: 0; }
-    .landing-v2 .landing-sreel__pillar[data-i="1"] { top: calc(var(--m-stack-pin-top) + var(--m-stack-band-h)); }
-    .landing-v2 .landing-sreel__pillar[data-i="2"] { top: calc(var(--m-stack-pin-top) + 2 * var(--m-stack-band-h)); }
+    /* the first pillar sits 24 under WHAT WE DO's text: its margin takes back the label's sticky box (16 + the stack's foot) */
+    .landing-v2 .landing-sreel__pillar[data-i="0"] { margin-top: calc(var(--m-space-4) - var(--m-space-3) - var(--m-stack-h)); min-height: var(--m-stack-h); }
+    .landing-v2 .landing-sreel__pillar[data-i="1"] { top: calc(var(--m-stack-pin-top) + var(--m-stack-band-h)); min-height: calc(var(--m-stack-h) - var(--m-stack-band-h)); }
+    .landing-v2 .landing-sreel__pillar[data-i="2"] { top: calc(var(--m-stack-pin-top) + 2 * var(--m-stack-band-h)); min-height: calc(var(--m-stack-h) - 2 * var(--m-stack-band-h)); }
+    /* the compaction is a TRANSFORM on the title row (services.js): the row scales about its top-left corner and lifts, so the type never
+       re-lays out mid-scrub (the vibration Oscar saw); the row's fixed 55 box keeps the layout below it still */
+    .landing-v2 .landing-sreel__titlerow { transform-origin: 0 0; will-change: transform; backface-visibility: hidden; }
+    /* the covered units of a parked pillar dissolve as the next panel arrives (services.js — the hero's vocabulary) */
+    .landing-v2 .landing-sreel__img, .landing-v2 .landing-sreel__desc, .landing-v2 .landing-sreel__wlabel,
+    .landing-v2 .landing-sreel__listwin, .landing-v2 .landing-sreel__btn { will-change: opacity, filter; }
     .landing-v2 .landing-sreel__divider {
       position: static;
       display: block;

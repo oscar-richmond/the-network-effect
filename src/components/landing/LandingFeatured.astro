@@ -54,7 +54,9 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
 {/* THE REBUILD (2026-09-07): below the seam this same markup is a
     touch-scrolled rail (landing-narrow.css) — the desktop's staggered
     strip, panned by the finger instead of scrubbed by the page. */}
-<section class="landing-featured" data-landing-featured data-ground="dark" data-ground-fade data-ground-fade-anchor="[data-landing-services]" data-ground-fade-anchor-y="--m-fade-anchor-nav" aria-label="Featured work">
+{/* below the seam (Oscar 2026-09-08): the page layer darkens over the services tail as it reaches the viewport's bottom (ground.js),
+    so this band's ink enters on a settled dark; its own bare tail after the rail carries the fade back to light for WE CREATE ACCESS */}
+<section class="landing-featured" data-landing-featured data-ground="dark" data-ground-fade data-ground-fade-from="[data-services-tail-m]" aria-label="Featured work">
   <div class="landing-featured__stage" data-featured-stage>
     <h2 class="landing-featured__header">
       <span class="landing-featured__hl landing-featured__hl--featured" data-featured-line>FEATURED</span>
@@ -193,5 +195,11 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
   {/* The shared [ VIEW CASE STUDY + ] cursor — a top-level element
       inside the section, carrying difference itself (see
       view-case-cursor.js). */}
+  {/* below the seam (rail-pin.js): the runway the pinned stage holds through — the rail's travel plus the hold; the stage's sticky
+      box is constrained by this section, so it lets go as the runway ends. Nothing above the seam. */}
+  <div class="m-runway" data-featured-runway-m aria-hidden="true"></div>
   <div class="work-cursor" data-featured-cursor aria-hidden="true">( VIEW CASE STUDY + )</div>
 </section>
+{/* below the seam: the bare tail AFTER the section (outside the stage's sticky constraint, so the stage has released before it
+    scrolls in) — the page layer lightens for WE CREATE ACCESS as this reaches the viewport's bottom (ground.js data-ground-fade-from) */}
+<div class="m-tail" data-featured-tail-m aria-hidden="true"></div>

@@ -1,56 +1,81 @@
 /**
- * THE GROUND-FADE GRAMMAR (mobile rebuild Part 1 D5, 2026-09-08).
+ * THE GROUND-FADE GRAMMAR (mobile rebuild Part 1 D5, 2026-09-08; the fade
+ * grammar reworked for Oscar's 2026-09-08 brief: no drawn gradients — the
+ * page's ground itself fades).
  *
- * The frame marks WHERE grounds change: two gradient rectangles (light → dark
- * under the hero image and above Featured Work, --m-ground-fade-h tall) and
- * hard edges everywhere else (the dark band's end, the red band's edges).
- * One mechanism serves every later part: the page ground is a single fixed
- * layer (.m-ground); every section is transparent over it and declares its
+ * The page ground is a single fixed layer (.m-ground) painted together with
+ * body (the nav's difference blend on iOS composites against the root
+ * layer, nav.css); every section is transparent over it and declares its
  * ground in markup —
  *
- *   <section data-ground="dark" data-ground-fade>   a fade into this section
- *   <section data-ground="red">                    a hard edge at its top
- *   … data-ground-fade-anchor="<selector>" data-ground-fade-anchor-y="--token"
- *       (Part 2): the fade is keyed on ANOTHER element's bottom edge — it
- *       begins when that edge crosses the viewport y the token names and
- *       runs --m-ground-fade-h from there (the hero's image into the dark
- *       band: the ground darkens under the image once the copy is gone);
- *       the value "bottom" (Part 3) means the fade ENDS as the anchor's
- *       bottom edge reaches the viewport's bottom; "pin" means it STARTS as
- *       the anchor's natural top reaches its own sticky top (the closing
- *       statement: the scrub runs while the text is fixed)
- *   … data-ground-fade-px="--token"   this fade's own length (the closing's 600)
- *   … data-ground-paint               the section's own background is tweened in
- *       step with the layer (it is opaque from then on — its edge with the
- *       next section's own ground is a cut)
+ *   <section data-ground="dark">                   a HARD EDGE: the layer switches as the
+ *       section's top reaches the viewport's top — for a section that follows an OPAQUE
+ *       band (the footer after the painted red), so the switch is invisible
+ *   <section data-ground="dark" data-ground-fade>  a FADE into this section, over
+ *       --m-ground-fade-px of scroll, ENDING as the section's top reaches the viewport's
+ *       bottom — the band is on its own ground before its first ink enters (the dark band
+ *       after the hero; WHAT WE DO after OUR NETWORK's exit)
+ *   … data-ground-fade-from="<selector>"           the fade STARTS as that element's top
+ *       reaches the viewport's BOTTOM and runs its length: the element is a bare tail after an
+ *       opaque pinned stage (the services and Featured Work tails), so while the colour moves
+ *       the stage still covers the viewport above it and only bare ground shows beneath — the
+ *       tail is at least the fade plus the reveal margin (--m-band-tail), so the next
+ *       section's ink (hidden until its reveal line) enters on a settled ground
+ *   … data-ground-fade-px="--token"                this fade's own length (the closing's 600)
+ *   … data-ground-fade-anchor="<selector>" data-ground-fade-anchor-y="pin"
+ *       the closing statement: the fade STARTS as the anchor's natural top reaches its own
+ *       sticky top (the scrub runs while the text is fixed) and runs its length
+ *   … data-ground-paint                            the section's own background is tweened
+ *       in step with the layer (opaque from then on — its edge with the next section's own
+ *       ground is a cut)
  *
- * The layer's colour is a pure function of scroll: a transition is keyed on
- * the section's top crossing the viewport's midline — a fade scrubs across
- * --m-ground-fade-h of scroll centred on that crossing, a hard edge switches
- * at it — and every trigger reverses. Reading the colours from the tokens
- * keeps the grammar in one place.
+ * Every colour is a pure function of scroll (scrubbed ScrollTriggers keyed on
+ * in-flow elements — never on a sticky one); every trigger reverses.
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { mobileMatch, tokenPx } from './match.js';
 
 const tokenColour = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-/* a "pin" anchor: the y at which its BOTTOM edge sits when its natural top has reached its sticky top (sticky measured off) */
-const pinAnchorY = (el) => (parseFloat(getComputedStyle(el).top) || 0) + el.getBoundingClientRect().height;
+/* an element's document top, sticky measured off */
+const naturalTop = (el) => { const prev = el.style.position; el.style.position = 'static'; const t = el.getBoundingClientRect().top + window.scrollY; el.style.position = prev; return t; };
+const naturalBottom = (el) => { const prev = el.style.position; el.style.position = 'static'; const b = el.getBoundingClientRect().bottom + window.scrollY; el.style.position = prev; return b; };
+const FADE_MIN_PX = 120;
+
+/** A section's fade window in document scroll, from its declaration — the one model the triggers and the harness share. */
+function fadeWindow(sec, fadePx) {
+  const vh = window.innerHeight;
+  const own = sec.dataset.groundFadePx ? tokenPx(sec.dataset.groundFadePx) : fadePx;
+  const secTop = naturalTop(sec);
+  if (sec.dataset.groundFadeAnchorY === 'pin' && sec.dataset.groundFadeAnchor) {
+    const anchor = document.querySelector(sec.dataset.groundFadeAnchor);
+    if (anchor instanceof HTMLElement) {
+      const start = naturalTop(anchor) - (parseFloat(getComputedStyle(anchor).top) || 0);
+      return { start, end: start + own };
+    }
+  }
+  const end = secTop - vh;                          /* the section's top at the viewport's bottom */
+  if (sec.dataset.groundFadeFrom) {
+    const from = document.querySelector(sec.dataset.groundFadeFrom);
+    if (from instanceof HTMLElement) {
+      /* the tail's top at the viewport's bottom (the opaque stage above it still pinned, the ground below it darkening),
+         over the fade's own length — done before the section's ink, hidden until its reveal line, enters */
+      const start = Math.min(naturalTop(from) - vh, end - FADE_MIN_PX);
+      return { start, end: Math.min(start + own, end) };
+    }
+  }
+  return { start: end - own, end };
+}
 
 /** The colour the grammar expects at a scroll position — the harness reads this to check the layer. */
-export function groundAt(scrollY, sections, fadePx, colours, vh) {
+export function groundAt(scrollY, sections, colours) {
   let colour = colours.light;
-  for (const { top, ground, fade, anchorBottom, anchorY, fadePx: own } of sections) {
-    const px = own || fadePx;
-    const crossing = top - vh / 2; /* scrollY at which the section's top reaches the midline */
+  for (const { top, ground, fade, start, end } of sections) {
     if (fade) {
-      /* an anchored fade starts as the anchor's bottom edge reaches anchorY; a centred one straddles the midline crossing */
-      const startAt = typeof anchorBottom === 'number' ? anchorBottom - anchorY : crossing - px / 2;
-      const t = Math.min(1, Math.max(0, (scrollY - startAt) / px));
+      const t = Math.min(1, Math.max(0, (scrollY - start) / Math.max(1, end - start)));
       if (t <= 0) break;
       colour = t >= 1 ? colours[ground] : gsap.utils.interpolate(colour, colours[ground], t);
-    } else if (scrollY >= crossing) colour = colours[ground];
+    } else if (scrollY >= top) colour = colours[ground];
     else break;
   }
   return colour;
@@ -61,10 +86,12 @@ export function initMobileGround() {
     const layer = document.querySelector('[data-m-ground]');
     if (!(layer instanceof HTMLElement)) return;
     const colours = { light: tokenColour('--m-color-ground'), dark: tokenColour('--m-color-ground-dark'), red: tokenColour('--m-color-ground-red') };
-    const fadePx = tokenPx('--m-ground-fade-h');
+    const fadePx = tokenPx('--m-ground-fade-px');
     const sections = Array.from(document.querySelectorAll('[data-ground]')).filter((el) => el instanceof HTMLElement);
+    /* the layer and body together (the nav's blend backdrop lives in the root layer) */
+    const grounds = [layer, document.body];
     /* the idempotent re-entry reset */
-    gsap.set(layer, { backgroundColor: colours.light });
+    gsap.set(grounds, { backgroundColor: colours.light });
     let prev = 'light';
     ctx.add(() => {
       for (const sec of sections) {
@@ -72,22 +99,16 @@ export function initMobileGround() {
         if (!colours[next] || next === prev) continue;
         const from = colours[prev], to = colours[next];
         if ('groundFade' in sec.dataset) {
-          const px = sec.dataset.groundFadePx ? tokenPx(sec.dataset.groundFadePx) : fadePx;
-          const anchor = sec.dataset.groundFadeAnchor ? document.querySelector(sec.dataset.groundFadeAnchor) : null;
-          const mode = sec.dataset.groundFadeAnchorY;
-          const anchorYFor = () => mode === 'bottom' ? window.innerHeight + px : mode === 'pin' && anchor instanceof HTMLElement ? pinAnchorY(anchor) : mode ? tokenPx(mode) : 0;
-          const trigger = anchor instanceof HTMLElement ? { trigger: anchor, start: () => `bottom ${anchorYFor()}px`, end: () => `bottom ${anchorYFor() - px}px` }
-            : { trigger: sec, start: `top center+=${px / 2}`, end: `top center-=${px / 2}` };
-          const targets = 'groundPaint' in sec.dataset ? [layer, sec] : [layer];
+          const targets = 'groundPaint' in sec.dataset ? [...grounds, sec] : grounds;
           gsap.fromTo(targets, { backgroundColor: from }, {
             backgroundColor: to, ease: 'none', immediateRender: false,
-            scrollTrigger: { ...trigger, scrub: true, invalidateOnRefresh: true },
+            scrollTrigger: { start: () => fadeWindow(sec, fadePx).start, end: () => fadeWindow(sec, fadePx).end, scrub: true, invalidateOnRefresh: true },
           });
         } else {
           ScrollTrigger.create({
-            trigger: sec, start: 'top center',
-            onEnter: () => gsap.set(layer, { backgroundColor: to }),
-            onLeaveBack: () => gsap.set(layer, { backgroundColor: from }),
+            start: () => naturalTop(sec), end: () => naturalTop(sec) + 1, invalidateOnRefresh: true,
+            onEnter: () => gsap.set(grounds, { backgroundColor: to }),
+            onLeaveBack: () => gsap.set(grounds, { backgroundColor: from }),
           });
         }
         prev = next;
@@ -96,17 +117,11 @@ export function initMobileGround() {
     /* the model, for the harness and DevTools */
     if (import.meta.env.DEV) {
       window.__mGround = () => ({ colours, fadePx, sections: sections.map((s) => {
-        const anchor = s.dataset.groundFadeAnchor ? document.querySelector(s.dataset.groundFadeAnchor) : null;
-        const px = s.dataset.groundFadePx ? tokenPx(s.dataset.groundFadePx) : fadePx;
-        const mode = s.dataset.groundFadeAnchorY;
-        const naturalBottom = (el) => { const prev = el.style.position; el.style.position = 'static'; const b = el.getBoundingClientRect().bottom + window.scrollY; el.style.position = prev; return b; };
-        return {
-          top: s.getBoundingClientRect().top + window.scrollY, ground: s.dataset.ground, fade: 'groundFade' in s.dataset, fadePx: px,
-          anchorBottom: anchor instanceof HTMLElement ? naturalBottom(anchor) : undefined,
-          anchorY: mode === 'bottom' ? window.innerHeight + px : mode === 'pin' && anchor instanceof HTMLElement ? pinAnchorY(anchor) : mode ? tokenPx(mode) : undefined,
-        };
+        const fade = 'groundFade' in s.dataset;
+        const w = fade ? fadeWindow(s, fadePx) : { start: 0, end: 0 };
+        return { top: naturalTop(s), bottom: naturalBottom(s), ground: s.dataset.ground, fade, start: Math.round(w.start), end: Math.round(w.end) };
       }) });
     }
-    return () => { if (import.meta.env.DEV) delete window.__mGround; };
+    return () => { gsap.set(document.body, { clearProps: 'backgroundColor' }); if (import.meta.env.DEV) delete window.__mGround; };
   });
 }

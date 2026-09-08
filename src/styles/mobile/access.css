@@ -34,8 +34,20 @@
     }
     /* the runway — content after the rows, so the sticky rows hold for five transitions */
     .landing-v2 .landing-access__stage::after { content: ''; display: block; order: 9; height: var(--m-access-runway); }
-    /* the label (1:336) centred, the statement (1:326) 64 below it: 48/45 lines, each at its indent */
-    .landing-v2 .m-access-st { order: 1; margin: 0 var(--m-inset); }
+    /* the label (1:336) centred, the statement (1:326) 64 below it: 48/45 lines, each at its indent.
+       STICKY with the rows (Oscar 2026-09-08): it fixes 80 above them the moment they fix (its top is the
+       rows' pin less the gap less its own measured height, access.js) and its box runs down to the rows'
+       foot so it releases with them; the top wrap's margin takes that height back out of the flow. */
+    .landing-v2 .m-access-st {
+      order: 1;
+      position: sticky;
+      top: var(--m-access-st-top);
+      height: calc(var(--m-access-st-h) + var(--m-space-9) + var(--m-access-rows-h));
+      box-sizing: border-box;
+      margin: 0 var(--m-inset);
+      pointer-events: none;
+      will-change: filter, opacity;
+    }
     .landing-v2 .m-access-st__label {
       margin: 0;
       font-family: var(--type-eyebrow-face);
@@ -77,8 +89,13 @@
     /* the top wrap's sticky box spans the whole block (its row at the top, the rest empty) and the
        words layer is the block's height too, so all three are constrained alike and RELEASE TOGETHER
        with the stage's end — the desktop's rows leave as one */
-    .landing-v2 .landing-access__rowwrap--top { order: 3; height: var(--m-access-rows-h); margin: var(--m-space-9) 0 calc(var(--m-access-tile-h) - var(--m-access-rows-h)); pointer-events: none; }
+    .landing-v2 .landing-access__rowwrap--top { order: 3; height: var(--m-access-rows-h); margin: calc(-1 * var(--m-access-rows-h)) 0 calc(var(--m-access-tile-h) - var(--m-access-rows-h)); pointer-events: none; }
     .landing-v2 .landing-access__rowwrap--bottom { order: 4; margin-top: var(--m-space-3); top: calc(var(--m-access-pin-top) + var(--m-access-row-pitch)); }
+    /* THE EXIT (access.js, the desktop's collapse): the wraps scale about the block's top centre, lift and fade; the top wrap's box
+       is the block, so its origin is the block's — the bottom wrap's origin is set to the same point above it */
+    .landing-v2 .landing-access__rowwrap--top { transform-origin: 50% 0; }
+    .landing-v2 .landing-access__rowwrap--bottom { transform-origin: 50% calc(-1 * var(--m-access-row-pitch)); }
+    .landing-v2 .landing-access__rowwrap { will-change: transform, opacity; }
     .landing-v2 .landing-access__row {
       position: absolute;
       top: 0;

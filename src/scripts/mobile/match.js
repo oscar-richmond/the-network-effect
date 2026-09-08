@@ -41,5 +41,25 @@ export function mobileMatch(build, opts = {}) {
   return () => { document.removeEventListener('astro:before-swap', off); off(); };
 }
 
-/** Read a px token from :root (the mobile layer's geometry lives in the tokens, never in scripts). */
-export const tokenPx = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
+/**
+ * Read a px token from :root (the mobile layer's geometry lives in the tokens, never in scripts).
+ * A plain length, number or percentage parses directly; an EXPRESSION (calc(), min(), max(), clamp(),
+ * viewport units — an unregistered custom property's computed value is its text, unevaluated) is
+ * resolved by the engine through a probe element's margin, which takes negatives and resolves to px.
+ */
+let probe = null;
+export const tokenPx = (name) => {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  if (!raw) return 0;
+  if (/^-?(\d+\.?\d*|\.\d+)(px|%)?$/.test(raw)) return parseFloat(raw) || 0;
+  if (!probe || !probe.isConnected) {
+    probe = document.createElement('div');
+    probe.setAttribute('data-m-token-probe', '');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;';
+    document.body.appendChild(probe);
+  }
+  probe.style.setProperty('margin-left', `var(${name})`);
+  const px = parseFloat(getComputedStyle(probe).marginLeft);
+  return Number.isFinite(px) ? px : 0;
+};

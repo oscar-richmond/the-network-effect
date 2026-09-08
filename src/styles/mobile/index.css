@@ -25,4 +25,7 @@
 @import './services-page.css';
 @import './contact.css';
 @import './founders-page.css';
+/* the two shared grammars last: their state classes (.is-banded, .is-rail-pinned) out-order the sections' own rest rules at equal specificity */
+@import './reveal.css';
+@import './band.css';
 @layer tokens, base, desktop, mobile, tablet;

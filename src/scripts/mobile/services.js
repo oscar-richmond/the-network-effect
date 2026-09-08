@@ -1,29 +1,50 @@
 /**
  * THE SERVICES STACK below the seam (mobile rebuild Part 2, 2026-09-08 —
- * frames 1:105 / 1:141 / 1:177 and the stack 1:426).
+ * frames 1:105 / 1:141 / 1:177 and the stack 1:426; Oscar's 2026-09-08
+ * brief: the pinned label, the roll-over dissolve, the one release, the
+ * transform compaction).
  *
- * THE STACK: each pillar is a sticky opaque panel (services.css) parking
- * under the nav on a 31 pitch — IMMERSE at the bar's foot, CONNECT 31 lower,
- * AMPLIFY 31 lower again. As the NEXT pillar arrives, the parked one
- * COMPACTS: its title 28 → 14, the index 14 → 6, the gap above the title
- * 32 → 8 — scrubbed over the next pillar's last --m-stack-compact-px of
- * approach, ending as its divider lands. The title row is a fixed 55 box,
- * so the compaction never moves the layout below it; the next panel covers
- * that layout anyway, leaving the 31 band. AMPLIFY, the last, parks
- * expanded (the stack frame's end state) and the whole stack holds through
- * the stage's tail — the 80 + 474 fade zone into Featured Work — then
- * releases with it, AMPLIFY first, the bands 31px apart behind it. Pure
- * functions of scroll: sticky is one, the scrubbed compaction is another.
+ * THE STACK: WHAT WE DO pins 24 under the scrolled wordmark; each pillar is
+ * a sticky opaque panel (services.css) parking on a 31 pitch under it —
+ * IMMERSE's divider 16 under the label, CONNECT 31 lower, AMPLIFY 31 lower
+ * again. As the NEXT pillar arrives, the parked one COMPACTS: its title row
+ * scales about its top-left corner (28 → 14, the index with it) and lifts
+ * (the 32 gap → 8) — ONE transform, scrubbed over the next pillar's last
+ * --m-stack-compact-px of approach, ending as its divider lands; the row's
+ * fixed 55 box means nothing below it moves. Scaling the font instead
+ * re-laid the glyphs out every frame and read as a vibration.
+ *
+ * THE ROLL-OVER: the parked pillar's units below its title — the image, the
+ * description, the label, the list, the button — DISSOLVE one by one as the
+ * next panel's top comes up over them: each blurs --m-wipe-blur and fades
+ * over --m-wipe-span of scroll, gone --m-wipe-lead before the panel's top
+ * reaches its own top (the hero's vocabulary; the desktop reel's roll-over
+ * wipe). Their windows are absolute scroll positions from the pinned
+ * geometry, so they reverse exactly.
+ *
+ * THE RELEASE: the stack holds --m-stack-hold once AMPLIFY has parked, then
+ * leaves as ONE. A sticky box lets go as the stage's end reaches its foot,
+ * so the four boxes are given one foot: --m-stack-h (the tallest pillar plus
+ * its band offset) is measured here and written on the stage; each pillar's
+ * min-height is it less the pillar's band offset, WHAT WE DO's box runs down
+ * to it (services.css takes the extra out of the flow). Without it AMPLIFY,
+ * the tallest, would slide up first over the parked bands.
  *
  * THE LIST RAIL: the rows are a 4-row column grid in a snapping scroller;
  * the indicator's thumb (the label's pseudo-element) translates with the
  * rail's scroll fraction — a ScrollTrigger on the rail as its scroller.
  *
  * The desc's authored <br> becomes a space below the seam (1:113 is one
- * text node wrapping at 257) and comes back on revert.
+ * text node wrapping at 257) and comes back on revert. The intro statement
+ * and WHAT WE DO arrive on the word-clip rise (reveal.js); the pillars'
+ * own text does not (Oscar's brief).
  */
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { mobileMatch, tokenPx } from './match.js';
+import { bindTextReveal } from './reveal.js';
+
+const UNITS = ['.landing-sreel__img', '.landing-sreel__desc', '.landing-sreel__wlabel', '.landing-sreel__listwin', '.landing-sreel__btn'];
 
 export function initMobileServices() {
   return mobileMatch((ctx) => {
@@ -34,14 +55,25 @@ export function initMobileServices() {
     const pinTop = tokenPx('--m-stack-pin-top'), bandH = tokenPx('--m-stack-band-h'), compactPx = tokenPx('--m-stack-compact-px');
     const gapOpen = tokenPx('--m-space-5'), gapClosed = tokenPx('--m-stack-band-title-gap');
     const titleOpen = tokenPx('--type-pillar-title-size'), titleClosed = tokenPx('--type-pillar-title-size-collapsed');
-    const titleLhOpen = tokenPx('--m-pillar-title-h'), titleLhClosed = tokenPx('--m-stack-title-lh');
-    const indexOpen = tokenPx('--type-pillar-index-size'), indexClosed = tokenPx('--type-pillar-index-size-collapsed');
-    const indexLhOpen = tokenPx('--m-pillar-index-h'), indexLhClosed = tokenPx('--m-stack-index-lh');
+    const ratio = titleOpen > 0 ? titleClosed / titleOpen : 0.5;
+    const wipeLead = tokenPx('--m-wipe-lead'), wipeSpan = tokenPx('--m-wipe-span'), wipeBlur = tokenPx('--m-wipe-blur');
     const trackW = tokenPx('--m-indicator-w'), thumbW = tokenPx('--m-indicator-thumb');
+
+    /* the entrances: the statement's two lines and the label */
+    for (const el of stage.querySelectorAll('.landing-sreel__st-line')) bindTextReveal(ctx, el);
+    bindTextReveal(ctx, stage.querySelector('[data-sreel-wwd]'));
 
     /* the desc's <br> → a space (restored on revert) */
     const swaps = [];
     for (const br of stage.querySelectorAll('[data-sreel-desc] br')) { const t = document.createTextNode(' '); br.replaceWith(t); swaps.push([br, t]); }
+
+    /* THE ONE FOOT: the pillars' natural heights (min-height off), the tallest plus its band offset */
+    const measure = () => {
+      stage.style.setProperty('--m-stack-h', '0px');
+      const h = Math.max(...pillars.map((p, i) => p.offsetHeight + i * bandH));
+      stage.style.setProperty('--m-stack-h', `${Math.ceil(h)}px`);
+    };
+    measure();
 
     /* natural (unstuck) tops, measured with sticky off — the scrubs are keyed on these, as absolute scroll positions */
     const naturalTops = () => {
@@ -52,28 +84,38 @@ export function initMobileServices() {
       return tops;
     };
 
-    /* the idempotent re-entry reset: every pillar expanded */
-    const parts = pillars.map((p) => ({
-      row: p.querySelector('[data-sreel-titlerow]'), title: p.querySelector('.landing-sreel__title'), num: p.querySelector('.landing-sreel__num'),
-    }));
-    for (const { row, title, num } of parts) {
-      if (row) gsap.set(row, { paddingTop: gapOpen });
-      if (title) gsap.set(title, { fontSize: titleOpen, lineHeight: `${titleLhOpen}px` });
-      if (num) gsap.set(num, { fontSize: indexOpen, lineHeight: `${indexLhOpen}px` });
-    }
+    /* the idempotent re-entry reset: every pillar expanded, every unit whole */
+    const rows = pillars.map((p) => p.querySelector('[data-sreel-titlerow]')).filter((r) => r instanceof HTMLElement);
+    gsap.set(rows, { scale: 1, y: 0 });
+    const units = pillars.map((p) => UNITS.map((s) => p.querySelector(s)).filter((u) => u instanceof HTMLElement));
+    gsap.set(units.flat(), { opacity: 1, filter: 'blur(0px)' });
     gsap.set(pillars, { '--m-ind-x': '0px' });
 
     ctx.add(() => {
-      /* the compaction of pillar i, keyed on pillar i + 1's approach to its own pin line */
+      /* the refresh re-measures the foot before anything reads the layout */
+      ScrollTrigger.addEventListener('refreshInit', measure);
       for (let i = 0; i < pillars.length - 1; i += 1) {
-        const { row, title, num } = parts[i];
-        const pinNext = pinTop + (i + 1) * bandH;
-        const end = () => naturalTops()[i + 1] - pinNext;   /* the next divider lands */
-        const start = () => end() - compactPx;
-        const tl = gsap.timeline({ scrollTrigger: { start, end, scrub: true, invalidateOnRefresh: true } });
-        if (row) tl.fromTo(row, { paddingTop: gapOpen }, { paddingTop: gapClosed, ease: 'none', immediateRender: false }, 0);
-        if (title) tl.fromTo(title, { fontSize: titleOpen, lineHeight: `${titleLhOpen}px` }, { fontSize: titleClosed, lineHeight: `${titleLhClosed}px`, ease: 'none', immediateRender: false }, 0);
-        if (num) tl.fromTo(num, { fontSize: indexOpen, lineHeight: `${indexLhOpen}px` }, { fontSize: indexClosed, lineHeight: `${indexLhClosed}px`, ease: 'none', immediateRender: false }, 0);
+        const pinI = pinTop + i * bandH, pinNext = pinI + bandH;
+        /* the compaction of pillar i, keyed on pillar i + 1's approach to its own pin line: one transform on the row */
+        const row = rows[i];
+        if (row) {
+          const end = () => naturalTops()[i + 1] - pinNext;   /* the next divider lands */
+          const start = () => end() - compactPx;
+          const state = { p: 0 };
+          /* the row scales s about its top-left; its text (gapOpen down) must sit at the gap the scrub wants, so the row lifts the difference */
+          const apply = (p) => { const s = 1 - (1 - ratio) * p; const gap = gapOpen - (gapOpen - gapClosed) * p; gsap.set(row, { scale: s, y: gap - gapOpen * s, transformOrigin: '0 0' }); };
+          gsap.to(state, { p: 1, ease: 'none', onUpdate: () => apply(state.p), scrollTrigger: { start, end, scrub: true, invalidateOnRefresh: true, onRefresh: (st) => apply(st.progress) } });
+        }
+        /* the roll-over: each unit of pillar i dissolves as pillar i + 1's top comes up to it */
+        for (const unit of units[i]) {
+          const cover = () => naturalTops()[i + 1] - (pinI + unit.offsetTop);  /* the next panel's top reaches the unit's pinned top */
+          const end = () => cover() - wipeLead;
+          const start = () => end() - wipeSpan;
+          gsap.fromTo(unit, { opacity: 1, filter: 'blur(0px)' }, {
+            opacity: 0, filter: `blur(${wipeBlur}px)`, ease: 'none', immediateRender: false,
+            scrollTrigger: { start, end, scrub: true, invalidateOnRefresh: true },
+          });
+        }
       }
       /* the list rails: the thumb follows the scroll fraction */
       for (const p of pillars) {
@@ -88,8 +130,8 @@ export function initMobileServices() {
       }
     });
     if (import.meta.env.DEV) {
-      window.__mStack = () => pillars.map((p, i) => { const r = p.getBoundingClientRect(); const t = parts[i].title; return { i, top: Math.round(r.top), bottom: Math.round(r.bottom), title: t ? getComputedStyle(t).fontSize : null, pad: parts[i].row ? getComputedStyle(parts[i].row).paddingTop : null, natural: Math.round(naturalTops()[i]) }; });
+      window.__mStack = () => pillars.map((p, i) => { const r = p.getBoundingClientRect(); return { i, top: Math.round(r.top), bottom: Math.round(r.bottom), scale: gsap.getProperty(rows[i], 'scale'), natural: Math.round(naturalTops()[i]), stackH: stage.style.getPropertyValue('--m-stack-h') }; });
     }
-    return () => { for (const [br, t] of swaps) t.replaceWith(br); if (import.meta.env.DEV) delete window.__mStack; };
+    return () => { ScrollTrigger.removeEventListener('refreshInit', measure); for (const [br, t] of swaps) t.replaceWith(br); stage.style.removeProperty('--m-stack-h'); if (import.meta.env.DEV) delete window.__mStack; };
   });
 }

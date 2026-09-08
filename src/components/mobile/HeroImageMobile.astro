@@ -4,8 +4,11 @@
  * a 370×420 window (1:273) at page y697 showing 1:275 — the GQ photograph
  * (52513570442_182000ff2d_k), the frame's own upload at 1536×1920, drawn
  * 379×474 at (−2, −7) inside the window; 1:274 beneath it is fully covered
- * and is not rendered. Behind the window sits 1:271, the light → dark
- * gradient that carries the ground into the dark band (page 697 → 1167).
+ * and is not rendered. Behind the window the frame draws 1:271, the light →
+ * dark gradient into the dark band (page 697 → 1167) — NOT DRAWN HERE
+ * (Oscar 2026-09-08): the page's ground itself fades to the band's dark as
+ * the band arrives (ground.js). The window twirls as it rises off the top
+ * (hero.js — the desktop cards' turn).
  *
  * The desktop's three cards and the entry stage are removed on the phone by
  * the gate that stamps this in (LandingHero.astro); the phone never parses
@@ -27,8 +30,7 @@ const src = asset('/assets/landing/mobile/hero.jpg');
 const sizes = `${QUERIES.phone} calc((100vw - 32px) * 2 / 3), 470px`;
 ---
 <figure class="m-hero" data-hero-image-m aria-hidden="true">
-  <div class="m-hero__fade" aria-hidden="true"></div>
-  <div class="m-hero__win">
+  <div class="m-hero__win" data-hero-win-m>
     <img src={src} srcset={imageSrcset(src, [780, 1140], 1536)} sizes={sizes} alt="" decoding="async" loading="eager" width="1536" height="1920" />
   </div>
 </figure>

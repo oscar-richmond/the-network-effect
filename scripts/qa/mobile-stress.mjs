@@ -12,7 +12,9 @@
  * INVARIANTS (Part 1 — the global chrome):
  *   N1  the nav is fixed at the top: its box never leaves y=0 and its height
  *       is --m-nav-h at every scroll position;
- *   N2  the wordmark's font-size is a pure function of scrollY: at 0 it is
+ *   N2  the wordmark's RENDERED size (its font-size times the link's
+ *       rendered scale — nav.js scrubs a transform between the two true
+ *       type sizes) is a pure function of scrollY: at 0 it is
  *       --type-nav-size, at ≥ --m-nav-shrink-scroll it is
  *       --type-nav-size-scrolled, and the same scrollY always gives the
  *       same size (reversible — checked on every reversal);
@@ -66,7 +68,7 @@ for (const route of ROUTES) {
       const nav = document.querySelector('.home__topbar'); const wm = document.querySelector('.home__logo'); const bg = document.querySelector('.home__menu-burger'); const footer = document.querySelector('.landing-footer'); const ground = document.querySelector('[data-m-ground]');
       const r = (el) => el ? el.getBoundingClientRect() : null; const cs = (el) => el ? getComputedStyle(el) : null;
       const blendHost = (el) => { let e = el; while (e && e !== document.body) { if (getComputedStyle(e).mixBlendMode === 'difference') return e; e = e.parentElement; } return null; }; const chain = (el) => { const bad = []; const host = blendHost(el); if (!host) return ['no blend host']; let e = el; while (e && e !== document.body) { const c = getComputedStyle(e); if (parseFloat(c.opacity) < 1 || c.transform !== 'none' || c.filter !== 'none' || c.willChange !== 'auto' || c.isolation === 'isolate') bad.push(e.className || e.tagName); if (e !== host && e.parentElement !== host && e.parentElement && getComputedStyle(e.parentElement).position !== 'static' && getComputedStyle(e.parentElement).zIndex !== 'auto' && e.parentElement !== host) {} e = e.parentElement; } return bad; };
-      return { overRed: !!(nav && nav.classList.contains('is-over-red')), navBlend: cs(nav)?.mixBlendMode, y: window.scrollY, ovf: document.documentElement.scrollWidth - document.documentElement.clientWidth, nav: r(nav), navPos: cs(nav)?.position, wm: r(wm), wmSize: wm ? parseFloat(getComputedStyle(wm).fontSize) : null, wmBlend: blendHost(wm) ? 'difference' : cs(wm)?.mixBlendMode, bg: r(bg), bgBlend: blendHost(bg) ? 'difference' : cs(bg)?.mixBlendMode, chainWm: chain(wm), chainBg: chain(bg), footer: r(footer), footerPos: cs(footer)?.position, docH: document.documentElement.scrollHeight, ground: ground ? getComputedStyle(ground).backgroundColor : null };
+      return { overRed: !!(nav && nav.classList.contains('is-over-red')), navBlend: cs(nav)?.mixBlendMode, y: window.scrollY, ovf: document.documentElement.scrollWidth - document.documentElement.clientWidth, nav: r(nav), navPos: cs(nav)?.position, wm: r(wm), wmSize: wm ? (() => { const l = wm.querySelector('.home__logo-link') || wm; const k = l.offsetHeight ? l.getBoundingClientRect().height / l.offsetHeight : 1; return parseFloat(getComputedStyle(wm).fontSize) * k; })() : null, wmBlend: blendHost(wm) ? 'difference' : cs(wm)?.mixBlendMode, bg: r(bg), bgBlend: blendHost(bg) ? 'difference' : cs(bg)?.mixBlendMode, chainWm: chain(wm), chainBg: chain(bg), footer: r(footer), footerPos: cs(footer)?.position, docH: document.documentElement.scrollHeight, ground: ground ? getComputedStyle(ground).backgroundColor : null };
     });
     if (s.ovf > 0) note(route, 'X1', `overflow ${s.ovf}px at y${s.y} (${label})`);
     if (s.nav && (Math.abs(s.nav.top) > 0.5 || s.navPos !== 'fixed' || Math.abs(s.nav.height - tokens.navH) > 0.5)) note(route, 'N1', `nav top ${s.nav.top.toFixed(1)} h ${s.nav.height.toFixed(1)} pos ${s.navPos} at y${s.y}`);

@@ -51,7 +51,10 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
     section rides position:sticky inside it — pinned while items
     land, hold, exit upward and the ground fades to the hero grey —
     then releases exactly as its own bottom meets the track's. */}
-<div class="landing-founders-track" data-landing-founders-track data-ground="dark" data-ground-fade data-ground-fade-anchor="[data-hero-image-m]" data-ground-fade-anchor-y="--m-hero-fade-anchor">
+{/* below the seam (Oscar 2026-09-08): the band is transparent over the page layer, which fades light → dark over
+    --m-ground-fade-px ENDING as this top reaches the viewport's bottom (ground.js) — black as WHO WE ARE arrives;
+    band.js pins the section inside this track and runs the desktop's staggered exit */}
+<div class="landing-founders-track" data-landing-founders-track data-ground="dark" data-ground-fade>
   <section class="landing-founders" data-landing-founders aria-label="The founders">
   {/* WHO WE ARE label (frame 16:204, 2026-08-13) — desktop only
       (display:none below the seam; the approved mobile frames carry

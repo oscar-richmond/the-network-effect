@@ -61,7 +61,9 @@
     }
     .landing-v2 .m-brands::-webkit-scrollbar { display: none; }
     .landing-v2 .m-brands__card { position: relative; flex: 0 0 var(--m-brands-card-w); height: 100%; margin: 0; scroll-snap-align: start; }
-    .landing-v2 .m-brands__card:last-child { margin-right: var(--m-inset); }
+    /* the rail's own end padding is the 16 after the last card — no margin on top of it, so the last card
+       rests with the inset alone at its right and nothing scrolls past it (Oscar 2026-09-08) */
+    .landing-v2 .m-brands__card:last-child { margin-right: 0; }
     .landing-v2 .m-brands__img { display: block; width: var(--m-brands-card-w); height: var(--m-brands-img-h); margin: 0; overflow: hidden; }
     .landing-v2 .m-brands__img img { display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: center; }
     .landing-v2 .m-brands__word {

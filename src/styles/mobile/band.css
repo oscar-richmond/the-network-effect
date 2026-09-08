@@ -1,0 +1,31 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, mobile, tablet;
+@layer mobile {
+  @media (--mobile) {
+    /* THE BAND'S PIN (scripts/mobile/band.js — Oscar 2026-09-08, the desktop
+       founders mechanic): the track is the section plus its hold, its release
+       and any runway after; the section is sticky at the top, or on its foot
+       where it is taller than the viewport (the desktop's min()). Its exiting
+       items rise past the viewport's top (no clip of its own: the arriving
+       items drift in from below its foot). band.js writes --m-band-h and
+       --m-band-after on the track and adds the classes; with no script (or
+       reduced motion) the band scrolls in flow. */
+    .landing-v2 .m-band-track.is-banded {
+      height: calc(var(--m-band-h) + var(--m-band-hold) + var(--m-band-release) + var(--m-band-after));
+    }
+    /* the pin: at the top, or on the foot where taller than the viewport — but never with the band's first ink
+       under the bar (the phone's bands run past a viewport; the desktop's foot rule would hide their heads) */
+    .landing-v2 .m-band.is-banded {
+      position: sticky;
+      top: max(calc(var(--m-nav-h) - var(--m-band-ink)), min(var(--m-band-top), calc(var(--m-band-foot) - var(--m-band-h))));
+    }
+    /* the tails after an opaque stage (services, Featured Work): bare ground for a viewport plus the fade — the layer
+       moves through their end (ground.js data-ground-fade-from). Above the seam they have no place. */
+    .landing-v2 .m-tail { display: block; height: var(--m-band-tail); pointer-events: none; }
+    .landing-v2 .m-runway { display: block; height: var(--m-rail-runway); pointer-events: none; }
+    /* THE PINNED RAIL (rail-pin.js): the stage sticky at the top the driver wrote on its section; the driven rail's snap is off */
+    .landing-v2 .is-rail-pinned { position: sticky; top: var(--m-rail-pin-top); }
+    .landing-v2 .is-rail-driven { scroll-snap-type: none; }
+  }
+  @media (--desktop) { .m-tail, .m-runway { display: none; } }
+}

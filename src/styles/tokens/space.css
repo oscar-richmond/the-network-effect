@@ -74,7 +74,16 @@
 --m-hero-band-top: 1167px;             /* 1:15 (1216 − 49) — the hero's flow height, the dark band's top */
 --m-hero-img-crop-w: 379px; --m-hero-img-crop-h: 474px; --m-hero-img-crop-x: -2px; --m-hero-img-crop-y: -7px; /* 1:275 inside the 370×420 window (1:273) */
 --m-hero-text-out-px: 160px;           /* each pinned block blurs out over this much scroll, ending as the image's top reaches the block's top (tunable) */
---m-hero-fade-anchor: 700px;           /* the page ground begins its 474 fade when the image's BOTTOM edge crosses this viewport y (tunable; the safety table) */
+/* THE GROUND FADES (Oscar 2026-09-08 — no drawn gradients: the page's ground itself fades, ground.js). Every fade runs --m-ground-fade-px of
+   scroll and ENDS as the arriving section's top reaches the viewport's bottom, so a band is on its own ground before its first ink enters;
+   a fade that follows an opaque pinned stage (AMPLIFY, the Featured Work rail) STARTS as the stage's bare tail reaches the viewport's bottom
+   (data-ground-fade-from) and runs its length — the stage still covers the viewport above while only bare ground darkens beneath it; the tail
+   is the frame's 474 zone (1:279), which is the fade plus the 15% of the viewport the arriving text (hidden until its reveal line, 85%) needs
+   to enter on a settled ground — at least 300 + 0.15 × 100svh. 300 is the desktop's rate (its hero fade runs 208) */
+--m-ground-fade-px: 300px;
+--m-band-tail: max(var(--m-ground-fade-h), calc(var(--m-ground-fade-px) + 15svh));
+/* THE HERO'S TWIRL (the desktop gallery's constants, hero-rotating-gallery.js): the image turns about its vertical axis as it rises off the top, 1 − (1 − t)^1.4 of a turn at travel t (scroll-scrubbed, as the WebGL cards are) */
+--m-hero-twirl-turns: 1; --m-hero-twirl-ease: 1.4; --m-hero-perspective: 1400px;
 --m-hero-logos-gap: 114px;             /* the intro's bottom (471) → the logo row (585) */
 --m-hero-img-pos: 22% 13%;             /* the crop's offset inside the window: 2 of the 9 spare px across, 7 of the 54 down (1:275 in 1:273) */
 --m-logo-pitch: 110.4px;               /* 1:216 → 1:219: 102.4 cells on an 8 gap */
@@ -83,10 +92,21 @@
 --m-logo-edge-w: 12px;                 /* 1:269: the row's edge fade, 3% of 402 */
 /* the dark band (1:15, y1167 → 2870) */
 --m-band-label-top: 106px;             /* WHO WE ARE (1:55): 1273 − 1167 */
---m-founders-card-1: 230px; --m-founders-card-2: 224.4px; --m-founders-card-3: 466px; /* 1:36, 1:41, 1:48 (the third's window 450 + its 16 lead) */
---m-founders-card-3-lead: 16px;        /* 1:50 sits 16 into 1:48 */
+--m-founders-card-1: 230px; --m-founders-card-2: 224.4px; --m-founders-card-3: 450px; /* 1:36, 1:41, 1:48's WINDOW (1:50, 450) — the frame's 16 lead inside 1:48 is dropped (Oscar 2026-09-08): every card sits on the rail's 8 gutter */
 --m-founders-pos-1: 44% 41%; --m-founders-pos-2: 28% 20%; --m-founders-pos-3: 90% 0%; /* the crops' offsets inside their windows (1:40 −4.69/−11.85 of 10.5/29.1 spare; 1:47 −4.08/−5.46 of 14.7/27.1; 1:52 −9/0 of 10/0) */
 --m-band-headline-indent: 202px;       /* 1:74's leading-space indent, measured on the frame's render: line 1 starts at x218 */
+/* THE BAND'S PIN AND EXIT (Oscar 2026-09-08 — the desktop founders mechanic, landing-founders.js, on the phone's layout; OUR NETWORK takes the
+   same grammar): a section fixes (sticky; on its foot where it is taller than the viewport), holds --m-band-hold, then over --m-band-exit every
+   item leaves at its own pace — its own rise and its own blur/fade span — and the sticky lets go at --m-band-release, when the last blur is done */
+--m-band-hold: 250px; --m-band-exit: 900px; --m-band-release: 760px; /* FOUNDERS_HOLD_PX, FOUNDERS_EXIT_PX, EXIT_BLUR_ASHLEY_PX + EXIT_PHOTO_BLUR_LAG_PX */
+--m-band-h: 0px; --m-band-after: 0px; --m-band-y: 0px; --m-band-fade: 1; /* a band item's exit, mirrored for pseudo-elements that ride with it (the network strip's edges) */
+--m-band-foot: 100svh; --m-band-top: 0px; /* a band pins at --m-band-top, or on its foot where it is taller than the viewport: top = min(top, foot − h) */
+--m-reveal-clip-room: 0.25em; --m-reveal-clip-rise: 0.2em; /* a word clip's room at the sides (swashes, italics) and above/below (ascenders and descenders past a tight leading), compensated by its margins — the layout is unchanged */
+--m-reveal-park: 140%;                 /* the parked word: its own height plus the clip's rise below the window's foot, so nothing shows before its rise */
+--m-band-ink: 0px;                     /* a band's first ink below its own top (band.js measures it): the pin keeps that ink under the bar rather than the desktop's foot rule where the band is taller than the viewport */  /* a band's measured height and its runway after the release (band.js writes both per section: OUR NETWORK holds a further --m-ground-fade-px of bare ground while the layer lightens for WHAT WE DO) */
+--m-exit-y-headline: 420px; --m-exit-y-ctas: 300px; --m-exit-y-media: 150px; --m-exit-y-media-2: 220px; --m-exit-y-media-3: 180px; /* EXIT_HEADLINE/CTAS/PHOTO/ROBBO/ASHLEY_PX */
+--m-exit-blur: 3px; --m-exit-blur-headline: 450px; --m-exit-blur-ctas: 550px; --m-exit-blur-media: 650px; --m-exit-blur-media-2: 700px; --m-exit-media-lag: 60px;
+--m-drift-headline: 60px; --m-drift-ctas: 110px; --m-drift-media: 200px; --m-drift-scale: 0.6; /* the arrival drift (DRIFT_*_PX) at the phone's 0.6 (486cdd5's DRIFT_SCALE_NARROW) */
 --m-rail-edge-l: 20px; --m-rail-edge-r: 24px; /* 1:54 / 1:572: the edge gradients, 5% and 6% of 402 */
 --m-rail-edge-l-op: 0; --m-rail-edge-r-op: 1; /* the edges' rest opacities where they are pseudo-elements (the strip); rail.js writes them on the host from the rail's scroll */
 --m-network-gap: 218px;                /* the rail's bottom (1996) → the network title (1:56 at 2214) */
@@ -105,29 +125,49 @@
 --m-pillar-tail: 80px;                 /* button bottom → the next divider (4081 → 4161) */
 --m-list-rail-gap: 24px;               /* label → the list rail (1:123 → 1:124: 3865 + 14 + 24 = 3903) */
 --m-indicator-top: 10px;               /* the indicator sits 10 below the label's top (1:120 vs 1:123) */
-/* THE STACK (1:426): each pillar sticks under the nav on a 31 pitch; the previous one compacts as the next arrives */
---m-stack-pin-top: var(--m-nav-h);     /* IMMERSE's divider at y116 − 49 = 67 ≈ the bar's foot */
+/* THE STACK (1:426): WHAT WE DO pins 24 under the wordmark, the first divider 16 under it, then each pillar on a 31 pitch; the previous one compacts as the next arrives */
+--m-wwd-pin-top: calc((var(--m-nav-h) + var(--type-nav-size-scrolled)) / 2 + var(--m-space-4)); /* the scrolled wordmark's foot (its 18 box centred in the 68 bar → 43) + 24 (Oscar 2026-09-08) */
+--m-stack-pin-top: calc(var(--m-wwd-pin-top) + var(--type-eyebrow-size) * var(--type-eyebrow-lh) + var(--m-space-3)); /* IMMERSE's divider: WHAT WE DO's foot + 16 (Oscar 2026-09-08; the frame's 67 was the bar's foot) */
 --m-stack-band-h: 31px;                /* 116 → 147 → 178 */
 --m-stack-band-title-gap: 8px;         /* divider (2) → title at +10 (1:432 → 1:436) */
 --m-stack-title-lh: 13px; --m-stack-index-lh: 6px; /* the compact title's and index's line boxes (1:436, 1:435) */
 --m-stack-band-pad: 8px;               /* title bottom → the next divider */
 --m-stack-compact-px: 160px;           /* the compaction scrub: the next pillar's last 160px of approach (tunable) */
 --m-stack-hold: 300px;                 /* the stack's HOLD once AMPLIFY has parked — scroll runway, the desktop's 300 read hold (tunable; not drawn: the frame is the parked state) */
---m-services-tail: var(--m-ground-fade-h); /* the 474 fade zone (1:279) after AMPLIFY's own 80 tail: button bottom 5498 + 80 + 474 = Featured Work's top 6052 */
+--m-services-tail: var(--m-band-tail); /* the frame's 474 fade zone (1:279) after AMPLIFY's own 80 tail, made a ground fade: bare ground for a viewport, then the layer darkens over --m-ground-fade-px as Featured Work arrives (Oscar 2026-09-08) */
+--m-stack-h: 0px;                      /* the stack leaves as ONE: the parked panels' foot below IMMERSE's pin — each pillar's min-height is this less its band offset and WHAT WE DO's box runs down to it, so all four sticky boxes reach the stage's end at the same scroll (services.js measures and writes it; 0 = in flow) */
+/* THE ROLL-OVER WIPE (the desktop reel's constants, landing-services-reel.js; the hero's vocabulary): a parked pillar's covered units dissolve — blur and fade — over --m-wipe-span of the next panel's approach, gone --m-wipe-lead before its top reaches them */
+--m-wipe-lead: 40px; --m-wipe-span: 120px; --m-wipe-blur: 6px;
 /* ── PART 3 (2026-09-08): Featured Work → the closing ── */
 /* FEATURED WORK (1:280 – 1:324): the band 880 from y6052; the title 229 in; cards 48 below it on an 8 gap; the indicator 48 under the tallest card, centred */
 --m-fw-card-1: 321px 200px; --m-fw-card-2: 340px 420px; --m-fw-card-3: 360px 310px; --m-fw-card-4: 440px 400px; --m-fw-card-5: 400px 249px; /* 1:285, 1:291, 1:299, 1:305, 1:314 — width height */
 --m-fw-card: var(--m-fw-card-1); --m-fw-w: 321px; --m-fw-h: 200px; /* a card's own pair and its two lengths (featured.js splits the pair per card) */
 --m-fw-rail-h: 472px;                  /* the tallest card (420) + its title (24 + 28) */
---m-fw-tail: 52px;
---m-fade-anchor-nav: 542px;            /* the nav's foot + the fade (68 + 474): the page layer's fade into an OPAQUE dark band tracks the tail's gradient at the bar's foot — the only place the layer shows there */                     /* the indicator (1:322 at y6879) → the band's end (6932) */
+--m-fw-tail: 52px;                     /* the indicator (1:322 at y6879) → the band's end (6932) */
+/* THE PINNED RAILS (Oscar 2026-09-08): Featured Work and Most Brands fix with their indicator --m-rail-pin-bottom above the viewport's
+   bottom, the page's scroll then travels the cards across (1:1), holds --m-rail-hold, and the page continues; the nav clearance floors the pin
+   where the stage is taller than the viewport allows (the title never goes under the bar) */
+--m-rail-pin-bottom: 80px;
+--m-rail-hold: 200px;
+--m-rail-pin-floor: calc(var(--m-nav-h) - var(--m-space-section)); /* the pin never puts the title under the bar: the stage's own 120 head keeps it clear down to here */
+--m-rail-pin-top: 0px;                 /* a stage's sticky top — written per stage by rail-pin.js from its own geometry */
+--m-rail-runway: 0px;                  /* a section's runway after its stage (the travel + the hold) — written by the same driver */
+--m-featured-tail: var(--m-band-tail); /* the band's bare tail: the layer fades dark → light through its end into WE CREATE ACCESS (the frame's cut, made a fade — Oscar 2026-09-08) */
 
     /* WE CREATE ACCESS (1:336, 1:326; the rows 1:89 / 1:97 / 1:102 and 1:75 / 1:82 / 1:86) */
 --m-access-rows-h: 496px;              /* two 240 rows on the 256 pitch */
---m-access-pin-top: calc((100svh - var(--m-access-rows-h)) / 2); /* the rows pin centred in the viewport while the pairs travel */
+--m-access-pin-bottom: 80px;           /* the rows fix with their bottom 80 above the viewport's bottom (Oscar 2026-09-08 — was centred) */
+--m-access-pin-top: calc(100svh - var(--m-access-pin-bottom) - var(--m-access-rows-h));
+--m-access-st-h: calc(var(--type-eyebrow-size) * var(--type-eyebrow-lh) + var(--m-space-8) + 8 * var(--type-statement-size) * var(--type-statement-lh)); /* the statement block's height: the label, 64, the eight lines — access.js writes the measured value over this */
+--m-access-exit-scale: 0.6; --m-access-exit-lift: 120px; /* THE EXIT's end state: the rows' block at 0.6 about its top centre, lifted 120, gone (the desktop's collapse-to-0, kept legible as a shrink) */
+--m-access-st-top: calc(var(--m-access-pin-top) - var(--m-space-9) - var(--m-access-st-h)); /* the statement's sticky top: it fixes 80 above the rows the moment they fix, and its box is padded down to the rows' foot so it releases with them */
 --m-access-tile-pitch: 368px;          /* 360 + 8 (1:89 at x81 → 1:97 at x449) */
 --m-access-step-px: 400px;             /* scroll per pair transition — the desktop's STEP_SCROLL_PX */
---m-access-runway: 2000px;             /* five transitions × 400 */
+--m-access-exit-px: 600px;             /* THE EXIT (the desktop's ACCESS_COLLAPSE_TRAVEL_PX): after the fifth transition the rows keep travelling while their height collapses to 0 and the statement blurs out */
+--m-access-exit-blur: 12px;            /* the statement's blur at full collapse (ACCESS_HEADLINE_EXIT_BLUR_PX) */
+--m-access-word-fade-t: 0.15;          /* the words are gone this far into the exit (EXIT_WORD_FADE_T) */
+--m-access-c: 0;                       /* the collapse amount, 0 → 1, written on the section by access.js */
+--m-access-runway: calc(5 * var(--m-access-step-px) + var(--m-access-exit-px)); /* five transitions × 400 + the exit */
 --m-access-land-offset: 60px;          /* the landed cell's centre: 60 right of the viewport's centre in the top row (1:89), 60 left in the bottom (1:75) */
 --m-access-word-w: 344px; --m-access-word-h: 61px; /* the word's box on the landed cell (1:96, 1:81) */
 --m-access-word-full: 140px; --m-access-word-window: 290px; /* the desktop's word fade: solid within 140 of the landing, gone at 290 */
@@ -144,11 +184,13 @@
 /* THE CLOSING (1:372, 1:373) */
 --m-closing-st-h: 630px;               /* fourteen 45 lines */
 --m-closing-st-top: 165px; --m-closing-st-bottom: 85px; /* the statement inside the 880 band (9278 − 9113; 9993 − 9908) */
---m-closing-pin-top: calc(var(--m-nav-h) + (100svh - var(--m-nav-h) - var(--m-closing-st-h)) / 2); /* centred between the bar's foot and the viewport's bottom (the desktop rule) */
+--m-closing-pin-top: min(calc(var(--m-nav-h) + (100svh - var(--m-nav-h) - var(--m-closing-st-h)) / 2), calc(100svh - var(--m-closing-st-bottom) - var(--m-closing-st-h))); /* centred between the bar's foot and the viewport's bottom (the desktop rule) — but never with less than the band's 85 of red under VALUE: where the fourteen lines do not fit, the statement pins on its FOOT and the top lines have already passed under the bar (Oscar 2026-09-08: the footer must not take the red under the last line) */
 --m-closing-red-px: 600px;             /* the grey → red scrub while the text is fixed — the desktop's CLOSING_FADE_PX; also the pin's hold */
 --m-closing-nav-switch-t: 0;           /* the nav goes solid as the fade BEGINS: on the light ground the blend's own result is one step from the solid, so the switch is invisible (the desktop's reasoning; its 0.5 is a fraction of the bar's height, not of the fade) */
 /* the footer (1:392, 1:410) */
 --m-footer-indent: 104px;              /* the statement's first-line indent (1:409 — drawn as leading spaces, measured on the render) */
+--m-footer-top: calc(var(--m-space-section) - var(--m-space-9));  /* the statement 149 below the red band: the frame's 229 less 80 (Oscar 2026-09-08) */
+--m-footer-bottom: calc(var(--m-page-bottom) + var(--m-space-7)); /* below SITE BY: the frame's 44 plus 48 (Oscar 2026-09-08) */
     /* ── PART 4 (2026-09-08): the other pages and the tablet band ── */
     --m-page-img-h: var(--m-hero-img-h);   /* the pages' image windows (/work tiles, the case-study hero and stream, the founders portraits, the contact photograph) — the landing hero's 420 on the phone; the tablet band scales it */
     --m-two-up-w: calc((var(--m-measure) - var(--m-space-1)) / 2); /* a two-up cell: half the measure less the 8 gutter */

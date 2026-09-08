@@ -83,7 +83,9 @@ const bottomStrip = [
 
 ---
 
-<section class="landing-access" data-landing-access data-ground="light" aria-label="We create access">
+{/* below the seam (Oscar 2026-09-08): the page layer lightens over Featured Work's bare tail as it reaches the viewport's bottom
+    (ground.js data-ground-fade-from) — no drawn edge; the statement enters on a settled light ground */}
+<section class="landing-access" data-landing-access data-ground="light" data-ground-fade data-ground-fade-from="[data-featured-tail-m]" aria-label="We create access">
   <div class="landing-access__stage" data-access-stage>
     {/* Image columns — masked static wrapper (the section's top/bottom
         fade) around the travelling flex column. aria-hidden: ambient

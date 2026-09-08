@@ -18,10 +18,23 @@
  * riding the moving edge, each window delayed by its x across the viewport;
  * then the over layer takes the new image and the under layer waits for
  * the next cycle. A swap requested mid-wipe queues and runs after.
+ *
+ * THE PIN AND THE EXIT (Oscar 2026-09-08): the stage pins in the section
+ * (band.js — the desktop founders mechanic): the copy takes the headline
+ * role, the strip the media's, each drifting in, holding, then rising and
+ * blurring out at its own pace; the strip's edges ride with it through
+ * --m-band-y / --m-band-fade on the stage. The section then holds a
+ * runway of bare dark ground while the page layer lightens for WHAT WE DO
+ * (ground.js: the outro's data-ground-fade ends as its top reaches the
+ * viewport's bottom — the runway is the fade plus whatever the pin needs
+ * so the fade never starts before the last item has gone). The copy
+ * arrives on the word-clip rise, the strip fade-rises behind it (reveal.js).
  */
 import { gsap } from 'gsap';
 import { mobileMatch, tokenPx } from './match.js';
 import { bindRailEdges } from './rail.js';
+import { bindBand, bandSpecs } from './band.js';
+import { bindTextReveal, bindMediaReveal } from './reveal.js';
 import { asset } from '../../utils/asset.js';
 import { NETWORK_STRIP_SETS, NETWORK_STRIP_HOME, NETWORK_STRIP_SLOTS } from '../../data/landing/network-strip-sets.js';
 
@@ -42,9 +55,29 @@ const decodeWithin = (img, ms) => Promise.race([
 export function initMobileNetwork() {
   return mobileMatch((ctx) => {
     const section = document.querySelector('[data-landing-network]');
+    const stage = document.querySelector('[data-landing-network-stage]');
     const strip = document.querySelector('[data-landing-network-strip]');
     const body = document.querySelector('[data-landing-network-body]');
-    if (!(section instanceof HTMLElement) || !(strip instanceof HTMLElement)) return;
+    if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement) || !(strip instanceof HTMLElement)) return;
+    const subtitle = section.querySelector('[data-landing-network-subtitle]');
+    const title = section.querySelector('[data-landing-network-title]');
+    /* the entrances */
+    bindTextReveal(ctx, subtitle);
+    bindTextReveal(ctx, title);
+    bindTextReveal(ctx, body);
+    bindMediaReveal(ctx, Array.from(strip.querySelectorAll('.landing-network__strip-win'))); /* the windows, not the strip: the band drives the strip */
+    /* the pin and the exit; the runway after: the fade, plus whatever of the viewport the pinned stage leaves bare beneath it (the fade then begins at the release, never during the exit) */
+    const s = bandSpecs();
+    bindBand(ctx, {
+      track: section, section: stage,
+      items: [
+        { el: subtitle, ...s.headline },
+        { el: title, ...s.headline },
+        { el: body, ...s.ctas },
+        { el: strip, ...s.media, mirror: stage },
+      ],
+      after: (h, top) => tokenPx('--m-ground-fade-px') + Math.max(0, window.innerHeight - h - top),
+    });
     const tileW = tokenPx('--m-strip-tile-w');
     const wins = Array.from(strip.querySelectorAll('.landing-network__strip-win'));
     const overs = wins.map((w) => w.querySelector('img')).filter((i) => i instanceof HTMLImageElement);
@@ -63,7 +96,7 @@ export function initMobileNetwork() {
       over.parentElement?.insertBefore(under, over);
       return under;
     });
-    bindRailEdges(ctx, strip, { host: section });
+    bindRailEdges(ctx, strip, { host: stage }); /* the edges are the stage's pseudo-elements: they pin and exit with it */
 
     /* the swap */
     const wipeMs = parseFloat(tokenRaw('--m-wipe-ms')) || 450;

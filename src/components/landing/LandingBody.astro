@@ -82,7 +82,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
       runs the pinned reel exactly as before. THE FADE-TO-BLACK lives on
       this section's tail on both: services is the one light→dark
       boundary in the order, and Featured Work arrives black-over-black. */}
-  <section class="landing-outro" aria-label="Our services" data-landing-services data-ground="light">
+  <section class="landing-outro" aria-label="Our services" data-landing-services data-ground="light" data-ground-fade>
     {/* ══ THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26) —
         every width since the 2026-09-07 rebuild (in flow below the seam
         — landing-services.js). The STAGING (8ec705a) stack mechanics are
@@ -175,6 +175,9 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
         ))}
       </div>
     </div>
+    {/* below the seam (Oscar 2026-09-08): the bare tail after AMPLIFY's release — the page layer darkens for Featured Work as this
+        reaches the viewport's bottom (ground.js data-ground-fade-from); the frame's drawn 1:279 is not drawn. Nothing above the seam. */}
+    <div class="m-tail" data-services-tail-m aria-hidden="true"></div>
   </section>
 
   {/* Featured Work — horizontal gallery on the DARK ground (frame

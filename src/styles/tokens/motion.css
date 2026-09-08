@@ -19,5 +19,17 @@
 --m-wipe-ms: 450; --m-wipe-sweep-ms: 300; --m-wipe-edge-blur: 6px;
 /* the hero's blur-out (the hero vocabulary: the covered block dissolves, never a bare clip) */
 --m-hero-out-blur: 12px;
+/* THE ENTRANCE GRAMMAR (Oscar 2026-09-08 — the previous build's m-entrance, the desktop's reveal constants): every text block below the
+   seam arrives on the hero headline's word-clip rise — 1.2s on the reveal curve, lines 0.12 apart, words 0.04 — played ONCE as the block
+   reaches --m-reveal-at of the viewport; media (the founders rail, the strip, the cards, the CTAs) fade-rise 24 → 0 over 0.8s on the house
+   curve a beat behind their text (--m-reveal-media-delay). The stacked pillars' text is exempt (Oscar's brief). */
+--m-reveal-curve: cubic-bezier(0.42, 0, 0.24, 1);
+--m-reveal-dur: 1.2s; --m-reveal-line-stagger: 0.12s; --m-reveal-word-stagger: 0.04s;
+--m-reveal-at: 85%;                    /* the block's top at this fraction of the viewport's height */
+--m-reveal-media-rise: 24px; --m-reveal-media-dur: 0.8s; --m-reveal-media-delay: 0.3s; --m-reveal-media-stagger: 0.1s;
+/* THE ENTRANCE OF THE HERO IMAGE (the desktop cards' beat as the cover lifts): 24 → 0 and 1.04 → 1, 0.8s opacity / 0.9s transform */
+--m-hero-in-rise: 24px; --m-hero-in-scale: 1.04; --m-hero-in-dur: 0.8s; --m-hero-in-dur-tr: 0.9s;
+/* THE ACCESS ROWS' ARRIVAL (the desktop's ENTRY_CURVE): parked along their travel axis — the top row off to the right, the bottom off to the left — they slide in over 1.2s */
+--m-access-in-dur: 1.2s;
   }
 }

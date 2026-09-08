@@ -189,27 +189,26 @@
       opacity: 1;
       background: linear-gradient(90deg, var(--m-color-ground) 0, var(--m-color-ground-0) var(--m-logo-edge-w), var(--m-color-ground-0) calc(100% - var(--m-logo-edge-w)), var(--m-color-ground) 100%);
     }
-    /* THE IMAGE (1:272) in flow 48 below the row; the 1:271 fade behind it runs to the band's top */
+    /* THE IMAGE (1:272) in flow 48 below the row. The frame's 1:271 gradient behind it is not drawn:
+       the page layer fades to the band's dark as the band arrives (ground.js). THE TWIRL: the
+       window turns about its vertical axis as it rises off the top — hero.js scrubs the rotation,
+       the figure lends the perspective (the desktop gallery's camera); the back face shows
+       through the turn as the WebGL plane's does */
     .landing-v2 .m-hero {
       position: relative;
       margin: var(--m-space-7) var(--m-inset) 0;
       padding: 0;
       width: auto;
-    }
-    .landing-v2 .m-hero__fade {
-      position: absolute;
-      top: 0;
-      left: calc(-1 * var(--m-inset));
-      right: calc(-1 * var(--m-inset));
-      height: calc(var(--m-hero-band-top) - var(--m-hero-img-top));
-      background: linear-gradient(180deg, var(--m-color-ground-dark-0) 0, var(--m-color-ground-dark) 100%);
-      pointer-events: none;
+      perspective: var(--m-hero-perspective);
     }
     .landing-v2 .m-hero__win {
       position: relative;
       width: 100%;
       height: var(--m-hero-img-h);
       overflow: hidden;
+      transform-origin: 50% 50%;
+      will-change: transform;
+      backface-visibility: visible;
     }
     .landing-v2 .m-hero__win img {
       display: block;
