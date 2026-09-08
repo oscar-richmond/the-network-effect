@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer desktop {
 /*
  * /work — FEATURED WORK PAGE (Figma 27:3103, extracted 2026-08-06;

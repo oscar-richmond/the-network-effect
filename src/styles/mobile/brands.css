@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer mobile {
   @media (--mobile) {
     /* MOST BRANDS STRUGGLE… (1:337 — mobile rebuild Part 3 §3): the four

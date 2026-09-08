@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer mobile {
   @media (--mobile) {
     /* WHO WE ARE — THE DARK BAND (1:15, page 1167 → 2870; mobile rebuild Part 2).

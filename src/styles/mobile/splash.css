@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer mobile {
   @media (--mobile) {
     /* THE SPLASH below the seam (mobile rebuild Part 3 §6). The frame draws

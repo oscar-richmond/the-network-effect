@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer desktop {
 /*
  * /founders — Figma 73:5519, extracted 2026-08-08; 83px chrome

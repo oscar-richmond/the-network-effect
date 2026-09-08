@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer mobile {
   @media (--mobile) {
     /* OUR NETWORK (1:56, 1:33, 1:32, 1:16 — mobile rebuild Part 2): the

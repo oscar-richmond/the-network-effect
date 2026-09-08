@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer desktop {
 /*
  * /contact — Figma 70:5009 + the 70:5172 modal, extracted

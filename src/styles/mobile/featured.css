@@ -1,5 +1,5 @@
 @import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer mobile {
   @media (--mobile) {
     /* FEATURED WORK (1:280 — mobile rebuild Part 3 §1). The band paints its

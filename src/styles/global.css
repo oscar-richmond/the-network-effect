@@ -1,6 +1,6 @@
 @import './fonts.css';
 @import './tokens/breakpoints.css';
-@layer tokens, base, desktop, tablet, mobile;
+@layer tokens, base, desktop, mobile, tablet;
 @layer base {
 
 :root {

@@ -6,7 +6,7 @@
  *   1. SEAMS: no numeric seam literal (the values in src/config/breakpoints.js)
  *      anywhere in src/ except that file, and the two generated mirrors are
  *      fresh (scripts/gen-breakpoints.mjs --check).
- *   2. THE MOBILE LAYER: every stylesheet under src/styles/mobile/ and every
+ *   2. THE MOBILE AND TABLET LAYERS: every stylesheet under src/styles/mobile/ and src/styles/tablet/ and every
  *      <style> in a *Mobile.astro component reads tokens only — no px / em /
  *      rem / vw / vh / svh / dvh numbers (0 excepted), no colour literals
  *      (#hex, rgb(), hsl(), named colours; transparent / currentColor /
@@ -55,6 +55,8 @@ console.log(`seams: ${seamHits} literal(s) in src/`);
 const mobileCss = [];
 const mobileDir = join(ROOT, 'src/styles/mobile');
 try { for (const p of walk(mobileDir).filter((p) => p.endsWith('.css'))) mobileCss.push([relative(ROOT, p), readFileSync(p, 'utf8')]); } catch {}
+/* the tablet layer (Part 4 §2) reads the same tokens under the same rule */
+try { for (const p of walk(join(ROOT, 'src/styles/tablet')).filter((p) => p.endsWith('.css'))) mobileCss.push([relative(ROOT, p), readFileSync(p, 'utf8')]); } catch {}
 for (const p of walk(join(ROOT, 'src/components')).filter((p) => /Mobile\.astro$/.test(p))) {
   const src = readFileSync(p, 'utf8'); const m = src.match(/<style[^>]*>([\s\S]*?)<\/style>/g) || [];
   for (const block of m) mobileCss.push([relative(ROOT, p), block.replace(/<\/?style[^>]*>/g, '')]);
