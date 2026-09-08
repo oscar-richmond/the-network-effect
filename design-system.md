@@ -12,7 +12,7 @@ A record of the type, spacing and colour as they stand in the codebase today. It
 
 1360 is the type floor: the smallest interactive text is the 14px tier, and 14 × (w ÷ 1728) stays above 11px only from 1358 up, so the shell must not scale below 0.786. 768 is chosen because no iPad is narrower in either orientation and no phone is wider than 430, leaving a 338px gap that no device occupies.
 
-**Which sheets are live.** In cascade-layer order (Part 4.1): the five token sheets; `global.css`, `fonts.css`, `canvas-cursor.css`; `home.css`, `menu.css` and the seven desktop sheets under `src/styles/landing/`; `landing/tablet.css`; the seven mobile sheets under `src/styles/mobile/`. The `about-2`, `about-3`, `holding`, `old` and `services/partners.css` trees belong to archived routes and are excluded throughout.
+**Which sheets are live.** In cascade-layer order (Part 4.1): the five token sheets; `global.css`, `fonts.css`, `canvas-cursor.css`; `home.css`, `menu.css` and the seven desktop sheets under `src/styles/landing/`; the mobile sheets under `src/styles/mobile/` (twenty after Part 4); `tablet/index.css` and `tokens/tablet.css` (Part 4). The `about-2`, `about-3`, `holding`, `old` and `services/partners.css` trees belong to archived routes and are excluded throughout.
 
 ## Part 1 — Typography
 
@@ -434,8 +434,8 @@ Every live stylesheet sits in one of five layers, declared once in `src/styles/t
 | `tokens` | `src/styles/tokens/{colour,type,space,radius,motion}.css` | Every named value. `breakpoints.css` (generated) carries the `@custom-media` seams and is unlayered by nature. |
 | `base` | `global.css` (after its `@import`s), `fonts.css`, `canvas-cursor.css`, the two inline `<style>` blocks in `BaseLayout.astro` | Resets, fonts, the layout's own chrome |
 | `desktop` | `home.css`, `menu.css`, `landing/{landing,work,case-study,founders,contact,services-6,services-v2}.css` | The 1728 composition — untouched by the rebuild beyond the wrap |
-| `tablet` | `landing/tablet.css` | An empty container until Part 4 |
-| `mobile` | `mobile/{base,nav,menu,footer,drawer,ground,pending}.css` via `mobile/index.css` | The phone build, `@media (--mobile)` inside `@layer mobile` |
+| `mobile` | `mobile/{base,nav,menu,footer,drawer,ground,splash,hero,founders,network,services,featured,access,brands,closing,work,case-study,services-page,contact,founders-page}.css` via `mobile/index.css` | The phone build, `@media (--mobile)` inside `@layer mobile` — the base of everything below the shell floor |
+| `tablet` | `tablet/index.css` (+ `tokens/tablet.css` in the tokens layer) | The band between the phone and the shell floor, `@media (--tablet)` inside `@layer tablet` — DERIVED from the mobile layer, so it cascades ABOVE it (Part 4 §2, 2026-09-08: the order became `tokens, base, desktop, mobile, tablet`; `landing/tablet.css` and `mobile/pending.css` are retired) |
 
 A rule of the importer: `@import` lines must come before the `@layer` statement in any file (Vite's CSS importer refuses an `@import` after a layer declaration — `mobile/index.css` served 1,062 bytes until its imports were moved first).
 
@@ -511,6 +511,29 @@ Same rules. Four mobile siblings through DeviceGate from two new data files — 
 | Splash | The cover splash (dark cover, the hairline loading line, the wordmark centred then gliding onto the bar's) runs below the seam on the tokens; the dev-only hero entry is never armed there (its stage is desktop DOM). Scroll locked while up; readiness gated on the fonts and the hero's image. | cover 402×874 · wordmark lands at 16,22 · done by ~2.6s |
 
 Deviations, all reported: VIEW ALL WORK is absent from the frame and hidden; "Music and Culture" is a /work stub, not a featured card; the Featured titles use the title token (26/28) where the frame gives three cards 26; TOP BOY's face is the condensed serif of the others (the frame sets it in Serrif); the access rows' entrance is scroll-only (no offscreen park); the stack's 300 hold is scroll runway the frame does not draw; the muted grey is now `#6c6c6e` by ruling.
+
+---
+
+### 4.10 The other pages (rebuild Part 4 §1, 2026-09-08) — LAYOUT PENDING DESIGN
+
+No phone frames exist for /work, the case studies, /services, /contact, /founders or the 404. Part 4 applied the GLOBAL LAYER to each — the bar with its scale, the in-flow footer, the ground layer, the type/spacing/colour tokens, the layer architecture — and restyled their current layouts to the tokens, one sheet per page in the mobile layer. Nothing on the site reads as the old system; the layouts themselves wait for designs.
+
+| Page | Sheet | What changed | What waits |
+|---|---|---|---|
+| /work (grid and list) | `mobile/work.css` | Static stage under the bar; the GRID/ROW toggle at the label tier with 44 hit areas; one FEATURED WORK heading; grid tiles one-up (media at the measure × `--m-page-img-h`, hover image off, names at the title tier); the list as the stage's tiles one-up with the project details beneath; the footer in flow | A designed phone layout |
+| /work/[slug] (four) | `mobile/case-study.css` | Title at the statement tier, hero image at the measure; intro at the heading tier with the footer indent; OUR WORK facts (eyebrow / body, hairline rows); the stream one-up (pairs stack); MORE WORK as a snapping rail (the Most Brands card grammar); cursor, float, pager off | A designed phone layout; per-image phone crops |
+| /services | `mobile/services-page.css` | Title at the display tiers, lede; per pillar image (`--m-pillar-img-h`), name + index (pillar-title tokens), subtitle; statement at the heading tier; service rows at the row tier with hairlines; gallery as a snapping rail; fragment lines at the statement tier; dark band off (light throughout); footer in flow | A designed phone layout; the dark segments |
+| /contact and the 404 | `mobile/contact.css` | Intro at the display tiers (serif line indented); CTAs as the 38 button; socials at 44; WE'VE WORKED WITH over the rolling logo row (the hero row's cells, pitch and roll); photograph at the measure; chat CTA off | A designed phone layout |
+| /founders | `mobile/founders-page.css` | Both portraits at the measure; per founder role / name / biography / relationships; the column images as a snapping rail; the pair photograph; the indicator and the sweep choreography off; the footer in flow (Part 1's pending containment is now the page's rule) | A designed phone layout; the portrait wipe |
+| The drawer, both modals, the menu | Part 1's sheets | Already on the tokens (Part 1); verified completable by touch and keyboard with the on-screen keyboard simulated (Part 4 gate) | — |
+
+### 4.11 The tablet band (rebuild Part 4 §2, 2026-09-08) — DERIVED, PENDING TABLET DESIGNS
+
+The band (768–1359, both orientations) is the mobile build at tablet proportions, the previous pass's approach: `tokens/tablet.css` overrides the phone's tokens under `@media (--tablet)` inside the tokens layer — the 32 margin (`--m-inset`), the pages' image windows at 560 (`--m-page-img-h`), the pillar images at 300, the rail cards at 360 (`--m-brands-*`, with the keyword offsets and rail height following), the featured cards at 1.25 — and `tablet/index.css` holds the two-up arrangements where the phone is one-up (`--m-two-up-cols`, `--m-two-up-w`): the /work grid and list, the case-study pair rows, the founders portraits, the pillar image beside its text, the contact cluster. The landing hero keeps its fixed flow (its band top is a token). The vertical rhythm and the type tiers are the phone's. The seams at 767/768 and 1359/1360 are clean under continuous resize (shell present/absent, the bar, the inset token, no overflow, no errors) on six routes.
+
+### 4.12 The weight rule (Part 4 §3)
+
+The phone takes each image at (at most) twice its rendered width: `sizes` on the narrow branch is two thirds of the rendered width, so DPR 3 resolves the variant, never the original (hero 780 not 1140; the closing cards and the founders' pair photograph 600 / 780; the strip and featured cards keep their build-time phone branches — the drivers no longer drop the srcset). Desktop-only images the DeviceGate removes below the shell floor carry the 1×1 gate GIF on the narrow branch so they are never fetched there.
 
 ---
 
@@ -622,6 +645,16 @@ Faces: `--m-font-serif` Serrif, `--m-font-serif-cond` Serrif Condensed, `--m-fon
 | Most Brands | `--m-brands-line-pitch`, `--m-brands-card-w/pitch`, `--m-brands-img-h`, `--m-brands-word-top`, `--m-brands-line-top/w`, `--m-brands-rail-h`, `--m-brands-tail` | 34, 280 / 288, 280, 304, 340 / 220, 394, 100 | 1:338 – 1:371, 1:389 |
 | Closing | `--m-closing-st-h`, `--m-closing-st-top/bottom`, `--m-closing-pin-top`, `--m-closing-red-px`, `--m-closing-nav-switch-t` | 630, 165 / 85, nav-h + half the rest, 600, 0 | 1:372, 1:373 |
 | Splash / colour | `--m-z-splash`, `--m-color-muted` | 11000, #6c6c6e (ruled) | — |
+
+---
+
+### 5.7 Part 4's tokens
+
+| Group | Tokens | Values | Where |
+|---|---|---|---|
+| The pages | `--m-page-img-h` | 420 on the phone (the hero's), 560 in the band | `space.css`, `tokens/tablet.css` |
+| Two-up | `--m-two-up-w`, `--m-two-up-cols` | half the measure less the 8 gutter; `repeat(2, minmax(0, 1fr))` | `space.css` |
+| The band | `--m-inset` 32, `--m-page-img-h` 560, `--m-pillar-img-h` 300, `--m-pillar-desc-w` 360, `--m-brands-card-w/pitch/img-h` 360/368/360, `--m-brands-word-top/line-top/rail-h` 384/420/474, `--m-fw-card-1…5` at 1.25, `--m-fw-rail-h` 577 | overrides under `@media (--tablet)` | `tokens/tablet.css` |
 
 ---
 
