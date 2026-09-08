@@ -28,6 +28,7 @@
     --m-color-frost: rgba(255, 255, 255, 0.1);    /* the access tiles' frosted veil (1:85, 1:101) at --m-opacity-frost */
     --m-color-ground-dark-0: rgba(22, 22, 22, 0); /* the ground fades' transparent end (1:271, 1:279, 1:54, 1:572) */
     --m-color-ground-0: rgba(238, 238, 240, 0);   /* the light edge fades' transparent end (1:269, 1:140) */
+    --m-filter-arrow-on-dark: brightness(0) invert(1); /* the black arrow glyph (more-arrow.svg) on the dark fills */
     --m-opacity-frost: 0.6;
     --m-opacity-strip-image: 0.6;                 /* the access strip images (1:84, 1:99) */
   }

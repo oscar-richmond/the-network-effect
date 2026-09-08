@@ -49,7 +49,22 @@
     --m-featured-title-gap: 24px;                                   /* card image → name (1:284 → 1:288) */
     --m-ground-fade-h: 474px;                                       /* the two light → dark fades (1:271, 1:279) */
     --m-band-dark-h: 1703px; --m-band-featured-h: 880px; --m-band-red-h: 880px; /* 1:15, 1:281, 1:372 — the drawn heights */
+    /* touch and stacking — house values, not drawn in the frame */
+    --m-tap-min: 44px;                     /* the touch floor for every control */
+    --m-tap-pad-x: 14px; --m-tap-pad-y: 16px; /* the burger's hit extension: 16 + 28 = 44 wide, 12 + 32 = 44 tall */
+    --m-hairline: 1px;
+    --m-z-ground: -1; --m-z-content: 1; --m-z-nav: 270; --m-z-menu: 500; --m-z-nav-open: 550; --m-z-drawer: 600; /* nav-open: the bar rides above the open menu so the toggle closes it; the drawer (opened from the menu) still covers the bar */
+    /* the menu (not drawn in the frame — the current menu on the tokens) */
+    --m-menu-top: calc(var(--m-nav-h) + var(--m-space-8));
+    --m-menu-row-pitch: 45px;              /* the statement's line pitch (1:326) */
+    --m-menu-gap: var(--m-space-8);
+    /* the drawer and the modals (not drawn in the frame — restyled on the tokens) */
+    --m-drawer-pad: var(--m-inset);
+    --m-drawer-top: var(--m-nav-h);
+    --m-drawer-gap: var(--m-space-5);
+    --m-drawer-field-gap: var(--m-space-4);
     /* the footer (1:392, 1:410) */
+    --m-footer-indent: 104px;              /* the statement's first-line indent (1:409 — drawn as leading spaces, measured on the render) */
     --m-footer-statement-h: 180px; --m-footer-index-pitch: 30px; --m-footer-link-h: 18px; --m-footer-legal-row-pitch: 40px;
   }
 }

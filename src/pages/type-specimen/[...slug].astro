@@ -1,51 +1,45 @@
 ---
 /**
- * THE TYPE SPECIMEN — dev-only (the foundation task, 2026-09-07).
+ * THE TYPE SPECIMEN — dev-only (mobile rebuild Part 1 C, 2026-09-08).
  *
- * Every type role of the scale system, rendered THREE ways at the current
- * viewport: the band's tokens (what Prompt 2 will apply below the seam),
- * the desktop's literal values scaled by 100vw ÷ 1728 (what the shell does —
- * the naive alternative, unreadable at phone widths), and the desktop's
- * literal values unscaled (the reference, clipped at narrow widths). The
- * computed size / leading / tracking of the token sample is printed live.
+ * Every type role of the phone build, rendered at the current viewport from
+ * the tokens (src/styles/tokens/type.css) with its computed size / leading /
+ * tracking printed live, beside the value the 402 frame draws — so 360, 390,
+ * 402 and 430 can be read side by side. The four large roles are fluid on the
+ * measure (100vw − 32) / 370; everything else is fixed.
  *
- * Gated like /landing-splash-b: getStaticPaths returns no path unless the
- * TYPE_SPECIMEN flag is on (dev, or PUBLIC_TYPE_SPECIMEN=1), so a production
- * build has no such route. No layout, no nav — a bare document.
+ * Gated: getStaticPaths returns no path unless the TYPE_SPECIMEN flag is on
+ * (dev, or PUBLIC_TYPE_SPECIMEN=1), so a production build has no such route.
+ * No layout, no nav — a bare document.
  */
 import { TYPE_SPECIMEN } from '../../data/flags.js';
 import '../../styles/fonts.css';
 import '../../styles/tokens/index.css';
-import { TABLET_MIN_WIDTH, MOBILE_MAX_WIDTH } from '../../config/breakpoints.js';
+import { PHONE_DESIGN_WIDTH, PHONE_FLUID_MIN, PHONE_FLUID_MAX } from '../../config/breakpoints.js';
 
 export function getStaticPaths() {
   return TYPE_SPECIMEN ? [{ params: { slug: undefined } }] : [];
 }
 
-/* role · sample copy (the site's own) · desktop [size, leading, tracking em] */
+/* role · the frame's sample copy · the frame's value at 402 · nodes · fluid? */
 const ROLES = [
-  ['statement', 'The network effect exists to connect people, brands and talent in ways that create long-term cultural and commercial value.', [100, 88, -0.04]],
-  ['display', 'POWERED BY ACCESS.', [90, 79.2, -0.05]],
-  ['display-serif', 'BUILT ON TRUST.', [90, 82.8, -0.04]],
-  ['heading', 'NEARLY 20 YEARS BUILDING GLOBAL RELATIONSHIPS MEETS 30 YEARS AT THE HEART OF MUSIC, FILM AND TELEVISION.', [56, 54, -0.035]],
-  ['heading-serif', 'Talent / Brands / Business / Culture', [56, 50, -0.035]],
-  ['term', 'Talent / Hospitality / TV & Film / Music', [48, 52, 0]],
-  ['keyword', 'CULTURE · TRUST · BEHAVIOUR', [48, 48, 0]],
-  ['lede', 'We connect Talent, Brands & Audiences through Experiences, Strategic Partnerships & Media.', [36, 40, -0.0286]],
-  ['title', 'TheNetworkEffect · Wilderness Reserve', [34, 38, -0.03]],
-  ['note', 'Our work is structured across three connected pillars: Immerse / Connect / Amplify.', [32, 35.4, -0.027]],
-  ['subtitle', 'Activate Experiences & Cultural Moments', [28, 32, -0.03]],
-  ['row', 'Talent-Led Experiences · Immersive Brand Worlds · Brand Launches', [26, 32, -0.02]],
-  ['index', '/01  /02  /03', [24, 24, 0]],
-  ['tile', 'IMMERSE · CONNECT · AMPLIFY', [24, 28, -0.035]],
-  ['body', 'Over seven years, Rob helped transform Wilderness Reserve from a private country estate into one of Britain’s leading luxury hospitality destinations. Working across commercial strategy, brand development, partnerships, events and audience growth, he played a key role in building the business into a recognised lifestyle brand.', [21, 28, -0.015]],
-  ['body-sans', 'Where we can reach you. First and last is fine. The brief, the moment, the ambition.', [18, 27, 0]],
-  ['label', 'WORK · SERVICES · FOUNDERS · LET’S CHAT · START A PROJECT · WE BUILD', [16, 16, -0.02]],
-  ['eyebrow', 'WHO WE ARE · OUR WORK · FOUNDER: PARTNERSHIPS, STRATEGY & EXPERIENCES', [14, 16, 0]],
-  ['small', 'Site Index · Home · Services · The Founders · Selected Work · Hello@networkeffectagency.co.uk · ©2026 All rights reserved', [14, 16, 0]],
-  ['micro', 'Skip to content · COPIED', [13, 19.5, 0.02]],
+  ['nav', 'TheNetworkEffect', '24 → 18 scrolled · −0.03em', '1:420', false],
+  ['display-serif', 'BUILT ON TRUST.', '48 / 45', '1:13, 1:277', true],
+  ['display', 'POWERED BY ACCESS.', '48 / 45 · −0.03em', '1:14, 1:278', true],
+  ['statement', 'WE CREATE ACCESS BETWEEN WORLDS THAT DON’T NORMALLY CONNECT', '48 / 45 · −0.04em', '1:326, 1:373', true],
+  ['heading', 'NEARLY 20 YEARS BUILDING GLOBAL RELATIONSHIPS MEETS 30 YEARS AT THE HEART OF MUSIC, FILM AND TELEVISION.', '32 / 30 · −0.035em', '1:74, 1:33, 1:321, 1:338', true],
+  ['footer-statement', 'Culture rarely moves in public first. It moves quietly. Through people. Through relationships.', '30 / 30', '1:409', false],
+  ['pillar-title', 'IMMERSE /01', '28 · −0.02em (index 14)', '1:109, 1:108', false],
+  ['title', 'Activate Experiences & Cultural Moments', '26 / 28', '1:113, 1:289, 1:349', false],
+  ['term', 'Talent / Hospitality / TV & Film / Music / Luxury / Fashion', '24 / 27', '1:32', false],
+  ['lede', 'We connect Talent, Brands & Audiences through Experiences, Strategic Partnerships & Media', '20 / 24 · −0.015em', '1:270', false],
+  ['row', 'Talent-Led Experiences · Immersive Brand Worlds · Brand Launches', '16 / 19 (8 gap)', '1:126', false],
+  ['body', 'Audiences trust people more than institutions.', '16 / 18', '1:350, 1:396', false],
+  ['small', 'Terms & Conditions · Privacy Policy · ©2026 All rights reserved', '14 / 16', '1:413, 1:416', false],
+  ['eyebrow', 'WHO WE ARE · WHAT WE DO · WE BUILD · TRUSTED BY FOUNDERS AND BRANDS', '12 / 14 · −0.015em', '1:55, 1:325, 1:123', false],
+  ['label', 'THE FOUNDERS · FEATURED WORK · MORE INFO', '12', '1:67, 1:72, 1:117', false],
+  ['access-label', 'Talent', '48 (30 inner)', '1:77, 1:81', false],
 ];
-const SIZES = [390, 430, TABLET_MIN_WIDTH, 1024, MOBILE_MAX_WIDTH, 1728];
 ---
 <!doctype html>
 <html lang="en">
@@ -57,63 +51,43 @@ const SIZES = [390, 430, TABLET_MIN_WIDTH, 1024, MOBILE_MAX_WIDTH, 1728];
   <style>
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; background: #eeeef0; color: #161616; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-    body { font-family: var(--font-type-sans); padding: 24px; }
-    .top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; margin-bottom: 8px; }
-    .top h1 { margin: 0; font: 600 16px/1 var(--font-type-sans); text-transform: uppercase; letter-spacing: 0.02em; }
-    .top p { margin: 0; font: 400 13px/1.4 var(--font-type-sans); color: #5f5d59; }
-    .vp { font: 500 13px/1 ui-monospace, Menlo, monospace; color: #161616; }
-    .legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 20px 0 8px; font: 600 11px/1.2 var(--font-type-sans); text-transform: uppercase; letter-spacing: 0.06em; color: #5f5d59; border-bottom: 1px solid #c9c7c1; padding-bottom: 6px; }
-    .role { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 18px 0; border-bottom: 1px solid #dad7d1; align-items: start; }
-    .role > div { min-width: 0; overflow: hidden; }
-    .meta { font: 500 11px/1.4 ui-monospace, Menlo, monospace; color: #5f5d59; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .meta b { color: #c1250e; font-weight: 600; }
-    .s { margin: 0; overflow-wrap: anywhere; }
-    .token { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: var(--s); line-height: var(--lh); letter-spacing: var(--ls); }
-    .shell { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: calc(var(--ds) * 100vw / 1728); line-height: calc(var(--dlh) / var(--ds)); letter-spacing: var(--dls); }
-    .ref { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: calc(var(--ds) * 1px); line-height: calc(var(--dlh) / var(--ds)); letter-spacing: var(--dls); white-space: nowrap; }
-    @media (--phone) { .legend, .role { grid-template-columns: 1fr; } .role .c3 { display: none; } .legend .c3 { display: none; } }
+    html, body { margin: 0; background: var(--m-color-ground); color: var(--m-color-ink); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body { font-family: var(--m-font-sans); padding: var(--m-space-4) var(--m-inset); }
+    .top { display: flex; flex-wrap: wrap; gap: var(--m-space-1) var(--m-space-4); align-items: baseline; margin-bottom: var(--m-space-3); }
+    .top h1 { margin: 0; font: var(--type-eyebrow-weight) var(--type-eyebrow-size) / var(--type-eyebrow-lh) var(--type-eyebrow-face); text-transform: var(--type-eyebrow-case); letter-spacing: var(--type-eyebrow-ls); }
+    .top p { margin: 0; font: var(--type-small-weight) var(--type-small-size) / var(--type-small-lh) var(--type-small-face); color: var(--m-color-muted); }
+    .vp { font-family: ui-monospace, Menlo, monospace; color: var(--m-color-ink); }
+    .role { padding: var(--m-space-3) 0; border-bottom: var(--m-hairline) solid var(--m-color-divider); }
+    .meta { display: flex; flex-wrap: wrap; gap: var(--m-space-1) var(--m-space-3); margin-bottom: var(--m-space-1); font: var(--type-small-weight) var(--type-small-size) / var(--type-small-lh) ui-monospace, Menlo, monospace; color: var(--m-color-muted); }
+    .meta b { color: var(--m-color-blue); }
+    .meta .frame { color: var(--m-color-ink); }
+    .s { margin: 0; overflow-wrap: anywhere; font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: var(--s); line-height: var(--lh); letter-spacing: var(--ls); }
+    .s.dark { background: var(--m-color-ground-dark); color: var(--m-color-ink-on-dark); padding: var(--m-space-2) var(--m-space-3); }
   </style>
 </head>
 <body>
   <div class="top">
-    <h1>Type specimen</h1>
-    <p>Viewport <span class="vp" data-vp></span> · body token <span class="vp" data-body></span> · tokens from <code>src/styles/type-tokens.css</code></p>
+    <h1>Type specimen — the phone build</h1>
+    <p>Viewport <span class="vp" data-vp></span> · frame {PHONE_DESIGN_WIDTH}, fluid {PHONE_FLUID_MIN}–{PHONE_FLUID_MAX} · tokens from <code>src/styles/tokens/type.css</code></p>
   </div>
-  <div class="legend"><div>This band’s tokens (computed live)</div><div>Desktop literal × 100vw ÷ 1728 (the shell’s naive scaling)</div><div class="c3">Desktop literal, unscaled (reference)</div></div>
-  {ROLES.map(([role, sample, [ds, dlh, dls]]) => {
-    const isSerif = ['display-serif', 'heading-serif', 'term', 'lede', 'title', 'note', 'subtitle', 'row', 'body', 'small'].includes(role);
-    const weight = role === 'body-sans' ? 400 : isSerif ? 500 : 600;
-    const upper = ['statement', 'display', 'display-serif', 'heading', 'keyword', 'tile', 'label', 'eyebrow'].includes(role);
-    const vars = `--f:var(--type-${role}-face);--w:var(--type-${role}-weight);--c:var(--type-${role}-case);--s:var(--type-${role}-size);--lh:var(--type-${role}-lh);--ls:var(--type-${role}-ls);--ds:${ds};--dlh:${dlh};--dls:${dls}em`;
+  {ROLES.map(([role, sample, frame, nodes, fluid]) => {
+    const vars = `--f:var(--type-${role}-face);--w:var(--type-${role}-weight);--c:var(--type-${role}-case);--s:var(--type-${role}-size);--lh:var(--type-${role}-lh);--ls:var(--type-${role}-ls)`;
     return (
       <section class="role" style={vars} data-role={role}>
-        <div>
-          <div class="meta"><b>{role}</b> · {isSerif ? 'Serrif Condensed' : 'Dazzed'} {weight} {upper ? 'caps' : ''} · <span data-computed>…</span></div>
-          <p class="s token" data-sample>{sample}</p>
-        </div>
-        <div>
-          <div class="meta">desktop {ds}/{dlh} {dls}em × {'(vw ÷ 1728)'}</div>
-          <p class="s shell">{sample}</p>
-        </div>
-        <div class="c3">
-          <div class="meta">desktop {ds}/{dlh} {dls}em</div>
-          <p class="s ref">{sample}</p>
-        </div>
+        <div class="meta"><b>{role}</b> <span>{fluid ? 'fluid' : 'fixed'}</span> <span class="frame">frame {frame}</span> <span>{nodes}</span> <span data-computed>…</span></div>
+        <p class:list={['s', { dark: role === 'access-label' }]} data-sample>{sample}</p>
       </section>
     );
   })}
   <script>
     const vp = document.querySelector('[data-vp]');
-    const bodyOut = document.querySelector('[data-body]');
     const print = () => {
       vp.textContent = `${innerWidth} × ${innerHeight}`;
-      const b = getComputedStyle(document.documentElement).getPropertyValue('--type-body-size').trim();
-      bodyOut.textContent = b;
       document.querySelectorAll('[data-role]').forEach((sec) => {
         const s = sec.querySelector('[data-sample]');
         const c = getComputedStyle(s);
-        sec.querySelector('[data-computed]').textContent = `${parseFloat(c.fontSize).toFixed(1)} / ${parseFloat(c.lineHeight).toFixed(1)} · ${c.letterSpacing === 'normal' ? '0' : (parseFloat(c.letterSpacing) / parseFloat(c.fontSize)).toFixed(3) + 'em'}`;
+        const ls = c.letterSpacing === 'normal' ? '0' : `${parseFloat(c.letterSpacing).toFixed(2)}px`;
+        sec.querySelector('[data-computed]').textContent = `computed ${parseFloat(c.fontSize).toFixed(2)} / ${parseFloat(c.lineHeight).toFixed(2)} · ${ls}`;
       });
     };
     print();
