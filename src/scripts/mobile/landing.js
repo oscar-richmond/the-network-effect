@@ -6,8 +6,9 @@
  * the seam), so the two sets never overlap.
  */
 import { initMobileHero } from './hero.js';
+import { initMobileFounders } from './founders.js';
 
 export function initMobileLanding() {
-  const offs = [initMobileHero()];
+  const offs = [initMobileHero(), initMobileFounders()];
   return () => { for (const off of offs) off(); };
 }

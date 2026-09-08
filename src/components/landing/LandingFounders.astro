@@ -38,6 +38,8 @@
 import { asset } from '../../utils/asset.js';
 import { QUERIES } from '../../config/breakpoints.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
+import DeviceGate from '../mobile/DeviceGate.astro';
+import FoundersRailMobile from '../mobile/FoundersRailMobile.astro';
 
 const foundersPhoto = asset('/assets/landing/founders/founders-photo.jpg');
 const robboPortrait = asset('/assets/landing/founders/robbo-portrait.jpg');
@@ -49,7 +51,7 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
     section rides position:sticky inside it — pinned while items
     land, hold, exit upward and the ground fades to the hero grey —
     then releases exactly as its own bottom meets the track's. */}
-<div class="landing-founders-track" data-landing-founders-track data-ground="dark" data-ground-fade>
+<div class="landing-founders-track" data-landing-founders-track data-ground="dark" data-ground-fade data-ground-fade-anchor="[data-hero-image-m]" data-ground-fade-anchor-y="--m-hero-fade-anchor">
   <section class="landing-founders" data-landing-founders aria-label="The founders">
   {/* WHO WE ARE label (frame 16:204, 2026-08-13) — desktop only
       (display:none below the seam; the approved mobile frames carry
@@ -170,5 +172,12 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
     </a>
   </figure>
   </div>
+  {/* THE PHONE'S RAIL (mobile rebuild Part 2, 2026-09-08 — frame 1:34): the
+      three cards as a snapping horizontal rail, stamped in below the seam
+      with the desktop's three figures removed (the gate sits after them);
+      on the desktop nothing here renders. */}
+  <DeviceGate desktop="[data-fd-grid]">
+    <FoundersRailMobile />
+  </DeviceGate>
   </section>
 </div>
