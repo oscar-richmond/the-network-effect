@@ -29,6 +29,7 @@
  * anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
+import { QUERIES } from '../config/breakpoints.js';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { WORK_PROJECTS, WORK_EXTRAS, WORK_GRID_HOVER } from '../data/landing/featured-work.js';
 import { LIVE_CASE_SLUGS } from '../data/landing/case-studies.js';
@@ -49,7 +50,7 @@ const workPool = [...WORK_PROJECTS, ...WORK_EXTRAS];
 /* THE FINAL GATE (2026-09-08): the phone's grid tile renders 167px and the row 342px; both
    branches resolve a 3× phone to the 680 candidate (the density cap) so the two views —
    both in the DOM, both fetched — share one file per project instead of two. */
-const GRID_SIZES = '(max-width: 767px) 50vw, (max-width: 1359px) 50vw, 1728px';
+const GRID_SIZES = `${QUERIES.phone} 50vw, ${QUERIES.mobile} 50vw, 1728px`;
 const gridSrcset = (src) => imageSrcset(src, [680, 1200], 2000);
 /* ── GRID VIEW (R35, Oscar 2026-09-03) — COMPOSITION A, nine tiles from
    the single source (the eight projects + the Ashley portrait stub,

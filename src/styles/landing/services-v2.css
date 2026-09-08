@@ -1,3 +1,6 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer desktop {
 /*
  * /services (NEW BUILD) — Figma 60:3648, extracted 2026-08-08; 83px
  * chrome subtracted. 1728 design px, the landing family's literal-px
@@ -232,7 +235,7 @@
 .landing-v2 .sv-st-stage,
 .landing-v2 .sv-st-dwell { display: contents; }
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .sv-st-dwell { display: block; position: relative; }
 	.landing-v2 .sv-st-stage { display: block; position: relative; }
 }
@@ -852,3 +855,4 @@
 
 /* ── Sub-1024 fallback — simplified static stack (the 15" scale
    shell remains the primary story; desktop-first staging). */
+}

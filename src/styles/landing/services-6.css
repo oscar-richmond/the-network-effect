@@ -1,3 +1,6 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer desktop {
 /*
  * /services — "Services Page - Option 6" (frame 38:2420, extracted
  * 2026-08-26; page y = frame y − 118). DESKTOP ONLY: the whole .sv6
@@ -13,9 +16,9 @@
  * landing's blue default is untouched.
  */
 
-/* ── The seam: the desktop build ≥ 1360; services-narrow.css carries the
+/* ── The seam: the desktop build at the shell floor and up (breakpoints.js); the mobile layer carries the
    phone and the band (the legacy page is retired). ── */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .sv6 { display: block; }
 	.landing-v2 .sv6-footwrap { display: contents; }
 	.landing-v2 .sv6-footspacer { display: block; }
@@ -593,4 +596,4 @@
 	font-weight: 600;
 	font-synthesis: none;
 }
-
+}

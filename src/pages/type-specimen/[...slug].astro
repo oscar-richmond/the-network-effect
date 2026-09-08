@@ -15,7 +15,8 @@
  */
 import { TYPE_SPECIMEN } from '../../data/flags.js';
 import '../../styles/fonts.css';
-import '../../styles/type-tokens.css';
+import '../../styles/tokens/index.css';
+import { TABLET_MIN_WIDTH, MOBILE_MAX_WIDTH } from '../../config/breakpoints.js';
 
 export function getStaticPaths() {
   return TYPE_SPECIMEN ? [{ params: { slug: undefined } }] : [];
@@ -44,7 +45,7 @@ const ROLES = [
   ['small', 'Site Index · Home · Services · The Founders · Selected Work · Hello@networkeffectagency.co.uk · ©2026 All rights reserved', [14, 16, 0]],
   ['micro', 'Skip to content · COPIED', [13, 19.5, 0.02]],
 ];
-const SIZES = [390, 430, 768, 1024, 1359, 1728];
+const SIZES = [390, 430, TABLET_MIN_WIDTH, 1024, MOBILE_MAX_WIDTH, 1728];
 ---
 <!doctype html>
 <html lang="en">
@@ -71,7 +72,7 @@ const SIZES = [390, 430, 768, 1024, 1359, 1728];
     .token { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: var(--s); line-height: var(--lh); letter-spacing: var(--ls); }
     .shell { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: calc(var(--ds) * 100vw / 1728); line-height: calc(var(--dlh) / var(--ds)); letter-spacing: var(--dls); }
     .ref { font-family: var(--f); font-weight: var(--w); text-transform: var(--c); font-size: calc(var(--ds) * 1px); line-height: calc(var(--dlh) / var(--ds)); letter-spacing: var(--dls); white-space: nowrap; }
-    @media (max-width: 767px) { .legend, .role { grid-template-columns: 1fr; } .role .c3 { display: none; } .legend .c3 { display: none; } }
+    @media (--phone) { .legend, .role { grid-template-columns: 1fr; } .role .c3 { display: none; } .legend .c3 { display: none; } }
   </style>
 </head>
 <body>

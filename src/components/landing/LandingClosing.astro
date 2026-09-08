@@ -26,13 +26,14 @@
  * exports, placeholder until licensed finals.
  */
 import { asset } from '../../utils/asset.js';
+import { QUERIES } from '../../config/breakpoints.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* THE REBUILD (2026-09-07): the tiles render on every width — a 600
    variant for the phone's half-width and the tablet's quarter; the
    desktop's sizes branch is larger than any candidate, so it keeps the
    full file. */
-const TILE_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 25vw, 1728px';
+const TILE_SIZES = `${QUERIES.phone} 200px, ${QUERIES.mobile} 25vw, 1728px`;
 
 const tiles = [
   { src: asset('/assets/landing/closing/tile-1.jpg'), w: 417, h: 519, x: -3, y: -42 },

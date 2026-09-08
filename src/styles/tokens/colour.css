@@ -1,0 +1,34 @@
+/* ═══════════════════════════════════════════════════════════════════
+   COLOUR TOKENS — every colour in the 402 frame (GvANAN3kJOPV8AKOi3O9FF,
+   1:11 + 1:426), named by role. The mobile layer reads these and nothing
+   else (scripts/qa/literal-sweep.mjs). The desktop sheets keep their
+   literals (protected, byte-identical); where the same colour exists there
+   its token name is kept (--landing-ground / --landing-ink / --landing-accent-blue).
+   ═══════════════════════════════════════════════════════════════════ */
+@layer tokens {
+  :root {
+    /* grounds */
+    --m-color-ground: #eeeef0;        /* the light ground — the frame's fill (1:11), the light bands */
+    --m-color-ground-dark: #161616;   /* the dark band (1:15, 1:281) */
+    --m-color-ground-red: #c1250e;    /* the red band (1:372) */
+    /* inks */
+    --m-color-ink: #161616;           /* ink on the light ground (1:13, 1:113, 1:396 …) */
+    --m-color-ink-on-dark: #eeeef0;   /* ink on the dark band (1:55, 1:74, 1:289) */
+    --m-color-ink-bright: #f9f9f9;    /* FEATURED WORK (1:321) */
+    --m-color-white: #ffffff;         /* the difference-blend text and the burger (1:420, 1:422, 1:77, 1:270) */
+    --m-color-blue: #232a89;          /* MORE INFO ink (1:444), the light carousel thumb (1:449, 1:391) */
+    --m-color-muted: #a6a6a8;         /* the footer's labels and statement tail (1:395, 1:401, 1:404, 1:409) — AS DRAWN; the desktop corrected this to #6c6c6e (R50, 2026-09-04) */
+    /* fills and rules */
+    --m-color-fill: #e4e4ea;          /* MORE INFO ground (1:442), the light carousel track (1:448) */
+    --m-color-fill-dark: #343439;     /* THE FOUNDERS / FEATURED WORK ground (1:65), the dark carousel track (1:323) */
+    --m-color-divider: #e0e0e7;       /* the pillar dividers (1:106, 1:432) */
+    --m-color-thumb-on-dark: #c1250e; /* the featured carousel thumb (1:324) */
+    /* translucent layers */
+    --m-color-logo-cell: rgba(22, 22, 22, 0.04);  /* the logo row's cells (1:221), behind --m-blur-logo */
+    --m-color-frost: rgba(255, 255, 255, 0.1);    /* the access tiles' frosted veil (1:85, 1:101) at --m-opacity-frost */
+    --m-color-ground-dark-0: rgba(22, 22, 22, 0); /* the ground fades' transparent end (1:271, 1:279, 1:54, 1:572) */
+    --m-color-ground-0: rgba(238, 238, 240, 0);   /* the light edge fades' transparent end (1:269, 1:140) */
+    --m-opacity-frost: 0.6;
+    --m-opacity-strip-image: 0.6;                 /* the access strip images (1:84, 1:99) */
+  }
+}

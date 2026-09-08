@@ -1,0 +1,9 @@
+/* RADIUS TOKENS — the 402 frame draws square corners everywhere but the carousel indicators. */
+@layer tokens {
+  :root {
+    --m-radius-0: 0;
+    --m-radius-indicator: 2px;   /* the carousel track and thumb (1:448 – 1:449) */
+    --m-blur-logo: 12px;         /* the logo cells' backdrop blur (1:221) */
+    --m-blur-frost: 10px;        /* the access tiles' frosted veil (1:85) */
+  }
+}

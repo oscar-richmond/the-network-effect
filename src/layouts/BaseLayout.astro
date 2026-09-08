@@ -1,5 +1,7 @@
 ---
+import '../styles/tokens/index.css';
 import '../styles/global.css';
+import { MOBILE_MAX_WIDTH } from '../config/breakpoints.js';
 import '../styles/canvas-cursor.css';
 /* R77 (Oscar, 2026-09-05): the four faces EVERY landing page renders,
    preloaded from the head so their fetch starts with the HTML instead
@@ -88,7 +90,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL.href} />
-    <script is:inline define:vars={{ base }}>
+    <script is:inline define:vars={{ base, MOBILE_MAX_WIDTH }}>
       /**
        * Scale-shell boot — 15" (and any sub-1728) viewport support.
        *
@@ -108,20 +110,21 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
        *
        * NARROW (Oscar's brief, 2026-08-10; re-zoned R83, 2026-09-06):
        * at and below MOBILE_MAX the shell NEVER engages — the page
-       * serves bare and the narrow layout (the max-width:1359px blocks
-       * + narrow JS paths) is the experience. 1359 is the shell's floor
-       * minus one: below 1360 the shell's scale puts the 14px
+       * serves bare and the narrow layout (the mobile layer's blocks
+       * + narrow JS paths) is the experience. MOBILE_MAX is the shell's
+       * floor minus one: below the floor the shell's scale puts the 14px
        * interactive tier under 11px effective (viewport.js has the
-       * arithmetic). Within the narrow build, 768–1359 is the tablet
-       * band and <= 767 the phone. A phone in either orientation
-       * (widest: 932 logical) never crosses 1359; only a 12.9" iPad
+       * arithmetic). Within the narrow build, the tablet band sits
+       * between the tablet seam and the shell floor, the phone below it
+       * (src/config/breakpoints.js). A phone in either orientation
+       * (widest: 932 logical) never crosses the seam; only a 12.9" iPad
        * does, rotating 1366 <-> 1024 — that crossing is a full
        * navigation by design (the
        * shell is a different document; there is no in-place handover).
        */
       (function () {
         var DESIGN_WIDTH = 1728;
-        var MOBILE_MAX = 1359; /* R83: mirrors viewport.js SHELL_MIN_WIDTH − 1 — move together */
+        var MOBILE_MAX = MOBILE_MAX_WIDTH; /* stamped at build time from src/config/breakpoints.js — the one source */
         var params = new URLSearchParams(window.location.search);
 
         var noscaleParam = params.get('noscale');
@@ -206,7 +209,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
         // TWO width sources, deliberately: the >=1728 side keeps
         // window.innerWidth — the shipped desktop semantics, untouched.
         // The MOBILE side reads documentElement.clientWidth — the SAME
-        // measure the max-width:1359px media queries resolve against,
+        // measure the mobile media queries resolve against,
         // so JS and CSS can never disagree about which side of the
         // seam the page is on (innerWidth is also the read known to go
         // stale after emulation/device-toolbar resizes — the
@@ -269,6 +272,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
         navigation, and (b) arms a vanilla CSS-only failsafe so the
         site is unstrandable even if the module never executes. */}
     <style is:inline>
+      @layer base {
       .page-cover {
         position: fixed;
         top: -2px;
@@ -300,6 +304,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
       }
       @media (prefers-reduced-motion: reduce) {
         html[data-ne-cover='failsafe-reveal'] .page-cover { transition: none; }
+      }
       }
     </style>
     <script is:inline>
@@ -335,6 +340,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
       })();
     </script>
     <style is:inline>
+      @layer base {
       /* ── SPLASH pre-paint (see LandingSplash.astro). MUST be in the
          head: in the body the light page paints first (Oscar's white
          flash). */
@@ -474,6 +480,7 @@ const ogImageURL = new URL(ogImage, Astro.site ?? 'https://networkeffectagency.c
     .splash-v2__line { display: none; }
     .splash-v2__logo .cr-char { opacity: 1; animation: none !important; }
   }
+      }
 </style>
     <script is:inline>
       (function () {

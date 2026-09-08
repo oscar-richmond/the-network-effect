@@ -1,0 +1,36 @@
+---
+/**
+ * THE DEVICE GATE (mobile rebuild Part 1 B5, 2026-09-08) — where a section's
+ * mobile DOM must differ from the desktop's (the carousels), the mobile
+ * sibling renders here from the SAME data source, inside a <template>, and
+ * a synchronous inline script stamps it into the document before first
+ * paint when the viewport is below the seam — or removes it when not. Its
+ * desktop counterpart (passed as `desktop`, a selector) is removed the same
+ * way on the phone. Phones never parse, lay out or fetch the desktop-only
+ * subtree; desktops never touch the mobile one. Keyed on the one seam source.
+ *
+ * A static build cannot know the viewport at build time; this is the
+ * pre-paint equivalent — the stamp runs inline, in place, before the parser
+ * reaches the next element, so nothing flashes.
+ *
+ *   <DeviceGate desktop="[data-featured-strip]">
+ *     <FeaturedMobile />
+ *   </DeviceGate>
+ */
+import { MOBILE_MAX_WIDTH } from '../../config/breakpoints.js';
+const { desktop = '' } = Astro.props;
+---
+<template data-device-gate data-desktop={desktop}><slot /></template>
+<script is:inline define:vars={{ MOBILE_MAX_WIDTH, desktop }}>
+  (function () {
+    var tpl = document.currentScript && document.currentScript.previousElementSibling;
+    if (!(tpl instanceof HTMLTemplateElement)) return;
+    var mobile = (document.documentElement.clientWidth || window.innerWidth) <= MOBILE_MAX_WIDTH;
+    if (mobile) {
+      tpl.replaceWith(tpl.content.cloneNode(true));
+      if (desktop) document.querySelectorAll(desktop).forEach(function (el) { el.remove(); });
+    } else {
+      tpl.remove();
+    }
+  })();
+</script>

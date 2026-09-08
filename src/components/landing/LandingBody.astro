@@ -15,6 +15,7 @@
  * build).
  */
 import LandingSplashB from './LandingSplashB.astro';
+import { QUERIES } from '../../config/breakpoints.js';
 
 interface Props { splash?: 'a' | 'b' }
 const { splash = 'a' } = Astro.props;
@@ -168,7 +169,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
               </svg>
             </a>
             <figure class="landing-sreel__img" data-sreel-imgwin aria-hidden="true">
-              <img data-sreel-img src={asset(p.img)} srcset={imageSrcset(p.img, [600, 780], 1100)} sizes="(max-width: 767px) 260px, (max-width: 1359px) 380px, 1728px" alt="" loading="lazy" decoding="async" />
+              <img data-sreel-img src={asset(p.img)} srcset={imageSrcset(p.img, [600, 780], 1100)} sizes={`${QUERIES.phone} 260px, ${QUERIES.mobile} 380px, 1728px`} alt="" loading="lazy" decoding="async" />
             </figure>
           </div>
         ))}

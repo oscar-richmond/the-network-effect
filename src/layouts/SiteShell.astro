@@ -23,17 +23,13 @@ import Menu from '../components/Menu.astro';
 import StartProjectModal from '../components/StartProjectModal.astro';
 import { START_PROJECT_MODAL } from '../data/flags.js';
 import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
-/* R85 (Oscar, 2026-09-06): the TABLET band, 768–1359 — the narrow
-   build's structure at tablet proportions. Imported directly after
-   mobile.css so it layers over the phone rules at equal specificity,
-   later in the cascade. Strictly min/max-gated: the phone (≤767) and
-   the shell (≥1360) never see it. */
+/* The TABLET band (Part 4 of the mobile rebuild) — tablet.css layers over the
+   phone build at the band's seams (src/config/breakpoints.js). */
 import '../styles/landing/tablet.css';
 /* THE TYPE TOKENS (the foundation task, 2026-09-07): the scale system's one
    source — every role at every band. Nothing reads them yet; Prompt 2
    replaces the mobile and tablet literals with them. Custom properties on
    :root, so the desktop renders exactly as before. */
-import '../styles/type-tokens.css';
 /* THE REBUILD (2026-09-07): the SHARED CHROME below the seam — the closing
    statement, the footer, the nav, the menu and the drawer at phone and
    tablet proportions, type from the tokens only. Imported after the

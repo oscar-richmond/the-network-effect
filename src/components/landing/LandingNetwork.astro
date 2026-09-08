@@ -25,6 +25,7 @@
  * per the standing content policy.
  */
 import { NETWORK_BRANDS } from '../../data/landing/network-brands.js';
+import { QUERIES } from '../../config/breakpoints.js';
 
 interface Props {
   /** Entrance anchor: 'pin' (default — the landing's bottom-aligned
@@ -169,7 +170,7 @@ const sectorLines = [
         <img
           src={s.src}
           srcset={imageSrcset(s.src, [480], 640)}
-          sizes="(max-width: 767px) 160px, (max-width: 1359px) 205px, 640px"
+          sizes={`${QUERIES.phone} 160px, ${QUERIES.mobile} 205px, 640px`}
           alt=""
           loading="lazy"
           decoding="async"

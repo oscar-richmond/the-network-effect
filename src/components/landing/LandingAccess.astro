@@ -28,6 +28,7 @@
  * centre and are repeats by design.
  */
 import { asset } from '../../utils/asset.js';
+import { QUERIES } from '../../config/breakpoints.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
 
@@ -38,7 +39,7 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 /* THE FINAL GATE (2026-09-08): the phone's cell renders 304px wide; its branch
    declares 200px so a 3× phone takes the 600 candidate (twice the rendered
    width — the density cap) instead of the 800 original at 3× (14 cells, 2.2MB). */
-const CELL_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 44vw, 1728px';
+const CELL_SIZES = `${QUERIES.phone} 200px, ${QUERIES.mobile} 44vw, 1728px`;
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 

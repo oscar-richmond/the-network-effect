@@ -1,0 +1,19 @@
+/* ═══════════════════════════════════════════════════════════════════
+   MOTION TOKENS — the frame is static; these are the house values the
+   mobile layer's scrubs and transitions read (named so a change is one
+   line). Scroll-driven behaviour is a pure function of scroll position
+   (gsap ScrollTrigger inside gsap.matchMedia); these govern the few timed
+   moments (the menu, the drawer, hover/press states).
+   ═══════════════════════════════════════════════════════════════════ */
+@layer tokens {
+  :root {
+    --m-ease-house: cubic-bezier(0.22, 0.61, 0.36, 1); /* the site's state-transition curve (--sp-ease) */
+    --m-dur-fast: 0.2s;
+    --m-dur-base: 0.5s;
+    --m-dur-slow: 0.8s;
+    /* THE NAV'S SIZE BEHAVIOUR: the wordmark scrubs 24 → 18 over this much scroll from the top (Part 1 D1) */
+    --m-nav-shrink-scroll: 120px;
+    /* the ground transitions: the fade zones are the frame's 474 (--m-ground-fade-h); hard edges switch at 0 */
+    --m-ground-edge: 0px;
+  }
+}

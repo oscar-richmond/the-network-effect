@@ -1,3 +1,6 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer desktop {
 /* ═══════════════════════════════════════════════════════════════════
    NEW LANDING PAGE (rebuild phase) — hero only.
 
@@ -499,7 +502,7 @@
    (the dark-carousel redesign) but kept the light-ground accent
    rings — 1.5:1, effectively invisible. Dark ink there; the mobile
    carousel stays on the light ground and keeps the accent above. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2.landing-home .landing-featured__viewall:focus-visible,
 	.landing-v2.landing-home .landing-featured__card:focus-visible {
 		outline-color: #eeeef0;
@@ -2107,7 +2110,7 @@
    neutralised here; hierarchy is position only (the guide's
    fragmented-statement rule). Mobile keeps the shipped 40 boxes and
    accent above. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .landing-closing__hl {
 		font-size: 56px;
 		line-height: 54px;
@@ -2211,7 +2214,7 @@
 
 /* Desktop keyword scale — Heading / Section (mobile keeps the 28 box
    above; family/case swap applies everywhere the element renders). */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .landing-closing__kw-row {
 		font-size: var(--ts-serif-section-size);
 		line-height: var(--ts-serif-section-lh);
@@ -2245,7 +2248,7 @@
 	display: none;
 }
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .landing-closing-st {
 		display: block;
 		position: relative;
@@ -2342,7 +2345,7 @@
    (the ≥1025 block flips the pair); the mobile chip renders its
    served "VIEW ALL" exactly as before. */
 .landing-v2 .landing-featured__viewall-label--d { display: none; }
-@media (min-width: 1360px) { .landing-v2 .landing-closing-tail { display: block; } }
+@media (--desktop) { .landing-v2 .landing-closing-tail { display: block; } }
 
 .landing-v2 .landing-footer {
 	/* RELATIVE always: every child is absolutely positioned (cols
@@ -2404,13 +2407,13 @@
 /* ── FOOTER REBUILD (frame 13:381, 2026-08-26): desktop renders the
    NEW structure; the shipped markup stays for the mobile footer (its
    own recent design — untouched) and hides ≥1025. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .landing-footer [data-footer-legacy] { display: none; }
 }
 
 .landing-v2 [data-footer-desktop] { display: none; }
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 [data-footer-desktop] { display: block; }
 
 	/* TOP ROW — y40, groups at the frame's x offsets. */
@@ -3153,7 +3156,7 @@
    keep their shipped geometry — the respec is the landing page's
    alone. Guide: TNE_Font_Style_Guide (Figma % tracking → em).
    ══════════════════════════════════════════════════════════════════ */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* ── HERO (16:889): the offset two-part composition replaces the
 	   centred stack. Headline block at x553, centre 0.2318·vh (frame
 	   341−118 chrome of the 962 design viewport); travel/settle
@@ -3773,7 +3776,7 @@
 	display: none;
 }
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* 71px bar centres the row's content on y=35.5 (frame 1:643,
 	   2026-08-26 — supersedes the 64/32 build). */
 	.landing-v2 .home__topbar--about {
@@ -3906,7 +3909,7 @@
                     mixed display heading, not as a label — left
                     untouched, flagged.
    · MICRO          card indexes /01… → 10/12/0. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* ── HERO 100/88 ── At 100px the 72px-drawn block (950w at x553)
 	   grows past the canvas, so the GEOMETRY keeps the frame's
 	   OPTICAL CENTRE instead of its left edge: block centre x1028
@@ -4083,7 +4086,7 @@
    itself retired by the reel rebuild (2026-08-26) and its rules are
    deleted; the FEATURED half below is live. */
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26): the
 	   section = the 100dvh sticky stage + the JS runway
 	   (--sreel-runway, set by landing-services-reel.js) + the
@@ -4304,7 +4307,7 @@
    old FEATURED WORK fill (#232326) on hover/focus — plain :hover
    (no hover-media gate: Oscar's machine reports hover:none
    system-wide). Desktop only; mobile keeps the shipped states. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2.landing-home .landing-founders__headline {
 		width: 980px;
 	}
@@ -4346,7 +4349,7 @@
    hierarchy from position only ✓ the fragmented-statement rule.
    Words = Serrif Regular 56/50/−3.5% (no named guide style —
    flagged); label = the 12/14 label family at the frame's −1.5%. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* Section = stage + the pinned runway (5×400 pair steps + the
 	   1900 side exit). Sticky releases at the section bottom. */
 	.landing-v2.landing-home .landing-access {
@@ -4539,7 +4542,7 @@
 	display: none;
 }
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2.landing-home .landing-sreel {
 		display: block;
 		position: relative;
@@ -5390,7 +5393,7 @@
    Step 2 is 862px of content at any height: 48 of top padding, the
    index and title, four fields (564), this 40px gap, the 44px row, 56
    of bottom padding. At the 16" reference (1117) it fits with room. At
-   the shortest interior in the shell zone — a 1366×768 laptop with
+   the shortest interior in the shell zone — a 1366-wide laptop with
    browser chrome, which the shell turns into 1728×835 — it overflowed
    by exactly 27px and the panel scrolled to reach SEND. This gap is the
    one discretionary space in the column, so it absorbs the shortfall:
@@ -6116,6 +6119,4 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 @media (prefers-reduced-motion: reduce) {
 	.email-copy-tip { transition: none; }
 }
-
-
-
+}

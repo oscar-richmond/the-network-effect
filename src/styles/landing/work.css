@@ -1,3 +1,6 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer desktop {
 /*
  * /work — FEATURED WORK PAGE (Figma 27:3103, extracted 2026-08-06;
  * 83px chrome offset subtracted; the file's y107 nav row ignored —
@@ -277,7 +280,7 @@ body.work-page {
 
 /* The mobile list must not exist above the seam — the desktop
    carousel + travelling metas are the page there. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .work-m { display: none; }
 }
 
@@ -370,7 +373,7 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 	}
 }
 
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* ── THE GRID: a 12-column grid inside the 24px margins — 1680 →
 	   twelve 132.67px columns on 8px gutters (R38; was 118 on 24).
 	   Tokens are tunables. */
@@ -601,4 +604,5 @@ body.work-page.work-switching .work-footer-wrap { visibility: hidden; }
 
 	/* (R38 item 5: the 1.02 hover scale retired — the cover-swap is the
 	   hover now, work-grid.js.) */
+}
 }

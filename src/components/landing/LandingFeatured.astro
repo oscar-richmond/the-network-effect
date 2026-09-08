@@ -36,6 +36,7 @@
  * Content/rights flags live in src/data/landing/featured-work.js.
  */
 import { asset } from '../../utils/asset.js';
+import { QUERIES } from '../../config/breakpoints.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
 import GradualBlur from '../GradualBlur.astro';
@@ -46,7 +47,7 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
    sizes branch is larger than any candidate, so it keeps the full file. */
 /* the phone's card renders 304px (the rail) or 167px (/work's grid): 200px
    resolves a 3× phone to the 600 candidate — the density cap (THE FINAL GATE) */
-const CARD_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 380px, 1728px';
+const CARD_SIZES = `${QUERIES.phone} 200px, ${QUERIES.mobile} 380px, 1728px`;
 const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
 ---
 

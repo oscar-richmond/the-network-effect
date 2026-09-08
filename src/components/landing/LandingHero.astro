@@ -22,6 +22,7 @@
  * rebuild of 2026-09-07 — the narrow build's video hero is retired.
  */
 import { asset } from '../../utils/asset.js';
+import { QUERIES } from '../../config/breakpoints.js';
 import { HERO_ENTRY } from '../../data/flags.js';
 import {
   HERO_LOGO_BRANDS,
@@ -37,7 +38,7 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
    it keeps resolving to the full file, exactly as the plain src did. */
 /* the phone's card renders 304px wide: 260px resolves a 3× phone to the 780
    candidate (the density cap — THE FINAL GATE, 2026-09-08) */
-const HERO_CARD_SIZES = '(max-width: 767px) 260px, (max-width: 1359px) 33vw, 1728px';
+const HERO_CARD_SIZES = `${QUERIES.phone} 260px, ${QUERIES.mobile} 33vw, 1728px`;
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */

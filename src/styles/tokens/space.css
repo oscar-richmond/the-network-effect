@@ -1,0 +1,55 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SPACING TOKENS — every spacing value in the 402 frame, page-relative
+   (frame y − 49 for the status bar). The vertical rhythm is fixed (it does
+   not scale with width); the horizontal measure is fluid by construction
+   (100vw − 2 × inset).
+   ═══════════════════════════════════════════════════════════════════ */
+@layer tokens {
+  :root {
+    /* the page */
+    --m-inset: 16px;                       /* the page margin (every block sits at x16, 370 wide at 402) */
+    --m-measure: calc(100vw - 2 * var(--m-inset));
+    --m-hero-top: 180px;                   /* the hero headline's top (1:13 at frame y229 − 49) */
+    --m-space-section: 229px;              /* the section-top offset: FROM ACCESS (1:277), FEATURED WORK (1:321), WHAT WE DO (1:336), MOST BRANDS (1:339) and the footer statement (1:409) all sit 229 below the previous band's end */
+    --m-page-bottom: 44px;                 /* below the legal row (1:417 → the frame's end) */
+    /* the scale — the gaps the frame uses, named by size */
+    --m-space-1: 8px;      /* card gutters: logos (1:215), founders (1:35), featured (1:283), cards (1:343); list row gap (1:452) */
+    --m-space-2: 12px;     /* the CTA pair (1:64 → 1:69); label → link in the footer (1:394); the wordmark's vertical inset */
+    --m-space-3: 16px;     /* the access grid's row gap (1:89 → 1:75); the strip → the section below */
+    --m-space-4: 24px;     /* label → list (1:123 → 1:124); card image → title (1:344); footer container's row gap (1:410) */
+    --m-space-5: 32px;     /* label → heading (1:55 → 1:74); subtitle → label (1:113 → 1:123) */
+    --m-space-6: 40px;     /* heading → CTAs (1:74 → 1:57); label → heading in the network (1:56 → 1:33); heading → terms (1:33 → 1:32); image → subtitle (1:110 → 1:113); list → button (1:124 → 1:114); legal rows (1:410) */
+    --m-space-7: 48px;     /* logos → hero image (1:213 → 1:272); FEATURED WORK → cards (1:321 → 1:283); MOST BRANDS → cards (1:338 → 1:343) */
+    --m-space-8: 64px;     /* WHAT WE DO → the statement (1:336 → 1:326); the footer's group gap (1:393); the statement → the index (1:409 → 1:393) */
+    --m-space-9: 80px;     /* terms → strip (1:32 → 1:16); pillar → pillar (1:114 → 1:142); statement → access grid (1:326 → 1:89); socials → legal (1:403 → 1:410) */
+    --m-space-10: 88px;    /* CTAs → the founders band (1:57 → 1:34; drawn 87) */
+    /* the chrome */
+    --m-nav-h: 68px;                       /* the bar: the wordmark's 20 box at y24 centred on y34 (1:420); the burger at y28–40 (1:421) */
+    --m-nav-top: 24px;
+    --m-burger-w: 16px; --m-burger-h: 12px; --m-burger-bar: 2px; /* three 16×2 bars on a 5 pitch (1:422 – 1:424) */
+    --m-burger-x: 370px;
+    /* controls */
+    --m-cta-h: 38px;                       /* every button (1:65, 1:115, 1:442) */
+    --m-cta-pad-x: 16px;                   /* MORE INFO: 16 + 71 + 6 + 9 + 16 = 118 (1:115 – 1:118) */
+    --m-cta-gap: 6px;                      /* label → arrow */
+    --m-cta-arrow: 9px;                    /* the arrow glyph (1:118) */
+    --m-cta-pair-w: 179px;                 /* the two founders CTAs (1:65, 1:70), labels centred */
+    --m-divider-h: 2px;                    /* the pillar dividers (1:106) */
+    --m-indicator-w: 100px; --m-indicator-h: 1px; --m-indicator-thumb: 32px; /* the carousel indicators (1:121 – 1:122, 1:323 – 1:324, 1:390 – 1:391) */
+    /* media */
+    --m-logo-row-h: 64px; --m-logo-cell-w: 102.4px;               /* the logo row (1:213 – 1:216) */
+    --m-hero-img-h: 420px;                                          /* 370 × 420 (1:273) */
+    --m-founders-band-h: 306px; --m-founders-w-1: 230px; --m-founders-w-2: 224.4px; --m-founders-w-3: 466px; /* 1:36, 1:41, 1:48 */
+    --m-strip-h: 330px; --m-strip-cell-w: 272.368px; --m-strip-pitch: 264.117px; /* 1:17 – 1:29: the masks overlap by 8 */
+    --m-pillar-img-h: 220px;                                        /* 370 × 220 (1:111) */
+    --m-pillar-pitch: 733px; --m-pillar-title-gap: 34px; --m-pillar-image-gap: 55px; /* divider → title → image (1:106 → 1:107 → 1:110) */
+    --m-list-col-gap: 48px; --m-list-row-h: 19px;                  /* the service lists (1:124) */
+    --m-access-tile-w: 360px; --m-access-tile-h: 240px; --m-access-row-pitch: 256px; /* 1:93, 1:79 */
+    --m-card-w: 280px; --m-card-title-gap: 24px; --m-card-desc-gap: 36px; /* the closing cards (1:344 – 1:350): image → title, title top → description top */
+    --m-featured-title-gap: 24px;                                   /* card image → name (1:284 → 1:288) */
+    --m-ground-fade-h: 474px;                                       /* the two light → dark fades (1:271, 1:279) */
+    --m-band-dark-h: 1703px; --m-band-featured-h: 880px; --m-band-red-h: 880px; /* 1:15, 1:281, 1:372 — the drawn heights */
+    /* the footer (1:392, 1:410) */
+    --m-footer-statement-h: 180px; --m-footer-index-pitch: 30px; --m-footer-link-h: 18px; --m-footer-legal-row-pitch: 40px;
+  }
+}

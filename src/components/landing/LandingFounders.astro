@@ -36,6 +36,7 @@
  * placeholder-until-approved per the standing content policy.
  */
 import { asset } from '../../utils/asset.js';
+import { QUERIES } from '../../config/breakpoints.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 const foundersPhoto = asset('/assets/landing/founders/founders-photo.jpg');
@@ -112,7 +113,7 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
       applies to everything below. */}
   <div class="landing-founders__grid-space" data-fd-grid>
   <figure class="landing-founders__photo" data-landing-founders-img>
-    <img src={foundersPhoto} srcset={imageSrcset(foundersPhoto, [780, 1200], 1600)} sizes="(max-width: 767px) 260px, (max-width: 1359px) 100vw, 1728px" alt="" loading="lazy" decoding="async" />
+    <img src={foundersPhoto} srcset={imageSrcset(foundersPhoto, [780, 1200], 1600)} sizes={`${QUERIES.phone} 260px, ${QUERIES.mobile} 100vw, 1728px`} alt="" loading="lazy" decoding="async" />
   </figure>
   {/* Portrait hover (Oscar's rev): hovering one dims the other to 20%
       and reveals the subject's name over the hovered image — Serrif

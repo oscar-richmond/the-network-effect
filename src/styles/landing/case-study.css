@@ -1,3 +1,6 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer desktop {
 /*
  * /work/[slug] — CASE STUDY template. DESKTOP rebuilt to frame
  * 36:1827 (2026-08-26; 118px chrome subtracted; geometry from the
@@ -474,7 +477,7 @@ body.case-page {
    extraction — properties marked INFERRED are mapped from the
    frame's box geometry + style-named layers to the guide's named
    styles, flagged in the build report, pending re-extraction. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	/* Mobile-only sections off above the seam: the subtitle (the
 	   frame's hero has none), what-we-did + its divider and the two
 	   rail segments (replaced by the facts table), and the more-work
@@ -878,7 +881,7 @@ body.case-page {
 }
 
 /* The mobile-only affordances must not exist above the seam. */
-@media (min-width: 1360px) {
+@media (--desktop) {
 	.landing-v2 .cs-more__viewall { display: none; }
 }
 
@@ -890,4 +893,4 @@ body.case-page {
 	font-weight: 600;
 	font-synthesis: none;
 }
-
+}

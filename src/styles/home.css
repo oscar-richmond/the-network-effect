@@ -1,3 +1,6 @@
+@import './tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer desktop {
 :root {
   --color-page-bg: #ffffff;
   --color-ink: #121212;
@@ -608,4 +611,5 @@ body.sphere-gallery-open .home__logo {
   .home__meta {
     transition: none;
   }
+}
 }
