@@ -20,5 +20,9 @@
 @import './brands.css';
 @import './closing.css';
 @import './splash.css';
-@import './pending.css';
-@layer tokens, base, desktop, tablet, mobile;
+@import './work.css';
+@import './case-study.css';
+@import './services-page.css';
+@import './contact.css';
+@import './founders-page.css';
+@layer tokens, base, desktop, mobile, tablet;

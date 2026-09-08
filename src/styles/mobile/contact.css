@@ -1,0 +1,99 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, mobile, tablet;
+@layer mobile {
+  @media (--mobile) {
+    /* /CONTACT and the 404 (they share the .ct grammar) below the seam
+       (mobile rebuild Part 4 §1 — LAYOUT PENDING DESIGN): the intro at the
+       display tiers with the indented serif line, the CTAs as the 38 button,
+       the socials, WE'VE WORKED WITH over the rolling logo row (the hero
+       row's grammar), the photograph at the measure. The desktop's
+       absolute cluster is in flow; the modal is Part 1's. */
+    .landing-v2 .ct { position: relative; display: block; height: auto; min-height: 0; margin: 0; padding: var(--m-nav-h) 0 0; overflow: visible; background: transparent; }
+    .landing-v2 .ct__cluster { position: relative; inset: auto; display: block; width: auto; margin: 0; padding: var(--m-space-5) var(--m-inset) 0; transform: none; opacity: 1; }
+    .landing-v2 .ct__intro {
+      position: static;
+      margin: 0;
+      width: auto;
+      max-width: none;
+      font-family: var(--type-display-face);
+      font-weight: var(--type-display-weight);
+      font-size: var(--type-display-size);
+      line-height: var(--type-display-lh);
+      letter-spacing: var(--type-display-ls);
+      text-transform: var(--type-display-case);
+      color: var(--m-color-ink);
+      white-space: normal;
+      transform: none;
+      opacity: 1;
+      clip-path: none;
+    }
+    .landing-v2 .ct__intro-serrif { font-family: var(--type-display-serif-face); font-weight: var(--type-display-serif-weight); letter-spacing: var(--type-display-serif-ls); }
+    .landing-v2 .ct__intro-indent { display: inline-block; width: var(--m-space-8); }
+    .landing-v2 .ct__ctas { position: static; display: flex; flex-wrap: wrap; gap: var(--m-space-2); width: auto; margin: var(--m-space-6) 0 0; transform: none; opacity: 1; }
+    .landing-v2 .ct-cta {
+      position: relative;
+      inset: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--m-cta-gap);
+      flex: 0 0 auto;
+      min-width: 0;
+      height: var(--m-cta-h);
+      margin: 0;
+      padding: 0 var(--m-cta-pad-x);
+      border: 0;
+      border-radius: var(--m-radius-0);
+      background: var(--m-color-fill);
+      color: var(--m-color-blue);
+      font-family: var(--type-label-face);
+      font-weight: var(--type-label-weight);
+      font-size: var(--type-label-size);
+      line-height: var(--type-label-lh);
+      letter-spacing: var(--type-label-ls);
+      text-transform: var(--type-label-case);
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      transform: none;
+      opacity: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .landing-v2 .ct-cta.is-placeholder { display: none; }
+    .landing-v2 .ct-cta__arrow, .landing-v2 .ct-cta img, .landing-v2 .ct-cta svg { width: var(--m-cta-arrow); height: var(--m-cta-arrow); flex: 0 0 auto; }
+    .landing-v2 .ct-social { position: static; display: inline-flex; align-items: center; justify-content: center; width: var(--m-tap-min); height: var(--m-tap-min); margin: 0; transform: none; opacity: 1; }
+    .landing-v2 .ct-social img { width: var(--m-space-4); height: var(--m-space-4); filter: none; }
+    .landing-v2 .ct-social.is-placeholder { display: none; }
+    /* WE'VE WORKED WITH + the logo row (the hero row's cells and pitch) */
+    .landing-v2 .ct__label {
+      position: static;
+      margin: var(--m-space-9) var(--m-inset) 0;
+      width: auto;
+      font-family: var(--type-eyebrow-face);
+      font-weight: var(--type-eyebrow-weight);
+      font-size: var(--type-eyebrow-size);
+      line-height: var(--type-eyebrow-lh);
+      letter-spacing: var(--type-eyebrow-ls);
+      text-transform: var(--type-eyebrow-case);
+      color: var(--m-color-ink);
+      transform: none;
+      opacity: 1;
+      clip-path: none;
+    }
+    .landing-v2 .ct__logos { position: relative; inset: auto; width: auto; height: var(--m-logo-row-h); margin: var(--m-space-4) 0 0; overflow: hidden; transform: none; opacity: 1; visibility: visible; }
+    .landing-v2 .ct__logos-track { display: flex; width: max-content; transform: none; opacity: 1; animation: m-logo-roll var(--m-logo-row-dur) linear infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .landing-v2 .ct__logos-track { animation: none; }
+    }
+    .landing-v2 .ct__logo-cell { position: relative; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; width: var(--m-logo-cell-w); height: var(--m-logo-row-h); margin-right: calc(var(--m-logo-pitch) - var(--m-logo-cell-w)); overflow: hidden; background: var(--m-color-logo-cell); -webkit-backdrop-filter: blur(var(--m-blur-logo)); backdrop-filter: blur(var(--m-blur-logo)); }
+    .landing-v2 .ct__logo-cell img { display: block; max-width: none; zoom: var(--m-logo-scale); filter: none; }
+    .landing-v2 .ct__logos-band { position: absolute; inset: 0; background: linear-gradient(90deg, var(--m-color-ground) 0, var(--m-color-ground-0) var(--m-logo-edge-w), var(--m-color-ground-0) calc(100% - var(--m-logo-edge-w)), var(--m-color-ground) 100%); }
+    /* the photograph at the measure */
+    .landing-v2 .ct__image { position: relative; inset: auto; display: block; width: auto; height: var(--m-page-img-h); margin: var(--m-space-9) var(--m-inset) 0; overflow: hidden; transform: none; opacity: 1; filter: none; z-index: auto; }
+    .landing-v2 .ct__image img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; transform: none; filter: none; opacity: 1; }
+    .landing-v2 .ct__chat { display: none; }
+    .landing-v2 .ct + .landing-footer { margin-top: var(--m-space-section); }
+    /* the 404's cluster is the same grammar; its footer follows */
+    .landing-v2 .ct__cluster + .landing-footer { margin-top: var(--m-space-section); }
+  }
+}

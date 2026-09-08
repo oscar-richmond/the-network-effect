@@ -149,6 +149,10 @@
 --m-closing-nav-switch-t: 0;           /* the nav goes solid as the fade BEGINS: on the light ground the blend's own result is one step from the solid, so the switch is invisible (the desktop's reasoning; its 0.5 is a fraction of the bar's height, not of the fade) */
 /* the footer (1:392, 1:410) */
 --m-footer-indent: 104px;              /* the statement's first-line indent (1:409 — drawn as leading spaces, measured on the render) */
+    /* ── PART 4 (2026-09-08): the other pages and the tablet band ── */
+    --m-page-img-h: var(--m-hero-img-h);   /* the pages' image windows (/work tiles, the case-study hero and stream, the founders portraits, the contact photograph) — the landing hero's 420 on the phone; the tablet band scales it */
+    --m-two-up-w: calc((var(--m-measure) - var(--m-space-1)) / 2); /* a two-up cell: half the measure less the 8 gutter */
+    --m-two-up-cols: repeat(2, minmax(0, 1fr)); /* the two-up grid template */
     --m-footer-statement-h: 180px; --m-footer-index-pitch: 30px; --m-footer-link-h: 18px; --m-footer-legal-row-pitch: 40px;
   }
 }
