@@ -497,6 +497,21 @@ Every section keeps its Astro component. Three mobile siblings render from the s
 
 Deviations from the frame, all reported: the industry list runs to 5 lines (135) instead of 4 (108) because the terms are `<button>`s, which cannot break internally, where the frame breaks "Food & / Beverage" — 27px carried through the band; the band headline's 7 lines are 210 against the frame's 206 box (4px); the founders CTA gap is the frame's 12, not the brief's 16; the CTA pair is fluid (half the measure less the gap) so 360 does not overflow; "FROM ACCESS." takes its full stop from a generated `::after` (the data has none); the pillar labels keep the data's trailing colon ("WE BUILD:") which the frame omits; the hero image is cover-fit with the crop's offset (`--m-hero-img-pos`), the frame's 2.4% zoom not reproduced; the strip tiles cover-fit (the repo's 640×800 sources, a little under 3× at 272 wide).
 
+### 4.9 The landing, Featured Work → the footer (rebuild Part 3, 2026-09-08)
+
+Same rules. Four mobile siblings through DeviceGate from two new data files — `data/landing/statements.js` (the We Create Access statement, the Most Brands headline and the closing statement, each as the desktop's authored lines AND the 402 frame's lines with indents; the desktop components render their own list from it, output unchanged) and `data/landing/closing.js` (the tiles and keywords lifted out of LandingClosing) — plus the Featured cards and the access rows on the desktop DOM. Sheets `mobile/{featured,access,brands,closing,splash}.css`, drivers `scripts/mobile/{featured,access,closing}.js`.
+
+| Beat | Mechanism | Numbers at 402×874 |
+|---|---|---|
+| Services → Featured | The stack's hold is an opaque block after AMPLIFY (`--m-stack-hold`, 300); the section's tail (`::after`, 474) paints 1:279's gradient statically; the band paints its own dark. The page layer, seen only in the strip behind the bar, fades from `--m-fade-anchor-nav` (68 + 474) to 68 on the tail's bottom edge, so it tracks the tail's gradient at the bar's foot. | column sampled every 60px: max 1px step 2 |
+| Featured rail | The desktop cards sized per slug (321×200, 340×420, 360×310, 440×400, 400×249), the frame's order, three hidden, titles 24 below, snap per card, the indicator centred (x151) with its thumb on the rail's scroll. | — |
+| We Create Access | The rows (360×240 on a 368 pitch, 16 apart) and the word layer are sticky, centred (`--m-access-pin-top`), for `--m-access-runway` (5 × 400); one scrubbed trigger writes the rows' x (top left, bottom right), each cell's `--m-veil` (dead zone 184, the desktop's half pitch) and each word slot's position and opacity (solid within 140, gone at 290). The landed cells sit ±60 from centre (1:89 at x81, 1:75 at x−39). Words 30 Serrif Regular, difference white. The word layer sits after the rows in flex `order` because `order` sets a flex item's paint order. | pairs land at 0 / 400 / … / 2000 |
+| Most Brands | Four lines on a 34 pitch (indents 0/15/0/48); the cards 280×280 image, word at +304, line at +340, 288 pitch, snap, edge gradients, the indicator right-aligned 40 below. | — |
+| Closing statement | Fourteen 48/45 lines at the frame's indents (four right-aligned; VALUE 32 in). The stage is sticky at `--m-closing-pin-top` (the bar's foot + half the remaining height, 156 at 874) with 600 of runway; the ground layer AND the section (`data-ground-paint`) scrub grey → red from the pin ("pin" anchor, `--m-closing-red-px`); the bar goes solid ink as the fade begins (on the light ground the blend's own result is one step from the solid) and back to the blend as the footer's top crosses its midpoint. The red ends at the section's edge: the footer paints its own ground — a cut, as 1:372 is drawn. | pin 156 · fade 600 · 85 of red below the text after release |
+| Splash | The cover splash (dark cover, the hairline loading line, the wordmark centred then gliding onto the bar's) runs below the seam on the tokens; the dev-only hero entry is never armed there (its stage is desktop DOM). Scroll locked while up; readiness gated on the fonts and the hero's image. | cover 402×874 · wordmark lands at 16,22 · done by ~2.6s |
+
+Deviations, all reported: VIEW ALL WORK is absent from the frame and hidden; "Music and Culture" is a /work stub, not a featured card; the Featured titles use the title token (26/28) where the frame gives three cards 26; TOP BOY's face is the condensed serif of the others (the frame sets it in Serrif); the access rows' entrance is scroll-only (no offscreen park); the stack's 300 hold is scroll runway the frame does not draw; the muted grey is now `#6c6c6e` by ruling.
+
 ---
 
 ## Part 5 — The mobile tokens (from the 402 frame)
@@ -598,8 +613,18 @@ Faces: `--m-font-serif` Serrif, `--m-font-serif-cond` Serrif Condensed, `--m-fon
 | Stack | `--m-stack-pin-top`, `--m-stack-band-h`, `--m-stack-band-title-gap/pad`, `--m-stack-title-lh`, `--m-stack-index-lh`, `--m-stack-compact-px` | nav-h (68), 31, 8 / 8, 13, 6, 160 | 1:432 – 1:436, 1:470 – 1:473, 1:506 |
 | Type / colour / motion | `--type-term-sep-ws`, `--m-opacity-term-dim`, `--m-wipe-ms`, `--m-wipe-sweep-ms`, `--m-wipe-edge-blur`, `--m-hero-out-blur` | 0.25em, 0.3, 450, 300, 6, 12 | 1:32 (the frame draws no selected state); house |
 
+### 5.6 Part 3's tokens (Featured Work → the footer)
+
+| Group | Tokens | Values (402) | Nodes |
+|---|---|---|---|
+| Featured | `--m-fw-card-1…5`, `--m-fw-card/w/h`, `--m-fw-rail-h`, `--m-fw-tail`, `--m-fade-anchor-nav`, `--m-stack-hold`, `--m-services-tail` | 321×200 / 340×420 / 360×310 / 440×400 / 400×249, 472, 52, 542, 300, 474 | 1:285 – 1:314, 1:322, 1:279 |
+| Access | `--m-access-rows-h`, `--m-access-pin-top`, `--m-access-tile-pitch`, `--m-access-step-px`, `--m-access-runway`, `--m-access-land-offset`, `--m-access-word-w/h`, `--m-access-word-full/window`, `--m-access-veil-dead`, `--m-veil`, `--m-x`, `--m-r` | 496, centred, 368, 400, 2000, 60, 344 × 61, 140 / 290, 184, 1, 0, 0 | 1:89 – 1:102, 1:75 – 1:86, 1:96, 1:81, 1:326 |
+| Most Brands | `--m-brands-line-pitch`, `--m-brands-card-w/pitch`, `--m-brands-img-h`, `--m-brands-word-top`, `--m-brands-line-top/w`, `--m-brands-rail-h`, `--m-brands-tail` | 34, 280 / 288, 280, 304, 340 / 220, 394, 100 | 1:338 – 1:371, 1:389 |
+| Closing | `--m-closing-st-h`, `--m-closing-st-top/bottom`, `--m-closing-pin-top`, `--m-closing-red-px`, `--m-closing-nav-switch-t` | 630, 165 / 85, nav-h + half the rest, 600, 0 | 1:372, 1:373 |
+| Splash / colour | `--m-z-splash`, `--m-color-muted` | 11000, #6c6c6e (ruled) | — |
+
 ---
 
 ## Provenance
 
-Parts 1–3 were read from the source at commit `486cdd5` on `develop` (the pre-rebuild state) and describe the desktop, which the rebuild has not changed. The tablet-band and exponent-derived phone tables that stood in Part 1 were removed on 2026-09-08 with the build they described; Parts 4–5 record the rebuilt mobile foundation from the working tree of that day (Part 1: the architecture and the chrome; Part 2, the same day: the landing from the hero to the services stack — §4.8 and §5.5), and every mobile value is read from `src/styles/tokens/*.css`.
+Parts 1–3 were read from the source at commit `486cdd5` on `develop` (the pre-rebuild state) and describe the desktop, which the rebuild has not changed. The tablet-band and exponent-derived phone tables that stood in Part 1 were removed on 2026-09-08 with the build they described; Parts 4–5 record the rebuilt mobile foundation from the working tree of that day (Part 1: the architecture and the chrome; Part 2, the same day: the landing from the hero to the services stack — §4.8 and §5.5; Part 3, the same day: Featured Work to the footer and the splash — §4.9 and §5.6), and every mobile value is read from `src/styles/tokens/*.css`.
