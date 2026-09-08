@@ -223,13 +223,15 @@ class HeroPlane {
 }
 
 /**
- * @param {HTMLElement[]} cardEls the three `.landing-hero__card` wrappers
- * @param {{ mount: HTMLElement, restTopOf: (el: HTMLElement) => number }} opts
+ * @param {HTMLElement[]} cardEls the three `.landing-hero__card` wrappers (the phone's one image window: minCards 1)
+ * @param {{ mount: HTMLElement, restTopOf: (el: HTMLElement) => number, minCards?: number }} opts
+ *   minCards — the desktop's three by default; the mobile hero (scripts/mobile/hero.js) runs the same
+ *   planes and shaders on its single window, so the phone's turn IS this module's, not an imitation
  * @returns {{ ready: Promise<void>, resize: () => void, setPaused: (p: boolean) => void, destroy: () => void } | null}
  */
 export function createHeroRotatingGallery(cardEls, opts) {
   const els = cardEls.filter((el) => el instanceof HTMLElement);
-  if (els.length < 3 || !(opts?.mount instanceof HTMLElement)) return null;
+  if (els.length < (opts?.minCards ?? 3) || !(opts?.mount instanceof HTMLElement)) return null;
 
   const canvas = document.createElement('canvas');
   canvas.className = 'landing-hero__gallery-canvas';

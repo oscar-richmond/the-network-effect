@@ -34,7 +34,7 @@
       transform: none;
       opacity: 1;
       visibility: visible;
-      background: var(--m-color-ground-dark);
+      background: transparent; /* the ground paints the dark and FADES to light behind the departing stage (ground.js, from the tail's top) — a painted stage cut a hard edge against the fading ground (Oscar 2026-09-08) */
     }
     .landing-v2 [data-featured-tail-m] { height: var(--m-featured-tail); }
     /* FEATURED WORK (1:321): the heading tier in the bright ink, one line */
@@ -169,7 +169,7 @@
       height: var(--m-indicator-h);
       border-radius: var(--m-radius-indicator);
     }
-    .landing-v2 .landing-featured__stage::before { width: var(--m-indicator-w); background: var(--m-color-fill-dark); }
-    .landing-v2 .landing-featured__stage::after { width: var(--m-indicator-thumb); background: var(--m-color-thumb-on-dark); transform: translateX(var(--m-ind-x)); }
+    .landing-v2 .landing-featured__stage::before { width: var(--m-indicator-w); background: var(--m-color-fill-dark); opacity: var(--m-ind-op, 1); }
+    .landing-v2 .landing-featured__stage::after { width: var(--m-indicator-thumb); background: var(--m-color-thumb-on-dark); transform: translateX(var(--m-ind-x)); opacity: var(--m-ind-op, 1); } /* --m-ind-op: the indicator fades with the light ink on the fade-to-light (featured.js) */
   }
 }

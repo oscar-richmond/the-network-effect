@@ -54,7 +54,7 @@
     --m-tap-min: 44px;                     /* the touch floor for every control */
     --m-tap-pad-x: 14px; --m-tap-pad-y: 16px; /* the burger's hit extension: 16 + 28 = 44 wide, 12 + 32 = 44 tall */
     --m-hairline: 1px;
-    --m-z-ground: -1; --m-z-content: 1; --m-z-nav: 270; --m-z-menu: 500; --m-z-nav-open: 550; --m-z-drawer: 600; --m-z-splash: 11000; /* nav-open: the bar rides above the open menu so the toggle closes it; the drawer (opened from the menu) still covers the bar */
+    --m-z-ground: -1; --m-z-content: 1; --m-z-band-over: 2; --m-z-nav: 270; --m-z-menu: 500; --m-z-nav-open: 550; --m-z-drawer: 600; --m-z-splash: 11000; /* nav-open: the bar rides above the open menu so the toggle closes it; the drawer (opened from the menu) still covers the bar */
     /* the menu (not drawn in the frame — the current menu on the tokens) */
     --m-menu-top: calc(var(--m-nav-h) + var(--m-space-8));
     --m-menu-row-pitch: 45px;              /* the statement's line pitch (1:326) */
@@ -83,9 +83,8 @@
 --m-ground-fade-px: 300px;
 --m-band-tail: max(var(--m-ground-fade-h), calc(var(--m-ground-fade-px) + 15svh));
 /* THE HERO'S TWIRL (the desktop gallery's constants, hero-rotating-gallery.js): the image turns about its vertical axis as it rises off the top, 1 − (1 − t)^1.4 of a turn at travel t (scroll-scrubbed, as the WebGL cards are) */
---m-hero-twirl-turns: 1; --m-hero-twirl-ease: 1.4; --m-hero-perspective: 1400px;
 --m-hero-logos-gap: 114px;             /* the intro's bottom (471) → the logo row (585) */
---m-hero-img-pos: 22% 13%;             /* the crop's offset inside the window: 2 of the 9 spare px across, 7 of the 54 down (1:275 in 1:273) */
+--m-hero-img-pos: 50% 50%;             /* the crop is centred: the WebGL plane's cover is centred and the DOM image must agree at the takeover (the frame's 2/7px offset is given up) */
 --m-logo-pitch: 110.4px;               /* 1:216 → 1:219: 102.4 cells on an 8 gap */
 --m-logo-scale: 0.64;                  /* the frame's marks are the desktop's at 0.64 (54.52 = 85.19 × 0.64; 102.4 = 160 × 0.64) */
 --m-logo-set-w: 993.6px; --m-logo-row-dur: 48s; --m-logo-row-delay: 0s; /* the roll's wrap distance and timing — defaults; LandingHero.astro sets the exact values inline from hero-logos.js */
@@ -104,6 +103,7 @@
 --m-reveal-clip-room: 0.25em; --m-reveal-clip-rise: 0.2em; /* a word clip's room at the sides (swashes, italics) and above/below (ascenders and descenders past a tight leading), compensated by its margins — the layout is unchanged */
 --m-reveal-park: 140%;                 /* the parked word: its own height plus the clip's rise below the window's foot, so nothing shows before its rise */
 --m-band-ink: 0px;                     /* a band's first ink below its own top (band.js measures it): the pin keeps that ink under the bar rather than the desktop's foot rule where the band is taller than the viewport */  /* a band's measured height and its runway after the release (band.js writes both per section: OUR NETWORK holds a further --m-ground-fade-px of bare ground while the layer lightens for WHAT WE DO) */
+--m-band-overlap: 0px;                 /* how far OUR NETWORK is pulled up under the founders track (network.js measures it): its stage is pinned beneath them as their hold ends, and reveals as their items go — the desktop's -100dvh handoff */
 --m-exit-y-headline: 420px; --m-exit-y-ctas: 300px; --m-exit-y-media: 150px; --m-exit-y-media-2: 220px; --m-exit-y-media-3: 180px; /* EXIT_HEADLINE/CTAS/PHOTO/ROBBO/ASHLEY_PX */
 --m-exit-blur: 3px; --m-exit-blur-headline: 450px; --m-exit-blur-ctas: 550px; --m-exit-blur-media: 650px; --m-exit-blur-media-2: 700px; --m-exit-media-lag: 60px;
 --m-drift-headline: 60px; --m-drift-ctas: 110px; --m-drift-media: 200px; --m-drift-scale: 0.6; /* the arrival drift (DRIFT_*_PX) at the phone's 0.6 (486cdd5's DRIFT_SCALE_NARROW) */
@@ -119,6 +119,7 @@
 --m-pillar-index-h: 11px;              /* 1:108's box at 14 — the index's line box */
 --m-pillar-header-h: 55px;             /* divider → title bottom: the 32 gap + the 23 title, a FIXED box so the compaction never moves the layout below it */
 --m-ind-x: 0px;                        /* the list indicator's thumb travel, written by services.js from the rail's scroll (0 → track − thumb) */
+--m-ind-op: 1;                         /* the Featured indicator's opacity — featured.js drains it with the light ink over the fade-to-light */
 --m-pillar-index-gap: 4px;             /* title → index (1:109 right edge 151 → 1:108 at 155) */
 --m-pillar-image-top: 89px;            /* divider → image (3517 − 3428) */
 --m-pillar-desc-w: 257px;              /* 1:113 */
@@ -147,7 +148,7 @@
 /* THE PINNED RAILS (Oscar 2026-09-08): Featured Work and Most Brands fix with their indicator --m-rail-pin-bottom above the viewport's
    bottom, the page's scroll then travels the cards across (1:1), holds --m-rail-hold, and the page continues; the nav clearance floors the pin
    where the stage is taller than the viewport allows (the title never goes under the bar) */
---m-rail-pin-bottom: 80px;
+--m-rail-pin-bottom: 64px;
 --m-rail-hold: 200px;
 --m-rail-pin-floor: calc(var(--m-nav-h) - var(--m-space-section)); /* the pin never puts the title under the bar: the stage's own 120 head keeps it clear down to here */
 --m-rail-pin-top: 0px;                 /* a stage's sticky top — written per stage by rail-pin.js from its own geometry */
@@ -156,7 +157,7 @@
 
     /* WE CREATE ACCESS (1:336, 1:326; the rows 1:89 / 1:97 / 1:102 and 1:75 / 1:82 / 1:86) */
 --m-access-rows-h: 496px;              /* two 240 rows on the 256 pitch */
---m-access-pin-bottom: 80px;           /* the rows fix with their bottom 80 above the viewport's bottom (Oscar 2026-09-08 — was centred) */
+--m-access-pin-bottom: 64px;           /* the rows fix with their bottom 64 above the viewport's bottom (Oscar 2026-09-08 — was centred) */
 --m-access-pin-top: calc(100svh - var(--m-access-pin-bottom) - var(--m-access-rows-h));
 --m-access-st-h: calc(var(--type-eyebrow-size) * var(--type-eyebrow-lh) + var(--m-space-8) + 8 * var(--type-statement-size) * var(--type-statement-lh)); /* the statement block's height: the label, 64, the eight lines — access.js writes the measured value over this */
 --m-access-exit-scale: 0.6; --m-access-exit-lift: 120px; /* THE EXIT's end state: the rows' block at 0.6 about its top centre, lifted 120, gone (the desktop's collapse-to-0, kept legible as a shrink) */
@@ -184,7 +185,7 @@
 /* THE CLOSING (1:372, 1:373) */
 --m-closing-st-h: 630px;               /* fourteen 45 lines */
 --m-closing-st-top: 165px; --m-closing-st-bottom: 85px; /* the statement inside the 880 band (9278 − 9113; 9993 − 9908) */
---m-closing-pin-top: min(calc(var(--m-nav-h) + (100svh - var(--m-nav-h) - var(--m-closing-st-h)) / 2), calc(100svh - var(--m-closing-st-bottom) - var(--m-closing-st-h))); /* centred between the bar's foot and the viewport's bottom (the desktop rule) — but never with less than the band's 85 of red under VALUE: where the fourteen lines do not fit, the statement pins on its FOOT and the top lines have already passed under the bar (Oscar 2026-09-08: the footer must not take the red under the last line) */
+--m-closing-pin-top: calc(var(--m-nav-h) + (100svh - var(--m-nav-h) - var(--m-closing-st-h)) / 2); /* centred between the bar's foot and the viewport's bottom (the desktop rule). The red under VALUE as the footer arrives is the band's 85 (--m-closing-st-bottom, the section's padding: the sticky releases on it), never less */
 --m-closing-red-px: 600px;             /* the grey → red scrub while the text is fixed — the desktop's CLOSING_FADE_PX; also the pin's hold */
 --m-closing-nav-switch-t: 0;           /* the nav goes solid as the fade BEGINS: on the light ground the blend's own result is one step from the solid, so the switch is invisible (the desktop's reasoning; its 0.5 is a fraction of the bar's height, not of the fade) */
 /* the footer (1:392, 1:410) */

@@ -17,7 +17,7 @@
       padding: 0;
       background: transparent;
       overflow: visible;
-      z-index: auto;
+      z-index: var(--m-z-band-over); /* above the network, which is pulled up beneath it for the handoff (the desktop's 261 over the network) */
     }
     .landing-v2 .landing-founders {
       position: relative;

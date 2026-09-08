@@ -115,7 +115,7 @@ export function prepareText(el, base = 0) {
  * Bind a text block's entrance to its arrival (fonts settled first — the line grouping needs the real glyphs).
  * The element's words are hidden only once wrapped, in the same frame the trigger is armed.
  */
-export function bindTextReveal(ctx, el, { base = 0, at } = {}) {
+export function bindTextReveal(ctx, el, { base = 0, at, start } = {}) {
   if (!(el instanceof HTMLElement) || reduced()) return;
   const atPct = at ?? tokenPx('--m-reveal-at');
   let disposed = false;
@@ -123,7 +123,8 @@ export function bindTextReveal(ctx, el, { base = 0, at } = {}) {
     if (disposed || !el.isConnected) return;
     const { play } = prepareText(el, base);
     ctx.add(() => {
-      ScrollTrigger.create({ trigger: el, start: `top ${atPct}%`, once: true, onEnter: play });
+      /* by the block's own arrival, or at a scroll position another beat names (the founders → network handoff) */
+      ScrollTrigger.create(start ? { start, end: () => start() + 1, once: true, invalidateOnRefresh: true, onEnter: play } : { trigger: el, start: `top ${atPct}%`, once: true, onEnter: play });
     });
   });
   ctx.add(() => () => { disposed = true; unwrapWords(el); });
@@ -133,7 +134,7 @@ export function bindTextReveal(ctx, el, { base = 0, at } = {}) {
  * Bind a media group's fade-rise to the first element's arrival — one tween per element, staggered.
  * The elements must carry no other transform/opacity writes (a scrubbed driver targets a wrapper or the children instead).
  */
-export function bindMediaReveal(ctx, els, { delay, at } = {}) {
+export function bindMediaReveal(ctx, els, { delay, at, start } = {}) {
   const list = (Array.isArray(els) ? els : [els]).filter((e) => e instanceof HTMLElement);
   if (!list.length || reduced()) return;
   const rise = tokenPx('--m-reveal-media-rise'), dur = tokenS('--m-reveal-media-dur'), stagger = tokenS('--m-reveal-media-stagger');
@@ -142,9 +143,7 @@ export function bindMediaReveal(ctx, els, { delay, at } = {}) {
   const atPct = at ?? tokenPx('--m-reveal-at');
   ctx.add(() => {
     gsap.set(list, { opacity: 0, y: rise });
-    ScrollTrigger.create({
-      trigger: list[0], start: `top ${atPct}%`, once: true,
-      onEnter: () => { gsap.to(list, { opacity: 1, y: 0, duration: dur, ease, delay: lead, stagger, overwrite: 'auto', clearProps: 'opacity,transform' }); },
-    });
+    const play = () => { gsap.to(list, { opacity: 1, y: 0, duration: dur, ease, delay: lead, stagger, overwrite: 'auto', clearProps: 'opacity,transform' }); };
+    ScrollTrigger.create(start ? { start, end: () => start() + 1, once: true, invalidateOnRefresh: true, onEnter: play } : { trigger: list[0], start: `top ${atPct}%`, once: true, onEnter: play });
   });
 }

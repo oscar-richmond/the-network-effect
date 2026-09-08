@@ -10,11 +10,14 @@
  * absolute scroll positions measured from the image's rest top at refresh,
  * so they are a pure function of scroll and reverse exactly.
  *
- * THE TWIRL: as the image rises from its rest to off the top it turns
- * --m-hero-twirl-turns about its vertical axis, 1 − (1 − t)^--m-hero-twirl-
- * ease of the turn at travel t — the desktop gallery's rotation
- * (hero-rotating-gallery.js), scrubbed on the same travel the WebGL planes
- * read. The rotation sits on the window; the figure lends the perspective.
+ * THE TURN: the desktop's WebGL gallery (hero-rotating-gallery.js — the
+ * Codrops rotating-gallery planes: a full turn about the vertical axis, eased
+ * so ~55° shows by 12% of travel, with the per-vertex fold that bends the
+ * plane as it turns) runs on the one image window, verbatim: a plane mirrors
+ * the window's rect every frame, its travel is the window's rise from rest
+ * to off the top, and the DOM image is hidden once the plane is ready. The
+ * canvas mounts in a fixed viewport layer (.m-hero__gl); the tick pauses
+ * while the hero is scrolled past. Reduced motion: the DOM image, no plane.
  *
  * THE ENTRANCES: the headline's two lines and the intro arrive on the
  * word-clip rise (reveal.js). When the splash runs it owns the headline
@@ -29,9 +32,10 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { mobileMatch, tokenPx } from './match.js';
-import { prepareText, unwrapWords, bindMediaReveal, tokenS } from './reveal.js';
+import { prepareText, unwrapWords, tokenS } from './reveal.js';
+import { createHeroRotatingGallery } from '../landing/hero-rotating-gallery.js';
 
-const tokenNum = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
+const tokenRaw = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 /* an element's document top through the offset chain — unaffected by the transforms the scrubs write */
 const layoutTop = (el) => { let y = 0; for (let e = el; e instanceof HTMLElement; e = e.offsetParent) y += e.offsetTop; return y; };
 
@@ -51,11 +55,19 @@ export function initMobileHero() {
     const spaces = brs.map((br) => { const t = document.createTextNode(' '); br.replaceWith(t); return [br, t]; });
     const outPx = tokenPx('--m-hero-text-out-px');
     const blur = tokenPx('--m-hero-out-blur');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* the idempotent re-entry reset */
     gsap.set(blocks, { opacity: 1, filter: 'blur(0px)' });
-    if (win instanceof HTMLElement) gsap.set(win, { rotationY: 0 });
     const imgTop = () => layoutTop(img);
     const stickyTop = (el) => parseFloat(getComputedStyle(el).top) || 0;
+    /* the gallery: the window's rest top in viewport space is its document top (travel 0 at scroll 0) */
+    const mount = document.querySelector('[data-hero-gl-m]');
+    let gallery = null, galleryDisposed = false;
+    const startGallery = () => {
+      if (gallery || galleryDisposed || reduced || !(win instanceof HTMLElement) || !(mount instanceof HTMLElement)) return;
+      gallery = createHeroRotatingGallery([win], { mount, minCards: 1, restTopOf: (el) => layoutTop(el) });
+      gallery?.ready.then(() => { if (galleryDisposed) gallery?.destroy(); else { const im = win.querySelector('img'); if (im instanceof HTMLElement) im.style.opacity = '0'; } });
+    };
     ctx.add(() => {
       for (const block of blocks) {
         const end = () => imgTop() - stickyTop(block);        /* the image's top reaches the block's top */
@@ -65,18 +77,20 @@ export function initMobileHero() {
           scrollTrigger: { start, end, scrub: true, invalidateOnRefresh: true },
         });
       }
-      /* the twirl: travel 0 at rest, 1 as the image's bottom clears the top */
-      if (win instanceof HTMLElement) {
-        const turns = tokenNum('--m-hero-twirl-turns') || 1, ease = tokenNum('--m-hero-twirl-ease') || 1.4;
-        const apply = (t) => gsap.set(win, { rotationY: (1 - Math.pow(1 - t, ease)) * turns * 360 });
-        ScrollTrigger.create({ start: 0, end: () => imgTop() + img.offsetHeight, scrub: true, invalidateOnRefresh: true, onUpdate: (st) => apply(st.progress), onRefresh: (st) => apply(st.progress) });
-      }
+      /* the plane's tick pauses once the window has cleared the top (the founders cover the hero) */
+      ScrollTrigger.create({ start: () => imgTop() + img.offsetHeight, end: 'max', invalidateOnRefresh: true, onEnter: () => gallery?.setPaused(true), onLeaveBack: () => gallery?.setPaused(false) });
+      /* the image's arrival — the fade-rise as its top enters the viewport (at boot, on the frame's fold); the gallery takes over when it has landed */
+      if (reduced) return;
+      const rise = tokenPx('--m-reveal-media-rise'), dur = tokenS('--m-reveal-media-dur'), ease = tokenRaw('--m-ease-house') || 'power2.out';
+      gsap.set(img, { opacity: 0, y: rise });
+      ScrollTrigger.create({
+        trigger: img, start: 'top 100%', once: true,
+        onEnter: () => { gsap.to(img, { opacity: 1, y: 0, duration: dur, ease, overwrite: 'auto', clearProps: 'opacity,transform', onComplete: startGallery }); },
+      });
+      return () => { galleryDisposed = true; gallery?.destroy(); gallery = null; const im = win?.querySelector('img'); if (im instanceof HTMLElement) im.style.opacity = ''; };
     });
-    /* the image's arrival — as its top enters the viewport (at boot, on the frame's fold) */
-    bindMediaReveal(ctx, img, { delay: 0, at: 100 });
 
     /* THE COPY'S ENTRANCE — the headline when the splash is not running it, the intro always */
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const splash = document.documentElement.classList.contains('splash-active');
     const headline = splash ? [] : Array.from(hero.querySelectorAll('.landing-hero__headline-line')).filter((el) => el instanceof HTMLElement);
     const intro = Array.from(hero.querySelectorAll('[data-landing-hero-intro-text] p')).filter((el) => el instanceof HTMLElement);

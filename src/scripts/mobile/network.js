@@ -21,19 +21,29 @@
  *
  * THE PIN AND THE EXIT (Oscar 2026-09-08): the stage pins in the section
  * (band.js — the desktop founders mechanic): the copy takes the headline
- * role, the strip the media's, each drifting in, holding, then rising and
- * blurring out at its own pace; the strip's edges ride with it through
- * --m-band-y / --m-band-fade on the stage. The section then holds a
- * runway of bare dark ground while the page layer lightens for WHAT WE DO
- * (ground.js: the outro's data-ground-fade ends as its top reaches the
- * viewport's bottom — the runway is the fade plus whatever the pin needs
- * so the fade never starts before the last item has gone). The copy
- * arrives on the word-clip rise, the strip fade-rises behind it (reveal.js).
+ * role, the strip the media's, each holding, then rising and blurring out
+ * at its own pace; the strip's edges ride with it through --m-band-y /
+ * --m-band-fade on the stage.
+ *
+ * THE HANDOFF FROM WHO WE ARE (the desktop's: landing.css pulls the network
+ * a viewport up under the founders track, its stage already pinned beneath
+ * them, and landing-network.js reveals its lines as the founders' photo
+ * passes — "our network is coming in way too late", Oscar 2026-09-08): the
+ * section is pulled up under the founders track by --m-band-overlap,
+ * measured so the stage is PINNED exactly as the founders' hold ends; it
+ * sits unrevealed beneath them (the founders track paints above), holds
+ * through their release (holdExtra), and its copy reveals as their headline
+ * has gone, the strip as their rail has. Nothing drifts in: it is in place,
+ * as on the desktop. After its own exit the section releases at once
+ * (after 0): the outro's ground fade runs through the exit's last stretch,
+ * when only the strip is still fading, and FROM ACCESS follows on the
+ * frame's 229.
  */
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { mobileMatch, tokenPx } from './match.js';
 import { bindRailEdges } from './rail.js';
-import { bindBand, bandSpecs } from './band.js';
+import { bindBand, bandSpecs, bandTimes } from './band.js';
 import { bindTextReveal, bindMediaReveal } from './reveal.js';
 import { asset } from '../../utils/asset.js';
 import { NETWORK_STRIP_SETS, NETWORK_STRIP_HOME, NETWORK_STRIP_SLOTS } from '../../data/landing/network-strip-sets.js';
@@ -61,22 +71,39 @@ export function initMobileNetwork() {
     if (!(section instanceof HTMLElement) || !(stage instanceof HTMLElement) || !(strip instanceof HTMLElement)) return;
     const subtitle = section.querySelector('[data-landing-network-subtitle]');
     const title = section.querySelector('[data-landing-network-title]');
-    /* the entrances */
-    bindTextReveal(ctx, subtitle);
-    bindTextReveal(ctx, title);
-    bindTextReveal(ctx, body);
-    bindMediaReveal(ctx, Array.from(strip.querySelectorAll('.landing-network__strip-win'))); /* the windows, not the strip: the band drives the strip */
-    /* the pin and the exit; the runway after: the fade, plus whatever of the viewport the pinned stage leaves bare beneath it (the fade then begins at the release, never during the exit) */
+    /* the handoff from the founders band: its track's beats, and the overlap that puts this stage in place beneath it */
+    const foundersTrack = document.querySelector('[data-landing-founders-track]');
+    const founders = document.querySelector('[data-landing-founders]');
+    const times = () => (foundersTrack instanceof HTMLElement ? bandTimes.get(foundersTrack) : undefined);
+    const release = tokenPx('--m-band-release');
+    const overlap = () => {
+      if (!(founders instanceof HTMLElement) || !(foundersTrack instanceof HTMLElement) || !times()) return 0;
+      const topF = parseFloat(getComputedStyle(founders).top) || 0, topN = parseFloat(getComputedStyle(stage).top) || 0;
+      /* the stage pins at the founders' hold end: X = h_f + release − T_net + T_f (band.js's pin geometry, solved for the section's offset) */
+      return Math.max(0, Math.round(founders.offsetHeight + release - topN + topF));
+    };
+    const measure = () => section.style.setProperty('--m-band-overlap', `${overlap()}px`);
+    ctx.add(() => { ScrollTrigger.addEventListener('refreshInit', measure); return () => { ScrollTrigger.removeEventListener('refreshInit', measure); section.style.removeProperty('--m-band-overlap'); }; });
+    /* the entrances: on the founders' exit where there is one (the copy as their headline has gone, the strip as their rail has), else on arrival */
+    const t = times();
+    const copyAt = t ? () => t.holdEnd() + tokenPx('--m-exit-blur-headline') : undefined;
+    const stripAt = t ? () => t.holdEnd() + tokenPx('--m-exit-blur-media') + tokenPx('--m-exit-media-lag') : undefined;
+    bindTextReveal(ctx, subtitle, { start: copyAt });
+    bindTextReveal(ctx, title, { start: copyAt });
+    bindTextReveal(ctx, body, { start: copyAt });
+    bindMediaReveal(ctx, Array.from(strip.querySelectorAll('.landing-network__strip-win')), { start: stripAt }); /* the windows, not the strip: the band drives the strip */
+    /* the pin and the exit: in place beneath the founders (no drift), holding through their release before its own hold */
     const s = bandSpecs();
     bindBand(ctx, {
       track: section, section: stage,
       items: [
-        { el: subtitle, ...s.headline },
-        { el: title, ...s.headline },
-        { el: body, ...s.ctas },
-        { el: strip, ...s.media, mirror: stage },
+        { el: subtitle, ...s.headline, drift: 0 },
+        { el: title, ...s.headline, drift: 0 },
+        { el: body, ...s.ctas, drift: 0 },
+        { el: strip, ...s.media, drift: 0, mirror: stage },
       ],
-      after: (h, top) => tokenPx('--m-ground-fade-px') + Math.max(0, window.innerHeight - h - top),
+      holdExtra: t ? release : 0,
+      after: 0,
     });
     const tileW = tokenPx('--m-strip-tile-w');
     const wins = Array.from(strip.querySelectorAll('.landing-network__strip-win'));

@@ -34,6 +34,11 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { tokenPx } from './match.js';
 
+/** Each band's scroll positions, by track — the next band reads them to hand off (OUR NETWORK reveals as WHO WE ARE's items go). */
+export const bandTimes = new WeakMap();
+/* an in-flow element's document top */
+const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
+
 /** The three roles' specs from the tokens: drift in, rise out, blur span. */
 export function bandSpecs() {
   const s = tokenPx('--m-drift-scale') || 1;
@@ -46,11 +51,13 @@ export function bandSpecs() {
 
 /**
  * @param {gsap.Context} ctx
- * @param {{ track: HTMLElement, section: HTMLElement, items: { el: HTMLElement, drift: number, exitY: number, blurSpan: number, lag?: number, mirror?: HTMLElement }[], after?: number | ((h: number, pinTop: number) => number) }} band  `after` may be a function of the section's height and sticky top (measured at every refresh)
+ * @param {{ track: HTMLElement, section: HTMLElement, items: { el: HTMLElement, drift: number, exitY: number, blurSpan: number, lag?: number, mirror?: HTMLElement }[], after?: number | ((h: number, pinTop: number) => number), holdExtra?: number }} band
+ *   `after` may be a function of the section's height and sticky top (measured at every refresh); `holdExtra` lengthens the hold
+ *   (OUR NETWORK holds through WHO WE ARE's release before its own hold begins)
  */
-export function bindBand(ctx, { track, section, items, after = 0 }) {
+export function bindBand(ctx, { track, section, items, after = 0, holdExtra = 0 }) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const hold = tokenPx('--m-band-hold'), exit = tokenPx('--m-band-exit'), release = tokenPx('--m-band-release'), blur = tokenPx('--m-exit-blur');
+  const hold = tokenPx('--m-band-hold') + holdExtra, exit = tokenPx('--m-band-exit'), release = tokenPx('--m-band-release'), blur = tokenPx('--m-exit-blur');
   const list = items.filter((it) => it.el instanceof HTMLElement);
   const els = list.map((it) => it.el);
   /* the idempotent re-entry reset */
@@ -66,8 +73,12 @@ export function bindBand(ctx, { track, section, items, after = 0 }) {
     const ink = Math.min(...els.map((el) => el.getBoundingClientRect().top - secTop - (Number(gsap.getProperty(el, 'y')) || 0)));
     track.style.setProperty('--m-band-h', `${section.offsetHeight}px`);
     track.style.setProperty('--m-band-ink', `${Math.max(0, Math.round(ink))}px`);
+    track.style.setProperty('--m-band-hold', `${Math.round(hold)}px`);
     track.style.setProperty('--m-band-after', `${Math.round(afterPx())}px`);
   };
+  /* the pin's scroll position (the track's top at the section's sticky top) and the beats from it */
+  const pinScroll = () => docTop(track) - pinTop();
+  bandTimes.set(track, { pin: pinScroll, holdEnd: () => pinScroll() + hold, release: () => pinScroll() + hold + release, exitEnd: () => pinScroll() + hold + exit });
   track.classList.remove('is-banded'); section.classList.remove('is-banded');
   measure();
   track.classList.add('m-band-track', 'is-banded'); section.classList.add('m-band', 'is-banded');
@@ -82,13 +93,15 @@ export function bindBand(ctx, { track, section, items, after = 0 }) {
       tl.fromTo(it.el, { y: it.drift }, { y: 0, duration: entry, ease: 'none' }, 0);
       tl.to(it.el, { y: -it.exitY, duration: exit, ease: 'none' }, holdEnd);
       const at = holdEnd + (it.lag || 0);
-      tl.fromTo(it.el, { filter: 'blur(0px)', opacity: 1 }, { filter: `blur(${blur}px)`, opacity: 0, duration: it.blurSpan, ease: 'none' }, at);
+      /* a gone item takes no taps (the next band's terms sit beneath it during the handoff) */
+      const gate = () => { it.el.style.pointerEvents = Number(gsap.getProperty(it.el, 'opacity')) < 0.05 ? 'none' : ''; };
+      tl.fromTo(it.el, { filter: 'blur(0px)', opacity: 1 }, { filter: `blur(${blur}px)`, opacity: 0, duration: it.blurSpan, ease: 'none', onUpdate: gate }, at);
       if (it.mirror) {
         tl.to(it.mirror, { '--m-band-y': `${-it.exitY}px`, duration: exit, ease: 'none' }, holdEnd);
         tl.fromTo(it.mirror, { '--m-band-fade': 1 }, { '--m-band-fade': 0, duration: it.blurSpan, ease: 'none' }, at);
       }
     }
-    return () => { ScrollTrigger.removeEventListener('refreshInit', measure); track.classList.remove('is-banded', 'm-band-track'); section.classList.remove('is-banded', 'm-band'); track.style.removeProperty('--m-band-h'); track.style.removeProperty('--m-band-ink'); track.style.removeProperty('--m-band-after'); };
+    return () => { ScrollTrigger.removeEventListener('refreshInit', measure); bandTimes.delete(track); track.classList.remove('is-banded', 'm-band-track'); section.classList.remove('is-banded', 'm-band'); for (const el of els) el.style.pointerEvents = ''; for (const n of ['--m-band-h', '--m-band-ink', '--m-band-hold', '--m-band-after']) track.style.removeProperty(n); };
   });
   if (import.meta.env.DEV) {
     section.__mBand = () => ({ h: section.offsetHeight, hold, exit, release, after, top: getComputedStyle(section).top, items: list.map((it) => ({ el: it.el.className, y: gsap.getProperty(it.el, 'y'), opacity: gsap.getProperty(it.el, 'opacity') })) });

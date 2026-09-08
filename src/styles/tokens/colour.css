@@ -13,6 +13,7 @@
     --m-color-ground-red: #c1250e;    /* the red band (1:372) */
     /* inks */
     --m-color-ink: #161616;           /* ink on the light ground (1:13, 1:113, 1:396 …) */
+    --m-nav-ink: var(--m-color-ink);  /* the bar's ink: ground.js rewrites it on :root as the INVERSE of the ground the layer shows (what the desktop's difference blend gives; iOS does not blend a fixed bar reliably) — at rest, the ink over the light ground */
     --m-color-ink-on-dark: #eeeef0;   /* ink on the dark band (1:55, 1:74, 1:289) */
     --m-color-ink-bright: #f9f9f9;    /* FEATURED WORK (1:321) */
     --m-color-white: #ffffff;         /* the difference-blend text and the burger (1:420, 1:422, 1:77, 1:270) */

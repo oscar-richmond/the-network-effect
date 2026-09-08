@@ -7,8 +7,9 @@
  * and is not rendered. Behind the window the frame draws 1:271, the light →
  * dark gradient into the dark band (page 697 → 1167) — NOT DRAWN HERE
  * (Oscar 2026-09-08): the page's ground itself fades to the band's dark as
- * the band arrives (ground.js). The window twirls as it rises off the top
- * (hero.js — the desktop cards' turn).
+ * the band arrives (ground.js). As the window rises off the top it turns and
+ * folds exactly as the desktop's three cards do: the desktop's WebGL gallery
+ * (hero-rotating-gallery.js) runs on this one window (hero.js).
  *
  * The desktop's three cards and the entry stage are removed on the phone by
  * the gate that stamps this in (LandingHero.astro); the phone never parses
@@ -34,3 +35,6 @@ const sizes = `${QUERIES.phone} calc((100vw - 32px) * 2 / 3), 470px`;
     <img src={src} srcset={imageSrcset(src, [780, 1140], 1536)} sizes={sizes} alt="" decoding="async" loading="eager" width="1536" height="1920" />
   </div>
 </figure>
+{/* the desktop gallery's canvas mounts here (hero.js): a fixed, viewport-sized layer — the planes are placed in viewport
+    space from the window's rect — outside the figure so nothing in flow contains it */}
+<div class="m-hero__gl" data-hero-gl-m aria-hidden="true"></div>

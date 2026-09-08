@@ -190,25 +190,22 @@
       background: linear-gradient(90deg, var(--m-color-ground) 0, var(--m-color-ground-0) var(--m-logo-edge-w), var(--m-color-ground-0) calc(100% - var(--m-logo-edge-w)), var(--m-color-ground) 100%);
     }
     /* THE IMAGE (1:272) in flow 48 below the row. The frame's 1:271 gradient behind it is not drawn:
-       the page layer fades to the band's dark as the band arrives (ground.js). THE TWIRL: the
-       window turns about its vertical axis as it rises off the top — hero.js scrubs the rotation,
-       the figure lends the perspective (the desktop gallery's camera); the back face shows
-       through the turn as the WebGL plane's does */
+       the page layer fades to the band's dark as the band arrives (ground.js). THE TURN is the
+       desktop gallery's (hero-rotating-gallery.js, mounted by hero.js in .m-hero__gl): a WebGL plane
+       mirrors the window's rect every frame and rotates a full turn about its vertical axis with the
+       per-vertex fold as the window rises off the top; the DOM image is hidden once the plane is
+       ready. The crop is centred, as the plane's cover is, so the takeover is seamless. */
     .landing-v2 .m-hero {
       position: relative;
       margin: var(--m-space-7) var(--m-inset) 0;
       padding: 0;
       width: auto;
-      perspective: var(--m-hero-perspective);
     }
     .landing-v2 .m-hero__win {
       position: relative;
       width: 100%;
       height: var(--m-hero-img-h);
       overflow: hidden;
-      transform-origin: 50% 50%;
-      will-change: transform;
-      backface-visibility: visible;
     }
     .landing-v2 .m-hero__win img {
       display: block;
@@ -217,6 +214,21 @@
       max-width: none;
       object-fit: cover;
       object-position: var(--m-hero-img-pos);
+    }
+    /* the gallery's layer: the viewport, above the hero's sticky copy (the window rises over it), under the bar */
+    .landing-v2 .m-hero__gl {
+      position: fixed;
+      inset: 0;
+      z-index: var(--m-z-content);
+      pointer-events: none;
+    }
+    .landing-v2 .m-hero__gl .landing-hero__gallery-canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
     }
   }
 }

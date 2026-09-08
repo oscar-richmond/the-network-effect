@@ -16,7 +16,7 @@
       position: relative;
       height: auto;
       min-height: 0;
-      margin: 0;
+      margin: calc(-1 * var(--m-band-overlap, 0px)) 0 0; /* pulled up under the founders track (network.js measures it): the stage is pinned beneath them as their hold ends — the desktop's -100dvh */
       padding: 0;
       background: transparent;
       overflow: visible;

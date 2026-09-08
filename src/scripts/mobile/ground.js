@@ -4,9 +4,12 @@
  * page's ground itself fades).
  *
  * The page ground is a single fixed layer (.m-ground) painted together with
- * body (the nav's difference blend on iOS composites against the root
- * layer, nav.css); every section is transparent over it and declares its
- * ground in markup —
+ * body; every section is transparent over it and declares its ground in
+ * markup. THE NAV'S INK follows the ground from here (nav.css): every colour
+ * write also sets --m-nav-ink on :root to the ground's inverse — what the
+ * desktop's difference blend yields against a bare ground, computed rather
+ * than blended because a fixed bar's blend is not reliable on iOS.
+ *
  *
  *   <section data-ground="dark">                   a HARD EDGE: the layer switches as the
  *       section's top reaches the viewport's top — for a section that follows an OPAQUE
@@ -42,8 +45,9 @@ const naturalTop = (el) => { const prev = el.style.position; el.style.position =
 const naturalBottom = (el) => { const prev = el.style.position; el.style.position = 'static'; const b = el.getBoundingClientRect().bottom + window.scrollY; el.style.position = prev; return b; };
 const FADE_MIN_PX = 120;
 
-/** A section's fade window in document scroll, from its declaration — the one model the triggers and the harness share. */
-function fadeWindow(sec, fadePx) {
+/** A section's fade window in document scroll, from its declaration — the one model the triggers, the sections that ride it
+ *  (featured.js fades its light ink with the Featured → Access fade) and the harness share. */
+export function fadeWindow(sec, fadePx = tokenPx('--m-ground-fade-px')) {
   const vh = window.innerHeight;
   const own = sec.dataset.groundFadePx ? tokenPx(sec.dataset.groundFadePx) : fadePx;
   const secTop = naturalTop(sec);
@@ -90,8 +94,17 @@ export function initMobileGround() {
     const sections = Array.from(document.querySelectorAll('[data-ground]')).filter((el) => el instanceof HTMLElement);
     /* the layer and body together (the nav's blend backdrop lives in the root layer) */
     const grounds = [layer, document.body];
+    /* the nav's ink: the inverse of the ground the layer shows right now */
+    const syncInk = () => {
+      const m = /(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)/.exec(getComputedStyle(layer).backgroundColor);
+      if (m) document.documentElement.style.setProperty('--m-nav-ink', `rgb(${[m[1], m[2], m[3]].map((c) => Math.round(255 - parseFloat(c))).join(', ')})`);
+    };
+    const paint = (targets, colour) => { gsap.set(targets, { backgroundColor: colour }); syncInk(); };
+    /* ScrollTrigger renders the scrubbed fades with events suppressed on refresh (a load mid-window, a resize), so the ink is
+       resynced after every refresh as well as on the fades' own updates */
+    ScrollTrigger.addEventListener('refresh', syncInk);
     /* the idempotent re-entry reset */
-    gsap.set(grounds, { backgroundColor: colours.light });
+    paint(grounds, colours.light);
     let prev = 'light';
     ctx.add(() => {
       for (const sec of sections) {
@@ -101,14 +114,14 @@ export function initMobileGround() {
         if ('groundFade' in sec.dataset) {
           const targets = 'groundPaint' in sec.dataset ? [...grounds, sec] : grounds;
           gsap.fromTo(targets, { backgroundColor: from }, {
-            backgroundColor: to, ease: 'none', immediateRender: false,
+            backgroundColor: to, ease: 'none', immediateRender: false, onUpdate: syncInk,
             scrollTrigger: { start: () => fadeWindow(sec, fadePx).start, end: () => fadeWindow(sec, fadePx).end, scrub: true, invalidateOnRefresh: true },
           });
         } else {
           ScrollTrigger.create({
             start: () => naturalTop(sec), end: () => naturalTop(sec) + 1, invalidateOnRefresh: true,
-            onEnter: () => gsap.set(grounds, { backgroundColor: to }),
-            onLeaveBack: () => gsap.set(grounds, { backgroundColor: from }),
+            onEnter: () => paint(grounds, to),
+            onLeaveBack: () => paint(grounds, from),
           });
         }
         prev = next;
@@ -122,6 +135,6 @@ export function initMobileGround() {
         return { top: naturalTop(s), bottom: naturalBottom(s), ground: s.dataset.ground, fade, start: Math.round(w.start), end: Math.round(w.end) };
       }) });
     }
-    return () => { gsap.set(document.body, { clearProps: 'backgroundColor' }); if (import.meta.env.DEV) delete window.__mGround; };
+    return () => { ScrollTrigger.removeEventListener('refresh', syncInk); gsap.set(document.body, { clearProps: 'backgroundColor' }); document.documentElement.style.removeProperty('--m-nav-ink'); if (import.meta.env.DEV) delete window.__mGround; };
   });
 }

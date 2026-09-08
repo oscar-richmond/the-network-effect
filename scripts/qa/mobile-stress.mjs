@@ -20,10 +20,11 @@
  *       same size (reversible — checked on every reversal);
  *   N3  the burger is vertically centred to the wordmark at every size
  *       (centre-to-centre ≤ 0.75px) and sits at x = --m-burger-x;
- *   N4  the blend chain: the wordmark and the burger carry
- *       mix-blend-mode: difference and no ancestor between them and the
- *       body carries opacity < 1, a transform, a filter, will-change or
- *       isolation — the scrub animates the wordmark itself;
+ *   N4  the ink: the wordmark and the burger are painted, not blended —
+ *       their colour is the INVERSE of the ground layer's colour (what the
+ *       desktop's difference blend gives against a bare ground; ground.js
+ *       writes --m-nav-ink), the solid ink over the red band, white with
+ *       the menu open; no mix-blend-mode anywhere on the bar;
  *   F1  the footer is in normal flow: position static, its top at
  *       (document height − footer height − scrollY), never sticky/fixed;
  *   G1  the page ground layer is the only ground: every section's own
@@ -68,17 +69,21 @@ for (const route of ROUTES) {
       const nav = document.querySelector('.home__topbar'); const wm = document.querySelector('.home__logo'); const bg = document.querySelector('.home__menu-burger'); const footer = document.querySelector('.landing-footer'); const ground = document.querySelector('[data-m-ground]');
       const r = (el) => el ? el.getBoundingClientRect() : null; const cs = (el) => el ? getComputedStyle(el) : null;
       const blendHost = (el) => { let e = el; while (e && e !== document.body) { if (getComputedStyle(e).mixBlendMode === 'difference') return e; e = e.parentElement; } return null; }; const chain = (el) => { const bad = []; const host = blendHost(el); if (!host) return ['no blend host']; let e = el; while (e && e !== document.body) { const c = getComputedStyle(e); if (parseFloat(c.opacity) < 1 || c.transform !== 'none' || c.filter !== 'none' || c.willChange !== 'auto' || c.isolation === 'isolate') bad.push(e.className || e.tagName); if (e !== host && e.parentElement !== host && e.parentElement && getComputedStyle(e.parentElement).position !== 'static' && getComputedStyle(e.parentElement).zIndex !== 'auto' && e.parentElement !== host) {} e = e.parentElement; } return bad; };
-      return { overRed: !!(nav && nav.classList.contains('is-over-red')), navBlend: cs(nav)?.mixBlendMode, y: window.scrollY, ovf: document.documentElement.scrollWidth - document.documentElement.clientWidth, nav: r(nav), navPos: cs(nav)?.position, wm: r(wm), wmSize: wm ? (() => { const l = wm.querySelector('.home__logo-link') || wm; const k = l.offsetHeight ? l.getBoundingClientRect().height / l.offsetHeight : 1; return parseFloat(getComputedStyle(wm).fontSize) * k; })() : null, wmBlend: blendHost(wm) ? 'difference' : cs(wm)?.mixBlendMode, bg: r(bg), bgBlend: blendHost(bg) ? 'difference' : cs(bg)?.mixBlendMode, chainWm: chain(wm), chainBg: chain(bg), footer: r(footer), footerPos: cs(footer)?.position, docH: document.documentElement.scrollHeight, ground: ground ? getComputedStyle(ground).backgroundColor : null };
+      return { overRed: !!(nav && nav.classList.contains('is-over-red')), navBlend: cs(nav)?.mixBlendMode, y: window.scrollY, ovf: document.documentElement.scrollWidth - document.documentElement.clientWidth, nav: r(nav), navPos: cs(nav)?.position, wm: r(wm), wmSize: wm ? (() => { const l = wm.querySelector('.home__logo-link') || wm; const k = l.offsetHeight ? l.getBoundingClientRect().height / l.offsetHeight : 1; return parseFloat(getComputedStyle(wm).fontSize) * k; })() : null, wmBlend: blendHost(wm) ? 'difference' : cs(wm)?.mixBlendMode, wmColor: cs(wm)?.color, bg: r(bg), bgBlend: blendHost(bg) ? 'difference' : cs(bg)?.mixBlendMode, bgColor: bg ? getComputedStyle(bg.querySelector('.home__menu-burger-bar') || bg).backgroundColor : null, menuOpen: document.documentElement.classList.contains('menu-open') || document.body.classList.contains('menu-open'), inkRgb: (() => { const d = document.createElement('div'); d.style.color = 'var(--m-color-ink)'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; })(), footer: r(footer), footerPos: cs(footer)?.position, docH: document.documentElement.scrollHeight, ground: ground ? getComputedStyle(ground).backgroundColor : null };
     });
     if (s.ovf > 0) note(route, 'X1', `overflow ${s.ovf}px at y${s.y} (${label})`);
     if (s.nav && (Math.abs(s.nav.top) > 0.5 || s.navPos !== 'fixed' || Math.abs(s.nav.height - tokens.navH) > 0.5)) note(route, 'N1', `nav top ${s.nav.top.toFixed(1)} h ${s.nav.height.toFixed(1)} pos ${s.navPos} at y${s.y}`);
     if (s.wmSize !== null) { const exp = expectedSize(s.y); if (Math.abs(s.wmSize - exp) > 0.6) note(route, 'N2', `wordmark ${s.wmSize.toFixed(2)}px, expected ${exp.toFixed(2)} at y${s.y}`); const k = Math.round(s.y); if (sizeAt.has(k) && Math.abs(sizeAt.get(k) - s.wmSize) > 0.3) note(route, 'N2', `not reversible: y${k} gave ${sizeAt.get(k).toFixed(2)} then ${s.wmSize.toFixed(2)}`); sizeAt.set(k, s.wmSize); }
     if (s.wm && s.bg) { const cw = s.wm.top + s.wm.height / 2, cb = s.bg.top + s.bg.height / 2; if (Math.abs(cw - cb) > 0.75) note(route, 'N3', `burger centre ${cb.toFixed(2)} vs wordmark ${cw.toFixed(2)} at y${s.y}`); if (Math.abs(s.bg.left - tokens.burgerX) > 0.75) note(route, 'N3', `burger x ${s.bg.left.toFixed(2)} vs ${tokens.burgerX}`); }
-    /* over the red band the bar is SOLID by rule (closing.js: .is-over-red — blend off, ink): the blend checks expect that state there */
-    if (s.overRed) { if (s.wmBlend === 'difference' || s.bgBlend === 'difference' || s.navBlend !== 'normal') note(route, 'N4', `bar over red should be solid: ${s.wmBlend} / ${s.bgBlend} / ${s.navBlend}`); }
-    else {
-      if (s.wmBlend !== 'difference' || s.bgBlend !== 'difference') note(route, 'N4', `blend ${s.wmBlend} / ${s.bgBlend}`);
-      if (s.chainWm.length || s.chainBg.length) note(route, 'N4', `blend chain broken by ${[...s.chainWm, ...s.chainBg].join(', ')}`);
+    /* N4: painted ink — the inverse of the ground (±3 per channel), solid ink over red, white with the menu open; never a blend */
+    if (s.wmBlend === 'difference' || s.bgBlend === 'difference') note(route, 'N4', `blend on the bar: ${s.wmBlend} / ${s.bgBlend}`);
+    if (!s.menuOpen && s.ground && s.wmColor) {
+      const rgb = (c) => (c.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
+      const g = rgb(s.ground), w = rgb(s.wmColor), b = s.bgColor ? rgb(s.bgColor) : w;
+      /* over red the closing rule makes the bar solid ink; elsewhere the inverse of the ground */
+      const exp = s.overRed ? rgb(s.inkRgb) : g.map((c) => 255 - c);
+      const off = (c) => c.length === 3 && c.some((v, i) => Math.abs(v - exp[i]) > 3);
+      if (exp.length === 3 && (off(w) || off(b))) note(route, 'N4', `ink ${s.wmColor} / ${s.bgColor} vs ${s.overRed ? 'ink' : 'inverse of'} ${s.overRed ? s.inkRgb : s.ground} at y${s.y}`);
     }
     /* F1: static, and at the document's end — unless the document is shorter than the viewport (the 404 in the tablet band at
        1024×1366), where normal flow leaves it at the content's end and the body's min-height fills the rest */
