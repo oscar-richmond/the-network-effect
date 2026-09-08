@@ -24,7 +24,7 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* the hero cards' own sizes (LandingHero.astro) — the stand-ins land on
    those rects, so they need the same pixels */
-const HERO_CARD_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 33vw, 1728px';
+const HERO_CARD_SIZES = '(max-width: 767px) 260px, (max-width: 1359px) 33vw, 1728px';
 
 /* the hero's own three images — the settle must BE the hero, not a
    lookalike (LandingHero.astro's heroCards, same order) */
@@ -105,7 +105,7 @@ const SB_DISCARDS = [
       pile as they arrive. */}
   {SB_DISCARDS.map((src, i) => (
     <div class="splash-b__card splash-b__card--discard" data-sb-discard style={`z-index:${10 + i}`}>
-      <img src={src} alt="" decoding="async" loading="eager" />
+      <img src={src} srcset={imageSrcset(src, [480, 600], 900)} sizes="(max-width: 767px) 200px, (max-width: 1359px) 33vw, 1728px" alt="" decoding="async" loading="eager" />
     </div>
   ))}
 

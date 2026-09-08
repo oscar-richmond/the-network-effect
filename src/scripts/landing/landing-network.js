@@ -112,6 +112,8 @@ function normalisedSet(key) {
     Every branch COVERS the slot window — the authored crops do so by
     their Figma geometry, cover-fit by definition. */
 function applyStripEntry(img, entry) {
+  /* the strip's build-time srcset (LandingNetwork.astro) outranks src: drop it before the first swap (THE FINAL GATE) */
+  if (img.hasAttribute('srcset')) { img.removeAttribute('srcset'); img.removeAttribute('sizes'); }
   img.src = asset(entry.src);
   if (typeof entry.w === 'number') {
     img.style.width = `${entry.w}px`;

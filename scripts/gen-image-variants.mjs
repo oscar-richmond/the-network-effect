@@ -22,7 +22,7 @@ const force = process.argv.includes('--force');
 /** [glob-ish source, widths, quality] */
 const JOBS = [
 	/* the /work rail + list images (2000w): phones need ~1100 */
-	[/^assets\/landing\/work\/work-page-\d+\.jpg$/, [1200], 82],
+	[/^assets\/landing\/work\/work-page-\d+\.jpg$/, [680, 1200], 82],
 	/* case-study streams + heroes (2000–2048w): full rows ~1100, pair thumbs ~400 */
 	[/^assets\/landing\/case\/[^/]+\/stream-\d+\.jpg$/, [600, 1200], 82],
 	[/^assets\/landing\/case\/[^/]+\/hero\.jpg$/, [1200, 1400], 82],
@@ -40,6 +40,21 @@ const JOBS = [
 	[/^assets\/images\/menu\/(Home|Work|Services|Founders)\.jpg$/, [600], 80],
 	/* the founders' portraits (870w JPEGs saved as .png, 1.2MB): same pixels as JPEG */
 	[/^assets\/landing\/founders-page\/(ashley|robbo)\.png$/, [870], 80],
+	/* THE FINAL GATE (2026-09-08): the rebuild shows the desktop's full image set on
+	   the phone, so every image the phone renders gets a candidate at twice its
+	   rendered width (the density cap — see the components' sizes) */
+	/* the founders' column strip (960w JPEGs saved as .png): the phone's 188px slot */
+	[/^assets\/landing\/founders-page\/col-\d\.png$/, [600], 82],
+	/* the founders' photograph (1600w): the landing's 342px figure and /founders' sweep */
+	[/^assets\/landing\/founders\/founders-photo\.jpg$/, [780, 1200], 82],
+	/* the featured cards (960–1100w): the phone's 78vw card and the /work grid's half */
+	[/^assets\/landing\/featured\/work-\d+\.jpg$/, [600], 82],
+	/* the services stack (896w): the phone's 342px card */
+	[/^assets\/landing\/services-stack\/(immerse|connect|amplify)\.jpg$/, [600, 780], 82],
+	/* the network strip (640w): the phone's 242px cell */
+	[/^assets\/landing\/network\/strip-\d\.jpg$/, [480], 82],
+	/* the /services hover frame's placeholder (1440w JPEG saved as .png, 300KB): hidden on the phone yet fetched */
+	[/^assets\/landing\/services-6\/hover-placeholder\.png$/, [600], 82],
 ];
 
 const walk = (dir, out = []) => {

@@ -142,8 +142,11 @@ import '../styles/fonts.css';
             <span class="sv-rows__divider"></span>
           </div>
           <div class="sv-rows__img" data-sv-rows-img aria-hidden="true">
-            <img data-sv-img-base src={asset(SV6_HOVER_PLACEHOLDER)} alt="" loading="lazy" decoding="async" />
-            <img data-sv-img-over src={asset(SV6_HOVER_PLACEHOLDER)} alt="" loading="lazy" decoding="async" hidden />
+            {/* THE FINAL GATE: the placeholder (1440w, 300KB) is fetched on the phone though the
+                frame is hidden there — the 600 candidate serves every narrow width; sv-rows.js drops
+                the srcset before its first src write (a srcset outranks src). */}
+            <img data-sv-img-base src={asset(SV6_HOVER_PLACEHOLDER)} srcset={imageSrcset(SV6_HOVER_PLACEHOLDER, [600], 1440)} sizes="(max-width: 1359px) 200px, 1440px" alt="" loading="lazy" decoding="async" />
+            <img data-sv-img-over src={asset(SV6_HOVER_PLACEHOLDER)} srcset={imageSrcset(SV6_HOVER_PLACEHOLDER, [600], 1440)} sizes="(max-width: 1359px) 200px, 1440px" alt="" loading="lazy" decoding="async" hidden />
           </div>
         </section>
 

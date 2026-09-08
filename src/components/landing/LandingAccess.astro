@@ -35,7 +35,10 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
    variant serves the phone's 78vw cell and the tablet's 44vw; the
    desktop's sizes branch is larger than any candidate, so it keeps the
    full file. */
-const CELL_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 44vw, 1728px';
+/* THE FINAL GATE (2026-09-08): the phone's cell renders 304px wide; its branch
+   declares 200px so a 3× phone takes the 600 candidate (twice the rendered
+   width — the density cap) instead of the 800 original at 3× (14 cells, 2.2MB). */
+const CELL_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 44vw, 1728px';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 

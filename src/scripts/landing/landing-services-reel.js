@@ -321,6 +321,7 @@ export function initLandingServicesReel() {
     st.busy = true;
     /* The incoming image sits fully opaque BENEATH first — decode-
        gated (bounded: a slow network degrades to a plain swap). */
+    if (st.under.hasAttribute('srcset')) { st.under.removeAttribute('srcset'); st.under.removeAttribute('sizes'); } /* the build-time srcset outranks src (THE FINAL GATE) */
     st.under.src = srcFor(i, target);
     const ready = st.under.decode ? st.under.decode().catch(() => {}) : Promise.resolve();
     Promise.race([ready, new Promise((r) => setTimeout(r, 600))]).then(() => {
@@ -335,6 +336,7 @@ export function initLandingServicesReel() {
       out.onfinish = () => {
         /* The over layer adopts the settled image before its clip is
            released — full coverage throughout. */
+        if (st.el.hasAttribute('srcset')) { st.el.removeAttribute('srcset'); st.el.removeAttribute('sizes'); } /* the build-time srcset outranks src (THE FINAL GATE) */
         st.el.src = srcFor(i, target);
         const overReady = st.el.decode ? st.el.decode().catch(() => {}) : Promise.resolve();
         Promise.race([overReady, new Promise((r) => setTimeout(r, 600))]).then(() => {

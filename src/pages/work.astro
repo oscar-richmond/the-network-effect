@@ -47,7 +47,10 @@ const workPool = [...WORK_PROJECTS, ...WORK_EXTRAS];
 /* THE REBUILD (2026-09-07): the grid renders at every width — the phone's
    full-width and half-width tiles and the tablet's quarter take the 680
    and 1200 variants; the desktop's sizes branch keeps the full file. */
-const GRID_SIZES = '(max-width: 767px) 100vw, (max-width: 1359px) 50vw, 1728px';
+/* THE FINAL GATE (2026-09-08): the phone's grid tile renders 167px and the row 342px; both
+   branches resolve a 3× phone to the 680 candidate (the density cap) so the two views —
+   both in the DOM, both fetched — share one file per project instead of two. */
+const GRID_SIZES = '(max-width: 767px) 50vw, (max-width: 1359px) 50vw, 1728px';
 const gridSrcset = (src) => imageSrcset(src, [680, 1200], 2000);
 /* ── GRID VIEW (R35, Oscar 2026-09-03) — COMPOSITION A, nine tiles from
    the single source (the eight projects + the Ashley portrait stub,
@@ -151,12 +154,12 @@ const gridRows = GRID_ROWS.map((row) =>
             {live ? (
               <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${name} — view project`}>
                 <figure class="work-m__img">
-                  <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 100vw, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
+                  <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 220px, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
                 </figure>
               </a>
             ) : (
               <figure class="work-m__img">
-                <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 100vw, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
+                <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 220px, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
               </figure>
             )}
             <h2 class="work-m__title">{name}</h2>

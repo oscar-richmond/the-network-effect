@@ -157,6 +157,8 @@ export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root =
          legible); the frame glides to the target row meanwhile. */
       placeAt(target);
       imgWrap.classList.add('is-covering');
+      /* the placeholder carries a srcset (services.astro): a srcset outranks src, so drop it before the first write */
+      for (const el of [overEl, imgEl]) if (el && el.hasAttribute('srcset')) { el.removeAttribute('srcset'); el.removeAttribute('sizes'); }
       overEl.src = target.dataset.img ?? '';
       overEl.hidden = false;
       overEl.style.transition = 'none';

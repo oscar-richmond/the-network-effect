@@ -44,8 +44,10 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 /* THE REBUILD (2026-09-07): the cards render on every width — a 680
    variant for the phone's 78vw card and the tablet's 380; the desktop's
    sizes branch is larger than any candidate, so it keeps the full file. */
-const CARD_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 380px, 1728px';
-const cardSrcset = (src) => imageSrcset(src, [680], 2000);
+/* the phone's card renders 304px (the rail) or 167px (/work's grid): 200px
+   resolves a 3× phone to the 600 candidate — the density cap (THE FINAL GATE) */
+const CARD_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 380px, 1728px';
+const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
 ---
 
 {/* THE REBUILD (2026-09-07): below the seam this same markup is a

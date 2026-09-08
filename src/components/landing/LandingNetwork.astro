@@ -36,6 +36,7 @@ interface Props {
 
 const { entry = 'pin' } = Astro.props;
 import { asset } from '../../utils/asset.js';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* The resting strip lives in network-strip-sets.js now (the industry
    hover swaps these five — single source of truth for the default). */
@@ -167,6 +168,8 @@ const sectorLines = [
       <span class="landing-network__strip-win" style={`width:${s.win}px`}>
         <img
           src={s.src}
+          srcset={imageSrcset(s.src, [480], 640)}
+          sizes="(max-width: 767px) 160px, (max-width: 1359px) 205px, 640px"
           alt=""
           loading="lazy"
           decoding="async"

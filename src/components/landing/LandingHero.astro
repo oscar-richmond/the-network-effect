@@ -35,7 +35,9 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
    seam a 780 variant serves the phone's 78vw card and the tablet's third;
    the desktop's sizes branch is deliberately larger than any candidate so
    it keeps resolving to the full file, exactly as the plain src did. */
-const HERO_CARD_SIZES = '(max-width: 767px) 78vw, (max-width: 1359px) 33vw, 1728px';
+/* the phone's card renders 304px wide: 260px resolves a 3× phone to the 780
+   candidate (the density cap — THE FINAL GATE, 2026-09-08) */
+const HERO_CARD_SIZES = '(max-width: 767px) 260px, (max-width: 1359px) 33vw, 1728px';
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */
