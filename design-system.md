@@ -481,6 +481,22 @@ Sections keep their Astro component; where the phone needs different DOM, a `*Mo
 - **Drawer and modals**: full-screen 402×874, 16px inputs (no iOS zoom), 44px buttons, tiles 88 tall.
 - **Pages not yet rebuilt**: `mobile/pending.css` contains the desktop compositions of `/founders` and `/contact` so the footer stays last; Parts 2–3 delete it.
 
+### 4.8 The landing, hero → services (rebuild Part 2, 2026-09-08)
+
+Every section keeps its Astro component. Three mobile siblings render from the same data through DeviceGate — the hero's one image (`HeroImageMobile.astro`, the desktop's three cards and entry stage removed on the phone) and the founders rail (`FoundersRailMobile.astro`, the desktop's three figures removed); the network strip and the services pillars reuse the desktop DOM with mobile sheets (`mobile/{hero,founders,network,services}.css`) and drivers (`scripts/mobile/{hero,founders,network,services,rail}.js`, booted by `scripts/mobile/landing.js` from `LandingBody.astro`). The gate sits after the desktop elements it removes, because it runs as the parser reaches it, and removes its own script, so the desktop DOM reads exactly as before.
+
+| Beat | Mechanism | Numbers at 402×874 (scroll px) |
+|---|---|---|
+| Hero rise | The headline, intro and logo row are `position: sticky` at their frame tops (180 / 399 / 585); the image is in flow and scrolls 1:1, so it rises over them. Each block dissolves (opacity + `--m-hero-out-blur`) over `--m-hero-text-out-px` (160) ending as the image's top reaches the block's top. | logos out 0 → 112 · intro 138 → 298 · headline 357 → 517 |
+| Hero fade | The Part 1 ground layer with an anchored fade (`data-ground-fade-anchor`): it begins when the image's bottom edge crosses `--m-hero-fade-anchor` (700) and runs the frame's 474. 1:271 itself is a static gradient behind the image; the dark band paints its own ground (it is not a transition zone). | fade 417 → 891; safety table: no ink above 0.1 opacity on a ground under 60% luminance |
+| Founders rail | A horizontal scroll container, `scroll-snap-type: x proximity` (the third card is wider than the measure), cards 230 / 224.4 / 450 on an 8 gap, the last snapping on its end; 1:54's edge gradients as overlays whose opacity is a ScrollTrigger on the rail (`rail.js`): left rises over the first 20px of scroll, right falls over the last 24. | snap points 0 · 238 · 566 |
+| Industry tap | Tap selects (full ink; the rest at `--m-opacity-term-dim`), tap again deselects and the strip returns to the resting set, tap another switches. The strip swaps in the desktop's clip-wipe vocabulary (`--m-wipe-ms` 450, sweep 300, edge blur 6) with an under layer per window. | — |
+| Network strip | The same five windows, 272.368 on the 264.117 pitch (an 8 overlap), snap per tile, 1:572's edges as the section's pseudo-elements driven from the rail's scroll. | snap points 0 · 264 · 528 · 791 · 925 |
+| Services stack | Each pillar is a sticky opaque panel at `--m-stack-pin-top` + i × `--m-stack-band-h` (68 / 99 / 130). As pillar i+1 approaches, pillar i compacts over `--m-stack-compact-px` (160): title 28 → 14, index 14 → 6, the gap above the title 32 → 8, inside a fixed 55 title box so the layout below never moves. AMPLIFY parks expanded; the stage's tail (80 + the 474 fade zone) is content, so the stack HOLDS through it and releases as Featured Work arrives, AMPLIFY first. | IMMERSE parks 3343 · CONNECT compacts IMMERSE 3885 → 4045 · AMPLIFY compacts CONNECT 4587 → 4747 · hold to 5301 · release cascade 31px apart |
+| List rail | The rows as a 4-row column grid (`--m-list-row-h` 19 on an 8 gap, columns 48 apart, the first `--m-list-col-min` 214), snapping per column; the indicator's thumb translates 0 → 68 with the rail's scroll fraction (`--m-ind-x`). | — |
+
+Deviations from the frame, all reported: the industry list runs to 5 lines (135) instead of 4 (108) because the terms are `<button>`s, which cannot break internally, where the frame breaks "Food & / Beverage" — 27px carried through the band; the band headline's 7 lines are 210 against the frame's 206 box (4px); the founders CTA gap is the frame's 12, not the brief's 16; the CTA pair is fluid (half the measure less the gap) so 360 does not overflow; "FROM ACCESS." takes its full stop from a generated `::after` (the data has none); the pillar labels keep the data's trailing colon ("WE BUILD:") which the frame omits; the hero image is cover-fit with the crop's offset (`--m-hero-img-pos`), the frame's 2.4% zoom not reproduced; the strip tiles cover-fit (the repo's 640×800 sources, a little under 3× at 272 wide).
+
 ---
 
 ## Part 5 — The mobile tokens (from the 402 frame)
@@ -571,8 +587,19 @@ Faces: `--m-font-serif` Serrif, `--m-font-serif-cond` Serrif Condensed, `--m-fon
 | Nav shrink range | `--m-nav-shrink-scroll` | 120px of scroll | house (D1's tunable) |
 | Ground edge | `--m-ground-edge` | 0 | hard edges switch at the section top |
 
+### 5.5 Part 2's tokens (the landing, hero → services)
+
+| Group | Tokens | Values (402) | Nodes |
+|---|---|---|---|
+| Hero | `--m-hero-line-h/gap`, `--m-hero-intro-top`, `--m-hero-logos-top/gap`, `--m-hero-img-top`, `--m-hero-band-top`, `--m-hero-img-pos`, `--m-hero-text-out-px`, `--m-hero-fade-anchor` | 90 / 7, 399, 585 / 114, 697, 1167, 22% 13%, 160, 700 | 1:13, 1:14, 1:270, 1:213, 1:272, 1:271, 1:15 |
+| Logo row | `--m-logo-pitch`, `--m-logo-scale`, `--m-logo-set-w/row-dur/row-delay` (defaults; data sets them inline), `--m-logo-edge-w` | 110.4, 0.64, 993.6 / 48s / 0, 12 | 1:216 – 1:266, 1:269 |
+| Band | `--m-band-label-top`, `--m-band-headline-indent`, `--m-founders-card-1/2/3`, `--m-founders-card-3-lead`, `--m-founders-pos-1/2/3`, `--m-rail-edge-l/r`, `--m-rail-edge-l-op/r-op`, `--m-network-gap`, `--m-strip-tile-w`, `--m-strip-pitch` | 106, 202, 230 / 224.4 / 466, 16, crops, 20 / 24, 0 / 1, 218, 272.368, 264.117 | 1:55, 1:74, 1:36 – 1:52, 1:54, 1:56, 1:17 – 1:31, 1:572 |
+| Services | `--m-access-line-h/gap`, `--m-wwd-gap`, `--m-pillar-title-h`, `--m-pillar-index-h/gap`, `--m-pillar-header-h`, `--m-pillar-image-top`, `--m-pillar-desc-w`, `--m-pillar-tail`, `--m-list-rail-gap`, `--m-list-col-min`, `--m-indicator-top`, `--m-ind-x`, `--m-services-tail` | 43 / 4, 148, 23, 11 / 4, 55, 89, 257, 80, 24, 214, 10, 0, 80 + 474 | 1:277, 1:278, 1:325, 1:106 – 1:139, 1:279 |
+| Stack | `--m-stack-pin-top`, `--m-stack-band-h`, `--m-stack-band-title-gap/pad`, `--m-stack-title-lh`, `--m-stack-index-lh`, `--m-stack-compact-px` | nav-h (68), 31, 8 / 8, 13, 6, 160 | 1:432 – 1:436, 1:470 – 1:473, 1:506 |
+| Type / colour / motion | `--type-term-sep-ws`, `--m-opacity-term-dim`, `--m-wipe-ms`, `--m-wipe-sweep-ms`, `--m-wipe-edge-blur`, `--m-hero-out-blur` | 0.25em, 0.3, 450, 300, 6, 12 | 1:32 (the frame draws no selected state); house |
+
 ---
 
 ## Provenance
 
-Parts 1–3 were read from the source at commit `486cdd5` on `develop` (the pre-rebuild state) and describe the desktop, which the rebuild has not changed. The tablet-band and exponent-derived phone tables that stood in Part 1 were removed on 2026-09-08 with the build they described; Parts 4–5 record the rebuilt mobile foundation from the working tree of that day, and every mobile value is read from `src/styles/tokens/*.css`.
+Parts 1–3 were read from the source at commit `486cdd5` on `develop` (the pre-rebuild state) and describe the desktop, which the rebuild has not changed. The tablet-band and exponent-derived phone tables that stood in Part 1 were removed on 2026-09-08 with the build they described; Parts 4–5 record the rebuilt mobile foundation from the working tree of that day (Part 1: the architecture and the chrome; Part 2, the same day: the landing from the hero to the services stack — §4.8 and §5.5), and every mobile value is read from `src/styles/tokens/*.css`.
