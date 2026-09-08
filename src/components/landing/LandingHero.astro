@@ -27,10 +27,13 @@ import { HERO_ENTRY } from '../../data/flags.js';
 import {
   HERO_LOGO_BRANDS,
   HERO_LOGO_SET_W,
+  HERO_LOGO_SET_W_M,
   HERO_LOGO_ROW_DUR_S,
   HERO_LOGO_ROW_PHASE_DELAY_S,
 } from '../../data/landing/hero-logos.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
+import DeviceGate from '../mobile/DeviceGate.astro';
+import HeroImageMobile from '../mobile/HeroImageMobile.astro';
 
 /* THE REBUILD (2026-09-07): the cards render at every width. Below the
    seam a 780 variant serves the phone's 78vw card and the tablet's third;
@@ -139,7 +142,7 @@ const heroEntryFlash = [
     <div
       class="landing-hero__logos-track"
       data-landing-hero-logos-track
-      style={`--marquee-set-w:${HERO_LOGO_SET_W}px;--hero-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--hero-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s`}
+      style={`--marquee-set-w:${HERO_LOGO_SET_W}px;--hero-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--hero-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s;--m-logo-set-w:${HERO_LOGO_SET_W_M}px;--m-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--m-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s`}
     >
       {heroLogosDoubled.map((b) => (
         <span class="landing-hero__logo-cell" data-landing-hero-logo-cell>
@@ -205,9 +208,16 @@ const heroEntryFlash = [
     </div>
   )}
 
-  {/* THE REBUILD (2026-09-07): the narrow build's video hero is RETIRED —
-      the phone and the tablet render this same composition (headline,
-      intro, logo row, the three cards) from landing-narrow.css. */}
+  {/* THE PHONE'S ONE IMAGE (mobile rebuild Part 2, 2026-09-08 — frame 1:272):
+      stamped in before first paint below the seam, and the three cards +
+      the entry stage removed with it (the gate sits AFTER them: it runs
+      as the parser reaches it, so it can only remove what is already
+      parsed); on the desktop the template goes and nothing here renders.
+      Same data source as the strip's first tile. In flow it follows the
+      logo row, the cards being gone. */}
+  <DeviceGate desktop="[data-landing-hero-cards], [data-he-stage]">
+    <HeroImageMobile />
+  </DeviceGate>
 </div>
 
 {/* The runway. Height is set by landing-hero-scroll.js from the

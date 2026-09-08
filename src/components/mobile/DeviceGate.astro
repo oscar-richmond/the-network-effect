@@ -16,6 +16,10 @@
  *   <DeviceGate desktop="[data-featured-strip]">
  *     <FeaturedMobile />
  *   </DeviceGate>
+ *
+ * PLACE THE GATE AFTER THE DESKTOP ELEMENTS IT REMOVES: the script runs as
+ * the parser reaches it, so it can only find what is already parsed. The
+ * mobile subtree lands at the gate's own position in flow.
  */
 import { MOBILE_MAX_WIDTH } from '../../config/breakpoints.js';
 const { desktop = '' } = Astro.props;
@@ -32,5 +36,7 @@ const { desktop = '' } = Astro.props;
     } else {
       tpl.remove();
     }
+    /* leave no trace: the desktop DOM reads exactly as before the gate */
+    if (document.currentScript) document.currentScript.remove();
   })();
 </script>

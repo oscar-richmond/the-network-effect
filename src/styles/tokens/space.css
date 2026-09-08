@@ -33,7 +33,7 @@
     --m-cta-pad-x: 16px;                   /* MORE INFO: 16 + 71 + 6 + 9 + 16 = 118 (1:115 – 1:118) */
     --m-cta-gap: 6px;                      /* label → arrow */
     --m-cta-arrow: 9px;                    /* the arrow glyph (1:118) */
-    --m-cta-pair-w: 179px;                 /* the two founders CTAs (1:65, 1:70), labels centred */
+    --m-cta-pair-w: calc((var(--m-measure) - var(--m-space-2)) / 2); /* the two founders CTAs (1:65, 1:70): half the measure less their 12 gap — 179 at 402, fluid so the pair never overflows 360 */
     --m-divider-h: 2px;                    /* the pillar dividers (1:106) */
     --m-indicator-w: 100px; --m-indicator-h: 1px; --m-indicator-thumb: 32px; /* the carousel indicators (1:121 – 1:122, 1:323 – 1:324, 1:390 – 1:391) */
     /* media */
@@ -44,6 +44,7 @@
     --m-pillar-img-h: 220px;                                        /* 370 × 220 (1:111) */
     --m-pillar-pitch: 733px; --m-pillar-title-gap: 34px; --m-pillar-image-gap: 55px; /* divider → title → image (1:106 → 1:107 → 1:110) */
     --m-list-col-gap: 48px; --m-list-row-h: 19px;                  /* the service lists (1:124) */
+--m-list-col-min: 214px;                                        /* the first column's box (1:125); the rest hug their longest row */
     --m-access-tile-w: 360px; --m-access-tile-h: 240px; --m-access-row-pitch: 256px; /* 1:93, 1:79 */
     --m-card-w: 280px; --m-card-title-gap: 24px; --m-card-desc-gap: 36px; /* the closing cards (1:344 – 1:350): image → title, title top → description top */
     --m-featured-title-gap: 24px;                                   /* card image → name (1:284 → 1:288) */
@@ -63,7 +64,56 @@
     --m-drawer-top: var(--m-nav-h);
     --m-drawer-gap: var(--m-space-5);
     --m-drawer-field-gap: var(--m-space-4);
-    /* the footer (1:392, 1:410) */
+    /* ── PART 2 (2026-09-08): the landing, hero → services, page-relative (frame y − 49) ── */
+/* the hero (1:12, 1:270, 1:213, 1:272, 1:271) */
+--m-hero-line-h: 90px;                 /* each headline line's box (1:13, 1:14) — two 45 lines */
+--m-hero-line-gap: 7px;                /* 1:13 → 1:14 (229 → 326 − 90) */
+--m-hero-intro-top: 399px;             /* 1:270 (448 − 49) */
+--m-hero-logos-top: 585px;             /* 1:213 (634 − 49) */
+--m-hero-img-top: 697px;               /* 1:272 (746 − 49) */
+--m-hero-band-top: 1167px;             /* 1:15 (1216 − 49) — the hero's flow height, the dark band's top */
+--m-hero-img-crop-w: 379px; --m-hero-img-crop-h: 474px; --m-hero-img-crop-x: -2px; --m-hero-img-crop-y: -7px; /* 1:275 inside the 370×420 window (1:273) */
+--m-hero-text-out-px: 160px;           /* each pinned block blurs out over this much scroll, ending as the image's top reaches the block's top (tunable) */
+--m-hero-fade-anchor: 700px;           /* the page ground begins its 474 fade when the image's BOTTOM edge crosses this viewport y (tunable; the safety table) */
+--m-hero-logos-gap: 114px;             /* the intro's bottom (471) → the logo row (585) */
+--m-hero-img-pos: 22% 13%;             /* the crop's offset inside the window: 2 of the 9 spare px across, 7 of the 54 down (1:275 in 1:273) */
+--m-logo-pitch: 110.4px;               /* 1:216 → 1:219: 102.4 cells on an 8 gap */
+--m-logo-scale: 0.64;                  /* the frame's marks are the desktop's at 0.64 (54.52 = 85.19 × 0.64; 102.4 = 160 × 0.64) */
+--m-logo-set-w: 993.6px; --m-logo-row-dur: 48s; --m-logo-row-delay: 0s; /* the roll's wrap distance and timing — defaults; LandingHero.astro sets the exact values inline from hero-logos.js */
+--m-logo-edge-w: 12px;                 /* 1:269: the row's edge fade, 3% of 402 */
+/* the dark band (1:15, y1167 → 2870) */
+--m-band-label-top: 106px;             /* WHO WE ARE (1:55): 1273 − 1167 */
+--m-founders-card-1: 230px; --m-founders-card-2: 224.4px; --m-founders-card-3: 466px; /* 1:36, 1:41, 1:48 (the third's window 450 + its 16 lead) */
+--m-founders-card-3-lead: 16px;        /* 1:50 sits 16 into 1:48 */
+--m-founders-pos-1: 44% 41%; --m-founders-pos-2: 28% 20%; --m-founders-pos-3: 90% 0%; /* the crops' offsets inside their windows (1:40 −4.69/−11.85 of 10.5/29.1 spare; 1:47 −4.08/−5.46 of 14.7/27.1; 1:52 −9/0 of 10/0) */
+--m-band-headline-indent: 202px;       /* 1:74's leading-space indent, measured on the frame's render: line 1 starts at x218 */
+--m-rail-edge-l: 20px; --m-rail-edge-r: 24px; /* 1:54 / 1:572: the edge gradients, 5% and 6% of 402 */
+--m-rail-edge-l-op: 0; --m-rail-edge-r-op: 1; /* the edges' rest opacities where they are pseudo-elements (the strip); rail.js writes them on the host from the rail's scroll */
+--m-network-gap: 218px;                /* the rail's bottom (1996) → the network title (1:56 at 2214) */
+--m-strip-tile-w: 272.368px; --m-strip-pitch: 264.117px; /* 1:17 – 1:29 (kept from Part 1's --m-strip-cell-w) */
+/* FROM ACCESS (1:276) → WHAT WE DO (1:325) → the pillars */
+--m-access-line-h: 43px;               /* 1:277, 1:278 */
+--m-access-line-gap: 4px;              /* the two lines on a 49 pitch (3148 → 3197) at the token's 45 leading */
+--m-wwd-gap: 148px;                    /* TO IMPACT's line box (45) → WHAT WE DO at 3341 (the frame's 43 box + 150) */
+--m-pillar-title-h: 23px;              /* 1:109's box at 28 — the title's line box */
+--m-pillar-index-h: 11px;              /* 1:108's box at 14 — the index's line box */
+--m-pillar-header-h: 55px;             /* divider → title bottom: the 32 gap + the 23 title, a FIXED box so the compaction never moves the layout below it */
+--m-ind-x: 0px;                        /* the list indicator's thumb travel, written by services.js from the rail's scroll (0 → track − thumb) */
+--m-pillar-index-gap: 4px;             /* title → index (1:109 right edge 151 → 1:108 at 155) */
+--m-pillar-image-top: 89px;            /* divider → image (3517 − 3428) */
+--m-pillar-desc-w: 257px;              /* 1:113 */
+--m-pillar-tail: 80px;                 /* button bottom → the next divider (4081 → 4161) */
+--m-list-rail-gap: 24px;               /* label → the list rail (1:123 → 1:124: 3865 + 14 + 24 = 3903) */
+--m-indicator-top: 10px;               /* the indicator sits 10 below the label's top (1:120 vs 1:123) */
+/* THE STACK (1:426): each pillar sticks under the nav on a 31 pitch; the previous one compacts as the next arrives */
+--m-stack-pin-top: var(--m-nav-h);     /* IMMERSE's divider at y116 − 49 = 67 ≈ the bar's foot */
+--m-stack-band-h: 31px;                /* 116 → 147 → 178 */
+--m-stack-band-title-gap: 8px;         /* divider (2) → title at +10 (1:432 → 1:436) */
+--m-stack-title-lh: 13px; --m-stack-index-lh: 6px; /* the compact title's and index's line boxes (1:436, 1:435) */
+--m-stack-band-pad: 8px;               /* title bottom → the next divider */
+--m-stack-compact-px: 160px;           /* the compaction scrub: the next pillar's last 160px of approach (tunable) */
+--m-services-tail: calc(var(--m-pillar-tail) + var(--m-ground-fade-h)); /* AMPLIFY's button → Featured Work's top: 80 + the 474 fade zone (5498 → 6052); the stage's own padding, so it is also the stack's HOLD before the release */
+/* the footer (1:392, 1:410) */
     --m-footer-indent: 104px;              /* the statement's first-line indent (1:409 — drawn as leading spaces, measured on the render) */
     --m-footer-statement-h: 180px; --m-footer-index-pitch: 30px; --m-footer-link-h: 18px; --m-footer-legal-row-pitch: 40px;
   }

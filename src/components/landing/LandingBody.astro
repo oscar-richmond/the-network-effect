@@ -219,6 +219,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   import { initLandingClosing } from '../../scripts/landing/landing-closing.js';
   import { initNavEntrance } from '../../scripts/landing/nav-motion.js';
   import { initSplash } from '../../scripts/landing/splash.js';
+  import { initMobileLanding } from '../../scripts/mobile/landing.js';
 
   /* The splash boots FIRST so it owns the load before any section
      schedules its own arrival. It only exists when the pre-paint
@@ -259,6 +260,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   let cleanupLandingAccess = initLandingAccess();
   let cleanupLandingClosing = initLandingClosing();
   let cleanupNavEntrance = initNavEntrance();
+  let cleanupMobileLanding = initMobileLanding();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupLandingHero();
@@ -270,6 +272,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
     cleanupLandingAccess();
     cleanupLandingClosing();
     cleanupNavEntrance();
+    cleanupMobileLanding();
   });
 
   document.addEventListener('astro:after-swap', () => {
@@ -282,5 +285,6 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
     cleanupLandingAccess = initLandingAccess();
     cleanupLandingClosing = initLandingClosing();
     cleanupNavEntrance = initNavEntrance();
+    cleanupMobileLanding = initMobileLanding();
   });
 </script>

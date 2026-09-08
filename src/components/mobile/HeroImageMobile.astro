@@ -1,0 +1,33 @@
+---
+/**
+ * THE HERO'S ONE IMAGE (mobile rebuild Part 2, 2026-09-08) — frame 1:272 "2":
+ * a 370×420 window (1:273) at page y697 showing 1:275 — the GQ photograph
+ * (52513570442_182000ff2d_k), the frame's own upload at 1536×1920, drawn
+ * 379×474 at (−2, −7) inside the window; 1:274 beneath it is fully covered
+ * and is not rendered. Behind the window sits 1:271, the light → dark
+ * gradient that carries the ground into the dark band (page 697 → 1167).
+ *
+ * The desktop's three cards and the entry stage are removed on the phone by
+ * the gate that stamps this in (LandingHero.astro); the phone never parses
+ * them. The photograph is the same picture as the network strip's first
+ * tile and the desktop's strip-1.jpg; the frame supplies it at 2.4× the
+ * repo's resolution, so it ships as its own asset.
+ *
+ * RIGHTS (carried from network-strip-sets.js / LandingHero.astro): the
+ * frame's own upload, placeholder-until-approved per the standing policy;
+ * the pictured people are unnamed but real — founder confirmation before
+ * launch.
+ */
+import { asset } from '../../utils/asset.js';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
+import { QUERIES } from '../../config/breakpoints.js';
+const src = asset('/assets/landing/mobile/hero.jpg');
+/* the window is the fluid measure (100vw − 32): 370 at 402; the 3× phone resolves the 1140 candidate */
+const sizes = `${QUERIES.phone} calc(100vw - 32px), 370px`;
+---
+<figure class="m-hero" data-hero-image-m aria-hidden="true">
+  <div class="m-hero__fade" aria-hidden="true"></div>
+  <div class="m-hero__win">
+    <img src={src} srcset={imageSrcset(src, [780, 1140], 1536)} sizes={sizes} alt="" decoding="async" loading="eager" width="1536" height="1920" />
+  </div>
+</figure>

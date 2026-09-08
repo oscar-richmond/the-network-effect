@@ -15,5 +15,9 @@
     --m-nav-shrink-scroll: 120px;
     /* the ground transitions: the fade zones are the frame's 474 (--m-ground-fade-h); hard edges switch at 0 */
     --m-ground-edge: 0px;
+/* the strip's swap (the desktop's clip wipe vocabulary: two-phase L→R clip, a 6px edge blur riding the edge) */
+--m-wipe-ms: 450; --m-wipe-sweep-ms: 300; --m-wipe-edge-blur: 6px;
+/* the hero's blur-out (the hero vocabulary: the covered block dissolves, never a bare clip) */
+--m-hero-out-blur: 12px;
   }
 }

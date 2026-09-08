@@ -11,5 +11,9 @@
 @import './footer.css';
 @import './drawer.css';
 @import './ground.css';
+@import './hero.css';
+@import './founders.css';
+@import './network.css';
+@import './services.css';
 @import './pending.css';
 @layer tokens, base, desktop, tablet, mobile;
