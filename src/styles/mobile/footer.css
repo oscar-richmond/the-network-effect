@@ -1,0 +1,111 @@
+@import '../tokens/breakpoints.css';
+@layer tokens, base, desktop, tablet, mobile;
+@layer mobile {
+  @media (--mobile) {
+    /* THE FOOTER (1:392 + 1:410) — the same DOM as the desktop's, in normal
+       flow: no reveal, the page scrolls onto it. Statement first, then the
+       site index, the email, the socials (64 apart), then the legal rows. */
+    .landing-v2 .landing-footer,
+    .landing-v2:not(.work-page):not(.founders-page) .landing-footer,
+    .landing-v2.work-page .landing-footer,
+    .landing-v2.founders-page .landing-footer {
+      position: static;
+      top: auto;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: var(--m-space-section) var(--m-inset) var(--m-page-bottom);
+      background: transparent;
+      color: var(--m-color-ink);
+      font-family: var(--type-body-face);
+      z-index: auto;
+    }
+    .landing-v2 .landing-footer-spacer, .landing-v2 .work-footer-spacer { display: none; }
+    /* /work and /founders park their footers in fixed wraps on the desktop */
+    .landing-v2 .work-footwrap, .landing-v2 .fd-footwrap, .landing-v2 .sv6-footwrap { position: static; height: auto; bottom: auto; }
+    /* the statement (1:409): 370 × 180, the footer-statement tier, the first line indented, the tail muted */
+    .landing-v2 .landing-footer__dstatement {
+      display: block;
+      order: -1;
+      position: static;
+      width: auto;
+      margin: 0 0 var(--m-space-8);
+      font-family: var(--type-footer-statement-face);
+      font-weight: var(--type-footer-statement-weight);
+      font-size: var(--type-footer-statement-size);
+      line-height: var(--type-footer-statement-lh);
+      letter-spacing: var(--type-footer-statement-ls);
+      text-transform: var(--type-footer-statement-case);
+      color: var(--m-color-ink);
+    }
+    .landing-v2 .landing-footer__dst-line { display: inline; position: static; margin: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+    /* the desktop's three line <p>s run on as one paragraph here — they abut
+       with no whitespace in the DOM, so the word gap between them is generated */
+    .landing-v2 .landing-footer__dst-line + .landing-footer__dst-line::before { content: ' '; }
+    .landing-v2 .landing-footer__dst-indent { display: inline-block; width: var(--m-footer-indent); }
+    .landing-v2 .landing-footer__dst-grey { color: var(--m-color-muted); }
+    /* the groups (1:393): index, email, socials — 64 apart, each a label over links on the 30 pitch */
+    .landing-v2 .landing-footer__dtop {
+      position: static;
+      display: flex;
+      flex-direction: column;
+      gap: var(--m-space-8);
+      width: auto;
+      height: auto;
+      margin: 0 0 var(--m-space-9);
+    }
+    .landing-v2 .landing-footer__dgroup { position: static; display: flex; flex-direction: column; gap: var(--m-space-2); width: auto; }
+    .landing-v2 .landing-footer__dlabel,
+    .landing-v2 .landing-footer__dlink {
+      margin: 0;
+      font-family: var(--type-body-face);
+      font-weight: var(--type-body-weight);
+      font-size: var(--type-body-size);
+      line-height: var(--type-body-lh);
+      letter-spacing: var(--type-body-ls);
+      text-transform: capitalize;
+      text-decoration: none;
+      color: var(--m-color-ink);
+    }
+    .landing-v2 .landing-footer__dlabel { color: var(--m-color-muted); }
+    /* the address is an address (1:402), not a title */
+    .landing-v2 .landing-footer__dgroup--email .landing-footer__dlink { text-transform: none; }
+    .landing-v2 .landing-footer__dlink { display: inline-flex; align-items: center; min-height: var(--m-footer-link-h); position: relative; }
+    .landing-v2 .landing-footer__dlink::after { content: ''; position: absolute; inset: calc((var(--m-footer-link-h) - var(--m-tap-min)) / 2) 0; }
+    .landing-v2 .landing-footer__dlink.is-placeholder { pointer-events: none; }
+    /* the START A PROJECT chip is not in the frame's footer */
+    .landing-v2 .landing-footer__dchip { display: none; }
+    /* the legal rows (1:410): terms left + privacy right, then the copyright, then the studio — 40 apart */
+    .landing-v2 .landing-footer__drow {
+      position: static;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      row-gap: var(--m-space-4);
+      align-items: center;
+      width: auto;
+      height: auto;
+      margin: 0;
+    }
+    .landing-v2 .landing-footer__ritem {
+      position: static;
+      margin: 0;
+      font-family: var(--type-small-face);
+      font-weight: var(--type-small-weight);
+      font-size: var(--type-small-size);
+      line-height: var(--type-small-lh);
+      letter-spacing: var(--type-small-ls);
+      text-transform: capitalize;
+      color: var(--m-color-ink);
+    }
+    .landing-v2 .landing-footer__ritem--terms { grid-column: 1; grid-row: 1; }
+    .landing-v2 .landing-footer__ritem--privacy { grid-column: 2; grid-row: 1; justify-self: end; }
+    .landing-v2 .landing-footer__ritem--copy { grid-column: 1 / -1; grid-row: 2; }
+    .landing-v2 .landing-footer__ritem--siteby { grid-column: 1 / -1; grid-row: 3; }
+    .landing-v2 .landing-footer__ritem.is-placeholder { pointer-events: none; }
+    /* the desktop's reveal clips (footer-motion wraps the words) rest open here */
+    .landing-v2 .landing-footer .lr-clip, .landing-v2 .landing-footer .lr-inner { display: inline; transform: none; clip-path: none; opacity: 1; }
+    .landing-v2 .landing-footer__img { display: none; }
+  }
+}

@@ -55,7 +55,9 @@ for (const route of ROUTES) {
   await page.addInitScript(() => { try { sessionStorage.setItem('ne-splash-seen', '1'); } catch {} });
   await page.goto(BASE + route + (route.includes('?') ? '&' : '?') + 'splash=0', { waitUntil: 'load' }).catch(() => {});
   await page.waitForTimeout(1500);
-  const tokens = await page.evaluate(() => { const cs = getComputedStyle(document.documentElement); const px = (n) => parseFloat(cs.getPropertyValue(n)); return { navH: px('--m-nav-h'), navSize: px('--type-nav-size'), navSizeScrolled: px('--type-nav-size-scrolled'), shrink: px('--m-nav-shrink-scroll'), burgerX: px('--m-burger-x'), fade: px('--m-ground-fade-h') }; });
+  const tokens = await page.evaluate(() => { const cs = getComputedStyle(document.documentElement); const px = (n) => parseFloat(cs.getPropertyValue(n)); return { navH: px('--m-nav-h'), navSize: px('--type-nav-size'), navSizeScrolled: px('--type-nav-size-scrolled'), shrink: px('--m-nav-shrink-scroll'), inset: px('--m-inset'), burgerW: px('--m-burger-w'), fade: px('--m-ground-fade-h') }; });
+  /* the burger sits at the inset from the right edge at every width (370 at the 402 frame) */
+  tokens.burgerX = VW - tokens.inset - tokens.burgerW;
   const docH = await page.evaluate(() => document.documentElement.scrollHeight);
   const expectedSize = (y) => { const t = Math.min(1, Math.max(0, y / tokens.shrink)); return tokens.navSize + (tokens.navSizeScrolled - tokens.navSize) * t; };
   const sizeAt = new Map();
@@ -63,8 +65,8 @@ for (const route of ROUTES) {
     const s = await page.evaluate(() => {
       const nav = document.querySelector('.home__topbar'); const wm = document.querySelector('.home__logo'); const bg = document.querySelector('.home__menu-burger'); const footer = document.querySelector('.landing-footer'); const ground = document.querySelector('[data-m-ground]');
       const r = (el) => el ? el.getBoundingClientRect() : null; const cs = (el) => el ? getComputedStyle(el) : null;
-      const chain = (el) => { const bad = []; let e = el?.parentElement; while (e && e !== document.body) { const c = getComputedStyle(e); if (parseFloat(c.opacity) < 1 || c.transform !== 'none' || c.filter !== 'none' || c.willChange !== 'auto' || c.isolation === 'isolate') bad.push(e.className || e.tagName); e = e.parentElement; } return bad; };
-      return { y: window.scrollY, ovf: document.documentElement.scrollWidth - document.documentElement.clientWidth, nav: r(nav), navPos: cs(nav)?.position, wm: r(wm), wmSize: wm ? parseFloat(getComputedStyle(wm).fontSize) : null, wmBlend: cs(wm)?.mixBlendMode, bg: r(bg), bgBlend: cs(bg)?.mixBlendMode, chainWm: chain(wm), chainBg: chain(bg), footer: r(footer), footerPos: cs(footer)?.position, docH: document.documentElement.scrollHeight, ground: ground ? getComputedStyle(ground).backgroundColor : null };
+      const blendHost = (el) => { let e = el; while (e && e !== document.body) { if (getComputedStyle(e).mixBlendMode === 'difference') return e; e = e.parentElement; } return null; }; const chain = (el) => { const bad = []; const host = blendHost(el); if (!host) return ['no blend host']; let e = el; while (e && e !== document.body) { const c = getComputedStyle(e); if (parseFloat(c.opacity) < 1 || c.transform !== 'none' || c.filter !== 'none' || c.willChange !== 'auto' || c.isolation === 'isolate') bad.push(e.className || e.tagName); if (e !== host && e.parentElement !== host && e.parentElement && getComputedStyle(e.parentElement).position !== 'static' && getComputedStyle(e.parentElement).zIndex !== 'auto' && e.parentElement !== host) {} e = e.parentElement; } return bad; };
+      return { y: window.scrollY, ovf: document.documentElement.scrollWidth - document.documentElement.clientWidth, nav: r(nav), navPos: cs(nav)?.position, wm: r(wm), wmSize: wm ? parseFloat(getComputedStyle(wm).fontSize) : null, wmBlend: blendHost(wm) ? 'difference' : cs(wm)?.mixBlendMode, bg: r(bg), bgBlend: blendHost(bg) ? 'difference' : cs(bg)?.mixBlendMode, chainWm: chain(wm), chainBg: chain(bg), footer: r(footer), footerPos: cs(footer)?.position, docH: document.documentElement.scrollHeight, ground: ground ? getComputedStyle(ground).backgroundColor : null };
     });
     if (s.ovf > 0) note(route, 'X1', `overflow ${s.ovf}px at y${s.y} (${label})`);
     if (s.nav && (Math.abs(s.nav.top) > 0.5 || s.navPos !== 'fixed' || Math.abs(s.nav.height - tokens.navH) > 0.5)) note(route, 'N1', `nav top ${s.nav.top.toFixed(1)} h ${s.nav.height.toFixed(1)} pos ${s.navPos} at y${s.y}`);
@@ -105,7 +107,9 @@ for (const route of ROUTES) {
     const focusBack = await page.evaluate(() => document.activeElement?.matches('[data-menu-toggle]'));
     if (!focusBack) note(route, 'M1', 'focus did not return to the toggle');
   }
-  if (errors.length) note(route, 'X1', errors.slice(0, 3).join(' | '));
+  /* Vite's dev-only "504 (Outdated Optimize Dep)" after a dependency re-optimisation is not a page error */
+  const pageErrors = errors.filter((e) => !/Outdated Optimize Dep|Outdated Opt/.test(e) && !(/^\/nope-/.test(route) && /404 \(Not Found\)/.test(e)));
+  if (pageErrors.length) note(route, 'X1', pageErrors.slice(0, 3).join(' | '));
   console.log(`${route.padEnd(26)} moves ${MOVES}  docH ${docH}  ground stops ${groundSamples.length}  errors ${errors.length}`);
   await ctx.close();
 }

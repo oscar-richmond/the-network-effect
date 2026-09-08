@@ -26,6 +26,9 @@ import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
 /* The TABLET band (Part 4 of the mobile rebuild) — tablet.css layers over the
    phone build at the band's seams (src/config/breakpoints.js). */
 import '../styles/landing/tablet.css';
+/* THE MOBILE LAYER (Part 1 of the mobile rebuild, 2026-09-08): the last cascade
+   layer, below the shell floor only — the chrome now, the sections in Parts 2–3. */
+import '../styles/mobile/index.css';
 /* THE TYPE TOKENS (the foundation task, 2026-09-07): the scale system's one
    source — every role at every band. Nothing reads them yet; Prompt 2
    replaces the mobile and tablet literals with them. Custom properties on
@@ -64,6 +67,8 @@ const {
       page's <main>, and on the landing page the hero's exposed copy
       block. tabindex="-1" on those targets is what lets the jump
       actually move focus, not just the scroll. */}
+  {/* the mobile layer's page ground — one fixed layer every section is transparent over (ground.js scrubs it) */}
+  <div class="m-ground" data-m-ground aria-hidden="true"></div>
   <a class="skip-link" href="#main">Skip to content</a>
   {/* Top nav — the existing chrome and menu behaviour, unchanged. */}
   <header class="home__topbar home__topbar--about">
@@ -101,9 +106,10 @@ const {
         the click surface — nav-motion builds the entrance chars
         INSIDE it so the link survives the char wrap. */}
     {/* NAV RESPEC (frame 17:1637, 2026-08-24): the SSR text is the
-        MOBILE wordmark; on desktop ensureLogoChars() swaps it to
+        spaced no-JS form; on desktop ensureLogoChars() swaps it to
         "TheNetworkEffect" (Serrif Medium 24 — landing.css) before
-        any wrap or reveal, so the mobile DOM stays byte-identical. */}
+        any wrap or reveal, and below the seam the mobile nav driver
+        (scripts/mobile/nav.js) makes the same swap (frame 1:420). */}
     {/* A11y batch item 9: a <div>, not an <h1> — the wordmark is the
         site's name on every route, not the page's title, and as an h1
         it gave every page two top-level headings (or, on the landing
@@ -185,3 +191,11 @@ const {
   {/* Grain: last-in-body sibling, never an ancestor (blend safety). */}
   <div class="landing-grain" aria-hidden="true"></div>
 </BaseLayout>
+
+<script>
+  /* THE MOBILE CHROME (Part 1 D): the nav's size behaviour + the ground layer, on every route. */
+  import { initMobileChrome } from '../scripts/mobile/chrome.js';
+  let cleanupChrome = initMobileChrome();
+  document.addEventListener('astro:before-swap', () => { cleanupChrome(); });
+  document.addEventListener('astro:after-swap', () => { cleanupChrome = initMobileChrome(); });
+</script>

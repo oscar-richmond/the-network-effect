@@ -1,0 +1,15 @@
+/* THE MOBILE LAYER — one entry (mobile rebuild Part 1, 2026-09-08). Every
+   sheet here reads the tokens and nothing else (scripts/qa/literal-sweep.mjs),
+   sits in the `mobile` layer (the last, so it out-cascades every desktop and
+   tablet rule at any specificity) and applies only below the shell floor
+   (@custom-media --mobile from the one seam source). The imports come first —
+   Vite inlines them in place and each restates the layer order at its head. */
+@import '../tokens/breakpoints.css';
+@import './base.css';
+@import './nav.css';
+@import './menu.css';
+@import './footer.css';
+@import './drawer.css';
+@import './ground.css';
+@import './pending.css';
+@layer tokens, base, desktop, tablet, mobile;

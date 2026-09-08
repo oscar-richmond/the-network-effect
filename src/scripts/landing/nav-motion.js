@@ -96,6 +96,8 @@ export function ensureRippleChars(label) {
 }
 
 export function ensureLogoChars() {
+  /* the desktop bar only — the mobile wordmark is the served text, sized by the mobile layer (nav.js) */
+  if (isMobileViewport()) return;
   const logo = document.querySelector('.home__logo');
   if (!(logo instanceof HTMLElement) || logo.querySelector('.cr-char')) return;
   /* The logo text lives inside its home link when present (the
