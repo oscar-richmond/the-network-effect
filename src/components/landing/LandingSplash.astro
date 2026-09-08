@@ -30,13 +30,17 @@
  * stays byte-identical to the shipped site.
  */
 import { HERO_ENTRY, HERO_ENTRY_SPLASH } from '../../data/flags.js';
+import { MOBILE_MAX_WIDTH } from '../../config/breakpoints.js';
 const entryArmed = HERO_ENTRY && !HERO_ENTRY_SPLASH;
 ---
 {entryArmed && (
-  <script is:inline>
+  <script is:inline define:vars={{ MOBILE_MAX_WIDTH }}>
     (function () {
       try {
         var d = document.documentElement;
+        /* the hero entry is desktop DOM (the phone's gate removes its stage — mobile
+           rebuild Part 3 §6): below the seam it is never armed, and the cover splash runs */
+        if ((d.clientWidth || window.innerWidth) <= MOBILE_MAX_WIDTH) return;
         /* `?entry=0` suppresses the entry — so it must NOT arm the red
            ground either. Arming regardless left the red up with nothing
            to clear it (splash.js hands straight to the page beats, and

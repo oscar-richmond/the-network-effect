@@ -31,6 +31,7 @@
  */
 
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S, ensureNavLinkChars } from './nav-motion.js';
+import { isMobileViewport } from './viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 /* ── The register (every duration a named constant). */
@@ -262,7 +263,8 @@ export function initSplash(root) {
      — with the established char ripple (the same sweep units and
      stagger playPageBeats uses for MENU and LET'S CHAT; it excludes
      the logo only because the travel had already delivered it). */
-  const coverHidden = HERO_ENTRY && !HERO_ENTRY_SPLASH;
+  /* the dev-only hero entry is desktop DOM (the phone's gate removes its stage), so below the seam the cover splash runs as it does in production (mobile rebuild Part 3 §6) */
+  const coverHidden = HERO_ENTRY && !HERO_ENTRY_SPLASH && !isMobileViewport();
   const rippleNavIn = () => {
     ensureLogoChars();
     const parts = [
