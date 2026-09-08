@@ -178,28 +178,4 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
      marked. /contact keeps its own richer, pointer-tracked version. */
   import { initEmailCopy } from '../../scripts/email-copy.js';
   initEmailCopy();
-  /* THE REBUILD (2026-09-07): below the seam the footer reveals from
-     behind the closing tier exactly as on the desktop — a sticky
-     footer with a negative top margin and a spacer holding the
-     document's height. The desktop's 830 is a literal; the narrow
-     footer's height is measured here and published as --footer-h on
-     the body (the footer and the spacer both read it), then the
-     triggers below it are refreshed. Nothing runs above the seam. */
-  import { isMobileViewport } from '../../scripts/landing/viewport.js';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  {
-    let last = '';
-    const publish = () => {
-      const footer = document.querySelector('.landing-footer');
-      if (!(footer instanceof HTMLElement) || !isMobileViewport()) return;
-      const next = `${Math.round(footer.offsetHeight)}px`;
-      if (next === last) return;
-      last = next;
-      document.body.style.setProperty('--footer-h', next);
-      ScrollTrigger.refresh();
-    };
-    (document.fonts?.ready ?? Promise.resolve()).then(() => { publish(); requestAnimationFrame(publish); });
-    window.addEventListener('resize', publish);
-    window.addEventListener('load', publish);
-  }
 </script>

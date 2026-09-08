@@ -59,23 +59,9 @@ export function initCaseStudy() {
   const timeouts = [];
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* The desktop driver: below the seam the mobile layer owns the page (Part 3). */
+  if (isMobileViewport()) return () => {};
 
-  /* MOBILE swipe indicators (the 402-frame rebuild): the what-we-did
-     columns and the more-work cards are native carousels below the
-     seam — the shared component observes them. Above the RM gate:
-     the thumb follows the user's own swipe (feedback, not motion). */
-  if (isMobileViewport()) {
-    /* (the rebuild, 2026-09-07: the retired mobile build's swipe
-       indicators are gone with their markup) */
-    /* THE MOBILE PASS (2026-09-07): a stream video with a phone-encoded
-       sibling (data-src-m, 480w — [slug].astro) plays that one here; the
-       desktop keeps the original. */
-    page.querySelectorAll('video[data-src-m]').forEach((v) => {
-      if (!(v instanceof HTMLVideoElement) || !v.dataset.srcM) return;
-      v.src = v.dataset.srcM;
-      v.load();
-    });
-  }
 
   /* Live-slug gating for the more-work cards. On the PAGE element,
      not document: it must preventDefault BEFORE page-transition's
@@ -120,7 +106,7 @@ export function initCaseStudy() {
   const nextBtn = document.querySelector('[data-cs-pager="next"]');
   /* THE REBUILD (2026-09-07): below the seam the MORE WORK rail is native
      scroll with snap (case-study-narrow.css) — the pager is the desktop's. */
-  if (track instanceof HTMLElement && prevBtn instanceof HTMLButtonElement && nextBtn instanceof HTMLButtonElement && !isMobileViewport()) {
+  if (track instanceof HTMLElement && prevBtn instanceof HTMLButtonElement && nextBtn instanceof HTMLButtonElement) {
     const CARD_STEP_PX = 844; // 836 card + 8 gap
     const PER_VIEW = 2;
     const count = track.children.length;
@@ -670,11 +656,7 @@ export function initCaseStudy() {
   fontsReady.then(() => {
     if (disposed) return;
 
-    /* Hero — the title word-reveals at load, image rise behind.
-       (The subtitle is DESKTOP-hidden since the 36:1827 rebuild —
-       the mobile build keeps its shipped title+subtitle pair, so
-       its wiring is width-gated, not removed.) */
-    const isMob = isMobileViewport();
+    /* Hero — the title word-reveals at load, image rise behind. */
     const heroTitle = document.querySelector('[data-cs-hero-title]');
     /* (the rebuild, 2026-09-07: the subtitle is gone — the desktop's hero
        carries the title alone, at every width) */
@@ -756,53 +738,6 @@ export function initCaseStudy() {
       }));
     });
 
-    /* MOBILE-ONLY entrances (the shipped mobile build keeps its
-       what-we-did columns and static rail blocks — their wiring is
-       width-gated here since the 36:1827 desktop rebuild removed
-       those sections from the desktop render). The DESKTOP rail
-       machinery — the settle-at-pin scheduling for sticky segments
-       and the KEY-IMPACT scrubbed cover wipe — is REMOVED, not
-       gated. (Note: the cover wipe used to run below the seam too,
-       against desktop constants — a latent leak; it is gone on
-       both.) */
-    if (isMob) {
-      const didLines = Array.from(document.querySelectorAll('[data-cs-did-line]'));
-      didLines.forEach((line, i) => {
-        if (!(line instanceof HTMLElement)) return;
-        const col = Number(line.dataset.csCol ?? '-1');
-        const base = col >= 0 ? 0.12 + col * COL_STAGGER_S : 0;
-        wrapWordRevealElement(line, { baseDelay: base + (i % 5) * 0.04 });
-      });
-      const did = document.querySelector('[data-cs-did]');
-      if (did) {
-        triggers.push(ScrollTrigger.create({
-          trigger: did,
-          start: 'top 70%',
-          once: true,
-          onEnter: () => didLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l)),
-        }));
-      }
-      /* The seg1 desc keeps its static line boxes — the retired
-         cover wipe used to split it (wrapStaticLines) on every
-         width; the split is rendering-neutral and the shipped
-         mobile DOM carries it, so it stays. */
-      const seg1Desc = document.querySelector('.cs-rail-seg--1 .cs-rail__desc');
-      if (seg1Desc instanceof HTMLElement) wrapStaticLines(seg1Desc);
-      document.querySelectorAll('.cs-rail-seg').forEach((seg) => {
-        const block = seg.querySelector('[data-cs-rail]');
-        triggers.push(ScrollTrigger.create({
-          trigger: seg,
-          start: 'top 60%',
-          once: true,
-          onEnter: () => {
-            block?.classList.add('is-visible');
-            schedule(() => {
-              if (block instanceof HTMLElement) block.style.transition = 'none';
-            }, 700);
-          },
-        }));
-      });
-    }
 
     /* More work — title reveal, cards stagger, card text rides. */
     const moreTitle = document.querySelector('[data-cs-more-title]');
@@ -846,16 +781,9 @@ export function initCaseStudy() {
     const footer = document.querySelector('[data-landing-footer]');
     if (footer instanceof HTMLElement) {
       const wrapped = wrapFooterReveals(footer);
-      /* THE REBUILD (2026-09-07): the narrow build reveals the footer from
-         behind the page too (the sticky footer + the spacer, with a
-         measured height — shared-narrow.css); its trigger reads the
-         SPACER, which is in flow: 200 into the reveal. */
-      const spacer = document.querySelector('.landing-footer-spacer');
       triggers.push(ScrollTrigger.create({
-        trigger: isMobileViewport() && spacer ? spacer : footer,
-        start: () => (isMobileViewport()
-          ? (spacer ? 'top bottom-=200' : 'top 85%')
-          : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
+        trigger: footer,
+        start: () => `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`,
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),
       }));

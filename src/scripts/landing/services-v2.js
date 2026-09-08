@@ -88,11 +88,8 @@ export function initServicesV2() {
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  /* The viewport.js seam — mobile keeps the reveals, the rows (with
-     the tap path below) and the bottom behaviours; the hero wave,
-     pillar clip/parallax scrubs and the desktop image-frame glide
-     are gated where they occur. */
-  const isMob = isMobileViewport();
+  /* The desktop driver: below the seam the mobile layer owns the page (Part 3). */
+  if (isMobileViewport()) return () => {};
 
   /* ── Scroll: the SHARED house boot (site-scroll.js — one source
      of truth for the uniform feel; non-RM only). `lenis` reads the
@@ -103,7 +100,7 @@ export function initServicesV2() {
   /* ── HOVER ROWS — the shared machinery (sv-rows.js; extracted
      verbatim 2026-08-24 so the landing's row lists run the exact
      same behaviour — one definition, no drift). */
-  cleanups.push(initSvRowsSections({ reduced, isMob, fineHover, schedule }));
+  cleanups.push(initSvRowsSections({ reduced, fineHover, schedule }));
 
   /* Back-to-top / home (all modes — navigation, not decoration). */
   const topLinks = Array.from(document.querySelectorAll('[data-footer-top]'));
@@ -220,7 +217,7 @@ export function initServicesV2() {
     const hero = document.querySelector('[data-sv-hero]');
     const stage = document.querySelector('[data-sv-hero-stage]');
     const track = document.querySelector('[data-sv-hero-track]');
-    if (!isMob && hero instanceof HTMLElement && stage instanceof HTMLElement && track instanceof HTMLElement) {
+    if (hero instanceof HTMLElement && stage instanceof HTMLElement && track instanceof HTMLElement) {
       const items = Array.from(track.children).filter((el) => el instanceof HTMLElement);
       const itemSpeed = (item) => parseFloat(item.dataset.svWaveSpeed || '1') || 1;
       let waveTravel = 0;
@@ -303,10 +300,6 @@ export function initServicesV2() {
     document.querySelectorAll('.sv-pillar').forEach((section) => {
       const frame = section.querySelector('[data-sv-pillar-frame]');
       const img = section.querySelector('[data-sv-pillar-img]');
-      /* Mobile: the pillar is a static aspect box — no clip
-         expansion, no parallax (the oversized-img ride would fight
-         the static crop). */
-      if (isMob) return;
       if (frame instanceof HTMLElement) {
         gsap.fromTo(frame, {
           clipPath: `inset(0px ${PILLAR_MARGIN_PX}px 0px ${PILLAR_MARGIN_PX}px)`,
@@ -518,12 +511,7 @@ export function initServicesV2() {
       const wrapped = wrapFooterReveals(footer);
       triggers.push(ScrollTrigger.create({
         trigger: footer,
-        /* Mobile: plain-flow footer — the desktop pin formula can sit
-           past the document end and never fire (the landing-closing
-           lesson). */
-        start: () => (isMob
-          ? 'top 85%'
-          : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
+        start: () => `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`,
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),
       }));

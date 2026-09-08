@@ -530,42 +530,18 @@ export function initLandingHeroScroll() {
   if (!(hero instanceof HTMLElement) || !(spacer instanceof HTMLElement)) {
     return () => {};
   }
+  /* The desktop driver: below the seam the mobile layer owns the hero (Part 2). */
+  if (isMobileViewport()) return () => {};
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* NARROW (≤ MOBILE_MAX_WIDTH, the viewport.js seam): the SAME machine,
-     the SAME beats (the rebuild, 2026-09-07). What the flag still
-     decides: vh comes from the stage's rendered height (100svh on the
-     phone) so the runway never re-derives on URL-bar collapse, and the
-     resize rebuild fires on WIDTH change only, for the same reason. */
-  const isMob = isMobileViewport();
-
-  /* THE GEOMETRY TOKENS — read from the page's own custom properties
-     (landing-narrow.css sets them per band on .landing-home); the
-     shipped constants are the fallback, which is what the desktop gets
-     (it sets none), so its path is byte-identical. */
-  const readPx = (prop, fallback) => {
-    const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
-    return Number.isFinite(v) ? v : fallback;
-  };
-  const introToLogos = readPx('--hero-intro-to-logos', HERO_INTRO_TO_LOGOS_PX);
-  const logoRowH = readPx('--hero-logo-row-h', HERO_LOGO_ROW_H_PX);
-  const logosToCards = readPx('--hero-logos-to-cards', HERO_LOGOS_TO_CARDS_PX);
+  const introToLogos = HERO_INTRO_TO_LOGOS_PX;
+  const logoRowH = HERO_LOGO_ROW_H_PX;
+  const logosToCards = HERO_LOGOS_TO_CARDS_PX;
   const introToBand = introToLogos + logoRowH + logosToCards;
-  const cardMargin = readPx('--hero-card-margin', HERO_CARD_MARGIN_PX);
-  const cardGap = readPx('--hero-card-gap', HERO_CARD_GAP_PX);
-  const cardStagger = readPx('--hero-card-stagger', HERO_CARD_STAGGER_PX);
-  /* > 0 = the CENTRED ROW regime (the phone): each card is this fraction
-     of the viewport width and the row is centred on the middle card, the
-     outer two peeking in from the edges — the desktop's row of three,
-     cropped by the phone's width instead of shrunk to thumbnails. 0 (the
-     desktop, the tablet) = three across between the margins. */
-  const cardFrac = readPx('--hero-card-frac', 0);
-  /* > 0 = the intro's top is DERIVED here (the headline's measured
-     bottom + this gap) — on the narrow build the headline wraps, so its
-     height is not a constant the stylesheet can chain from. 0 = the
-     stylesheet owns it (the desktop's px rest chain). */
-  const headlineToIntro = readPx('--hero-headline-to-intro', 0);
+  const cardMargin = HERO_CARD_MARGIN_PX;
+  const cardGap = HERO_CARD_GAP_PX;
+  const cardStagger = HERO_CARD_STAGGER_PX;
   /* The band's top is DERIVED (R5, Oscar 2026-09-02) — the intro's
      measured rest bottom + the chain below it (intro → logo row → cards),
      so the authored gaps hold through type changes. Measured inside the
@@ -583,21 +559,6 @@ export function initLandingHeroScroll() {
     return VIDEO_BAND_TOP_PX;
   };
   const headlineLeft = HEADLINE_LEFT_MARGIN;
-  /* THE PHONE'S INTRO WRAPS NATURALLY: the desktop's two authored lines
-     are locked by a <br> the reveal wrap honours as a hard break; at the
-     phone's measure the first authored line is wider than the viewport,
-     so the break goes (the tablet, at the desktop's proportions, keeps
-     it). Once, before the first wrap caches the paragraph's markup. */
-  if (cardFrac > 0 && introText instanceof HTMLElement) {
-    introText.querySelectorAll('br').forEach((br) => br.replaceWith(document.createTextNode(' ')));
-  }
-  /* THE INTRO'S REST (narrow only): the headline's bottom + the gap
-     token, written inline like the logo row's and the cards' tops. */
-  const placeIntro = () => {
-    if (!(headlineToIntro > 0) || !(introText instanceof HTMLElement) || !(headlineText instanceof HTMLElement)) return;
-    const bottom = headlineText.getBoundingClientRect().bottom - hero.getBoundingClientRect().top;
-    if (Number.isFinite(bottom) && bottom > 0) introText.style.top = `${Math.round((bottom + headlineToIntro) * 10) / 10}px`;
-  };
 
   /* R8: the cards' rest geometry — written as inline layout (top/left/
      width/height) so the GL planes can read the rest top back from
@@ -618,13 +579,12 @@ export function initLandingHeroScroll() {
 
   const placeCards = (vh) => {
     if (cards.length !== 3) return null;
-    placeIntro();
     placeLogos();
     const vw = window.innerWidth || 1728;
-    const cardW = cardFrac > 0 ? Math.round(vw * cardFrac) : (vw - 2 * cardMargin - 2 * cardGap) / 3;
+    const cardW = (vw - 2 * cardMargin - 2 * cardGap) / 3;
     const cardH = cardW * HERO_CARD_ASPECT;
     const restTop = bandTopFor(vh);
-    const rowLeft = cardFrac > 0 ? (vw - cardW) / 2 - (cardW + cardGap) : cardMargin;
+    const rowLeft = cardMargin;
     gsap.set(cards, {
       top: restTop,
       left: (i) => rowLeft + i * (cardW + cardGap),
@@ -682,12 +642,12 @@ export function initLandingHeroScroll() {
     let disposed = false;
     fontsReady.then(() => {
       if (disposed) return;
-      if (!isMob && introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
+      if (introText instanceof HTMLElement && headlineText instanceof HTMLElement) {
         introText.style.width = `${headlineText.getBoundingClientRect().width}px`;
         deriveIntroLineHeight(headlineText, introText);
         alignIntroToHeadline(headlineText, introText);
       }
-      if (!isMob && headlineText instanceof HTMLElement) {
+      if (headlineText instanceof HTMLElement) {
         const lines = headlineText.querySelectorAll('.landing-hero__headline-line');
         lines.forEach((line) => {
           if (!(line instanceof HTMLElement)) return;
@@ -714,9 +674,7 @@ export function initLandingHeroScroll() {
   const tweens = [];
 
   const build = () => {
-    /* Mobile: the stage's rendered height (100svh) — stable under
-       URL-bar collapse; desktop keeps the shipped innerHeight read. */
-    const vh = isMob ? hero.clientHeight || window.innerHeight : window.innerHeight;
+    const vh = window.innerHeight;
 
     /* ── Beat 1: travel left AND converge to a left-aligned stack ──
        (Oscar's rev.) Each LINE gets its own x tween to the shared
@@ -886,8 +844,8 @@ export function initLandingHeroScroll() {
          block is gone before ANY card reaches it — /old's rule. */
       /* The centred-row regime (the phone): the MIDDLE card is every
          block's first coverer — the outer two cover only the margins. */
-      const coverIntro = cardFrac > 0 ? 1 : 0;
-      const coverLogos = cardFrac > 0 ? 1 : 0;
+      const coverIntro = 0;
+      const coverLogos = 0;
       if (headlineText instanceof HTMLElement) {
         buildExitWipe(headlineLines, headlineText.getBoundingClientRect(), (y) => scrollWhenCardTopAt(1, y));
       }
@@ -1090,7 +1048,6 @@ export function initLandingHeroScroll() {
      and a rebuild there re-derives the runway under the user's finger. */
   let lastW = window.innerWidth;
   const onResize = () => {
-    if (isMob && window.innerWidth === lastW) return;
     lastW = window.innerWidth;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(rebuild, 200);

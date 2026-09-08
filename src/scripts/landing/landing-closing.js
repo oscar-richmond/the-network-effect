@@ -63,6 +63,8 @@ const FOOTER_IMG_AT_MS = 240;
 const FOOTER_ROW_AT_MS = 900;
 
 export function initLandingClosing() {
+  /* The desktop driver: below the seam the mobile layer owns the closing (Part 2). */
+  if (isMobileViewport()) return () => {};
   const closing = document.querySelector('[data-landing-closing]');
   const footer = document.querySelector('[data-landing-footer]');
   if (!(closing instanceof HTMLElement) || !(footer instanceof HTMLElement)) return () => {};
@@ -233,17 +235,8 @@ export function initLandingClosing() {
          footer's move to 830 and skewed this trigger 19px; deriving
          from the element kills that class of drift; 830 is only the
          no-layout fallback). */
-      /* THE REBUILD (2026-09-07): the narrow build reveals the footer
-         from behind the red tail too (a sticky footer under the closing
-         tier, the spacer keeping the document's height — the desktop's
-         construction with a measured height). Its trigger reads the
-         SPACER, which is in flow: 200 into the reveal is the spacer's
-         top 200 above the viewport bottom. */
-      trigger: isMobileViewport() && document.querySelector('.landing-footer-spacer') ? document.querySelector('.landing-footer-spacer') : footer,
-      start: () =>
-        isMobileViewport()
-          ? (document.querySelector('.landing-footer-spacer') ? 'top bottom-=200' : 'top 85%')
-          : `top ${(window.innerHeight - (footer.offsetHeight || 830) - 200).toFixed(0)}px`,
+      trigger: footer,
+      start: () => `top ${(window.innerHeight - (footer.offsetHeight || 830) - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {
         footerWordEls.forEach((el) => playLineRevealElement(el));

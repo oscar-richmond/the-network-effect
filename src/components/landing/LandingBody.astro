@@ -34,7 +34,6 @@ import '../../styles/landing/landing.css';
    composition at phone and tablet proportions, type from the tokens only.
    Imported after landing.css so its narrow rules layer over the desktop
    sheet's; every rule is max-width-gated, so the desktop never sees it. */
-import '../../styles/landing/landing-narrow.css';
 /* (services-v2.css no longer rides along — R10, 2026-09-02: the
    /services sv-rows hover machinery is detached from this page, and
    every rule in that sheet is .landing-v2 .sv-* namespaced, so
@@ -201,18 +200,17 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
       'light' colourway) on the landing, following the red statement
       band. The other pages keep blue pending Oscar's global ruling. */}
   <LandingFooter theme="light" />
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
   {/* Footer-reveal spacer: the footer overlaps the closing section's
       bottom (negative margin) and pins BEHIND it (z259 < 260) at the
       viewport bottom; this transparent, click-through spacer keeps
       the document height so the page ends exactly at full reveal. */}
-  <div class="landing-footer-spacer" aria-hidden="true"></div>
 </SiteShell>
 
 <script>
   import { initLandingHeroScroll } from '../../scripts/landing/landing-hero-scroll.js';
   import { initLandingFounders } from '../../scripts/landing/landing-founders.js';
   import { initCharRipple } from '../../scripts/char-ripple.js';
-  import { initLandingServices } from '../../scripts/landing/landing-services.js';
   import { initLandingServicesReel } from '../../scripts/landing/landing-services-reel.js';
   import { initLandingNetwork } from '../../scripts/landing/landing-network.js';
   import { initLandingFeatured } from '../../scripts/landing/landing-featured.js';
@@ -254,7 +252,6 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();
   let cleanupCharRipple = initCharRipple();
-  let cleanupLandingServices = initLandingServices();
   let cleanupLandingReel = initLandingServicesReel();
   let cleanupLandingNetwork = initLandingNetwork();
   let cleanupLandingFeatured = initLandingFeatured();
@@ -266,7 +263,6 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
     cleanupLandingHero();
     cleanupLandingFounders();
     cleanupCharRipple();
-    cleanupLandingServices();
     cleanupLandingReel();
     cleanupLandingNetwork();
     cleanupLandingFeatured();
@@ -279,7 +275,6 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
     cleanupLandingHero = initLandingHeroScroll();
     cleanupLandingFounders = initLandingFounders();
     cleanupCharRipple = initCharRipple();
-    cleanupLandingServices = initLandingServices();
     cleanupLandingReel = initLandingServicesReel();
     cleanupLandingNetwork = initLandingNetwork();
     cleanupLandingFeatured = initLandingFeatured();

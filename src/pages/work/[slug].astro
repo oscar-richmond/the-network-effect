@@ -39,7 +39,6 @@ import '../../styles/landing/case-study.css';
 /* THE REBUILD (2026-09-07): the template below the seam — the desktop's
    sections at phone and tablet proportions, type from the tokens only.
    Imported after case-study.css. */
-import '../../styles/landing/case-study-narrow.css';
 import '../../styles/fonts.css';
 
 export function getStaticPaths() {
@@ -79,16 +78,6 @@ const moreWork = WORK_PROJECTS.filter((p) => p.slug !== study.base.slug).map((p)
 const posterFor = (src) => {
   const rel = src.replace('.mp4', '-poster.jpg').replace('.webm', '-poster.jpg');
   const onDisk = join(process.cwd(), 'public', rel.startsWith('/') ? rel.slice(1) : rel); /* from the project root — see thumb-srcset.js */
-  return existsSync(onDisk) ? rel : undefined;
-};
-/* THE MOBILE PASS (2026-09-07): a phone-encoded sibling (`<name>-m.mp4`, 480w)
-   when one exists — case-study.js swaps it in below the seam before the
-   stream plays. The desktop keeps the original. */
-const mobileVideoFor = (src) => {
-  const rel = src.replace(/\.(mp4|webm)$/, '-m.$1');
-  /* from the project root — see thumb-srcset.js: a URL-relative lookup
-     resolves nowhere inside a built server chunk */
-  const onDisk = join(process.cwd(), 'public', rel.startsWith('/') ? rel.slice(1) : rel);
   return existsSync(onDisk) ? rel : undefined;
 };
 const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5.41863e-06L0 0H300V300H246.212V91.6667L44.3693 300Z';
@@ -192,7 +181,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
                    playsinline for iOS; looped. NOTE: the current
                    build's stream is ALL stills (the file's exports) —
                    this renders the moment a video lands in the data. */
-                <video src={src} data-src-m={mobileVideoFor(src)} poster={posterFor(src)} preload="none" autoplay muted loop playsinline></video>
+                <video src={src} poster={posterFor(src)} preload="none" autoplay muted loop playsinline></video>
               ) : (
                 <img
                   src={src}

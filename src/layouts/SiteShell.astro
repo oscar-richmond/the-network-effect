@@ -23,7 +23,6 @@ import Menu from '../components/Menu.astro';
 import StartProjectModal from '../components/StartProjectModal.astro';
 import { START_PROJECT_MODAL } from '../data/flags.js';
 import { landingMenuLinks, landingMenuFooterLinks } from '../data/menu.js';
-import '../styles/landing/mobile.css';
 /* R85 (Oscar, 2026-09-06): the TABLET band, 768–1359 — the narrow
    build's structure at tablet proportions. Imported directly after
    mobile.css so it layers over the phone rules at equal specificity,
@@ -39,7 +38,6 @@ import '../styles/type-tokens.css';
    statement, the footer, the nav, the menu and the drawer at phone and
    tablet proportions, type from the tokens only. Imported after the
    tokens; every rule is max-width gated. */
-import '../styles/landing/shared-narrow.css';
 
 interface Props {
   title?: string;

@@ -16,7 +16,7 @@
  * elements, the safe blend shape. Reduced motion: instant states.
  * Keyframes/classes (cr-nav-in / cr-nav-out) live in landing.css.
  */
-import { isPhoneViewport, isMobileViewport } from './viewport.js';
+import { isMobileViewport } from './viewport.js';
 import { ensureStyles as ensureCharRippleStyles } from '../char-ripple.js';
 
 export const NAV_CHAR_STAGGER_S = 0.03;
@@ -58,10 +58,8 @@ export function getSweptNavParts() {
  *  respected both ways, and char-ripple boots before the page
  *  scripts, so a hover machine's wrap is never doubled. */
 export function ensureNavLinkChars() {
-  /* The phone: the links are display:none (the menu carries them) and
-     never sweep — leave the served DOM untouched. The band shows the
-     desktop's links (the rebuild, 2026-09-07), so it takes the chars. */
-  if (isPhoneViewport()) return;
+  /* the desktop bar only — the mobile layer has its own nav (Part 1 D) */
+  if (isMobileViewport()) return;
   getSweptNavParts().forEach((link) => ensureRippleChars(link.querySelector('[data-char-ripple]')));
 }
 
@@ -246,6 +244,8 @@ export function createNavSweep({ reduced = false } = {}) {
  *  (default: within the footer's height). `scrollTo(y)` is the page's
  *  glide — Lenis where it runs, native smooth otherwise. */
 export function bindBottomNavSweep({ reduced = false, inSnapZone = null, scrollTo = null, getLenis = null } = {}) {
+  /* the desktop bar only — the mobile layer has its own nav (Part 1 D) */
+  if (isMobileViewport()) return () => {};
   const { setNav } = createNavSweep({ reduced });
   const maxScroll = () => (document.documentElement.scrollHeight || 0) - (window.innerHeight || 0);
   const zone = inSnapZone ?? (() => maxScroll() - (window.scrollY || 0) < FOOTER_H_PX - BOTTOM_EPSILON_PX);
@@ -258,12 +258,7 @@ export function bindBottomNavSweep({ reduced = false, inSnapZone = null, scrollT
   let lastScrollY = window.scrollY || 0;
   let lastDirDown = false;
   const trySnapToBottom = () => {
-    /* NARROW (the rebuild, 2026-09-07): no idle snap on the phone and the
-       band — a page that moves by itself after a pause fights touch
-       scrolling, and with a footer taller than the viewport the bottom is
-       the footer's TAIL (its head passes under the bar). ADAPTED: the
-       bottom sweep stays; the desktop keeps its 2s glide. */
-    if (reduced || isMobileViewport() || !lastDirDown || !zone()) return;
+    if (reduced || !lastDirDown || !zone()) return;
     const y = window.scrollY || 0;
     if (y >= maxScroll() - BOTTOM_EPSILON_PX) return;
     glide(maxScroll());

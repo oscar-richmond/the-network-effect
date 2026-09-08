@@ -19,7 +19,6 @@ import {
 } from '../../data/landing/network-strip-sets.js';
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isTouchPrimary } from './viewport.js';
-import { initMobileEntrance } from './m-entrance.js';
 import { FOUNDERS_HANDOFF_T, foundersDepartingEdgeInsetPx } from './landing-founders.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -148,6 +147,8 @@ export function initLandingNetwork() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return () => {};
   }
+  /* The desktop driver: below the seam the mobile layer owns the section (Part 2). */
+  if (isMobileViewport()) return () => {};
 
   /* ── Industry hover wiring (house hover gate + ?forcehover escape).
      Keyboard mirrors hover via focusin. THE REBUILD (2026-09-07): touch
@@ -321,28 +322,6 @@ export function initLandingNetwork() {
      toggle, no pin-anchored entrance. Everything ABOVE this line
      (marquee swaps + the term interaction, including the tap path)
      stays live; everything below is the desktop arrival. */
-  if (isMobileViewport()) {
-    /* THE REBUILD (2026-09-07): the section is in flow (no pin — it
-       follows WHO WE ARE, which no longer pins below the seam either),
-       and arrives with the desktop's own vocabulary: the title, subtitle
-       and sector lines WORD-REVEAL in place (the shared entrance's line
-       wrap — the desktop's mechanism, one trigger instead of the
-       desktop's pin-anchored pair), and the photo strip fade-rises
-       (.is-visible, landing-narrow.css). The retired logo rows take no
-       part: the desktop removed them (R9). */
-    const cleanupEnt = initMobileEntrance(section, {
-      lines: Array.from(section.querySelectorAll(
-        '[data-landing-network-title] .landing-network__line, [data-landing-network-subtitle] .landing-network__line, [data-landing-network-body] .landing-network__line',
-      )),
-      media: [section.querySelector('[data-landing-network-strip]')].filter((el) => el instanceof HTMLElement),
-    });
-    return () => {
-      swapTimeouts.forEach(clearTimeout);
-      wipeAnims.forEach((a) => a.cancel());
-      cleanupHover.forEach((fn) => fn());
-      cleanupEnt();
-    };
-  }
 
   const lines = Array.from(section.querySelectorAll('.landing-network__line'));
   /* The delayed group (R4): title + subtitle + the desktop OUR

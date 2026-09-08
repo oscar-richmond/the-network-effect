@@ -44,6 +44,8 @@ export function initWorkGrid() {
   const cleanups = [];
   const timeouts = [];
   let disposed = false;
+  /* The desktop driver: below the seam the mobile layer owns the page (Part 3). */
+  if (isMobileViewport()) return () => {};
 
   cleanups.push(initSiteScroll());
   /* R36: the grid is a document-scroll page — it gets the shared bottom
@@ -124,9 +126,7 @@ export function initWorkGrid() {
       row.dataset.inkGap = String(GRID_ROW_INK_GAP_PX);
     });
   };
-  /* The rebuild (2026-09-07): the ink-gap ruling is the desktop's 120;
-     below the seam the stylesheet owns the row gap. */
-  if (!isMobileViewport()) {
+  {
     (document.fonts?.ready ?? Promise.resolve()).then(() => { if (!disposed) deriveRowGaps(); });
     window.addEventListener('resize', deriveRowGaps);
     cleanups.push(() => { window.removeEventListener('resize', deriveRowGaps); grid.style.removeProperty('--work-grid-rowgap'); gapRows.forEach((row) => { row.style.marginBottom = ''; delete row.dataset.inkGap; }); });
@@ -181,15 +181,10 @@ export function initWorkGrid() {
     const wrapped = wrapFooterReveals(footer);
     const play = () => playFooterReveals(wrapped, (fn, ms) => timeouts.push(setTimeout(fn, ms)));
     if (reduced || typeof IntersectionObserver !== 'function') { play(); return; }
-    /* NARROW (the rebuild, 2026-09-07): the footer sits under the grid
-       until the spacer scrolls it clear, so the cue is the spacer 200px
-       into the viewport (the landing's narrow footer cue); the desktop
-       keeps its own. */
-    const spacer = isMobileViewport() ? document.querySelector('[data-work-footer-spacer]') : null;
     footerIo = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) { play(); footerIo?.disconnect(); footerIo = null; }
-    }, spacer ? { rootMargin: '0px 0px -200px 0px', threshold: 0 } : { threshold: 0.15 });
-    footerIo.observe(spacer ?? footer);
+    }, { threshold: 0.15 });
+    footerIo.observe(footer);
   });
   cleanups.push(() => { footerIo?.disconnect(); footerIo = null; });
   cleanups.push(() => timeouts.forEach(clearTimeout));
