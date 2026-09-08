@@ -30,6 +30,11 @@
        wordmark reads light over the dark panel */
     .landing-v2.menu-open .home__topbar,
     .landing-v2.menu-open .home__topbar--about { z-index: var(--m-z-nav-open); }
+    /* over the red band the bar goes solid — the desktop rule: ink, blend off (closing.js toggles it at the fade's midpoint) */
+    .landing-v2 .home__topbar.is-over-red,
+    .landing-v2 .home__topbar--about.is-over-red { mix-blend-mode: normal; color: var(--m-color-ink); }
+    .landing-v2 .home__topbar--about.is-over-red .home__logo,
+    .landing-v2 .home__topbar--about.is-over-red .home__menu-toggle { color: var(--m-color-ink); }
     /* the wordmark: TheNetworkEffect, Serrif Condensed, 24 on landing → 18 scrolled (nav.js scrubs font-size) */
     .landing-v2 .home__topbar--about .home__logo {
       grid-column: 1;

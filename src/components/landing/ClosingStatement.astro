@@ -1,4 +1,7 @@
 ---
+import { CLOSING_STATEMENT } from '../../data/landing/statements.js';
+import DeviceGate from '../mobile/DeviceGate.astro';
+import ClosingStatementMobile from '../mobile/ClosingStatementMobile.astro';
 /**
  * THE CLOSING STATEMENT — a SHARED component (R36 item 7, Oscar
  * 2026-09-04): the fragmented statement section + the red tail,
@@ -19,17 +22,7 @@
    pitch is deliberately irregular: 90/88/101/90...). Supersedes the
    old right-hand intro paragraph on desktop (mobile keeps its own).
    Line 3's wide word-gap is AUTHORED SPACES (white-space: pre). */
-const ST_LINES = [
-  { x: 374, y: 0, t: 'The' },
-  { x: 295, y: 90, t: 'network effect' },
-  { x: 88, y: 178, t: 'exists            to connect people,' },
-  { x: 565, y: 279, t: 'brands and talent' },
-  { x: 201, y: 369, t: 'in ways that create' },
-  { x: 228, y: 459, t: 'long-term' },
-  { x: 1037, y: 459, t: 'cultural' },
-  { x: 410, y: 549, t: 'and commercial' },
-  { x: 1007, y: 639, t: 'value.' },
-];
+const ST_LINES = CLOSING_STATEMENT.desktop; /* data/landing/statements.js since the mobile rebuild's Part 3 — the phone's fourteen lines read the same words */
 ---
 
 {/* ── THE FRAGMENTED STATEMENT — its own full-width flow section
@@ -39,7 +32,7 @@ const ST_LINES = [
     closing — a margin here was a transparent strip that exposed the
     fixed hero video. The read gap from the descriptions stays the
     frame's 225. */}
-<section class="landing-closing-st" data-closing-st data-ground="red" aria-label="The network effect">
+<section class="landing-closing-st" data-closing-st data-ground="red" data-ground-fade data-ground-fade-anchor="[data-closing-st-m]" data-ground-fade-anchor-y="pin" data-ground-fade-px="--m-closing-red-px" data-ground-paint aria-label="The network effect">
   {/* The DWELL stage (Oscar R3, 2026-08-26): sticky slack — the
       closing's own hold mechanism reused. The stage pins when the
       statement's centre crosses the viewport centre (sticky top =
@@ -51,6 +44,11 @@ const ST_LINES = [
       <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y + 54}px`}>{l.t}</p>
     ))}
   </div>
+  {/* THE PHONE (mobile rebuild Part 3 §4 — frame 1:373): fourteen lines from
+      the same words, stamped in below the seam with the desktop stage removed. */}
+  <DeviceGate desktop="[data-closing-st-stage]">
+    <ClosingStatementMobile />
+  </DeviceGate>
 </section>
 
 {/* THE RED TAIL — R21 (Oscar 2026-09-02): 180px of the final red
