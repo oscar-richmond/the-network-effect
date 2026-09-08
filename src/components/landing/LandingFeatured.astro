@@ -91,6 +91,8 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
           data-work-link
           data-slug={card.slug}
           data-live="true"
+          data-phone-img={card.phoneImg}
+          data-phone-srcset={card.phoneImg ? imageSrcset(card.phoneImg, [680, 1200], 2000) : undefined}
         >
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
@@ -127,6 +129,8 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
           data-slug={card.slug}
           data-live="false"
           data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link, unfocusable"
+          data-phone-img={card.phoneImg}
+          data-phone-srcset={card.phoneImg ? imageSrcset(card.phoneImg, [680, 1200], 2000) : undefined}
         >
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img

@@ -27,9 +27,9 @@ const robbo = asset('/assets/landing/mobile/robbo.jpg');
 const ashley = asset('/assets/landing/founders/ashley-portrait.jpg');
 const both = asset('/assets/landing/founders/founders-photo.jpg');
 const cards = [
-  { key: 'robbo', src: robbo, srcset: imageSrcset(robbo, [480, 700], 870), sizes: `${QUERIES.phone} 230px, 230px`, href: '/founders#robbo', label: 'Robbo McCallum — founder profile', alt: 'Robbo McCallum' },
+  { key: 'robbo', src: robbo, srcset: imageSrcset(robbo, [480, 700], 870), sizes: `${QUERIES.phone} 154px, 154px` /* the density cap: 2/3 of 230 → the 480 variant at DPR 3 */, href: '/founders#robbo', label: 'Robbo McCallum — founder profile', alt: 'Robbo McCallum' },
   { key: 'ashley', src: ashley, srcset: undefined, sizes: undefined, href: '/founders#ashley', label: 'Ashley Walters — founder profile', alt: 'Ashley Walters' },
-  { key: 'both', src: both, srcset: imageSrcset(both, [780, 1200], 1600), sizes: `${QUERIES.phone} 450px, 450px`, href: '/founders', label: 'The founders', alt: 'Robbo McCallum and Ashley Walters' },
+  { key: 'both', src: both, srcset: imageSrcset(both, [780, 1200], 1600), sizes: `${QUERIES.phone} 260px, 260px` /* the density cap: the 780 variant at DPR 3 (1.7× the 450 window), not the 1600 original */, href: '/founders', label: 'The founders', alt: 'Robbo McCallum and Ashley Walters' },
 ];
 ---
 <div class="m-frail-wrap" data-frail-wrap>

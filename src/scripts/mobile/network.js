@@ -50,8 +50,11 @@ export function initMobileNetwork() {
     const overs = wins.map((w) => w.querySelector('img')).filter((i) => i instanceof HTMLImageElement);
     /* the windows and images take the frame's geometry (inline, reverted with the context) */
     gsap.set(wins, { width: tileW });
-    gsap.set(overs, { width: '100%', height: '100%', left: 0, top: 0, clearProps: 'srcset,sizes' });
-    for (const img of overs) { img.removeAttribute('srcset'); img.removeAttribute('sizes'); }
+    gsap.set(overs, { width: '100%', height: '100%', left: 0, top: 0 });
+    /* at rest the windows keep their build-time srcset and sizes (the component's phone branch resolves the 480
+       variant); a swapped set writes plain sources (the case streams carry no uniform variants); the return to
+       'all' restores the srcset. The originals' attributes are put back on revert. */
+    const restAttrs = overs.map((img) => [img.getAttribute('src'), img.getAttribute('srcset'), img.getAttribute('sizes')]);
     /* the under layers, created here and removed on revert */
     const unders = overs.map((over) => {
       const under = document.createElement('img');
@@ -85,7 +88,12 @@ export function initMobileNetwork() {
             { clipPath: 'inset(0 0 0 100%)', filter: 'blur(0px)' },
           ], { duration: wipeMs, delay, easing: curve, fill: 'forwards' });
           anims.push(anim);
-          timers.push(setTimeout(() => { over.src = asset(set[i].src); anim.cancel(); }, delay + wipeMs + 30));
+          timers.push(setTimeout(() => {
+            const [restSrc, restSrcset, restSizes] = restAttrs[i];
+            if (key === 'all' && restSrcset) { over.setAttribute('srcset', restSrcset); if (restSizes) over.setAttribute('sizes', restSizes); over.src = restSrc; }
+            else { over.removeAttribute('srcset'); over.removeAttribute('sizes'); over.src = asset(set[i].src); }
+            anim.cancel();
+          }, delay + wipeMs + 30));
         });
         timers.push(setTimeout(() => { currentKey = key; busy = false; pump(); }, sweepMs + wipeMs + 60));
       });
@@ -106,6 +114,7 @@ export function initMobileNetwork() {
       body?.removeEventListener('click', onClick);
       timers.forEach(clearTimeout); anims.forEach((a) => a.cancel());
       unders.forEach((u) => u.remove());
+      overs.forEach((img, i) => { const [src, srcset, sizes] = restAttrs[i]; if (srcset) img.setAttribute('srcset', srcset); else img.removeAttribute('srcset'); if (sizes) img.setAttribute('sizes', sizes); else img.removeAttribute('sizes'); if (src) img.setAttribute('src', src); });
       terms.forEach((t) => t.classList.remove('is-active')); body?.classList.remove('is-dimming');
       if (import.meta.env.DEV) delete window.__mNetwork;
     };

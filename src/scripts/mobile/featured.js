@@ -7,7 +7,6 @@
  */
 import { gsap } from 'gsap';
 import { mobileMatch, tokenPx } from './match.js';
-import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
 
 export function initMobileFeatured() {
   return mobileMatch((ctx) => {
@@ -24,10 +23,13 @@ export function initMobileFeatured() {
       if (img instanceof HTMLImageElement) {
         gsap.set(img, { width: '100%', height: '100%', left: 0, top: 0 });
         restore.push([img, img.getAttribute('src'), img.getAttribute('srcset'), img.getAttribute('sizes')]);
-        img.removeAttribute('srcset'); img.removeAttribute('sizes');
-        /* the frame's own picture for this card where it differs from the landing's (the data's phoneImg) */
-        const data = FEATURED_CARDS.find((c) => c.slug === card.dataset.slug);
-        if (data && data.phoneImg) img.src = data.phoneImg;
+        /* the build-time srcset and sizes stay (the component's phone branch resolves the 600 variants under the
+           density cap); the frame's own picture for this card where it differs from the landing's (the data's phoneImg, with the
+           srcset the component built for it) */
+        if (card.dataset.phoneImg) {
+          if (card.dataset.phoneSrcset) img.setAttribute('srcset', card.dataset.phoneSrcset); else img.removeAttribute('srcset');
+          img.src = card.dataset.phoneImg;
+        }
       }
     }
     const trackW = tokenPx('--m-indicator-w'), thumbW = tokenPx('--m-indicator-thumb');

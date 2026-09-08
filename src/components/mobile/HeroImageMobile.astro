@@ -23,7 +23,8 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 import { QUERIES } from '../../config/breakpoints.js';
 const src = asset('/assets/landing/mobile/hero.jpg');
 /* the window is the fluid measure (100vw − 32): 370 at 402; the 3× phone resolves the 1140 candidate */
-const sizes = `${QUERIES.phone} calc(100vw - 32px), 370px`;
+/* the density cap (the 486cdd5 rule): the phone takes the image at twice its rendered width — sizes is two thirds of the 370 window, so DPR 3 resolves to the 780 variant, not the 1140; the tablet's 704 window likewise */
+const sizes = `${QUERIES.phone} calc((100vw - 32px) * 2 / 3), 470px`;
 ---
 <figure class="m-hero" data-hero-image-m aria-hidden="true">
   <div class="m-hero__fade" aria-hidden="true"></div>

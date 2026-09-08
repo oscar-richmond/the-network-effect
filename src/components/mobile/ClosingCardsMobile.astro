@@ -14,7 +14,8 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 import { QUERIES } from '../../config/breakpoints.js';
 import { CLOSING_TILES, CLOSING_KEYWORDS } from '../../data/landing/closing.js';
 const cards = CLOSING_KEYWORDS.map((k, i) => ({ ...k, src: asset(CLOSING_TILES[i].src) }));
-const sizes = `${QUERIES.phone} 280px, 280px`;
+/* the density cap: two thirds of the 280 card (the tablet's 360) — DPR 3 / DPR 2 resolve to the 600 variant, not the original */
+const sizes = `${QUERIES.phone} 187px, 240px`;
 ---
 <div class="m-brands-wrap" data-brands-wrap>
   <div class="m-brands" data-brands-rail aria-label="Why access matters">

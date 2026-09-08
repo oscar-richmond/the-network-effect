@@ -78,7 +78,9 @@ for (const route of ROUTES) {
       if (s.wmBlend !== 'difference' || s.bgBlend !== 'difference') note(route, 'N4', `blend ${s.wmBlend} / ${s.bgBlend}`);
       if (s.chainWm.length || s.chainBg.length) note(route, 'N4', `blend chain broken by ${[...s.chainWm, ...s.chainBg].join(', ')}`);
     }
-    if (s.footer) { const expTop = s.docH - s.footer.height - s.y; if (s.footerPos !== 'static' || Math.abs(s.footer.top - expTop) > 1.5) note(route, 'F1', `footer ${s.footerPos} top ${s.footer.top.toFixed(1)} expected ${expTop.toFixed(1)} at y${s.y}`); }
+    /* F1: static, and at the document's end — unless the document is shorter than the viewport (the 404 in the tablet band at
+       1024×1366), where normal flow leaves it at the content's end and the body's min-height fills the rest */
+    if (s.footer) { const expTop = s.docH - s.footer.height - s.y; const short = s.docH <= VH + 1; if (s.footerPos !== 'static' || (!short && Math.abs(s.footer.top - expTop) > 1.5)) note(route, 'F1', `footer ${s.footerPos} top ${s.footer.top.toFixed(1)} expected ${expTop.toFixed(1)} at y${s.y}`); }
     return s;
   };
   /* the touch session */

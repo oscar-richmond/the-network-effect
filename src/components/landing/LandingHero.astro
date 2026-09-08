@@ -31,7 +31,7 @@ import {
   HERO_LOGO_ROW_DUR_S,
   HERO_LOGO_ROW_PHASE_DELAY_S,
 } from '../../data/landing/hero-logos.js';
-import { imageSrcset } from '../../utils/thumb-srcset.js';
+import { imageSrcset, GATE_GIF } from '../../utils/thumb-srcset.js';
 import DeviceGate from '../mobile/DeviceGate.astro';
 import HeroImageMobile from '../mobile/HeroImageMobile.astro';
 
@@ -41,7 +41,10 @@ import HeroImageMobile from '../mobile/HeroImageMobile.astro';
    it keeps resolving to the full file, exactly as the plain src did. */
 /* the phone's card renders 304px wide: 260px resolves a 3× phone to the 780
    candidate (the density cap — THE FINAL GATE, 2026-09-08) */
-const HERO_CARD_SIZES = `${QUERIES.phone} 260px, ${QUERIES.mobile} 33vw, 1728px`;
+/* below the shell floor the cards are removed by the DeviceGate before they can show — the narrow branch resolves the
+   1×1 gate GIF so the eager images are never fetched there (Part 4 §3: 197 kB at 390); the desktop branch is unchanged */
+const HERO_CARD_SIZES = `${QUERIES.mobile} 1px, 1728px`;
+const HE_STAGE_SIZES = HERO_CARD_SIZES;
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */
@@ -175,7 +178,7 @@ const heroEntryFlash = [
   <div class="landing-hero__cards" data-landing-hero-cards aria-hidden="true">
     {heroCards.map((src) => (
       <div class="landing-hero__card" data-landing-hero-card>
-        <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+        <img src={src} srcset={`${GATE_GIF} 8w, ${imageSrcset(src, [780], 960)}`} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
       </div>
     ))}
   </div>
@@ -195,14 +198,16 @@ const heroEntryFlash = [
         <p class="landing-hero__entry-text" data-he-text>BUILT ON TRUST.</p>
         <p class="landing-hero__entry-text" data-he-text>POWERED BY ACCESS.</p>
       </div>
+      {/* the stage is removed below the shell floor by the DeviceGate — the narrow branch resolves the 1×1 gate GIF so
+          these eager images are never fetched there; the desktop branch resolves the same file as before */}
       {heroEntryFlash.map((src) => (
         <div class="landing-hero__entry-flash" data-he-flash>
-          <img src={src} alt="" decoding="async" loading="eager" />
+          <img src={src} srcset={`${GATE_GIF} 8w, ${src} 960w`} sizes={HE_STAGE_SIZES} alt="" decoding="async" loading="eager" />
         </div>
       ))}
       {heroCards.map((src, i) => (
         <div class="landing-hero__entry-card" data-he-card style={`z-index:${[10, 12, 11][i]}`}>
-          <img src={src} alt="" decoding="async" loading="eager" />
+          <img src={src} srcset={`${GATE_GIF} 8w, ${src} 960w`} sizes={HE_STAGE_SIZES} alt="" decoding="async" loading="eager" />
         </div>
       ))}
     </div>
