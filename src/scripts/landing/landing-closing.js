@@ -28,8 +28,52 @@ import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { bindBottomNavSweep } from './nav-motion.js';
-import { isMobileViewport, flowFooterSpacer } from './viewport.js';
+import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.js';
 import { flowFooterStatement } from './footer-motion.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
+
+/* THE PHONE (Figma 1:343 + 1:389, 2026-09-09): the 2×2 grid becomes the
+   frame's four-card rail — each tile with its keyword in one column, a
+   native snapping row (the featured rail's construction), the 100×1
+   indicator RIGHT-aligned under it. Built at boot so the desktop DOM
+   stays as it is; the reveals below find the same elements wherever
+   they sit. Styles: landing-narrow.css (.landing-closing__rail/__card),
+   mobile.css (the indicator). */
+function buildPhoneRail(closing, tiles, kws) {
+  const stage = closing.querySelector('[data-closing-stage]');
+  const tilesWrap = closing.querySelector('.landing-closing__tiles');
+  if (!(stage instanceof HTMLElement) || !(tilesWrap instanceof HTMLElement) || tiles.length === 0 || tiles.length !== kws.length) return () => {};
+  const kwParents = kws.map((kw) => kw.parentElement);
+  const rail = document.createElement('div');
+  rail.className = 'landing-closing__rail';
+  rail.setAttribute('data-carousel-strip', '');
+  tiles.forEach((tile, i) => {
+    const card = document.createElement('div');
+    card.className = 'landing-closing__card';
+    card.append(tile, kws[i]);
+    rail.append(card);
+  });
+  tilesWrap.after(rail);
+  const ind = document.createElement('span');
+  ind.className = 'm-carousel-ind';
+  ind.setAttribute('data-carousel-ind', '');
+  ind.setAttribute('aria-hidden', 'true');
+  const thumb = document.createElement('span');
+  thumb.className = 'm-carousel-ind__thumb';
+  thumb.setAttribute('data-carousel-thumb', '');
+  ind.append(thumb);
+  rail.after(ind);
+  stage.setAttribute('data-m-carousel', '');
+  const cleanupWire = initCarouselIndicators(closing);
+  return () => {
+    cleanupWire();
+    tiles.forEach((tile) => tilesWrap.append(tile));
+    kws.forEach((kw, i) => kwParents[i]?.append(kw));
+    ind.remove();
+    rail.remove();
+    stage.removeAttribute('data-m-carousel');
+  };
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -120,10 +164,16 @@ export function initLandingClosing() {
     cleanupBottom();
   };
 
+  /* the phone's rail is layout, not motion — built in every mode */
+  const tiles = Array.from(closing.querySelectorAll('[data-closing-tile]'));
+  const kws = Array.from(closing.querySelectorAll('[data-closing-kw]'));
+  const cleanupPhoneRail = isPhoneViewport() ? buildPhoneRail(closing, tiles, kws) : () => {};
+
   if (reduced) {
     return () => {
       cleanupStatement();
       cleanupBase();
+      cleanupPhoneRail();
     };
   }
 
@@ -131,8 +181,6 @@ export function initLandingClosing() {
   /* Headline anchoring is pure CSS now (left-anchored on the tiles'
      24px margin, Oscar's rev 2) — no runtime derivation. */
   const intro = closing.querySelector('[data-closing-intro]');
-  const tiles = Array.from(closing.querySelectorAll('[data-closing-tile]'));
-  const kws = Array.from(closing.querySelectorAll('[data-closing-kw]'));
   const footerCols = Array.from(footer.querySelectorAll('[data-footer-col]'));
   const footerImg = footer.querySelector('[data-footer-img]');
   const stLines = Array.from(footer.querySelectorAll('[data-footer-st-line]'));
@@ -273,5 +321,6 @@ export function initLandingClosing() {
     cleanupBase();
     timeouts.forEach(clearTimeout);
     triggers.forEach((t) => t.kill());
+    cleanupPhoneRail();
   };
 }

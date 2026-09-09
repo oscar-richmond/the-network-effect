@@ -2485,3 +2485,120 @@
 	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(2) { grid-column: 3; grid-row: 3; }
 	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(1) { grid-column: 4; grid-row: 3; }
 }
+
+/* THE PHONE (Figma 1:11, 2026-09-09) — the C row: the 2 × 2 grid becomes
+   the frame's FOUR-CARD RAIL (1:343), the featured rail's construction
+   wholesale — the native snapping row, the same 8 gutter, the same
+   scrollLeft-driven indicator (1:389, RIGHT-aligned) — with each tile
+   and its keyword in one 280 column (the image 280×280, the keyword at
+   the title tier 24 below, its line in Serrif Medium 16/18 8 below the
+   keyword's box — the frame's +36), fluid on the 402 frame. The
+   headline (1:338) is the frame's four lines at the heading tier on
+   the 34 pitch, left-anchored at 0 / +15 / 0 / +48 — the third span
+   breaking into CULTURE / AUTHENTICALLY. — 229 below the access rows,
+   the rail 48 below it, the indicator 40 below the rail, 100 to the
+   statement's ground. The columns are assembled by landing-closing.js
+   (the desktop DOM stays as it is); the reveals — the headline's
+   word-reveals, the keywords' and lines' word-reveals on their
+   stagger, the tiles' fade-rise — are the same elements, untouched. */
+@media (max-width: 767px) {
+	.landing-v2.landing-home {
+		--cl-u: calc((100vw - 32px) / 370); /* the frame's measure unit */
+		--cl-pad-top: 229px;
+		--cl-pad-bottom: 100px;
+		--cl-tiles-gap: 48px;
+		--cl-kw-gap: 24px;
+		--cl-ind-gap: 40px;
+		--cl-gap: 8px;
+		--cl-card-w: calc(280 * 100vw / 402);
+	}
+	.landing-v2.landing-home .landing-closing__stage {
+		grid-template-columns: minmax(0, 1fr);
+		padding-left: 0;
+		padding-right: 0;
+	}
+	/* the headline: four lines, left-anchored at the frame's indents */
+	.landing-v2.landing-home .landing-closing__headline {
+		grid-column: 1;
+		align-items: flex-start;
+		margin: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+	}
+	.landing-v2.landing-home .landing-closing__hl {
+		width: auto;
+		text-align: left;
+		line-height: 1.0625; /* the frame's 34 pitch on the heading's 32 */
+		margin-left: calc(var(--cl-x, 0) * var(--cl-u));
+	}
+	.landing-v2.landing-home .landing-closing__hl--1 { --cl-x: 0; }
+	.landing-v2.landing-home .landing-closing__hl--2 { --cl-x: 15; }
+	.landing-v2.landing-home .landing-closing__hl--3 { --cl-x: 0; width: 100%; }
+	/* the retired serif accent's class inherited the h2's normal tracking
+	   — the frame's four lines track alike */
+	.landing-v2.landing-home .landing-closing__hl--serrif {
+		letter-spacing: var(--type-heading-ls);
+	}
+	/* CULTURE / AUTHENTICALLY. — the span's second word breaks to the
+	   fourth line (the measure forces it) and takes the frame's +48 */
+	.landing-v2.landing-home .landing-closing__hl--3 .lr-clip:nth-of-type(2) {
+		margin-left: calc(48 * var(--cl-u) - 0.25em); /* less the clip's bleed padding */
+	}
+	/* the rail */
+	.landing-v2.landing-home .landing-closing__rail {
+		grid-column: 1;
+		grid-row: 2;
+		display: flex;
+		align-items: flex-start;
+		gap: var(--cl-gap);
+		margin: var(--cl-tiles-gap) 0 0;
+		padding: 0 0 0 var(--m-margin-safe-l, var(--m-margin));
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scroll-padding-left: var(--m-margin-safe-l, var(--m-margin));
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+	}
+	.landing-v2.landing-home .landing-closing__rail::-webkit-scrollbar {
+		display: none;
+	}
+	/* the rail's end margin (Safari ignores a scroll container's
+	   trailing padding), less the flex gap before it */
+	.landing-v2.landing-home .landing-closing__rail::after {
+		content: '';
+		flex: 0 0 calc(var(--m-margin-safe-r, var(--m-margin)) - var(--cl-gap));
+	}
+	.landing-v2.landing-home .landing-closing__card {
+		flex: none;
+		width: var(--cl-card-w);
+		scroll-snap-align: start;
+	}
+	.landing-v2.landing-home .landing-closing__card .landing-closing__tile {
+		grid-column: auto;
+		grid-row: auto;
+		width: 100%;
+		aspect-ratio: 1;
+		margin: 0;
+	}
+	.landing-v2.landing-home .landing-closing__card .landing-closing__kw {
+		grid-column: auto;
+		grid-row: auto;
+		margin: var(--cl-kw-gap) 0 0;
+	}
+	/* the line: the frame's Serrif Medium (not the condensed), its
+	   measure 220 — the third card's runs the column (1:364) */
+	.landing-v2.landing-home .landing-closing__card .landing-closing__kw-line {
+		font-family: 'Serrif', var(--font-serif-cond);
+		max-width: calc(220 * 100vw / 402) !important;
+	}
+	.landing-v2.landing-home .landing-closing__card:nth-child(3) .landing-closing__kw-line {
+		max-width: none !important;
+	}
+	/* the indicator, right-aligned under the rail */
+	.landing-v2.landing-home .landing-closing .m-carousel-ind {
+		grid-column: 1;
+		grid-row: 3;
+		justify-self: end;
+		margin: var(--cl-ind-gap) var(--m-margin-safe-r, var(--m-margin)) 0 0;
+	}
+}
