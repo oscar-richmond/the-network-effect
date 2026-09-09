@@ -178,8 +178,24 @@ export const SB_LOGOS_AT = SB_TEXT_AT + SB_INTRO_SETTLE_S;
    is-entered at 10.808). The phone's schedule now counts the intro's
    laid-out lines at build (fonts are ready by then) and adds the
    stagger of every line after the first, so the beat sits after the
-   last line's landing at every width. */
-export const SB_LOGOS_BEAT_PHONE_S = 0.12;
+   last line's landing at every width.
+   ITEM 1 (Oscar, 2026-09-09, the refinements): STILL TOO SLOW — "about a
+   second after the intro line lands". Measured on the 402 build with the
+   +0.12 beat: the row's first frame 125ms after the last line's
+   transitionend; but line-reveal's curve (cubic-bezier(0.42,0,0.24,1)
+   over 1.2s) is perceptually landed long before its end — the last line
+   has under 1px of travel left from 0.96s (progress 0.972), under 4px
+   from 0.72s — and the row's own 0.8s fade needs ~0.25s to read, so the
+   eye saw ~0.3 (the curve's invisible tail) + 0.125 + ~0.25 ≈ 0.7s of
+   nothing. The beat is now NEGATIVE: the row's first frame lands 0.475s
+   BEFORE the last line's transitionend (0.6s earlier than before), at
+   0.725s of that line's 1.2s — progress 0.86, 4px of travel left, the
+   line visibly finishing as the row begins to fade in; the row is
+   reading (~0.25s in) as the line reaches its sub-pixel settle. Chosen
+   over 0.5 (still a gap) and 1.0 (the row would be up before the line
+   was half-way — "with", not "after"). Phone only; the desktop's
+   SB_INTRO_SETTLE_S schedule is untouched. */
+export const SB_LOGOS_BEAT_PHONE_S = -0.475;
 export const SB_INTRO_LINE_STAGGER_S = 0.12; /* line-reveal's per-line stagger, mirrored */
 const introLaidOutLines = () => {
   let lines = 1;
