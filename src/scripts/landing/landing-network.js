@@ -20,6 +20,7 @@ import {
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isPhoneViewport, isTouchPrimary } from './viewport.js';
 import { wireRailVeils } from './rail-veils.js';
+import { initStripAutoAdvance } from './strip-auto-advance.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { FOUNDERS_HANDOFF_T, FOUNDERS_RELEASE_PX, foundersDepartingEdgeInsetPx, foundersPhonePinTopPx } from './landing-founders.js';
 
@@ -33,6 +34,12 @@ const NETWORK_PHONE_HOLD_PX = 250;
    at the 2/3 line), not at the desktop's 1/3 line — which was vh/3 later
    (291 at 874) and read as a second, late arrival on the phone. */
 const NETWORK_PHONE_TITLE_LAG_PX = 60;
+/* ITEM 4 (Oscar, 2026-09-09) — THE PHONE's strip advances on its own, one
+   window at a time, at this rhythm (strip-auto-advance.js: armed once
+   the arrival's rise has landed; stops for good on the user's touch or at
+   the last window; pauses off screen, in a hidden tab, and under
+   reduced motion never runs). This strip only — no other rail. */
+const NETWORK_STRIP_AUTO_MS = 2500;
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -366,6 +373,8 @@ export function initLandingNetwork() {
     });
   }
   let cleanupPhonePin = () => {};
+  /** @type {ReturnType<typeof initStripAutoAdvance> | null} item 4, the phone's pinned path only */
+  let autoAdvance = null;
   if (phone && document.body.classList.contains('landing-home')) {
     const stageEl = section.querySelector('[data-landing-network-stage]');
     section.classList.add('is-pinned-phone');
@@ -439,7 +448,10 @@ export function initLandingNetwork() {
     const cleanupVeils = stageEl instanceof HTMLElement && strip instanceof HTMLElement
       ? wireRailVeils(stageEl, strip)
       : () => {};
+    /* item 4: the strip's own rhythm (armed by the arrival below) */
+    autoAdvance = initStripAutoAdvance(strip, { intervalMs: NETWORK_STRIP_AUTO_MS });
     cleanupPhonePin = () => {
+      autoAdvance.destroy();
       cleanupVeils();
       window.clearTimeout(resizeTimer);
       window.removeEventListener('resize', onResize);
@@ -595,6 +607,7 @@ export function initLandingNetwork() {
        parked, on the same curve. Both replay on every crossing —
        CSS transitions retarget cleanly mid-flight. */
     const totalS = (lines.length - 1) * LINE_STAGGER_S + LINE_REVEAL_S;
+    let armTimer = 0; /* item 4: the auto-advance's arming, after the rise */
     /* Each inner's authored stagger delay, captured post-wrap so the
        exit can zero them and the next entrance can restore them. */
     const delayMap = new Map();
@@ -632,6 +645,13 @@ export function initLandingNetwork() {
       setMediaTransition();
       void section.offsetWidth; /* commit current state under the transition */
       media.forEach((el) => { el.style.transform = 'translateY(0px)'; });
+      /* item 4: the strip's rhythm begins once its rise has landed —
+         the first advance comes NETWORK_STRIP_AUTO_MS after that */
+      if (autoAdvance) {
+        clearTimeout(armTimer);
+        armTimer = window.setTimeout(() => autoAdvance?.arm(true), Math.round(totalS * 1000));
+        timeouts.push(armTimer);
+      }
     };
     const hideContent = () => {
       shown = false;
@@ -639,6 +659,9 @@ export function initLandingNetwork() {
       setMediaTransition();
       void section.offsetWidth;
       parkMedia();
+      /* item 4: parked below the stage is off screen — the rhythm pauses */
+      clearTimeout(armTimer);
+      autoAdvance?.arm(false);
     };
 
     /* Ground cover — at the section top (= the services scrub end).
