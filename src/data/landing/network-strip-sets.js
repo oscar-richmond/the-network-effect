@@ -82,7 +82,10 @@ export const NETWORK_STRIP_SETS = {
   'TV & Film': [sv('immerse'), fp('robbo-2.jpg'), st(3), fp('ashley-2.jpg'), sv('amplify')],
   'Music': [pc(3), st(1), yx(1), pc(6), sv('connect')],
   'Luxury': [wr(5), pc(7), wr(6), st(4), pc(8)],
-  'Fashion': [st(2), fp('col-2.png'), pc(9), sv('immerse'), st(5)],
+  /* pc(9) never existed (pavilion-club has stream-1…8) — a 404 on every
+     Fashion swap, surfaced by item 2 (2026-09-09) once Fashion was tappable
+     on the phone; the third slot is stream-3 until the real set lands */
+  'Fashion': [st(2), fp('col-2.png'), pc(3), sv('immerse'), st(5)],
   'Food & Beverage': [yx(1), yx(2), pc(4), wr(3), st(2)],
   'Sports': [ps(1), ps(3), sv('connect'), ps(4), wr(2)],
   'Production': [ps(2), sv('amplify'), ps(5), st(3), pc(1)],

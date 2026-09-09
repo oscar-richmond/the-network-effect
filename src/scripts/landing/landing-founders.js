@@ -591,6 +591,20 @@ export function initLandingFounders() {
       { '--fd-veil-op': 0, duration: EXIT_BLUR_ROBBO_PX, ease: 'none' },
       holdEnd,
     );
+    /* ITEM 2 (Oscar, 2026-09-09, the refinements) — THE DEPARTED SECTION
+       MUST NOT TAKE THE TAPS. Diagnosed at 402 with OUR NETWORK pinned
+       (scrollY 2900): this section — sticky, z 2 inside its track's z 261,
+       every item already blurred to opacity 0 — still spanned viewport
+       y −449 → 424, and document.elementFromPoint at the centre of every
+       industry term on the first two lines (y 321–392) returned
+       .landing-founders__grid-space; only Cultural Operators (y 429–473)
+       hit its own button, Production / Founders (402–446) by their lower
+       halves. The taps that "did not work" landed on this invisible
+       plane. Once the last blur has cleared (the release) the section is
+       pointer-transparent until the scrub comes back below that point —
+       a zero-duration tween on the same scrubbed timeline, so reversal
+       restores it exactly where the items reappear. */
+    tl.set(section, { pointerEvents: 'none' }, holdEnd + photoBlurEndPx);
     driftTweens.push(tl);
     if (import.meta.env.DEV) {
       window.__landingFounders = {
@@ -695,6 +709,7 @@ export function initLandingFounders() {
       section.style.removeProperty('--fd-block-top');
       section.style.removeProperty('--fd-block-h');
       section.style.removeProperty('--fd-nav-bottom');
+      section.style.pointerEvents = ''; /* item 2's departed state */
       lastPhonePinTopPx = 0;
       if (track instanceof HTMLElement) track.style.height = '';
     }

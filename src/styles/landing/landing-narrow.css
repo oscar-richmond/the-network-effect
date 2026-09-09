@@ -1202,6 +1202,26 @@
 		background: #161616;
 		transform-origin: left center;
 		transform: scaleX(0);
+		/* ITEM 5 (Oscar, 2026-09-09, the refinements) — THE "BLACK DIVIDER".
+		   Not a colour bug and not a timing race: this fill is the rail's
+		   PROGRESS (scaleX = the WE BUILD rail's scrollLeft / its max,
+		   landing-services.js onRail — #161616 over the #e0e0e7 line), and a
+		   rail's scroll position is SESSION STATE. Reproduced at 402: one
+		   sideways swipe on IMMERSE's rail → scrollLeft 238/447 → scaleX
+		   0.53 → the divider painted rgb(22,22,22) over its left 53%; drive
+		   on, IMMERSE parks, CONNECT rises — the fill is carried into the
+		   parked band unchanged (same 22,22,22); reload → scrollLeft 0 →
+		   scaleX 0 → grey. Hence "intermittent, resolves on reload". Twelve
+		   vertical-only passes (fast, slow, paused at the lock, reversed,
+		   oscillated, jumped) never moved it: sl 0, scaleX 0, rgb(224,224,231)
+		   every time. The parked band is the frame's grey line (1:426 —
+		   dividers at 67/98/129, no fill), so the fill leaves with the rail:
+		   it drains as the panel parks and returns with the rail when the
+		   panel comes back. */
+		transition: opacity 0.3s cubic-bezier(0.42, 0, 0.24, 1);
+	}
+	.landing-v2.landing-home .landing-sreel__pillar.is-parked .landing-sreel__fill {
+		opacity: 0;
 	}
 	.landing-v2.landing-home .landing-sreel__titlerow {
 		order: 1;
@@ -2739,6 +2759,19 @@
 			calc((100dvh + var(--fd-nav-bottom, 0px) - var(--fd-block-h, 100dvh)) / 2 - var(--fd-block-top, 0px))
 		);
 		z-index: 2; /* above the network stage pinned beneath it */
+		/* item 2: the section takes taps only while it has anything to tap —
+		   landing-founders.js sets it pointer-events: none inline once the
+		   exit has cleared (the scrub restores this on the way back) */
+		pointer-events: auto;
+	}
+	/* ITEM 2 (Oscar, 2026-09-09, the refinements): the TRACK is a plain
+	   box at z 261 that still spans the upper half of the network stage
+	   (viewport −1209 → 424 at 402 with OUR NETWORK pinned) after its
+	   section has departed — the second thing document.elementFromPoint
+	   returned over the first two lines of industries once the section
+	   itself was pointer-transparent. It has nothing of its own to tap. */
+	.landing-v2.landing-home .landing-founders-track {
+		pointer-events: none;
 	}
 
 	/* ── OUR NETWORK: the stage pinned bottom-aligned on the strip,
