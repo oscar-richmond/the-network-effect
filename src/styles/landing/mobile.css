@@ -384,6 +384,29 @@
 		transform: translateY(-5px) rotate(-45deg);
 	}
 
+	/* ITEM 9 (Oscar, 2026-09-09, the refinements) — THE BURGER OVER THE RED.
+	   closing-statement.js already toggles is-over-red on this toggle (its
+	   navEls list names "the narrow build's burger"), but the solid-over-
+	   red rule in landing.css lists only the wordmark, the nav links and
+	   LET'S CHAT — the toggle had the class and no rule for it. So over
+	   the red the BAR went mix-blend-mode: normal (a stacking context that
+	   now isolates its children's blends) while the toggle kept
+	   `color: #fff; mix-blend-mode: difference` — difference against
+	   nothing but the bar's own transparent ground is white. Measured at
+	   402 on the landing's closing (scrollY 15000, is-over-red on): bars
+	   painted rgb(255,255,255), the wordmark rgb(22,22,22); the same on
+	   /services' red foot. And with the menu open over the red the X
+	   (these same bars) painted 255,255,255 on the #eeeef0 panel. The
+	   toggle takes the same override as the wordmark, here in the
+	   burger's own sheet and its own media query so the desktop's MENU
+	   label is exactly as it was. Over the light and dark grounds the
+	   bar's difference stands and nothing changes (17,17,15 / 233,233,233
+	   measured). */
+	.landing-v2 .home__topbar--about .home__menu-cta .home__menu-toggle.is-over-red {
+		mix-blend-mode: normal;
+		color: #161616;
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.landing-v2 .home__menu-burger-bar { transition: none; }
 	}
