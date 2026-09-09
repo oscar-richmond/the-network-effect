@@ -75,6 +75,13 @@ export const CASE_STUDIES = [
     base: ref('yoxman-food-festival'),
     subtitle: 'A New Platform for Culinary Culture', // PLACEHOLDER copy
     heroImg: yox('hero.jpg'),
+    /* THE 402 FRAME (V9fcTtbistM57vsObNruR6 2:21, 2026-09-09): the phone's
+       full-bleed 402×500 hero crops this photograph off-centre — the
+       frame scales it to the window's height and shows x123..525 of its
+       755 (the chefs and the near table; the water and the far bank
+       fall off the right). object-position for the phone's window;
+       the other studies are unframed and take the centre. */
+    heroFramingM: '35% 50%',
     /* PLACEHOLDER copy. The leading indent is reproduced as padding
        (the footer-statement spacer precedent). */
     intro:

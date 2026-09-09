@@ -111,7 +111,11 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
         motivated it — one less blended chain. */}
     <header class="cs-hero">
       <h1 class="cs-hero__title" data-cs-hero-title>{title}</h1>
-      <figure class="cs-hero__img" data-cs-hero-img>
+      {/* THE 402 FRAME (2:19–2:21, 2026-09-09): the phone's hero is the
+          402×500 full-bleed window at page y328; its crop is the study's
+          own (heroFramingM — case-study-narrow.css reads the var below
+          768 only; the desktop's frame keeps its centre). */}
+      <figure class="cs-hero__img" data-cs-hero-img style={study.heroFramingM ? `--cs-hero-pos-m:${study.heroFramingM}` : undefined}>
         <img src={study.heroImg} srcset={imageSrcset(study.heroImg, [1200, 1400], 2048)} sizes="(max-width: 1359px) 100vw, 1728px" alt={`${title} — hero image`} decoding="async" />
       </figure>
     </header>
@@ -209,6 +213,17 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           ))}
         </div>
       ))}
+      {/* THE 402 FRAME (2:50, 2026-09-09): the phone's stream carries the
+          OUR WORK paragraph as a text block between its rows — after the
+          THIRD row in the frame (its seven rows: three, the block, three);
+          after the last row where a study has fewer than three. It is the
+          section's LAST child so the desktop's rows stay adjacent siblings
+          (its `.cs-row + .cs-row` gap would otherwise skip the row after
+          the block); the phone orders it into place (case-study-narrow.css:
+          rows 4+ after it). display:none from 768 — the desktop and the band
+          keep the paragraph in the facts head above. Word-revealed on
+          entering as that paragraph is (case-study.js). */}
+      <p class="cs-note" data-cs-note>{study.ourWork.desc}</p>
     </section>
 
     {/* ── E. MORE WORK — a functional horizontal pager over EVERY
@@ -224,6 +239,15 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           mobile the file stacks the words (MORE indented 37, the
           landing stacked-header grammar mirrored). */}
       <h2 class="cs-more__title" data-cs-more-title><span class="cs-more__t1">MORE</span> <span class="cs-serrif">WORK</span></h2>
+      {/* THE 402 FRAME (2:45–2:48, 2026-09-09): VIEW ALL at the heading's
+          right — the label role in the brand blue with the 9px arrow (the
+          landing's more-arrow glyph at the frame's size), to /work. Phone
+          only (display:none from 768 — the desktop pages with its arrows).
+          The hit area is the ::after, 44 tall. */}
+      <a class="cs-more__viewall-m" href="/work" data-cs-viewall-m data-char-ripple-trigger>
+        <span data-char-ripple>VIEW ALL</span>
+        <img src={asset('/assets/landing/services-stack/more-arrow.svg')} alt="" width="9" height="9" data-char-ripple-arrow />
+      </a>
       <div class="cs-more__pager">
         <button type="button" class="cs-more__arrow" data-cs-pager="prev" aria-label="Previous projects" disabled>
           <svg class="cs-more__arrow-svg cs-more__arrow-svg--left" viewBox="0 0 300 300" aria-hidden="true" data-char-ripple-arrow xmlns="http://www.w3.org/2000/svg">

@@ -335,6 +335,197 @@
 	.landing-v2.case-page .cs-gallery-cursor { display: none; }
 }
 
+/* ═══ THE 402 FRAME (V9fcTtbistM57vsObNruR6 2:18 "Individual Case study
+   Page", 2026-09-09): the PHONE's template. Page y = frame y − 49. Every
+   vertical is a gap between content boxes, never a literal top — the four
+   studies' copy lengths differ and the template grows with them.
+
+   THE TITLE at the display role (48/48 here — the frame's two 48 lines in
+   a 96 box), page y184; THE HERO a 402×500 full-bleed window 48 under it
+   (its crop the study's — heroFramingM); THE INTRO 64 under the hero at
+   the heading role, flush left — the frame draws NO lead indent and NO
+   accent bar (LOGGED: the desktop's motif, kept from 768); THE FACTS 64
+   under the intro as the four-row table alone — the frame has no OUR
+   WORK eyebrow or paragraph above it; the paragraph moves into the
+   stream as the text block (2:50); rows are label | value on 2px
+   hairlines, 24 above and below, the value right-aligned in its 220
+   column (the frame's row 3 at x382 is a slip — every value at 386);
+   THE STREAM 80 under the table, full bleed edge to edge: singles
+   402×240, pairs 130 + 8 + 264 at 232, 8 between rows, the text block
+   80 above and below; MORE WORK 80 under the last row at the heading
+   role with VIEW ALL at its right, the rail 48 under it — 280-wide
+   cards (280×350 image, the name 24 below at the title role) on the 8
+   gap, the landing's rail grammar (native snap, the ground veiling both
+   edges); the footer's statement lands 220 under the rail's names (the
+   frame's 4343): 120 to the footer's top + its own 100.
+
+   FLAGGED, built per the frame: NO floating START A PROJECT chip below
+   768 (the band and the desktop keep it). */
+@media (max-width: 767px) {
+	.landing-v2.case-page {
+		--cs-pad-top: 184px;
+		--cs-hero-gap: 48px;
+		--cs-section-gap: 64px;
+		--cs-stream-gap: 80px;
+		--cs-row-gap: 8px;
+		--cs-pair-thumb: calc(130 / 402 * 100vw);
+		--cs-pair-h: calc(232 / 402 * 100vw);
+		--cs-hero-aspect: 402 / 500;
+		--cs-full-aspect: 402 / 240;
+		--cs-card-w: calc(280 / 402 * 100vw);
+		--cs-card-gap: 8px;
+		--cs-rail-gap: 48px;
+		--cs-more-pad: 80px;
+		--cs-bottom: 120px;
+	}
+
+	/* ── the title and the full-bleed hero ── */
+	.landing-v2.case-page .cs-hero__title {
+		font-family: var(--type-display-face);
+		font-weight: var(--type-display-weight);
+		font-size: var(--type-display-size);
+		line-height: 1; /* the frame's 48 on 48 (the role's 45 would stack 90) */
+		letter-spacing: var(--type-display-ls);
+		text-transform: var(--type-display-case);
+	}
+	.landing-v2.case-page .cs-hero__img {
+		margin: var(--cs-hero-gap) 0 0;
+		width: 100%;
+		aspect-ratio: var(--cs-hero-aspect);
+	}
+	.landing-v2.case-page .cs-hero__img img {
+		object-position: var(--cs-hero-pos-m, 50% 50%);
+	}
+
+	/* ── the intro: flush left, no indent, no bar ── */
+	.landing-v2.case-page .cs-intro { padding-right: 0; }
+	.landing-v2.case-page .cs-intro__indent,
+	.landing-v2.case-page .cs-intro__bar { display: none; }
+
+	/* ── the facts: the table alone; label | value rows ── */
+	.landing-v2.case-page .cs-facts__head { display: none; }
+	.landing-v2.case-page .cs-facts__table { margin-top: 0; }
+	.landing-v2.case-page .cs-facts__row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 220px;
+		column-gap: 16px;
+		align-items: start;
+		padding: 24px 0;
+	}
+	.landing-v2.case-page .cs-facts__rowlabel {
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+	}
+	.landing-v2.case-page .cs-facts__rowcopy {
+		margin: 0;
+		text-align: right;
+	}
+
+	/* ── the stream: edge to edge ── */
+	.landing-v2.case-page .cs-divider { display: none; }
+	.landing-v2.case-page .cs-work {
+		display: flex;
+		flex-direction: column;
+		margin-top: var(--cs-stream-gap);
+	}
+	.landing-v2.case-page .cs-row { margin: 0; }
+	/* the text block (the section's last child in the DOM) takes its place
+	   after the third row: rows 4+ order after it; the row that follows it
+	   visually drops the sibling gap (the block carries its own 80s) */
+	.landing-v2.case-page .cs-work > .cs-row:nth-child(n + 4) { order: 2; }
+	.landing-v2.case-page .cs-work > .cs-row:nth-child(4) { margin-top: 0; }
+	.landing-v2.case-page .cs-note {
+		order: 1;
+		display: block;
+		margin: var(--cs-stream-gap) var(--m-margin-safe-r, var(--m-margin));
+		font-family: var(--type-case-note-face);
+		font-weight: var(--type-case-note-weight);
+		font-synthesis: none;
+		font-size: var(--type-case-note-size);
+		line-height: var(--type-case-note-lh);
+		letter-spacing: var(--type-case-note-ls);
+		text-transform: var(--type-case-note-case);
+		color: #161616; /* the frame's white in difference over the ground — the ink */
+	}
+
+	/* ── MORE WORK: the heading, VIEW ALL, the rail on the landing's grammar ── */
+	.landing-v2.case-page .cs-more {
+		padding: var(--cs-more-pad) 0 var(--cs-bottom);
+	}
+	.landing-v2.case-page .cs-more__title {
+		font-family: var(--type-heading-face);
+		font-weight: var(--type-heading-weight);
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+		letter-spacing: var(--type-heading-ls);
+		text-transform: var(--type-heading-case);
+		white-space: nowrap;
+	}
+	.landing-v2.case-page .cs-more__viewall-m {
+		position: absolute;
+		top: calc(var(--cs-more-pad) + 16px);
+		right: var(--m-margin-safe-r, var(--m-margin));
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 13px;
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+		color: #232a89;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.landing-v2.case-page .cs-more__viewall-m img { display: block; width: 9px; height: 9px; }
+	.landing-v2.case-page .cs-more__viewall-m::after {
+		content: '';
+		position: absolute;
+		inset: -16px -8px -15px -8px; /* a 44-tall hit area on the 13 row */
+	}
+	.landing-v2.case-page .cs-more__viewport { margin-top: var(--cs-rail-gap); }
+	.landing-v2.case-page .cs-more__track { gap: var(--cs-card-gap); }
+	.landing-v2.case-page .cs-more__track::after { flex-basis: calc(var(--m-margin-safe-r, var(--m-margin)) - var(--cs-card-gap)); }
+	.landing-v2.case-page .cs-more__imgwin { aspect-ratio: 280 / 350; }
+	.landing-v2.case-page .cs-more__cardrow { margin-top: 24px; }
+	/* the ground veiling the rail's edges — the founders rail's 16 / 48,
+	   anchored to the rail's band (the images' height, below the heading) */
+	.landing-v2.case-page .cs-more::before,
+	.landing-v2.case-page .cs-more::after {
+		content: '';
+		position: absolute;
+		top: calc(var(--cs-more-pad) + var(--type-heading-size) * var(--type-heading-lh) + var(--cs-rail-gap));
+		height: calc(var(--cs-card-w) * 350 / 280);
+		z-index: 2;
+		pointer-events: none;
+	}
+	.landing-v2.case-page .cs-more::before {
+		left: 0;
+		width: var(--m-margin-safe-l, var(--m-margin));
+		background: linear-gradient(90deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
+	}
+	.landing-v2.case-page .cs-more::after {
+		right: 0;
+		width: 48px;
+		background: linear-gradient(90deg, rgba(238, 238, 240, 0) 0%, #eeeef0 100%);
+	}
+
+	/* ── FLAGGED: the frame draws no floating chip ── */
+	.landing-v2.case-page .cs-float { display: none; }
+}
+/* the phone's markup is display:none from 768 up */
+@media (min-width: 768px) {
+	.landing-v2.case-page .cs-note.cs-note,
+	.landing-v2.case-page .cs-more__viewall-m.cs-more__viewall-m { display: none; }
+}
+
 /* the band: the desktop's hero and row proportions, the table's two columns */
 @media (min-width: 768px) and (max-width: 1359px) {
 	.landing-v2.case-page {

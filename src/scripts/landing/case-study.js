@@ -40,7 +40,7 @@ import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '.
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initFloatCta } from './float-cta.js';
-import { isMobileViewport, flowFooterSpacer } from './viewport.js';
+import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initStatementBar } from './statement-bar.js';
 
@@ -722,6 +722,21 @@ export function initCaseStudy() {
         start: 'top 65%',
         once: true,
         onEnter: () => factLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l)),
+      }));
+    }
+    /* THE 402 FRAME (2026-09-09): below 768 the facts head is display:none
+       and its paragraph rides in the stream as the text block (2:50) —
+       word-revealed on entering at the paragraph's own convention (65%,
+       once). The block is display:none from 768, where the head above
+       carries the copy as before. */
+    const note = document.querySelector('[data-cs-note]');
+    if (note instanceof HTMLElement && isPhoneViewport()) {
+      wrapWordRevealElement(note);
+      triggers.push(ScrollTrigger.create({
+        trigger: note,
+        start: 'top 65%',
+        once: true,
+        onEnter: () => playLineRevealElement(note),
       }));
     }
     const factRows = Array.from(document.querySelectorAll('[data-cs-fact-row]'));

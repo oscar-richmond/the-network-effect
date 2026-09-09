@@ -303,16 +303,20 @@
    each glyph off-centre in its own. THE GRID — the seven-row composition (the
    modules in work.astro); THE ROWS — eight 370×254 tiles on the 336
    pitch; names 18 at the frame's role (--type-work-tile), 16 under the
-   image; 48 between rows. The footer follows the last name at 160 to its
-   statement in both views (60 here + the footer's 100 — the rows and
-   case frames; the grid frame's 220 is the outlier, LOGGED). */
+   image; 48 between rows. The footer's statement follows the last name at
+   the frame's distance per view — 220 under the grid (0:107), 160 under
+   the rows (0:180) — as the page's bottom padding plus the footer's own
+   100. (The frames draw the footer ground from 140 above the statement,
+   on the brand red; the built footer is the global light one — REPORTED,
+   not rebuilt.) */
 @media (max-width: 767px) {
 	.landing-v2.work-page {
 		--wk-toggle-top: 103px;   /* the glyph's top (0:74 at frame y152) */
 		--wk-toggle-gap: 65px;    /* glyph bottom 115 → the first tile at 180 */
 		--wk-row-gap: 48px;
 		--wk-name-gap: 16px;
-		--wk-bottom: 60px;
+		--wk-bottom: 120px;       /* the grid: 220 to the statement */
+		--wk-bottom-rows: 60px;   /* the rows: 160 */
 		--wk-u: calc(100vw / 402);
 	}
 	.landing-v2.work-page .work-header { display: none; }
@@ -395,7 +399,7 @@
 	}
 
 	/* ── the rows: the band's list hidden, the frame's eight shown ── */
-	.landing-v2.work-page .work-stage { padding: var(--wk-toggle-gap) var(--m-margin-safe-r, var(--m-margin)) var(--wk-bottom) var(--m-margin-safe-l, var(--m-margin)); }
+	.landing-v2.work-page .work-stage { padding: var(--wk-toggle-gap) var(--m-margin-safe-r, var(--m-margin)) var(--wk-bottom-rows) var(--m-margin-safe-l, var(--m-margin)); }
 	.landing-v2.work-page .work-m { display: none; }
 	.landing-v2.work-page .work-r { display: block; }
 	.landing-v2.work-page .work-r__entry { margin: 0 0 var(--wk-row-gap); }
