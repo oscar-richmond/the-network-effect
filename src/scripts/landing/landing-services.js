@@ -42,8 +42,9 @@
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
 import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -66,13 +67,21 @@ export function initLandingServices() {
   const pillars = Array.from(section.querySelectorAll('[data-sreel-pillar]')).filter((el) => el instanceof HTMLElement);
   const readT = parseFloat(getComputedStyle(document.body).getPropertyValue('--sv-read-t')) || 1;
 
+  /* THE PHONE (Figma 1:11 + 1:426, 2026-09-09): the frame's stack and
+     rail — see the block at the end of this function. The reading-line
+     machinery below (the rows scrolling vertically beneath a sticky
+     image) has nothing to read on the phone, where the rows are a
+     horizontal rail inside a sticky panel; the tablet keeps it. */
+  const phone = isPhoneViewport();
+
   /* ── the entrances: the intro's lines, then each pillar's heads ── */
   const intro = section.querySelector('[data-sreel-intro]');
+  const wwd = section.querySelector('[data-sreel-wwd]');
+  const introLines = Array.from(intro ? intro.querySelectorAll('[data-sreel-introline]') : []);
   cleanups.push(initMobileEntrance(section, {
-    lines: [
-      section.querySelector('[data-sreel-wwd]'),
-      ...(intro ? intro.querySelectorAll('[data-sreel-introline]') : []),
-    ].filter((el) => el instanceof HTMLElement),
+    /* the phone reads the pair first, WHAT WE DO below it (the frame's
+       order — landing-narrow.css reorders the column); same stagger */
+    lines: (phone ? [...introLines, wwd] : [wwd, ...introLines]).filter((el) => el instanceof HTMLElement),
   }));
   pillars.forEach((pillar) => {
     cleanups.push(initMobileEntrance(pillar, {
@@ -107,12 +116,18 @@ export function initLandingServices() {
     st.pending = null;
     if (target === st.current) return;
     st.busy = true;
+    /* the build-time srcset outranks src (the desktop reel's FINAL GATE
+       guard, landing-services-reel.js) — without it the swap never
+       showed below the seam (found driving the phone rail, 2026-09-09) */
+    const unset = (img) => { if (img.hasAttribute('srcset')) { img.removeAttribute('srcset'); img.removeAttribute('sizes'); } };
     if (reduced) {
+      unset(st.over);
       st.over.src = srcFor(i, target);
       st.current = target;
       st.busy = false;
       return;
     }
+    unset(st.under);
     st.under.src = srcFor(i, target);
     const ready = st.under.decode ? st.under.decode().catch(() => {}) : Promise.resolve();
     Promise.race([ready, new Promise((r) => setTimeout(r, IMG_DECODE_TIMEOUT_MS))]).then(() => {
@@ -126,6 +141,7 @@ export function initLandingServices() {
         { duration: IMG_WIPE_MS, easing: IMG_WIPE_CURVE, fill: 'forwards' },
       );
       out.onfinish = () => {
+        unset(st.over);
         st.over.src = srcFor(i, target);
         const overReady = st.over.decode ? st.over.decode().catch(() => {}) : Promise.resolve();
         Promise.race([overReady, new Promise((r) => setTimeout(r, IMG_DECODE_TIMEOUT_MS))]).then(() => {
@@ -178,7 +194,7 @@ export function initLandingServices() {
     rows.forEach((row, k) => row.classList.toggle('is-sactive', k === idx));
     requestImage(i, idx);
   };
-  const triggers = pillars.map((pillar, i) => ScrollTrigger.create({
+  const triggers = phone ? [] : pillars.map((pillar, i) => ScrollTrigger.create({
     trigger: pillar,
     start: 'top bottom',
     end: 'bottom top',
@@ -186,6 +202,110 @@ export function initLandingServices() {
     onEnter: () => update(i),
     onEnterBack: () => update(i),
   }));
+
+  /* ═══ THE PHONE — the frame's stack and rail (Figma 1:426 / 1:11) ═══
+     THE STACK: each pillar is a sticky opaque panel (landing-narrow.css)
+     parking under the bar on the 31 pitch; as the next panel rises
+     over it, its title row compacts (is-parked → a transform on the
+     house curve, the desktop reel's band compaction). The park tops
+     are clamped so a panel taller than the viewport still shows its
+     MORE INFO before it parks (short phones park higher, under the
+     bar). THE RAIL: the rows are a 4-row column grid scrolling
+     sideways; the 100×1 indicator (the shared carousel-indicator
+     module — its markup built here, phone only, removed on cleanup)
+     rides the WE BUILD row. The two treatments the reading line used
+     to drive are RE-ANCHORED to the rail's scroll: the divider fills
+     with the rail's progress, and the column in view drives the image
+     through the same wipe — column 0 shows the pillar's own image,
+     column k its first row's picture, that row taking the text slide. */
+  const phoneCleanups = [];
+  if (phone) {
+    const parkTop = parseFloat(getComputedStyle(document.body).getPropertyValue('--sv-park-top')) || 67;
+    const parkPitch = parseFloat(getComputedStyle(document.body).getPropertyValue('--sv-park-pitch')) || 31;
+    const parks = pillars.map(() => parkTop);
+    const setParks = () => {
+      const vh = window.innerHeight;
+      pillars.forEach((pillar, i) => {
+        const natural = parkTop + i * parkPitch;
+        const h = pillar.offsetHeight;
+        parks[i] = Math.min(natural, Math.max(vh - h, -h));
+        pillar.style.setProperty('--sv-park', `${Math.round(parks[i])}px`);
+      });
+    };
+    setParks();
+    const parkTriggers = pillars.slice(0, -1).map((pillar, i) => ScrollTrigger.create({
+      trigger: pillars[i + 1],
+      /* the next panel's top passing 100 below this one's park line */
+      start: () => `top ${Math.round(parks[i] + 100)}px`,
+      end: '+=100000',
+      toggleClass: { targets: pillar, className: 'is-parked' },
+      invalidateOnRefresh: true,
+    }));
+    const onRefreshInit = () => setParks();
+    ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
+    phoneCleanups.push(() => {
+      ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
+      parkTriggers.forEach((t) => t.kill());
+      pillars.forEach((p) => { p.classList.remove('is-parked'); p.style.removeProperty('--sv-park'); });
+    });
+
+    pillars.forEach((pillar, i) => {
+      const list = pillar.querySelector('[data-sreel-list]');
+      const label = pillar.querySelector('[data-sreel-wlabel]');
+      const fill = fills[i];
+      const rows = rowsOf[i];
+      if (!(list instanceof HTMLElement)) return;
+      /* the indicator */
+      let ind = null;
+      if (label instanceof HTMLElement) {
+        ind = document.createElement('span');
+        ind.className = 'm-carousel-ind';
+        ind.setAttribute('data-carousel-ind', '');
+        ind.setAttribute('aria-hidden', 'true');
+        const thumb = document.createElement('span');
+        thumb.className = 'm-carousel-ind__thumb';
+        thumb.setAttribute('data-carousel-thumb', '');
+        ind.appendChild(thumb);
+        label.appendChild(ind);
+        pillar.setAttribute('data-m-carousel', '');
+        list.setAttribute('data-carousel-strip', '');
+      }
+      /* the rail's scroll → the fill, the active column, the image */
+      let raf = 0;
+      const onRail = () => {
+        raf = 0;
+        const max = list.scrollWidth - list.clientWidth;
+        const t = max > 0 ? Math.min(Math.max(list.scrollLeft / max, 0), 1) : 0;
+        if (fill instanceof HTMLElement) fill.style.transform = `scaleX(${t.toFixed(4)})`;
+        /* the column in view: the row whose start is nearest the
+           scroller's padding edge */
+        const pad = parseFloat(getComputedStyle(list).paddingLeft) || 0;
+        let col = 0;
+        let best = Infinity;
+        rows.forEach((row, k) => {
+          const d = Math.abs(row.offsetLeft - pad - list.scrollLeft);
+          if (d < best) { best = d; col = Math.floor(k / 4); }
+        });
+        const idx = col === 0 ? -1 : Math.min(col * 4, rows.length - 1);
+        if (idx === activeIdx[i]) return;
+        activeIdx[i] = idx;
+        rows.forEach((row, k) => row.classList.toggle('is-sactive', k === idx));
+        requestImage(i, idx);
+      };
+      const onScroll = () => { if (!raf) raf = requestAnimationFrame(onRail); };
+      list.addEventListener('scroll', onScroll, { passive: true });
+      onRail();
+      phoneCleanups.push(() => {
+        list.removeEventListener('scroll', onScroll);
+        if (raf) cancelAnimationFrame(raf);
+        ind?.remove();
+        pillar.removeAttribute('data-m-carousel');
+        list.removeAttribute('data-carousel-strip');
+      });
+    });
+    /* the module wires every [data-m-carousel] DESCENDANT of its scope */
+    phoneCleanups.push(initCarouselIndicators(section));
+  }
 
   /* ── the tail: light → the featured stage's dark. PAINTED, not
      scrubbed (logged): the desktop scrubs its ground while its stage is
@@ -202,5 +322,6 @@ export function initLandingServices() {
     disposed = true;
     cleanups.forEach((fn) => fn());
     triggers.forEach((t) => t.kill());
+    phoneCleanups.forEach((fn) => fn());
   };
 }

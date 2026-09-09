@@ -1370,6 +1370,270 @@
 	}
 }
 
+/* THE PHONE (Figma 1:11 + 1:426 "SERVICES STACK", 2026-09-09).
+   1:11 lays the section out: FROM ACCESS. / TO IMPACT (display 48,
+   serif left, sans right) 229 below the strip, WHAT WE DO (eyebrow)
+   150 below, then three pillars 80 apart — divider, title 28 with its
+   /01 at 14, the image 370×220, the description (Serrif Condensed
+   26/28), WE BUILD with the 100×1 indicator on its row, the services
+   as a 4-row × 3-column rail (Serrif 16/19, 27 pitch, 48 between
+   columns) fading at both edges, MORE INFO 118×38; the 474 fade-to-
+   black tail follows 80 below. 1:426 shows the SCROLLED state: each
+   pillar an opaque full-bleed panel parked under the bar on a 31
+   pitch (dividers at 67 / 98 / 129), a parked title compacted to 13
+   (from 23) — the desktop reel's stack, done here with sticky panels
+   (the later pillar paints over the earlier) and a transform on the
+   parked title row (landing-services.js toggles is-parked). The
+   restored build's in-flow pillars never stacked — see the commit. */
+@media (max-width: 767px) {
+	.landing-v2.landing-home {
+		--sv-pad-top: 229px;
+		--sv-wwd-gap: 150px;
+		--sv-wwd-to-pillar: 24px;
+		--sv-pillar-gap: 80px;
+		--sv-head-gap: 32px;
+		--sv-img-gap: 32px;
+		--sv-desc-gap: 40px;
+		--sv-label-gap: 32px;
+		--sv-rail-gap: 24px;
+		--sv-btn-gap: 40px;
+		--sv-tail: 474px;
+		--sv-tail-gap: 80px;
+		--sv-park-top: 67px;
+		--sv-park-pitch: 31px;
+		--sv-stack-hold: 300px; /* AMPLIFY parked at 129, the stack complete, before the three release together */
+		/* the parked title: 23 → 13, its top 34 → 10 below the divider */
+		--sv-park-scale: 0.5652;
+		--sv-park-lift: -24px;
+		--sv-rail-h: 100px;
+		--sv-row-h: 19px;
+		--sv-row-gap: 8px;
+		--sv-col-gap: 48px;
+	}
+	.landing-v2.landing-home .landing-outro {
+		padding: var(--sv-pad-top) 0 calc(var(--sv-tail-gap) + var(--sv-tail));
+	}
+	/* the frame's order: the pair, then WHAT WE DO, then the pillars */
+	.landing-v2.landing-home .landing-sreel__stage {
+		display: flex;
+		flex-direction: column;
+	}
+	/* the sticky panels' runway: a last flex item (padding would sit
+	   outside the sticky constraint's content box) */
+	.landing-v2.landing-home .landing-sreel__stage::after {
+		content: '';
+		order: 9;
+		flex: none;
+		height: var(--sv-stack-hold);
+	}
+	.landing-v2.landing-home .landing-sreel__intro {
+		order: 1;
+		padding-top: 0;
+	}
+	.landing-v2.landing-home .landing-sreel__wwd {
+		order: 2;
+		margin-top: var(--sv-wwd-gap);
+	}
+	.landing-v2.landing-home .landing-sreel__pillar {
+		order: 3;
+	}
+	/* the pair: the frame's 49 pitch (43 boxes 6 apart at our 45 box);
+	   the serif line takes its full stop from the frame (the data has
+	   none — it rides the last word's reveal clip); the sans line is
+	   right-aligned with no lead */
+	.landing-v2.landing-home .landing-sreel__st-line + .landing-sreel__st-line {
+		margin-top: 4px;
+	}
+	.landing-v2.landing-home .landing-sreel__st-serif .lr-clip:last-of-type .lr-inner::after,
+	.landing-v2.landing-home .landing-sreel__st-serif:not(:has(.lr-clip))::after {
+		content: '.';
+	}
+	.landing-v2.landing-home .landing-sreel__st-sans {
+		text-indent: 0;
+		text-align: right;
+	}
+	/* the pillars note is not in the frame */
+	.landing-v2.landing-home .landing-sreel__note {
+		display: none;
+	}
+
+	/* ── the panels ── */
+	.landing-v2.landing-home .landing-sreel__pillar {
+		position: sticky;
+		top: var(--sv-park, var(--sv-park-top));
+		margin: var(--sv-pillar-gap) 0 0;
+		padding: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		background: #eeeef0;
+	}
+	/* the release: the stage's end pushes a parked panel up once it
+	   reaches the panel's MARGIN edge, so the earlier panels carry a
+	   bottom margin of their park offset from the last — the three
+	   margin edges coincide and the stack leaves the bar TOGETHER (the
+	   desktop reel's exit), the pitch kept at 80 by the next panel's
+	   top margin taking up the difference */
+	.landing-v2.landing-home .landing-sreel__pillar[data-i='0'] {
+		margin-top: var(--sv-wwd-to-pillar);
+		margin-bottom: calc(2 * var(--sv-park-pitch));
+		--sv-park: var(--sv-park-top);
+		z-index: 1;
+	}
+	.landing-v2.landing-home .landing-sreel__pillar[data-i='1'] {
+		margin-top: calc(var(--sv-pillar-gap) - 2 * var(--sv-park-pitch));
+		margin-bottom: var(--sv-park-pitch);
+		--sv-park: calc(var(--sv-park-top) + var(--sv-park-pitch));
+		z-index: 2;
+	}
+	.landing-v2.landing-home .landing-sreel__pillar[data-i='2'] {
+		margin-top: calc(var(--sv-pillar-gap) - var(--sv-park-pitch));
+		--sv-park: calc(var(--sv-park-top) + 2 * var(--sv-park-pitch));
+		z-index: 3;
+	}
+	/* the title row: 28 in a 23 box with /01 at 14 on its top edge,
+	   4 after it; parked, the row compacts on its top-left corner */
+	.landing-v2.landing-home .landing-sreel__titlerow {
+		margin-top: var(--sv-head-gap);
+		gap: 4px;
+		/* the row's strut at the title's box, so the reveal clips (the
+		   entrance wraps the two spans) measure 23, not the heading tier */
+		font-size: clamp(25px, 6.9652vw, 30px);
+		line-height: 0.8214;
+		transform-origin: left top;
+		transition: transform 0.5s cubic-bezier(0.42, 0, 0.24, 1);
+		will-change: transform;
+	}
+	.landing-v2.landing-home .landing-sreel__pillar.is-parked .landing-sreel__titlerow {
+		transform: translateY(var(--sv-park-lift)) scale(var(--sv-park-scale));
+	}
+	.landing-v2.landing-home .landing-sreel__title {
+		font-size: clamp(25px, 6.9652vw, 30px);
+		line-height: 0.8214;
+		letter-spacing: -0.02em;
+	}
+	.landing-v2.landing-home .landing-sreel__num {
+		display: inline-block;
+		vertical-align: top; /* on the title's top edge (1:108) */
+		margin-top: 0;
+		font-size: 14px;
+		line-height: 11px;
+		letter-spacing: -0.02em;
+	}
+	/* the frame's order: the image above the description */
+	.landing-v2.landing-home .landing-sreel__desc {
+		order: 3;
+		margin-top: var(--sv-desc-gap);
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-size: clamp(23.3px, 6.4677vw, 27.8px);
+		line-height: 1.0769;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+	/* the image sits in the panel (the panel is the sticky unit now) */
+	.landing-v2.landing-home .landing-sreel__img {
+		order: 2;
+		position: relative; /* the two absolute layers' box */
+		top: auto;
+		aspect-ratio: 370 / 220;
+		margin-top: var(--sv-img-gap);
+		z-index: auto;
+	}
+	/* WE BUILD: at the eyebrow, the indicator on its row (inserted by
+	   landing-services.js) right-aligned to the margin */
+	.landing-v2.landing-home .landing-sreel__wlabel {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: var(--sv-label-gap);
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+	}
+	/* the rail: full-bleed scroller with the margin as its padding, the
+	   rows a 4-row column grid snapping per column; the old sticky blur
+	   has nothing to dissolve now */
+	.landing-v2.landing-home .landing-sreel__listwin {
+		position: relative;
+		margin: var(--sv-rail-gap) calc(-1 * var(--m-margin-safe-r, var(--m-margin))) 0 calc(-1 * var(--m-margin-safe-l, var(--m-margin)));
+		width: auto;
+		display: block;
+		overflow: visible;
+	}
+	.landing-v2.landing-home .landing-sreel__list {
+		display: grid;
+		grid-auto-flow: column;
+		grid-template-rows: repeat(4, var(--sv-row-h));
+		grid-auto-columns: max-content;
+		row-gap: var(--sv-row-gap);
+		column-gap: var(--sv-col-gap);
+		height: var(--sv-rail-h);
+		padding: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scroll-padding-left: var(--m-margin-safe-l, var(--m-margin));
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+	}
+	.landing-v2.landing-home .landing-sreel__list::-webkit-scrollbar {
+		display: none;
+	}
+	.landing-v2.landing-home .landing-sreel__listfade,
+	.landing-v2.landing-home .landing-sreel__rowline {
+		display: none;
+	}
+	.landing-v2.landing-home .landing-sreel__row {
+		height: var(--sv-row-h);
+		padding: 0;
+		scroll-snap-align: start;
+	}
+	.landing-v2.landing-home .landing-sreel__svc {
+		display: block;
+		font-family: 'Serrif', var(--font-serif-cond);
+		font-weight: 500;
+		font-size: 16px;
+		line-height: var(--sv-row-h);
+		letter-spacing: 0;
+		white-space: nowrap;
+	}
+	/* 1:140 — the ground over the rail's edges: 5% left, 6% right */
+	.landing-v2.landing-home .landing-sreel__listwin::before,
+	.landing-v2.landing-home .landing-sreel__listwin::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		pointer-events: none;
+		z-index: 1;
+	}
+	.landing-v2.landing-home .landing-sreel__listwin::before {
+		left: 0;
+		width: 5%;
+		background: linear-gradient(90deg, #eeeef0, rgba(238, 238, 240, 0));
+	}
+	.landing-v2.landing-home .landing-sreel__listwin::after {
+		right: 0;
+		width: 6%;
+		background: linear-gradient(90deg, rgba(238, 238, 240, 0), #eeeef0);
+	}
+	/* MORE INFO — 118×38: 16 · text · 6 · the 9px arrow · 16 */
+	.landing-v2.landing-home .landing-sreel__btn {
+		display: inline-flex; /* the desktop chip's row (block below 1360 in landing.css) */
+		align-items: center;
+		min-width: 0;
+		gap: 6px;
+		margin-top: var(--sv-btn-gap);
+		text-decoration: none; /* the desktop chip's rule sits above the seam; the bare <a> underlined here */
+	}
+	.landing-v2.landing-home .landing-sreel__btn-arrow {
+		width: 9px;
+		height: 9px;
+	}
+}
+
 /* the band: the pillar in two columns — the image sticky at the left
    (the desktop's proportion), the label, rows and MORE INFO at the
    right; the reading line beside the image's centre */

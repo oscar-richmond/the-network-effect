@@ -62,6 +62,38 @@
 @media (max-width: 767px) {
   .landing-v2 {
     --m-margin: 16px;
+    /* the frame's rail indicator (1:121–1:122, 1:323–1:324, 1:390–
+       1:391): a 100×1 track with a 32 thumb, radius 2; light-ground
+       fills here, the dark band's set where it sits on the dark */
+    --m-ind-w: 100px;
+    --m-ind-h: 1px;
+    --m-ind-thumb: 32px;
+    --m-ind-track: #e4e4ea;
+    --m-ind-fill: #232a89;
+  }
+  /* THE INDICATOR — built by carousel-indicator.js's markup contract
+     (data-carousel-ind / data-carousel-thumb): the module sizes the
+     thumb and translates it with the strip's scroll fraction */
+  .landing-v2 .m-carousel-ind {
+    position: relative;
+    display: block;
+    flex: none;
+    width: var(--m-ind-w);
+    height: var(--m-ind-h);
+    border-radius: 2px;
+    background: var(--m-ind-track);
+    overflow: hidden;
+  }
+  .landing-v2 .m-carousel-ind__thumb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--m-ind-thumb);
+    border-radius: 2px;
+    background: var(--m-ind-fill);
+    transform: translateX(var(--ci-x, 0px));
+    will-change: transform;
   }
 }
 
