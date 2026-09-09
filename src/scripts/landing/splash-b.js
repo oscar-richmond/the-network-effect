@@ -51,6 +51,19 @@ import gsap from 'gsap';
 import { getLenisInstance } from './site-scroll.js';
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
 import { playLineRevealElement, wrapWordRevealElement } from '../line-reveal.js';
+import { isPhoneViewport } from './viewport.js';
+
+/* THE 402 FRAME (Oscar, 2026-09-09 — GvANAN3kJOPV8AKOi3O9FF 1:11): the
+   phone's hero is ONE image, the middle card; the outer two are
+   display:none there (landing-narrow.css). This sequence's destination
+   on the phone is therefore the middle card alone — the readiness gate
+   waits for ITS box, the two outer stand-ins borrow that box exactly as
+   the discards do (they arrive in the pile beneath it and clear with the
+   discards, never seen leaving), and the sort travels one card. Nothing
+   above the seam reads this. Before: the gate waited for three boxes,
+   two of which could never come, so every phone load sat on the red
+   ground at "0" for the whole SB_READY_TIMEOUT and then skipped. */
+const SB_PHONE_CARD = 1;
 
 /* ── the reference's timings, verbatim */
 export const SB_COUNT_DUR = 3;
@@ -437,12 +450,18 @@ export function initSplashB(splashRoot) {
      already up). So waiting for them is part of the readiness gate
      below, not an assumption here. */
   let rects = [];
+  const phone = isPhoneViewport();
+  /* the phone: the stand-ins that have no card of their own (see the
+     note at SB_PHONE_CARD) — they pile and clear, they do not travel */
+  const sbExtras = phone ? sbCards.filter((_, i) => i !== SB_PHONE_CARD) : [];
+  const sbTravellers = phone ? [sbCards[SB_PHONE_CARD]] : sbCards;
   const cardsPlaced = () => {
     const wrap = document.querySelector('.landing-hero__cards');
     if (!wrap || !wrap.classList.contains('is-placed')) return false;
     const r = heroCards.map((c) => c.getBoundingClientRect());
-    if (r.some((x) => x.width < 1 || x.height < 1)) return false;
-    rects = r;
+    const needed = phone ? [r[SB_PHONE_CARD]] : r;
+    if (needed.some((x) => x.width < 1 || x.height < 1)) return false;
+    rects = phone ? r.map(() => r[SB_PHONE_CARD]) : r;
     return true;
   };
 
@@ -506,6 +525,11 @@ export function initSplashB(splashRoot) {
       clipPath: 'none',
     });
     gsap.set(sbCards.map((c) => c.querySelector('img')), { scale: SB_IMG_SCALE_FROM });
+    /* the phone: the two extras sit ABOVE the discards and BENEATH the
+       middle card in the pile (the markup's z puts the right card on
+       top), so the card that stays is the one the eye follows and the
+       extras fade behind it exactly as the discards do */
+    if (sbExtras.length) gsap.set(sbExtras, { zIndex: (i) => 13 + i });
   };
 
   /* the counter: fixed-width digit cells (see the component's note) */
@@ -636,11 +660,22 @@ export function initSplashB(splashRoot) {
         onComplete: () => sbDiscards.forEach((d) => d.remove()),
       }, SB_DISCARD_OUT_AT);
     }
+    /* the phone's two extras clear on the same beat, the same fade, no
+       stagger — so they are gone within the discards' own window, before
+       the middle card leaves the pile and would expose them */
+    if (sbExtras.length) {
+      tl.to(sbExtras, {
+        opacity: 0,
+        duration: SB_DISCARD_OUT_DUR,
+        ease: 'none',
+        onComplete: () => sbExtras.forEach((d) => d.remove()),
+      }, SB_DISCARD_OUT_AT);
+    }
 
     /* ── THE SORT: a plain return to zero — x, y and scale only, on the
        compositor, with the destination already the element's own layout
        box. Per-frame deltas verified monotonic with no reversals. */
-    tl.to(sbCards, {
+    tl.to(sbTravellers, {
       x: 0, y: 0, scale: 1, ease: 'power3.inOut',
       duration: SB_TRAVEL_DUR, stagger: SB_TRAVEL_STAGGER,
     }, sortAt);

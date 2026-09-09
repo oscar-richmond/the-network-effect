@@ -31,6 +31,15 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { asset } from '../../utils/asset.js';
 import { thumbSrcset, imageSrcset } from '../../utils/thumb-srcset.js';
+
+/* THE MORE WORK cards' sizes. The phone branch is the 402 frame's card —
+   280 on the 402 measure (case-study-narrow.css --cs-card-w), fluid — so
+   a 2× phone resolves the 680 / 780 candidates (the 780 exists for the
+   featured set, whose 960–1100w sources have no 1200); the restored
+   build's "100vw − 48px" here was the OLD rail card and, declared, made
+   a 2× phone fall through to the originals (the gate, 2026-09-09). The
+   band's and the desktop's branches are exactly what they were. */
+const MORE_SIZES = '(max-width: 767px) calc(280 / 402 * 100vw), (max-width: 1359px) 340px, 836px';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
@@ -272,7 +281,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-live="true"
             >
               <figure class="cs-more__imgwin">
-                <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
+                <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 780, 1200], 2000)} sizes={MORE_SIZES} alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>
@@ -287,7 +296,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-a4-note="unbuilt study: inert placeholder — no href, unfocusable"
             >
               <figure class="cs-more__imgwin">
-                <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1359px) 340px, 836px" alt="" loading="lazy" decoding="async" />
+                <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 780, 1200], 2000)} sizes={MORE_SIZES} alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
                 <span class="cs-more__cardtitle" data-cs-card-title>{m.title.join(' ')}</span>

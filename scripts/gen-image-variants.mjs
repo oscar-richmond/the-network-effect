@@ -47,8 +47,10 @@ const JOBS = [
 	[/^assets\/landing\/founders-page\/col-\d\.png$/, [600], 82],
 	/* the founders' photograph (1600w): the landing's 342px figure and /founders' sweep */
 	[/^assets\/landing\/founders\/founders-photo\.jpg$/, [780, 1200], 82],
-	/* the featured cards (960–1100w): the phone's 78vw card and the /work grid's half */
-	[/^assets\/landing\/featured\/work-\d+\.jpg$/, [600], 82],
+	/* the featured cards (960–1100w): the phone's 78vw card and the /work grid's half;
+	   the 780 (2026-09-09) is the phone's 370 tile at 2× on /work and the case
+	   studies' MORE WORK rail — without it those fell through to the original */
+	[/^assets\/landing\/featured\/work-\d+\.jpg$/, [600, 780], 82],
 	/* the services stack (896w): the phone's 342px card */
 	[/^assets\/landing\/services-stack\/(immerse|connect|amplify)\.jpg$/, [600, 780], 82],
 	/* the network strip (640w): the phone's 242px cell */

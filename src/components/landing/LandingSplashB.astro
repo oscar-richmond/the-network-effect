@@ -33,6 +33,19 @@ const heroCards = [
   asset('/assets/landing/hero/hero-2.jpg'),
   asset('/assets/landing/hero/hero-3.jpg'),
 ];
+/* THE 402 FRAME (Oscar, 2026-09-09): on the phone the hero is ONE image —
+   the middle card carries the frame's picture (LandingHero.astro's
+   heroPhoneSrc, same set, same sizes) — so the middle stand-in must be
+   THAT picture for the settle to be the hero there too. The phone-only
+   <source> below is the hero's own device, verbatim; above 767 no source
+   matches and the <img> is exactly what it was. The outer two keep the
+   desktop's images: on the phone they are pile members that clear with
+   the discards (splash-b.js), never the landing. */
+const HERO_PHONE_QUERY = '(max-width: 767px)';
+const HERO_PHONE_CARD = 1;
+const heroPhoneSrc = asset('/assets/landing/mobile/hero.jpg');
+const heroPhoneSrcset = imageSrcset(heroPhoneSrc, [780, 1140], 1536);
+const heroPhoneSizes = 'calc((100vw - 32px) * 2 / 3)';
 
 /* R65 item 2c: the discard pool — placeholder, see the markup note. */
 const SB_DISCARDS = [
@@ -90,7 +103,14 @@ const SB_DISCARDS = [
       Placed and sized entirely by splash-b.js from the live hero. */}
   {heroCards.map((src, i) => (
     <div class="splash-b__card" data-sb-card style={`z-index:${20 + i}`}>
-      <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" />
+      {i === HERO_PHONE_CARD ? (
+        <picture>
+          <source media={HERO_PHONE_QUERY} srcset={heroPhoneSrcset} sizes={heroPhoneSizes} />
+          <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" />
+        </picture>
+      ) : (
+        <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" />
+      )}
     </div>
   ))}
 
