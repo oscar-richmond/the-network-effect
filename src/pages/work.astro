@@ -123,14 +123,19 @@ const rowsM = ROWS_M.map((slug) => workPool.find((x) => x.slug === slug)).filter
    display:none and the srcset's 8w GIF is what "1px" selects, so the
    desktop fetches nothing for them — the hero-card gate, inverted. */
 /* THE GATE (2026-09-09): both views are in the DOM and Chrome fetches the
-   hidden one's images too (lazy or not), so every module declares the
-   FULL measure — the half and three-quarter tiles then resolve the same
-   1200 candidate the rows view needs, one file per project instead of a
-   680 for the grid tile and a 1200 for its row (measured: five duplicate
-   fetches, ~270 kB, at 390 on 4G). The 1200 is downsampled into the 181
-   tile; the 8w GIF still gates the seam. */
-const M_SIZES = { sq: '(max-width: 767px) calc(100vw - 32px), 1px', pt: '(max-width: 767px) calc(100vw - 32px), 1px', wide: '(max-width: 767px) calc(100vw - 32px), 1px', land: '(max-width: 767px) calc(100vw - 32px), 1px' };
-const mSrcset = (src) => `${GATE_GIF} 8w, ${imageSrcset(src, [680, 780, 1200], 2000)}`; /* 780: the featured set's 2× tile (no 1200 exists for those 960–1100w sources) */
+   hidden one's images too (lazy or not), so every module declares ONE
+   width — the full measure under the hero's DENSITY CAP (two thirds of
+   the 370 window, LandingHero.astro): a 2× phone asks 493 and a 3× phone
+   740, so both resolve the 780 for the featured set (960–1100w sources,
+   no 1200 — declared plainly they fell through to the ORIGINALS, 126–244
+   kB each) and the 1200 for the /work set, one file per project across
+   both views instead of a 680 for the grid tile and a 1200 for its row
+   (measured at 390: five duplicate fetches and three originals). The
+   file is downsampled into the half tiles; the 8w GIF still gates the
+   seam. */
+const M_PHONE_W = 'calc((100vw - 32px) * 2 / 3)';
+const M_SIZES = { sq: `(max-width: 767px) ${M_PHONE_W}, 1px`, pt: `(max-width: 767px) ${M_PHONE_W}, 1px`, wide: `(max-width: 767px) ${M_PHONE_W}, 1px`, land: `(max-width: 767px) ${M_PHONE_W}, 1px` };
+const mSrcset = (src) => `${GATE_GIF} 8w, ${imageSrcset(src, [780, 1200], 2000)}`;
 
 ---
 

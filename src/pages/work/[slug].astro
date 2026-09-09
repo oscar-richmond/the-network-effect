@@ -33,13 +33,14 @@ import { asset } from '../../utils/asset.js';
 import { thumbSrcset, imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* THE MORE WORK cards' sizes. The phone branch is the 402 frame's card —
-   280 on the 402 measure (case-study-narrow.css --cs-card-w), fluid — so
-   a 2× phone resolves the 680 / 780 candidates (the 780 exists for the
-   featured set, whose 960–1100w sources have no 1200); the restored
-   build's "100vw − 48px" here was the OLD rail card and, declared, made
-   a 2× phone fall through to the originals (the gate, 2026-09-09). The
-   band's and the desktop's branches are exactly what they were. */
-const MORE_SIZES = '(max-width: 767px) calc(280 / 402 * 100vw), (max-width: 1359px) 340px, 836px';
+   280 on the 402 measure (case-study-narrow.css --cs-card-w), fluid —
+   under the hero's DENSITY CAP (two thirds, LandingHero.astro): a 2×
+   phone asks 373 and a 3× phone 560, so both resolve the 680 (the 780
+   exists for the featured set, whose 960–1100w sources have no 1200).
+   The restored build's "100vw − 48px" here was the OLD rail card and,
+   declared, sent every phone to the ORIGINALS (the gate, 2026-09-09).
+   The band's and the desktop's branches are exactly what they were. */
+const MORE_SIZES = '(max-width: 767px) calc(280 / 402 * 100vw * 2 / 3), (max-width: 1359px) 340px, 836px';
 import { CASE_STUDIES, LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import '../../styles/home.css';
