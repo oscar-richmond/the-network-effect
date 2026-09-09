@@ -510,9 +510,17 @@ export function initContactPage() {
       const spacer = isMobileViewport() ? flowFooterSpacer() : null;
       triggers.push(ScrollTrigger.create({
         trigger: spacer ?? footer,
+        /* The PHONE's footer is in flow with no spacer (the 402 frame,
+           2026-09-09): the desktop pin formula (top −156 at 874 tall)
+           sits past a short document's end and never fires — /contact
+           at 402×874 rests with the footer's top at −119 and the whole
+           footer stayed unrevealed. The services/case-study fallback:
+           the footer's own top at 85% (the landing-closing lesson). */
         start: () => (spacer
           ? 'top bottom-=200'
-          : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
+          : isMobileViewport()
+            ? 'top 85%'
+            : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),
       }));
