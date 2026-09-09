@@ -861,10 +861,14 @@
 		content: none;
 	}
 	/* the terms: the desktop's inline buttons with a 44px touch floor
-	   riding invisible padding (the line pitch is untouched) */
+	   riding invisible padding (the line pitch is untouched) — the pad is
+	   at least 8 (the band's, where the line box is ~40 and the button
+	   56–59 as it was) and otherwise what the line box needs to reach 44
+	   exactly (8.5 at the 402 frame's 24/1.125; the flat 8 left it at 43) */
 	.landing-v2.landing-home .landing-network__term {
-		padding: 8px 2px;
-		margin: -8px -2px;
+		--nw-term-pad: max(8px, calc((44px - var(--type-term-size) * var(--type-term-lh)) / 2));
+		padding: var(--nw-term-pad) 2px;
+		margin: calc(-1 * var(--nw-term-pad)) -2px;
 	}
 	.landing-v2.landing-home .landing-network__marquee--top,
 	.landing-v2.landing-home .landing-network__marquee--bottom,
