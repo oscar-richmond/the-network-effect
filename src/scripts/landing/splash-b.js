@@ -169,8 +169,29 @@ export const SB_LOGOS_AT = SB_TEXT_AT + SB_INTRO_SETTLE_S;
    specificity ((0,4,1) against (0,3,2)); the phone sheet now zeroes it at
    a specificity that wins. With the delay gone this beat is the whole gap
    between the intro's transition end and the row's first frame. Phone
-   only: the desktop's schedule is exactly as it was. */
+   only: the desktop's schedule is exactly as it was.
+   VERIFY-TIME FINDING (same day): the 1.59 settle is the intro's FIRST
+   line — line-reveal staggers every laid-out line 0.12 behind the one
+   before (line-reveal.js: `revealDelay + i × 0.12`), and the phone's
+   intro wraps to three, so the row was rising 0.11s before the LAST
+   line had landed (measured transform ends 10.675 / 10.800 / 10.917,
+   is-entered at 10.808). The phone's schedule now counts the intro's
+   laid-out lines at build (fonts are ready by then) and adds the
+   stagger of every line after the first, so the beat sits after the
+   last line's landing at every width. */
 export const SB_LOGOS_BEAT_PHONE_S = 0.12;
+export const SB_INTRO_LINE_STAGGER_S = 0.12; /* line-reveal's per-line stagger, mirrored */
+const introLaidOutLines = () => {
+  let lines = 1;
+  document.querySelectorAll('[data-landing-hero-intro-text] p').forEach((p) => {
+    if (!(p instanceof HTMLElement)) return;
+    const inners = p.querySelectorAll('.lr-inner').length;
+    if (inners) { lines = Math.max(lines, inners); return; }
+    const lh = parseFloat(getComputedStyle(p).lineHeight);
+    if (lh > 0) lines = Math.max(lines, Math.round(p.getBoundingClientRect().height / lh));
+  });
+  return lines;
+};
 export const SB_HEADLINE_AT = SB_TEXT_AT;
 export const SB_CONTENT_AT = SB_HEADLINE_AT + 0.5;
 export const SB_LINE_WIPE_AT = SB_OPEN_AT;
@@ -614,7 +635,8 @@ export function initSplashB(splashRoot) {
   function build() {
     const sortAt = SB_SORT_AT;
     const textAt = sortAt + SB_TRAVEL_DUR;
-    const logosAt = textAt + SB_INTRO_SETTLE_S + (phone ? SB_LOGOS_BEAT_PHONE_S : 0);
+    const logosAt = textAt + SB_INTRO_SETTLE_S
+      + (phone ? (introLaidOutLines() - 1) * SB_INTRO_LINE_STAGGER_S + SB_LOGOS_BEAT_PHONE_S : 0);
     const contentAt = textAt + 0.5;
     const lineWipeDur = sortAt - SB_LINE_WIPE_AT;
     const counter = { value: 0 };
