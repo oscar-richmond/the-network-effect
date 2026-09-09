@@ -2241,6 +2241,97 @@
 	}
 }
 
+/* THE PHONE (Figma 1:11, 2026-09-09) — values on the same mechanic (the
+   sticky stage, the scrubbed pairs, the veils, the difference words,
+   the collapse): WHAT WE DO centred at the eyebrow, the statement's
+   EIGHT lines at 48 on the 45 pitch at the frame's indents (WE and
+   CREATE +66, ACCESS +150, BETWEEN 0, WORLDS +157, THAT DON'T +57,
+   NORMALLY 0, CONNECT +32 — the seventh span breaking into the last two
+   lines), 64 below the label; the rows' cells 360×240 (the 8 gutter, the
+   16 row gap), the landed pair 60 off centre — the frame's TOP RIGHT,
+   BOTTOM LEFT (the desktop's mirror); the rows pinned 80 from the
+   viewport's bottom (the ruling). The frame's composition is 1094 tall
+   against the phone's 874: the stage is that tall and pins with the ROWS
+   at the bottom (a sticky top below zero — the desktop's own read-hold
+   shape), the label and the upper lines having read in above as the
+   section arrived. The driver's narrow build re-anchors its triggers to
+   this geometry (landing-access.js). The label→lines 64 and lines→rows
+   80 are the frame's; the section's 229 above is the featured band's
+   fade. */
+@media (max-width: 767px) {
+	.landing-v2.landing-home {
+		--ac-u: calc((100vw - 32px) / 370); /* the frame's measure unit */
+		--ac-pad-top: 0px;
+		--ac-label-gap: 64px;
+		--ac-lines-gap: 80px;
+		--ac-cell-w: calc(360 * 100vw / 402);
+		--ac-cell-h: calc(var(--ac-cell-w) * 240 / 360);
+		--ac-gap: 8px;
+		--ac-row-gap: 16px;
+		--ac-rows-bottom: 80px;
+		--ac-land-shift: -60px; /* read by the driver as a px literal; the frame's 60 at 402 */
+		--ac-lines-h: calc(8 * var(--type-statement-size) * var(--type-statement-lh));
+		--ac-stage-h: calc(var(--ac-pad-top) + var(--type-eyebrow-size) * var(--type-eyebrow-lh) + var(--ac-label-gap) + var(--ac-lines-h) + var(--ac-lines-gap) + 2 * var(--ac-cell-h) + var(--ac-row-gap) + var(--ac-rows-bottom));
+	}
+	.landing-v2.landing-home .landing-access {
+		height: calc(max(100svh, var(--ac-stage-h)) + 5 * var(--ac-step) + var(--ac-exit));
+	}
+	.landing-v2.landing-home .landing-access__stage {
+		top: min(0px, calc(100svh - var(--ac-stage-h)));
+		height: max(100svh, var(--ac-stage-h));
+	}
+	/* the headline */
+	.landing-v2.landing-home .landing-access__dheadline {
+		right: var(--m-margin-safe-r, var(--m-margin));
+	}
+	.landing-v2.landing-home .landing-access__dlabel {
+		text-align: center;
+	}
+	.landing-v2.landing-home .landing-access__dlines {
+		grid-template-columns: minmax(0, 1fr);
+		margin-top: var(--ac-label-gap);
+	}
+	.landing-v2.landing-home .landing-access__dline {
+		grid-column: 1;
+		grid-row: auto;
+		justify-self: start;
+		margin-left: calc(var(--ac-x, 0) * var(--ac-u));
+	}
+	.landing-v2.landing-home .landing-access__dline--1 { --ac-x: 66; }
+	.landing-v2.landing-home .landing-access__dline--2 { --ac-x: 66; }
+	.landing-v2.landing-home .landing-access__dline--3 { --ac-x: 150; }
+	.landing-v2.landing-home .landing-access__dline--4 { --ac-x: 0; }
+	.landing-v2.landing-home .landing-access__dline--5 { --ac-x: 157; }
+	.landing-v2.landing-home .landing-access__dline--6 { --ac-x: 57; }
+	.landing-v2.landing-home .landing-access__dline--7 { --ac-x: 0; justify-self: stretch; }
+	/* NORMALLY / CONNECT — the span's second word breaks to its own line
+	   (the measure forces it) and takes the frame's +32 */
+	.landing-v2.landing-home .landing-access__dline--7 .lr-clip:nth-of-type(2) {
+		margin-left: calc(32 * var(--ac-u) - 0.25em); /* less the clip's bleed padding */
+	}
+	/* the rows: the 16 row gap */
+	.landing-v2.landing-home .landing-access__rowwrap--top,
+	.landing-v2.landing-home .landing-access__veilwrap--top,
+	.landing-v2.landing-home .landing-access__wordslot--top {
+		bottom: calc(var(--ac-rows-bottom) + var(--ac-cell-h) + var(--ac-row-gap));
+	}
+	/* the landed word: the frame's Serrif Regular at 30, centred (1:96) */
+	.landing-v2.landing-home .landing-access__wordslot {
+		font-family: 'Serrif', var(--font-serif-cond); /* the frame's Serrif Regular (the loaded 400), not the condensed */
+		font-weight: var(--type-access-label-weight);
+		font-size: var(--type-access-label-size-inner);
+		line-height: var(--type-access-label-lh);
+		letter-spacing: var(--type-access-label-ls);
+		text-transform: var(--type-access-label-case);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2.landing-home .landing-access__stage {
+			height: auto;
+			min-height: 100svh;
+		}
+	}
+}
+
 /* ═══ WHY ACCESS MATTERS (the closing) ═══════════════════════════════
    The desktop section, translated: the three staggered headline lines
    in ONE face at the heading tier — right-aligned boxes whose right

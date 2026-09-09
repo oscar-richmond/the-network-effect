@@ -714,9 +714,20 @@ function buildNarrow(section) {
     timeouts.push(setTimeout(() => { all.forEach((el) => { el.style.transition = ''; el.style.transform = ''; }); }, 1400));
   };
 
+  /* THE PHONE (2026-09-09): the stage may be taller than the viewport
+     (the frame's label + eight lines + 360×240 rows) and pins with the
+     ROWS at the bottom — its sticky top sits below zero by the
+     overflow (landing-narrow.css). The scrub starts where the sticky
+     engages: the section's top at that offset, not at the viewport's
+     top. Where the stage is the viewport (the tablet, the old phone
+     values) the offset is 0 and this is 'top top' as before. */
+  const stickyOffset = () => {
+    const t = parseFloat(getComputedStyle(stage).top);
+    return Number.isFinite(t) && t < 0 ? -t : 0;
+  };
   const trigger = ScrollTrigger.create({
     trigger: section,
-    start: 'top top',
+    start: () => `top+=${Math.round(stickyOffset())} top`,
     end: `+=${TOTAL}`,
     scrub: true,
     invalidateOnRefresh: true,
@@ -741,9 +752,16 @@ function buildNarrow(section) {
       once: true,
       onEnter: () => { dlines.forEach((line) => { if (line instanceof HTMLElement) playLineRevealElement(line); }); },
     });
+    /* the rows' slide-in fires as the rows reach the viewport's bottom
+       edge: with the stage the viewport's height that is the section's
+       top at 45%; with the taller phone stage the rows sit further down
+       the section, so the anchor is the rows themselves (their top at
+       the viewport's bottom) — the same moment, re-anchored. */
+    const tallStage = stickyOffset() > 0;
+    const rowsAnchor = entryGroups.top[0] ?? rows.top;
     revealTrigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top 45%',
+      start: tallStage ? () => `top+=${Math.round(rowsAnchor.offsetTop)} bottom` : 'top 45%',
       once: true,
       onEnter: () => {
         playEntrance();
