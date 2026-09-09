@@ -116,10 +116,22 @@ export function initLandingServices() {
   const intro = section.querySelector('[data-sreel-intro]');
   const wwd = section.querySelector('[data-sreel-wwd]');
   const introLines = Array.from(intro ? intro.querySelectorAll('[data-sreel-introline]') : []);
+  /* ITEM 7 (Oscar, 2026-09-09) — the header pair's pacing, measured at
+     402: WHAT WE DO and the pair are both static flex children of the
+     stage (no transform, no sticky) and moved by IDENTICAL amounts at
+     every 50px step of a 2100px drive through the section — there is no
+     parallax and no scroll drift; they are one block. The one thing that
+     separates them is the ENTRANCE stagger (the shared line reveal, 0.12
+     a line), and on the phone that stagger carried a PHANTOM beat: the
+     pillars note is display:none below the seam (landing-narrow.css) but
+     still took an index, so WHAT WE DO rose 0.36s after the pair's first
+     line — 0.24 after its second — instead of the vocabulary's 0.12.
+     Hidden lines no longer count. */
+  const displayed = (el) => el instanceof HTMLElement && getComputedStyle(el).display !== 'none';
   cleanups.push(initMobileEntrance(section, {
     /* the phone reads the pair first, WHAT WE DO below it (the frame's
        order — landing-narrow.css reorders the column); same stagger */
-    lines: (phone ? [...introLines, wwd] : [wwd, ...introLines]).filter((el) => el instanceof HTMLElement),
+    lines: (phone ? [...introLines.filter(displayed), wwd] : [wwd, ...introLines]).filter((el) => el instanceof HTMLElement),
   }));
   pillars.forEach((pillar) => {
     cleanups.push(initMobileEntrance(pillar, {
