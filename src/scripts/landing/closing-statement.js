@@ -238,7 +238,17 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
      section's vocabulary: per-line word reveal on a 120ms DOM-order
      stagger, one-shot at 65% viewport. RM: static, visible, no
      trigger. Desktop only (the section is display:none ≤1024). */
-  const fragLines = Array.from(document.querySelectorAll('[data-closing-st-line]'));
+  /* THE PHONE'S FOURTEEN LINES (frame 1:373, 2026-09-09): the component
+     renders the frame's re-broken statement alongside the desktop's
+     nine fragments; below 768 the CSS shows the fourteen and hides the
+     nine. The entrance reveals whichever set is rendered — on the
+     desktop the phone lines are display:none and fall out here, so
+     that path is exactly as before. */
+  const shownMLines = Array.from(document.querySelectorAll('[data-closing-st-mline]'))
+    .filter((el) => el instanceof HTMLElement && getComputedStyle(el).display !== 'none');
+  const fragLines = shownMLines.length
+    ? shownMLines
+    : Array.from(document.querySelectorAll('[data-closing-st-line]'));
   let fragTrigger = null;
   if (!reduced && fragLines.length) {
     const stFonts = document.fonts?.ready ?? Promise.resolve();

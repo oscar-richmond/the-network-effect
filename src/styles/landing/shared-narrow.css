@@ -91,6 +91,48 @@
 	.landing-v2.landing-v2 .landing-closing-st__line:nth-child(4) { grid-column: 4 / -1; }
 	.landing-v2.landing-v2 .landing-closing-st__line:nth-child(5) { grid-column: 2 / -1; }
 }
+/* ═══ THE PHONE'S STATEMENT — frame 1:373 in the 1:372 band (applied
+   2026-09-09). FOURTEEN lines at the statement role (48/45 −0.04em at
+   402, fluid), each its own block on the 45 pitch at the frame's
+   authored x from the content edge (--st-x, in 402nds of the width) or
+   flush to an authored right edge (--st-r, the inset from the content
+   edge: 0 for the three lines at 386, 32 for VALUE at 354). The nine
+   desktop fragments hide; the component renders both sets, the driver
+   (closing-statement.js) reveals whichever is shown and the dwell
+   measures the shown block. THE BAND: the frame's 880 is the pinned
+   picture — the text 165 from the top and 90 from the bottom — which
+   the dwell's nav-aware centring already produces from the 48 stage
+   pads (158 / 90 at 874); after the release the red runs 90 below the
+   text's box to the footer, so the tail is 42 (48 + 42 = 1:372's 90).
+   The sequence — arrive white, fix, scrub to red over 400, nav solid
+   over the red, per-line word reveal at 65% on the 0.12 stagger — is
+   the restored build's, on more lines. */
+.landing-v2 .landing-closing-st__mline { display: none; } /* shown below 768 only */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2 {
+		--st-tail: 42px;
+		--st-u: calc(100vw / 402);
+	}
+	.landing-v2.landing-v2 .landing-closing-st__stage { display: block; }
+	.landing-v2.landing-v2 .landing-closing-st__line { display: none; }
+	.landing-v2.landing-v2 .landing-closing-st__mline {
+		display: block;
+		margin: 0 0 0 calc(var(--st-x, 0) * var(--st-u));
+		font-family: var(--type-statement-face);
+		font-weight: var(--type-statement-weight);
+		font-synthesis: none;
+		font-size: var(--type-statement-size);
+		line-height: var(--type-statement-lh);
+		letter-spacing: var(--type-statement-ls);
+		text-transform: var(--type-statement-case);
+		white-space: nowrap;
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .landing-closing-st__mline--r {
+		margin: 0 calc(var(--st-r, 0) * var(--st-u)) 0 0;
+		text-align: right;
+	}
+}
 
 /* ═══ THE FOOTER ═════════════════════════════════════════════════════
    The desktop's global footer (frame 13:381) at every width: the four

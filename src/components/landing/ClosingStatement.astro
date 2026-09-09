@@ -30,6 +30,33 @@ const ST_LINES = [
   { x: 410, y: 549, t: 'and commercial' },
   { x: 1007, y: 639, t: 'value.' },
 ];
+/* ── THE PHONE'S FOURTEEN LINES (frame 1:373 at 402, applied
+   2026-09-09): the same statement re-broken as the frame draws it —
+   fourteen single-word (or two-word) fragments on a 45 pitch at 48,
+   each at an authored x (`x`, from the page's left edge) or flush to
+   an authored RIGHT edge (`r`, likewise). The frame's "NETWORK" box at
+   x14 is read as the 16 margin (a 2px slip). Rendered hidden at every
+   width and shown only below 768 (shared-narrow.css), so the desktop's
+   nine lines and their dwell, entrance and ink centring are untouched;
+   the phone's dwell measures this block instead. "exists" is authored
+   lowercase in the frame under an uppercase style — it renders caps,
+   as the desktop's line does. */
+const ST_LINES_M = [
+  { x: 82, t: 'The' },
+  { x: 16, t: 'network' },
+  { r: 386, t: 'effect exists' },
+  { r: 386, t: 'to connect' },
+  { x: 155, t: 'people,' },
+  { x: 16, t: 'brands and' },
+  { x: 63, t: 'talent' },
+  { r: 386, t: 'in ways that' },
+  { x: 201, t: 'create' },
+  { x: 79, t: 'long-term' },
+  { x: 16, t: 'cultural' },
+  { x: 40, t: 'and' },
+  { x: 16, t: 'commercial' },
+  { r: 354, t: 'value.' },
+];
 ---
 
 {/* ── THE FRAGMENTED STATEMENT — its own full-width flow section
@@ -49,6 +76,17 @@ const ST_LINES = [
   <div class="landing-closing-st__stage" data-closing-st-stage>
     {ST_LINES.map((l) => (
       <p class="landing-closing-st__line" data-closing-st-line style={`left:${l.x}px;top:${l.y + 54}px`}>{l.t}</p>
+    ))}
+    {/* the phone's fourteen lines (1:373) — hidden above 767; the
+        driver reveals whichever set is rendered. The full stop on
+        "value." stays with the desktop's shared copy (the frame draws
+        none — read as a slip, like WE BUILD's colon). */}
+    {ST_LINES_M.map((l) => (
+      <p
+        class={`landing-closing-st__mline${l.r ? ' landing-closing-st__mline--r' : ''}`}
+        data-closing-st-mline
+        style={l.r ? `--st-r:${386 - l.r}` : `--st-x:${l.x - 16}`}
+      >{l.t}</p>
     ))}
   </div>
 </section>
