@@ -31,8 +31,12 @@ import { CAL_BOOKING_LINK } from '../../data/landing/contact.js';
 import {
   CT_LOGOS_FADE_START, CT_LOGOS_FADE_END,
   CT_ROW_H, CT_ROW_BOTTOM_GAP, CT_LABEL_GAP,
+  CT_LOGO_ROW_PHONE, CT_LOGO_ROW_PHONE_DELAY_S, CT_LOGO_ROW_PHONE_SPEED_PX_S,
 } from '../../data/landing/contact-logos.js';
-import { isMobileViewport, NARROW_QUERY, flowFooterSpacer } from './viewport.js';
+import { isMobileViewport, isPhoneViewport, NARROW_QUERY, flowFooterSpacer } from './viewport.js';
+import { initImageReveal } from './img-reveal.js';
+import { MEDIA_AT_MS, MEDIA_STAGGER_MS } from './m-entrance.js';
+import { writeVeilState, clearVeilState, RAIL_VEIL_RAMP_PX } from './rail-veils.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -465,6 +469,65 @@ export function initContactPage() {
     updateLogosFade();
   }
 
+  /* ── THE PHONE (Figma vq7hl5Q9TMPyD7ghw6iXTd 1:11, 2026-09-09) ──
+     1. The row's contract: the same doubled track and marquee keyframes,
+        the frame's 152 pitch — one set 1368 (was the desktop's 1728),
+        the hero row's 48s, the frame's resting phase (−146) as the
+        negative delay; written inline on the track (the desktop's
+        values are restored on dispose). Direction / speed are the
+        named tunables in contact-logos.js (CT_LOGO_ROW_PHONE).
+     2. The standardised rail veils on the band (shared-narrow.css,
+        rail-veils.js): the marquee is not a scroller, so its "offset"
+        is the distance rolled since the roll began — right veil only
+        at rest, the left ramping in over RAIL_VEIL_RAMP_PX (24px, 0.84s
+        at 28.5 px/s) once the roll starts; RM: both, static.
+     3. The photograph takes the site-wide blur-in (img-reveal.js). */
+  const phone = isPhoneViewport();
+  const track = document.querySelector('[data-ct-logos-track]');
+  let phoneVeilRamp = null;
+  if (phone && track instanceof HTMLElement) {
+    const prior = {
+      setW: track.style.getPropertyValue('--marquee-set-w'),
+      dur: track.style.getPropertyValue('--ct-logo-row-dur'),
+      delay: track.style.getPropertyValue('--ct-logo-row-delay'),
+      dir: track.getAttribute('data-direction'),
+    };
+    track.style.setProperty('--marquee-set-w', `${CT_LOGO_ROW_PHONE.SET_W}px`);
+    track.style.setProperty('--ct-logo-row-dur', `${CT_LOGO_ROW_PHONE.DUR_S}s`);
+    track.style.setProperty('--ct-logo-row-delay', `${CT_LOGO_ROW_PHONE_DELAY_S.toFixed(2)}s`);
+    track.setAttribute('data-direction', CT_LOGO_ROW_PHONE.DIRECTION);
+    cleanups.push(() => {
+      track.style.setProperty('--marquee-set-w', prior.setW);
+      track.style.setProperty('--ct-logo-row-dur', prior.dur);
+      track.style.setProperty('--ct-logo-row-delay', prior.delay);
+      if (prior.dir) track.setAttribute('data-direction', prior.dir);
+    });
+  }
+  if (phone && logos instanceof HTMLElement) {
+    writeVeilState(logos, { l: reduced ? 1 : 0, r: 1 });
+    cleanups.push(() => clearVeilState(logos));
+    /* the left veil's ramp, keyed to the roll's own start (the entrance
+       adds is-visible and unpauses the animation at the same instant) */
+    phoneVeilRamp = () => {
+      const t0 = performance.now();
+      let raf = 0;
+      const tick = (now) => {
+        const rolled = ((now - t0) / 1000) * CT_LOGO_ROW_PHONE_SPEED_PX_S;
+        const l = Math.min(1, rolled / RAIL_VEIL_RAMP_PX);
+        writeVeilState(logos, { l, r: 1 });
+        if (l < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      cleanups.push(() => cancelAnimationFrame(raf));
+    };
+  }
+  if (phone) {
+    const image = document.querySelector('[data-ct-image]');
+    if (image instanceof HTMLElement) {
+      cleanups.push(initImageReveal([image], { entranceOf: (host) => host }));
+    }
+  }
+
   if (reduced) {
     return () => cleanups.forEach((fn) => fn());
   }
@@ -482,23 +545,55 @@ export function initContactPage() {
       playLineRevealElement(intro);
     }
 
-    /* CTAs — the pills' staggered fade, after the intro's beat; the
-       social chips (51:2862) join the same wave as beats 4 and 5. */
-    const ctas = Array.from(document.querySelectorAll('.ct-cta, .ct-social'));
-    ctas.forEach((cta, i) => {
-      schedule(() => cta.classList.add('is-visible'), 300 + i * 60);
-    });
+    if (phone) {
+      /* THE PHONE's sequence (2026-09-09) — the site's mobile vocabulary,
+         top to bottom on the landing's media beat (MEDIA_AT_MS 400) and
+         stagger (120): the intro's word-reveal at 0 → the CTAs (400,
+         520) → the chips in the FRAME's visual order, LinkedIn then
+         Instagram (640, 760) → WE'VE WORKED WITH as a word-reveal
+         (880, the eyebrow convention) → the band's 24px rise and the
+         roll's start (1000) → the photograph's blur-in (1120; the
+         is-visible cue releases img-reveal.js). */
+      const order = [
+        ...document.querySelectorAll('.ct-cta'),
+        ...[...document.querySelectorAll('.ct-social')].sort((a, b) => (
+          (a.querySelector('.ct-social__icon-m') ? 0 : 1) - (b.querySelector('.ct-social__icon-m') ? 0 : 1)
+        )),
+      ];
+      order.forEach((el, i) => schedule(() => el.classList.add('is-visible'), MEDIA_AT_MS + i * MEDIA_STAGGER_MS));
+      const label = document.querySelector('[data-ct-label]');
+      if (label instanceof HTMLElement) {
+        wrapWordRevealElement(label);
+        schedule(() => playLineRevealElement(label), MEDIA_AT_MS + order.length * MEDIA_STAGGER_MS);
+      }
+      const rowAt = MEDIA_AT_MS + (order.length + 1) * MEDIA_STAGGER_MS;
+      schedule(() => {
+        document.querySelector('[data-ct-logos]')?.classList.add('is-visible');
+        phoneVeilRamp?.();
+      }, rowAt);
+      schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-settled'); }, rowAt + 900);
+      schedule(() => {
+        document.querySelector('[data-ct-image]')?.classList.add('is-visible');
+      }, rowAt + MEDIA_STAGGER_MS);
+    } else {
+      /* CTAs — the pills' staggered fade, after the intro's beat; the
+         social chips (51:2862) join the same wave as beats 4 and 5. */
+      const ctas = Array.from(document.querySelectorAll('.ct-cta, .ct-social'));
+      ctas.forEach((cta, i) => {
+        schedule(() => cta.classList.add('is-visible'), 300 + i * 60);
+      });
 
-    /* Media — blur/fade at the hero-image beat: the image section (R58). */
-    schedule(() => {
-      document.querySelector('[data-ct-image]')?.classList.add('is-visible');
-    }, 300);
-    /* R58: the label and the logo row follow the row items — 540 / 600;
-       the row's transition retires once it has landed (900 later) so
-       the footer fade can write per frame. */
-    schedule(() => { document.querySelector('[data-ct-label]')?.classList.add('is-visible'); }, 540);
-    schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-visible'); }, 600);
-    schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-settled'); }, 600 + 900);
+      /* Media — blur/fade at the hero-image beat: the image section (R58). */
+      schedule(() => {
+        document.querySelector('[data-ct-image]')?.classList.add('is-visible');
+      }, 300);
+      /* R58: the label and the logo row follow the row items — 540 / 600;
+         the row's transition retires once it has landed (900 later) so
+         the footer fade can write per frame. */
+      schedule(() => { document.querySelector('[data-ct-label]')?.classList.add('is-visible'); }, 540);
+      schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-visible'); }, 600);
+      schedule(() => { document.querySelector('[data-ct-logos]')?.classList.add('is-settled'); }, 600 + 900);
+    }
 
     /* Footer — the covered-trigger reveal maths, verbatim. */
     const footer = document.querySelector('[data-landing-footer]');

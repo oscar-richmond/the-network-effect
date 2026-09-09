@@ -34,7 +34,7 @@ const LINE_STAGGER_S = 0.12;
    that runs its own arrival (the case study's MORE WORK) lands its
    chip on the same beat as the landing's */
 export const MEDIA_AT_MS = 400;
-const MEDIA_STAGGER_MS = 120;
+export const MEDIA_STAGGER_MS = 120;
 
 export function initMobileEntrance(section, { lines = [], media = [], start = 'top 65%' } = {}) {
   if (!(section instanceof HTMLElement)) return () => {};

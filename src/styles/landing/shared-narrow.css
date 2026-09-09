@@ -936,7 +936,10 @@
    NETWORK (.landing-network__stage), WHAT WE DO ×3
    (.landing-sreel__listwin), FEATURED WORK (.landing-featured__stage,
    pinned), MOST BRANDS (.landing-closing__stage), the case study's
-   MORE WORK (.cs-more), the /services galleries ×3 (.sv6-gal). */
+   MORE WORK (.cs-more), the /services galleries ×3 (.sv6-gal), and
+   (2026-09-09, Figma 1:11) /contact's rolling logo row (.ct__logos —
+   a marquee, not a scroller: contact.js ramps its left veil in as the
+   roll begins, ink the page's red). */
 @media (max-width: 767px) {
 	.landing-v2.landing-v2 {
 		--m-veil-l-w: var(--m-margin-safe-l, var(--m-margin));
@@ -955,7 +958,9 @@
 	.landing-v2.case-page .cs-more::before,
 	.landing-v2.case-page .cs-more::after,
 	.landing-v2.services-6 .sv6-gal::before,
-	.landing-v2.services-6 .sv6-gal::after {
+	.landing-v2.services-6 .sv6-gal::after,
+	.landing-v2.contact-page .ct__logos::before,
+	.landing-v2.contact-page .ct__logos::after {
 		content: '';
 		position: absolute;
 		z-index: 2;
@@ -967,7 +972,8 @@
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before,
 	.landing-v2.landing-home .landing-closing__stage::before,
 	.landing-v2.case-page .cs-more::before,
-	.landing-v2.services-6 .sv6-gal::before {
+	.landing-v2.services-6 .sv6-gal::before,
+	.landing-v2.contact-page .ct__logos::before {
 		left: 0;
 		width: var(--m-veil-l-w);
 		background: linear-gradient(90deg, var(--m-veil-ink, #161616) 0%, transparent 100%);
@@ -979,7 +985,8 @@
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after,
 	.landing-v2.landing-home .landing-closing__stage::after,
 	.landing-v2.case-page .cs-more::after,
-	.landing-v2.services-6 .sv6-gal::after {
+	.landing-v2.services-6 .sv6-gal::after,
+	.landing-v2.contact-page .ct__logos::after {
 		right: 0;
 		width: var(--m-veil-r-w);
 		background: linear-gradient(90deg, transparent 0%, var(--m-veil-ink, #161616) 100%);

@@ -23,7 +23,19 @@
    no measure), the nav group right-aligned to it, the LET'S CHAT twin
    over the photograph, the vertical rhythm derived live by contact.js
    from the viewport and the ink (--ct-split tells it to).
+
+   THE PHONE (≤ 767) IS REBUILT to Figma vq7hl5Q9TMPyD7ghw6iXTd frame
+   1:11 "Contact" (402 × 2233, 2026-09-09) — the block at the foot of
+   this sheet; the tablet band keeps the 2026-09-07 build above.
    ═══════════════════════════════════════════════════════════════════ */
+
+/* the phone-only twins (contact.astro): GET IN TOUCH under EMAIL US,
+   the frame's solid LinkedIn glyph under the line one — off everywhere
+   the phone block below does not switch them on (the img selector
+   outranks contact.css's `.ct-social img { display: block }`) */
+.landing-v2.landing-v2 .ct-cta .ct-cta__label-m,
+.landing-v2.landing-v2 .ct-social img.ct-social__icon-m { display: none; }
+
 @media (max-width: 1359px) {
 	.landing-v2.landing-v2.contact-page {
 		--ct-top: 96px;               /* the nav's clearance + the page's own top */
@@ -272,6 +284,176 @@
 		line-height: 1;
 		letter-spacing: var(--type-title-ls);
 		text-transform: var(--type-title-case);
+	}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE PHONE — Figma vq7hl5Q9TMPyD7ghw6iXTd frame 1:11 "Contact"
+   (402 × 2233, extracted 2026-09-09; page y = frame y − 49, the Status
+   Bar 1:130). The frame is the total specification at 402, fluid
+   360 – 430: ONE flat ground, the red #c1250e, to the footer's own
+   #eeeef0 at a hard cut on the image's bottom edge (no gradient, no
+   scrub — the frame draws no change of ground above the footer). The
+   page stacks on the 16 margin: the intro at y184 (370 × 96, two lines
+   of the display face at 48 leading, LINE ONE indented four spaces —
+   ink 58.5 against line two's 18.5, 40px), the CTA row at y320 (38
+   tall, 16 padding, 9px arrows, START A PROJECT 156 → GET IN TOUCH 138,
+   a 10px gap — FLAGGED: the site's grammar is 8 or 16), the chips at
+   y374 (38 × 38, 19px icons, LinkedIn FIRST at x16 then Instagram at
+   x64 — both FLAGGED: the order and the 10px gap), WE'VE WORKED WITH at
+   y532, the band at y586 (86 tall, the 80 track 1 below its top, 128 ×
+   80 cells on the 152 pitch bleeding both edges, the standardised rail
+   veils in the page's red), the photograph FULL BLEED at y736 (402 ×
+   440, the frame's own crop from 1:98/1:100 — the 1044 × 1466 source at
+   414 wide, offset −7 / −99 — not a centre crop), and the global footer
+   flush beneath it.
+   FLAGS carried in the report: the frame's intro reads "CONVERSAON."
+   (built CONVERSATION.); its second CTA reads "GET IN  TOUCH" (built
+   single-spaced); CONVERSATION. at the role's 48 runs 393 wide, so the
+   size keeps the fluid rule above (45.1 at 402, 40 at 360, 48.6 at 430)
+   under the frame's fixed 48 leading.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2.contact-page {
+		--ct-top: 184px;              /* 1:12 at frame y233 */
+		--ct-intro-gap: 40px;         /* intro box 280 → 1:13 at 320 */
+		--ct-cta-gap: 10px;           /* FLAGGED — 172 → 182 */
+		--ct-chip-gap: 16px;          /* 1:13 bottom 358 → the chips at 374 */
+		--ct-label-gap: 120px;        /* chips bottom 412 → 1:95 at 532 */
+		--ct-row-gap: 40px;           /* 1:95 box bottom 546 → 1:94 at 586 */
+		--ct-image-gap: 64px;         /* band bottom 672 → 1:96 at 736 */
+		--ct-bottom: 0px;             /* the footer flush to the image */
+		--ct-indent: 0px;             /* the desktop's line-two atom retires — line ONE indents */
+		--ct-row-h: 86px;             /* 1:94 */
+		--ct-logo-zoom: 1;            /* the cells are sized here; the marks zoom on the img */
+	}
+
+	/* ── the intro: the frame's 48 leading fixed under the fluid size;
+	   the frame's four-space indent on line one, its 40 (ink 58.5 against
+	   line two's 18.5) — fixed, as the frame authored it ── */
+	.landing-v2.landing-v2 .ct__intro {
+		line-height: 48px;
+		text-indent: 40px;
+	}
+
+	/* ── the CTA row and the chip row: one flex box, the break between
+	   them a full-width pseudo item; the chips carry their own 16 gap
+	   above. Order: START A PROJECT · GET IN TOUCH · (break) · LinkedIn ·
+	   Instagram — the DOM (and the tab order) stays Instagram → LinkedIn;
+	   LinkedIn is a span, out of the tab order regardless. ── */
+	.landing-v2.landing-v2 .ct__ctas {
+		column-gap: var(--ct-cta-gap);
+		row-gap: 0;
+		align-items: flex-start;
+	}
+	.landing-v2.landing-v2 .ct__ctas::after {
+		content: '';
+		order: 2;
+		flex: 0 0 100%;
+		height: 0;
+	}
+	.landing-v2.landing-v2 .ct-cta {
+		order: 1;
+		height: 38px;
+		min-height: 38px;
+		padding: 0 16px;
+		gap: 6px;                     /* label 109 + 6 + arrow 9 = 124 = 156 − 32 */
+	}
+	.landing-v2.landing-v2 .ct-cta__arrow { width: 9px; height: 9px; }
+	.landing-v2.landing-v2 .ct-cta--email [data-char-ripple] { display: none; }
+	.landing-v2.landing-v2 .ct-cta--email .ct-cta__label-m { display: inline; }
+	.landing-v2.landing-v2 .ct-social {
+		order: 4;
+		position: relative;
+		width: 38px;
+		height: 38px;
+		margin-top: var(--ct-chip-gap);
+	}
+	.landing-v2.landing-v2 .ct-social:has(.ct-social__icon-m) { order: 3; }
+	.landing-v2.landing-v2 .ct-social img { width: 19px; height: 19px; }
+	.landing-v2.landing-v2 .ct-social img.ct-social__icon-m { display: block; }
+	.landing-v2.landing-v2 .ct-social:has(.ct-social__icon-m) > img:not(.ct-social__icon-m) { display: none; }
+	/* the 44px touch floor over the drawn 38s: an invisible 3px halo on
+	   every side of the chips (38 + 6 = 44; the pair stay 4 apart) and
+	   above/below the CTAs (their 10 gap is too narrow to widen into) */
+	.landing-v2.landing-v2 .ct-cta::after,
+	.landing-v2.landing-v2 .ct-social::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: -3px;
+		bottom: -3px;
+	}
+	.landing-v2.landing-v2 .ct-social::after { left: -3px; right: -3px; }
+
+	/* ── WE'VE WORKED WITH — the eyebrow token already; the word-reveal
+	   is its phone entrance (contact.js), so no fade-rise here ── */
+	.landing-v2.landing-v2 .ct__label { opacity: 1; transform: none; transition: none; }
+
+	/* ── the band: 86 with the 80 track 1 below its top; 128 × 80 cells
+	   on the 152 pitch; the marks at 0.8 of the hero assets; the old
+	   gradient band retires for the standardised veils (shared-narrow.css
+	   — --m-veil-l / --m-veil-r written by contact.js) ── */
+	.landing-v2.landing-v2 .ct__logos { --m-veil-ink: #c1250e; }
+	/* the band anchors its veils (the shared rule leaves top/height to
+	   each host): the full 86 */
+	.landing-v2.landing-v2 .ct__logos::before,
+	.landing-v2.landing-v2 .ct__logos::after { top: 0; height: 100%; }
+	.landing-v2.landing-v2 .ct__logos-track { top: 1px; }
+	.landing-v2.landing-v2 .ct__logo-cell {
+		width: 128px;
+		height: 80px;
+		margin-right: 24px;
+	}
+	.landing-v2.landing-v2 .ct__logo-cell img { zoom: 0.8; }
+	.landing-v2.landing-v2 .ct__logos-band { display: none; }
+
+	/* ── the photograph, full bleed at 402 / 440, the frame's crop: the
+	   source (1044 × 1466) drawn 414 wide (1.0299 × 402 → 103.0%) from
+	   −7 (−1.74%) / −99 (−17.01% of its own 581 height) ── */
+	.landing-v2.landing-v2 .ct__image {
+		width: auto;
+		margin: var(--ct-image-gap) calc(-1 * var(--m-margin-safe-r, var(--m-margin))) 0 calc(-1 * var(--m-margin-safe-l, var(--m-margin)));
+		aspect-ratio: 402 / 440;
+	}
+	.landing-v2.landing-v2 .ct__image img {
+		inset: auto;
+		left: -1.7413%;
+		top: 0;
+		width: 102.9851%;
+		height: auto;
+		transform: translateY(-17.0103%);
+		object-fit: fill;
+		object-position: 0 0;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		/* the CTAs and the chips enter in the site's chip vocabulary —
+		   the 16px rise on the house ease (the landing's VIEW ALL, the
+		   case study's), 0.8s */
+		.landing-v2.landing-v2 .ct-cta,
+		.landing-v2.landing-v2 .ct-social {
+			transform: translateY(16px);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.8s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.landing-v2 .ct-cta.is-visible,
+		.landing-v2.landing-v2 .ct-social.is-visible { transform: none; }
+		/* the roll begins with the row's arrival (contact.js adds
+		   is-visible), holding the frame's phase until then */
+		.landing-v2.landing-v2 .ct__logos:not(.is-visible) .ct__logos-track { animation-play-state: paused; }
+		/* the photograph's entrance is the site-wide blur-in (img-reveal.js
+		   on the window) — not the desktop's fade */
+		.landing-v2.landing-v2 .ct__image,
+		.landing-v2.landing-v2 .ct__image.is-visible {
+			opacity: 1;
+			filter: none;
+			transition: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		/* the frame's resting phase, static */
+		.landing-v2.landing-v2 .ct__logos-track { transform: translateX(-146px); }
 	}
 }
 
