@@ -20,10 +20,11 @@
  *
  * DEV handle: window.__closingStatement (was __landingClosingRed).
  */
-import { WIDE_QUERY } from './viewport.js';
+import { WIDE_QUERY, isPhoneViewport } from './viewport.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initStatementDwell, ST_DWELL_HOLD_PX } from './statement-dwell.js';
+import { trackVisibleBottom } from './m-viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -44,6 +45,13 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
      wide path is byte-identical to before. */
   const wide = window.matchMedia(WIDE_QUERY).matches;
   let cleanupDwell = () => {};
+  /* ITEM 6 (Oscar, 2026-09-09): on the phone the dwell centres from the
+     SMALL viewport (no layout moves with the URL bar) and the stage
+     follows the live visible edge by half the delta — m-viewport.js
+     writes --m-vv-dy on the stage, shared-narrow.css translates it. */
+  const phoneDwell = isPhoneViewport() && document.body.classList.contains('landing-home');
+  let cleanupVv = () => {};
+  if (phoneDwell && stDwellStage instanceof HTMLElement) cleanupVv = trackVisibleBottom(stDwellStage);
   /* Guards teardown-before-fonts: without it the dwell (and the
      frag trigger below) would install AFTER dispose and leak its
      resize listener / trigger. */
@@ -75,6 +83,8 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
            lines flow (no baked paddings), so box centring is ink
            centring within a pixel. */
         allowNarrow: !wide,
+        /* item 6: the phone's half-region is the small viewport's (m-viewport.js) */
+        halfViewport: phoneDwell ? 'calc(var(--m-svh, 100svh) / 2)' : undefined,
       });
       ScrollTrigger.refresh();
     });
@@ -279,5 +289,6 @@ export function initClosingStatement({ reduced = false, solidNavFrom = null } = 
     fragTrigger?.kill();
     cleanupRed();
     cleanupDwell();
+    cleanupVv();
   };
 }

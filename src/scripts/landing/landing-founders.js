@@ -22,6 +22,7 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { getLenisInstance } from './site-scroll.js';
 import { wireRailVeils } from './rail-veils.js';
+import { trackVisibleBottom, smallViewportPx } from './m-viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -234,6 +235,7 @@ export function initLandingFounders() {
   let cleanupHandoffSettle = () => {};
   /* item 3: the rail's edge veils' state (rail-veils.js), phone only */
   let cleanupVeils = () => {};
+  let cleanupVv = () => {}; /* item 6: the visible-bottom tracker's unregister */
   {
     const handoffTrack = section.closest('[data-landing-founders-track]') ?? section.parentElement;
     if (handoffTrack instanceof HTMLElement && !isMobileViewport()) {
@@ -496,12 +498,18 @@ export function initLandingFounders() {
     section.style.setProperty('--fd-block-h', `${blockHPx}px`);
     section.style.setProperty('--fd-nav-bottom', `${Math.round(navBottomPx)}px`);
     section.classList.add('is-pinned-phone');
+    /* ITEM 6 (Oscar, 2026-09-09): the centring reads the SMALL viewport
+       (--m-svh — the same number the CSS's sticky top reads, whatever
+       the URL bar was doing at load) and the section follows the live
+       visible edge by half the delta (--m-vv-dy, m-viewport.js; the
+       translate is landing-narrow.css's). */
+    cleanupVv = trackVisibleBottom(section);
     if (track instanceof HTMLElement) {
       /* the release (760) is measured from the pin and already spans the
          hold and the exit — the track is the section + the release */
       track.style.height = `${section.offsetHeight + FOUNDERS_RELEASE_PX}px`;
     }
-    const vhPx = window.innerHeight || 0;
+    const vhPx = smallViewportPx() || window.innerHeight || 0;
     /* the pin's top in px at build (the CSS's own formula, for the scrub) */
     const pinTopPx = Math.max(
       navBottomPx - blockTopPx,
@@ -714,6 +722,7 @@ export function initLandingFounders() {
       t.scrollTrigger?.kill();
       t.kill();
     });
+    cleanupVv();
     if (section.classList.contains('is-pinned-phone')) {
       section.classList.remove('is-pinned-phone');
       section.style.removeProperty('--fd-rail-bottom');

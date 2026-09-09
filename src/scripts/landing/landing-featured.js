@@ -40,6 +40,7 @@ import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 import { veilState, writeVeilState, clearVeilState } from './rail-veils.js';
+import { trackVisibleBottom } from './m-viewport.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 import { servicesLastImageLeavesTopAt } from './landing-services.js';
 
@@ -214,6 +215,11 @@ function initPhoneFeatured(section, removeGate) {
   section.insertBefore(pin, stage);
   pin.appendChild(stage);
   section.classList.add('is-pinned-phone');
+  /* ITEM 6 (Oscar, 2026-09-09): the stage's LENGTH is the small
+     viewport (--m-svh) and its content follows the live visible bottom
+     edge — m-viewport.js writes --m-vv-dy on the section, the CSS
+     translates the sticky stage by it (landing-narrow.css). */
+  const cleanupVv = trackVisibleBottom(section);
 
   /* the cards' fade-rise staggers in the RAIL's order (the CSS order,
      not the DOM's — the phone-only pool cards sit last in the markup).
@@ -347,6 +353,7 @@ function initPhoneFeatured(section, removeGate) {
     section.style.marginTop = '';
     section.style.removeProperty('--fw-travel');
     clearVeilState(section);
+    cleanupVv();
     gsap.set(strip, { clearProps: 'transform' });
     phonePin = null;
   };

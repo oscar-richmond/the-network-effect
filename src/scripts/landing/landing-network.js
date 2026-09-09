@@ -21,6 +21,7 @@ import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isPhoneViewport, isTouchPrimary } from './viewport.js';
 import { wireRailVeils } from './rail-veils.js';
 import { initStripAutoAdvance } from './strip-auto-advance.js';
+import { trackVisibleBottom, smallViewportPx } from './m-viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { FOUNDERS_HANDOFF_T, FOUNDERS_RELEASE_PX, foundersDepartingEdgeInsetPx, foundersPhonePinTopPx } from './landing-founders.js';
 
@@ -380,7 +381,9 @@ export function initLandingNetwork() {
     section.classList.add('is-pinned-phone');
     const layout = () => {
       const stageH = stageEl instanceof HTMLElement ? stageEl.offsetHeight : window.innerHeight;
-      const vh = window.innerHeight || 0;
+      /* item 6: the SMALL viewport (--m-svh, m-viewport.js) — the number
+         the CSS's sticky top reads, whatever the URL bar was doing at load */
+      const vh = smallViewportPx() || window.innerHeight || 0;
       const inset = foundersDepartingEdgeInsetPx();
       const foundersTrack = document.querySelector('[data-landing-founders-track]');
       const foundersSection = document.querySelector('[data-landing-founders]');
@@ -450,9 +453,13 @@ export function initLandingNetwork() {
       : () => {};
     /* item 4: the strip's own rhythm (armed by the arrival below) */
     autoAdvance = initStripAutoAdvance(strip, { intervalMs: NETWORK_STRIP_AUTO_MS });
+    /* item 6: the stage follows the live visible edge (--m-vv-dy on the
+       stage, m-viewport.js; the translate is landing-narrow.css's) */
+    const cleanupVv = stageEl instanceof HTMLElement ? trackVisibleBottom(stageEl) : () => {};
     cleanupPhonePin = () => {
       autoAdvance.destroy();
       cleanupVeils();
+      cleanupVv();
       window.clearTimeout(resizeTimer);
       window.removeEventListener('resize', onResize);
       section.classList.remove('is-pinned-phone');

@@ -114,6 +114,15 @@
 		--st-u: calc(100vw / 402);
 	}
 	.landing-v2.landing-v2 .landing-closing-st__stage { display: block; }
+	/* ITEM 6 (Oscar, 2026-09-09): the landing's statement dwell centres
+	   the stage between the nav's foot and the viewport bottom
+	   (statement-dwell.js) — on the phone from the SMALL viewport
+	   (--m-svh; it was 50dvh, which moved the section's padding — a
+	   layout — by half the bar at the end of its animation, a jump for
+	   the text and everything below), the stage then translated by half
+	   the live delta (--m-vv-dy, m-viewport.js) so it glides to the
+	   centre of what is actually visible. Unset elsewhere (/services): 0. */
+	.landing-v2.landing-home .landing-closing-st__stage { transform: translateY(calc(var(--m-vv-dy, 0px) / 2)); }
 	.landing-v2.landing-v2 .landing-closing-st__line { display: none; }
 	.landing-v2.landing-v2 .landing-closing-st__mline {
 		display: block;

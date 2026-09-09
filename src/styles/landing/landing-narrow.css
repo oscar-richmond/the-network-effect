@@ -2108,12 +2108,12 @@
 		   landing-access.js — the section's top at the fold as the featured
 		   stage's top edge passes 150 above the viewport) is folded in here */
 		margin-top: calc(-1 * var(--ac-ride, 0px)) !important;
-		height: calc(100svh + 5 * var(--ac-step) + var(--ac-exit));
+		height: calc(var(--m-svh, 100svh) + 5 * var(--ac-step) + var(--ac-exit));
 	}
 	.landing-v2.landing-home .landing-access__stage {
 		position: sticky;
 		top: 0;
-		height: 100svh;
+		height: var(--m-svh, 100svh);
 		overflow: hidden;
 	}
 
@@ -2293,7 +2293,7 @@
 		}
 		.landing-v2.landing-home .landing-access__stage {
 			position: relative;
-			height: 100svh;
+			height: var(--m-svh, 100svh);
 		}
 	}
 }
@@ -2343,11 +2343,23 @@
 		--ac-stage-h: calc(var(--ac-pad-top) + var(--type-eyebrow-size) * var(--type-eyebrow-lh) + var(--ac-label-gap) + var(--ac-lines-h) + var(--ac-lines-gap) + 2 * var(--ac-cell-h) + var(--ac-row-gap) + var(--ac-rows-bottom));
 	}
 	.landing-v2.landing-home .landing-access {
-		height: calc(max(100svh, var(--ac-stage-h)) + 5 * var(--ac-step) + var(--ac-exit));
+		height: calc(max(var(--m-svh, 100svh), var(--ac-stage-h)) + 5 * var(--ac-step) + var(--ac-exit));
 	}
 	.landing-v2.landing-home .landing-access__stage {
-		top: min(0px, calc(100svh - var(--ac-stage-h)));
-		height: max(100svh, var(--ac-stage-h));
+		top: min(0px, calc(var(--m-svh, 100svh) - var(--ac-stage-h)));
+		height: max(var(--m-svh, 100svh), var(--ac-stage-h));
+		/* ITEM 6 (Oscar, 2026-09-09): where the stage is taller than the
+		   small viewport (every live phone) its BOTTOM is flush to the
+		   viewport's — so it follows the live visible edge by --m-vv-dy
+		   (m-viewport.js), the translate being the difference between
+		   the flush position against the visible edge and the fixed one,
+		   both under the same min() (a stage that fits is top-anchored
+		   and does not move: both terms 0). The pin's height and the
+		   sticky range are the svh maths, untouched. */
+		transform: translateY(calc(
+			min(0px, calc(var(--m-svh, 100svh) + var(--m-vv-dy, 0px) - var(--ac-stage-h)))
+			- min(0px, calc(var(--m-svh, 100svh) - var(--ac-stage-h)))
+		));
 	}
 	/* the headline */
 	.landing-v2.landing-home .landing-access__dheadline {
@@ -2396,7 +2408,8 @@
 	@media (prefers-reduced-motion: reduce) {
 		.landing-v2.landing-home .landing-access__stage {
 			height: auto;
-			min-height: 100svh;
+			min-height: var(--m-svh, 100svh);
+			transform: none; /* item 6: in flow here, nothing to follow */
 		}
 	}
 }
@@ -2745,10 +2758,30 @@
 		   in the section) centred between the nav's foot and the viewport
 		   bottom; clamped so the label never goes under the nav where the
 		   block is taller than the room (landing-founders.js) */
+		/* ITEM 6 (Oscar, 2026-09-09): the centring was 100dvh — the block
+		   re-centred in ONE step at the end of the bar's animation (dvh
+		   updates then), a jump of half the bar. Now the small viewport
+		   (--m-svh, m-viewport.js — the same number the driver's scrub
+		   reads) fixes the sticky top, and the block is TRANSLATED by the
+		   difference between the centring against the live visible edge
+		   (--m-svh + --m-vv-dy) and the fixed one, each under the same
+		   nav clamp, so it glides to the new centre; where the clamp
+		   holds (the block taller than the room) both terms are the clamp
+		   and the translate is 0. */
 		top: max(
 			calc(var(--fd-nav-bottom, 0px) - var(--fd-block-top, 0px)),
-			calc((100dvh + var(--fd-nav-bottom, 0px) - var(--fd-block-h, 100dvh)) / 2 - var(--fd-block-top, 0px))
+			calc((var(--m-svh, 100svh) + var(--fd-nav-bottom, 0px) - var(--fd-block-h, var(--m-svh, 100svh))) / 2 - var(--fd-block-top, 0px))
 		);
+		transform: translateY(calc(
+			max(
+				calc(var(--fd-nav-bottom, 0px) - var(--fd-block-top, 0px)),
+				calc((var(--m-svh, 100svh) + var(--m-vv-dy, 0px) + var(--fd-nav-bottom, 0px) - var(--fd-block-h, var(--m-svh, 100svh))) / 2 - var(--fd-block-top, 0px))
+			)
+			- max(
+				calc(var(--fd-nav-bottom, 0px) - var(--fd-block-top, 0px)),
+				calc((var(--m-svh, 100svh) + var(--fd-nav-bottom, 0px) - var(--fd-block-h, var(--m-svh, 100svh))) / 2 - var(--fd-block-top, 0px))
+			)
+		));
 		z-index: 2; /* above the network stage pinned beneath it */
 		/* item 2: the section takes taps only while it has anything to tap —
 		   landing-founders.js sets it pointer-events: none inline once the
@@ -2780,8 +2813,21 @@
 	.landing-v2.landing-home .landing-network.is-pinned-phone .landing-network__stage {
 		position: sticky;
 		/* bottom-aligned on the strip; clamped so the heading never pins
-		   above the nav on a short viewport (landing-network.js) */
-		top: max(var(--nw-pin-min-top, 0px), calc(100dvh - var(--nw-stage-h, 100dvh)));
+		   above the nav on a short viewport (landing-network.js).
+		   ITEM 6 (Oscar, 2026-09-09): was 100dvh — a one-step jump at the
+		   end of the bar's animation wherever the clamp was not holding.
+		   The small viewport (--m-svh) fixes the top; the stage is
+		   translated by the difference between the bottom-alignment
+		   against the live edge (--m-svh + --m-vv-dy) and the fixed one,
+		   both under the clamp, so it glides — and where the clamp holds
+		   in both states (402: the stage is taller than the room) the
+		   translate is 0 and the strip's bottom comes into view as the
+		   section scrolls on, as before. */
+		top: max(var(--nw-pin-min-top, 0px), calc(var(--m-svh, 100svh) - var(--nw-stage-h, var(--m-svh, 100svh))));
+		transform: translateY(calc(
+			max(var(--nw-pin-min-top, 0px), calc(var(--m-svh, 100svh) + var(--m-vv-dy, 0px) - var(--nw-stage-h, var(--m-svh, 100svh))))
+			- max(var(--nw-pin-min-top, 0px), calc(var(--m-svh, 100svh) - var(--nw-stage-h, var(--m-svh, 100svh))))
+		));
 		background: transparent;
 		overflow: visible;
 	}
@@ -2838,19 +2884,34 @@
 	   and returns on the way up: the block jumped on every reversal. On
 	   the small viewport the stage is exactly as it was; with the bar
 	   away it holds its place and the ground shows beneath it. The
-	   release (pin − stage = the travel) is independent of the unit. */
+	   release (pin − stage = the travel) is independent of the unit.
+	   ITEM 6 (Oscar, 2026-09-09) — THE CONTENT FOLLOWS THE VISIBLE EDGE:
+	   F4 left the block 80px too high once the bar collapsed (its bottom
+	   at the small viewport's, the actual edge 80 lower). The LENGTH
+	   stays svh — --m-svh, the small viewport measured in px by
+	   m-viewport.js so the drivers and this sheet read one number — and
+	   the sticky stage is TRANSLATED by --m-vv-dy, the live distance from
+	   the small viewport's bottom to the visual viewport's (0 with the
+	   bar, its height without, eased over ~270ms — m-viewport.js): a
+	   transform, so the sticky range, the pin's height and every trigger
+	   are exactly as the svh maths left them, and the indicator's 52,
+	   the cards' 48 and FEATURED WORK's 48 are measured from the edge
+	   the user can see in both states. The stage is transparent under
+	   m-ground-on: the strip of body ground its top uncovers is the same
+	   live ground. */
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__pin {
-		height: calc(100svh + var(--fw-travel, 0px));
+		height: calc(var(--m-svh, 100svh) + var(--fw-travel, 0px));
 	}
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage {
 		position: sticky;
 		top: 0;
-		height: 100svh;
+		height: var(--m-svh, 100svh);
 		padding: 0 0 var(--fw-pad-bottom);
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-end;
 		overflow: hidden;
+		transform: translateY(var(--m-vv-dy, 0px));
 	}
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__header {
 		margin: 0 var(--m-margin-safe-r, var(--m-margin)) var(--fw-header-gap) var(--m-margin-safe-l, var(--m-margin));

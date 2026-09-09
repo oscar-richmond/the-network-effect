@@ -46,6 +46,7 @@ import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 import { wireRailVeils } from './rail-veils.js';
+import { smallViewportPx } from './m-viewport.js';
 import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -302,7 +303,9 @@ export function initLandingServices() {
          the panel's height (never less than the frame's 80). The two
          dwells match (recommended: one grammar, the founders' and the
          network's own 250); the stack's final hold stays --sv-stack-hold. */
-      const vh = window.innerHeight || 0;
+      /* item 6: the SMALL viewport (--m-svh, m-viewport.js), so the
+         margins are the same whatever the URL bar was doing at load */
+      const vh = smallViewportPx() || window.innerHeight || 0;
       pillars.forEach((pillar, i) => {
         if (i === 0) return;
         const prev = pillars[i - 1];

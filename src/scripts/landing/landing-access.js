@@ -46,6 +46,7 @@ import { getLenisInstance } from './landing-hero-scroll.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
 import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { featuredUnitBottomCrossAt, featuredPhonePin } from './landing-featured.js';
+import { trackVisibleBottom, smallViewportPx } from './m-viewport.js';
 
 /* R27 item 2 (Oscar, 2026-09-03) — THE MUCH EARLIER ENTRANCE: this
    section begins entering AS FEATURED WORK IS LEAVING — its headline's
@@ -743,6 +744,10 @@ function buildNarrow(section) {
      the phone or without the pinned rail (reduced motion never gets
      here). */
   const phone = isPhoneViewport();
+  /* item 6: the stage follows the live visible bottom edge where it is
+     bottom-flush (--m-vv-dy on the section, m-viewport.js; the translate
+     is landing-narrow.css's) — the phone's pinned path only */
+  const cleanupVv = phone ? trackVisibleBottom(section) : () => {};
   const arrivalAt = () => {
     if (!phone) return null;
     const fp = featuredPhonePin();
@@ -756,7 +761,8 @@ function buildNarrow(section) {
     if (at === null) { section.style.removeProperty('--ac-ride'); return; }
     const current = parseFloat(getComputedStyle(section).getPropertyValue('--ac-ride')) || 0;
     const naturalTop = section.getBoundingClientRect().top + (window.scrollY || 0) + current;
-    const foldCross = naturalTop - (window.innerHeight || 0);
+    /* item 6: the fold is the SMALL viewport's (--m-svh), as every other pin's */
+    const foldCross = naturalTop - (smallViewportPx() || window.innerHeight || 0);
     const ride = Math.round(foldCross - at);
     if (ride > 0) section.style.setProperty('--ac-ride', `${ride}px`);
     else section.style.removeProperty('--ac-ride');
@@ -842,6 +848,7 @@ function buildNarrow(section) {
     window.removeEventListener('resize', onResize);
     ScrollTrigger.removeEventListener('refreshInit', applyArrival);
     section.style.removeProperty('--ac-ride');
+    cleanupVv();
     trigger.kill();
     headlineTrigger?.kill();
     revealTrigger?.kill();

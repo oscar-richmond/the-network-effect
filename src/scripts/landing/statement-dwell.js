@@ -71,6 +71,14 @@ export function initStatementDwell(section, stage, opts = {}) {
   if (isMobileViewport() && !opts.allowNarrow) return () => {};
   const holdPx = Number.isFinite(opts.holdPx) ? Math.max(0, opts.holdPx) : ST_DWELL_HOLD_PX;
   const bottomClear = opts.bottomClear !== false;
+  /* ITEM 6 (Oscar, 2026-09-09): the region's half-height as a CSS
+     length. The default is the shipped 50dvh (every other caller: the
+     desktop closing, the /services statements — byte-identical). The
+     landing's phone closing passes the SMALL viewport's half
+     (`calc(var(--m-svh, 100svh) / 2)`, m-viewport.js) so the padding
+     and the sticky top never move with the URL bar; its CSS translates
+     the stage by half the live delta instead (shared-narrow.css). */
+  const halfViewport = typeof opts.halfViewport === 'string' && opts.halfViewport ? opts.halfViewport : '50dvh';
   const topBoundOf = () => {
     const tb = typeof opts.topBound === 'function' ? opts.topBound() : (opts.topBound || 0);
     return Number.isFinite(tb) ? Math.max(0, tb) : 0;
@@ -109,11 +117,11 @@ export function initStatementDwell(section, stage, opts = {}) {
        to the viewport bottom are equal by construction. pad-bottom
        keeps the neighbour-clearing strip below the stage's box. */
     stage.style.position = 'sticky';
-    stage.style.top = `calc(50dvh + ${tbHalf}px - ${anchor}px)`;
+    stage.style.top = `calc(${halfViewport} + ${tbHalf}px - ${anchor}px)`;
     stage.style.height = `${h}px`;
     section.style.boxSizing = 'content-box';
-    section.style.paddingTop = `calc(50dvh + ${tbHalf}px - ${anchor}px)`;
-    section.style.paddingBottom = bottomClear ? `calc(50dvh - ${tbHalf}px - ${rest}px)` : '0px';
+    section.style.paddingTop = `calc(${halfViewport} + ${tbHalf}px - ${anchor}px)`;
+    section.style.paddingBottom = bottomClear ? `calc(${halfViewport} - ${tbHalf}px - ${rest}px)` : '0px';
     section.style.height = `${h + holdPx}px`;
   };
   apply();
