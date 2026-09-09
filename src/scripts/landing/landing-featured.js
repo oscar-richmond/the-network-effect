@@ -40,6 +40,7 @@ import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
+import { servicesLastImageLeavesTopAt } from './landing-services.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -222,10 +223,35 @@ function initPhoneFeatured(section, removeGate) {
   const byRailOrder = [...cards].sort(
     (a, b) => (parseInt(getComputedStyle(a).order, 10) || 0) - (parseInt(getComputedStyle(b).order, 10) || 0),
   );
+  /* F1 (Oscar, 2026-09-09) — THE ARRIVAL. The section BEGINS ENTERING
+     when AMPLIFY's image starts to leave the top of the viewport: its
+     measured top edge crossing y = 0 (landing-services.js, one
+     derivation). Before this the section sat after the services' 554
+     tail (80 + the frame's 474), so its content's top reached the fold
+     645 scroll px after that edge — 563 of them on a ground already
+     fully dark: the screen of black. The section now rides up on a
+     negative margin so its content's top edge (FEATURED WORK, the block
+     bottom-anchored in the stage) is exactly at the fold at that scroll
+     — and the entrance (the header's reveal, the cards' fade-rise) fires
+     from the same measured scroll, not the header's 90% line. The ride
+     is re-derived on every refresh (the stack's dwell margins move with
+     the viewport). Null-safe: without the stack (reduced motion) the
+     section sits where the flow puts it and the 90% line stands. */
+  const arrivalAt = () => servicesLastImageLeavesTopAt();
+  const applyArrival = () => {
+    const at = arrivalAt();
+    if (at === null || !(header instanceof HTMLElement)) { section.style.marginTop = ''; return; }
+    const contentH = stage.getBoundingClientRect().bottom - header.getBoundingClientRect().top;
+    const current = parseFloat(section.style.marginTop) || 0;
+    const naturalTop = section.getBoundingClientRect().top + (window.scrollY || 0) - current;
+    const ride = Math.round(naturalTop - contentH - at);
+    section.style.marginTop = ride > 0 ? `-${ride}px` : '';
+  };
+  applyArrival();
   const cleanupEnt = initMobileEntrance(header instanceof HTMLElement ? header : section, {
     lines,
     media: byRailOrder,
-    start: 'top 90%',
+    start: () => arrivalAt() ?? 'top 90%',
   });
 
   /* the indicator — the shared contract's markup, driven below */
@@ -260,8 +286,17 @@ function initPhoneFeatured(section, removeGate) {
     phonePin = { sectionTop: Math.round(top), travel: Math.round(travel()), releaseAt: Math.round(top + travel()) };
   };
   const applyProgress = (p) => {
-    const l = Math.min(1, p / PHONE_EDGE_FRACTION);
-    const r = Math.min(1, (1 - p) / PHONE_EDGE_FRACTION);
+    /* F3 (Oscar, 2026-09-09): BOTH veils are gone at the travel's end,
+       on the travel's own progress. The near (right) veil always was —
+       min(1, (1 − p)/⅛); the far (left) one appeared over the first
+       eighth and then STAYED at 1 through the release, so it was still
+       painted (its 16px of #161616 → clear over the left margin) as the
+       ground faded to light under it — the gradient seen during the
+       fade. It now carries the same end factor: up by ⅛, gone by 1,
+       back on the way up. */
+    const endFade = Math.min(1, (1 - p) / PHONE_EDGE_FRACTION);
+    const l = Math.min(1, p / PHONE_EDGE_FRACTION) * endFade;
+    const r = endFade;
     section.style.setProperty('--fw-edge-l', l.toFixed(3));
     section.style.setProperty('--fw-edge-r', r.toFixed(3));
     const run = ind.clientWidth - (thumb.offsetWidth || 32);
@@ -283,7 +318,7 @@ function initPhoneFeatured(section, removeGate) {
         end: () => `+=${Math.round(travel())}`,
         scrub: true,
         invalidateOnRefresh: true,
-        onRefreshInit: applyTravel,
+        onRefreshInit: () => { applyTravel(); applyArrival(); },
         onRefresh: (st) => { publish(); applyProgress(st.progress); },
         onUpdate: (st) => applyProgress(st.progress),
       },
@@ -304,6 +339,7 @@ function initPhoneFeatured(section, removeGate) {
     section.insertBefore(stage, pin);
     pin.remove();
     section.classList.remove('is-pinned-phone');
+    section.style.marginTop = '';
     ['--fw-travel', '--fw-edge-l', '--fw-edge-r'].forEach((p) => section.style.removeProperty(p));
     gsap.set(strip, { clearProps: 'transform' });
     phonePin = null;

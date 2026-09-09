@@ -62,6 +62,39 @@ const READ_GAP_PX = 72; /* below the 48px fade band, so the active row reads sha
    CONNECT → AMPLIFY alike; the founders' and the network's 250) */
 export const SV_DWELL_PX = 250;
 
+/** The phone stack's RELEASE, absolute scroll px — the last panel is
+ *  pushed when the stage's bottom reaches its parked bottom (park top +
+ *  height); the three then leave together at 1:1. ONE derivation for the
+ *  ground module (the fade-to-dark starts here) and for FEATURED WORK's
+ *  arrival below. Null until the phone stack has parked its panels. */
+export function servicesStackReleaseAt() {
+  const stage = document.querySelector('[data-sreel-stage]');
+  const pillars = document.querySelectorAll('[data-sreel-pillar]');
+  const last = pillars[pillars.length - 1];
+  if (!(stage instanceof HTMLElement) || !(last instanceof HTMLElement)) return null;
+  const park = parseFloat(last.style.getPropertyValue('--sv-park'));
+  if (!Number.isFinite(park)) return null;
+  const stageBottom = stage.getBoundingClientRect().bottom + (window.scrollY || 0);
+  return Math.round(stageBottom - (park + last.offsetHeight));
+}
+/** F1 (Oscar, 2026-09-09) — the scroll at which AMPLIFY's IMAGE begins to
+ *  leave the top of the viewport: its measured top edge crossing y = 0
+ *  as the released stack departs (the panel leaves its park at 1:1, so
+ *  the image's top is park + its offset in the panel at the release, and
+ *  crosses 0 that many px later). FEATURED WORK's arrival is anchored
+ *  here (landing-featured.js). Null outside the phone's stack. */
+export function servicesLastImageLeavesTopAt() {
+  const releaseAt = servicesStackReleaseAt();
+  if (releaseAt === null) return null;
+  const pillars = document.querySelectorAll('[data-sreel-pillar]');
+  const last = pillars[pillars.length - 1];
+  const img = last.querySelector('[data-sreel-imgwin]');
+  if (!(img instanceof HTMLElement)) return null;
+  const park = parseFloat(last.style.getPropertyValue('--sv-park')) || 0;
+  const imgOff = img.getBoundingClientRect().top - last.getBoundingClientRect().top;
+  return Math.round(releaseAt + park + imgOff);
+}
+
 export function initLandingServices() {
   const section = document.querySelector('[data-landing-services]');
   if (!(section instanceof HTMLElement)) return () => {};

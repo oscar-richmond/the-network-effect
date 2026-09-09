@@ -57,7 +57,9 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
    sizes branch is larger than any candidate, so it keeps the full file. */
 /* the phone's card renders 304px (the rail) or 167px (/work's grid): 200px
    resolves a 3× phone to the 600 candidate — the density cap (THE FINAL GATE) */
-const CARD_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 380px, 1728px';
+/* the phone's cards run to the measure (F2: 1.5×, capped at 100vw − 32) —
+   the hint follows, so the 2×/3× screens take the larger candidate */
+const CARD_SIZES = '(max-width: 767px) calc(100vw - 32px), (max-width: 1359px) 380px, 1728px';
 const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
 ---
 

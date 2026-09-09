@@ -54,6 +54,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isPhoneViewport } from './viewport.js';
 import { heroBeats } from './landing-hero-scroll.js';
 import { featuredPhonePin } from './landing-featured.js';
+import { servicesStackReleaseAt } from './landing-services.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -72,7 +73,6 @@ export function initPhoneGround() {
      while this module paints (landing-narrow.css keys on the class) */
   body.classList.add('m-ground-on');
   const outro = document.querySelector('[data-landing-services]');
-  const stage = document.querySelector('[data-sreel-stage]');
   const pillars = Array.from(document.querySelectorAll('[data-sreel-pillar]'));
   const featured = document.querySelector('[data-landing-featured]');
   const toDark = gsap.utils.interpolate(LIGHT, DARK); /* t 0 → light, 1 → dark */
@@ -88,7 +88,6 @@ export function initPhoneGround() {
   const measure = () => {
     const sy = window.scrollY || 0;
     const docTop = (el) => el.getBoundingClientRect().top + sy;
-    const docBottom = (el) => el.getBoundingClientRect().bottom + sy;
 
     const hb = heroBeats();
     heroFade = hb ? [hb.wipeEndAt, Math.max(hb.firstInkAt, hb.wipeEndAt + 1)] : null;
@@ -96,15 +95,11 @@ export function initPhoneGround() {
     switchAt = outro instanceof HTMLElement ? docTop(outro) : Infinity;
 
     /* the stack's release: the last panel is pushed when the stage's
-       bottom reaches its parked bottom (its park top + its height) */
-    if (stage instanceof HTMLElement && pillars.length) {
-      const last = pillars[pillars.length - 1];
-      const park = parseFloat(last.style.getPropertyValue('--sv-park')) || 0;
-      const releaseAt = docBottom(stage) - (park + last.offsetHeight);
-      servicesFade = [releaseAt, releaseAt + GROUND_FADE_PX];
-    } else {
-      servicesFade = null;
-    }
+       bottom reaches its parked bottom (its park top + its height) —
+       landing-services.js's one derivation (FEATURED WORK's arrival is
+       anchored on the same stack, F1) */
+    const releaseAt = servicesStackReleaseAt();
+    servicesFade = releaseAt !== null ? [releaseAt, releaseAt + GROUND_FADE_PX] : null;
 
     const fp = featuredPhonePin();
     featuredFade = fp ? [fp.releaseAt, fp.releaseAt + GROUND_FADE_PX] : null;

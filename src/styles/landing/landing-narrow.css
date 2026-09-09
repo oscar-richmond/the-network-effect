@@ -2783,19 +2783,41 @@
 		--fw-gap: 8px;
 		--fw-label-gap: 16px;
 		--fw-measure: calc(100vw - var(--m-margin-safe-l, var(--m-margin)) - var(--m-margin-safe-r, var(--m-margin)));
-		--fw-half: calc((var(--fw-measure) - var(--fw-gap)) / 2);
-		/* the tallest module (the portrait) + its name row */
-		--fw-strip-h: calc(var(--fw-half) * 260 / 181 + var(--fw-label-gap) + 18px);
+		/* F2 (Oscar, 2026-09-09) — THE CARDS AT 1.5×, THE WIDE ONES CAPPED.
+		   The /work grid's modules (sq 181 · pt 181×260 · wide 370×254 ·
+		   land 276×181) scaled by --fw-scale, ratio kept; then no card
+		   wider than the measure (the viewport less 16 either side) —
+		   a card over it is scaled DOWN to the measure, its height with
+		   it. The cap moves with the viewport; the 1.5× does not. */
+		--fw-scale: 1.5;
+		--fw-sq-w: calc(181px * var(--fw-scale));
+		--fw-pt-w: calc(181px * var(--fw-scale));
+		--fw-wide-w: calc(370px * var(--fw-scale));
+		--fw-land-w: calc(276px * var(--fw-scale));
+		/* the tallest module (the portrait, under the cap at every phone
+		   width) + its name row */
+		--fw-strip-h: calc(min(var(--fw-pt-w), var(--fw-measure)) * 260 / 181 + var(--fw-label-gap) + 18px);
 		height: auto;
 		padding: 0 0 var(--fw-tail);
 	}
+	/* F4 (Oscar, 2026-09-09) — THE PIN IS FIXED-HEIGHT: svh, not dvh.
+	   Measured at 402: with the stage 100dvh and its content anchored to
+	   its bottom, the address bar's collapse/expand (innerHeight 874 ↔
+	   794 at a constant scrollY) re-measured the stage mid-flight and
+	   moved every pinned element 80px — FEATURED WORK's top 401 → 321,
+	   the indicator's bottom 822 → 742 — and the pin's length 3048 →
+	   2968, so the release itself moved. The bar hides on the way down
+	   and returns on the way up: the block jumped on every reversal. On
+	   the small viewport the stage is exactly as it was; with the bar
+	   away it holds its place and the ground shows beneath it. The
+	   release (pin − stage = the travel) is independent of the unit. */
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__pin {
-		height: calc(100dvh + var(--fw-travel, 0px));
+		height: calc(100svh + var(--fw-travel, 0px));
 	}
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage {
 		position: sticky;
 		top: 0;
-		height: 100dvh;
+		height: 100svh;
 		padding: 0 0 var(--fw-pad-bottom);
 		display: flex;
 		flex-direction: column;
@@ -2831,23 +2853,24 @@
 	}
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card {
 		flex: none;
-		width: var(--fw-half);
+		/* F2: the module's 1.5× width, capped at the measure */
+		width: min(var(--fw-cw, var(--fw-sq-w)), var(--fw-measure));
 		height: auto;
 		scroll-snap-align: none;
 		display: block;
 	}
 	/* the order (Oscar, 3B) and each project's /work grid module */
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='pavilion-club'] { order: 1; --fw-ar: 1 / 1; }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='pavilion-summit'] { order: 2; --fw-ar: 181 / 260; }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='wilderness-reserve'] { order: 3; --fw-ar: 370 / 254; width: var(--fw-measure); }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='tbc-ashley-walters'] { order: 4; --fw-ar: 181 / 260; }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='top-boy'] { order: 5; --fw-ar: 370 / 254; width: var(--fw-measure); }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='tbc-adidas-spezial'] { order: 6; --fw-ar: 181 / 260; }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='adolescence'] { order: 7; --fw-ar: 1 / 1; }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='yoxman-food-festival'] { order: 8; --fw-ar: 370 / 254; width: var(--fw-measure); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='pavilion-club'] { order: 1; --fw-ar: 1 / 1; --fw-cw: var(--fw-sq-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='pavilion-summit'] { order: 2; --fw-ar: 181 / 260; --fw-cw: var(--fw-pt-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='wilderness-reserve'] { order: 3; --fw-ar: 370 / 254; --fw-cw: var(--fw-wide-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='tbc-ashley-walters'] { order: 4; --fw-ar: 181 / 260; --fw-cw: var(--fw-pt-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='top-boy'] { order: 5; --fw-ar: 370 / 254; --fw-cw: var(--fw-wide-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='tbc-adidas-spezial'] { order: 6; --fw-ar: 181 / 260; --fw-cw: var(--fw-pt-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='adolescence'] { order: 7; --fw-ar: 1 / 1; --fw-cw: var(--fw-sq-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='yoxman-food-festival'] { order: 8; --fw-ar: 370 / 254; --fw-cw: var(--fw-wide-w); }
 	/* not on the /work grid (its ninth is not drawn) — the square, flagged */
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='thunder-aviation'] { order: 9; --fw-ar: 1 / 1; }
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='animol'] { order: 10; --fw-ar: 276 / 181; width: calc(var(--fw-measure) * 276 / 370); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='thunder-aviation'] { order: 9; --fw-ar: 1 / 1; --fw-cw: var(--fw-sq-w); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='animol'] { order: 10; --fw-ar: 276 / 181; --fw-cw: var(--fw-land-w); }
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__imgwin {
 		height: auto;
 		aspect-ratio: var(--fw-ar, 1 / 1);
