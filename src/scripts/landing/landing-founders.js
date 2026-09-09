@@ -194,6 +194,14 @@ export function foundersDepartingEdgeInsetPx() {
   if (!(section instanceof HTMLElement) || !(photo instanceof HTMLElement)) return 0;
   return Math.max(0, section.offsetHeight - (photo.offsetTop + photo.offsetHeight));
 }
+/** The phone pin's sticky top in px at the last build (W1: the centred
+ *  block's top, clamped at the nav) — landing-network.js derives its
+ *  overlap from it so its stage pins beneath at the same scroll. 0 until
+ *  the phone branch has run. */
+let lastPhonePinTopPx = 0;
+export function foundersPhonePinTopPx() {
+  return lastPhonePinTopPx;
+}
 const FOUNDERS_HANDOFF_IDLE_MS = 150;
 const FOUNDERS_HANDOFF_SETTLE_S = 0.6;
 
@@ -462,20 +470,52 @@ export function initLandingFounders() {
     const inset = foundersDepartingEdgeInsetPx();
     const railBottomOff = Math.max(1, section.offsetHeight - inset);
     section.style.setProperty('--fd-rail-bottom', `${railBottomOff}px`);
+    /* W1 (Oscar, 2026-09-09) — THE BLOCK IS CENTRED: label, headline,
+       chips and rail as one block, centred between the nav's foot and
+       the viewport bottom at the pinned state (it was the rail's bottom
+       flush to the viewport bottom, the block's top wherever the
+       section's padding put it — 41 + 106 at 402×874). The sticky top
+       is the CSS's — (100dvh + nav − block) / 2 − the block's offset in
+       the section — so it is live under the URL bar; the same numbers
+       go into the scrub below. THE SHORT VIEWPORT: where the block is
+       taller than the room (390×664, 360×740) the equal gaps would be
+       negative and the label would sit under the nav — the top is
+       clamped so the label lands at the nav's foot and the rail's
+       bottom goes below the fold by the shortfall. */
+    const nav = document.querySelector('.home__topbar');
+    const navBottomPx = nav instanceof HTMLElement ? nav.getBoundingClientRect().bottom : 0;
+    const labelEl = section.querySelector('[data-landing-founders-label]');
+    const blockTopPx = labelEl instanceof HTMLElement && labelEl.offsetTop > 0
+      ? labelEl.offsetTop
+      : parseFloat(getComputedStyle(section).paddingTop) || 0;
+    const blockHPx = Math.max(1, railBottomOff - blockTopPx);
+    section.style.setProperty('--fd-block-top', `${blockTopPx}px`);
+    section.style.setProperty('--fd-block-h', `${blockHPx}px`);
+    section.style.setProperty('--fd-nav-bottom', `${Math.round(navBottomPx)}px`);
     section.classList.add('is-pinned-phone');
     if (track instanceof HTMLElement) {
       /* the release (760) is measured from the pin and already spans the
          hold and the exit — the track is the section + the release */
       track.style.height = `${section.offsetHeight + FOUNDERS_RELEASE_PX}px`;
     }
-    const entryPx = railBottomOff;
+    const vhPx = window.innerHeight || 0;
+    /* the pin's top in px at build (the CSS's own formula, for the scrub) */
+    const pinTopPx = Math.max(
+      navBottomPx - blockTopPx,
+      (vhPx + navBottomPx - blockHPx) / 2 - blockTopPx,
+    );
+    lastPhonePinTopPx = pinTopPx;
+    /* the entry runs from the track's top at the viewport bottom to the
+       pin engaging: vh − the pin's top */
+    const entryPx = Math.max(1, vhPx - pinTopPx);
     const holdEnd = entryPx + FOUNDERS_HOLD_PX;
     const photo = section.querySelector('.landing-founders__photo');
     const headline = section.querySelector('.landing-founders__headline');
-    const nav = document.querySelector('.home__topbar');
     const firstLine = section.querySelector('.landing-founders__line') ?? headline;
-    const navBottomPx = nav instanceof HTMLElement ? nav.getBoundingClientRect().bottom : 0;
-    const stickyTopPx = Math.min(0, parseFloat(getComputedStyle(section).top) || 0);
+    /* the section's top in the viewport while pinned (negative on a
+       viewport shorter than the block) — the ink's own position is its
+       offset in the section plus this */
+    const stickyTopPx = pinTopPx;
     const headlineInkTopPx = firstLine instanceof HTMLElement
       ? firstLine.getBoundingClientRect().top
         - section.getBoundingClientRect().top
@@ -534,6 +574,23 @@ export function initLandingFounders() {
         holdEnd + photoBlurStartPx,
       );
     }
+    /* N2 (Oscar, 2026-09-09) — THE RAIL'S VEILS LEAVE WITH THE RAIL. The
+       section's ::before/::after (16 and 48 wide, the rail's 306 tall, a
+       gradient into #161616 over the rail's edges) were not part of this
+       exit: the cards blurred out and the veils stayed painted at the
+       founders' z, over the network stage beneath, and once the section
+       released they scrolled up over the network's heading and text —
+       measured at 402: the right veil's box over the right 32px of OUR
+       NETWORK (960px²) and over the industries (up to 4320px²) through
+       ~200px of scroll, at opacity 1, while the title revealed under it.
+       They now fade over the first portrait's blur window, so the
+       veils are gone with the cards and never leave the rail's frame. */
+    tl.fromTo(
+      section,
+      { '--fd-veil-op': 1 },
+      { '--fd-veil-op': 0, duration: EXIT_BLUR_ROBBO_PX, ease: 'none' },
+      holdEnd,
+    );
     driftTweens.push(tl);
     if (import.meta.env.DEV) {
       window.__landingFounders = {
@@ -635,6 +692,10 @@ export function initLandingFounders() {
     if (section.classList.contains('is-pinned-phone')) {
       section.classList.remove('is-pinned-phone');
       section.style.removeProperty('--fd-rail-bottom');
+      section.style.removeProperty('--fd-block-top');
+      section.style.removeProperty('--fd-block-h');
+      section.style.removeProperty('--fd-nav-bottom');
+      lastPhonePinTopPx = 0;
       if (track instanceof HTMLElement) track.style.height = '';
     }
   };

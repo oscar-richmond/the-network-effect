@@ -137,6 +137,9 @@ export function initPhoneGround() {
       p.style.backgroundColor = g;
       p.style.setProperty('--sv-ground', g); /* the list rail's edge veils */
       p.style.setProperty('--sv-ink-op', (1 - s).toFixed(3));
+      /* D4: the fade's own progress, for MORE INFO and the rail indicator's
+         blur-out (landing-narrow.css) — one value, so they cannot desync */
+      p.style.setProperty('--sv-fade-p', s.toFixed(3));
     });
     if (featured instanceof HTMLElement) featured.style.setProperty('--fw-ink-op', (1 - f).toFixed(3));
   };
@@ -160,7 +163,7 @@ export function initPhoneGround() {
     body.classList.remove('m-ground-on');
     body.style.backgroundColor = '';
     if (outro instanceof HTMLElement) outro.style.backgroundColor = '';
-    pillars.forEach((p) => { p.style.backgroundColor = ''; p.style.removeProperty('--sv-ink-op'); p.style.removeProperty('--sv-ground'); });
+    pillars.forEach((p) => { p.style.backgroundColor = ''; p.style.removeProperty('--sv-ink-op'); p.style.removeProperty('--sv-ground'); p.style.removeProperty('--sv-fade-p'); });
     if (featured instanceof HTMLElement) featured.style.removeProperty('--fw-ink-op');
   };
 }

@@ -57,6 +57,10 @@ const IMG_DECODE_TIMEOUT_MS = 600;
 /* the reading line sits this far below the image's bottom on the phone
    (the tablet reads --sv-read-t = 0.5: beside the image's centre) */
 const READ_GAP_PX = 72; /* below the 48px fade band, so the active row reads sharp */
+/* D3 — the phone stack's dwell: the scroll a locked panel holds before
+   the next panel's top enters the viewport (IMMERSE → CONNECT and
+   CONNECT → AMPLIFY alike; the founders' and the network's 250) */
+export const SV_DWELL_PX = 250;
 
 export function initLandingServices() {
   const section = document.querySelector('[data-landing-services]');
@@ -234,10 +238,32 @@ export function initLandingServices() {
        AMPLIFY's panel ending at 780; on a shorter viewport its foot sits
        below the fold while parked and comes into view as the stack
        releases — the geometry wins over the button's early visibility. */
+    const pillarGap = parseFloat(getComputedStyle(document.body).getPropertyValue('--sv-pillar-gap')) || 80;
     const setParks = () => {
       pillars.forEach((pillar, i) => {
         parks[i] = parkTop + i * parkPitch;
         pillar.style.setProperty('--sv-park', `${Math.round(parks[i])}px`);
+      });
+      /* D3 (Oscar, 2026-09-09) — THE DWELL: a panel HOLDS once it locks
+         before the next one rises. Measured at 402×874 before this:
+         CONNECT locked at 98 with AMPLIFY's top already 43px up the
+         viewport (the 653 panel + the 80 gap is shorter than the 874
+         viewport less the park), and IMMERSE locked with CONNECT 74px
+         up — no hold at all, the next panel already climbing. The next
+         panel's top must sit at the viewport bottom when this one locks
+         and stay there for SV_DWELL_PX of scroll, so the flow gap
+         between the two is derived per viewport: dwell + vh − park −
+         the panel's height (never less than the frame's 80). The two
+         dwells match (recommended: one grammar, the founders' and the
+         network's own 250); the stack's final hold stays --sv-stack-hold. */
+      const vh = window.innerHeight || 0;
+      pillars.forEach((pillar, i) => {
+        if (i === 0) return;
+        const prev = pillars[i - 1];
+        const prevMb = parseFloat(getComputedStyle(prev).marginBottom) || 0;
+        const need = SV_DWELL_PX + vh - parks[i - 1] - prev.offsetHeight;
+        const gap = Math.max(pillarGap, need);
+        pillar.style.marginTop = `${Math.round(gap - prevMb)}px`;
       });
     };
     setParks();
@@ -254,7 +280,7 @@ export function initLandingServices() {
     phoneCleanups.push(() => {
       ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
       parkTriggers.forEach((t) => t.kill());
-      pillars.forEach((p) => { p.classList.remove('is-parked'); p.style.removeProperty('--sv-park'); });
+      pillars.forEach((p) => { p.classList.remove('is-parked'); p.style.removeProperty('--sv-park'); p.style.marginTop = ''; });
     });
 
     pillars.forEach((pillar, i) => {

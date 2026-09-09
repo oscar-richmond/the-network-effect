@@ -160,6 +160,17 @@ export const SB_TEXT_AT = SB_SORT_AT + SB_TRAVEL_DUR;
    intro's text has settled. */
 export const SB_INTRO_SETTLE_S = 0.39 + 1.2;
 export const SB_LOGOS_AT = SB_TEXT_AT + SB_INTRO_SETTLE_S;
+/* H1 (Oscar, 2026-09-09) — THE PHONE'S LOGO ROW: directly after the intro
+   line completes its entrance, one short deliberate beat. Measured on the
+   402 build before this: the row's `is-entered` landed at the intro's
+   transition end as intended, but its fade did not START until 0.54s
+   later — the desktop rule's transition-delay (landing.css) was winning
+   over the variant-B zeroing rule, which sits one class lower in
+   specificity ((0,4,1) against (0,3,2)); the phone sheet now zeroes it at
+   a specificity that wins. With the delay gone this beat is the whole gap
+   between the intro's transition end and the row's first frame. Phone
+   only: the desktop's schedule is exactly as it was. */
+export const SB_LOGOS_BEAT_PHONE_S = 0.12;
 export const SB_HEADLINE_AT = SB_TEXT_AT;
 export const SB_CONTENT_AT = SB_HEADLINE_AT + 0.5;
 export const SB_LINE_WIPE_AT = SB_OPEN_AT;
@@ -603,7 +614,7 @@ export function initSplashB(splashRoot) {
   function build() {
     const sortAt = SB_SORT_AT;
     const textAt = sortAt + SB_TRAVEL_DUR;
-    const logosAt = textAt + SB_INTRO_SETTLE_S;
+    const logosAt = textAt + SB_INTRO_SETTLE_S + (phone ? SB_LOGOS_BEAT_PHONE_S : 0);
     const contentAt = textAt + 0.5;
     const lineWipeDur = sortAt - SB_LINE_WIPE_AT;
     const counter = { value: 0 };

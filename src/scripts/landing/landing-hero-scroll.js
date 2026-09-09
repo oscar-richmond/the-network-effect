@@ -696,7 +696,30 @@ export function initLandingHeroScroll() {
       });
     });
   };
-  const onCardsEntered = () => startGallery();
+  /* H2 (Oscar, 2026-09-09) — THE FLASH AT THE HANDOFF, phone only.
+     Measured on a throttled cold load at 402 (cache off): the splash
+     stage — whose traveller card is what shows the image at the hero's
+     rect — is removed at the settle, and the GL canvas is created in
+     that same frame; its texture is a SECOND fetch of the same file
+     (crossOrigin 'anonymous' is a CORS-mode request), and its first
+     draw came 345ms later (74 unthrottled). The DOM img under it stays
+     at 0 throughout (the gallery's inline 0 lands before its 0.8s fade
+     shows), so for those frames the rect was bare ground, then the GL
+     snapped to full: image → blank → image, the flash. Under the splash
+     the phone now builds the gallery as soon as the runway is built —
+     hidden by `is-gl-warming` while it fetches, compiles and renders
+     beneath the opaque red — and shows it on cards-entered, the frame
+     the stage goes, so the swap is one image to the same image at the
+     same rect. The desktop still builds at cards-entered. */
+  const galleryWarm = () => {
+    if (gallery || galleryDisposed) return;
+    hero.classList.add('is-gl-warming');
+    startGallery();
+  };
+  const onCardsEntered = () => {
+    hero.classList.remove('is-gl-warming');
+    startGallery();
+  };
   document.addEventListener('landing-hero:cards-entered', onCardsEntered, { once: true });
 
   /* EVERYTHING below measures rendered text — the headline's travel is
@@ -887,8 +910,20 @@ export function initLandingHeroScroll() {
          the same screen motion, one fewer moving part). */
       const geo = placeCards(vh);
       const { cardH, restTop } = geo;
-      const pinScrollY = Math.max(0, restTop - (vh - cardH) / 2);
       const startOffsets = [0, cardStagger, cardStagger * 2];
+      /* H3 (Oscar, 2026-09-09) — THE REST HOLD, phone: the desktop's rule
+         holds the row until its centre reaches the viewport's centre
+         (restTop − (vh − cardH)/2 = 470 at 402×874, + the 64 stagger =
+         534 of dead scroll before the one visible card moved — "three
+         swipes"). `--hero-rest-hold` (landing-narrow.css) names the
+         scroll at which the boundary card — the phone's one image —
+         begins its rise; the stagger is taken off so the token IS that
+         number. Unset (the desktop, the band): the centre rule, as it
+         was. */
+      const restHold = readPx('--hero-rest-hold', -1);
+      const pinScrollY = restHold >= 0
+        ? Math.max(0, restHold - startOffsets[HERO_BOUNDARY_CARD])
+        : Math.max(0, restTop - (vh - cardH) / 2);
       const startAt = (i) => revealEnd + pinScrollY + startOffsets[i];
       const exitAt = (i) => startAt(i) + restTop + cardH;
       const exitEnd = exitAt(2) + HERO_CARD_EXIT_BUFFER_PX;
@@ -1154,6 +1189,8 @@ export function initLandingHeroScroll() {
        GL takeover follows the build straight away. (Under the splash
        it waits for landing-hero:cards-entered.) */
     if (document.documentElement.getAttribute('data-ne-splash') !== 'on') startGallery();
+    /* H2: under the splash, the phone pre-warms the GL beneath the red */
+    else if (isPhoneViewport()) galleryWarm();
   });
 
   return () => {

@@ -20,12 +20,18 @@ import {
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isPhoneViewport, isTouchPrimary } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
-import { FOUNDERS_HANDOFF_T, FOUNDERS_RELEASE_PX, foundersDepartingEdgeInsetPx } from './landing-founders.js';
+import { FOUNDERS_HANDOFF_T, FOUNDERS_RELEASE_PX, foundersDepartingEdgeInsetPx, foundersPhonePinTopPx } from './landing-founders.js';
 
 /* THE PHONE's hold once the arrival has played, before the stage scrolls
    on — the desktop founders' own 250 ("slightly fix into place before
    then scrolling on", Oscar). */
 const NETWORK_PHONE_HOLD_PX = 250;
+/* N1 (Oscar, 2026-09-09) — THE PHONE's title group ("OUR NETWORK" and the
+   subtitle) enters essentially WITH the industries list: its gate sits
+   this many scroll px behind the lines' gate (the departing rail's edge
+   at the 2/3 line), not at the desktop's 1/3 line — which was vh/3 later
+   (291 at 874) and read as a second, late arrival on the phone. */
+const NETWORK_PHONE_TITLE_LAG_PX = 60;
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -366,13 +372,13 @@ export function initLandingNetwork() {
       const stageH = stageEl instanceof HTMLElement ? stageEl.offsetHeight : window.innerHeight;
       const vh = window.innerHeight || 0;
       const inset = foundersDepartingEdgeInsetPx();
-      /* the overlap: the stage pinned by the founders' exit start —
-         their rail's inset + the release + this stage's own height */
-      const overlap = inset + FOUNDERS_RELEASE_PX + stageH;
-      /* the pinned run: the founders' release (760), the two handoff
-         lines (the departing edge crossing 2/3 then 1/3 of the
-         viewport — the desktop's gates), then the 250 hold */
-      const pinned = FOUNDERS_RELEASE_PX + vh * (1 - FOUNDERS_HANDOFF_T) + NETWORK_PHONE_HOLD_PX;
+      const foundersTrack = document.querySelector('[data-landing-founders-track]');
+      const foundersSection = document.querySelector('[data-landing-founders]');
+      const trackH = foundersTrack instanceof HTMLElement ? foundersTrack.offsetHeight : 0;
+      const railBottomOff = foundersSection instanceof HTMLElement ? foundersSection.offsetHeight - inset : 0;
+      /* the founders' pin top (W1: the centred block's, clamped at the
+         nav — landing-founders.js publishes it) */
+      const fdTop = foundersPhonePinTopPx();
       /* THE SHORT VIEWPORT: the stage (subtitle, title, list, strip —
          ~837 at 402) is taller than most live phone viewports (the
          frame's own device shows ~750–800 under Safari's bars), and a
@@ -393,11 +399,25 @@ export function initLandingNetwork() {
         : 0;
       const minTop = Math.max(0, Math.round(navBottom - inkTop));
       const extra = Math.max(0, minTop - (vh - stageH));
+      const stickyTop = Math.max(minTop, vh - stageH);
+      /* THE OVERLAP, general form: this stage pins at the SAME scroll the
+         founders do. The founders pin at scroll = trackTop − fdTop; this
+         stage at (trackTop + trackH − overlap) − stickyTop; equating them:
+         overlap = trackH + fdTop − stickyTop. (With the old flush pin,
+         fdTop = vh − railBottom and stickyTop = vh − stageH, this reduces
+         to the inset + the release + the stage, the previous formula.) */
+      const overlap = trackH + fdTop - stickyTop;
+      /* the pinned run: the founders' release (760); then the departing
+         rail's bottom — at fdTop + railBottom once released, scrolling
+         1:1 — travelling to the lines' gate (the 2/3 line), the title
+         group's lag behind it (N1), then the 250 hold */
+      const linesGatePx = Math.max(0, fdTop + railBottomOff - vh * (1 - FOUNDERS_HANDOFF_T));
+      const pinned = FOUNDERS_RELEASE_PX + linesGatePx + NETWORK_PHONE_TITLE_LAG_PX + NETWORK_PHONE_HOLD_PX;
       section.style.setProperty('--nw-stage-h', `${stageH}px`);
       section.style.setProperty('--nw-pin-min-top', `${minTop}px`);
       section.style.marginTop = `${-Math.round(overlap)}px`;
       section.style.height = `${Math.round(stageH + pinned + extra)}px`;
-      return { stageH, overlap: Math.round(overlap), pinned: Math.round(pinned), minTop, extra: Math.round(extra), stickyTop: Math.max(minTop, vh - stageH) };
+      return { stageH, overlap: Math.round(overlap), pinned: Math.round(pinned), minTop, extra: Math.round(extra), stickyTop, fdTop, linesGatePx: Math.round(linesGatePx) };
     };
     let last = layout();
     let lastW = window.innerWidth;
@@ -686,8 +706,14 @@ export function initLandingNetwork() {
     if (delayedLines.length) {
       delayedTrigger = ScrollTrigger.create({
         trigger: section,
-        start: () =>
-          foundersHandoffScroll(FOUNDERS_HANDOFF_T) ?? `top+=${pinOffset() + titleDelayPx} top`,
+        start: () => {
+          /* N1: the phone's title group rides just behind the lines' gate */
+          if (phone) {
+            const linesGate = foundersHandoffScroll(1 - FOUNDERS_HANDOFF_T);
+            if (linesGate !== null) return linesGate + NETWORK_PHONE_TITLE_LAG_PX;
+          }
+          return foundersHandoffScroll(FOUNDERS_HANDOFF_T) ?? `top+=${pinOffset() + titleDelayPx} top`;
+        },
         end: 'max',
         onEnter: () => playGroup(delayedLines),
         onLeaveBack: () => hideGroup(delayedLines),

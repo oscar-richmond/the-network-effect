@@ -349,6 +349,27 @@
 	.landing-v2.landing-home .landing-hero__card:nth-child(3) {
 		display: none;
 	}
+
+	/* H3 (Oscar, 2026-09-09) — THE REST HOLD: the scroll at which the
+	   image begins its rise (landing-hero-scroll.js reads it; the desktop
+	   keeps its centre rule, 518 here). Slight resistance, not a dead
+	   screen: the first swipe moves it. */
+	.landing-v2.landing-home {
+		--hero-rest-hold: 120px;
+	}
+
+	/* H1: the logo row's fade starts the frame it is told to — the
+	   desktop's 0.54s transition-delay was still winning here (see
+	   splash-b.js, SB_LOGOS_BEAT_PHONE_S); this outranks it. */
+	html[data-ne-splash='on'] .landing-v2.landing-home.splash-variant-b .landing-hero__logos-track {
+		transition-delay: 0s, 0s;
+	}
+
+	/* H2: the GL gallery pre-warms beneath the splash — fetched, compiled
+	   and rendering, but not shown until the handoff frame */
+	.landing-v2.landing-home .landing-hero.is-gl-warming .landing-hero__gallery-canvas {
+		visibility: hidden;
+	}
 }
 
 /* ── THE BAND: the desktop's own hero geometry at tablet proportions —
@@ -489,6 +510,14 @@
 		line-height: 1;
 		letter-spacing: var(--type-label-ls);
 		text-transform: var(--type-label-case);
+		/* W3 (Oscar, 2026-09-09): the chip is an <a> and no rule ever
+		   removed the UA's underline — the desktop never showed it because
+		   the char-ripple wraps every glyph in an inline-block span, which
+		   the decoration does not propagate into; the ripple is gated
+		   behind (hover:hover)/(pointer:fine), so on touch the bare text
+		   drew it. Computed `underline` on both chips at 402, none at the
+		   label span. */
+		text-decoration: none;
 	}
 	.landing-v2.landing-home .landing-founders__btn::after {
 		content: '';
@@ -648,7 +677,8 @@
 		--fd-pad-bottom: 64px;
 		--fd-headline-gap: 32px;
 		--fd-ctas-gap: 40px;
-		--fd-media-gap: 87px;
+		/* W2 (Oscar, 2026-09-09): the chips → rail gap, the frame's 87 less 24 */
+		--fd-media-gap: 63px;
 		--fd-rail-h: 306px;
 		--fd-rail-gap: 8px;
 		--fd-drift-room: 128px;
@@ -742,6 +772,8 @@
 		height: var(--fd-rail-h);
 		z-index: 2;
 		pointer-events: none;
+		/* N2: scrubbed out with the rail's cards (landing-founders.js) */
+		opacity: var(--fd-veil-op, 1);
 	}
 	.landing-v2.landing-home .landing-founders::before {
 		left: 0;
@@ -1352,6 +1384,15 @@
 		line-height: 1;
 		letter-spacing: var(--type-label-ls);
 		text-transform: var(--type-label-case);
+		/* D1 (Oscar, 2026-09-09): THE BRIGHTER BLUE, found by pixel. The
+		   chip's colour rule lives in the desktop block (landing.css, ≥1360)
+		   and nothing below the seam set one, so the <a> painted the UA's
+		   link blue — computed rgb(0, 0, 238), painted rgb(0, 0, 236) on the
+		   label's ink and rgb(0, 0, 234) on the arrow (fill: currentColor),
+		   against a #232a89 swatch painting rgb(35, 42, 137) in the same
+		   capture. No opacity, filter or blend anywhere in the chain. The
+		   brand blue, stated here for every width below the seam. */
+		color: var(--landing-accent-blue, #232a89);
 	}
 	.landing-v2.landing-home .landing-sreel__btn::after {
 		content: '';
@@ -1607,6 +1648,17 @@
 		line-height: var(--sv-row-h);
 		letter-spacing: 0;
 		white-space: nowrap;
+	}
+	/* D2 (Oscar, 2026-09-09): THE FIRST LINE'S INDENT ON SWIPE. The rail
+	   driver marks column k's first row `is-sactive` to key the image
+	   swap (landing-services.js, onRail), and the rule above the seam
+	   slides an active row's text 24px right — the desktop's reading-line
+	   treatment. Measured: every column past the first had its first row
+	   at 39.9 against 15.9 for the other three, in all three rails. The
+	   class stays (the picture still follows the column); the slide does
+	   not: text is left-aligned in every column at every scroll. */
+	.landing-v2.landing-home .landing-sreel__row.is-sactive .landing-sreel__svc {
+		transform: none;
 	}
 	/* 1:140 — the ground over the rail's edges: 5% left, 6% right. The
 	   colour is the panel's LIVE ground (--sv-ground, written by
@@ -2655,6 +2707,16 @@
 	.landing-v2.landing-home.m-ground-on .landing-sreel__pillar > * {
 		opacity: var(--sv-ink-op, 1);
 	}
+	/* D4 (Oscar, 2026-09-09): MORE INFO and the rail's indicator BLUR OUT
+	   the moment the ground fade begins, on the fade's own progress
+	   (--sv-fade-p, m-ground.js — the same value that darkens the ground),
+	   completing over its first half: gone well before the panels have. */
+	/* filter only: the chip's opacity carries its 0.8s entrance transition,
+	   which would lag a scrubbed value — filter has none here */
+	.landing-v2.landing-home.m-ground-on .landing-sreel__pillar .landing-sreel__btn,
+	.landing-v2.landing-home.m-ground-on .landing-sreel__pillar .m-carousel-ind {
+		filter: blur(calc(min(1, 2 * var(--sv-fade-p, 0)) * 8px)) opacity(calc(1 - min(1, 2 * var(--sv-fade-p, 0))));
+	}
 	.landing-v2.landing-home.m-ground-on .landing-featured,
 	.landing-v2.landing-home.m-ground-on .landing-featured__stage {
 		background: transparent;
@@ -2664,7 +2726,14 @@
 	   bottom; negative when the section is taller than the screen) ── */
 	.landing-v2.landing-home .landing-founders.is-pinned-phone {
 		position: sticky;
-		top: calc(100dvh - var(--fd-rail-bottom, 100dvh));
+		/* W1: the block (label → rail bottom, --fd-block-h at --fd-block-top
+		   in the section) centred between the nav's foot and the viewport
+		   bottom; clamped so the label never goes under the nav where the
+		   block is taller than the room (landing-founders.js) */
+		top: max(
+			calc(var(--fd-nav-bottom, 0px) - var(--fd-block-top, 0px)),
+			calc((100dvh + var(--fd-nav-bottom, 0px) - var(--fd-block-h, 100dvh)) / 2 - var(--fd-block-top, 0px))
+		);
 		z-index: 2; /* above the network stage pinned beneath it */
 	}
 
