@@ -36,7 +36,7 @@ const ROW_BAND_CENTRE_PX = 34;
 
 /**
  * Wires every [data-sv-rows] section under `root`. Returns a cleanup.
- * @param {{ reduced: boolean, fineHover: boolean,
+ * @param {{ reduced: boolean, isMob: boolean, fineHover: boolean,
  *   schedule: (fn: () => void, ms: number) => void,
  *   root?: ParentNode }} opts
  */
@@ -47,7 +47,7 @@ const ROW_BAND_CENTRE_PX = 34;
    the shared `.is-active` fill/marquee/text-out rules engage; the host
    maps `.is-hactive` to its slide transform). The marquee tracks are
    not built in indent mode (nothing rolls). Existing hosts unchanged. */
-export function initSvRowsSections({ reduced, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false, treatment = 'full', tap = true }) {
+export function initSvRowsSections({ reduced, isMob, fineHover, schedule, root = document, fixedImg = false, controllers = null, moveGate = false, treatment = 'full', tap = true }) {
   const cleanups = [];
   const activeClass = treatment === 'indent' ? 'is-hactive' : 'is-active';
   const rowSections = Array.from(root.querySelectorAll('[data-sv-rows]'));
@@ -128,7 +128,9 @@ export function initSvRowsSections({ reduced, fineHover, schedule, root = docume
       }
     };
     const placeAt = (row) => {
-      if (fixedImg) return;
+      /* Mobile: the frame is CSS-docked at the section's bottom slot
+         (services-v2.css) — the glide is a desktop read. */
+      if (isMob || fixedImg) return;
       if (imgWrap instanceof HTMLElement) {
         const half = (imgWrap.offsetHeight || HOVER_IMG_HALF_PX * 2) / 2;
         /* RECT-based (2026-08-25): the landing hosts the rows inside

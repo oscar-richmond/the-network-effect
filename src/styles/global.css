@@ -1,7 +1,4 @@
 @import './fonts.css';
-@import './tokens/breakpoints.css';
-@layer tokens, base, desktop, mobile, tablet;
-@layer base {
 
 :root {
   /* THE EYEBROW / SECTION-LABEL TIER (R26, Oscar 2026-09-03): one
@@ -87,5 +84,4 @@ input,
 textarea,
 select {
   font: inherit;
-}
 }

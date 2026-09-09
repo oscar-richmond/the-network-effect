@@ -25,7 +25,6 @@
  * per the standing content policy.
  */
 import { NETWORK_BRANDS } from '../../data/landing/network-brands.js';
-import { QUERIES } from '../../config/breakpoints.js';
 
 interface Props {
   /** Entrance anchor: 'pin' (default — the landing's bottom-aligned
@@ -70,7 +69,7 @@ const sectorLines = [
 ];
 ---
 
-<section class="landing-network" data-landing-network data-ground="dark" data-network-entry={entry} aria-label="Our network">
+<section class="landing-network" data-landing-network data-network-entry={entry} aria-label="Our network">
   {/* Sticky stage (Oscar's arrival rev): the section slides into the
       viewport as PURE BLACK (text hidden in reveal clips, media
       parked below the stage) — invisible against the services fade —
@@ -170,7 +169,7 @@ const sectorLines = [
         <img
           src={s.src}
           srcset={imageSrcset(s.src, [480], 640)}
-          sizes={`${QUERIES.phone} 160px, ${QUERIES.mobile} 205px, 640px`}
+          sizes="(max-width: 767px) 160px, (max-width: 1359px) 205px, 640px"
           alt=""
           loading="lazy"
           decoding="async"

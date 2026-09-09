@@ -1,6 +1,3 @@
-@import './tokens/breakpoints.css';
-@layer tokens, base, desktop, mobile, tablet;
-@layer base {
 .canvas-cursor {
   position: fixed;
   inset: 0;
@@ -19,5 +16,4 @@
   html.canvas-cursor-active * {
     cursor: none !important;
   }
-}
 }

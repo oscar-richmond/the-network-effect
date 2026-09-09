@@ -20,15 +20,11 @@
  * emits none of this, and the route that uses it does not exist there.
  */
 import { asset } from '../../utils/asset.js';
-import { QUERIES } from '../../config/breakpoints.js';
-import { imageSrcset, GATE_GIF } from '../../utils/thumb-srcset.js';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* the hero cards' own sizes (LandingHero.astro) — the stand-ins land on
    those rects, so they need the same pixels */
-/* below the shell floor the splash is never built (the cover splash runs there) and its markup is removed before paint — the
-   narrow branch resolves the 1×1 gate GIF so the eager images are never fetched (Part 4 §3: 197 kB at 390); desktop unchanged */
-const HERO_CARD_SIZES = `${QUERIES.mobile} 1px, 1728px`;
-const DISCARD_SIZES = `${QUERIES.mobile} 1px, 1728px`;
+const HERO_CARD_SIZES = '(max-width: 767px) 260px, (max-width: 1359px) 33vw, 1728px';
 
 /* the hero's own three images — the settle must BE the hero, not a
    lookalike (LandingHero.astro's heroCards, same order) */
@@ -94,7 +90,7 @@ const SB_DISCARDS = [
       Placed and sized entirely by splash-b.js from the live hero. */}
   {heroCards.map((src, i) => (
     <div class="splash-b__card" data-sb-card style={`z-index:${20 + i}`}>
-      <img src={src} srcset={`${GATE_GIF} 8w, ${imageSrcset(src, [780], 960)}`} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" />
+      <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" />
     </div>
   ))}
 
@@ -109,7 +105,7 @@ const SB_DISCARDS = [
       pile as they arrive. */}
   {SB_DISCARDS.map((src, i) => (
     <div class="splash-b__card splash-b__card--discard" data-sb-discard style={`z-index:${10 + i}`}>
-      <img src={src} srcset={`${GATE_GIF} 8w, ${imageSrcset(src, [480, 600], 900)}`} sizes={DISCARD_SIZES} alt="" decoding="async" loading="eager" />
+      <img src={src} srcset={imageSrcset(src, [480, 600], 900)} sizes="(max-width: 767px) 200px, (max-width: 1359px) 33vw, 1728px" alt="" decoding="async" loading="eager" />
     </div>
   ))}
 

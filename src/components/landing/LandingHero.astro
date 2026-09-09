@@ -22,18 +22,14 @@
  * rebuild of 2026-09-07 — the narrow build's video hero is retired.
  */
 import { asset } from '../../utils/asset.js';
-import { QUERIES } from '../../config/breakpoints.js';
 import { HERO_ENTRY } from '../../data/flags.js';
 import {
   HERO_LOGO_BRANDS,
   HERO_LOGO_SET_W,
-  HERO_LOGO_SET_W_M,
   HERO_LOGO_ROW_DUR_S,
   HERO_LOGO_ROW_PHASE_DELAY_S,
 } from '../../data/landing/hero-logos.js';
-import { imageSrcset, GATE_GIF } from '../../utils/thumb-srcset.js';
-import DeviceGate from '../mobile/DeviceGate.astro';
-import HeroImageMobile from '../mobile/HeroImageMobile.astro';
+import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* THE REBUILD (2026-09-07): the cards render at every width. Below the
    seam a 780 variant serves the phone's 78vw card and the tablet's third;
@@ -41,10 +37,7 @@ import HeroImageMobile from '../mobile/HeroImageMobile.astro';
    it keeps resolving to the full file, exactly as the plain src did. */
 /* the phone's card renders 304px wide: 260px resolves a 3× phone to the 780
    candidate (the density cap — THE FINAL GATE, 2026-09-08) */
-/* below the shell floor the cards are removed by the DeviceGate before they can show — the narrow branch resolves the
-   1×1 gate GIF so the eager images are never fetched there (Part 4 §3: 197 kB at 390); the desktop branch is unchanged */
-const HERO_CARD_SIZES = `${QUERIES.mobile} 1px, 1728px`;
-const HE_STAGE_SIZES = HERO_CARD_SIZES;
+const HERO_CARD_SIZES = '(max-width: 767px) 260px, (max-width: 1359px) 33vw, 1728px';
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */
@@ -88,7 +81,7 @@ const heroEntryFlash = [
   <p>Trusted by {HERO_LOGO_BRANDS.map((b) => b.name).join(', ')}.</p>
 </div>
 
-<div class="landing-hero" data-landing-hero data-ground="light" aria-hidden="true">
+<div class="landing-hero" data-landing-hero aria-hidden="true">
   <div class="landing-hero__bg"></div>
 
   {/* HEADLINE — starts centred, slides left. Two lines, two families:
@@ -145,7 +138,7 @@ const heroEntryFlash = [
     <div
       class="landing-hero__logos-track"
       data-landing-hero-logos-track
-      style={`--marquee-set-w:${HERO_LOGO_SET_W}px;--hero-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--hero-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s;--m-logo-set-w:${HERO_LOGO_SET_W_M}px;--m-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--m-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s`}
+      style={`--marquee-set-w:${HERO_LOGO_SET_W}px;--hero-logo-row-dur:${HERO_LOGO_ROW_DUR_S}s;--hero-logo-row-delay:${HERO_LOGO_ROW_PHASE_DELAY_S.toFixed(2)}s`}
     >
       {heroLogosDoubled.map((b) => (
         <span class="landing-hero__logo-cell" data-landing-hero-logo-cell>
@@ -178,7 +171,7 @@ const heroEntryFlash = [
   <div class="landing-hero__cards" data-landing-hero-cards aria-hidden="true">
     {heroCards.map((src) => (
       <div class="landing-hero__card" data-landing-hero-card>
-        <img src={src} srcset={`${GATE_GIF} 8w, ${imageSrcset(src, [780], 960)}`} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+        <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
       </div>
     ))}
   </div>
@@ -198,31 +191,22 @@ const heroEntryFlash = [
         <p class="landing-hero__entry-text" data-he-text>BUILT ON TRUST.</p>
         <p class="landing-hero__entry-text" data-he-text>POWERED BY ACCESS.</p>
       </div>
-      {/* the stage is removed below the shell floor by the DeviceGate — the narrow branch resolves the 1×1 gate GIF so
-          these eager images are never fetched there; the desktop branch resolves the same file as before */}
       {heroEntryFlash.map((src) => (
         <div class="landing-hero__entry-flash" data-he-flash>
-          <img src={src} srcset={`${GATE_GIF} 8w, ${src} 960w`} sizes={HE_STAGE_SIZES} alt="" decoding="async" loading="eager" />
+          <img src={src} alt="" decoding="async" loading="eager" />
         </div>
       ))}
       {heroCards.map((src, i) => (
         <div class="landing-hero__entry-card" data-he-card style={`z-index:${[10, 12, 11][i]}`}>
-          <img src={src} srcset={`${GATE_GIF} 8w, ${src} 960w`} sizes={HE_STAGE_SIZES} alt="" decoding="async" loading="eager" />
+          <img src={src} alt="" decoding="async" loading="eager" />
         </div>
       ))}
     </div>
   )}
 
-  {/* THE PHONE'S ONE IMAGE (mobile rebuild Part 2, 2026-09-08 — frame 1:272):
-      stamped in before first paint below the seam, and the three cards +
-      the entry stage removed with it (the gate sits AFTER them: it runs
-      as the parser reaches it, so it can only remove what is already
-      parsed); on the desktop the template goes and nothing here renders.
-      Same data source as the strip's first tile. In flow it follows the
-      logo row, the cards being gone. */}
-  <DeviceGate desktop="[data-landing-hero-cards], [data-he-stage]">
-    <HeroImageMobile />
-  </DeviceGate>
+  {/* THE REBUILD (2026-09-07): the narrow build's video hero is RETIRED —
+      the phone and the tablet render this same composition (headline,
+      intro, logo row, the three cards) from landing-narrow.css. */}
 </div>
 
 {/* The runway. Height is set by landing-hero-scroll.js from the

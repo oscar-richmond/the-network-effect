@@ -30,7 +30,7 @@
  * stays byte-identical to the shipped site.
  */
 import { HERO_ENTRY, HERO_ENTRY_SPLASH } from '../../data/flags.js';
-import { MOBILE_MAX_WIDTH } from '../../config/breakpoints.js';
+import { MOBILE_MAX_WIDTH } from '../../scripts/landing/viewport.js';
 const entryArmed = HERO_ENTRY && !HERO_ENTRY_SPLASH;
 ---
 {entryArmed && (
@@ -38,8 +38,10 @@ const entryArmed = HERO_ENTRY && !HERO_ENTRY_SPLASH;
     (function () {
       try {
         var d = document.documentElement;
-        /* the hero entry is desktop DOM (the phone's gate removes its stage — mobile
-           rebuild Part 3 §6): below the seam it is never armed, and the cover splash runs */
+        /* The entry is DESKTOP DOM — hero-entry.js refuses to run below the seam — so below it
+           the entry must not be armed at all, or the phone gets the red ground with nothing to
+           clear it and no cover splash either (cherry-picked from the set-aside rebuild's
+           Part 3 §6, 2026-09-09; the flag is DEV-only, so production was never affected). */
         if ((d.clientWidth || window.innerWidth) <= MOBILE_MAX_WIDTH) return;
         /* `?entry=0` suppresses the entry — so it must NOT arm the red
            ground either. Arming regardless left the red up with nothing

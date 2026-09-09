@@ -1,6 +1,3 @@
-@import '../tokens/breakpoints.css';
-@layer tokens, base, desktop, mobile, tablet;
-@layer desktop {
 /*
  * /founders — Figma 73:5519, extracted 2026-08-08; 83px chrome
  * subtracted; 1728 design px (content viewport 1034 at the design
@@ -245,7 +242,7 @@ body.founders-page {
    and travelling names KEEP RUNNING (not removed unilaterally —
    flagged: the frame draws neither, and the static name below
    duplicates the travelling one; Oscar rules). */
-@media (--desktop) {
+@media (min-width: 1360px) {
 	/* Portrait: 630×841 flush left at y80 (was top88/right24/bottom
 	   24 right-anchored). Height clamps on short interiors; the name
 	   clamps re-derive from the LIVE rect either way. */
@@ -509,5 +506,4 @@ body.founders-page {
 	/* The narrow build's footer spacer (founders-narrow.css) has no place
 	   in the driver's fixed viewport. */
 	.founders-page .landing-footer-spacer { display: none; }
-}
 }

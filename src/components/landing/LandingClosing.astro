@@ -26,22 +26,20 @@
  * exports, placeholder until licensed finals.
  */
 import { asset } from '../../utils/asset.js';
-import { QUERIES } from '../../config/breakpoints.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
-import { CLOSING_TILES, CLOSING_KEYWORDS } from '../../data/landing/closing.js';
-import { CLOSING_HEADLINE } from '../../data/landing/statements.js';
-import DeviceGate from '../mobile/DeviceGate.astro';
-import ClosingHeadlineMobile from '../mobile/ClosingHeadlineMobile.astro';
-import ClosingCardsMobile from '../mobile/ClosingCardsMobile.astro';
 
 /* THE REBUILD (2026-09-07): the tiles render on every width — a 600
    variant for the phone's half-width and the tablet's quarter; the
    desktop's sizes branch is larger than any candidate, so it keeps the
    full file. */
-const TILE_SIZES = `${QUERIES.phone} 200px, ${QUERIES.mobile} 25vw, 1728px`;
+const TILE_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 25vw, 1728px';
 
-/* the tiles and keywords live in data/landing/closing.js since the mobile rebuild's Part 3 (the phone's cards read them too) */
-const tiles = CLOSING_TILES.map((t) => ({ ...t, src: asset(t.src) }));
+const tiles = [
+  { src: asset('/assets/landing/closing/tile-1.jpg'), w: 417, h: 519, x: -3, y: -42 },
+  { src: asset('/assets/landing/closing/tile-2.jpg'), w: 421, h: 636, x: -5, y: -69 },
+  { src: asset('/assets/landing/closing/tile-3.jpg'), w: 422, h: 528, x: -5, y: -25 },
+  { src: asset('/assets/landing/closing/tile-4.jpg'), w: 425, h: 597, x: -6, y: -25 },
+];
 
 /* Frame 13:184 (2026-08-26): keyword columns are FULL-WIDTH (414 =
    the tile width; was 323/406); the /0N indexes no longer exist in
@@ -52,11 +50,16 @@ const tiles = CLOSING_TILES.map((t) => ({ ...t, src: asset(t.src) }));
 /* `index` survives for the MOBILE carousel only (its /0N chips are
    part of the untouched mobile build); the desktop keyword markup no
    longer renders it. */
-const keywords = CLOSING_KEYWORDS;
+const keywords = [
+  { x: 24, w: 414, lw: 323, word: 'Trust', index: '/01', line: 'Audiences trust people more than institutions.' },
+  { x: 446, w: 414, lw: 323, word: 'Behaviour', index: '/02', line: 'Communities shape behaviour.' },
+  { x: 868, w: 414, lw: 406, word: 'Influence', index: '/03', line: 'Traditional campaigns create awareness, relationships create influence.' },
+  { x: 1290, w: 414, lw: 406, word: 'Credibility', index: '/04', line: 'Brands need access, credibility and participation.' },
+];
 
 ---
 
-<section class="landing-closing" data-landing-closing data-ground="light" aria-label="Why access matters">
+<section class="landing-closing" data-landing-closing aria-label="Why access matters">
   {/* Sticky stage (Oscar's rev): the section fixes briefly when the
       keyword descriptions' bottoms sit 64px above the viewport
       bottom — a 300px hold ("one more scroll") — then releases. The
@@ -69,9 +72,9 @@ const keywords = CLOSING_KEYWORDS;
       block neutralises it). Difference over the light ground and the
       tiles' top edge. */}
   <h2 class="landing-closing__headline">
-    {CLOSING_HEADLINE.desktop.map((t, i) => (
-      <span class:list={['landing-closing__hl', `landing-closing__hl--${i + 1}`, { 'landing-closing__hl--serrif': i === 2 }]} data-closing-line>{t}</span>
-    ))}
+    <span class="landing-closing__hl landing-closing__hl--1" data-closing-line>MOST BRANDS</span>
+    <span class="landing-closing__hl landing-closing__hl--2" data-closing-line>STRUGGLE TO ACCESS</span>
+    <span class="landing-closing__hl landing-closing__hl--3 landing-closing__hl--serrif" data-closing-line>CULTURE AUTHENTICALLY.</span>
   </h2>
 
   <p class="landing-closing__intro" data-closing-intro>
@@ -104,21 +107,12 @@ const keywords = CLOSING_KEYWORDS;
       <p class="landing-closing__kw-line" style={`max-width:${k.lw}px`}>{k.line}</p>
     </div>
   ))}
-  {/* THE PHONE (mobile rebuild Part 3 §3 — frames 1:338, 1:343): the four
-      lines and the card rail from the same data, stamped in below the seam
-      with the desktop's headline, intro, tiles and keyword blocks removed. */}
-  <DeviceGate desktop=".landing-closing__headline, .landing-closing__intro, .landing-closing__tiles, [data-closing-kw]">
-    <ClosingHeadlineMobile />
-    <ClosingCardsMobile />
-  </DeviceGate>
 
   {/* THE REBUILD (2026-09-07): the retired mobile design's tile carousel
       is gone — below the seam the tiles and their keywords are the
       desktop's, two-up on the phone and four across on the tablet
       (landing-narrow.css). */}
   </div>
-  {/* below the seam (rail-pin.js): the runway the pinned stage holds through — the card rail's travel plus the hold. Nothing above the seam. */}
-  <div class="m-runway" data-closing-runway-m aria-hidden="true"></div>
 </section>
 
 {/* The FRAGMENTED STATEMENT + the RED TAIL that followed here moved to

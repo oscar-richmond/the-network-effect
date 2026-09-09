@@ -36,10 +36,7 @@
  * placeholder-until-approved per the standing content policy.
  */
 import { asset } from '../../utils/asset.js';
-import { QUERIES } from '../../config/breakpoints.js';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
-import DeviceGate from '../mobile/DeviceGate.astro';
-import FoundersRailMobile from '../mobile/FoundersRailMobile.astro';
 
 const foundersPhoto = asset('/assets/landing/founders/founders-photo.jpg');
 const robboPortrait = asset('/assets/landing/founders/robbo-portrait.jpg');
@@ -51,10 +48,7 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
     section rides position:sticky inside it — pinned while items
     land, hold, exit upward and the ground fades to the hero grey —
     then releases exactly as its own bottom meets the track's. */}
-{/* below the seam (Oscar 2026-09-08): the band is transparent over the page layer, which fades light → dark over
-    --m-ground-fade-px ENDING as this top reaches the viewport's bottom (ground.js) — black as WHO WE ARE arrives;
-    band.js pins the section inside this track and runs the desktop's staggered exit */}
-<div class="landing-founders-track" data-landing-founders-track data-ground="dark" data-ground-fade>
+<div class="landing-founders-track" data-landing-founders-track>
   <section class="landing-founders" data-landing-founders aria-label="The founders">
   {/* WHO WE ARE label (frame 16:204, 2026-08-13) — desktop only
       (display:none below the seam; the approved mobile frames carry
@@ -118,7 +112,7 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
       applies to everything below. */}
   <div class="landing-founders__grid-space" data-fd-grid>
   <figure class="landing-founders__photo" data-landing-founders-img>
-    <img src={foundersPhoto} srcset={imageSrcset(foundersPhoto, [780, 1200], 1600)} sizes={`${QUERIES.phone} 260px, ${QUERIES.mobile} 100vw, 1728px`} alt="" loading="lazy" decoding="async" />
+    <img src={foundersPhoto} srcset={imageSrcset(foundersPhoto, [780, 1200], 1600)} sizes="(max-width: 767px) 260px, (max-width: 1359px) 100vw, 1728px" alt="" loading="lazy" decoding="async" />
   </figure>
   {/* Portrait hover (Oscar's rev): hovering one dims the other to 20%
       and reveals the subject's name over the hovered image — Serrif
@@ -175,12 +169,5 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
     </a>
   </figure>
   </div>
-  {/* THE PHONE'S RAIL (mobile rebuild Part 2, 2026-09-08 — frame 1:34): the
-      three cards as a snapping horizontal rail, stamped in below the seam
-      with the desktop's three figures removed (the gate sits after them);
-      on the desktop nothing here renders. */}
-  <DeviceGate desktop="[data-fd-grid]">
-    <FoundersRailMobile />
-  </DeviceGate>
   </section>
 </div>

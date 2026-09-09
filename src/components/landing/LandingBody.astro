@@ -15,7 +15,6 @@
  * build).
  */
 import LandingSplashB from './LandingSplashB.astro';
-import { QUERIES } from '../../config/breakpoints.js';
 
 interface Props { splash?: 'a' | 'b' }
 const { splash = 'a' } = Astro.props;
@@ -35,6 +34,7 @@ import '../../styles/landing/landing.css';
    composition at phone and tablet proportions, type from the tokens only.
    Imported after landing.css so its narrow rules layer over the desktop
    sheet's; every rule is max-width-gated, so the desktop never sees it. */
+import '../../styles/landing/landing-narrow.css';
 /* (services-v2.css no longer rides along — R10, 2026-09-02: the
    /services sv-rows hover machinery is detached from this page, and
    every rule in that sheet is .landing-v2 .sv-* namespaced, so
@@ -82,7 +82,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
       runs the pinned reel exactly as before. THE FADE-TO-BLACK lives on
       this section's tail on both: services is the one light→dark
       boundary in the order, and Featured Work arrives black-over-black. */}
-  <section class="landing-outro" aria-label="Our services" data-landing-services data-ground="light" data-ground-fade>
+  <section class="landing-outro" aria-label="Our services" data-landing-services>
     {/* ══ THE SERVICES REEL (frames 29:859/30:1191, 2026-08-26) —
         every width since the 2026-09-07 rebuild (in flow below the seam
         — landing-services.js). The STAGING (8ec705a) stack mechanics are
@@ -169,15 +169,12 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
               </svg>
             </a>
             <figure class="landing-sreel__img" data-sreel-imgwin aria-hidden="true">
-              <img data-sreel-img src={asset(p.img)} srcset={imageSrcset(p.img, [600, 780], 1100)} sizes={`${QUERIES.phone} 260px, ${QUERIES.mobile} 380px, 1728px`} alt="" loading="lazy" decoding="async" />
+              <img data-sreel-img src={asset(p.img)} srcset={imageSrcset(p.img, [600, 780], 1100)} sizes="(max-width: 767px) 260px, (max-width: 1359px) 380px, 1728px" alt="" loading="lazy" decoding="async" />
             </figure>
           </div>
         ))}
       </div>
     </div>
-    {/* below the seam (Oscar 2026-09-08): the bare tail after AMPLIFY's release — the page layer darkens for Featured Work as this
-        reaches the viewport's bottom (ground.js data-ground-fade-from); the frame's drawn 1:279 is not drawn. Nothing above the seam. */}
-    <div class="m-tail" data-services-tail-m aria-hidden="true"></div>
   </section>
 
   {/* Featured Work — horizontal gallery on the DARK ground (frame
@@ -204,17 +201,18 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
       'light' colourway) on the landing, following the red statement
       band. The other pages keep blue pending Oscar's global ruling. */}
   <LandingFooter theme="light" />
-  <div class="landing-footer-spacer" aria-hidden="true"></div>
   {/* Footer-reveal spacer: the footer overlaps the closing section's
       bottom (negative margin) and pins BEHIND it (z259 < 260) at the
       viewport bottom; this transparent, click-through spacer keeps
       the document height so the page ends exactly at full reveal. */}
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
 </SiteShell>
 
 <script>
   import { initLandingHeroScroll } from '../../scripts/landing/landing-hero-scroll.js';
   import { initLandingFounders } from '../../scripts/landing/landing-founders.js';
   import { initCharRipple } from '../../scripts/char-ripple.js';
+  import { initLandingServices } from '../../scripts/landing/landing-services.js';
   import { initLandingServicesReel } from '../../scripts/landing/landing-services-reel.js';
   import { initLandingNetwork } from '../../scripts/landing/landing-network.js';
   import { initLandingFeatured } from '../../scripts/landing/landing-featured.js';
@@ -222,7 +220,6 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   import { initLandingClosing } from '../../scripts/landing/landing-closing.js';
   import { initNavEntrance } from '../../scripts/landing/nav-motion.js';
   import { initSplash } from '../../scripts/landing/splash.js';
-  import { initMobileLanding } from '../../scripts/mobile/landing.js';
 
   /* The splash boots FIRST so it owns the load before any section
      schedules its own arrival. It only exists when the pre-paint
@@ -257,37 +254,37 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   let cleanupLandingHero = initLandingHeroScroll();
   let cleanupLandingFounders = initLandingFounders();
   let cleanupCharRipple = initCharRipple();
+  let cleanupLandingServices = initLandingServices();
   let cleanupLandingReel = initLandingServicesReel();
   let cleanupLandingNetwork = initLandingNetwork();
   let cleanupLandingFeatured = initLandingFeatured();
   let cleanupLandingAccess = initLandingAccess();
   let cleanupLandingClosing = initLandingClosing();
   let cleanupNavEntrance = initNavEntrance();
-  let cleanupMobileLanding = initMobileLanding();
 
   document.addEventListener('astro:before-swap', () => {
     cleanupLandingHero();
     cleanupLandingFounders();
     cleanupCharRipple();
+    cleanupLandingServices();
     cleanupLandingReel();
     cleanupLandingNetwork();
     cleanupLandingFeatured();
     cleanupLandingAccess();
     cleanupLandingClosing();
     cleanupNavEntrance();
-    cleanupMobileLanding();
   });
 
   document.addEventListener('astro:after-swap', () => {
     cleanupLandingHero = initLandingHeroScroll();
     cleanupLandingFounders = initLandingFounders();
     cleanupCharRipple = initCharRipple();
+    cleanupLandingServices = initLandingServices();
     cleanupLandingReel = initLandingServicesReel();
     cleanupLandingNetwork = initLandingNetwork();
     cleanupLandingFeatured = initLandingFeatured();
     cleanupLandingAccess = initLandingAccess();
     cleanupLandingClosing = initLandingClosing();
     cleanupNavEntrance = initNavEntrance();
-    cleanupMobileLanding = initMobileLanding();
   });
 </script>

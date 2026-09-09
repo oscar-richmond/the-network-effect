@@ -29,7 +29,6 @@
  * anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
-import { QUERIES } from '../config/breakpoints.js';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { WORK_PROJECTS, WORK_EXTRAS, WORK_GRID_HOVER } from '../data/landing/featured-work.js';
 import { LIVE_CASE_SLUGS } from '../data/landing/case-studies.js';
@@ -41,6 +40,7 @@ import '../styles/landing/work.css';
 /* THE REBUILD (2026-09-07): /work below the seam — the grid as the
    default view and the row view's vertical list, the header and the
    toggle in flow, type from the tokens only. Imported after work.css. */
+import '../styles/landing/work-narrow.css';
 import '../styles/fonts.css';
 
 const workPool = [...WORK_PROJECTS, ...WORK_EXTRAS];
@@ -50,7 +50,7 @@ const workPool = [...WORK_PROJECTS, ...WORK_EXTRAS];
 /* THE FINAL GATE (2026-09-08): the phone's grid tile renders 167px and the row 342px; both
    branches resolve a 3× phone to the 680 candidate (the density cap) so the two views —
    both in the DOM, both fetched — share one file per project instead of two. */
-const GRID_SIZES = `${QUERIES.phone} 50vw, ${QUERIES.mobile} 50vw, 1728px`;
+const GRID_SIZES = '(max-width: 767px) 50vw, (max-width: 1359px) 50vw, 1728px';
 const gridSrcset = (src) => imageSrcset(src, [680, 1200], 2000);
 /* ── GRID VIEW (R35, Oscar 2026-09-03) — COMPOSITION A, nine tiles from
    the single source (the eight projects + the Ashley portrait stub,
@@ -136,7 +136,38 @@ const gridRows = GRID_ROWS.map((row) =>
       ))}
     </div>
 
-
+    {/* ── THE ROW VIEW'S LIST (the rebuild, 2026-09-07): below the seam the
+        desktop's ROW view — the pinned horizontal carousel with its
+        docking metas, a fixed-viewport driver — becomes a vertical list
+        of the same nine projects in the same order, each its image (the
+        link, for live studies), its name and its description: the
+        carousel's own content, one source. No filter pills (the desktop
+        has none) and no per-entry chip: the tile is the tap target, as
+        on the landing's rail (the VIEW CASE STUDY cursor has no touch
+        form). display:none above the seam. */}
+    <div class="work-m" data-work-m>
+      {WORK_PROJECTS.map((p) => {
+        const live = LIVE_CASE_SLUGS.includes(p.slug);
+        const name = p.title.join(' ');
+        return (
+          <article class="work-m__entry" data-work-m-entry data-slug={p.slug}>
+            {live ? (
+              <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${name} — view project`}>
+                <figure class="work-m__img">
+                  <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 220px, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
+                </figure>
+              </a>
+            ) : (
+              <figure class="work-m__img">
+                <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 220px, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
+              </figure>
+            )}
+            <h2 class="work-m__title">{name}</h2>
+            <p class="work-m__desc">{p.desc}</p>
+          </article>
+        );
+      })}
+    </div>
     {/* Left column — header + the active meta (below). The FILTER
         PILLS are REMOVED from the desktop page (Oscar, 2026-08-26 —
         frame 35:1524 has none); the MOBILE chip row, which shared
@@ -276,8 +307,8 @@ const gridRows = GRID_ROWS.map((row) =>
   <div class="work-footer-wrap" data-work-footer>
     <LandingFooter theme="light" />
   </div>
-  <div class="work-footer-spacer" data-work-footer-spacer aria-hidden="true"></div>
   {/* R38 item 7: the grid view's reveal spacer (display:none in list view). */}
+  <div class="work-footer-spacer" data-work-footer-spacer aria-hidden="true"></div>
 
   {/* Custom cursor — hover:hover + pointer:fine only (work-page.js
       gates it; touch taps the link directly). The case-study

@@ -46,10 +46,6 @@ export const FEATURED_CARDS = [
        decision (destination experiences + partnerships). */
     tags: ['immerse', 'connect'],
     workImg: wp(1), // /work carousel image (Figma 27:3103, interior)
-    /* THE PHONE'S CARD (mobile rebuild Part 3, frame GvANAN3kJOPV8AKOi3O9FF 1:285): the 402 frame draws
-       the interior here — the /work image — where the landing's card carries the aerial; the other
-       four cards draw the landing's own images. featured.js prefers this below the seam. */
-    phoneImg: wp(1),
     desc: 'Developed one of the UK’s leading luxury destinations, spanning hospitality, events, guest experiences and talent partnerships.',
     img: { src: a(1), cover: true }, // Oscar-supplied final (2026-08-06; file crop retired)
   },

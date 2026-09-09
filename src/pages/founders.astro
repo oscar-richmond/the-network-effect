@@ -34,7 +34,6 @@
  * IMAGERY pending founder sign-off. STAGING ONLY.
  */
 import SiteShell from '../layouts/SiteShell.astro';
-import { QUERIES } from '../config/breakpoints.js';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { FOUNDERS_SLIDES } from '../data/landing/founders-page.js';
 import { asset } from '../utils/asset.js';
@@ -42,6 +41,7 @@ import { imageSrcset } from '../utils/thumb-srcset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/founders.css';
+import '../styles/landing/founders-narrow.css';
 import '../styles/fonts.css';
 ---
 
@@ -82,8 +82,8 @@ import '../styles/fonts.css';
           branch declares 290px — a 3× phone resolves to exactly the 870
           candidate instead of the 1728-declared original (2.2MB for the
           same pixels). */}
-      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} srcset={imageSrcset(FOUNDERS_SLIDES[1].img, [870], 1728)} sizes={`${QUERIES.mobile} 290px, 1728px`} alt="" loading="eager" decoding="async" />
-      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} srcset={imageSrcset(FOUNDERS_SLIDES[0].img, [870], 1728)} sizes={`${QUERIES.mobile} 290px, 1728px`} alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--under" data-fd-img-under src={asset(FOUNDERS_SLIDES[1].img)} srcset={imageSrcset(FOUNDERS_SLIDES[1].img, [870], 1728)} sizes="(max-width: 1359px) 290px, 1728px" alt="" loading="eager" decoding="async" />
+      <img class="fd-portrait__img fd-portrait__img--over" data-fd-img-over src={asset(FOUNDERS_SLIDES[0].img)} srcset={imageSrcset(FOUNDERS_SLIDES[0].img, [870], 1728)} sizes="(max-width: 1359px) 290px, 1728px" alt="" loading="eager" decoding="async" />
     </div>
 
     {/* ── Indicator — repositioned (Oscar, 2026-08-26): 24 from the
@@ -105,7 +105,7 @@ import '../styles/fonts.css';
             aria-current={i === 0 ? 'true' : 'false'}
             aria-label={`Go to founder ${slide.number}: ${slide.name}`}
           >
-            <img src={asset(slide.img)} srcset={imageSrcset(slide.img, [176, 870], 1728)} sizes={`${QUERIES.mobile} 80px, 1728px`} alt="" loading="eager" decoding="async" />
+            <img src={asset(slide.img)} srcset={imageSrcset(slide.img, [176, 870], 1728)} sizes="(max-width: 1359px) 80px, 1728px" alt="" loading="eager" decoding="async" />
           </button>
         ))}
       </div>
@@ -131,7 +131,7 @@ import '../styles/fonts.css';
         {[0, 1].map(() => (
           FOUNDERS_SLIDES[0].colImgs.map((src) => (
             <div class="fd-col__slot">
-              <img src={asset(src)} srcset={imageSrcset(src, [600], 960)} sizes={`${QUERIES.mobile} 200px, 960px`} alt="" loading="eager" decoding="async" />
+              <img src={asset(src)} srcset={imageSrcset(src, [600], 960)} sizes="(max-width: 1359px) 200px, 960px" alt="" loading="eager" decoding="async" />
             </div>
           ))
         ))}
@@ -204,7 +204,7 @@ import '../styles/fonts.css';
         in the SiteShell header, an entirely different subtree, so
         this element's clip can never become its blend ancestor. */}
     <figure class="fd-sweep" data-fd-sweep aria-hidden="true">
-      <img src={asset('/assets/landing/founders/founders-photo.jpg')} srcset={imageSrcset('/assets/landing/founders/founders-photo.jpg', [780, 1200], 1600)} sizes={`${QUERIES.phone} 260px, ${QUERIES.mobile} 100vw, 1728px`} alt="" loading="lazy" decoding="async" />
+      <img src={asset('/assets/landing/founders/founders-photo.jpg')} srcset={imageSrcset('/assets/landing/founders/founders-photo.jpg', [780, 1200], 1600)} sizes="(max-width: 767px) 260px, (max-width: 1359px) 100vw, 1728px" alt="" loading="lazy" decoding="async" />
     </figure>
     </div>
 
@@ -222,6 +222,7 @@ import '../styles/fonts.css';
   </div>
   {/* the narrow build's uncover travel (founders-narrow.css; hidden in the
       driver's fixed viewport) */}
+  <div class="landing-footer-spacer" aria-hidden="true"></div>
 </SiteShell>
 
 <script>

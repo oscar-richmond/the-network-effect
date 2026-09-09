@@ -32,13 +32,23 @@ import {
   CT_LOGOS_FADE_START, CT_LOGOS_FADE_END,
   CT_ROW_H, CT_ROW_BOTTOM_GAP, CT_LABEL_GAP,
 } from '../../data/landing/contact-logos.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, NARROW_QUERY } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* Bottom behaviours — the landing constants. */
 const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
-const footerHeight = () => FOOTER_H_PX;
+/* THE REBUILD (2026-09-07): the narrow build's footer publishes its
+   measured height (LandingFooter's --footer-h); the desktop keeps the
+   frame's 830. */
+const readPx = (prop, fallback) => {
+  const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+  return Number.isFinite(v) ? v : fallback;
+};
+const footerHeight = () => (isMobileViewport() ? readPx('--footer-h', FOOTER_H_PX) : FOOTER_H_PX);
+/* the band from 1024 carries the desktop's split composition
+   (contact-narrow.css sets --ct-split) — the rhythm derives there too */
+const isSplit = () => readPx('--ct-split', 0) === 1;
 
 const CAL_EMBED_SRC = 'https://app.cal.com/embed/embed.js';
 
@@ -50,8 +60,6 @@ export function initContactPage() {
   const timeouts = [];
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* The desktop driver: below the seam the mobile layer owns the page (Part 3). */
-  if (isMobileViewport()) return () => {};
 
   /* ── Scroll: the shared house boot (non-RM). */
   if (!reduced) cleanups.push(initSiteScroll());
@@ -244,6 +252,7 @@ export function initContactPage() {
   const TIP_OFFSET_X = 14;
   const TIP_OFFSET_Y = 18;
   const TIP_FADE_OUT_MS = 220;
+  const MOBILE_TIP_GAP = 24;
   const copyLinks = Array.from(document.querySelectorAll('[data-ct-copy]'));
   const copyTip = document.querySelector('[data-ct-copy-tip]');
   const copyAnnouncer = document.querySelector('[data-ct-copy-announcer]');
@@ -270,14 +279,25 @@ export function initContactPage() {
       copyTip.classList.remove('is-in');
       removeTimer = window.setTimeout(() => { copyTip.hidden = true; }, TIP_FADE_OUT_MS);
     };
+    const isMobile = () => window.matchMedia(NARROW_QUERY).matches;
     const showTip = (link, x, y) => {
       window.clearTimeout(hideTimer);
       window.clearTimeout(removeTimer);
       copyTip.hidden = false;
-      place(x, y);
+      if (isMobile()) {
+        const rect = link.getBoundingClientRect();
+        const tipW = copyTip.offsetWidth;
+        const cx = Math.min(
+          Math.max(rect.left + rect.width / 2 - tipW / 2, 8),
+          window.innerWidth - tipW - 8,
+        );
+        copyTip.style.transform = `translate3d(${cx}px, ${rect.bottom + MOBILE_TIP_GAP}px, 0)`;
+      } else {
+        place(x, y);
+      }
       void copyTip.offsetWidth;
       copyTip.classList.add('is-in');
-      if (!tracking) {
+      if (!isMobile() && !tracking) {
         window.addEventListener('mousemove', onMove);
         tracking = true;
       }
@@ -378,7 +398,8 @@ export function initContactPage() {
   const layoutRhythm = () => {
     const { logos, label, cluster, intro, bar } = layoutEls;
     if (!(logos instanceof HTMLElement) || !(label instanceof HTMLElement)
-      || !(cluster instanceof HTMLElement) || !(intro instanceof HTMLElement)) return;
+      || !(cluster instanceof HTMLElement) || !(intro instanceof HTMLElement)
+      || (isMobileViewport() && !isSplit())) return;
     const vh = window.innerHeight;
     /* a. the row */
     const rowTop = vh - CT_ROW_BOTTOM_GAP - CT_ROW_H;
@@ -483,9 +504,15 @@ export function initContactPage() {
     const footer = document.querySelector('[data-landing-footer]');
     if (footer instanceof HTMLElement) {
       const wrapped = wrapFooterReveals(footer);
+      /* narrow: the footer sits under the page until the spacer scrolls it
+         clear (the sticky uncover) — the cue is the spacer 200 into the
+         viewport, the landing's narrow footer cue. */
+      const spacer = isMobileViewport() ? document.querySelector('.landing-footer-spacer') : null;
       triggers.push(ScrollTrigger.create({
-        trigger: footer,
-        start: () => `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`,
+        trigger: spacer ?? footer,
+        start: () => (spacer
+          ? 'top bottom-=200'
+          : `top ${(window.innerHeight - FOOTER_H_PX - 200).toFixed(0)}px`),
         once: true,
         onEnter: () => playFooterReveals(wrapped, schedule),
       }));

@@ -1,0 +1,378 @@
+/* ═══════════════════════════════════════════════════════════════════
+   /contact — THE NARROW BUILD (the mobile + tablet rebuild to the
+   desktop, Oscar 2026-09-07). The R58 redesign (frame 1:90) at phone
+   (≤ 767) and tablet (768 – 1359) proportions from the type tokens:
+   the red ground, the nav solid black over it (the desktop's own
+   contact rule), the intro's two Dazzed lines at the display tier with
+   line two's indent (the desktop's 167 at 90 → 1.86em), the 48px row —
+   START A PROJECT, EMAIL US, Instagram, LinkedIn — black with white
+   ink at the label tier, WE'VE WORKED WITH at the eyebrow tier over the
+   rolling logo row (the hero row's marks and marquee, zoomed to the
+   phone), and the desktop's photograph (contact-table.jpg — the same
+   source, the same crop grammar: the window at the source's own
+   proportion) — then the footer's sticky uncover with the row fading
+   as it reveals (contact.js).
+
+   TWO COMPOSITIONS: below 1024 the desktop's split (red left, the
+   photograph a full-height column at the right, the row anchored to the
+   viewport bottom) has no width — the page STACKS: intro, the row, the
+   photograph as a full-measure window, the label and the logo row
+   (LOGGED: a designed static composition in place of the viewport-
+   anchored one). From 1024 the band carries the desktop's split: the
+   image column at 40vw (the desktop's 754 of 1728 would leave the intro
+   no measure), the nav group right-aligned to it, the LET'S CHAT twin
+   over the photograph, the vertical rhythm derived live by contact.js
+   from the viewport and the ink (--ct-split tells it to).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-v2.contact-page {
+		--ct-top: 96px;               /* the nav's clearance + the page's own top */
+		--ct-intro-gap: 24px;         /* the desktop's 48 under the 90 tier */
+		--ct-cta-gap: 12px;           /* the desktop's 16 */
+		--ct-image-gap: 40px;
+		--ct-label-gap: 40px;
+		--ct-row-gap: 20px;           /* the desktop's 48 ink gap */
+		--ct-bottom: 48px;            /* the desktop's 80 under the row */
+		--ct-indent: 0.6em;           /* the desktop's 167 at 90 is 1.86em — at the phone's measure CONVERSATION. would not follow it on one line (LOGGED); the band takes the desktop's */
+		--ct-row-h: 75px;             /* the hero row's phone height */
+		--ct-logo-zoom: 0.75;
+		--ct-split: 0;
+	}
+
+	/* ── the ground and the bar ── */
+	.landing-v2.landing-v2.contact-page main[data-contact] { background: #c1250e; }
+	.landing-v2.landing-v2.contact-page .ct {
+		position: relative;
+		height: auto;
+		padding: var(--ct-top) var(--m-margin-safe-r, var(--m-margin)) var(--ct-bottom) var(--m-margin-safe-l, var(--m-margin));
+	}
+	/* the nav SOLID over the red — the desktop's own rule for this page,
+	   restated for the burger build and the band's bar */
+	.landing-v2.landing-v2.contact-page .home__topbar--about { mix-blend-mode: normal; }
+	.landing-v2.landing-v2.contact-page .home__topbar--about .home__logo,
+	.landing-v2.landing-v2.contact-page .home__topbar--about .home__menu-toggle,
+	.landing-v2.landing-v2.contact-page .home__topbar--about .home__nav-link,
+	.landing-v2.landing-v2.contact-page .home__topbar--about .home__topbar-email {
+		mix-blend-mode: normal;
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .ct__chat { display: none; }
+
+	/* ── the intro — the display tier, both lines Dazzed (the desktop's
+	   pair), line two indented ── */
+	.landing-v2.landing-v2 .ct__cluster {
+		position: static;
+		top: auto;
+		left: auto;
+		transform: none;
+	}
+	.landing-v2.landing-v2 .ct__intro {
+		width: auto;
+		margin: 0;
+		font-family: var(--type-display-face);
+		font-weight: var(--type-display-weight);
+		font-synthesis: none;
+		font-size: var(--type-display-size);
+		line-height: var(--type-display-lh);
+		letter-spacing: var(--type-display-ls);
+		text-transform: var(--type-display-case);
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .ct__intro-serrif {
+		font-family: inherit;
+		font-weight: inherit;
+		font-synthesis: none;
+		letter-spacing: inherit;
+	}
+	.landing-v2.landing-v2 .ct__intro-indent {
+		display: inline-block;
+		width: var(--ct-indent);
+		height: 1px;
+	}
+
+	/* ── the row — the desktop's 48px black chips at the label tier, the
+	   two social squares with them; wraps at the phone's measure ── */
+	.landing-v2.landing-v2 .ct__ctas {
+		margin-top: var(--ct-intro-gap);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--ct-cta-gap);
+		width: auto;
+	}
+	.landing-v2.landing-v2 .ct-cta {
+		height: 48px;
+		min-height: 48px;
+		padding: 0 16px;
+		gap: 8px;
+		background: #161616;
+		color: #ffffff;
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+	}
+	.landing-v2.landing-v2 .ct-cta__arrow { width: 12px; height: 12px; }
+	.landing-v2.landing-v2 .ct-cta:focus-visible {
+		outline: 2px solid #eeeef0;
+		outline-offset: -4px;
+	}
+	.landing-v2.landing-v2 .ct-social { display: flex; }
+
+	/* ── the photograph — the desktop's window at the source's own
+	   proportion (its crop is the whole frame), the full measure ── */
+	.landing-v2.landing-v2 .ct__image {
+		display: block;
+		position: relative;
+		right: auto;
+		top: auto;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 754 / 1037;
+		margin-top: var(--ct-image-gap);
+		overflow: hidden;
+		z-index: 1;
+	}
+	.landing-v2.landing-v2 .ct__image img {
+		position: absolute;
+		inset: 0;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		object-fit: cover;
+		object-position: 50% 50%;
+		display: block;
+	}
+
+	/* ── WE'VE WORKED WITH + the rolling row ── */
+	.landing-v2.landing-v2 .ct__label {
+		display: block;
+		position: static;
+		left: auto;
+		top: auto;
+		margin: var(--ct-label-gap) 0 0;
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-synthesis: none;
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .ct__logos {
+		display: block;
+		position: relative;
+		left: auto;
+		top: auto;
+		/* the .ct block's own margins: the row bleeds to the viewport's edges */
+		margin: var(--ct-row-gap) calc(-1 * var(--m-margin-safe-r, var(--m-margin))) 0 calc(-1 * var(--m-margin-safe-l, var(--m-margin)));
+		width: auto;
+		height: var(--ct-row-h);
+		overflow: hidden;
+		z-index: 1;
+		opacity: var(--ct-logos-fade, 1);
+	}
+	.landing-v2.landing-v2 .ct__logos-track {
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: flex;
+		width: max-content;
+		will-change: transform;
+		zoom: var(--ct-logo-zoom);
+	}
+	.landing-v2.landing-v2 .ct__logo-cell {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 160px;
+		height: 100px;
+		margin-right: 32px;
+		background: rgba(255, 255, 255, 0.04);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+	.landing-v2.landing-v2 .ct__logo-cell img { display: block; max-width: none; }
+	.landing-v2.landing-v2 .ct__logos-band {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		background: linear-gradient(90deg, #c1250e 0%, rgba(193, 37, 14, 0) 12%, rgba(193, 37, 14, 0) 88%, #c1250e 100%);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-v2 .ct__logos-track[data-direction='right'] {
+			animation: landing-network-marquee-right var(--ct-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--ct-logo-row-delay, 0s);
+		}
+		.landing-v2.landing-v2 .ct__logos-track[data-direction='left'] {
+			animation: landing-network-marquee-left var(--ct-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--ct-logo-row-delay, 0s);
+		}
+		/* the entrances the desktop gates ≥ 1360: the row's rise, the
+		   photograph's blur-in (contact.js schedules the classes) */
+		.landing-v2.landing-v2 .ct__logos {
+			opacity: 0;
+			transform: translate3d(0, 24px, 0);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.9s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.landing-v2 .ct__logos.is-visible { opacity: var(--ct-logos-fade, 1); transform: none; }
+		.landing-v2.landing-v2 .ct__logos.is-settled { transition: none; }
+		.landing-v2.landing-v2 .ct__image {
+			opacity: 0;
+			filter: blur(6px);
+			transition: opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				filter 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+		}
+		.landing-v2.landing-v2 .ct__image.is-visible { opacity: 1; filter: blur(0); }
+	}
+
+	/* ── the (inert) SCHEDULE A CALL modal: full-screen, the ghosts are
+	   desktop dressing, CLOSE at 44 clear of the notch ── */
+	.landing-v2.landing-v2 .ct-modal__band { top: 0; }
+	.landing-v2.landing-v2 .ct-modal__ghost { display: none; }
+	.landing-v2.landing-v2 .ct-modal__window { left: 0; top: 0; width: 100%; height: 100%; }
+	.landing-v2.landing-v2 .ct-modal__close {
+		left: auto;
+		right: max(12px, var(--safe-right, 0px));
+		top: max(12px, var(--safe-top, 0px));
+		height: 44px;
+	}
+	.landing-v2.landing-v2 .ct-modal__cal { -webkit-overflow-scrolling: touch; }
+	/* the modal's logo twin — the bar's wordmark (title tier, at the margin) */
+	.landing-v2.landing-v2 .ct-modal__logo {
+		left: var(--m-margin-safe-l, var(--m-margin));
+		height: var(--nav-h, 64px);
+		margin: 0;
+		font-family: var(--type-title-face);
+		font-weight: var(--type-title-weight);
+		font-synthesis: none;
+		font-size: var(--type-title-size);
+		line-height: 1;
+		letter-spacing: var(--type-title-ls);
+		text-transform: var(--type-title-case);
+	}
+}
+
+/* ── the band: the desktop's proportions ── */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-v2.contact-page {
+		--ct-top: 128px;
+		--ct-intro-gap: 32px;
+		--ct-cta-gap: 16px;
+		--ct-image-gap: 48px;
+		--ct-label-gap: 48px;
+		--ct-row-gap: 24px;
+		--ct-bottom: 64px;
+		--ct-row-h: 100px;
+		--ct-logo-zoom: 1;
+		--ct-indent: 1.86em;
+	}
+}
+
+/* ── the band from 1024: the desktop's SPLIT — the photograph a full-
+   height column at the right, the red at the left, the row anchored to
+   the viewport bottom, the block centred between the bar and the label
+   (contact.js derives the tops; the values here are the resting state
+   before it runs) ── */
+@media (min-width: 1024px) and (max-width: 1359px) {
+	.landing-v2.landing-v2.contact-page {
+		--ct-image-w: 40vw;           /* the desktop's 754 of 1728, opened for the intro's measure */
+		--ct-split: 1;
+	}
+	.landing-v2.landing-v2.contact-page .ct {
+		height: 100svh;
+		min-height: 640px;
+		padding: 0;
+	}
+	.landing-v2.landing-v2 .ct__cluster {
+		position: absolute;
+		left: var(--m-margin-safe-l, var(--m-margin));
+		top: 25%;
+		width: calc(100% - var(--ct-image-w) - var(--m-margin-safe-l, var(--m-margin)) - 24px);
+	}
+	.landing-v2.landing-v2 .ct__ctas { flex-wrap: nowrap; width: max-content; }
+	.landing-v2.landing-v2 .ct__image {
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: var(--ct-image-w);
+		height: 100%;
+		aspect-ratio: auto;
+		margin: 0;
+		z-index: 3;
+	}
+	.landing-v2.landing-v2 .ct__label {
+		position: absolute;
+		left: var(--m-margin-safe-l, var(--m-margin));
+		top: calc(100% - 80px - 100px - 48px - 1.2em);
+		margin: 0;
+	}
+	.landing-v2.landing-v2 .ct__logos {
+		position: absolute;
+		left: 0;
+		top: calc(100% - 80px - 100px);
+		margin: 0;
+		width: 100%;
+	}
+	/* the band's fades: the desktop's 1048 box (the viewport less the
+	   image column, plus the 74 that runs under it), 10% each end */
+	.landing-v2.landing-v2 .ct__logos-band {
+		width: calc(100% - var(--ct-image-w) + 74px);
+		background: linear-gradient(90deg, #c1250e 0%, rgba(193, 37, 14, 0) 10%, rgba(193, 37, 14, 0) 90%, #c1250e 100%);
+	}
+	/* the nav group right-aligns to the image (the desktop's R60), the
+	   bar's LET'S CHAT yields to the page-owned twin over the photograph
+	   (white, its own difference) */
+	.landing-v2.landing-v2.contact-page .home__nav-links {
+		position: fixed;
+		right: calc(var(--ct-image-w) + 24px);
+		top: 0;
+		height: var(--nav-h, 71px);
+	}
+	.landing-v2.landing-v2.contact-page .home__nav-link,
+	.landing-v2.landing-v2.contact-page .home__nav-link [data-char-ripple] { white-space: nowrap; }
+	.landing-v2.landing-v2.contact-page header.home__topbar .home__topbar-email { display: none; }
+	.landing-v2.landing-v2 .ct__chat {
+		position: fixed;
+		right: var(--m-margin-safe-r, var(--m-margin));
+		top: calc((var(--nav-h, 71px) - var(--type-label-size)) / 2);
+		z-index: 270;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: var(--type-label-size);
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+		text-decoration: none;
+		white-space: nowrap;
+		color: #ffffff;
+		mix-blend-mode: difference;
+	}
+	.landing-v2.landing-v2 .ct__chat-arrow { display: block; flex: none; width: 12px; height: 12px; }
+	.landing-v2.landing-v2 .ct__chat:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+	/* the touch floor: a 44px hit area on the 16px ink (no ground — the blend is untouched) */
+	.landing-v2.landing-v2 .ct__chat::after {
+		content: '';
+		position: absolute;
+		left: -8px;
+		right: -8px;
+		top: -14px;
+		bottom: -14px;
+	}
+}

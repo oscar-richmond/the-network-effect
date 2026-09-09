@@ -54,6 +54,10 @@ const FRAG_LINE_H_PX = 88;
    The threshold reads the measured --sv6-hero-inset; the EXIT keeps
    the edge-contact-leave timing untouched (asymmetric by design). */
 const SV6_HERO_REST_INSET_PX = 24;
+/* THE REBUILD (2026-09-07), narrow-scoped: the fragment dwell's hold —
+   the desktop's ST_DWELL_HOLD_PX (300) reads long under a thumb; 240
+   keeps the hold legible inside one flick. */
+const FRAG_HOLD_PX_M = 240;
 const SV6_TEXT_ENTER_EXPAND_PX = 4;
 /* The landing's bottom pair (audit fix, 2026-08-27 — this build had
    NEITHER behaviour: the nav exit and idle snap only ever lived in
@@ -68,10 +72,24 @@ export function initServices6() {
   const timeouts = [];
   const schedule = (fn, ms) => timeouts.push(setTimeout(fn, ms));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* The desktop driver: below the seam the mobile layer owns the page (Part 3). */
-  if (isMobileViewport()) return () => {};
-  const restInset = SV6_HERO_REST_INSET_PX;
-  const expandPx = 700;
+  /* THE MOBILE PASS (2026-09-07): this driver runs on BOTH builds now
+     (the legacy mobile page retired). narrow = the phone/tablet build:
+     the tables take the tap path (sv-rows), the galleries are native
+     swipe strips (no pin/scrub), the fragment dwell, the statement
+     bars, the dark-band layer and the bottom nav sweep stand aside —
+     services-6.css paints their equivalents. The pillar expansion
+     keeps its scrub; its rest inset is the page margin here. */
+  const narrow = isMobileViewport();
+  const readPx = (prop, fallback) => {
+    const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
+    return Number.isFinite(v) ? v : fallback;
+  };
+  const restInset = narrow ? readPx('--m-margin', SV6_HERO_REST_INSET_PX) : SV6_HERO_REST_INSET_PX;
+  /* retimed for the narrow build: the pillar frame is 240 tall there and
+     the inset 24, so the desktop's 700px of scroll for the expansion
+     reads as a slow drag under the thumb; 420 completes it inside one
+     flick. Desktop keeps 700 (the hero's VIDEO_EXPAND_PX). */
+  const expandPx = narrow ? 420 : 700;
   const fineHover =
     window.matchMedia('(hover: hover) and (pointer: fine)').matches ||
     new URLSearchParams(window.location.search).has('forcehover');
@@ -90,10 +108,15 @@ export function initServices6() {
      their rules from services-6.css). The shared machinery keeps the
      full treatment for its other hosts. */
   cleanups.push(initSvRowsSections({
-    reduced, fineHover, schedule, root: page,
+    /* narrow: neither hover nor the tap path — a tapped row here would
+       indent with nothing to reveal (the frame is hidden ≤1359), and it
+       fought the scroll-active indent below (two rows indented at once,
+       measured). The row at the viewport centre is the one active
+       row on touch; keyboard focus keeps its parity handlers. */
+    reduced, isMob: false, fineHover: narrow ? false : fineHover, schedule, root: page,
     /* fixedImg on every width (the rebuild): the frame is CSS-placed here
        too — the phone's top-right, the band's centre-right. */
-    fixedImg: true, controllers: svImgCtl, moveGate: true, treatment: 'indent', tap: true,
+    fixedImg: true, controllers: svImgCtl, moveGate: !narrow, treatment: 'indent', tap: !narrow,
   }));
 
   /* ── SCROLL-ACTIVE ROWS (R3): between hovers, the row under the
@@ -108,7 +131,9 @@ export function initServices6() {
   const SV6_SLIDE_S = 0.5;
   const SV6_SLIDE_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
   if (!reduced) {
-    page.style.setProperty('--sv6-slide-x', `${SV6_SLIDE_X_PX}px`);
+    /* the narrow build's indent is its own token (services-narrow.css:
+       16 phone / 24 band — the desktop's 40 for the narrower measure) */
+    page.style.setProperty('--sv6-slide-x', `${narrow ? readPx('--sv-slide-x', 16) : SV6_SLIDE_X_PX}px`);
     page.style.setProperty('--sv6-slide-s', `${SV6_SLIDE_S}s`);
     page.style.setProperty('--sv6-slide-ease', SV6_SLIDE_EASE);
     svImgCtl.forEach((ctl) => {
@@ -246,7 +271,12 @@ export function initServices6() {
         const tb = document.querySelector('.home__topbar');
         return tb instanceof HTMLElement ? tb.getBoundingClientRect().bottom : 0;
       },
-      inkLines: () => Array.from(sec.querySelectorAll('[data-sv6-frag-line]')),
+      /* narrow (the rebuild): the lines sit on a grid with no baked
+         paddings, so box centring is ink centring — the closing
+         statement's own narrow rule; the hold is the narrow constant. */
+      inkLines: narrow ? undefined : () => Array.from(sec.querySelectorAll('[data-sv6-frag-line]')),
+      allowNarrow: narrow,
+      holdPx: narrow ? FRAG_HOLD_PX_M : undefined,
     }));
   });
   cleanups.push(() => fragCleanups.forEach((fn) => fn()));
@@ -275,6 +305,7 @@ export function initServices6() {
   };
   const galTweens = [];
   const buildGals = () => {
+    if (narrow) return; /* native swipe strips on the narrow build */
     gals.forEach((gal) => {
       const stage = gal.querySelector('[data-sv6-gal-stage]');
       const strip = gal.querySelector('[data-sv6-gal-strip]');
@@ -577,9 +608,13 @@ export function initServices6() {
     let wrapped = { wordEls: [], img: null };
     if (footer instanceof HTMLElement) {
       wrapped = wrapFooterReveals(footer);
+      /* narrow: the footer sits under the page until the spacer scrolls it
+         clear (the sticky uncover) — the cue is the spacer 200 into the
+         viewport, the landing's narrow footer cue. */
+      const spacer = narrow ? document.querySelector('.sv6-footspacer') : null;
       triggers.push(ScrollTrigger.create({
-        trigger: footer,
-        start: 'top 90%',
+        trigger: spacer ?? footer,
+        start: spacer ? 'top bottom-=200' : 'top 90%',
         once: true,
         onEnter: () => playFooterReveals(wrapped, (fn, ms) => schedule(fn, ms)),
       }));
@@ -598,6 +633,8 @@ export function initServices6() {
   /* R36 (Oscar, 2026-09-04): the SHARED bottom binder (nav-motion.js)
      — sweep, hysteresis and the idle snap inside the footer's height,
      one implementation on every document-scroll page. */
+  /* every width (the rebuild): the sweep is the band's; the idle snap
+     gates itself off on narrow viewports (nav-motion.js). */
   cleanups.push(bindBottomNavSweep({ reduced, getLenis: getLenisInstance }));
 
   if (import.meta.env.DEV) {

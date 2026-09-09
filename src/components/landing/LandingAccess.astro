@@ -28,11 +28,7 @@
  * centre and are repeats by design.
  */
 import { asset } from '../../utils/asset.js';
-import { QUERIES } from '../../config/breakpoints.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
-import { ACCESS_LABEL, ACCESS_STATEMENT } from '../../data/landing/statements.js';
-import DeviceGate from '../mobile/DeviceGate.astro';
-import AccessStatementMobile from '../mobile/AccessStatementMobile.astro';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
 
 /* THE REBUILD (2026-09-07): the rows render on every width — a 600
@@ -42,7 +38,7 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 /* THE FINAL GATE (2026-09-08): the phone's cell renders 304px wide; its branch
    declares 200px so a 3× phone takes the 600 candidate (twice the rendered
    width — the density cap) instead of the 800 original at 3× (14 cells, 2.2MB). */
-const CELL_SIZES = `${QUERIES.phone} 200px, ${QUERIES.mobile} 44vw, 1728px`;
+const CELL_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 44vw, 1728px';
 
 const a = (n) => asset(`/assets/landing/access/access-${n}.jpg`);
 
@@ -83,9 +79,7 @@ const bottomStrip = [
 
 ---
 
-{/* below the seam (Oscar 2026-09-08): the page layer lightens over Featured Work's bare tail as it reaches the viewport's bottom
-    (ground.js data-ground-fade-from) — no drawn edge; the statement enters on a settled light ground */}
-<section class="landing-access" data-landing-access data-ground="light" data-ground-fade data-ground-fade-from="[data-featured-tail-m]" aria-label="We create access">
+<section class="landing-access" data-landing-access aria-label="We create access">
   <div class="landing-access__stage" data-access-stage>
     {/* Image columns — masked static wrapper (the section's top/bottom
         fade) around the travelling flex column. aria-hidden: ambient
@@ -170,19 +164,17 @@ const bottomStrip = [
         size). Every width since the 2026-09-07 rebuild: below the seam
         the lines sit on a 12-column grid at the statement tier. */}
     <div class="landing-access__dheadline" aria-hidden="false">
-      <p class="landing-access__dlabel" data-access-dline>{ACCESS_LABEL}</p>
+      <p class="landing-access__dlabel" data-access-dline>WHAT WE DO</p>
       <h2 class="landing-access__dlines">
-        {ACCESS_STATEMENT.desktop.map((t, i) => (
-          <span class={`landing-access__dline landing-access__dline--${i + 1}`} data-access-dline>{t}</span>
-        ))}
+        <span class="landing-access__dline landing-access__dline--1" data-access-dline>WE</span>
+        <span class="landing-access__dline landing-access__dline--2" data-access-dline>CREATE</span>
+        <span class="landing-access__dline landing-access__dline--3" data-access-dline>ACCESS</span>
+        <span class="landing-access__dline landing-access__dline--4" data-access-dline>BETWEEN</span>
+        <span class="landing-access__dline landing-access__dline--5" data-access-dline>WORLDS</span>
+        <span class="landing-access__dline landing-access__dline--6" data-access-dline>THAT DON’T</span>
+        <span class="landing-access__dline landing-access__dline--7" data-access-dline>NORMALLY CONNECT</span>
       </h2>
     </div>
-    {/* THE PHONE'S label + statement (mobile rebuild Part 3 §2 — frames 1:336,
-        1:326): the same words as the seven lines above, in the 402 frame's
-        eight, stamped in below the seam with the desktop block removed. */}
-    <DeviceGate desktop=".landing-access__dheadline">
-      <AccessStatementMobile />
-    </DeviceGate>
 
     {/* THE REBUILD (2026-09-07): the retired mobile design's welded
         headline and its clock-driven rows are gone — the fragmented

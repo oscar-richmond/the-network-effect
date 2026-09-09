@@ -200,8 +200,6 @@ const FOUNDERS_HANDOFF_SETTLE_S = 0.6;
 export function initLandingFounders() {
   const section = document.querySelector('[data-landing-founders]');
   if (!(section instanceof HTMLElement)) return () => {};
-  /* The desktop driver: below the seam the mobile layer owns the section (Part 2). */
-  if (isMobileViewport()) return () => {};
 
   const lines = Array.from(section.querySelectorAll('.landing-founders__line'));
   const buttons = Array.from(section.querySelectorAll('.landing-founders__btn'));
@@ -227,7 +225,7 @@ export function initLandingFounders() {
   let cleanupHandoffSettle = () => {};
   {
     const handoffTrack = section.closest('[data-landing-founders-track]') ?? section.parentElement;
-    if (handoffTrack instanceof HTMLElement) {
+    if (handoffTrack instanceof HTMLElement && !isMobileViewport()) {
       let settleTimer = 0;
       const trySettle = () => {
         const bottom = handoffTrack.getBoundingClientRect().bottom;
@@ -289,7 +287,12 @@ export function initLandingFounders() {
      transform (the blend note on the constants). */
   const track = section.closest('[data-landing-founders-track]') ?? section.parentElement;
   const driftTweens = [];
-  {
+  /* MOBILE (the viewport.js seam): the drift/hold/exit scrub encodes
+     the desktop sticky-track geometry (portrait `top` bases, the photo
+     crop expansion, the pin catch) — the linear mobile stack has none
+     of it. The ENTRANCE below (word reveals + is-visible) runs on both
+     regimes; only this scrub is desktop's. */
+  if (!isMobileViewport()) {
     /* Entry runs until the sticky pin engages — which, with the
        bottom-aligned pin (the section is taller than the viewport),
        is one full SECTION height of scroll after the track's top
@@ -440,6 +443,43 @@ export function initLandingFounders() {
         lastOtherBlurEndPx: photoBlurEndPx - EXIT_PHOTO_BLUR_LAG_PX,
       };
     }
+  } else {
+    /* ── NARROW (the rebuild, 2026-09-07): the desktop's ENTRY DRIFT and
+       nothing else. Each layer lags at its own amplitude — scaled to the
+       phone's shorter travel (DRIFT_SCALE_NARROW) — and lands at rest as
+       the section fills the viewport: one viewport of scroll from the
+       track's top. The sticky hold and the blur exit are NOT carried:
+       they encode a section that fits a 1117 viewport, and at the
+       phone's height this one is taller than the screen, so it scrolls
+       on in flow and Our Network follows it. REJECTED: shrinking the
+       images until the section pins (the photo becomes a stamp); pinning
+       the headline alone (a partial pin reads as a bug). Portraits still
+       drift via `top` (the blend note above) — they sit position:
+       relative below the seam, so 0 is their rest. */
+    const entryPx = window.innerHeight || SECTION_ENTRY_PX_FALLBACK;
+    const spec = [
+      { el: section.querySelector('[data-landing-founders-label]'), px: DRIFT_HEADLINE_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__headline'), px: DRIFT_HEADLINE_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__photo'), px: DRIFT_PHOTO_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, mode: 'top' },
+      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, mode: 'top' },
+    ];
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: track,
+        start: 'top bottom',
+        end: `+=${entryPx}`,
+        scrub: true,
+      },
+    });
+    spec.forEach(({ el, px, mode }) => {
+      if (!(el instanceof HTMLElement)) return;
+      const amp = px * DRIFT_SCALE_NARROW;
+      if (mode === 'top') tl.fromTo(el, { top: amp }, { top: 0, duration: entryPx, ease: 'none' }, 0);
+      else tl.fromTo(el, { y: amp }, { y: 0, duration: entryPx, ease: 'none' }, 0);
+    });
+    driftTweens.push(tl);
   }
 
   /* Wrap after fonts so the clip boxes measure the real glyphs (the

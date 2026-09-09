@@ -31,13 +31,13 @@
  */
 
 import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S, ensureNavLinkChars } from './nav-motion.js';
-import { isMobileViewport } from './viewport.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 /* ── The register (every duration a named constant). */
 const MIN_MS = 1200;        // floor, so a warm cache still reads as a beat
 const MAX_MS = 4000;        // failsafe — proceed regardless past this
 import { HERO_ENTRY, HERO_ENTRY_SPLASH } from '../../data/flags.js';
+import { isMobileViewport } from './viewport.js';
 
 const LOGO_RIPPLE_AT_MS = 120;  // wordmark ripple starts
 const LINE_START_AT_MS = 420;   // the loading line begins after the ripple
@@ -263,7 +263,11 @@ export function initSplash(root) {
      — with the established char ripple (the same sweep units and
      stagger playPageBeats uses for MENU and LET'S CHAT; it excludes
      the logo only because the travel had already delivered it). */
-  /* the dev-only hero entry is desktop DOM (the phone's gate removes its stage), so below the seam the cover splash runs as it does in production (mobile rebuild Part 3 §6) */
+  /* THE ENTRY IS DESKTOP-ONLY (cherry-picked from the set-aside rebuild's Part 3 §6, 2026-09-09):
+     hero-entry.js refuses to run below the seam, so with the flag armed the phone got the
+     cover-hidden path AND no entry — neither the splash nor the thing that replaces it. The
+     flag is DEV-only (flags.js: HERO_ENTRY = import.meta.env.DEV), so production and staging
+     phones were always fine; this closes it in dev and in any preview built with the flag on. */
   const coverHidden = HERO_ENTRY && !HERO_ENTRY_SPLASH && !isMobileViewport();
   const rippleNavIn = () => {
     ensureLogoChars();

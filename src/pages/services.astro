@@ -43,7 +43,6 @@
  * STAGING ONLY — nothing promoted anywhere until Oscar says so.
  */
 import SiteShell from '../layouts/SiteShell.astro';
-import { QUERIES } from '../config/breakpoints.js';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import ClosingStatement from '../components/landing/ClosingStatement.astro';
 import { SV6_HERO, SV6_PILLARS, SV6_GALLERIES, SV6_FRAGMENTS, SV6_HOVER_PLACEHOLDER, SV6_HOVER_IMGS } from '../data/landing/services-6.js';
@@ -53,6 +52,7 @@ import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/services-v2.css';
 import '../styles/landing/services-6.css';
+import '../styles/landing/services-narrow.css';
 import '../styles/fonts.css';
 ---
 
@@ -78,7 +78,7 @@ import '../styles/fonts.css';
             frame's +200/+264. id keeps the landing MORE INFO deep
             links working. */}
         <section class={`sv6-pillar${p.dark ? ' sv6-on-dark' : ''}`} id={p.key} aria-label={p.title}>
-          <img class="sv6-pillar__img" src={asset(p.headerImg)} srcset={imageSrcset(p.headerImg, [860, 1200, 1300], 2400)} sizes={`${QUERIES.mobile} 100vw, 1728px`} alt="" loading={pi === 0 ? 'eager' : 'lazy'} decoding="async" />
+          <img class="sv6-pillar__img" src={asset(p.headerImg)} srcset={imageSrcset(p.headerImg, [860, 1200, 1300], 2400)} sizes="(max-width: 1359px) 100vw, 1728px" alt="" loading={pi === 0 ? 'eager' : 'lazy'} decoding="async" />
           {/* Item 1 (Oscar): the block VERTICALLY CENTRES against the
               image via a flex wrapper — derived from the section's
               height by construction, no fixed offset, NO transform
@@ -145,8 +145,8 @@ import '../styles/fonts.css';
             {/* THE FINAL GATE: the placeholder (1440w, 300KB) is fetched on the phone though the
                 frame is hidden there — the 600 candidate serves every narrow width; sv-rows.js drops
                 the srcset before its first src write (a srcset outranks src). */}
-            <img data-sv-img-base src={asset(SV6_HOVER_PLACEHOLDER)} srcset={imageSrcset(SV6_HOVER_PLACEHOLDER, [600], 1440)} sizes={`${QUERIES.mobile} 200px, 1440px`} alt="" loading="lazy" decoding="async" />
-            <img data-sv-img-over src={asset(SV6_HOVER_PLACEHOLDER)} srcset={imageSrcset(SV6_HOVER_PLACEHOLDER, [600], 1440)} sizes={`${QUERIES.mobile} 200px, 1440px`} alt="" loading="lazy" decoding="async" hidden />
+            <img data-sv-img-base src={asset(SV6_HOVER_PLACEHOLDER)} srcset={imageSrcset(SV6_HOVER_PLACEHOLDER, [600], 1440)} sizes="(max-width: 1359px) 200px, 1440px" alt="" loading="lazy" decoding="async" />
+            <img data-sv-img-over src={asset(SV6_HOVER_PLACEHOLDER)} srcset={imageSrcset(SV6_HOVER_PLACEHOLDER, [600], 1440)} sizes="(max-width: 1359px) 200px, 1440px" alt="" loading="lazy" decoding="async" hidden />
           </div>
         </section>
 
@@ -164,7 +164,7 @@ import '../styles/fonts.css';
                 <div class="sv6-gal__strip" data-sv6-gal-strip>
                   {SV6_GALLERIES[pi].imgs.map((src, bi) => (
                     <figure class="sv6-gal__box" data-sv6-gal-box>
-                      <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes={`${QUERIES.phone} 62vw, ${QUERIES.mobile} 22vw, 389px`} alt="" loading="lazy" decoding="async" />
+                      <img src={asset(src)} srcset={thumbSrcset(src, 780, 4000)} sizes="(max-width: 767px) 62vw, (max-width: 1359px) 22vw, 389px" alt="" loading="lazy" decoding="async" />
                       <figcaption class="sv6-gal__label">{SV6_GALLERIES[pi].labels[bi]}</figcaption>
                       {bi < SV6_GALLERIES[pi].imgs.length - 1 && (
                         <span class="sv6-gal__arrow" aria-hidden="true">

@@ -37,6 +37,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport } from './viewport.js';
+import { initMobileEntrance } from './m-entrance.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -167,9 +168,28 @@ export function initLandingFeatured() {
   };
   section.addEventListener('click', onCardClick);
   const removeGate = () => section.removeEventListener('click', onCardClick);
-  /* The desktop driver: below the seam the mobile layer owns the rail (Part 2). */
-  if (isMobileViewport()) { removeGate(); return () => {}; }
 
+  /* NARROW (the rebuild, 2026-09-07): the desktop's strip as a
+     touch-scrolled rail (landing-narrow.css — the same cards, the same
+     height stagger, no descriptions), with the section's arrival in the
+     desktop's vocabulary: the header line-reveals, the chip and the
+     cards fade-rise on the founders slots. The pinned scrub is not
+     carried (logged): a fixed-viewport driver under touch momentum
+     fights the finger; the rail is native scroll with snap. The
+     retired design's swipe indicator is gone with its markup. The
+     entrance module gates itself on RM internally. */
+  if (isMobileViewport()) {
+    const header = Array.from(section.querySelectorAll('[data-featured-line]'));
+    const media = [
+      section.querySelector('[data-featured-viewall]'),
+      ...section.querySelectorAll('[data-featured-card]'),
+    ].filter((el) => el instanceof HTMLElement);
+    const cleanupEnt = initMobileEntrance(section, { lines: header, media });
+    return () => {
+      removeGate();
+      cleanupEnt();
+    };
+  }
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) return removeGate;

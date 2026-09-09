@@ -18,7 +18,6 @@
  * can never 404 — the full-size file is always the last candidate.
  */
 import { existsSync } from 'node:fs';
-import { QUERIES } from '../config/breakpoints.js';
 import { join } from 'node:path';
 import { asset } from './asset.js';
 
@@ -60,7 +59,7 @@ export function imageSrcset(path, widths, fullWidth) {
 /** The narrow-build gate — a 1×1 transparent GIF the phone picks instead of a desktop-only image. */
 export const GATE_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 export const gateSrcset = (url, fullWidth) => `${GATE_GIF} 8w, ${url} ${fullWidth}w`;
-export const gateSizes = (fullWidth) => `${QUERIES.mobile} 1px, ${fullWidth}px`;
+export const gateSizes = (fullWidth) => `(max-width: 1359px) 1px, ${fullWidth}px`;
 
 /** The `-w<W>.jpg` variant's path when it exists, else the original — for a src that is phone-only. */
 export function variantOr(path, w) {

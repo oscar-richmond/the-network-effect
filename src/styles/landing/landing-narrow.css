@@ -1,0 +1,1775 @@
+/* ═══════════════════════════════════════════════════════════════════
+   THE LANDING PAGE BELOW THE SEAM — the mobile + tablet rebuild to the
+   desktop (Oscar, 2026-09-07). Imported by LandingBody after landing.css.
+
+   WHAT THIS IS. The 16" desktop composition (1728 × 1117, the ONLY spec)
+   carried to the phone (≤ 767) and the tablet band (768 – 1359): the same
+   sections in the same order, the same copy, the same images, the same
+   faces per element, the same grounds and the same animation vocabulary
+   — adapted for width and touch where the desktop's mechanic cannot run,
+   never for convenience. Every adaptation is logged in the rebuild
+   report with the alternative it rejected.
+
+   TYPE. Every text rule here reads the type tokens (type-tokens.css —
+   --type-<role>-face/weight/case/size/lh/ls, fluid within each band);
+   there are no size, leading, tracking, face or weight literals below
+   the seam. A computed-style sweep enforces it.
+
+   GEOMETRY TOKENS. The drivers (landing-hero-scroll.js and the rest)
+   read their narrow geometry from custom properties set here on
+   .landing-home — the desktop sets none, so every read falls back to
+   the shipped constant and the desktop path is byte-identical.
+
+   STRUCTURE. The phone rules come first under (max-width: 1359px) — the
+   base for the whole narrow build — and the band's overrides follow
+   under (min-width: 768px) and (max-width: 1359px), later in the
+   cascade at the same specificity, so the tablet inherits the phone's
+   structure and changes proportion only.
+
+   THE DESKTOP (≥ 1360) NEVER SEES THIS FILE: every rule is max-width
+   gated. Selectors carry .landing-v2.landing-home (0,3,0) so they sit
+   above landing.css's own .landing-v2 X rules regardless of order.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══ HERO ═══════════════════════════════════════════════════════════
+   The desktop hero, translated: the two-line headline at the display
+   tier (Serrif Condensed Medium / Dazzed SemiBold — the desktop's own
+   pair), the intro at the lede tier, the rolling logo row, and the three
+   cards resting below the copy, rising up and over it on scroll with
+   the WebGL tilt and the ground fade — landing-hero-scroll.js runs its
+   desktop beats here from the tokens below.
+
+   THE PHONE'S ROW: three cards at a third of a 390 viewport are 108px
+   thumbnails — the image weight the desktop hero carries is gone. So
+   the phone keeps the ROW, cropped by its width instead of shrunk: each
+   card is 78vw, the row is centred on the middle card and the outer two
+   peek in from the edges (the same three images, the same rise, the
+   same exit; the middle card is every block's first coverer). The
+   tablet has the width for three across between its margins — the
+   desktop's own geometry from the live viewport. REJECTED: three
+   thumbnails across (the images stop reading), a single card (one image
+   is not the desktop's row), a stack/fan (a new composition, not a
+   translation).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		/* the rest chain, top to bottom (the desktop's is wordmark → cap
+		   120, headline → intro 48, intro → logo row 120, row 100, row →
+		   cards 80, all at 1728) — scaled to the phone's height */
+		--hero-headline-top: 104px;
+		--hero-headline-to-intro: 24px;
+		--hero-intro-to-logos: 40px;
+		--hero-logo-row-h: 75px;
+		--hero-logo-zoom: 0.75;
+		--hero-logos-to-cards: 40px;
+		/* the centred row: each card 78vw, 8px apart (the desktop's gap) */
+		--hero-card-frac: 0.78;
+		--hero-card-gap: 8px;
+		--hero-card-margin: var(--m-margin);
+		/* the exit's stagger — 80 at 1728 on a 624-tall card; the phone's
+		   card is ~340 tall, so the beats sit 48 apart (retimed for the
+		   shorter travel, the same order and rate) */
+		--hero-card-stagger: 48px;
+	}
+
+	/* the stage stays fixed at 100svh: the geometry must NOT re-derive
+	   when the URL bar collapses (an under-fill strip during collapsed-bar
+	   is the accepted trade — the founders section slides over the stage
+	   regardless) */
+	.landing-v2 .landing-hero {
+		height: 100vh;
+		height: 100svh;
+	}
+
+	/* ── the headline: a left-set block at the margins (the desktop's
+	   right-anchored lockup has no right to anchor from at 342px). The
+	   Dazzed line wraps here — POWERED BY / ACCESS. — and keeps the
+	   frame's 2em lead as its first-line indent. */
+	.landing-v2.landing-home .landing-hero__headline {
+		justify-content: flex-start;
+		padding: 0;
+	}
+	.landing-v2.landing-home .landing-hero__headline-text {
+		align-items: flex-start;
+		text-align: left;
+		width: auto;
+		margin: var(--hero-headline-top) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		transform: none;
+	}
+	.landing-v2.landing-home .landing-hero__headline-line {
+		font-size: var(--type-display-size);
+		line-height: var(--type-display-lh);
+		letter-spacing: var(--type-display-ls);
+		text-transform: var(--type-display-case);
+		white-space: normal;
+		margin: 0;
+	}
+	/* the class names are the OLD hero's and INVERTED (see landing.css):
+	   --dazzed IS the serif line, BUILT ON TRUST.; --serrif the Dazzed
+	   line, POWERED BY ACCESS. Faces by role, as the desktop renders. */
+	.landing-v2.landing-home .landing-hero__headline-line--dazzed {
+		font-family: var(--type-display-serif-face);
+		font-weight: var(--type-display-serif-weight);
+		font-size: var(--type-display-serif-size);
+		line-height: var(--type-display-serif-lh);
+		letter-spacing: var(--type-display-serif-ls);
+		text-transform: var(--type-display-serif-case);
+		font-synthesis: none;
+	}
+	.landing-v2.landing-home .landing-hero__headline-line--serrif {
+		font-family: var(--type-display-face);
+		font-weight: var(--type-display-weight);
+		font-synthesis: none;
+		margin-left: 0;
+		text-indent: 2em;
+	}
+
+	/* ── the intro: the lede tier, full measure, its top written by the
+	   driver from the headline's measured bottom (the headline wraps, so
+	   its height is not a constant to chain from) */
+	.landing-v2.landing-home .landing-hero__intro {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: 100;
+		pointer-events: none;
+		visibility: hidden;
+	}
+	.landing-v2.landing-home .landing-hero__intro.is-armed {
+		visibility: visible;
+	}
+	.landing-v2.landing-home .landing-hero__intro-text {
+		position: absolute;
+		top: 0;
+		right: auto;
+		left: var(--m-margin-safe-l, var(--m-margin));
+		width: calc(100% - var(--m-margin-safe-l, var(--m-margin)) - var(--m-margin-safe-r, var(--m-margin)));
+		margin: 0;
+		transform: none;
+		text-align: left;
+		font-family: var(--type-lede-face);
+		font-weight: var(--type-lede-weight);
+		font-synthesis: none;
+		font-size: var(--type-lede-size);
+		line-height: var(--type-lede-lh);
+		letter-spacing: var(--type-lede-ls);
+		text-transform: var(--type-lede-case);
+		color: #161616;
+		mix-blend-mode: normal;
+		white-space: normal;
+	}
+	.landing-v2.landing-home .landing-hero__intro-text p {
+		margin: 0;
+	}
+
+	/* ── the logo row: the desktop's marquee (the same track, the same
+	   keyframe, the same set-width contract) drawn at 0.75 — 120 × 75
+	   cells on a 144 pitch, so a 390 viewport shows two and a half. zoom
+	   scales layout and the translate together, so the wrap stays
+	   seamless. Its top is written by the driver (intro bottom + the gap). */
+	.landing-v2.landing-home .landing-hero__logos {
+		display: block;
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: var(--hero-logo-row-h);
+		z-index: 110;
+		overflow: hidden;
+		pointer-events: none;
+		visibility: hidden;
+	}
+	.landing-v2.landing-home .landing-hero__logos.is-placed {
+		visibility: visible;
+	}
+	.landing-v2.landing-home .landing-hero__logos-track {
+		display: flex;
+		width: max-content;
+		will-change: transform;
+		zoom: var(--hero-logo-zoom);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-home .landing-hero__logos-track {
+			animation: landing-network-marquee-right var(--hero-logo-row-dur, 48s) linear infinite;
+			animation-delay: var(--hero-logo-row-delay, 0s);
+		}
+	}
+	.landing-v2.landing-home .landing-hero__logo-cell {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 160px;
+		height: 100px;
+		margin-right: 32px;
+		background: rgba(22, 22, 22, 0.04);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+	.landing-v2.landing-home .landing-hero__logo-cell img {
+		display: block;
+		max-width: none;
+	}
+	.landing-v2.landing-home .landing-hero__logos-band {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: linear-gradient(
+			90deg,
+			#eeeef0 0%,
+			rgba(238, 238, 240, 0) 3%,
+			rgba(238, 238, 240, 0) 97%,
+			#eeeef0 100%
+		);
+	}
+
+	/* ── the cards: placed by the driver (top/left/width/height inline),
+	   hidden until placed — the desktop's flash-guard discipline */
+	.landing-v2.landing-home .landing-hero__cards {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: 120;
+		pointer-events: none;
+		visibility: hidden;
+	}
+	.landing-v2.landing-home .landing-hero__cards.is-placed {
+		visibility: visible;
+	}
+	.landing-v2.landing-home .landing-hero__card {
+		position: absolute;
+		overflow: hidden;
+		pointer-events: none;
+	}
+	.landing-v2.landing-home .landing-hero__card img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.landing-v2.landing-home .landing-hero__gallery-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 120;
+		pointer-events: none;
+	}
+
+	/* the splash-owned entrances — the desktop's states, verbatim: the
+	   cards' fade+rise on the inner img (the wrapper's transform belongs
+	   to the scrubbed exit), the logo track's a beat after the intro */
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card img {
+		opacity: 0;
+		transform: translate3d(0, 24px, 0) scale(1.04);
+		transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.9s cubic-bezier(0.42, 0, 0.24, 1);
+	}
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__cards.is-entered .landing-hero__card img {
+		opacity: 1;
+		transform: none;
+	}
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card:nth-child(2) img { transition-delay: 0.1s; }
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__card:nth-child(3) img { transition-delay: 0.2s; }
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__logos-track {
+		opacity: 0;
+		transform: translate3d(0, 24px, 0);
+		transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1) 0.54s, transform 0.9s cubic-bezier(0.42, 0, 0.24, 1) 0.54s;
+	}
+	html[data-ne-splash='on'] body.splash-variant-b .landing-hero__logos-track {
+		transition-delay: 0s, 0s;
+	}
+	html[data-ne-splash='on'] .landing-v2.landing-home .landing-hero__logos.is-entered .landing-hero__logos-track {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* the phone: the intro's authored break goes (the driver also drops the
+   <br> before the reveal wrap, which would honour it as a hard break) */
+@media (max-width: 767px) {
+	.landing-v2.landing-home .landing-hero__intro-text br {
+		display: none;
+	}
+}
+
+/* ── THE BAND: the desktop's own hero geometry at tablet proportions —
+   the lockup right-anchored (the desktop's 180 from the right, scaled
+   by the viewport), the intro at the desktop's left offset with its two
+   authored lines, the logo row at its full size, three cards across. */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--hero-headline-top: 136px;
+		--hero-headline-to-intro: 32px;
+		--hero-intro-to-logos: 64px;
+		--hero-logo-row-h: 100px;
+		--hero-logo-zoom: 1;
+		--hero-logos-to-cards: 56px;
+		--hero-card-frac: 0;
+		--hero-card-stagger: 64px;
+	}
+	.landing-v2.landing-home .landing-hero__headline-text {
+		margin-left: auto;
+		margin-right: calc(100vw * 180 / 1728);
+	}
+	.landing-v2.landing-home .landing-hero__headline-line {
+		white-space: nowrap;
+	}
+	.landing-v2.landing-home .landing-hero__headline-line--serrif {
+		margin-left: 2em;
+		text-indent: 0;
+	}
+	.landing-v2.landing-home .landing-hero__intro-text {
+		left: calc(100vw * 180 / 1728);
+		width: auto;
+		max-width: calc(100vw - 2 * (100vw * 180 / 1728));
+		white-space: nowrap;
+	}
+}
+
+/* ═══ WHO WE ARE ═════════════════════════════════════════════════════
+   The desktop section, translated: the eyebrow label, the heading-tier
+   headline with its 20-space lead (the desktop's 200px atom, kept as an
+   em indent so it scales with the type), the two chips, the sofa
+   photograph and the two portraits with their names — on the desktop's
+   #161616, arriving on the hero's ground fade exactly as at 1728.
+
+   IN FLOW, NOT PINNED (logged): the desktop pins the section for a
+   250px hold and blur-exits every item upward; that choreography
+   assumes a section that fits the viewport, and at the phone's height
+   this one is taller than the screen, so it scrolls on in flow with
+   the desktop's ENTRY DRIFT (landing-founders.js, scaled). REJECTED:
+   shrinking the images until it pins; a partial pin.
+
+   THE NAMES: the desktop reveals them on hover (Serrif 32/24,
+   difference-blended over the portrait). Touch has no hover, so they
+   are always shown, in the same face and blend, inside the portrait —
+   the touch rule, not a redesign.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--fd-pad-top: 64px;
+		--fd-pad-bottom: 64px;
+		--fd-headline-gap: 24px;
+		--fd-ctas-gap: 32px;
+		--fd-media-gap: 40px;
+	}
+	.landing-v2.landing-home .landing-founders-track {
+		height: auto;
+		z-index: 261;
+	}
+	.landing-v2.landing-home .landing-founders {
+		position: relative;
+		top: auto;
+		height: auto;
+		padding: var(--fd-pad-top) var(--m-margin-safe-r, var(--m-margin)) var(--fd-pad-bottom) var(--m-margin-safe-l, var(--m-margin));
+		overflow: hidden;
+	}
+
+	/* the label — the eyebrow tier, as on the desktop */
+	.landing-v2.landing-home .landing-founders__label {
+		display: block;
+		position: static;
+		margin: 0;
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-synthesis: none;
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+		color: #eeeef0;
+	}
+
+	/* the headline — the heading tier; the four authored spans flow
+	   inline and re-break to the measure (the desktop does the same at
+	   its 727 measure); the lead indent is the desktop's 200-at-56 atom */
+	.landing-v2.landing-home .landing-founders__headline {
+		position: static;
+		width: auto;
+		margin: var(--fd-headline-gap) 0 0;
+		font-family: var(--type-heading-face);
+		font-weight: var(--type-heading-weight);
+		font-synthesis: none;
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+		letter-spacing: var(--type-heading-ls);
+		text-transform: var(--type-heading-case);
+		text-indent: 3.57em;
+		color: #eeeef0;
+	}
+	.landing-v2.landing-home .landing-founders__headline .landing-founders__line {
+		display: inline;
+		white-space: normal;
+		text-indent: 0;
+	}
+	.landing-v2.landing-home .landing-founders__headline .landing-founders__line + .landing-founders__line::before {
+		content: ' ';
+	}
+
+	/* the chips — the desktop's 38px pair at the label tier; the 44px
+	   touch floor rides an invisible extension, so the chip's own box is
+	   the desktop's. The press state is the desktop's hover ground. */
+	.landing-v2.landing-home .landing-founders__ctas {
+		position: static;
+		margin: var(--fd-ctas-gap) 0 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16px;
+	}
+	.landing-v2.landing-home .landing-founders__btn,
+	.landing-v2.landing-home .landing-founders__btn:nth-of-type(2) {
+		position: relative;
+		height: 38px;
+		min-height: 0;
+		padding: 0 16px;
+		background: #343439;
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+	}
+	.landing-v2.landing-home .landing-founders__btn::after {
+		content: '';
+		position: absolute;
+		inset: -3px 0;
+	}
+	.landing-v2.landing-home .landing-founders__btn:active {
+		background: #232326;
+		opacity: 1;
+	}
+
+	/* the media — the photograph full-measure, the portraits two-up
+	   beneath it (the desktop's lower band, stacked for the width) */
+	.landing-v2.landing-home .landing-founders__grid-space {
+		position: static;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+		height: auto;
+		margin: var(--fd-media-gap) 0 0;
+	}
+	.landing-v2.landing-home .landing-founders__photo {
+		grid-column: 1 / -1;
+		position: static;
+		top: auto;
+		right: auto;
+		left: auto;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 600 / 370;
+		margin: 0;
+		overflow: hidden;
+		z-index: auto;
+	}
+	.landing-v2.landing-home .landing-founders__photo img {
+		position: static;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: 55% 50%;
+		transform: none;
+	}
+	.landing-v2.landing-home .landing-founders__portrait {
+		position: relative;
+		top: 0;
+		left: auto;
+		width: auto;
+		height: auto;
+		aspect-ratio: 180 / 260;
+		margin: 0;
+		float: none;
+	}
+	.landing-v2.landing-home .landing-founders__portrait-crop {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		aspect-ratio: auto;
+	}
+	.landing-v2.landing-home .landing-founders__portrait img {
+		position: static;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		max-width: none;
+	}
+	/* the names — always shown (no hover on touch), the desktop's face
+	   and blend, at the note tier; inside the portrait's box */
+	.landing-v2.landing-home .landing-founders__portrait-name {
+		display: block;
+		position: absolute;
+		left: 8px;
+		right: auto;
+		top: 46%;
+		bottom: auto;
+		margin: 0;
+		font-family: var(--type-note-face);
+		font-weight: var(--type-note-weight);
+		font-synthesis: none;
+		font-size: var(--type-note-size);
+		line-height: var(--type-note-lh);
+		letter-spacing: var(--type-note-ls);
+		text-transform: var(--type-note-case);
+		white-space: nowrap;
+		color: #ffffff;
+		mix-blend-mode: difference;
+		opacity: 1;
+	}
+}
+
+/* the band: the headline right-anchored at the desktop's em measure with
+   the chips on its left edge (the desktop's 596 column), the lower band
+   two-column — portraits left, the photograph right, bottoms aligned */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--fd-pad-top: 96px;
+		--fd-pad-bottom: 80px;
+		--fd-headline-gap: 0px;
+		--fd-ctas-gap: 40px;
+		--fd-media-gap: 64px;
+	}
+	.landing-v2.landing-home .landing-founders__headline {
+		width: 13em;
+		max-width: 100%;
+		margin-left: auto;
+		margin-top: calc(-1 * var(--type-eyebrow-size) * var(--type-eyebrow-lh));
+	}
+	.landing-v2.landing-home .landing-founders__ctas {
+		margin-left: max(0px, calc(100% - 13 * var(--type-heading-size)));
+	}
+	.landing-v2.landing-home .landing-founders__grid-space {
+		grid-template-columns: 150px 150px 1fr;
+		column-gap: 8px;
+		align-items: end;
+	}
+	.landing-v2.landing-home .landing-founders__photo {
+		grid-column: 3;
+		grid-row: 1;
+		margin-left: 16px;
+	}
+	.landing-v2.landing-home .landing-founders__portrait--robbo {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	.landing-v2.landing-home .landing-founders__portrait--ashley {
+		grid-column: 2;
+		grid-row: 1;
+	}
+}
+
+/* ═══ OUR NETWORK ════════════════════════════════════════════════════
+   The desktop section (frame 1:67), translated: OUR NETWORK at the
+   heading tier (both words Dazzed, as the desktop renders), the
+   subtitle right-aligned at the label tier, the sector list at the term
+   tier right-aligned in its three authored lines (each wraps within
+   itself at the phone's measure, so the grouping holds), and the five
+   photograph windows as one edge-to-edge band with zero gaps.
+
+   THE STRIP (logged): five windows across 390 are 78px slivers. The
+   phone keeps the band and its five crops at a readable size —
+   62vw-wide windows in a touch-scrolled, snapping strip (native
+   momentum; the same band, panned instead of shrunk). The tablet has
+   the width for the desktop's five across. REJECTED: five slivers; a
+   3 + 2 grid (not a band); an auto-marquee (the desktop's strip does
+   not move — its images change on hover).
+
+   THE TERMS: the desktop's hover dims the rest and swaps the strip's
+   photographs. Touch has no hover, so a TAP does exactly that (a second
+   tap, or one outside the list, clears it) — the same interaction, the
+   same wipe. The retired logo rows and their fade bands stay out: the
+   desktop removed them (R9).
+
+   IN FLOW (logged): the desktop pins the section beneath the departing
+   founders photograph and plays its entrance at the pin. WHO WE ARE no
+   longer pins below the seam, so this section follows it in flow and
+   plays the same entrance — the lines word-reveal, the strip rises —
+   on entering the viewport.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--nw-pad-top: 64px;
+		--nw-subtitle-gap: 24px;
+		--nw-list-gap: 40px;
+		--nw-strip-gap: 48px;
+		--nw-strip-w: 62vw;
+	}
+	.landing-v2.landing-home .landing-network {
+		height: auto;
+		margin-top: 0;
+	}
+	.landing-v2.landing-home .landing-network__stage {
+		position: static;
+		top: auto;
+		height: auto;
+		padding: var(--nw-pad-top) 0 0;
+		overflow: visible;
+	}
+	.landing-v2.landing-home .landing-network__title,
+	.landing-v2.landing-home .landing-network__subtitle,
+	.landing-v2.landing-home .landing-network__body {
+		position: static;
+		top: auto;
+		left: auto;
+		right: auto;
+		width: auto;
+		margin: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		transform: none;
+	}
+	.landing-v2.landing-home .landing-network__title {
+		display: block;
+		font-family: var(--type-heading-face);
+		font-weight: var(--type-heading-weight);
+		font-synthesis: none;
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+		letter-spacing: var(--type-heading-ls);
+		text-transform: var(--type-heading-case);
+		color: #eeeef0;
+		white-space: normal;
+	}
+	.landing-v2.landing-home .landing-network__title-serrif {
+		font-family: inherit;
+		font-weight: inherit;
+	}
+	.landing-v2.landing-home .landing-network__subtitle {
+		margin-top: var(--nw-subtitle-gap);
+		text-align: right;
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: var(--type-label-lh);
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+		color: #eeeef0;
+	}
+	.landing-v2.landing-home .landing-network__body {
+		margin-top: var(--nw-list-gap);
+		text-align: right;
+		font-family: var(--type-term-face);
+		font-weight: var(--type-term-weight);
+		font-synthesis: none;
+		font-size: var(--type-term-size);
+		line-height: var(--type-term-lh);
+		letter-spacing: var(--type-term-ls);
+		text-transform: var(--type-term-case);
+		color: #ffffff;
+	}
+	/* the authored lines stay blocks (the desktop's grouping — no
+	   separator joins two lines); the double-spaced slash runs collapse
+	   exactly as the desktop's R23 collapse */
+	.landing-v2.landing-home .landing-network__line {
+		display: block;
+		position: static;
+		white-space: normal;
+	}
+	.landing-v2.landing-home .landing-network__body .landing-network__line::after,
+	.landing-v2.landing-home .landing-network__subtitle .landing-network__line::after {
+		content: none;
+	}
+	/* the terms: the desktop's inline buttons with a 44px touch floor
+	   riding invisible padding (the line pitch is untouched) */
+	.landing-v2.landing-home .landing-network__term {
+		padding: 8px 2px;
+		margin: -8px -2px;
+	}
+	.landing-v2.landing-home .landing-network__marquee--top,
+	.landing-v2.landing-home .landing-network__marquee--bottom,
+	.landing-v2.landing-home .landing-network__row-fade,
+	.landing-v2.landing-home .landing-network__edge-fade,
+	.landing-v2.landing-home .landing-network__label {
+		display: none;
+	}
+	/* the strip: one band, five windows, zero gaps — touch-scrolled */
+	.landing-v2.landing-home .landing-network__strip {
+		position: relative;
+		top: auto;
+		left: auto;
+		display: flex;
+		width: 100%;
+		height: auto;
+		margin: var(--nw-strip-gap) 0 0;
+		z-index: auto;
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+	}
+	.landing-v2.landing-home .landing-network__strip::-webkit-scrollbar {
+		display: none;
+	}
+	.landing-v2.landing-home .landing-network__strip-win {
+		flex: 0 0 var(--nw-strip-w);
+		width: var(--nw-strip-w) !important; /* the inline desktop width */
+		height: calc(var(--nw-strip-w) * 421 / 345);
+		scroll-snap-align: start;
+		overflow: hidden;
+	}
+	/* the crops cover-fit their windows (the inline px are the desktop's
+	   Figma crops for 345px windows) — the hover/tap swap's under layer
+	   included */
+	.landing-v2.landing-home .landing-network__strip-win img {
+		position: absolute !important;
+		inset: 0 !important;
+		width: 100% !important;
+		height: 100% !important;
+		object-fit: cover;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-home .landing-network__strip {
+			opacity: 0;
+			transform: translateY(24px);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.9s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.landing-home .landing-network__strip.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+	}
+}
+
+/* the band: the desktop's row — title left and subtitle right on one
+   line — and its five windows across */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--nw-pad-top: 96px;
+		--nw-list-gap: 56px;
+		--nw-strip-gap: 64px;
+		--nw-strip-w: 20vw;
+	}
+	.landing-v2.landing-home .landing-network__subtitle {
+		margin-top: calc(-1 * var(--type-heading-size) * var(--type-heading-lh));
+	}
+	.landing-v2.landing-home .landing-network__strip {
+		overflow-x: hidden;
+		scroll-snap-type: none;
+	}
+	.landing-v2.landing-home .landing-network__strip-win {
+		flex: 1 1 0;
+		width: auto !important;
+	}
+}
+
+/* ═══ OUR SERVICES — THE REEL ═══════════════════════════════════════
+   The desktop's reel markup at phone and tablet proportions, in flow
+   (landing-services.js drives it below the seam — see its header for
+   the translation and the rejected alternatives): WHAT WE DO, the
+   FROM ACCESS / TO IMPACT pair at the display tier with the frame's
+   lead, the pillars note at the note tier; then each pillar — divider
+   with its fill, IMMERSE /01 at the heading + index tiers, the
+   description at the subtitle tier, the STICKY image, the WE BUILD:
+   label, the rows at the body tier scrolling up beneath the image
+   through the desktop's gradient blur, MORE INFO at the label tier.
+   The tail pads the section for the fade-to-black.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--sv-pad-top: 64px;
+		--sv-intro-gap: 24px;
+		--sv-note-gap: 24px;
+		--sv-pillar-gap: 48px;
+		--sv-img-top: 64px;           /* the nav's clearance for the sticky image */
+		--sv-img-aspect: 4 / 3;       /* the phone's height: the desktop's 5/6 would eat the reading area */
+		--sv-read-t: 1;               /* the reading line: below the image */
+		--sv-fade-h: 48px;
+		--sv-tail: 40svh;             /* the fade-to-black's runway */
+		--sreel-slide-x: 24px;        /* the desktop's 40, for the narrower measure */
+	}
+	.landing-v2.landing-home .landing-outro {
+		height: auto;
+		padding: var(--sv-pad-top) 0 var(--sv-tail);
+		/* the fade-to-black, painted on the tail (see landing-services.js) */
+		background: linear-gradient(to bottom, #eeeef0 0, #eeeef0 calc(100% - var(--sv-tail)), #161616 100%);
+	}
+	/* the desktop seam-tail hairline (background: inherit) would repaint
+	   the gradient light under the dark tail */
+	.landing-v2.landing-home .landing-outro::after {
+		display: none;
+	}
+	.landing-v2 .landing-sreel {
+		display: block;
+		position: relative;
+		height: auto;
+	}
+	.landing-v2.landing-home .landing-sreel__stage {
+		position: static;
+		height: auto;
+		overflow: visible;
+	}
+
+	/* ── the intro: WHAT WE DO, the pair, the note ── */
+	.landing-v2.landing-home .landing-sreel__wwd {
+		position: static;
+		margin: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-synthesis: none;
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-sreel__intro {
+		position: static;
+		width: auto;
+		height: auto;
+		padding: var(--sv-intro-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		pointer-events: auto;
+	}
+	.landing-v2.landing-home .landing-sreel__st {
+		position: static;
+		margin: 0;
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-sreel__st-line {
+		display: block;
+		white-space: normal;
+		font-size: var(--type-display-size);
+		line-height: var(--type-display-lh);
+		letter-spacing: var(--type-display-ls);
+		text-transform: var(--type-display-case);
+	}
+	.landing-v2.landing-home .landing-sreel__st-serif {
+		font-family: var(--type-display-serif-face);
+		font-weight: var(--type-display-serif-weight);
+		font-size: var(--type-display-serif-size);
+		line-height: var(--type-display-serif-lh);
+		letter-spacing: var(--type-display-serif-ls);
+		text-transform: var(--type-display-serif-case);
+	}
+	.landing-v2.landing-home .landing-sreel__st-sans {
+		font-family: var(--type-display-face);
+		font-weight: var(--type-display-weight);
+		margin-left: 0;
+		text-indent: 3.25em; /* the frame's lead: 292.5 at 90 */
+	}
+	.landing-v2.landing-home .landing-sreel__note {
+		position: static;
+		width: auto;
+		margin: var(--sv-note-gap) 0 0;
+		font-family: var(--type-note-face);
+		font-weight: var(--type-note-weight);
+		font-synthesis: none;
+		font-size: var(--type-note-size);
+		line-height: var(--type-note-lh);
+		letter-spacing: var(--type-note-ls);
+		text-transform: var(--type-note-case);
+		color: #161616;
+	}
+
+	/* ── the pillars ── */
+	.landing-v2.landing-home .landing-sreel__pillar {
+		position: relative;
+		left: auto;
+		top: auto;
+		width: auto;
+		height: auto;
+		margin: var(--sv-pillar-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		background: transparent;
+		display: flex;
+		flex-direction: column;
+	}
+	.landing-v2.landing-home .landing-sreel__divider {
+		order: 0;
+		position: relative;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 2px;
+		background: #e0e0e7;
+		z-index: 1;
+	}
+	.landing-v2.landing-home .landing-sreel__fill {
+		display: block;
+		position: absolute;
+		inset: 0;
+		background: #161616;
+		transform-origin: left center;
+		transform: scaleX(0);
+	}
+	.landing-v2.landing-home .landing-sreel__titlerow {
+		order: 1;
+		position: static;
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		margin: 24px 0 0;
+		white-space: normal;
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+	}
+	.landing-v2.landing-home .landing-sreel__title {
+		position: static;
+		display: inline-block;
+		font-family: var(--type-heading-face);
+		font-weight: var(--type-heading-weight);
+		font-synthesis: none;
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+		letter-spacing: var(--type-heading-ls);
+		text-transform: var(--type-heading-case);
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-sreel__num {
+		position: static;
+		left: auto;
+		top: auto;
+		margin-top: 0.15em;
+		font-family: var(--type-index-face);
+		font-weight: var(--type-index-weight);
+		font-synthesis: none;
+		font-size: var(--type-index-size);
+		line-height: var(--type-index-lh);
+		letter-spacing: var(--type-index-ls);
+		text-transform: var(--type-index-case);
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-sreel__desc {
+		order: 2;
+		position: static;
+		left: auto;
+		top: auto;
+		width: auto;
+		margin: 16px 0 0;
+		font-family: var(--type-subtitle-face);
+		font-weight: var(--type-subtitle-weight);
+		font-synthesis: none;
+		font-size: var(--type-subtitle-size);
+		line-height: var(--type-subtitle-lh);
+		letter-spacing: var(--type-subtitle-ls);
+		text-transform: var(--type-subtitle-case);
+		color: #161616;
+	}
+	/* the image: sticky below the nav while the rows scroll beneath it */
+	.landing-v2.landing-home .landing-sreel__img {
+		order: 3;
+		position: sticky;
+		top: var(--sv-img-top);
+		left: auto;
+		width: 100%;
+		height: auto;
+		aspect-ratio: var(--sv-img-aspect);
+		margin: 24px 0 0;
+		overflow: hidden;
+		z-index: 3;
+		background: #e4e4ea;
+	}
+	.landing-v2.landing-home .landing-sreel__img img {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.landing-v2.landing-home .landing-sreel__wlabel {
+		order: 4;
+		position: static;
+		left: auto;
+		top: auto;
+		margin: 24px 0 0;
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: var(--type-label-lh);
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-sreel__listwin {
+		order: 5;
+		position: relative;
+		left: auto;
+		top: auto;
+		width: 100%;
+		height: auto;
+		margin: 8px 0 0;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+	}
+	.landing-v2.landing-home .landing-sreel__list {
+		order: 1;
+		position: static;
+		width: auto;
+	}
+	/* the desktop's gradient blur, sticky under the image: the rows
+	   dissolve as they slide beneath it */
+	.landing-v2.landing-home .landing-sreel__listfade {
+		order: 0;
+		display: block;
+		position: sticky;
+		top: calc(var(--sv-img-top) + (100vw - var(--m-margin-safe-l, var(--m-margin)) - var(--m-margin-safe-r, var(--m-margin))) * 3 / 4);
+		left: 0;
+		width: 100%;
+		height: var(--sv-fade-h);
+		margin-bottom: calc(-1 * var(--sv-fade-h));
+		z-index: 2;
+		pointer-events: none;
+		background: linear-gradient(to bottom, #eeeef0 0, rgba(238, 238, 240, 0) 100%);
+		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(6px);
+	}
+	.landing-v2.landing-home .landing-sreel__row {
+		position: relative;
+		height: auto;
+		padding: 12px 0;
+		outline: none;
+	}
+	.landing-v2.landing-home .landing-sreel__rowline {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 2px;
+		background: #e0e0e7;
+	}
+	.landing-v2.landing-home .landing-sreel__rowline--end {
+		position: relative;
+		display: block;
+	}
+	.landing-v2.landing-home .landing-sreel__svc {
+		position: static;
+		width: auto;
+		margin: 0;
+		font-family: var(--type-body-face);
+		font-weight: var(--type-body-weight);
+		font-synthesis: none;
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-lh);
+		letter-spacing: var(--type-body-ls);
+		text-transform: var(--type-body-case);
+		color: #161616;
+		transition: transform var(--sreel-slide-s, 0.5s) var(--sreel-slide-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+	}
+	.landing-v2.landing-home .landing-sreel__row.is-sactive .landing-sreel__svc {
+		transform: translateX(var(--sreel-slide-x, 24px));
+	}
+	/* MORE INFO — the desktop's chip at the label tier; 44px floor on an
+	   invisible extension, the press state in place of the ripple */
+	.landing-v2.landing-home .landing-sreel__btn {
+		order: 6;
+		position: relative;
+		left: auto;
+		top: auto;
+		align-self: flex-start;
+		width: auto;
+		min-width: 147px;
+		height: 38px;
+		margin: 24px 0 0;
+		padding: 0 16px;
+		background: var(--landing-svc-btn-fill, #e4e4ea);
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+	}
+	.landing-v2.landing-home .landing-sreel__btn::after {
+		content: '';
+		position: absolute;
+		inset: -3px 0;
+	}
+	.landing-v2.landing-home .landing-sreel__btn:active {
+		opacity: 0.7;
+	}
+	/* the entrance's fade-rise states (the founders slots' vocabulary) */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-home .landing-sreel__img,
+		.landing-v2.landing-home .landing-sreel__wlabel,
+		.landing-v2.landing-home .landing-sreel__listwin,
+		.landing-v2.landing-home .landing-sreel__btn {
+			opacity: 0;
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.landing-home .landing-sreel__img.is-visible,
+		.landing-v2.landing-home .landing-sreel__wlabel.is-visible,
+		.landing-v2.landing-home .landing-sreel__listwin.is-visible,
+		.landing-v2.landing-home .landing-sreel__btn.is-visible {
+			opacity: 1;
+		}
+	}
+}
+
+/* the band: the pillar in two columns — the image sticky at the left
+   (the desktop's proportion), the label, rows and MORE INFO at the
+   right; the reading line beside the image's centre */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--sv-pad-top: 96px;
+		--sv-pillar-gap: 64px;
+		--sv-img-aspect: 380 / 456;
+		--sv-read-t: 0.5;
+		--sreel-slide-x: 32px;
+	}
+	.landing-v2.landing-home .landing-sreel__pillar {
+		display: grid;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		grid-template-areas:
+			'divider divider'
+			'title title'
+			'desc desc'
+			'img label'
+			'img list'
+			'img btn';
+		column-gap: 32px;
+	}
+	.landing-v2.landing-home .landing-sreel__divider { grid-area: divider; }
+	.landing-v2.landing-home .landing-sreel__titlerow { grid-area: title; }
+	.landing-v2.landing-home .landing-sreel__desc { grid-area: desc; max-width: 14em; }
+	.landing-v2.landing-home .landing-sreel__img {
+		grid-area: img;
+		align-self: start;
+		max-width: 380px;
+	}
+	.landing-v2.landing-home .landing-sreel__wlabel { grid-area: label; }
+	.landing-v2.landing-home .landing-sreel__listwin { grid-area: list; }
+	.landing-v2.landing-home .landing-sreel__btn { grid-area: btn; justify-self: start; }
+	.landing-v2.landing-home .landing-sreel__listfade { display: none; }
+}
+
+/* ═══ FEATURED WORK ══════════════════════════════════════════════════
+   The desktop's dark stage, translated: FEATURED WORK as one Dazzed
+   line at the heading tier, VIEW ALL WORK as the desktop's chip on the
+   header row (below it on the phone, where the row has no room), and
+   the strip of eight top-aligned cards with the desktop's HEIGHT
+   STAGGER — 400 · 249 · 450 · 320 · 450 · 400 · 320 · 400, scaled to
+   the phone's card — names in the serif at the row tier, no
+   descriptions (the desktop dropped them), the blurred right edge.
+
+   THE RAIL (logged): the desktop pins its stage and scrubs the strip
+   across with the page scroll — a fixed-viewport driver that fights
+   touch momentum. The phone and the tablet pan the same strip by hand:
+   native horizontal scroll with snap, the finger's own momentum.
+   REJECTED: the scrub under touch (stutter, snap fights); a vertical
+   list (the desktop's gallery is horizontal).
+
+   THE TAIL: the desktop fades its ground back to light as the carousel
+   departs so We Create Access arrives light on light; here the fade is
+   painted on the stage's tail (the section is in flow).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--fw-pad-top: 64px;
+		--fw-header-gap: 40px;
+		--fw-card-w: 78vw;
+		--fw-scale: 0.8;
+		--fw-gap: 8px;
+		--fw-tail: 40svh;
+	}
+	.landing-v2.landing-home .landing-featured {
+		position: relative;
+		z-index: 260;
+		margin-top: 0;
+		height: auto;
+		background: transparent;
+	}
+	.landing-v2.landing-home .landing-featured__stage {
+		position: relative;
+		top: auto;
+		height: auto;
+		overflow: hidden;
+		padding: var(--fw-pad-top) 0 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		background: linear-gradient(to bottom, #161616 0, #161616 calc(100% - var(--fw-tail)), #eeeef0 100%);
+	}
+	.landing-v2.landing-home .landing-featured__header {
+		margin: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		white-space: normal;
+	}
+	.landing-v2.landing-home .landing-featured__hl {
+		position: static;
+		display: inline;
+		font-family: var(--type-heading-face);
+		font-weight: var(--type-heading-weight);
+		font-synthesis: none;
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+		letter-spacing: var(--type-heading-ls);
+		text-transform: var(--type-heading-case);
+		color: #eeeef0;
+		mix-blend-mode: normal;
+		white-space: normal;
+	}
+	.landing-v2.landing-home .landing-featured__hl--work {
+		margin-left: 0.22em;
+	}
+	/* VIEW ALL WORK — the desktop's chip (#343439, white, the label tier) */
+	.landing-v2.landing-home .landing-featured__viewall {
+		position: relative;
+		z-index: 3;
+		right: auto;
+		top: auto;
+		justify-self: end;
+		margin: 16px var(--m-margin-safe-r, var(--m-margin)) 0 0;
+		height: 38px;
+		padding: 0 16px;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		background: #343439;
+		color: #ffffff;
+		font-family: var(--type-label-face);
+		font-weight: var(--type-label-weight);
+		font-synthesis: none;
+		font-size: var(--type-label-size);
+		line-height: 1;
+		letter-spacing: var(--type-label-ls);
+		text-transform: var(--type-label-case);
+		opacity: 1;
+		transform: none;
+	}
+	.landing-v2.landing-home .landing-featured__viewall::after {
+		content: '';
+		position: absolute;
+		inset: -3px 0;
+	}
+	.landing-v2.landing-home .landing-featured__viewall:active {
+		background: #232326;
+		opacity: 1;
+	}
+	.landing-v2.landing-home .landing-featured__viewall img {
+		--char-ripple-arrow-filter: brightness(0) invert(1);
+		filter: var(--char-ripple-arrow-filter);
+		width: 12px;
+		height: 12px;
+	}
+	.landing-v2 .landing-featured__viewall-label--m { display: none; }
+	.landing-v2 .landing-featured__viewall-label--d { display: inline; }
+
+	/* the rail */
+	.landing-v2.landing-home .landing-featured__strip {
+		grid-column: 1 / -1;
+		position: relative;
+		z-index: 1;
+		left: auto;
+		top: auto;
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: var(--fw-gap);
+		margin: var(--fw-header-gap) 0 0;
+		padding: 0 0 0 var(--m-margin-safe-l, var(--m-margin));
+		transform: none !important;
+		will-change: auto;
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scroll-padding-left: var(--m-margin-safe-l, var(--m-margin));
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+	}
+	.landing-v2.landing-home .landing-featured__strip::-webkit-scrollbar {
+		display: none;
+	}
+	/* the rail's end margin (Safari ignores a scroll container's
+	   trailing padding) */
+	.landing-v2.landing-home .landing-featured__strip::after {
+		content: '';
+		flex: 0 0 var(--m-margin-safe-r, var(--m-margin));
+	}
+	.landing-v2.landing-home .landing-featured__card {
+		flex: none;
+		width: var(--fw-card-w);
+		height: auto;
+		scroll-snap-align: start;
+	}
+	.landing-v2.landing-home .landing-featured__imgwin {
+		position: relative;
+		width: 100%;
+		height: calc(var(--fw-h, 400px) * var(--fw-scale));
+		margin: 0;
+		overflow: hidden;
+	}
+	/* the desktop's cycle, by position (nth-child: type-agnostic across
+	   live links and inert placeholders) */
+	.landing-v2.landing-home .landing-featured__card:nth-child(1) .landing-featured__imgwin { --fw-h: 400px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(2) .landing-featured__imgwin { --fw-h: 249px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(3) .landing-featured__imgwin { --fw-h: 450px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(4) .landing-featured__imgwin { --fw-h: 320px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(5) .landing-featured__imgwin { --fw-h: 450px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(6) .landing-featured__imgwin { --fw-h: 400px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(7) .landing-featured__imgwin { --fw-h: 320px; }
+	.landing-v2.landing-home .landing-featured__card:nth-child(8) .landing-featured__imgwin { --fw-h: 400px; }
+	.landing-v2.landing-home .landing-featured__imgwin img {
+		position: static !important;
+		width: 100% !important;
+		height: 100% !important;
+		object-fit: cover;
+	}
+	/* the name — the serif at the row tier, one welded line, sentence
+	   case as authored; no index, no description */
+	.landing-v2.landing-home .landing-featured__titleblock {
+		position: static;
+		transform: none;
+		width: 100%;
+		margin: 16px 0 0;
+		font-family: var(--type-row-face);
+		font-weight: var(--type-row-weight);
+		font-synthesis: none;
+		font-size: var(--type-row-size);
+		line-height: var(--type-row-lh);
+		letter-spacing: var(--type-row-ls);
+		text-transform: none;
+		white-space: nowrap;
+		color: #eeeef0;
+	}
+	.landing-v2.landing-home .landing-featured__titleline {
+		display: inline;
+		white-space: nowrap;
+	}
+	.landing-v2.landing-home .landing-featured__titleline + .landing-featured__titleline::before {
+		content: ' ';
+	}
+	.landing-v2.landing-home .landing-featured__index,
+	.landing-v2.landing-home .landing-featured__desc {
+		display: none;
+	}
+	/* the blurred right edge — the desktop's tint under its blur band */
+	.landing-v2.landing-home .landing-featured__edge-tint {
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 12rem;
+		height: 100%;
+		z-index: 2;
+		pointer-events: none;
+		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, rgba(22, 22, 22, 0.85) 100%);
+	}
+	.landing-v2.landing-home .landing-featured .work-cursor {
+		display: none;
+	}
+	/* the chip's entrance (the founders slots) */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-home .landing-featured__viewall {
+			opacity: 0;
+			transform: translateY(16px);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.8s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.landing-home .landing-featured__viewall.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+	}
+}
+
+/* the band: the desktop's 380px cards at their own heights, the chip on
+   the header's row */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--fw-pad-top: 96px;
+		--fw-header-gap: 48px;
+		--fw-card-w: 380px;
+		--fw-scale: 1;
+	}
+	.landing-v2.landing-home .landing-featured__stage {
+		grid-template-columns: 1fr auto;
+		align-items: end;
+	}
+	.landing-v2.landing-home .landing-featured__viewall {
+		margin-top: 0;
+	}
+}
+
+/* ═══ WE CREATE ACCESS ═══════════════════════════════════════════════
+   The desktop's composition (frame 0:91) at the phone's geometry: WHAT
+   WE DO and the seven fragmented lines at the statement tier — every
+   line one size, hierarchy from position, each on its own row of a
+   12-column grid whose column starts re-break the desktop's authored x
+   positions for the narrow measure (WE and CREATE from column 4,
+   ACCESS at the margin with BETWEEN beside it, WORLDS under BETWEEN,
+   THAT DON'T a step in, NORMALLY CONNECT at the margin); below them the
+   two rows of 640×340 cells at 78vw, travelling opposite ways and
+   landing the pairs with the difference words on the landed cells;
+   the stage pinned for the six pairs, then the collapse. The driver's
+   narrow build (landing-access.js) runs it from the tokens here.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--ac-pad-top: 64px;
+		--ac-cell-w: 78vw;
+		--ac-gap: 8px;
+		--ac-pitch: calc(var(--ac-cell-w) + var(--ac-gap));
+		--ac-cell-h: calc(var(--ac-cell-w) * 340 / 640);
+		--ac-land-shift: 11vw;        /* the landed cells: top left of centre, bottom right (the desktop's ∓270 / +272) */
+		--ac-rows-bottom: 24px;
+		--ac-step: 300px;             /* scroll per pair transition (the desktop's 400) */
+		--ac-exit: 300px;             /* the collapse (the desktop's 1650 → 600 of collapse) */
+	}
+	.landing-v2.landing-home .landing-access {
+		position: relative;
+		z-index: 260;
+		margin-top: 0 !important; /* the desktop's overlap margin is written inline by its driver */
+		height: calc(100svh + 5 * var(--ac-step) + var(--ac-exit));
+	}
+	.landing-v2.landing-home .landing-access__stage {
+		position: sticky;
+		top: 0;
+		height: 100svh;
+		overflow: hidden;
+	}
+
+	/* ── the headline ── */
+	.landing-v2.landing-home .landing-access__dheadline {
+		display: block;
+		position: absolute;
+		left: var(--m-margin-safe-l, var(--m-margin));
+		right: 8px; /* the lines are left-anchored; only the longest reaches past the margin */
+		top: var(--ac-pad-top);
+		z-index: 4;
+	}
+	.landing-v2.landing-home .landing-access__dlabel {
+		position: static;
+		margin: 0;
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-synthesis: none;
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-access__dlines {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		grid-auto-rows: min-content;
+		margin: 16px 0 0;
+	}
+	.landing-v2.landing-home .landing-access__dline {
+		position: static;
+		margin: 0;
+		font-family: var(--type-statement-face);
+		font-weight: var(--type-statement-weight);
+		font-synthesis: none;
+		font-size: var(--type-statement-size);
+		line-height: var(--type-statement-lh);
+		letter-spacing: var(--type-statement-ls);
+		text-transform: var(--type-statement-case);
+		white-space: nowrap;
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-access__dline--1 { grid-column: 4 / -1; grid-row: 1; }
+	.landing-v2.landing-home .landing-access__dline--2 { grid-column: 4 / -1; grid-row: 2; }
+	.landing-v2.landing-home .landing-access__dline--3 { grid-column: 1 / 7; grid-row: 3; }
+	.landing-v2.landing-home .landing-access__dline--4 { grid-column: 7 / -1; grid-row: 3; }
+	.landing-v2.landing-home .landing-access__dline--5 { grid-column: 7 / -1; grid-row: 4; }
+	.landing-v2.landing-home .landing-access__dline--6 { grid-column: 2 / -1; grid-row: 5; }
+	/* the longest fragment is the phone's whole measure at the statement
+	   tier; at the narrowest widths it re-breaks as two fragments */
+	.landing-v2.landing-home .landing-access__dline--7 { grid-column: 1 / -1; grid-row: 6; white-space: normal; }
+
+	/* ── the rows: bottom-anchored in the stage ── */
+	.landing-v2.landing-home .landing-access__rowwrap,
+	.landing-v2.landing-home .landing-access__veilwrap {
+		display: block;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: auto;
+		width: auto;
+		height: var(--ac-cell-h);
+		transform: none;
+		pointer-events: none;
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+	.landing-v2.landing-home .landing-access__rowwrap--bottom,
+	.landing-v2.landing-home .landing-access__veilwrap--bottom {
+		bottom: var(--ac-rows-bottom);
+	}
+	.landing-v2.landing-home .landing-access__rowwrap--top,
+	.landing-v2.landing-home .landing-access__veilwrap--top {
+		bottom: calc(var(--ac-rows-bottom) + var(--ac-cell-h) + var(--ac-gap));
+	}
+	.landing-v2.landing-home .landing-access__row,
+	.landing-v2.landing-home .landing-access__veilrow {
+		position: absolute;
+		top: 0;
+		display: flex;
+		gap: var(--ac-gap);
+	}
+	/* the rest: pair 1 landed (the RM / pre-JS frame) — the top row's
+	   pair-1 cell is index 1, the bottom row's index 5 */
+	.landing-v2.landing-home .landing-access__row--top,
+	.landing-v2.landing-home .landing-access__veilwrap--top .landing-access__veilrow {
+		left: calc(50% - var(--ac-land-shift) - var(--ac-cell-w) / 2 - var(--ac-pitch));
+	}
+	.landing-v2.landing-home .landing-access__row--bottom,
+	.landing-v2.landing-home .landing-access__veilwrap--bottom .landing-access__veilrow {
+		left: calc(50% + var(--ac-land-shift) - var(--ac-cell-w) / 2 - 5 * var(--ac-pitch));
+	}
+	.landing-v2.landing-home .landing-access__cell {
+		flex: none;
+		width: var(--ac-cell-w);
+		height: var(--ac-cell-h);
+		margin: 0;
+		overflow: hidden;
+	}
+	.landing-v2.landing-home .landing-access__cell img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: filter 0.2s linear;
+	}
+	.landing-v2.landing-home .landing-access__veil {
+		flex: none;
+		width: var(--ac-cell-w);
+		height: var(--ac-cell-h);
+		background: rgba(238, 238, 240, 0.4);
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+	}
+	.landing-v2.landing-home .landing-access__veil.is-prime {
+		background: transparent;
+	}
+
+	/* ── the words: the serif at the heading-serif tier, difference over
+	   the landed cell, centred in its box (their ancestors stay
+	   section > stage — no transform, filter, opacity or mask above) ── */
+	.landing-v2.landing-home .landing-access__words {
+		display: block;
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 4;
+	}
+	.landing-v2.landing-home .landing-access__wordslot {
+		position: absolute;
+		top: auto;
+		width: var(--ac-cell-w);
+		height: var(--ac-cell-h);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		font-family: var(--type-heading-serif-face);
+		font-weight: var(--type-heading-serif-weight);
+		font-synthesis: none;
+		font-size: var(--type-heading-serif-size);
+		line-height: var(--type-heading-serif-lh);
+		letter-spacing: var(--type-heading-serif-ls);
+		text-transform: var(--type-heading-serif-case);
+		color: #ffffff;
+		mix-blend-mode: difference;
+		opacity: 0;
+	}
+	.landing-v2.landing-home .landing-access__wordslot--top {
+		bottom: calc(var(--ac-rows-bottom) + var(--ac-cell-h) + var(--ac-gap));
+	}
+	.landing-v2.landing-home .landing-access__wordslot--bottom {
+		bottom: var(--ac-rows-bottom);
+	}
+	.landing-v2.landing-home .landing-access__wordslot.is-on {
+		opacity: 1;
+	}
+	.landing-v2.landing-home .landing-access__wordslot--top.is-on {
+		left: calc(50% - var(--ac-land-shift) - var(--ac-cell-w) / 2);
+	}
+	.landing-v2.landing-home .landing-access__wordslot--bottom.is-on {
+		left: calc(50% + var(--ac-land-shift) - var(--ac-cell-w) / 2);
+	}
+
+	/* cramped landscape phones: smaller cells so the rows clear the headline */
+	@media (max-height: 520px) {
+		.landing-v2.landing-home {
+			--ac-cell-w: 40vw;
+			--ac-rows-bottom: 16px;
+		}
+	}
+	/* reduced motion: no pin, no runway — the landed pair-1 frame in flow */
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2.landing-home .landing-access {
+			height: auto;
+		}
+		.landing-v2.landing-home .landing-access__stage {
+			position: relative;
+			height: 100svh;
+		}
+	}
+}
+
+/* the band: two cells and a half across, the landed pair further apart */
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--ac-pad-top: 96px;
+		--ac-cell-w: 44vw;
+		--ac-land-shift: 12vw;
+		--ac-rows-bottom: 32px;
+		--ac-step: 360px;
+		--ac-exit: 400px;
+	}
+}
+
+/* ═══ WHY ACCESS MATTERS (the closing) ═══════════════════════════════
+   The desktop section, translated: the three staggered headline lines
+   in ONE face at the heading tier — right-aligned boxes whose right
+   edges keep the desktop's stagger — then the four tiles with their
+   keywords (the title tier) and lines (the body tier), two-up on the
+   phone, four across on the tablet. No /0N indexes, no intro (the
+   desktop dropped both). LOGGED: the desktop's headline is white
+   difference over the tiles' top edge; here it clears the tiles and is
+   plain ink (the blend's result on the light ground). The desktop's
+   300px sticky hold at the keywords is not carried — the section is
+   in flow (a phone viewport has nothing to hold against).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--cl-pad-top: 64px;
+		--cl-pad-bottom: 64px;
+		--cl-tiles-gap: 40px;
+		--cl-kw-gap: 16px;
+	}
+	.landing-v2.landing-home .landing-closing {
+		position: relative;
+		z-index: 260;
+		margin-top: 0;
+		height: auto;
+	}
+	.landing-v2.landing-home .landing-closing__stage {
+		position: static;
+		height: auto;
+		padding: var(--cl-pad-top) var(--m-margin-safe-r, var(--m-margin)) var(--cl-pad-bottom) var(--m-margin-safe-l, var(--m-margin));
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		column-gap: 8px;
+		row-gap: 0;
+		align-items: start;
+	}
+	.landing-v2.landing-home .landing-closing__headline {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		position: static;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		margin: 0;
+	}
+	.landing-v2.landing-home .landing-closing__hl {
+		position: static;
+		left: auto;
+		top: auto;
+		display: block;
+		text-align: right;
+		white-space: nowrap;
+		font-family: var(--type-heading-face);
+		font-weight: var(--type-heading-weight);
+		font-synthesis: none;
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+		letter-spacing: var(--type-heading-ls);
+		text-transform: var(--type-heading-case);
+		color: #161616;
+		mix-blend-mode: normal;
+	}
+	.landing-v2.landing-home .landing-closing__hl--1 { width: 63%; }
+	.landing-v2.landing-home .landing-closing__hl--2 { width: 100%; }
+	/* the longest line is the phone's whole measure and may wrap */
+	.landing-v2.landing-home .landing-closing__hl--3 { width: 100%; white-space: normal; }
+	.landing-v2.landing-home .landing-closing__hl--serrif {
+		font-family: inherit;
+		font-weight: inherit;
+		letter-spacing: inherit;
+	}
+	.landing-v2.landing-home .landing-closing__intro { display: none; }
+	.landing-v2.landing-home .landing-closing__tiles { display: contents; }
+	.landing-v2.landing-home .landing-closing__tile {
+		position: relative;
+		width: auto;
+		height: auto;
+		aspect-ratio: 414 / 450;
+		margin: 0;
+		overflow: hidden;
+	}
+	.landing-v2.landing-home .landing-closing__tile img {
+		position: static !important;
+		width: 100% !important;
+		height: 100% !important;
+		object-fit: cover;
+	}
+	.landing-v2.landing-home .landing-closing__kw {
+		position: static;
+		top: auto;
+		left: auto !important;
+		width: auto !important;
+		margin: var(--cl-kw-gap) 0 0;
+	}
+	.landing-v2.landing-home .landing-closing__kw-row {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		margin: 0;
+		font-family: var(--type-title-face);
+		font-weight: var(--type-title-weight);
+		font-synthesis: none;
+		font-size: var(--type-title-size);
+		line-height: var(--type-title-lh);
+		letter-spacing: var(--type-title-ls);
+		text-transform: var(--type-title-case);
+		color: #161616;
+	}
+	.landing-v2.landing-home .landing-closing__kw-line {
+		position: static;
+		top: auto;
+		width: auto;
+		max-width: none !important;
+		margin: 8px 0 0;
+		font-family: var(--type-body-face);
+		font-weight: var(--type-body-weight);
+		font-synthesis: none;
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-lh);
+		letter-spacing: var(--type-body-ls);
+		text-transform: var(--type-body-case);
+		color: #161616;
+	}
+	/* the 2 × 2: tiles 1–2, their keywords, tiles 3–4, their keywords */
+	.landing-v2.landing-home .landing-closing__tile:nth-child(1) { grid-column: 1; grid-row: 2; margin-top: var(--cl-tiles-gap); }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(2) { grid-column: 2; grid-row: 2; margin-top: var(--cl-tiles-gap); }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(4) { grid-column: 1; grid-row: 3; }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(3) { grid-column: 2; grid-row: 3; }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(3) { grid-column: 1; grid-row: 4; margin-top: 32px; }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(4) { grid-column: 2; grid-row: 4; margin-top: 32px; }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(2) { grid-column: 1; grid-row: 5; }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(1) { grid-column: 2; grid-row: 5; }
+}
+@media (min-width: 768px) and (max-width: 1359px) {
+	.landing-v2.landing-home {
+		--cl-pad-top: 96px;
+		--cl-pad-bottom: 96px;
+		--cl-tiles-gap: 56px;
+	}
+	.landing-v2.landing-home .landing-closing__stage {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.landing-v2.landing-home .landing-closing__hl--1 { width: 40%; }
+	.landing-v2.landing-home .landing-closing__hl--2 { width: 62%; }
+	.landing-v2.landing-home .landing-closing__hl--3 { width: 56%; }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(1) { grid-column: 1; grid-row: 2; }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(2) { grid-column: 2; grid-row: 2; }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(3) { grid-column: 3; grid-row: 2; margin-top: var(--cl-tiles-gap); }
+	.landing-v2.landing-home .landing-closing__tile:nth-child(4) { grid-column: 4; grid-row: 2; margin-top: var(--cl-tiles-gap); }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(4) { grid-column: 1; grid-row: 3; }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(3) { grid-column: 2; grid-row: 3; }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(2) { grid-column: 3; grid-row: 3; }
+	.landing-v2.landing-home .landing-closing__kw:nth-last-of-type(1) { grid-column: 4; grid-row: 3; }
+}

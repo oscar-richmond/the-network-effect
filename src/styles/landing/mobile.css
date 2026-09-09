@@ -1,0 +1,410 @@
+/**
+ * MOBILE FOUNDATION — the new build's shared mobile scaffolding
+ * (Oscar's mobile brief, 2026-08-10). Imported by SiteShell, so every
+ * new-build page carries it; NOTHING here reaches /old or the holding
+ * routes (every selector is .landing-v2-scoped).
+ *
+ * THE SEAM: <=1024px = native mobile (the shell never engages — see
+ * scripts/landing/viewport.js, the one boundary). Every layout rule
+ * in this file sits behind that query; the touch-affordance rules sit
+ * behind (hover: none)/(pointer: coarse) instead, because touch is a
+ * property of the device, not the width.
+ *
+ * DESKTOP INVARIANT: at >1024 with a fine pointer this file is
+ * byte-inert by construction — verified against the geometry baseline
+ * (mobile-baseline/scrollmaps) after every page batch.
+ */
+
+/* ── Touch press feedback (A3): every interactive element gets a
+   visible :active response — the char-ripple's role on touch. The
+   default grey tap flash is removed ONLY on elements this state
+   covers (the brief's rule). Gated on coarse/no-hover so desktop
+   mice never see it. */
+@media (hover: none), (pointer: coarse) {
+  .landing-v2 a,
+  .landing-v2 button,
+  .landing-v2 [data-char-ripple-trigger],
+  .landing-v2 [data-hover],
+  .landing-v2 [tabindex='0'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .landing-v2 a:active,
+  .landing-v2 button:active,
+  .landing-v2 [data-char-ripple-trigger]:active,
+  .landing-v2 [tabindex='0']:active {
+    opacity: 0.55;
+    transition: opacity 0.08s ease-out;
+  }
+}
+
+@media (max-width: 1359px) {
+  /* ── Ground + overflow discipline. overflow-x is a BELT (the audit
+     measures scrollWidth honestly and fixes real offenders); clip,
+     not hidden — hidden creates a scroll container and can strand
+     position:sticky descendants. */
+  .landing-v2 {
+    overflow-x: clip;
+  }
+
+  /* ── The mobile margin: the desktop 24px page margin carries over
+     verbatim (Oscar's grammar; every pre-existing mobile block
+     already used it). One token so a later rethink is one line. */
+  .landing-v2 {
+    --m-margin: 24px;
+    --m-margin-safe-l: max(var(--m-margin), var(--safe-left, 0px));
+    --m-margin-safe-r: max(var(--m-margin), var(--safe-right, 0px));
+  }
+}
+
+/* ── MENU OVERLAY at phone width — R2 respec (Oscar's menu round,
+   2026-08-13; supersedes the B7 block). The five primary items run
+   ONE PER ROW at 30px with their slashes (the seps force a line
+   break via the '\A' pseudo), 24px between rows; then 48px to the
+   side-by-side CTA pair (16px gap); 64px to the one-row contact
+   line (email left, Instagram right); 32px + the home-indicator
+   inset to the visual bottom. Tap targets ride invisible ::after
+   extensions (the filled-chip convention) so the measured gaps stay
+   the spec's exact values. .landing-v2-scoped; specificity (0,3,0)
+   where landing.css owns desktop rows at (0,2,0). */
+@media (max-width: 1359px) {
+	.landing-v2 .site-menu__container {
+		/* R3 (Oscar): 16px side margins; the content tops out 24px
+		   below the close X (toggle top 7px-or-inset + 40px box);
+		   24px from the contact row to the visual bottom + the
+		   home-indicator inset. */
+		padding: calc(max(7px, var(--safe-top, 0px)) + 40px + 24px)
+			max(16px, var(--safe-right, 0px))
+			calc(24px + var(--safe-bottom, 0px))
+			max(16px, var(--safe-left, 0px));
+		width: 100%;
+	}
+
+	.landing-v2 .site-menu__wrapper {
+		width: 100%;
+		display: block;
+		/* R3: the desktop wrapper's own padding (41/20) was stacking
+		   under the container's — the container owns ALL the offsets
+		   now, so the 16px margins and 24-below-X measure true. */
+		padding: 0;
+		margin-bottom: 0; /* the desktop wrapper margin inflated the
+		   panel's auto-height 80px past the content (rect probes miss
+		   margins — the menu bg ran past the 32px bottom) */
+	}
+
+	.landing-v2 .site-menu__panel {
+		padding-bottom: 0; /* ditto — menu.css's desktop tail retired */
+	}
+
+	/* Items 2+3: block flow, links inline-block 30/30 with 24px
+	   margins (rect-exact row gaps); each sep renders its slash then
+	   breaks the line. */
+	.landing-v2 .site-menu__body { display: block; }
+
+	/* R3 grouping (Oscar): three lines — HOME / FOUNDERS /,
+	   SERVICES / WORK /, CONTACT — via an explicit grid over the
+	   flattened rows (the desktop's 3+2 row DIVs become
+	   display:contents, so the desktop markup is untouched). The
+	   slashes ride the LAST CHAR SPAN's ::after — the open/close
+	   choreography animates the char spans, so the slashes now
+	   travel with their letters instead of hanging on the page
+	   (Oscar's report; the old link-level pseudo never moved). Gaps
+	   around each slash are DOUBLED: 15px pseudo padding + 15px
+	   column gap at the 30px size. */
+	.landing-v2 .site-menu__body .site-menu__row { display: contents; }
+
+	/* (0,3,0): the desktop body rules sit later in the bundle. Plain
+	   INLINE FLOW at natural widths (grid column-aligned the pairs,
+	   and the desktop seps' positioning fought flex breakers):
+	   inline-block links, body line-height 0 (no strut arithmetic),
+	   24px line spacing via the links' own margins, and the two
+	   in-between seps flattened into zero-height BLOCK breakers —
+	   line 1 HOME / FOUNDERS /, line 2 SERVICES / WORK /, line 3
+	   CONTACT. */
+	.landing-v2 .site-menu__panel .site-menu__body {
+		display: block;
+		line-height: 0;
+	}
+
+	.landing-v2 .site-menu__body .site-menu__link {
+		position: relative;
+		display: inline-block;
+		width: fit-content;
+		vertical-align: top;
+		padding: 0; /* the desktop link's vertical padding (10px) */
+		margin: 0 15px 24px 0;
+	}
+
+	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__link:last-of-type { margin-bottom: 0; }
+
+	/* Breakers: the 2nd sep of row 1 (after FOUNDERS) and row 2's sep
+	   (after WORK) — glyph hidden, zero-height blocks force the line
+	   breaks. */
+	.landing-v2 .site-menu__body .site-menu__row:first-child .site-menu__sep:nth-of-type(2),
+	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__sep {
+		display: block;
+		position: static;
+		width: auto;
+		height: 0;
+		overflow: hidden;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* 44px effective target without disturbing the measured gaps. */
+	.landing-v2 .site-menu__body .site-menu__link::before {
+		content: '';
+		position: absolute;
+		inset: -7px 0;
+	}
+
+	/* The slash, on the last letter's span (animates with it); every
+	   item except CONTACT (the grid's last cell). */
+	.landing-v2 .site-menu__body .site-menu__link > span:last-child::after {
+		content: '/';
+		padding-left: 15px;
+	}
+
+	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__link:nth-of-type(2) > span:last-child::after {
+		content: none;
+	}
+
+	.landing-v2 .site-menu__body .site-menu__row:first-child .site-menu__sep:nth-of-type(1) { display: none; }
+
+	/* Item 4: 48 from CONTACT's box to the CTA row (24 link margin +
+	   24 here). Grid: CTAs full-row, then email left / Instagram
+	   right on one row 64 below (item 6). */
+	.landing-v2 .site-menu__panel .site-menu__footer {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		margin-top: 48px; /* the grid rows carry no bottom margins now */
+		position: static;
+	}
+
+	/* Item 5: the pair, side by side, 16px gap. */
+	.landing-v2 .site-menu__panel .site-menu__ctas {
+		grid-column: 1 / -1;
+		position: static;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 16px;
+		margin: 0;
+	}
+
+	.landing-v2 .site-menu__ctaclip {
+		position: static;
+		flex: none; /* the clips must never shrink the chips into wraps */
+	}
+
+	.landing-v2 .site-menu__ctas .landing-svc-card__btn { white-space: nowrap; }
+
+	/* At 360 the pair + 16 gap overruns the measure — compress the
+	   chip pads (16→10), never the type (reported to Oscar). */
+	@media (max-width: 380px) {
+		.landing-v2 .site-menu__ctas .landing-svc-card__btn { padding: 0 8px; }
+	}
+
+	.landing-v2 .site-menu__panel .site-menu__footer ul {
+		position: static;
+		display: block;
+		margin: 64px 0 0;
+		padding: 0;
+		width: auto;
+	}
+
+	/* DOM order is Instagram, email — the grid seats email left. */
+	.landing-v2 .site-menu__panel .site-menu__footer ul:first-of-type {
+		grid-column: 2;
+		grid-row: 2;
+		justify-self: end;
+	}
+
+	.landing-v2 .site-menu__panel .site-menu__footer ul:last-of-type {
+		grid-column: 1;
+		grid-row: 2;
+		justify-self: start;
+	}
+
+	.landing-v2 .site-menu__panel .site-menu__footer-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+	}
+
+	/* Item 5 arrow band: the shared chip's arrow at the mobile 9px
+	   cap-band size (the carousel-index alignment class) — SHARED
+	   at the seam, so the menu pair, the services MORE INFO and any
+	   future chip all align; flex centring does the rest. */
+	.landing-v2 .landing-svc-card__btn img {
+		width: 9px;
+		height: 9px;
+	}
+}
+
+/* ── Phase C fixes: tap-target floors + the 12px type floor. ────── */
+@media (max-width: 1359px) {
+	/* Topbar + footer text links render 15-16px tall; padding extends
+	   each hit area to 44px effective with negative margin cancelling
+	   the layout growth (the network-terms pattern) — visual layout
+	   byte-identical, targets compliant. */
+	/* Filled buttons (founders CTAs etc.) are excluded — padding grows
+	   a visible fill; their natural boxes already run ~40px+. */
+	.landing-v2 .home__menu-toggle,
+	.landing-v2 .home__topbar-email,
+	.landing-v2 .home__logo-link,
+	.landing-v2 .landing-footer__link,
+	.landing-v2 .landing-footer__rowitem,
+	.landing-v2 .landing-footer__start {
+		padding-top: 14px;
+		padding-bottom: 14px;
+		margin-top: -14px;
+		margin-bottom: -14px;
+	}
+
+	/* Type floor: nothing under 12px effective (C-TYPE). */
+}
+
+/* ── .cr-sr STATIC (Phase C finding — the CLOSECLOSE bug): char-
+   ripple injects this rule from JS, but only on hover devices (its
+   touch early-return skips ensureStyles). menu.js builds .cr-sr
+   screen-reader duplicates on EVERY device, so touch rendered them
+   visibly — the toggle read "CLOSECLOSE". Static and unconditioned
+   here; on desktop it duplicates the injected rule verbatim
+   (visually inert). */
+.landing-v2 .cr-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE NAV — the Figma 402-frame chrome (frame 0:12, rebuild
+   2026-08-13), applied SITE-WIDE on mobile: the nav is SiteShell
+   chrome shared by every new-build page, and forking it per page
+   would split the site's one topbar. Wordmark centred in Dazzed
+   Heavy 12/0.36px; the toggle's face is the 16×2-bar burger (text
+   labels hidden — menu.js's label choreography still runs, unseen);
+   LET'S CHAT leaves the mobile topbar per the frame.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	/* Wordmark: the file sets Dazzed Heavy (800), not the desktop's
+	   Arial Black — a deliberate mobile-only face change, flagged in
+	   the build report. */
+
+	/* (0,3,1): landing.css's `--about` base styles this link at (0,3,0)
+	   and sits later in the bundle — the element qualifier wins the tie. */
+
+	.landing-v2 [data-menu-label-menu],
+	.landing-v2 .home__menu-toggle-label--close { display: none !important; }
+
+	/* Burger — file 0:405: three 16×2 bars, tops 69.5/74.5/79.5 (5px
+	   pitch), white + difference (the toggle already carries the
+	   difference treatment; the bars inherit its context). Open state
+	   (aria-expanded) folds the outer bars into an X — the file only
+	   draws the closed state; the X is the standard reading of it. */
+	.landing-v2 .home__menu-burger {
+		display: block;
+		position: relative;
+		width: 16px;
+		height: 12px;
+	}
+
+	.landing-v2 .home__menu-burger-bar {
+		position: absolute;
+		left: 0;
+		width: 16px;
+		height: 2px;
+		background: currentColor;
+		transition: transform 0.3s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			opacity 0.3s ease-out;
+	}
+
+	.landing-v2 .home__menu-burger-bar:nth-child(1) { top: 0; }
+	.landing-v2 .home__menu-burger-bar:nth-child(2) { top: 5px; }
+	.landing-v2 .home__menu-burger-bar:nth-child(3) { top: 10px; }
+
+	.landing-v2 .home__menu-toggle[aria-expanded='true'] .home__menu-burger-bar:nth-child(1) {
+		transform: translateY(5px) rotate(45deg);
+	}
+	.landing-v2 .home__menu-toggle[aria-expanded='true'] .home__menu-burger-bar:nth-child(2) {
+		opacity: 0;
+	}
+	.landing-v2 .home__menu-toggle[aria-expanded='true'] .home__menu-burger-bar:nth-child(3) {
+		transform: translateY(-5px) rotate(-45deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2 .home__menu-burger-bar { transition: none; }
+	}
+}
+
+/* Desktop must never see the burger. */
+@media (min-width: 1360px) {
+	.landing-v2 .home__menu-burger { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HORIZONTAL-PAN CONTAINMENT (Oscar's device report, R1 item 9).
+   ROOT CAUSE: fixed-position layers ESCAPE the body's overflow-x
+   clip (their containing block is the viewport, not body), and iOS
+   Safari extends the pannable visual viewport to any fixed layer
+   painted beyond the edges. Two offenders, measured:
+   1. .landing-grain — 200%×200% (804px at 402), jittering by
+      transform. Mobile: viewport-sized, jittering by BACKGROUND
+      POSITION instead — the texture repeats, so the visual is
+      identical and the box never leaves the viewport.
+   2. .page-cover — parked off the LEFT edge by translate(-100%).
+      Mobile: visibility-parked; every painted phase of the wipe
+      (covering/revealing = .page-cover--blocking, pre-paint hold +
+      failsafe = html[data-ne-cover]) re-shows it.
+   The hero video was NOT an offender (its fixed stage is viewport-
+   wide with overflow hidden) — it merely showed through the pan
+   gutter these two opened. Desktop: byte-untouched (all <=1024).
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1359px) {
+	/* body-qualified (0,2,1): landing.css's base grain rule sits later
+	   in the bundle and would win the (0,2,0) tie. */
+	body.landing-v2 .landing-grain {
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		animation: none;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		body.landing-v2 .landing-grain {
+			animation: landing-grain-jitter-m 1s infinite;
+			animation-timing-function: steps(1, end);
+		}
+	}
+
+	.landing-v2 .page-cover {
+		visibility: hidden;
+	}
+
+	.landing-v2 .page-cover--blocking,
+	html[data-ne-cover] .landing-v2 .page-cover {
+		visibility: visible;
+	}
+}
+
+/* The mobile jitter: the same ten scattered stops as the desktop
+   transform dance, expressed as texture offsets (px of the repeating
+   grain tile — visually equivalent, box never moves). */
+@keyframes landing-grain-jitter-m {
+	0% { background-position: 0 0; }
+	10% { background-position: -37px 22px; }
+	20% { background-position: 41px -19px; }
+	30% { background-position: -23px -41px; }
+	40% { background-position: 18px 33px; }
+	50% { background-position: -45px 8px; }
+	60% { background-position: 29px -35px; }
+	70% { background-position: -12px 44px; }
+	80% { background-position: 38px 15px; }
+	90% { background-position: -31px -27px; }
+}

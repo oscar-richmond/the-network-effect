@@ -1,6 +1,5 @@
 ---
 import { menuLinks, menuFooterLinks as defaultFooterLinks } from '../data/menu.js';
-import { QUERIES } from '../config/breakpoints.js';
 import { asset } from '../utils/asset.js';
 import { variantOr } from '../utils/thumb-srcset.js';
 import { CONTACT_EMAIL } from '../data/landing/contact.js';
@@ -184,11 +183,11 @@ import { START_PROJECT_MODAL } from '../data/flags.js';
             (the source wins there; menu.js's src swaps are the desktop's
             and keep working above the seam, where no source matches). */}
         <picture>
-          <source media={QUERIES.mobile} srcset={variantOr(defaultImage, 600)} />
+          <source media="(max-width: 1359px)" srcset={variantOr(defaultImage, 600)} />
           <img src={defaultImage} alt="" data-menu-image-el data-menu-image-base loading="lazy" decoding="async" />
         </picture>
         <picture>
-          <source media={QUERIES.mobile} srcset={variantOr(defaultImage, 600)} />
+          <source media="(max-width: 1359px)" srcset={variantOr(defaultImage, 600)} />
           <img src={defaultImage} alt="" data-menu-image-over decoding="async" hidden />
         </picture>
       </div>

@@ -1,6 +1,3 @@
-@import './tokens/breakpoints.css';
-@layer tokens, base, desktop, mobile, tablet;
-@layer desktop {
 /* Placeholder menu styles — ported from reference; branding TBD */
 
 body.menu-open {
@@ -334,5 +331,4 @@ body:not(.landing-v2) .site-menu__footer-link:hover {
     overflow: hidden; /* containing block + clip for the cover swap */
     opacity: 0;
   }
-}
 }

@@ -71,6 +71,7 @@ import { isMobileViewport } from './viewport.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
+import { initMobileEntrance } from './m-entrance.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { createNavSweep, BOTTOM_SNAP_IDLE_MS, BOTTOM_EPSILON_PX, NAV_SHOW_HYSTERESIS_PX } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
@@ -149,9 +150,62 @@ export function initWorkPage() {
   };
   stage.addEventListener('click', onLinkClick);
   cleanups.push(() => stage.removeEventListener('click', onLinkClick));
-  /* The desktop driver: below the seam the mobile layer owns the page (Part 3). */
-  if (isMobileViewport()) return () => cleanups.forEach((fn) => fn());
 
+  /* The NARROW build (≤ MOBILE_MAX_WIDTH, viewport.js) — the 402-frame rebuild: the page
+     is the NATIVE VERTICAL LIST (.work-m, its own markup in file
+     order); no driver, no docking metas, no cursor, no band. This
+     branch wires:
+     1. FILTERS — desktop semantics on the list entries (same tags,
+        aria-pressed, live-region count), with the desktop's
+        blur-out → swap → blur-in grammar as the CSS .is-swapping
+        twin; the entry set toggles at the blurred midpoint. RM:
+        instant toggle, no blur (the transition is no-preference).
+     2. ENTRANCES — header lines via the shared line-reveal path,
+        pills on the load beat, then one once-only trigger per entry
+        (image → meta stagger via the CSS delays). */
+  /* R83: the NARROW build, read from the one seam constant. This was a
+     bare `innerWidth <= 1024` — the only numeric seam literal left in
+     the build after the zoning moved to viewport.js — and it meant the
+     tablet band (768–1359) ran the DESKTOP branch against a stage the
+     stylesheet had hidden: no entry triggers, a blank grid. */
+  if (isMobileViewport()) {
+    /* NARROW (the rebuild, 2026-09-07): the ROW view's counterpart is the
+       vertical list (.work-m — the nine projects in the carousel's
+       order, image / name / description; work-narrow.css). No driver,
+       no docking metas, no cursor, no filter pills (the desktop has
+       none). This branch wires the entrances only: each entry's name and
+       description word-reveal and its image fade-rises as it enters —
+       the founders slots, once — and the footer's reveal as it comes
+       into view. */
+    const entries = Array.from(document.querySelectorAll('[data-work-m-entry]')).filter((el) => el instanceof HTMLElement);
+    entries.forEach((entry) => {
+      cleanups.push(initMobileEntrance(entry, {
+        lines: [entry.querySelector('.work-m__title'), entry.querySelector('.work-m__desc')].filter((el) => el instanceof HTMLElement),
+        media: [entry.querySelector('.work-m__img')].filter((el) => el instanceof HTMLElement),
+        start: 'top 80%',
+      }));
+    });
+    const reducedM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const footerEl = footer instanceof HTMLElement ? footer.querySelector('[data-landing-footer]') : null;
+    if (footerEl instanceof HTMLElement) {
+      const timeouts = [];
+      cleanups.push(() => timeouts.forEach(clearTimeout));
+      let io = null;
+      (document.fonts?.ready ?? Promise.resolve()).then(() => {
+        const wrapped = wrapFooterReveals(footerEl);
+        const play = () => playFooterReveals(wrapped, (fn, ms) => timeouts.push(setTimeout(fn, ms)));
+        if (reducedM || typeof IntersectionObserver !== 'function') { play(); return; }
+        /* The footer sits UNDER the list until the spacer scrolls it clear
+           (the sticky uncover, work-narrow.css) — the cue is the spacer 200px
+           into the viewport, the landing's narrow footer cue. */
+        const spacer = document.querySelector('[data-work-footer-spacer]');
+        io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { play(); io?.disconnect(); } }, spacer ? { rootMargin: '0px 0px -200px 0px', threshold: 0 } : { threshold: 0.1 });
+        io.observe(spacer ?? footerEl);
+      });
+      cleanups.push(() => io?.disconnect());
+    }
+    return () => cleanups.forEach((fn) => fn());
+  }
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stageH = () => stage.clientHeight || window.innerHeight;

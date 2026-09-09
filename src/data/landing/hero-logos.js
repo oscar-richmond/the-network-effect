@@ -63,11 +63,5 @@ export const HERO_LOGO_ROW_DUR_S = 48;
  *  at frame x −68). Expressed as a negative animation delay so the row
  *  loads on the frame's phase and rolls on from there. */
 export const HERO_LOGO_ROW_PHASE_PX = -68;
-/* THE PHONE'S ROW (mobile rebuild Part 2, frame GvANAN3kJOPV8AKOi3O9FF 1:213):
-   102.4×64 cells on a 110.4 pitch — the desktop's cell at 0.64 with the
-   frame's 8 gap. Same set, same order, same direction and duration; the
-   set width is the wrap distance the phone's keyframe reads. */
-export const HERO_LOGO_CELL_PITCH_M = 110.4;
-export const HERO_LOGO_SET_W_M = HERO_LOGO_CELL_PITCH_M * HERO_LOGO_BRANDS.length; /* 993.6 */
 export const HERO_LOGO_ROW_PHASE_DELAY_S =
   -((HERO_LOGO_SET_W + HERO_LOGO_ROW_PHASE_PX) / HERO_LOGO_SET_W) * HERO_LOGO_ROW_DUR_S; /* −46.11 */

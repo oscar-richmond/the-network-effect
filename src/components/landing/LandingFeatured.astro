@@ -36,7 +36,6 @@
  * Content/rights flags live in src/data/landing/featured-work.js.
  */
 import { asset } from '../../utils/asset.js';
-import { QUERIES } from '../../config/breakpoints.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
 import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
 import GradualBlur from '../GradualBlur.astro';
@@ -47,16 +46,14 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
    sizes branch is larger than any candidate, so it keeps the full file. */
 /* the phone's card renders 304px (the rail) or 167px (/work's grid): 200px
    resolves a 3× phone to the 600 candidate — the density cap (THE FINAL GATE) */
-const CARD_SIZES = `${QUERIES.phone} 200px, ${QUERIES.mobile} 380px, 1728px`;
+const CARD_SIZES = '(max-width: 767px) 200px, (max-width: 1359px) 380px, 1728px';
 const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
 ---
 
 {/* THE REBUILD (2026-09-07): below the seam this same markup is a
     touch-scrolled rail (landing-narrow.css) — the desktop's staggered
     strip, panned by the finger instead of scrubbed by the page. */}
-{/* below the seam (Oscar 2026-09-08): the page layer darkens over the services tail as it reaches the viewport's bottom (ground.js),
-    so this band's ink enters on a settled dark; its own bare tail after the rail carries the fade back to light for WE CREATE ACCESS */}
-<section class="landing-featured" data-landing-featured data-ground="dark" data-ground-fade data-ground-fade-from="[data-services-tail-m]" aria-label="Featured work">
+<section class="landing-featured" data-landing-featured aria-label="Featured work">
   <div class="landing-featured__stage" data-featured-stage>
     <h2 class="landing-featured__header">
       <span class="landing-featured__hl landing-featured__hl--featured" data-featured-line>FEATURED</span>
@@ -93,8 +90,6 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
           data-work-link
           data-slug={card.slug}
           data-live="true"
-          data-phone-img={card.phoneImg}
-          data-phone-srcset={card.phoneImg ? imageSrcset(card.phoneImg, [680, 1200], 2000) : undefined}
         >
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
@@ -131,8 +126,6 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
           data-slug={card.slug}
           data-live="false"
           data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link, unfocusable"
-          data-phone-img={card.phoneImg}
-          data-phone-srcset={card.phoneImg ? imageSrcset(card.phoneImg, [680, 1200], 2000) : undefined}
         >
           <figure class="landing-featured__imgwin" aria-hidden="true">
             <img
@@ -195,11 +188,5 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
   {/* The shared [ VIEW CASE STUDY + ] cursor — a top-level element
       inside the section, carrying difference itself (see
       view-case-cursor.js). */}
-  {/* below the seam (rail-pin.js): the runway the pinned stage holds through — the rail's travel plus the hold; the stage's sticky
-      box is constrained by this section, so it lets go as the runway ends. Nothing above the seam. */}
-  <div class="m-runway" data-featured-runway-m aria-hidden="true"></div>
   <div class="work-cursor" data-featured-cursor aria-hidden="true">( VIEW CASE STUDY + )</div>
 </section>
-{/* below the seam: the bare tail AFTER the section (outside the stage's sticky constraint, so the stage has released before it
-    scrolls in) — the page layer lightens for WE CREATE ACCESS as this reaches the viewport's bottom (ground.js data-ground-fade-from) */}
-<div class="m-tail" data-featured-tail-m aria-hidden="true"></div>
