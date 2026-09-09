@@ -33,7 +33,7 @@ import LandingFooter from '../components/landing/LandingFooter.astro';
 import { WORK_PROJECTS, WORK_EXTRAS, WORK_GRID_HOVER } from '../data/landing/featured-work.js';
 import { LIVE_CASE_SLUGS } from '../data/landing/case-studies.js';
 import { asset } from '../utils/asset.js';
-import { imageSrcset, gateSrcset, gateSizes } from '../utils/thumb-srcset.js';
+import { imageSrcset, gateSrcset, gateSizes, GATE_GIF } from '../utils/thumb-srcset.js';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/work.css';
@@ -50,8 +50,12 @@ const workPool = [...WORK_PROJECTS, ...WORK_EXTRAS];
 /* THE FINAL GATE (2026-09-08): the phone's grid tile renders 167px and the row 342px; both
    branches resolve a 3× phone to the 680 candidate (the density cap) so the two views —
    both in the DOM, both fetched — share one file per project instead of two. */
-const GRID_SIZES = '(max-width: 767px) 50vw, (max-width: 1359px) 50vw, 1728px';
-const gridSrcset = (src) => imageSrcset(src, [680, 1200], 2000);
+/* THE 402 FRAME (2026-09-09): below 768 the desktop's rows are display:none
+   behind the phone's own composition (below) — "1px" there selects the 8w
+   GIF, so the phone fetches none of these. The tablet and the desktop pick
+   exactly what they did. */
+const GRID_SIZES = '(max-width: 767px) 1px, (max-width: 1359px) 50vw, 1728px';
+const gridSrcset = (src) => `${GATE_GIF} 8w, ${imageSrcset(src, [680, 1200], 2000)}`;
 /* ── GRID VIEW (R35, Oscar 2026-09-03) — COMPOSITION A, nine tiles from
    the single source (the eight projects + the Ashley portrait stub,
    the pool's only true 3:4 source). A 12-column grid inside the 24px
@@ -74,6 +78,52 @@ const GRID_ROWS = [
 const gridRows = GRID_ROWS.map((row) =>
   row.map(([slug, mod]) => ({ p: workPool.find((x) => x.slug === slug), mod })).filter((t) => t.p !== undefined),
 );
+
+/* ═══ THE 402 FRAME (V9fcTtbistM57vsObNruR6, 2026-09-09) — the PHONE's two
+   views, rendered beside the desktop's (each hidden at the other's width;
+   work-narrow.css). Page y = frame y − 49.
+
+   GRID (0:12): NINE tiles in SEVEN rows, 48 between rows (a row's lowest
+   name bottom → the next row's image top), names 18 tall 16 under their
+   image; the first row at page y180. Modules at 402 (fluid on the 370
+   measure): sq 181×181 · pt 181×260 · wide 370×254 · land 276×181. Paired
+   rows on the 8 gutter; row 3's portrait is CENTRED (x110 = (402−181)/2);
+   row 7's landscape is right-aligned (x110..386). The projects are the
+   frame's image nodes (0:17 … 0:72), read against the rows frame where the
+   same file is named: row 5's right tile is the Netflix key art the rows
+   frame calls ADOLESCENCE — the grid labels it "Pavilion" (a slip, not
+   reproduced). The frame's "Pavilion" / "Music & Culture" labels are the
+   shared data's "Pavilion Club" / "Music and Culture" (the data wins, as
+   WE BUILD's colon). Adidas is the pool's adidas Spezial stub, named by
+   the frame (featured-work.js) — an inert placeholder like every unbuilt
+   study. Thunder Aviation (the desktop grid's ninth) is not drawn.
+
+   ROWS (0:124): EIGHT full-width tiles 370×254 on a 336 pitch (254 + 16 +
+   18 + 48) from page y180, the same name role and link rules. The frame
+   omits Pavilion Summit here (nine vs eight — FLAGGED); its second tile
+   carries the Pavilion image under a repeated "Wilderness Reserve" label
+   (a slip — the image names the project). Built per the frame. */
+const GRID_ROWS_M = [
+  [['pavilion-club', 'sq'], ['pavilion-summit', 'pt']],
+  [['wilderness-reserve', 'wide']],
+  [['tbc-ashley-walters', 'pt']],
+  [['top-boy', 'wide']],
+  [['tbc-adidas-spezial', 'pt'], ['adolescence', 'sq']],
+  [['yoxman-food-festival', 'wide']],
+  [['animol', 'land']],
+];
+const gridRowsM = GRID_ROWS_M.map((row) =>
+  row.map(([slug, mod]) => ({ p: workPool.find((x) => x.slug === slug), mod })).filter((t) => t.p !== undefined),
+);
+const rowModM = (row) => (row.length === 2 ? 'pair' : row[0].mod === 'wide' ? 'full' : row[0].mod === 'land' ? 'right' : 'centre');
+const ROWS_M = ['wilderness-reserve', 'pavilion-club', 'yoxman-food-festival', 'tbc-ashley-walters', 'adolescence', 'top-boy', 'animol', 'tbc-adidas-spezial'];
+const rowsM = ROWS_M.map((slug) => workPool.find((x) => x.slug === slug)).filter((p) => p !== undefined);
+/* The phone's tiles pick their file by the drawn width at 3× (the density
+   cap resolves to the 680 / 1200 variants); above the seam they are
+   display:none and the srcset's 8w GIF is what "1px" selects, so the
+   desktop fetches nothing for them — the hero-card gate, inverted. */
+const M_SIZES = { sq: '(max-width: 767px) calc(50vw - 20px), 1px', pt: '(max-width: 767px) calc(50vw - 20px), 1px', wide: '(max-width: 767px) calc(100vw - 32px), 1px', land: '(max-width: 767px) calc(74.6vw - 24px), 1px' };
+const mSrcset = (src) => `${GATE_GIF} 8w, ${imageSrcset(src, [680, 1200], 2000)}`;
 
 ---
 
@@ -164,6 +214,32 @@ const gridRows = GRID_ROWS.map((row) =>
             )}
             <h2 class="work-m__title">{name}</h2>
             <p class="work-m__desc">{p.desc}</p>
+          </article>
+        );
+      })}
+    </div>
+    {/* ── THE PHONE'S ROWS (0:124) — eight 370×254 tiles on the 336 pitch,
+        the name 16 under each (the frame's title role), no descriptions;
+        display:none from 768 up (the band keeps its two-up list above,
+        itself display:none below 768). The entries carry the list's
+        data-work-m-entry so work-page.js's narrow branch wires the SAME
+        entrance — the name's word reveal and the image's fade-rise as
+        each enters (m-entrance.js). */}
+    <div class="work-r" data-work-r>
+      {rowsM.map((p, i) => {
+        const live = LIVE_CASE_SLUGS.includes(p.slug);
+        const name = p.title.join(' ');
+        const img = <img src={p.workImg} srcset={mSrcset(p.workImg)} sizes={M_SIZES.wide} alt="" loading={i < 2 ? 'eager' : 'lazy'} decoding="async" />;
+        return (
+          <article class="work-r__entry" data-work-m-entry data-slug={p.slug}>
+            {live ? (
+              <a class="work-r__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${name} — view project`}>
+                <figure class="work-r__img work-m__img">{img}</figure>
+              </a>
+            ) : (
+              <figure class="work-r__img work-m__img is-placeholder" data-a4-note="unbuilt study: inert placeholder — no link">{img}</figure>
+            )}
+            <h2 class="work-r__title work-m__title">{name}</h2>
           </article>
         );
       })}
@@ -290,6 +366,33 @@ const gridRows = GRID_ROWS.map((row) =>
             ) : (
               <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-hover-img={asset(WORK_GRID_HOVER[p.slug] ?? p.workImg)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
                 <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} srcset={gridSrcset(p.workImg)} sizes={GRID_SIZES} alt="" loading={r === 0 ? 'eager' : 'lazy'} decoding="async" /><img data-gtile-over src={p.workImg} srcset={gridSrcset(p.workImg)} sizes={GRID_SIZES} alt="" hidden decoding="async" /></figure>
+                <p class="work-gtile__name">{name}</p>
+              </span>
+            );
+          })}
+        </div>
+      ))}
+      {/* ── THE PHONE'S GRID (0:12) — display:none from 768 up; the desktop's
+          rows above are display:none below it. Same tile grammar
+          (data-work-gtile, the media figure, the name), so work-grid.js's
+          row reveal — the image's blur resolving as a quarter of the row's
+          tallest tile enters, reversible — drives these rows exactly as it
+          drives the desktop's. No hover swap (touch). */}
+      {gridRowsM.map((row, r) => (
+        <div class={`work-grid__row work-grid__row--m work-grid__row--m-${rowModM(row)}`} data-work-grid-row data-work-grid-row-m data-row={String(r)}>
+          {row.map(({ p, mod }, t) => {
+            const live = LIVE_CASE_SLUGS.includes(p.slug);
+            const name = p.title.join(' ');
+            const cls = `work-gtile work-gtile--m work-gtile--m-${mod}`;
+            const eager = r === 0;
+            return live ? (
+              <a class={cls} href={`/work/${p.slug}`} data-work-link data-work-gtile data-slug={p.slug} data-tile={String(t)} aria-label={`${name} — view project`}>
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} srcset={mSrcset(p.workImg)} sizes={M_SIZES[mod]} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" /></figure>
+                <p class="work-gtile__name">{name}</p>
+              </a>
+            ) : (
+              <span class={`${cls} is-placeholder`} data-work-gtile data-slug={p.slug} data-tile={String(t)} data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link (no cursor), unfocusable">
+                <figure class="work-gtile__media"><img data-gtile-base src={p.workImg} srcset={mSrcset(p.workImg)} sizes={M_SIZES[mod]} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" /></figure>
                 <p class="work-gtile__name">{name}</p>
               </span>
             );

@@ -191,9 +191,13 @@ export const WORK_EXTRAS = [
   },
   {
     /* TBC — RIGHTS: adidas Spezial campaign photography (brand
-       property). */
+       property). THE 402 FRAME (V9fcTtbistM57vsObNruR6 0:59 / 0:166,
+       2026-09-09) draws this image in both /work views under the name
+       "Adidas" — the title is the frame's; the stub stays tbc (no
+       desktop surface renders it) and the phone's tiles keep it an
+       inert placeholder. */
     index: '/00',
-    title: ['TBC'],
+    title: ['Adidas'],
     desc: 'Content to follow.',
     slug: 'tbc-adidas-spezial',
     tags: [], // TBC

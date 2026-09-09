@@ -288,6 +288,133 @@
 	.landing-v2.landing-v2.work-page .work-footer-spacer { display: none; }
 }
 
+/* ═══ THE 402 FRAME (V9fcTtbistM57vsObNruR6 — 0:12 grid, 0:124 rows;
+   2026-09-09): the PHONE's /work. Page y = frame y − 49.
+
+   NO PAGE HEADING (FLAGGED — the frames draw none; the desktop's FEATURED
+   WORK is hidden here, one rule to restore). THE TOGGLE (0:74 / 0:167) —
+   the two 16×12 glyphs alone at x16, page y103, their left edges 24
+   apart: the active view's glyph in the brand red (#c1250e), the other in
+   the ink; no chip, no label. The mechanic is the desktop's, unchanged
+   (work-view.js: the blur-crossfade, ne:work-view + ?view=, the scroll to
+   top, the full teardown and boot). Hit areas: the button IS the 16×12
+   glyph; its ::after grows it to a 44×44 box — the glyphs' left edges are
+   40 apart, so the two boxes abut (x0–44, x44–88) without overlapping,
+   each glyph off-centre in its own. THE GRID — the seven-row composition (the
+   modules in work.astro); THE ROWS — eight 370×254 tiles on the 336
+   pitch; names 18 at the frame's role (--type-work-tile), 16 under the
+   image; 48 between rows. The footer follows the last name at 160 to its
+   statement in both views (60 here + the footer's 100 — the rows and
+   case frames; the grid frame's 220 is the outlier, LOGGED). */
+@media (max-width: 767px) {
+	.landing-v2.work-page {
+		--wk-toggle-top: 103px;   /* the glyph's top (0:74 at frame y152) */
+		--wk-toggle-gap: 65px;    /* glyph bottom 115 → the first tile at 180 */
+		--wk-row-gap: 48px;
+		--wk-name-gap: 16px;
+		--wk-bottom: 60px;
+		--wk-u: calc(100vw / 402);
+	}
+	.landing-v2.work-page .work-header { display: none; }
+
+	/* ── the toggle ── */
+	.landing-v2.work-page .work-viewtoggle {
+		justify-content: flex-start;
+		align-items: flex-start;
+		gap: 24px;
+		margin: var(--wk-toggle-top) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		height: 12px;
+	}
+	.landing-v2.work-page .work-viewtoggle__btn {
+		height: 12px;
+		width: 16px;
+		padding: 0;
+		gap: 0;
+		background: transparent;
+		color: #161616;
+		border-radius: 0;
+	}
+	.landing-v2.work-page .work-viewtoggle__btn.is-active {
+		background: transparent;
+		color: #c1250e;
+	}
+	.landing-v2.work-page .work-viewtoggle__label { display: none; }
+	.landing-v2.work-page .work-viewtoggle__icon { width: 16px; height: 12px; }
+	/* the hit areas: two 44×44 boxes abutting at x60 — the glyphs sit at
+	   x16 and x56 (the 24 gap), so each box holds its glyph off-centre */
+	.landing-v2.work-page .work-viewtoggle__btn::after { inset: -16px -12px -16px -16px; }   /* x0 … x44 */
+	.landing-v2.work-page .work-viewtoggle__btn + .work-viewtoggle__btn::after { inset: -16px -16px -16px -12px; } /* x44 … x88 */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.work-page .work-viewtoggle__btn { transition: color 0.3s cubic-bezier(0.42, 0, 0.24, 1); }
+	}
+
+	/* ── the grid: the desktop's rows hidden, the frame's seven shown ── */
+	.landing-v2.work-page .work-grid { padding: 0 0 var(--wk-bottom); }
+	.landing-v2.work-page .work-grid__rows {
+		gap: var(--wk-row-gap);
+		padding-top: var(--wk-toggle-gap);
+	}
+	.landing-v2.work-page .work-grid__row:not(.work-grid__row--m) { display: none; }
+	.landing-v2.work-page .work-grid__row--m {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0 var(--work-grid-gutter);
+		align-items: start;
+	}
+	.landing-v2.work-page .work-grid__row--m-full,
+	.landing-v2.work-page .work-grid__row--m-centre,
+	.landing-v2.work-page .work-grid__row--m-right { grid-template-columns: minmax(0, 1fr); }
+	.landing-v2.work-page .work-gtile--m { grid-column: auto; }
+	.landing-v2.work-page .work-grid__row--m-centre .work-gtile--m {
+		width: calc((100% - var(--work-grid-gutter)) / 2);
+		justify-self: center;
+	}
+	.landing-v2.work-page .work-grid__row--m-right .work-gtile--m {
+		width: calc(276 / 370 * 100%);
+		justify-self: end;
+	}
+	.landing-v2.work-page .work-gtile--m-sq .work-gtile__media { aspect-ratio: 1 / 1; }
+	.landing-v2.work-page .work-gtile--m-pt .work-gtile__media { aspect-ratio: 181 / 260; }
+	.landing-v2.work-page .work-gtile--m-wide .work-gtile__media { aspect-ratio: 370 / 254; }
+	.landing-v2.work-page .work-gtile--m-land .work-gtile__media { aspect-ratio: 276 / 181; }
+	.landing-v2.work-page .work-gtile--m .work-gtile__name,
+	.landing-v2.work-page .work-r__title {
+		margin: var(--wk-name-gap) 0 0;
+		height: 18px;
+		font-family: var(--type-work-tile-face);
+		font-weight: var(--type-work-tile-weight);
+		font-synthesis: none;
+		font-size: var(--type-work-tile-size);
+		line-height: var(--type-work-tile-lh);
+		letter-spacing: var(--type-work-tile-ls);
+		text-transform: var(--type-work-tile-case);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: #161616;
+	}
+
+	/* ── the rows: the band's list hidden, the frame's eight shown ── */
+	.landing-v2.work-page .work-stage { padding: var(--wk-toggle-gap) var(--m-margin-safe-r, var(--m-margin)) var(--wk-bottom) var(--m-margin-safe-l, var(--m-margin)); }
+	.landing-v2.work-page .work-m { display: none; }
+	.landing-v2.work-page .work-r { display: block; }
+	.landing-v2.work-page .work-r__entry { margin: 0 0 var(--wk-row-gap); }
+	.landing-v2.work-page .work-r__entry:last-child { margin-bottom: 0; }
+	.landing-v2.work-page .work-r__imglink { display: block; }
+	.landing-v2.work-page .work-r__img {
+		margin: 0;
+		width: 100%;
+		aspect-ratio: 370 / 254;
+		overflow: hidden;
+		background: #e4e4ea;
+	}
+	.landing-v2.work-page .work-r__img img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
 /* the band: the desktop's own 12-column rows */
 @media (min-width: 768px) and (max-width: 1359px) {
 	.landing-v2.work-page {
@@ -323,4 +450,13 @@
 	body.landing-v2.work-page > .work-footer-wrap,
 	body.landing-v2.work-page > .work-footer-wrap > .landing-footer { order: 4; } /* the wrap is display:contents — the footer is the item */
 	body.landing-v2.work-page > .work-footer-spacer { order: 5; }
+}
+
+/* THE PHONE'S MARKUP (the seven grid rows, the eight-tile rows list) is
+   display:none from 768 up — last in the sheet and one class heavier than
+   the band's row rule above, which would otherwise show the rows. The
+   desktop applies this (a min-width rule) to elements it never drew. */
+@media (min-width: 768px) {
+	.landing-v2.work-page .work-grid__row--m.work-grid__row--m,
+	.landing-v2.work-page .work-r.work-r { display: none; }
 }

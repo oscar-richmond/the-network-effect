@@ -248,6 +248,18 @@
     --type-access-label-size: 48px;
     --type-access-label-lh: 1;
     --type-access-label-ls: 0em;
+    --type-work-tile-face: var(--font-type-serif);
+    --type-work-tile-weight: 500;
+    --type-work-tile-case: none;
+    --type-work-tile-size: 18px;
+    --type-work-tile-lh: 1;
+    --type-work-tile-ls: 0em;
+    --type-case-note-face: var(--font-type-serif);
+    --type-case-note-weight: 500;
+    --type-case-note-case: none;
+    --type-case-note-size: 18px;
+    --type-case-note-lh: 1.3333;
+    --type-case-note-ls: -0.015em;
     --type-nav-size-scrolled: 18px;
     --type-pillar-title-size-collapsed: 14px;
     --type-pillar-index-size: 14px;

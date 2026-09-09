@@ -100,7 +100,15 @@ export function initWorkGrid() {
      text's measured descent) → margin-bottom = GRID_ROW_INK_GAP_PX −
      (row bottom − ink bottom); the flex gap is zeroed while JS owns
      it. Fonts-gated, re-derived on resize. */
-  const gapRows = Array.from(grid.querySelectorAll('[data-work-grid-row]')).filter((el) => el instanceof HTMLElement);
+  /* THE 402 FRAME (2026-09-09): the grid carries two sets of rows — the
+     desktop's and the phone's seven (work.astro), each display:none at
+     the other's width. Only the RENDERED set is a row here: the gap
+     derivation's "last row" and the reveal's measurements must not see
+     the hidden set (a hidden last row would hand the desktop's real last
+     row a margin it never had). At the desktop this is the same three
+     rows as before. */
+  const shownRows = Array.from(grid.querySelectorAll('[data-work-grid-row]')).filter((el) => el instanceof HTMLElement && getComputedStyle(el).display !== 'none');
+  const gapRows = shownRows;
   const inkBottomOf = (nameEl) => {
     const r = nameEl.getBoundingClientRect(); const cs = getComputedStyle(nameEl);
     const c = document.createElement('canvas').getContext('2d'); if (!c) return r.bottom;
@@ -140,7 +148,7 @@ export function initWorkGrid() {
      (Oscar's default). Tunables: GRID_REVEAL_THRESHOLD_T, the
      duration and blur as CSS vars (GRID_REVEAL_MS / GRID_REVEAL_BLUR_PX).
      RM: no veil (CSS), rows marked resolved at boot. */
-  const rows = Array.from(grid.querySelectorAll('[data-work-grid-row]')).filter((el) => el instanceof HTMLElement);
+  const rows = shownRows;
   const tilesOf = (row) => Array.from(row.querySelectorAll('[data-work-gtile]')).filter((el) => el instanceof HTMLElement);
   grid.style.setProperty('--work-reveal-s', `${GRID_REVEAL_MS / 1000}s`);
   grid.style.setProperty('--work-reveal-blur', `${GRID_REVEAL_BLUR_PX}px`);

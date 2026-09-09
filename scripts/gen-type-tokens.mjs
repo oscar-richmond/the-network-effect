@@ -72,6 +72,9 @@ export const PHONE_ONLY_ROLES = [
 	['footer-statement', 'sans', 600, 30, 1, 0, 'uppercase'],           // 1:409
 	['pillar-title', 'sans', 600, 28, 1, -0.02, 'uppercase'],           // 1:109 (collapsed 14 — the stack's compaction)
 	['access-label', 'serif', 400, 48, 1, 0, 'none'],                   // 1:77, 1:81
+	/* /work + the case study (V9fcTtbistM57vsObNruR6, 2026-09-09) */
+	['work-tile', 'serif', 500, 18, 1, 0, 'none'],                      // 0:23 … 0:73, 0:129 … 0:166 — the tile names, an 18 box
+	['case-note', 'serif', 500, 18, 24 / 18, -0.015, 'none'],           // 2:50 — the stream's text block
 ];
 
 const BODY_D = BODY_DESKTOP;
