@@ -30,7 +30,10 @@ import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js'
 gsap.registerPlugin(ScrollTrigger);
 
 const LINE_STAGGER_S = 0.12;
-const MEDIA_AT_MS = 400;
+/* the media beat after the section's arrival — exported so a section
+   that runs its own arrival (the case study's MORE WORK) lands its
+   chip on the same beat as the landing's */
+export const MEDIA_AT_MS = 400;
 const MEDIA_STAGGER_MS = 120;
 
 export function initMobileEntrance(section, { lines = [], media = [], start = 'top 65%' } = {}) {

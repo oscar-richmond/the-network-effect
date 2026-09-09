@@ -45,11 +45,17 @@ import { wireRailVeils } from './rail-veils.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initStatementBar } from './statement-bar.js';
 import { initImageReveal } from './img-reveal.js';
+import { MEDIA_AT_MS } from './m-entrance.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const COL_STAGGER_S = 0.08;
 const LINE_STAGGER_S = 0.12;
+/* The phone's gallery text block (the OUR WORK paragraph riding between
+   the stream's rows): its word reveal starts as its top edge crosses
+   this fraction of the viewport height (was 0.65 — too late, Oscar
+   2026-09-09). */
+export const NOTE_ENTER_VH = 0.88;
 /* Bottom behaviours — the landing constants (landing-closing.js). */
 const FOOTER_H_PX = 830; /* frame 13:381 (was 811) */
 
@@ -754,12 +760,22 @@ export function initCaseStudy() {
        word-revealed on entering at the paragraph's own convention (65%,
        once). The block is display:none from 768, where the head above
        carries the copy as before. */
+    /* 2026-09-09 (Oscar: "too late"): the block sits between image rows,
+       so the paragraph's 65% (its top 306px up from the bottom edge at
+       874) left it blank while the reader was already on it — the word
+       reveal is a 1.2s rise per word on a 0.12s line stagger, so a
+       seven-line block needs ~2s to finish. It now starts as its top
+       edge comes up through NOTE_ENTER_VH of the viewport (88%: 105px
+       in from the bottom at 874, 80 at 664) — the deepest entrance line
+       on the page bar the rows' own 85%, so the text is moving before
+       the reader reaches it and settled by mid-screen at a reading
+       pace. Still once. */
     const note = document.querySelector('[data-cs-note]');
     if (note instanceof HTMLElement && isPhoneViewport()) {
       wrapWordRevealElement(note);
       triggers.push(ScrollTrigger.create({
         trigger: note,
-        start: 'top 65%',
+        start: `top ${Math.round(NOTE_ENTER_VH * 100)}%`,
         once: true,
         onEnter: () => playLineRevealElement(note),
       }));
@@ -854,6 +870,11 @@ export function initCaseStudy() {
       });
     });
     const more = document.querySelector('[data-cs-more]');
+    /* the phone's VIEW ALL chip (2026-09-09): the landing's FEATURED
+       WORK chip entrance, on this section's arrival — label and arrow
+       are one <a>, so they rise as one; the beat is m-entrance's chip
+       beat (MEDIA_AT_MS), the cards keep their 200 + i×120 */
+    const viewallM = document.querySelector('[data-cs-viewall-m]');
     if (more) {
       triggers.push(ScrollTrigger.create({
         trigger: more,
@@ -861,6 +882,7 @@ export function initCaseStudy() {
         once: true,
         onEnter: () => {
           if (moreTitle instanceof HTMLElement) playLineRevealElement(moreTitle);
+          if (viewallM instanceof HTMLElement && isPhoneViewport()) schedule(() => viewallM.classList.add('is-visible'), MEDIA_AT_MS);
           moreCards.forEach((card, i) => {
             schedule(() => {
               card.classList.add('is-visible');

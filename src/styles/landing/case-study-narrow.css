@@ -511,6 +511,25 @@
 
 	/* ── FLAGGED: the frame draws no floating chip ── */
 	.landing-v2.case-page .cs-float { display: none; }
+
+	/* ── VIEW ALL's entrance (2026-09-09) — the landing's FEATURED WORK
+	   chip verbatim (landing-narrow.css "the chip's entrance"): the whole
+	   <a> — label and arrow as one — fades and rises 16px over 0.8s on
+	   the house ease, `.is-visible` set by case-study.js at the MORE WORK
+	   section's arrival + the chip beat (m-entrance's MEDIA_AT_MS, 400ms
+	   — where the landing's chip lands after its section's arrival).
+	   No-preference gated: RM renders it present, as before. */
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.case-page .cs-more__viewall-m {
+			opacity: 0;
+			transform: translateY(16px);
+			transition: opacity 0.8s cubic-bezier(0.42, 0, 0.24, 1), transform 0.8s cubic-bezier(0.42, 0, 0.24, 1);
+		}
+		.landing-v2.case-page .cs-more__viewall-m.is-visible {
+			opacity: 1;
+			transform: none;
+		}
+	}
 }
 /* the phone's markup is display:none from 768 up */
 @media (min-width: 768px) {
