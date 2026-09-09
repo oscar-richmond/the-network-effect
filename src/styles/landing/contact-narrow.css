@@ -84,6 +84,17 @@
 		font-synthesis: none;
 		letter-spacing: inherit;
 	}
+	/* THE PHONE (2026-09-09): the display role is the landing frame's 48
+	   now (was ~36), and "CONVERSATION." — one unbreakable word at 8.2em —
+	   ran 23 past the 370 measure at 402 (measured 393). The intro takes
+	   the role's size only where that word fits; otherwise it scales
+	   with the measure (0.122 = 48 / 393, the word's ratio at this face):
+	   45.1 at 402, 40 at 360, the role's 48.6 at 430. */
+	@media (max-width: 767px) {
+		.landing-v2.landing-v2 .ct__intro {
+			font-size: min(var(--type-display-size), calc((100vw - 32px) * 0.122));
+		}
+	}
 	.landing-v2.landing-v2 .ct__intro-indent {
 		display: inline-block;
 		width: var(--ct-indent);

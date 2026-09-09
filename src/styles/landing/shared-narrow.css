@@ -418,6 +418,13 @@
 		color: #161616;
 	}
 	.landing-v2.landing-v2 .landing-footer__dst-indent { width: var(--m-footer-indent); }
+	/* THE 404 (no page script): the statement's authored lines flow as
+	   one paragraph here, and the markup puts no whitespace between
+	   them — on every other page the word-reveal's clips are atomic
+	   inlines and break between themselves, but the bare text ran
+	   "THROUGH" straight into "RELATIONSHIPS." and 28 past the measure.
+	   A space between the lines where nothing scripts them. */
+	.landing-v2.landing-v2.nf-page .landing-footer__dst-line + .landing-footer__dst-line::before { content: ' '; }
 	.landing-v2.landing-v2 .landing-footer__dst-grey,
 	.landing-v2.landing-v2 .landing-footer--light .landing-footer__dst-grey { color: var(--footer-muted); }
 
