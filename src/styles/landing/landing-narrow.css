@@ -2440,7 +2440,7 @@
 		height: auto;
 	}
 	.landing-v2.landing-home .landing-closing__stage {
-		position: relative; /* the rail veils' containing block (item 3) */
+		position: static;
 		height: auto;
 		padding: var(--cl-pad-top) var(--m-margin-safe-r, var(--m-margin)) var(--cl-pad-bottom) var(--m-margin-safe-l, var(--m-margin));
 		display: grid;
@@ -2657,6 +2657,10 @@
 	   light ground */
 	.landing-v2.landing-home .landing-closing__stage {
 		--m-veil-ink: #eeeef0;
+		/* the veils' containing block — the PHONE only: the tablet's stage
+		   stays static (its headline is placed against the section; making
+		   the stage relative there moved it 429px — caught by the 1024 diff) */
+		position: relative;
 	}
 	.landing-v2.landing-home .landing-closing__stage::before,
 	.landing-v2.landing-home .landing-closing__stage::after {
