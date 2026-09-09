@@ -619,6 +619,137 @@
 	}
 }
 
+/* ── THE 402 FRAME (Oscar, 2026-09-09 — 1:11, page y = frame y − 49):
+   the dark band 1:15 opens at page 1167; WHO WE ARE 1:55 at 1273
+   RIGHT-aligned to 386 (eyebrow 12/14); the headline 1:74 at 1319,
+   370×206, heading 32 with its first line indented 202; the two chips
+   1:64 / 1:69 at 1565 SIDE BY SIDE, 179×38 each, 12 apart; the rail
+   1:35 at 1690 — THREE cards 306 tall on 8 gutters: Robbo 230, Ashley
+   224.4, both 450 — with 1:54 veiling the right edge into the ground.
+   THE RAIL is the house rail (the featured strip's grammar: a native
+   snapping scroller, the finger's own momentum, the end margin on
+   ::after); the three figures are its cards in the frame's order (the
+   photograph last — `order`, the DOM is the desktop's). THE MOTION is
+   the section's own and untouched: the entry drift (landing-founders.js,
+   each layer at its own amplitude, the portraits on `top`, the photo
+   on y) runs on the cards inside the rail — the scroller carries 128px
+   of head-room below the rail (padding pulled back by its margin) so
+   a drifting card is never clipped by the scroller's own box; the
+   section's overflow clips as before. The word reveals and the
+   is-visible fades are unchanged. */
+@media (max-width: 767px) {
+	.landing-v2.landing-home {
+		--fd-pad-top: 106px;
+		--fd-pad-bottom: 64px;
+		--fd-headline-gap: 32px;
+		--fd-ctas-gap: 40px;
+		--fd-media-gap: 87px;
+		--fd-rail-h: 306px;
+		--fd-rail-gap: 8px;
+		--fd-drift-room: 128px;
+	}
+	.landing-v2.landing-home .landing-founders {
+		padding-right: 0;
+		padding-left: 0;
+	}
+	.landing-v2.landing-home .landing-founders__label {
+		margin: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		text-align: right;
+	}
+	.landing-v2.landing-home .landing-founders__headline {
+		margin: var(--fd-headline-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		/* 202 at the frame's 32 */
+		text-indent: 6.3125em;
+	}
+	.landing-v2.landing-home .landing-founders__ctas {
+		margin: var(--fd-ctas-gap) var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+		flex-wrap: nowrap;
+		gap: 12px;
+	}
+	.landing-v2.landing-home .landing-founders__btn,
+	.landing-v2.landing-home .landing-founders__btn:nth-of-type(2) {
+		flex: 1 1 0;
+		justify-content: center;
+		min-width: 0;
+	}
+
+	/* the rail */
+	.landing-v2.landing-home .landing-founders__grid-space {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: var(--fd-rail-gap);
+		margin: var(--fd-media-gap) 0 calc(-1 * var(--fd-drift-room));
+		padding: 0 0 var(--fd-drift-room) var(--m-margin-safe-l, var(--m-margin));
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scroll-padding-left: var(--m-margin-safe-l, var(--m-margin));
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+	}
+	.landing-v2.landing-home .landing-founders__grid-space::-webkit-scrollbar {
+		display: none;
+	}
+	.landing-v2.landing-home .landing-founders__grid-space::after {
+		content: '';
+		flex: 0 0 var(--m-margin-safe-r, var(--m-margin));
+		/* after the ordered cards (order 0 would put it first) */
+		order: 4;
+	}
+	.landing-v2.landing-home .landing-founders__portrait,
+	.landing-v2.landing-home .landing-founders__photo {
+		flex: none;
+		height: var(--fd-rail-h);
+		aspect-ratio: auto;
+		scroll-snap-align: start;
+	}
+	.landing-v2.landing-home .landing-founders__portrait--robbo {
+		order: 1;
+		width: 230px;
+	}
+	.landing-v2.landing-home .landing-founders__portrait--ashley {
+		order: 2;
+		width: 224.4px;
+	}
+	.landing-v2.landing-home .landing-founders__photo {
+		order: 3;
+		width: 450px;
+		grid-column: auto;
+	}
+	.landing-v2.landing-home .landing-founders__photo img {
+		object-position: 50% 50%;
+	}
+	/* the names — the frame draws none; the portraits keep their
+	   /founders links (the hit area is the card) */
+	.landing-v2.landing-home .landing-founders__portrait-name {
+		display: none;
+	}
+	/* 1:54 — the ground veiling the rail's edges: 16 over the left margin,
+	   48 into the right edge, anchored to the rail's band (the section's
+	   last child, so its bottom is the section's bottom padding) */
+	.landing-v2.landing-home .landing-founders::before,
+	.landing-v2.landing-home .landing-founders::after {
+		content: '';
+		position: absolute;
+		bottom: var(--fd-pad-bottom);
+		height: var(--fd-rail-h);
+		z-index: 2;
+		pointer-events: none;
+	}
+	.landing-v2.landing-home .landing-founders::before {
+		left: 0;
+		width: var(--m-margin-safe-l, var(--m-margin));
+		background: linear-gradient(90deg, #161616 0%, rgba(22, 22, 22, 0) 100%);
+	}
+	.landing-v2.landing-home .landing-founders::after {
+		right: 0;
+		width: 48px;
+		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, #161616 100%);
+	}
+}
+
 /* ═══ OUR NETWORK ════════════════════════════════════════════════════
    The desktop section (frame 1:67), translated: OUR NETWORK at the
    heading tier (both words Dazzed, as the desktop renders), the

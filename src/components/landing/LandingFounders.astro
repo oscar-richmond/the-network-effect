@@ -41,6 +41,15 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 const foundersPhoto = asset('/assets/landing/founders/founders-photo.jpg');
 const robboPortrait = asset('/assets/landing/founders/robbo-portrait.jpg');
 const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
+/* THE PHONE'S ROBBO CARD (Oscar's 402 frame, 2026-09-09 — 1:40 "Robbo Team
+   Image 1 3" in a 230×306 window): the frame's own upload at 870×1212, the
+   same photograph as the desktop's 473-wide portrait at 1.8× its
+   resolution, shipped under /assets/landing/mobile. A phone-only <picture>
+   source (the hero's pattern) — above 767 the <img> is exactly what it
+   was. The density cap: sizes is two thirds of the 230 card, so DPR 3
+   resolves the 480 variant. */
+const robboPhone = asset('/assets/landing/mobile/robbo.jpg');
+const robboPhoneSrcset = imageSrcset(robboPhone, [480, 700], 870);
 ---
 
 {/* The track is the section's scroll runway: section height + the
@@ -140,7 +149,10 @@ const ashleyPortrait = asset('/assets/landing/founders/ashley-portrait.jpg');
         portrait exactly as before. */}
     <a class="landing-founders__portrait-link" href="/founders#robbo" aria-label="Robbo McCallum — founder profile">
     <span class="landing-founders__portrait-crop">
-      <img src={robboPortrait} alt="" loading="lazy" decoding="async" />
+      <picture>
+        <source media="(max-width: 767px)" srcset={robboPhoneSrcset} sizes="154px" />
+        <img src={robboPortrait} alt="" loading="lazy" decoding="async" />
+      </picture>
     </span>
     <span class="landing-founders__portrait-name" aria-hidden="true" data-char-ripple="in"
       >Robbo McCallum</span
