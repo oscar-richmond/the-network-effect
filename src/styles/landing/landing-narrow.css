@@ -923,6 +923,85 @@
 	}
 }
 
+/* THE PHONE (Figma 1:11, 2026-09-09) — values on the same mechanic:
+   the frame stacks the subtitle (1:56, eyebrow 12/14, right) ABOVE the
+   title (1:33, heading 32/30, right), then the industries as ONE
+   paragraph (1:32, term 24/27, left, 370 wide), then the strip (1:16,
+   five 272.37 cells on a 264.12 pitch, 330 tall) with 1:572's ground
+   fade on its right edge. Rhythm from the founders rail's foot: 218 to
+   the subtitle (154 here + the founders' 64), 40, 40, 80. The stage
+   becomes a flex column so the subtitle can lead without touching the
+   DOM (the reveal order follows it — landing-network.js). */
+@media (max-width: 767px) {
+	.landing-v2.landing-home {
+		--nw-pad-top: 154px;
+		--nw-subtitle-gap: 40px;
+		--nw-list-gap: 40px;
+		--nw-strip-gap: 80px;
+		/* 272.37 / 330 / 8.25 at 402 */
+		--nw-strip-w: 67.7534vw;
+		--nw-strip-h: 82.0896vw;
+		--nw-strip-overlap: 2.0522vw;
+		--nw-fade-w: 6%;
+	}
+	.landing-v2.landing-home .landing-network__stage {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+	}
+	.landing-v2.landing-home .landing-network__subtitle {
+		order: 1;
+		margin-top: 0;
+		font-family: var(--type-eyebrow-face);
+		font-weight: var(--type-eyebrow-weight);
+		font-size: var(--type-eyebrow-size);
+		line-height: var(--type-eyebrow-lh);
+		letter-spacing: var(--type-eyebrow-ls);
+		text-transform: var(--type-eyebrow-case);
+	}
+	.landing-v2.landing-home .landing-network__title {
+		order: 2;
+		margin-top: var(--nw-subtitle-gap);
+		text-align: right;
+	}
+	.landing-v2.landing-home .landing-network__body {
+		order: 3;
+		text-align: left;
+	}
+	/* one paragraph: the authored line blocks flow inline, joined by
+	   the runtime separators (landing-network.js) */
+	.landing-v2.landing-home .landing-network__body .landing-network__line {
+		display: inline;
+	}
+	.landing-v2.landing-home .landing-network__body .landing-network__line + .landing-network__line::before {
+		content: ' ';
+	}
+	.landing-v2.landing-home .landing-network__strip {
+		order: 4;
+		height: var(--nw-strip-h);
+	}
+	.landing-v2.landing-home .landing-network__strip-win {
+		height: var(--nw-strip-h);
+	}
+	/* the frame's 8 overlap — cells 272.37 on a 264.12 pitch */
+	.landing-v2.landing-home .landing-network__strip-win + .landing-network__strip-win {
+		margin-left: calc(-1 * var(--nw-strip-overlap));
+	}
+	/* 1:572 — the ground over the strip's right edge (94% → 100%); the
+	   left is drawn fully transparent in the frame */
+	.landing-v2.landing-home .landing-network__stage::after {
+		content: '';
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		width: var(--nw-fade-w);
+		height: var(--nw-strip-h);
+		background: linear-gradient(90deg, rgba(22, 22, 22, 0), #161616);
+		pointer-events: none;
+		z-index: 1;
+	}
+}
+
 /* the band: the desktop's row — title left and subtitle right on one
    line — and its five windows across */
 @media (min-width: 768px) and (max-width: 1359px) {

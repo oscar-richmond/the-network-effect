@@ -18,7 +18,7 @@ import {
   NETWORK_STRIP_SLOTS,
 } from '../../data/landing/network-strip-sets.js';
 import { asset } from '../../utils/asset.js';
-import { isMobileViewport, isTouchPrimary } from './viewport.js';
+import { isMobileViewport, isPhoneViewport, isTouchPrimary } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { FOUNDERS_HANDOFF_T, foundersDepartingEdgeInsetPx } from './landing-founders.js';
 
@@ -181,6 +181,11 @@ export function initLandingNetwork() {
   let currentKey = 'all';
   let targetKey = 'all';
   let swapBusy = false;
+  /* Declared HERE, above the mobile early-return (2026-09-09): the swap
+     reads it, and on the phone the former declaration below the return
+     never ran — every tap's strip swap threw in the TDZ ("Cannot access
+     'disposed' before initialization"), dimming without swapping. */
+  let disposed = false;
 
   const pumpSwap = () => {
     if (swapBusy || targetKey === currentKey) return;
@@ -330,17 +335,52 @@ export function initLandingNetwork() {
        desktop's pin-anchored pair), and the photo strip fade-rises
        (.is-visible, landing-narrow.css). The retired logo rows take no
        part: the desktop removed them (R9). */
+    /* PHONE (Figma 1:11, 2026-09-09): the frame stacks the subtitle
+       ABOVE the title (landing-narrow.css reorders the flex column), so
+       the reveal's 120ms stagger runs in the frame's reading order —
+       subtitle, title, list — instead of the DOM's. Same wrap, same
+       trigger, same stagger; only the index each line takes. And the
+       frame flows the industries as ONE paragraph (1:32) — the authored
+       line blocks go inline (CSS) and a separator joins them — appended
+       to the END of each line but the last, BEFORE the wrap, so it
+       rides inside the line's reveal clip and dims with the rest
+       (.landing-network__sep); the wrap hoists edge whitespace, so the
+       inter-line space is the CSS ::before on the following line.
+       Removed on cleanup; the desktop DOM is never touched. */
+    const phone = isPhoneViewport();
+    const pick = (sel) => Array.from(section.querySelectorAll(sel));
+    const lines = phone
+      ? [
+          ...pick('[data-landing-network-subtitle] .landing-network__line'),
+          ...pick('[data-landing-network-title] .landing-network__line'),
+          ...pick('[data-landing-network-body] .landing-network__line'),
+        ]
+      : pick(
+          '[data-landing-network-title] .landing-network__line, [data-landing-network-subtitle] .landing-network__line, [data-landing-network-body] .landing-network__line',
+        );
+    const joinSeps = [];
+    if (phone) {
+      const bodyLines = pick('[data-landing-network-body] .landing-network__line');
+      bodyLines.forEach((line, i) => {
+        if (i === bodyLines.length - 1) return;
+        const sep = document.createElement('span');
+        sep.className = 'landing-network__sep landing-network__sep--join';
+        sep.textContent = ' /';
+        line.appendChild(sep);
+        joinSeps.push(sep);
+      });
+    }
     const cleanupEnt = initMobileEntrance(section, {
-      lines: Array.from(section.querySelectorAll(
-        '[data-landing-network-title] .landing-network__line, [data-landing-network-subtitle] .landing-network__line, [data-landing-network-body] .landing-network__line',
-      )),
+      lines,
       media: [section.querySelector('[data-landing-network-strip]')].filter((el) => el instanceof HTMLElement),
     });
     return () => {
+      disposed = true;
       swapTimeouts.forEach(clearTimeout);
       wipeAnims.forEach((a) => a.cancel());
       cleanupHover.forEach((fn) => fn());
       cleanupEnt();
+      joinSeps.forEach((sep) => sep.remove());
     };
   }
 
@@ -376,7 +416,6 @@ export function initLandingNetwork() {
   let trigger = null;
   let delayedTrigger = null;
   let groundTrigger = null;
-  let disposed = false;
   let shown = false;
 
   /* Park each riser at the stage's bottom edge (its own distance —
