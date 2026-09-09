@@ -84,6 +84,14 @@ body.menu-open .home__menu-cta {
   z-index: 1;
 }
 
+/* X1 (2026-09-09): the panel is the open's focus target (tabindex=-1
+   in Menu.astro) — a container, not a control, so it never paints a
+   ring; Tab from it lands on the first link with the link's own ring. */
+.site-menu__panel:focus,
+.site-menu__panel:focus-visible {
+  outline: none;
+}
+
 .site-menu__wrapper {
   display: flex;
   gap: 50px;

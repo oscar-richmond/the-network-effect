@@ -520,6 +520,16 @@
 	outline-offset: 2px;
 }
 
+/* X1 (2026-09-09): the toggle takes the return focus on every close,
+   and Chromium paints a script focus's ring whenever the session has
+   seen a key press (measured: after one Tab, every tap-close boxed the
+   X). menu.js marks a POINTER-initiated close `is-focus-quiet` — the
+   ring yields until the next key press or blur; a keyboard close
+   (Escape, Enter) never carries the class and keeps its ring. */
+.landing-v2 .home__menu-toggle.is-focus-quiet:focus-visible {
+	outline: none;
+}
+
 /* ── MENU overlay, new-build revs (Oscar's rev 2026-08-07). menu.css
    and Menu.astro are /old-shared — every change here is scoped. */
 

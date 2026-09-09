@@ -357,9 +357,71 @@ export function initMenu(scope = document) {
     tl.reversed(wasReversed);
   };
 
+  /* ── FOCUS MODALITY (X1, 2026-09-09). The rings are :focus-visible
+     only, but every engine decides for itself whether a SCRIPT focus
+     paints one: Chromium inherits it from the element focus left
+     (measured: after the START A PROJECT modal returned focus to the
+     toggle with a ring, the next tap-open's first.focus() painted the
+     rectangle around WORK — :focus-visible=true, outline 2px #232a89)
+     and treats any keyboard use in the session as "keyboard user"
+     thereafter (measured: after one Tab, a tap-close's toggle.focus()
+     painted the square around the X). So the input modality is
+     tracked here — the last thing the user did, pointer or keyboard —
+     and the two programmatic focuses are shaped by it:
+       · open → the PANEL (tabindex=-1, `outline: none`): a focus
+         target that never paints; Tab from it goes to the first link
+         WITH a ring (keyboard-initiated, every engine agrees).
+       · close → the toggle, as before (focus must return), but after
+         a POINTER close it carries `is-focus-quiet` — its ring rule
+         yields — until the next key press or blur. A keyboard close
+         (Escape / Enter on the toggle) keeps its ring. */
+  const FOCUS_QUIET = 'is-focus-quiet';
+  const MENU_FOCUS_FRAMES = 12; /* frames to wait for is-open (the timeline's first tick) */
+  let lastInput = 'pointer';
+  const onAnyKey = () => {
+    lastInput = 'keyboard';
+    toggle.classList.remove(FOCUS_QUIET);
+  };
+  const onAnyPointer = () => { lastInput = 'pointer'; };
+  const onToggleBlur = () => { toggle.classList.remove(FOCUS_QUIET); };
+  document.addEventListener('keydown', onAnyKey, true);
+  document.addEventListener('pointerdown', onAnyPointer, true);
+  toggle.addEventListener('blur', onToggleBlur);
+  /* The old rAF fired once and checked is-open — which the timeline's
+     onStart adds on its FIRST TICK, a race the rAF lost on a cold page
+     (measured in Chromium: focus never left the toggle). Polls a few
+     frames instead, giving up if the open was reversed meanwhile. */
+  const focusPanelWhenOpen = (framesLeft) => {
+    requestAnimationFrame(() => {
+      if (tl.reversed()) return;
+      if (root.classList.contains('is-open')) {
+        panel.focus({ preventScroll: true });
+        return;
+      }
+      if (framesLeft > 0) focusPanelWhenOpen(framesLeft - 1);
+    });
+  };
+
+  /* X2 (2026-09-09): every open starts NEUTRAL. The hover treatment
+     (the hovered link sharp, the rest blur 4 / 0.6, the image up) is
+     written as inline GSAP state from `mouseover` and only ever undone
+     by `mouseleave` — which a touch pointer never fires: a tap on a
+     link is a synthetic mouseover (measured: Work sharp, Services and
+     Founders blur(4px)/0.6 in the frames before the navigation
+     committed) and nothing after it clears the state for the life of
+     the document — a bfcache restore (iOS swipe-back) brings that
+     document back with the tapped item still "selected". */
+  const neutraliseHover = () => {
+    navImageShown = false;
+    gsap.set(navLinks, { filter: 'blur(0px)', opacity: 1, overwrite: true });
+    if (navSeps.length) gsap.set(navSeps, { filter: 'blur(0px)', opacity: 1, overwrite: true });
+    gsap.set(navImage, { opacity: 0, overwrite: true });
+  };
+
   const open = () => {
     if (tl.reversed() || tl.progress() === 0) {
       clearTailBoost();
+      neutraliseHover();
       /* Re-resolve the panel's height:'auto' against the CURRENT
          content each open (R2 item 7): gsap caches the px from the
          first resolution, which was measured against init-time
@@ -369,12 +431,9 @@ export function initMenu(scope = document) {
          re-record is loss-free. */
       if (tl.progress() === 0) tl.invalidate();
       tl.play();
-      /* Focus lands on the first link once the panel has begun to
-         open (next frame — the toggle's own click must settle first). */
-      requestAnimationFrame(() => {
-        const first = root.querySelector('a[href], button:not([disabled])');
-        if (root.classList.contains('is-open') && first instanceof HTMLElement) first.focus({ preventScroll: true });
-      });
+      /* Focus lands on the panel container once the panel has begun
+         to open — never on an item (X1). */
+      focusPanelWhenOpen(MENU_FOCUS_FRAMES);
       revealCTAs(true);
       if (landingSwap) {
         sweepLabels(true);
@@ -401,6 +460,9 @@ export function initMenu(scope = document) {
       const active = document.activeElement;
       if (active === document.body || (active instanceof Node && root.contains(active))) {
         toggle.focus({ preventScroll: true });
+        /* X1: a pointer-initiated close must not paint the return
+           focus; a keyboard close keeps its ring. */
+        if (lastInput !== 'keyboard') toggle.classList.add(FOCUS_QUIET);
       }
       tl.reverse();
       if (!reducedMotion && tl.time() > PANEL_BAND_END_S) {
@@ -522,11 +584,26 @@ export function initMenu(scope = document) {
        toggle → links → CTAs → footer links → toggle, both directions. */
     event.preventDefault();
     const idx = items.indexOf(document.activeElement);
-    const next = event.shiftKey
-      ? (idx <= 0 ? items.length - 1 : idx - 1)
-      : (idx < 0 || idx === items.length - 1 ? 0 : idx + 1);
+    /* From the panel itself (the open's focus target, X1): Tab goes to
+       the first LINK — the toggle is the cycle's wrap point, not its
+       first stop — and Shift+Tab to the toggle. */
+    const fromPanel = idx < 0 && document.activeElement === panel;
+    const next = fromPanel
+      ? (event.shiftKey ? 0 : Math.min(1, items.length - 1))
+      : event.shiftKey
+        ? (idx <= 0 ? items.length - 1 : idx - 1)
+        : (idx < 0 || idx === items.length - 1 ? 0 : idx + 1);
     items[next].focus({ preventScroll: true });
   };
+
+  /* X2: a bfcache restore (iOS swipe-back) resurrects the document
+     exactly as it froze — menu open, the tapped item "selected". The
+     page-transition re-covers and re-reveals the page; the menu comes
+     back closed under that cover, and the next open is neutral. */
+  const onPageShow = (event) => {
+    if (event.persisted && root.classList.contains('is-open')) close();
+  };
+  window.addEventListener('pageshow', onPageShow);
 
   toggle.addEventListener('click', onToggleClick);
   backdrop.addEventListener('click', onBackdropClick);
@@ -550,6 +627,11 @@ export function initMenu(scope = document) {
     window.clearTimeout(logoBeltTimer);
     window.clearTimeout(ctaRevealTimer);
     close();
+    window.removeEventListener('pageshow', onPageShow);
+    document.removeEventListener('keydown', onAnyKey, true);
+    document.removeEventListener('pointerdown', onAnyPointer, true);
+    toggle.removeEventListener('blur', onToggleBlur);
+    toggle.classList.remove(FOCUS_QUIET);
     toggle.removeEventListener('click', onToggleClick);
     backdrop.removeEventListener('click', onBackdropClick);
     navBody.removeEventListener('mouseover', onNavMouseOver);
