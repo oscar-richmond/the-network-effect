@@ -42,7 +42,7 @@
  * lerp). Touch keeps the /work handling.
  */
 
-import { NARROW_QUERY } from './viewport.js';
+import { NARROW_QUERY, flowFooterSpacer } from './viewport.js';
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createNavSweep } from './nav-motion.js';
@@ -904,7 +904,7 @@ function initFoundersNarrow(stage, reduced) {
   const sweep = stage.querySelector('[data-fd-sweep]');
   const footerWrap = document.querySelector('[data-fd-footer]');
   const footerEl = footerWrap?.querySelector('[data-landing-footer]');
-  const spacer = document.querySelector('.landing-footer-spacer');
+  const spacer = flowFooterSpacer();
 
   let disposed = false;
   const timeouts = [];
@@ -1087,11 +1087,14 @@ function initFoundersNarrow(stage, reduced) {
     if (footerEl instanceof HTMLElement) {
       wrappedFooter = wrapFooterReveals(footerEl);
       const play = () => { if (wrappedFooter) playFooterReveals(wrappedFooter, schedule); };
-      if (reduced || typeof IntersectionObserver !== 'function' || !(spacer instanceof HTMLElement)) { play(); return; }
+      if (reduced || typeof IntersectionObserver !== 'function') { play(); return; }
+      /* THE 402 FRAME (2026-09-09): the phone's footer is in flow (no
+         spacer in the layout) — the cue is the footer itself 200 into
+         the viewport, the same distance the spacer gave. */
       footerIo = new IntersectionObserver((entries) => {
         if (entries.some((e) => e.isIntersecting)) { play(); footerIo?.disconnect(); footerIo = null; }
       }, { rootMargin: '0px 0px -200px 0px', threshold: 0 });
-      footerIo.observe(spacer);
+      footerIo.observe(spacer ?? footerEl);
     }
   });
   cleanups.push(() => { footerIo?.disconnect(); footerIo = null; });

@@ -176,6 +176,10 @@ const {
       desktop nav's three in its order (the menu fix, 2026-09-07; was
       3 + 2, then 2 + 2 with a Home row). Contact is the LET'S CHAT CTA
       below them; the wordmark is home. Row layout/spacing in landing.css. */}
+  {/* THE PHONE WORDMARK'S SHRINK (the 402 frame, 2026-09-09) boots from
+      LandingFooter's script — the one module every new-build route
+      already carries and /old and the holding routes do not, so the
+      served DOM gains no script tag (nav-shrink.js). */}
   <Menu
     rows={[landingMenuLinks]}
     footerLinks={landingMenuFooterLinks}

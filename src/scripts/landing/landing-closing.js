@@ -28,7 +28,8 @@ import gsap from 'gsap';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { bindBottomNavSweep } from './nav-motion.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, flowFooterSpacer } from './viewport.js';
+import { flowFooterStatement } from './footer-motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -149,6 +150,10 @@ export function initLandingClosing() {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
     });
+    /* THE 402 FRAME (2026-09-09): on the phone the statement flows as one
+       paragraph — the grey span splits per word first so the measure can
+       break inside it (footer-motion.js; a no-op above the phone). */
+    flowFooterStatement(footer);
     stLines.forEach((line, i) => {
       line.dataset.revealDelay = String(i * LINE_STAGGER_S);
       wrapWordRevealElement(line);
@@ -239,10 +244,13 @@ export function initLandingClosing() {
          construction with a measured height). Its trigger reads the
          SPACER, which is in flow: 200 into the reveal is the spacer's
          top 200 above the viewport bottom. */
-      trigger: isMobileViewport() && document.querySelector('.landing-footer-spacer') ? document.querySelector('.landing-footer-spacer') : footer,
+      /* THE 402 FRAME (2026-09-09): the PHONE's footer is in flow — no
+         spacer in the layout (flowFooterSpacer is null there), so the cue
+         is the footer's own top at 85%; the band keeps the spacer cue. */
+      trigger: isMobileViewport() && flowFooterSpacer() ? flowFooterSpacer() : footer,
       start: () =>
         isMobileViewport()
-          ? (document.querySelector('.landing-footer-spacer') ? 'top bottom-=200' : 'top 85%')
+          ? (flowFooterSpacer() ? 'top bottom-=200' : 'top 85%')
           : `top ${(window.innerHeight - (footer.offsetHeight || 830) - 200).toFixed(0)}px`,
       once: true,
       onEnter: () => {

@@ -319,6 +319,129 @@
 		color: var(--footer-muted);
 	}
 }
+/* ═══ THE PHONE'S FOOTER — the 402 frame (1:392, 1:393, 1:409, 1:410;
+   applied 2026-09-09). IN FLOW: the frame's page scrolls onto a static
+   footer, so the sticky uncover and its spacer do not apply below 768
+   (the band keeps them). Light ground, the ink #161616; the statement
+   FIRST — 370 × 180, the footer-statement role (Dazzed 600 uppercase
+   30/30) flowing as ONE paragraph from a 104 indent with the tail in
+   the muted grey (#6c6c6e by ruling; the frame's #a6a6a8 is the
+   uncorrected value) — then, 64 below, the groups in one column: the
+   site index (label + four links, 16/18 on a 30 pitch), 64, the email
+   pair, 64, the socials; 80 below them the legal rows on a 40 pitch
+   (Terms left · Privacy right, then ©2026, then Site By); 80 to the
+   page's end. The statement sits 100 below the red band's end. START A
+   PROJECT is not drawn — it stays (a live CTA; the frame is silent on
+   it) at the index's right, where the frame's column leaves the room.
+   The index links keep their 44 hit areas as ::after extensions so the
+   frame's 18-tall rows measure true. The desktop's word-reveal entrance
+   plays unchanged; only its cue moves from the spacer to the footer.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2 {
+		--m-nav-shrink-scroll: 120px;
+		--m-footer-top: 100px;     /* 1:372's end → 1:409 */
+		--m-footer-bottom: 80px;   /* 1:417 → the frame's end */
+		--m-footer-indent: 104px;  /* 1:409's leading space */
+	}
+	body.landing-v2.landing-v2.landing-v2 .landing-footer {
+		position: relative;
+		top: auto;
+		margin-top: 0;
+		padding: var(--m-footer-top) var(--m-margin-safe-r, var(--m-margin)) var(--m-footer-bottom) var(--m-margin-safe-l, var(--m-margin));
+		display: flex;
+		flex-direction: column;
+		background: #eeeef0;
+		color: #161616;
+	}
+	body.landing-v2.landing-v2.landing-v2 .landing-footer-spacer { display: none; }
+
+	/* the statement first (1:409) */
+	.landing-v2.landing-v2 .landing-footer__dstatement {
+		order: 1;
+		margin: 0 0 64px;
+		font-family: var(--type-footer-statement-face);
+		font-weight: var(--type-footer-statement-weight);
+		font-synthesis: none;
+		font-size: var(--type-footer-statement-size);
+		line-height: var(--type-footer-statement-lh);
+		letter-spacing: var(--type-footer-statement-ls);
+		text-transform: var(--type-footer-statement-case);
+	}
+	.landing-v2.landing-v2 .landing-footer__dst-line {
+		display: inline; /* the three authored lines flow as the frame's one paragraph */
+		font: inherit;
+		letter-spacing: inherit;
+		text-transform: inherit;
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .landing-footer__dst-indent { width: var(--m-footer-indent); }
+	.landing-v2.landing-v2 .landing-footer__dst-grey,
+	.landing-v2.landing-v2 .landing-footer--light .landing-footer__dst-grey { color: var(--footer-muted); }
+
+	/* the groups (1:393): one column, 64 apart */
+	.landing-v2.landing-v2 .landing-footer__dtop {
+		order: 2;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 64px;
+		margin: 0 0 80px;
+	}
+	.landing-v2.landing-v2 .landing-footer__dlabel,
+	.landing-v2.landing-v2 .landing-footer__dlink {
+		font-family: var(--type-body-face);
+		font-weight: var(--type-body-weight);
+		font-size: var(--type-body-size);
+		line-height: 18px;
+		letter-spacing: var(--type-body-ls);
+		text-transform: capitalize;
+	}
+	.landing-v2.landing-v2 .landing-footer__dlabel {
+		margin-bottom: 12px; /* the 30 pitch */
+		color: var(--footer-muted);
+	}
+	.landing-v2.landing-v2 .landing-footer__dlink {
+		position: relative;
+		display: block;
+		min-height: 0;
+		margin: 0 0 12px;
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .landing-footer__dgroup > .landing-footer__dlink:last-child { margin-bottom: 0; }
+	/* the 44 touch floor around an 18 row, without moving the row */
+	.landing-v2.landing-v2 .landing-footer__dlink::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: -13px;
+		bottom: -13px;
+	}
+	/* START A PROJECT at the index's right (not drawn; kept) */
+	.landing-v2.landing-v2 .landing-footer__dchip {
+		position: absolute;
+		right: 0;
+		top: 0;
+		background: #161616;
+		color: #eeeef0;
+	}
+
+	/* the legal rows (1:410): 14/16 on a 40 pitch */
+	.landing-v2.landing-v2 .landing-footer__drow {
+		order: 3;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 24px 16px;
+	}
+	.landing-v2.landing-v2 .landing-footer__drow .landing-footer__ritem {
+		line-height: 16px;
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .landing-footer__ritem--terms { grid-column: 1; grid-row: 1; }
+	.landing-v2.landing-v2 .landing-footer__ritem--privacy { grid-column: 2; grid-row: 1; justify-self: end; }
+	.landing-v2.landing-v2 .landing-footer__ritem--copy { grid-column: 1 / -1; grid-row: 2; }
+	.landing-v2.landing-v2 .landing-footer__ritem--siteby { grid-column: 1 / -1; grid-row: 3; }
+}
 @media (min-width: 768px) and (max-width: 1359px) {
 	.landing-v2.landing-v2 .landing-footer {
 		padding-top: calc(var(--nav-h, 71px) + 32px); /* clears the bar on a short (landscape) viewport */
@@ -418,6 +541,56 @@
 	@media (max-width: 374px) {
 		.landing-v2.landing-v2 .home__topbar-email-arrow { display: none; }
 	}
+}
+/* ═══ THE PHONE'S BAR — the 402 frame (1:419 – 1:424, applied 2026-09-09).
+   The bar 68 tall; the wordmark LEFT at the inset in the nav role
+   (Serrif Condensed 500, 24 at rest → 18 scrolled, −0.03em — the shrink
+   is nav-shrink.js, a scrubbed transform on the link so the type never
+   re-rasterises mid-scroll; the rest states are true type); the burger
+   RIGHT, 16 × 12 with a 44 × 44 hit area, centred on the bar's middle
+   at every size; LET'S CHAT leaves the bar (the frame draws wordmark
+   and burger only — it lives in the menu overlay's CTA pair). The
+   blend, the entrance sweep and the solid-ink switch over the red band
+   are the desktop's and are untouched. The band keeps its bar above.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2 { --nav-h: 68px; }
+	.landing-v2.landing-v2 .home__topbar--about {
+		grid-template-columns: minmax(0, 1fr) auto;
+		column-gap: 16px;
+	}
+	.landing-v2.landing-v2 .home__topbar--about .home__logo {
+		grid-column: 1;
+		grid-row: 1;
+		font-family: var(--type-nav-face);
+		font-weight: var(--type-nav-weight);
+		font-size: var(--type-nav-size);
+		line-height: var(--type-nav-lh);
+		letter-spacing: var(--type-nav-ls);
+		text-transform: var(--type-nav-case);
+	}
+	/* the shrink scales the LINK (transform-origin at the wordmark's
+	   left, on the bar's centre line); its 44 tap floor stays */
+	.landing-v2.landing-v2 .home__topbar--about .home__logo-link {
+		display: inline-block;
+		transform-origin: 0 50%;
+		will-change: transform;
+	}
+	.landing-v2.landing-v2 .home__topbar--about .home__menu-cta {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: end;
+	}
+	/* the toggle's face is the 16 × 12 burger; the hit area is 44 × 44
+	   around it (padding with cancelling margins — the layout is the
+	   burger's own box, so the bar's grid centres the bars themselves) */
+	.landing-v2.landing-v2 .home__topbar--about .home__menu-toggle {
+		padding: 16px 14px;
+		margin: -16px -14px;
+		line-height: 0;
+	}
+	.landing-v2.landing-v2 .home__topbar--about .home__menu-burger { top: 0; } /* the old 64 bar's 4px nudge */
+	.landing-v2.landing-v2 header.home__topbar .home__topbar-email { display: none; }
 }
 @media (min-width: 768px) and (max-width: 1359px) {
 	.landing-v2.landing-v2 { --nav-h: 71px; }

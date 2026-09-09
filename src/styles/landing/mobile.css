@@ -56,6 +56,14 @@
     --m-margin-safe-r: max(var(--m-margin), var(--safe-right, 0px));
   }
 }
+/* THE 402 FRAME (Figma 1:11, applied 2026-09-09): every block sits at
+   x16, 370 wide — the phone's inset is 16 (`--m-inset` in the frame's
+   token table). The tablet band keeps the 24 it was derived on. */
+@media (max-width: 767px) {
+  .landing-v2 {
+    --m-margin: 16px;
+  }
+}
 
 /* ── MENU OVERLAY at phone width — R2 respec (Oscar's menu round,
    2026-08-13; supersedes the B7 block). The five primary items run
@@ -166,6 +174,12 @@
 	}
 
 	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__link:nth-of-type(2) > span:last-child::after {
+		content: none;
+	}
+	/* the one-row menu (Work · Services · Founders, 2026-09-07): the LAST
+	   item carries no slash either — the rule above was written for the
+	   five-item menu whose last row ended on CONTACT (2026-09-09) */
+	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__link:last-of-type > span:last-child::after {
 		content: none;
 	}
 

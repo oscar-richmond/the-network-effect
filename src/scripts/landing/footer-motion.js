@@ -10,8 +10,42 @@
  * /work; a scroll trigger on flow pages).
  */
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
+import { isPhoneViewport } from './viewport.js';
 
 const LINE_STAGGER_S = 0.12;
+
+/**
+ * THE PHONE'S STATEMENT FLOW (the 402 frame, 2026-09-09). The frame sets
+ * the footer statement as ONE paragraph at 30/30 in 370 — "QUIETLY.
+ * THROUGH / PEOPLE. THROUGH / RELATIONSHIPS." — so on the phone the three
+ * authored lines flow inline (shared-narrow.css). The word wrap treats a
+ * child ELEMENT as one atom, and the grey span "Through people. Through"
+ * is 385 wide at 30: as one inline-block it can only start a new line
+ * and wrap inside itself (7 lines, not the frame's 6). Split it into one
+ * span per word — same class, same ink, the source whitespace between
+ * them — so each word is its own clip and the paragraph breaks where the
+ * measure says. Phone only; the desktop and the band keep the span whole
+ * and their stagger exactly as it was. Idempotent.
+ * @param {HTMLElement} footer
+ */
+export function flowFooterStatement(footer) {
+  if (!isPhoneViewport() || !(footer instanceof HTMLElement)) return;
+  footer.querySelectorAll('[data-footer-st-line] .landing-footer__dst-grey').forEach((span) => {
+    if (!(span instanceof HTMLElement) || span.dataset.flowSplit || span.children.length) return;
+    const parts = (span.textContent ?? '').split(/(\s+)/).filter(Boolean);
+    if (parts.length < 2) return;
+    const frag = document.createDocumentFragment();
+    parts.forEach((part) => {
+      if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+      const w = document.createElement('span');
+      w.className = span.className;
+      w.dataset.flowSplit = '1';
+      w.textContent = part;
+      frag.appendChild(w);
+    });
+    span.replaceWith(frag);
+  });
+}
 
 /* R35 (/work views, 2026-09-03): the wrap is IDEMPOTENT per footer —
    a page that boots a view more than once in one page life (the /work
@@ -36,6 +70,7 @@ function wrapFooterRevealsOnce(footer) {
      family on the same beat as its own words. */
   let chip = null;
   if (!(footer instanceof HTMLElement)) return { wordEls, img: null, chip };
+  flowFooterStatement(footer);
   Array.from(footer.querySelectorAll('[data-footer-st-line]')).forEach((line, i) => {
     if (!(line instanceof HTMLElement)) return;
     line.dataset.revealDelay = String(i * LINE_STAGGER_S);

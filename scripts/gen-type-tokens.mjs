@@ -43,6 +43,37 @@ export const BODY_MOBILE = [16, 17];
 export const BODY_TABLET = [17, 17.5];
 /* ─────────────────────────────────────────────────────────────────── */
 
+/* ── THE 402 FRAME (Figma GvANAN3kJOPV8AKOi3O9FF 1:11 / 1:426, applied 2026-09-09) ──
+   Where the frame draws a role, the PHONE block takes the frame's value instead of the
+   exponent's: `size` fixed in px, or [at360, at430] for the four large roles, which the
+   frame sets against the 370 measure (size × (100vw − 32) / 370, clamped at the band's
+   edges); `lh` a ratio; `ls` in em. Roles the frame does not draw keep the exponent.
+   Rulings over the frame: Serrif Bold renders 500 (not licensed); label 12 is the frame's
+   CTA face (1:67) — its 44px hit areas come from the chips' padding, not the type. */
+export const PHONE_FRAME = {
+	statement:        { size: [42.55, 51.63], lh: 0.9375, ls: -0.04 },   // 1:326, 1:373 — 48 at 402
+	display:          { size: [42.55, 51.63], lh: 0.9375, ls: -0.03 },   // 1:14, 1:278 — 48 at 402
+	'display-serif':  { size: [42.55, 51.63], lh: 0.9375, ls: 0 },       // 1:13, 1:277 — 48 at 402
+	heading:          { size: [28.37, 34.42], lh: 0.9375, ls: -0.035 },  // 1:74, 1:33, 1:321, 1:338 — 32 at 402
+	'heading-serif':  { size: [28.37, 34.42], lh: 0.9375, ls: 0 },       // the heading's serif partner, same box
+	term:             { size: 24, lh: 27 / 24, ls: 0 },                  // 1:32
+	title:            { size: 26, lh: 28 / 26, ls: 0 },                  // 1:113, 1:289, 1:349
+	lede:             { size: 20, lh: 24 / 20, ls: -0.015 },             // 1:270
+	row:              { size: 16, lh: 19 / 16, ls: 0 },                  // 1:126
+	body:             { size: 16, lh: 18 / 16, ls: 0 },                  // 1:350, 1:396, 1:402
+	label:            { size: 12, lh: 1, ls: 0 },                        // 1:67, 1:72, 1:117
+	eyebrow:          { size: 12, lh: 14 / 12, ls: -0.015 },             // 1:55, 1:325, 1:123, 1:56
+	small:            { size: 14, lh: 16 / 14, ls: 0 },                  // 1:413, 1:416, 1:417
+};
+/* Roles the frame draws that the desktop hierarchy has no name for — phone-only tokens. */
+export const PHONE_ONLY_ROLES = [
+	/* [name, face, weight, size, lh, ls(em), case] */
+	['nav', 'serif', 500, 24, 1, -0.03, 'none'],                        // 1:420 (24 at rest; 18 scrolled — --type-nav-size-scrolled)
+	['footer-statement', 'sans', 600, 30, 1, 0, 'uppercase'],           // 1:409
+	['pillar-title', 'sans', 600, 28, 1, -0.02, 'uppercase'],           // 1:109 (collapsed 14 — the stack's compaction)
+	['access-label', 'serif', 400, 48, 1, 0, 'none'],                   // 1:77, 1:81
+];
+
 const BODY_D = BODY_DESKTOP;
 const k_m = TYPE_SCALE_EXPONENT_MOBILE;
 const [k_t0, k_t1] = TYPE_SCALE_EXPONENT_TABLET;
@@ -83,7 +114,7 @@ const LEAD = { // leading ratios per class: [desktop→ keep?, tablet, mobile]
 	label: (d) => [d, Math.max(d, 1.1), Math.max(d, 1.2)],
 };
 const trackAt = (em, size) => (em >= 0 ? em : size >= 64 ? em : size >= 40 ? em * 0.75 : size >= 24 ? em * 0.5 : 0);
-const r2 = (x) => Math.round(x * 100) / 100;
+const r2 = (x, d = 2) => Math.round(x * 10 ** d) / 10 ** d;
 const scale = (dSize, body, k) => body * Math.pow(dSize / BODY_D, k);
 /* FLOORS. Body ≥ 16 (below it iOS zooms a focused field and a condensed serif loses its counters);
    anything interactive ≥ 14 (the nav and every chip, the index that is a control in the drawer);
@@ -113,6 +144,14 @@ let css = `/* ══════════════════════
    body → 1.5); tracking scales by size class (≥64px keeps the desktop
    em, 40–64 keeps 75%, 24–40 keeps 50%, under 24 drops to 0).
    Floors: body ≥ 16, interactive ≥ 14, labels ≥ 12.
+
+   THE 402 FRAME (2026-09-09): on the PHONE every role the Figma frame
+   draws (GvANAN3kJOPV8AKOi3O9FF 1:11 / 1:426) takes the frame's value
+   over the exponent's — the four large roles fluid against the 370
+   measure (48 and 32 at 402), everything else fixed — plus the roles
+   the frame draws that the desktop has no name for (nav, footer-
+   statement, pillar-title, access-label). PHONE_FRAME in the script.
+   The tablet band keeps the exponent (no tablet designs exist).
    ═══════════════════════════════════════════════════════════════════ */
 :root {
   --font-type-serif: ${FACES.serif};
@@ -135,15 +174,29 @@ for (const [name, face, weight, dSize, dLH, dTrack, kase, cls, sample, notes, va
 	if (dSize < BODY_D) t1 = Math.max(t1, t0);
 	m0 = Math.max(m0, floor); m1 = Math.max(m1, floor); t0 = Math.max(t0, floor); t1 = Math.max(t1, floor);
 	const dRatio = dLH / dSize;
-	const [lhD, lhT, lhM] = LEAD[cls](dRatio);
-	const trM = trackAt(dTrack, (m0 + m1) / 2), trT = trackAt(dTrack, (t0 + t1) / 2);
+	let [lhD, lhT, lhM] = LEAD[cls](dRatio);
+	let trM = trackAt(dTrack, (m0 + m1) / 2);
+	const trT = trackAt(dTrack, (t0 + t1) / 2);
+	/* the frame's value wins on the phone (see PHONE_FRAME) */
+	const pf = PHONE_FRAME[name];
+	if (pf) {
+		if (Array.isArray(pf.size)) { m0 = pf.size[0]; m1 = pf.size[1]; } else { m0 = pf.size; m1 = pf.size; }
+		lhM = pf.lh; trM = pf.ls;
+	}
 	const faceVar = face === 'serif' ? 'var(--font-type-serif)' : 'var(--font-type-sans)';
 	const caseVal = kase === 'upper' ? 'uppercase' : 'none';
 	css += `  --type-${name}-face: ${faceVar};\n  --type-${name}-weight: ${weight};\n  --type-${name}-case: ${caseVal};\n  --type-${name}-size: ${dSize}px;\n  --type-${name}-lh: ${r2(lhD)};\n  --type-${name}-ls: ${dTrack}em;\n`;
-	cssM += `    --type-${name}-size: ${name === 'counter' ? 'clamp(64px, 25vw, 400px)' : fluid(m0, 360, m1, 430)};\n    --type-${name}-lh: ${r2(lhM)};\n    --type-${name}-ls: ${r2(trM)}em;\n`;
+	cssM += `    --type-${name}-size: ${name === 'counter' ? 'clamp(64px, 25vw, 400px)' : fluid(m0, 360, m1, 430)};\n    --type-${name}-lh: ${r2(lhM, 4)};\n    --type-${name}-ls: ${r2(trM, 3)}em;\n`;
 	cssT += `    --type-${name}-size: ${name === 'counter' ? 'clamp(160px, 25vw, 400px)' : fluid(t0, 768, t1, 1359)};\n    --type-${name}-lh: ${r2(lhT)};\n    --type-${name}-ls: ${r2(trT)}em;\n`;
 	rows.push({ role: name, face: face === 'serif' ? 'Serrif Condensed' : 'Dazzed', weight, case: caseVal, desktop: `${dSize}/${dLH} ${dTrack}em`, tablet: `${r2(t0)} → ${r2(t1)} · lh ${r2(lhT)} · ${r2(trT)}em`, mobile: `${r2(m0)} → ${r2(m1)} · lh ${r2(lhM)} · ${r2(trM)}em`, floor: `${floor}px ${Math.min(m0, m1) >= floor ? '✓' : '✗'}${Math.min(m0, m1) === floor && scale(dSize, BODY_M[0], k_m) < floor ? ' (held)' : ''}`, sample, notes, variants, tokens: `--type-${name}-{face,weight,case,size,lh,ls}` });
 }
+/* the frame's own roles, phone block only (no desktop or tablet reader) */
+cssM += `    /* roles the 402 frame draws that the desktop hierarchy has no name for */\n`;
+for (const [name, face, weight, size, lh, ls, kase] of PHONE_ONLY_ROLES) {
+	const faceVar = face === 'serif' ? 'var(--font-type-serif)' : 'var(--font-type-sans)';
+	cssM += `    --type-${name}-face: ${faceVar};\n    --type-${name}-weight: ${weight};\n    --type-${name}-case: ${kase};\n    --type-${name}-size: ${size}px;\n    --type-${name}-lh: ${r2(lh, 4)};\n    --type-${name}-ls: ${ls}em;\n`;
+}
+cssM += `    --type-nav-size-scrolled: 18px;\n    --type-pillar-title-size-collapsed: 14px;\n    --type-pillar-index-size: 14px;\n    --type-pillar-index-size-collapsed: 6px;\n    --type-access-label-size-inner: 30px;\n`;
 css += `}\n\n` + cssM + `  }\n}\n\n` + cssT + `  }\n}\n`;
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'styles');
 writeFileSync(`${OUT}/type-tokens.css`, css);

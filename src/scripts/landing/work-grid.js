@@ -25,7 +25,7 @@ import { bindBottomNavSweep } from './nav-motion.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createCoverSwap } from '../cover-swap.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, flowFooterSpacer } from './viewport.js';
 
 /* R38 item 6 — the row reveal's tunables (the R35 entrance staggers
    are retired with the fade-rise). */
@@ -185,7 +185,7 @@ export function initWorkGrid() {
        until the spacer scrolls it clear, so the cue is the spacer 200px
        into the viewport (the landing's narrow footer cue); the desktop
        keeps its own. */
-    const spacer = isMobileViewport() ? document.querySelector('[data-work-footer-spacer]') : null;
+    const spacer = isMobileViewport() ? flowFooterSpacer('[data-work-footer-spacer]') : null;
     footerIo = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) { play(); footerIo?.disconnect(); footerIo = null; }
     }, spacer ? { rootMargin: '0px 0px -200px 0px', threshold: 0 } : { threshold: 0.15 });

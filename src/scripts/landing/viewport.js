@@ -66,6 +66,19 @@ export const isTouchPrimary = () =>
   window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
 /**
+ * The footer's reveal SPACER when it is in the layout — the sticky
+ * uncover's cue on the band and the desktop — or null where the footer
+ * is in flow (the PHONE since the 402 frame, 2026-09-09: the spacer is
+ * display:none there, and a trigger on a box with no layout would fire
+ * at the wrong place or never). Callers fall back to the footer itself.
+ * @param {string} [selector]
+ */
+export const flowFooterSpacer = (selector = '.landing-footer-spacer') => {
+  const el = document.querySelector(selector);
+  return el instanceof HTMLElement && el.getClientRects().length > 0 ? el : null;
+};
+
+/**
  * Run on crossings of the seam, debounced to the same 300ms settle
  * the shell handover uses. Returns the cleanup. Most pages never need
  * this (the shell handover is a full navigation, which reboots

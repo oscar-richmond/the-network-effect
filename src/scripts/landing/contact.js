@@ -32,7 +32,7 @@ import {
   CT_LOGOS_FADE_START, CT_LOGOS_FADE_END,
   CT_ROW_H, CT_ROW_BOTTOM_GAP, CT_LABEL_GAP,
 } from '../../data/landing/contact-logos.js';
-import { isMobileViewport, NARROW_QUERY } from './viewport.js';
+import { isMobileViewport, NARROW_QUERY, flowFooterSpacer } from './viewport.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -507,7 +507,7 @@ export function initContactPage() {
       /* narrow: the footer sits under the page until the spacer scrolls it
          clear (the sticky uncover) — the cue is the spacer 200 into the
          viewport, the landing's narrow footer cue. */
-      const spacer = isMobileViewport() ? document.querySelector('.landing-footer-spacer') : null;
+      const spacer = isMobileViewport() ? flowFooterSpacer() : null;
       triggers.push(ScrollTrigger.create({
         trigger: spacer ?? footer,
         start: () => (spacer

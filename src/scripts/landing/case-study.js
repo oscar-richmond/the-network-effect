@@ -40,7 +40,7 @@ import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '.
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initFloatCta } from './float-cta.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, flowFooterSpacer } from './viewport.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initStatementBar } from './statement-bar.js';
 
@@ -850,7 +850,7 @@ export function initCaseStudy() {
          behind the page too (the sticky footer + the spacer, with a
          measured height — shared-narrow.css); its trigger reads the
          SPACER, which is in flow: 200 into the reveal. */
-      const spacer = document.querySelector('.landing-footer-spacer');
+      const spacer = flowFooterSpacer();
       triggers.push(ScrollTrigger.create({
         trigger: isMobileViewport() && spacer ? spacer : footer,
         start: () => (isMobileViewport()

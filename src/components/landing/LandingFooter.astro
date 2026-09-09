@@ -187,11 +187,27 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
      triggers below it are refreshed. Nothing runs above the seam. */
   import { isMobileViewport } from '../../scripts/landing/viewport.js';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  /* THE PHONE WORDMARK'S SHRINK (the 402 frame, 2026-09-09): 24 at rest →
+     18 scrolled, a scrubbed transform on the bar's link (nav-shrink.js).
+     Booted from this module because the footer ships on every new-build
+     route and the bar is SiteShell chrome on the same routes — no new
+     script tag in the served DOM. A gsap.matchMedia block: it exists only
+     below 768 and reverts itself above it and on the page transition. */
+  import { initNavShrink } from '../../scripts/landing/nav-shrink.js';
+  {
+    let cleanupNavShrink = initNavShrink();
+    document.addEventListener('astro:before-swap', () => { cleanupNavShrink(); });
+    document.addEventListener('astro:after-swap', () => { cleanupNavShrink = initNavShrink(); });
+  }
   {
     let last = '';
     const publish = () => {
       const footer = document.querySelector('.landing-footer');
       if (!(footer instanceof HTMLElement) || !isMobileViewport()) return;
+      /* THE 402 FRAME (2026-09-09): the PHONE's footer is in flow (the
+         frame's page scrolls onto it — no reveal), so there is no height
+         to publish; the band keeps the sticky uncover and the measure. */
+      if (getComputedStyle(footer).position !== 'sticky') return;
       const next = `${Math.round(footer.offsetHeight)}px`;
       if (next === last) return;
       last = next;

@@ -67,7 +67,7 @@
  * swaps instant, footer content static, no custom cursor, no snap.
  * <=1024px: the CSS stacked list is the page; no machinery boots.
  */
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, flowFooterSpacer } from './viewport.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
@@ -198,7 +198,7 @@ export function initWorkPage() {
         /* The footer sits UNDER the list until the spacer scrolls it clear
            (the sticky uncover, work-narrow.css) — the cue is the spacer 200px
            into the viewport, the landing's narrow footer cue. */
-        const spacer = document.querySelector('[data-work-footer-spacer]');
+        const spacer = flowFooterSpacer('[data-work-footer-spacer]');
         io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { play(); io?.disconnect(); } }, spacer ? { rootMargin: '0px 0px -200px 0px', threshold: 0 } : { threshold: 0.1 });
         io.observe(spacer ?? footerEl);
       });

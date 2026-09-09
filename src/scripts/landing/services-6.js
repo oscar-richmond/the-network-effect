@@ -33,7 +33,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, flowFooterSpacer } from './viewport.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
@@ -611,7 +611,7 @@ export function initServices6() {
       /* narrow: the footer sits under the page until the spacer scrolls it
          clear (the sticky uncover) — the cue is the spacer 200 into the
          viewport, the landing's narrow footer cue. */
-      const spacer = narrow ? document.querySelector('.sv6-footspacer') : null;
+      const spacer = narrow ? flowFooterSpacer('.sv6-footspacer') : null;
       triggers.push(ScrollTrigger.create({
         trigger: spacer ?? footer,
         start: spacer ? 'top bottom-=200' : 'top 90%',

@@ -18,6 +18,14 @@
    body → 1.5); tracking scales by size class (≥64px keeps the desktop
    em, 40–64 keeps 75%, 24–40 keeps 50%, under 24 drops to 0).
    Floors: body ≥ 16, interactive ≥ 14, labels ≥ 12.
+
+   THE 402 FRAME (2026-09-09): on the PHONE every role the Figma frame
+   draws (GvANAN3kJOPV8AKOi3O9FF 1:11 / 1:426) takes the frame's value
+   over the exponent's — the four large roles fluid against the 370
+   measure (48 and 32 at 402), everything else fixed — plus the roles
+   the frame draws that the desktop has no name for (nav, footer-
+   statement, pillar-title, access-label). PHONE_FRAME in the script.
+   The tablet band keeps the exponent (no tablet designs exist).
    ═══════════════════════════════════════════════════════════════════ */
 :root {
   --font-type-serif: var(--font-serif-cond);
@@ -155,32 +163,32 @@
     --type-counter-size: clamp(64px, 25vw, 400px);
     --type-counter-lh: 1;
     --type-counter-ls: -0.02em;
-    --type-statement-size: clamp(36px, calc(24.43px + 3.21vw), 38.25px);
-    --type-statement-lh: 0.92;
-    --type-statement-ls: -0.02em;
-    --type-display-size: clamp(34.25px, calc(23.24px + 3.06vw), 36.39px);
-    --type-display-lh: 0.92;
-    --type-display-ls: -0.02em;
-    --type-display-serif-size: clamp(34.25px, calc(23.24px + 3.06vw), 36.39px);
-    --type-display-serif-lh: 0.92;
-    --type-display-serif-ls: -0.02em;
-    --type-heading-size: clamp(27.37px, calc(18.57px + 2.44vw), 29.08px);
-    --type-heading-lh: 0.96;
-    --type-heading-ls: -0.02em;
-    --type-heading-serif-size: clamp(27.37px, calc(18.57px + 2.44vw), 29.08px);
-    --type-heading-serif-lh: 0.96;
-    --type-heading-serif-ls: -0.02em;
-    --type-term-size: clamp(25.44px, calc(17.26px + 2.27vw), 27.03px);
-    --type-term-lh: 1.08;
+    --type-statement-size: clamp(42.55px, calc(-4.15px + 12.97vw), 51.63px);
+    --type-statement-lh: 0.9375;
+    --type-statement-ls: -0.04em;
+    --type-display-size: clamp(42.55px, calc(-4.15px + 12.97vw), 51.63px);
+    --type-display-lh: 0.9375;
+    --type-display-ls: -0.03em;
+    --type-display-serif-size: clamp(42.55px, calc(-4.15px + 12.97vw), 51.63px);
+    --type-display-serif-lh: 0.9375;
+    --type-display-serif-ls: 0em;
+    --type-heading-size: clamp(28.37px, calc(-2.74px + 8.64vw), 34.42px);
+    --type-heading-lh: 0.9375;
+    --type-heading-ls: -0.035em;
+    --type-heading-serif-size: clamp(28.37px, calc(-2.74px + 8.64vw), 34.42px);
+    --type-heading-serif-lh: 0.9375;
+    --type-heading-serif-ls: 0em;
+    --type-term-size: 24px;
+    --type-term-lh: 1.125;
     --type-term-ls: 0em;
     --type-keyword-size: clamp(25.44px, calc(17.26px + 2.27vw), 27.03px);
     --type-keyword-lh: 1;
     --type-keyword-ls: 0em;
-    --type-lede-size: clamp(22.21px, calc(15.07px + 1.98vw), 23.59px);
+    --type-lede-size: 20px;
     --type-lede-lh: 1.2;
-    --type-lede-ls: 0em;
-    --type-title-size: clamp(21.61px, calc(14.67px + 1.93vw), 22.97px);
-    --type-title-lh: 1.2;
+    --type-lede-ls: -0.015em;
+    --type-title-size: 26px;
+    --type-title-lh: 1.0769;
     --type-title-ls: 0em;
     --type-note-size: clamp(21px, calc(14.25px + 1.88vw), 22.32px);
     --type-note-lh: 1.2;
@@ -188,8 +196,8 @@
     --type-subtitle-size: clamp(19.72px, calc(13.38px + 1.76vw), 20.95px);
     --type-subtitle-lh: 1.2;
     --type-subtitle-ls: 0em;
-    --type-row-size: clamp(19.04px, calc(12.92px + 1.7vw), 20.23px);
-    --type-row-lh: 1.5;
+    --type-row-size: 16px;
+    --type-row-lh: 1.1875;
     --type-row-ls: 0em;
     --type-index-size: clamp(18.33px, calc(12.44px + 1.64vw), 19.48px);
     --type-index-lh: 1.2;
@@ -197,24 +205,54 @@
     --type-tile-size: clamp(18.33px, calc(12.44px + 1.64vw), 19.48px);
     --type-tile-lh: 1.2;
     --type-tile-ls: 0em;
-    --type-body-size: clamp(17.21px, calc(11.68px + 1.54vw), 18.29px);
-    --type-body-lh: 1.5;
+    --type-body-size: 16px;
+    --type-body-lh: 1.125;
     --type-body-ls: 0em;
     --type-body-sans-size: clamp(16px, calc(10.86px + 1.43vw), 17px);
     --type-body-sans-lh: 1.5;
     --type-body-sans-ls: 0em;
-    --type-label-size: clamp(15.13px, calc(10.27px + 1.35vw), 16.08px);
-    --type-label-lh: 1.2;
+    --type-label-size: 12px;
+    --type-label-lh: 1;
     --type-label-ls: 0em;
-    --type-eyebrow-size: clamp(14.21px, calc(9.64px + 1.27vw), 15.1px);
-    --type-eyebrow-lh: 1.2;
-    --type-eyebrow-ls: 0em;
-    --type-small-size: clamp(14.21px, calc(9.64px + 1.27vw), 15.1px);
-    --type-small-lh: 1.5;
+    --type-eyebrow-size: 12px;
+    --type-eyebrow-lh: 1.1667;
+    --type-eyebrow-ls: -0.015em;
+    --type-small-size: 14px;
+    --type-small-lh: 1.1429;
     --type-small-ls: 0em;
     --type-micro-size: clamp(13.72px, calc(9.31px + 1.22vw), 14.58px);
     --type-micro-lh: 1.5;
     --type-micro-ls: 0.02em;
+    /* roles the 402 frame draws that the desktop hierarchy has no name for */
+    --type-nav-face: var(--font-type-serif);
+    --type-nav-weight: 500;
+    --type-nav-case: none;
+    --type-nav-size: 24px;
+    --type-nav-lh: 1;
+    --type-nav-ls: -0.03em;
+    --type-footer-statement-face: var(--font-type-sans);
+    --type-footer-statement-weight: 600;
+    --type-footer-statement-case: uppercase;
+    --type-footer-statement-size: 30px;
+    --type-footer-statement-lh: 1;
+    --type-footer-statement-ls: 0em;
+    --type-pillar-title-face: var(--font-type-sans);
+    --type-pillar-title-weight: 600;
+    --type-pillar-title-case: uppercase;
+    --type-pillar-title-size: 28px;
+    --type-pillar-title-lh: 1;
+    --type-pillar-title-ls: -0.02em;
+    --type-access-label-face: var(--font-type-serif);
+    --type-access-label-weight: 400;
+    --type-access-label-case: none;
+    --type-access-label-size: 48px;
+    --type-access-label-lh: 1;
+    --type-access-label-ls: 0em;
+    --type-nav-size-scrolled: 18px;
+    --type-pillar-title-size-collapsed: 14px;
+    --type-pillar-index-size: 14px;
+    --type-pillar-index-size-collapsed: 6px;
+    --type-access-label-size-inner: 30px;
   }
 }
 

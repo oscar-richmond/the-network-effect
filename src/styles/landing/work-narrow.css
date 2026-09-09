@@ -277,6 +277,16 @@
 	}
 	.landing-v2.work-page .work-cursor { display: none; }
 }
+/* THE 402 FRAME (2026-09-09): the PHONE's footer is in flow on every page
+   (shared-narrow.css) — no sticky uncover, no spacer; the band keeps them. */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2.work-page .work-footer-wrap .landing-footer {
+		position: relative;
+		top: auto;
+		margin-top: 0;
+	}
+	.landing-v2.landing-v2.work-page .work-footer-spacer { display: none; }
+}
 
 /* the band: the desktop's own 12-column rows */
 @media (min-width: 768px) and (max-width: 1359px) {
