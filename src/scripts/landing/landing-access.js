@@ -44,8 +44,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { getLenisInstance } from './landing-hero-scroll.js';
 import { ACCESS_PAIRS } from '../../data/landing/access-pairs.js';
-import { isMobileViewport } from './viewport.js';
-import { featuredUnitBottomCrossAt } from './landing-featured.js';
+import { isMobileViewport, isPhoneViewport } from './viewport.js';
+import { featuredUnitBottomCrossAt, featuredPhonePin } from './landing-featured.js';
 
 /* R27 item 2 (Oscar, 2026-09-03) — THE MUCH EARLIER ENTRANCE: this
    section begins entering AS FEATURED WORK IS LEAVING — its headline's
@@ -160,6 +160,18 @@ const PAIRS = ACCESS_PAIRS;
    file. The retired mobile design's clock-driven rows (and their
    ACCESS_M_* constants) are gone. The narrow build's runway and exit
    are tokens (landing-narrow.css: --ac-step, --ac-exit). */
+
+/* A1 (Oscar, 2026-09-09) — THE PHONE's ARRIVAL: the section BEGINS
+   ENTERING (its top edge at the fold, the label and the seven lines'
+   reveal firing) when the departing FEATURED WORK stage's top edge is
+   this many px above the top of the viewport — a measured edge: the
+   pinned stage releases at landing-featured's releaseAt and leaves at
+   1:1, so its top is −150 at releaseAt + 150. Before this the section
+   sat after the featured band's 474 tail, so its top reached the fold
+   at releaseAt + 474 and its reveal fired at the 70% line, releaseAt +
+   736 at 874. The ground module's fade-to-light is sized to this lead
+   (m-ground.js), so the light section arrives on a light ground. */
+export const ACCESS_ENTER_AFTER_FEATURED_TOP_PX = 150;
 
 export function initLandingAccess() {
   const section = document.querySelector('[data-landing-access]');
@@ -725,6 +737,33 @@ function buildNarrow(section) {
     const t = parseFloat(getComputedStyle(stage).top);
     return Number.isFinite(t) && t < 0 ? -t : 0;
   };
+
+  /* A1 — the phone's arrival scroll: the featured stage's top edge
+     ACCESS_ENTER_AFTER_FEATURED_TOP_PX above the viewport top. Null off
+     the phone or without the pinned rail (reduced motion never gets
+     here). */
+  const phone = isPhoneViewport();
+  const arrivalAt = () => {
+    if (!phone) return null;
+    const fp = featuredPhonePin();
+    return fp ? fp.releaseAt + ACCESS_ENTER_AFTER_FEATURED_TOP_PX : null;
+  };
+  /* the ride: the section's top edge crosses the fold at the arrival —
+     --ac-ride (landing-narrow.css folds it into the section's margin);
+     re-derived on the global refreshInit, after the featured's own */
+  const applyArrival = () => {
+    const at = arrivalAt();
+    if (at === null) { section.style.removeProperty('--ac-ride'); return; }
+    const current = parseFloat(getComputedStyle(section).getPropertyValue('--ac-ride')) || 0;
+    const naturalTop = section.getBoundingClientRect().top + (window.scrollY || 0) + current;
+    const foldCross = naturalTop - (window.innerHeight || 0);
+    const ride = Math.round(foldCross - at);
+    if (ride > 0) section.style.setProperty('--ac-ride', `${ride}px`);
+    else section.style.removeProperty('--ac-ride');
+  };
+  applyArrival();
+  ScrollTrigger.addEventListener('refreshInit', applyArrival);
+
   const trigger = ScrollTrigger.create({
     trigger: section,
     start: () => `top+=${Math.round(stickyOffset())} top`,
@@ -748,7 +787,9 @@ function buildNarrow(section) {
     });
     headlineTrigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top 70%',
+      /* A1: the phone reveals as the section begins entering — the
+         measured arrival; the band keeps the 70% line */
+      start: () => arrivalAt() ?? 'top 70%',
       once: true,
       onEnter: () => { dlines.forEach((line) => { if (line instanceof HTMLElement) playLineRevealElement(line); }); },
     });
@@ -799,6 +840,8 @@ function buildNarrow(section) {
     disposed = true;
     timeouts.forEach(clearTimeout);
     window.removeEventListener('resize', onResize);
+    ScrollTrigger.removeEventListener('refreshInit', applyArrival);
+    section.style.removeProperty('--ac-ride');
     trigger.kill();
     headlineTrigger?.kill();
     revealTrigger?.kill();

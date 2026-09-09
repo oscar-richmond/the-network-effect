@@ -318,13 +318,19 @@ function initPhoneFeatured(section, removeGate) {
         end: () => `+=${Math.round(travel())}`,
         scrub: true,
         invalidateOnRefresh: true,
-        onRefreshInit: () => { applyTravel(); applyArrival(); },
         onRefresh: (st) => { publish(); applyProgress(st.progress); },
         onUpdate: (st) => applyProgress(st.progress),
       },
     },
   );
   publish();
+  /* the geometry is re-derived on the GLOBAL refreshInit — before any
+     trigger measures — and published there too, so the sections below
+     (WE CREATE ACCESS rides on the release, A1) read a fresh release in
+     their own refreshInit; the services' listener (the stack's dwell
+     margins) is registered before this one and runs first */
+  const onRefreshInit = () => { applyTravel(); applyArrival(); publish(); };
+  ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
 
   if (import.meta.env.DEV) {
     window.__landingFeaturedPhone = { travel, pin: () => phonePin };
@@ -333,6 +339,7 @@ function initPhoneFeatured(section, removeGate) {
   return () => {
     removeGate();
     cleanupEnt();
+    ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
     tween.scrollTrigger?.kill();
     tween.kill();
     ind.remove();

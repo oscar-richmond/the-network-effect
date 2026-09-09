@@ -41,10 +41,12 @@
  *                         ride the same value, and the panels' ink drains
  *                         with it (the desktop's departure: "the ground
  *                         falls to dark while the content blurs out").
- *   4 FEATURED → ACCESS   dark → light over FADE_PX, starting as the
- *                         pinned stage releases (the travel done); the
- *                         stage's light ink and its edge veils drain with
- *                         it (--fw-ink-op).
+ *   4 FEATURED → ACCESS   dark → light, starting as the pinned stage
+ *                         releases (the travel done) and complete as WE
+ *                         CREATE ACCESS's top edge reaches the fold (A1:
+ *                         its 150 lead, landing-access.js); the stage's
+ *                         light ink and its edge veils drain with it
+ *                         (--fw-ink-op).
  *
  * Phone only (isPhoneViewport); the desktop and the tablet band are
  * untouched — their grounds are their sections' own.
@@ -55,6 +57,7 @@ import { isPhoneViewport } from './viewport.js';
 import { heroBeats } from './landing-hero-scroll.js';
 import { featuredPhonePin } from './landing-featured.js';
 import { servicesStackReleaseAt } from './landing-services.js';
+import { ACCESS_ENTER_AFTER_FEATURED_TOP_PX } from './landing-access.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -101,8 +104,13 @@ export function initPhoneGround() {
     const releaseAt = servicesStackReleaseAt();
     servicesFade = releaseAt !== null ? [releaseAt, releaseAt + GROUND_FADE_PX] : null;
 
+    /* A1 (Oscar, 2026-09-09): the fade-to-light is sized to WE CREATE
+       ACCESS's lead — complete the scroll its light section's top edge
+       reaches the fold (releaseAt + 150), so the light arrives on light
+       and the fade never runs under its ink (it was GROUND_FADE_PX, 300,
+       with the section 474 behind) */
     const fp = featuredPhonePin();
-    featuredFade = fp ? [fp.releaseAt, fp.releaseAt + GROUND_FADE_PX] : null;
+    featuredFade = fp ? [fp.releaseAt, fp.releaseAt + ACCESS_ENTER_AFTER_FEATURED_TOP_PX] : null;
 
     lastReport = { heroFade, switchAt, servicesFade, featuredFade };
   };

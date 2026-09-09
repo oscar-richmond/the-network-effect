@@ -2105,7 +2105,11 @@
 	.landing-v2.landing-home .landing-access {
 		position: relative;
 		z-index: 260;
-		margin-top: 0 !important; /* the desktop's overlap margin is written inline by its driver */
+		/* the desktop's overlap margin is written inline by its driver and
+		   is not this layout's; the phone's own ride (A1, --ac-ride from
+		   landing-access.js — the section's top at the fold as the featured
+		   stage's top edge passes 150 above the viewport) is folded in here */
+		margin-top: calc(-1 * var(--ac-ride, 0px)) !important;
 		height: calc(100svh + 5 * var(--ac-step) + var(--ac-exit));
 	}
 	.landing-v2.landing-home .landing-access__stage {

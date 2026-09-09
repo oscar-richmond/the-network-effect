@@ -39,6 +39,10 @@ import { initCarouselIndicators } from './carousel-indicator.js';
    stays as it is; the reveals below find the same elements wherever
    they sit. Styles: landing-narrow.css (.landing-closing__rail/__card),
    mobile.css (the indicator). */
+/* M1 (Oscar, 2026-09-09) — the phone's MOST BRANDS: how far below the
+   fold the headline's top sits at the cue (the access carousels' exit
+   complete). 0: it enters the frame the cue fires. */
+const CLOSING_PHONE_LEAD_PX = 0;
 function buildPhoneRail(closing, tiles, kws) {
   const stage = closing.querySelector('[data-closing-stage]');
   const tilesWrap = closing.querySelector('.landing-closing__tiles');
@@ -189,6 +193,19 @@ export function initLandingClosing() {
   const triggers = [];
   let disposed = false;
 
+  /* M1 — the phone's cue element (see the headline trigger below), and
+     NO DEAD SPACE after the cue: the frame's 229 above the headline was
+     measured from the access rows' bottom in the static frame, but in
+     motion the rows have collapsed to nothing by the cue and the
+     viewport above the fold is the stage's bare ground — so the
+     headline's top sits CLOSING_PHONE_LEAD_PX below the fold at the cue
+     and rises at once. Set at boot (before any trigger measures); the
+     static build (reduced motion, where the rows stand) keeps the
+     frame's 229 (landing-narrow.css). */
+  const access = document.querySelector('[data-landing-access]');
+  const phoneCue = isPhoneViewport() && access instanceof HTMLElement;
+  if (phoneCue) closing.style.setProperty('--cl-pad-top', `${CLOSING_PHONE_LEAD_PX}px`);
+
   const fontsReady = document.fonts?.ready ?? Promise.resolve();
   fontsReady.then(() => {
     if (disposed) return;
@@ -263,9 +280,19 @@ export function initLandingClosing() {
       footerWordEls.push(item);
     });
 
+    /* M1 (Oscar, 2026-09-09) — THE PHONE: MOST BRANDS enters AS SOON AS
+       the two access carousels have completely animated out. Their exit
+       (the rows' collapse, landing-access.js) completes exactly where the
+       access section's bottom edge meets the fold — the pinned stage
+       releases there and this section's top is that same edge — so the
+       cue is the access section's bottom at the viewport bottom, a
+       measured edge with nothing after it. It was this section's top at
+       the 65% line: 0.35·vh (306 at 874) after the exit had finished,
+       the headline waiting unrevealed as it rose. The band keeps the
+       65% line. */
     triggers.push(ScrollTrigger.create({
-      trigger: closing,
-      start: 'top 65%',
+      trigger: phoneCue ? access : closing,
+      start: phoneCue ? 'bottom bottom' : 'top 65%',
       once: true,
       onEnter: () => {
         closingLines.forEach((line) => playLineRevealElement(line));
@@ -321,6 +348,7 @@ export function initLandingClosing() {
     cleanupBase();
     timeouts.forEach(clearTimeout);
     triggers.forEach((t) => t.kill());
+    closing.style.removeProperty('--cl-pad-top');
     cleanupPhoneRail();
   };
 }
