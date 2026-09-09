@@ -21,6 +21,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { getLenisInstance } from './site-scroll.js';
+import { wireRailVeils } from './rail-veils.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -231,6 +232,8 @@ export function initLandingFounders() {
      wins); reduced motion resolves the same zone instantly. Desktop
      only — the mobile stack has no sticky boundary. */
   let cleanupHandoffSettle = () => {};
+  /* item 3: the rail's edge veils' state (rail-veils.js), phone only */
+  let cleanupVeils = () => {};
   {
     const handoffTrack = section.closest('[data-landing-founders-track]') ?? section.parentElement;
     if (handoffTrack instanceof HTMLElement && !isMobileViewport()) {
@@ -606,6 +609,13 @@ export function initLandingFounders() {
        restores it exactly where the items reappear. */
     tl.set(section, { pointerEvents: 'none' }, holdEnd + photoBlurEndPx);
     driftTweens.push(tl);
+    /* ITEM 3 (Oscar, 2026-09-09) — the rail's edge veils follow its
+       scroll: right only at the start, both once scrolled, left only at
+       the end (rail-veils.js — this rail's 16 / 48 are the shared
+       values; the paint is shared-narrow.css's). The N2 exit multiplier
+       (--fd-veil-op) rides on top, unchanged. */
+    const gridSpace = section.querySelector('.landing-founders__grid-space');
+    if (gridSpace instanceof HTMLElement) cleanupVeils = wireRailVeils(section, gridSpace);
     if (import.meta.env.DEV) {
       window.__landingFounders = {
         phone: true, entryPx, holdPx: FOUNDERS_HOLD_PX, exitPx: FOUNDERS_EXIT_PX, holdEndPx: holdEnd,
@@ -697,6 +707,7 @@ export function initLandingFounders() {
   return () => {
     disposed = true;
     cleanupHandoffSettle();
+    cleanupVeils();
     timeouts.forEach(clearTimeout);
     trigger?.kill();
     driftTweens.forEach((t) => {

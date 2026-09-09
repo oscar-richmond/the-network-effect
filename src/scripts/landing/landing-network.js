@@ -19,6 +19,7 @@ import {
 } from '../../data/landing/network-strip-sets.js';
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isPhoneViewport, isTouchPrimary } from './viewport.js';
+import { wireRailVeils } from './rail-veils.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { FOUNDERS_HANDOFF_T, FOUNDERS_RELEASE_PX, foundersDepartingEdgeInsetPx, foundersPhonePinTopPx } from './landing-founders.js';
 
@@ -430,7 +431,16 @@ export function initLandingNetwork() {
     };
     window.addEventListener('resize', onResize);
     if (import.meta.env.DEV) window.__landingNetworkPhone = { layout: () => last };
+    /* ITEM 3 (Oscar, 2026-09-09) — the strip's edge veils follow its
+       scroll (rail-veils.js; the paint is shared-narrow.css's, anchored
+       to the strip's band in landing-narrow.css): right only at the
+       start, both once scrolled, left only at the end. The frame's
+       right-only 6% veil was the strip's whole treatment before. */
+    const cleanupVeils = stageEl instanceof HTMLElement && strip instanceof HTMLElement
+      ? wireRailVeils(stageEl, strip)
+      : () => {};
     cleanupPhonePin = () => {
+      cleanupVeils();
       window.clearTimeout(resizeTimer);
       window.removeEventListener('resize', onResize);
       section.classList.remove('is-pinned-phone');

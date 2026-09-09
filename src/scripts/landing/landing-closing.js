@@ -31,6 +31,7 @@ import { bindBottomNavSweep } from './nav-motion.js';
 import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.js';
 import { flowFooterStatement } from './footer-motion.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
+import { wireRailVeils } from './rail-veils.js';
 
 /* THE PHONE (Figma 1:343 + 1:389, 2026-09-09): the 2×2 grid becomes the
    frame's four-card rail — each tile with its keyword in one column, a
@@ -69,7 +70,15 @@ function buildPhoneRail(closing, tiles, kws) {
   rail.after(ind);
   stage.setAttribute('data-m-carousel', '');
   const cleanupWire = initCarouselIndicators(closing);
+  /* ITEM 3 (Oscar, 2026-09-09) — the rail's edge veils (rail-veils.js;
+     the paint is shared-narrow.css's on the stage's pseudo-elements):
+     right only at the start, both once scrolled, left only at the end.
+     The band is the tiles' — the first tile's box, measured, since the
+     wrapped headline above sets where the rail begins. The rail had no
+     veils before. */
+  const cleanupVeils = wireRailVeils(stage, rail, { band: tiles[0] instanceof HTMLElement ? tiles[0] : null });
   return () => {
+    cleanupVeils();
     cleanupWire();
     tiles.forEach((tile) => tilesWrap.append(tile));
     kws.forEach((kw, i) => kwParents[i]?.append(kw));

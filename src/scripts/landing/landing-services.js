@@ -45,6 +45,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
+import { wireRailVeils } from './rail-veils.js';
 import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -362,7 +363,14 @@ export function initLandingServices() {
       const onScroll = () => { if (!raf) raf = requestAnimationFrame(onRail); };
       list.addEventListener('scroll', onScroll, { passive: true });
       onRail();
+      /* ITEM 3 (Oscar, 2026-09-09) — the list's edge veils follow its
+         scroll (rail-veils.js; the state lands on the pillar and the
+         list window's pseudo-elements inherit it — landing-narrow.css):
+         right only at the start, both once scrolled, left only at the
+         end. They were 5% / 6%, both always on. */
+      const cleanupVeils = wireRailVeils(pillar, list);
       phoneCleanups.push(() => {
+        cleanupVeils();
         list.removeEventListener('scroll', onScroll);
         if (raf) cancelAnimationFrame(raf);
         ind?.remove();

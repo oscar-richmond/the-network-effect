@@ -495,26 +495,18 @@
 	.landing-v2.case-page .cs-more__track::after { flex-basis: calc(var(--m-margin-safe-r, var(--m-margin)) - var(--cs-card-gap)); }
 	.landing-v2.case-page .cs-more__imgwin { aspect-ratio: 280 / 350; }
 	.landing-v2.case-page .cs-more__cardrow { margin-top: 24px; }
-	/* the ground veiling the rail's edges — the founders rail's 16 / 48,
-	   anchored to the rail's band (the images' height, below the heading) */
+	/* the ground veiling the rail's edges — the shared rail veils
+	   (shared-narrow.css, rail-veils.js: 16 / 48, right only at the
+	   start, both once scrolled, left only at the end), anchored here to
+	   the rail's band (the images' height, below the heading); the ink is
+	   the page's light ground */
+	.landing-v2.case-page .cs-more {
+		--m-veil-ink: #eeeef0;
+	}
 	.landing-v2.case-page .cs-more::before,
 	.landing-v2.case-page .cs-more::after {
-		content: '';
-		position: absolute;
 		top: calc(var(--cs-more-pad) + var(--type-heading-size) * var(--type-heading-lh) + var(--cs-rail-gap));
 		height: calc(var(--cs-card-w) * 350 / 280);
-		z-index: 2;
-		pointer-events: none;
-	}
-	.landing-v2.case-page .cs-more::before {
-		left: 0;
-		width: var(--m-margin-safe-l, var(--m-margin));
-		background: linear-gradient(90deg, #eeeef0 0%, rgba(238, 238, 240, 0) 100%);
-	}
-	.landing-v2.case-page .cs-more::after {
-		right: 0;
-		width: 48px;
-		background: linear-gradient(90deg, rgba(238, 238, 240, 0) 0%, #eeeef0 100%);
 	}
 
 	/* ── FLAGGED: the frame draws no floating chip ── */

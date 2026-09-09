@@ -761,29 +761,18 @@
 	.landing-v2.landing-home .landing-founders__portrait-name {
 		display: none;
 	}
-	/* 1:54 — the ground veiling the rail's edges: 16 over the left margin,
-	   48 into the right edge, anchored to the rail's band (the section's
-	   last child, so its bottom is the section's bottom padding) */
+	/* 1:54 — the ground veiling the rail's edges: the shared rail veils
+	   (shared-narrow.css, rail-veils.js — this rail's 16 / 48 were the
+	   reference), anchored here to the rail's band (the section's last
+	   child, so its bottom is the section's bottom padding). N2: scrubbed
+	   out with the rail's cards (--fd-veil-op, landing-founders.js). */
+	.landing-v2.landing-home .landing-founders {
+		--m-veil-op: var(--fd-veil-op, 1);
+	}
 	.landing-v2.landing-home .landing-founders::before,
 	.landing-v2.landing-home .landing-founders::after {
-		content: '';
-		position: absolute;
 		bottom: var(--fd-pad-bottom);
 		height: var(--fd-rail-h);
-		z-index: 2;
-		pointer-events: none;
-		/* N2: scrubbed out with the rail's cards (landing-founders.js) */
-		opacity: var(--fd-veil-op, 1);
-	}
-	.landing-v2.landing-home .landing-founders::before {
-		left: 0;
-		width: var(--m-margin-safe-l, var(--m-margin));
-		background: linear-gradient(90deg, #161616 0%, rgba(22, 22, 22, 0) 100%);
-	}
-	.landing-v2.landing-home .landing-founders::after {
-		right: 0;
-		width: 48px;
-		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, #161616 100%);
 	}
 }
 
@@ -983,7 +972,6 @@
 		--nw-strip-w: 67.7534vw;
 		--nw-strip-h: 82.0896vw;
 		--nw-strip-overlap: 2.0522vw;
-		--nw-fade-w: 6%;
 	}
 	.landing-v2.landing-home .landing-network__stage {
 		position: relative;
@@ -1028,18 +1016,15 @@
 	.landing-v2.landing-home .landing-network__strip-win + .landing-network__strip-win {
 		margin-left: calc(-1 * var(--nw-strip-overlap));
 	}
-	/* 1:572 — the ground over the strip's right edge (94% → 100%); the
-	   left is drawn fully transparent in the frame */
+	/* 1:572 drew the ground over the strip's right edge only (94% → 100%,
+	   the left fully transparent). Item 3 (Oscar, 2026-09-09): the strip
+	   carries the shared rail veils (shared-narrow.css, rail-veils.js —
+	   16 / 48, right only at the start, both once scrolled, left only at
+	   the end), anchored here to the strip's band at the stage's foot. */
+	.landing-v2.landing-home .landing-network__stage::before,
 	.landing-v2.landing-home .landing-network__stage::after {
-		content: '';
-		position: absolute;
-		right: 0;
 		bottom: 0;
-		width: var(--nw-fade-w);
 		height: var(--nw-strip-h);
-		background: linear-gradient(90deg, rgba(22, 22, 22, 0), #161616);
-		pointer-events: none;
-		z-index: 1;
 	}
 }
 
@@ -1680,28 +1665,21 @@
 	.landing-v2.landing-home .landing-sreel__row.is-sactive .landing-sreel__svc {
 		transform: none;
 	}
-	/* 1:140 — the ground over the rail's edges: 5% left, 6% right. The
-	   colour is the panel's LIVE ground (--sv-ground, written by
-	   m-ground.js through the AMPLIFY → FEATURED fade; the light at rest),
-	   so the veils never read as light strips over a darkening panel. */
+	/* 1:140 drew the ground over the rail's edges at 5% / 6%. Item 3
+	   (Oscar, 2026-09-09): the list carries the shared rail veils
+	   (shared-narrow.css, rail-veils.js — 16 / 48, right only at the
+	   start, both once scrolled, left only at the end), anchored here to
+	   the list window's full height. The ink is the panel's LIVE ground
+	   (--sv-ground, written by m-ground.js through the AMPLIFY → FEATURED
+	   fade; the light at rest), so the veils never read as light strips
+	   over a darkening panel. */
+	.landing-v2.landing-home .landing-sreel__listwin {
+		--m-veil-ink: var(--sv-ground, #eeeef0);
+	}
 	.landing-v2.landing-home .landing-sreel__listwin::before,
 	.landing-v2.landing-home .landing-sreel__listwin::after {
-		content: '';
-		position: absolute;
 		top: 0;
 		bottom: 0;
-		pointer-events: none;
-		z-index: 1;
-	}
-	.landing-v2.landing-home .landing-sreel__listwin::before {
-		left: 0;
-		width: 5%;
-		background: linear-gradient(90deg, var(--sv-ground, #eeeef0), transparent);
-	}
-	.landing-v2.landing-home .landing-sreel__listwin::after {
-		right: 0;
-		width: 6%;
-		background: linear-gradient(90deg, transparent, var(--sv-ground, #eeeef0));
 	}
 	/* MORE INFO — 118×38: 16 · text · 6 · the 9px arrow · 16 */
 	.landing-v2.landing-home .landing-sreel__btn {
@@ -2449,7 +2427,7 @@
 		height: auto;
 	}
 	.landing-v2.landing-home .landing-closing__stage {
-		position: static;
+		position: relative; /* the rail veils' containing block (item 3) */
 		height: auto;
 		padding: var(--cl-pad-top) var(--m-margin-safe-r, var(--m-margin)) var(--cl-pad-bottom) var(--m-margin-safe-l, var(--m-margin));
 		display: grid;
@@ -2658,6 +2636,19 @@
 	.landing-v2.landing-home .landing-closing__rail::after {
 		content: '';
 		flex: 0 0 calc(var(--m-margin-safe-r, var(--m-margin)) - var(--cl-gap));
+	}
+	/* item 3: the shared rail veils (shared-narrow.css, rail-veils.js)
+	   over the tiles' band — its top depends on the wrapped headline
+	   above, so landing-closing.js measures the first tile and publishes
+	   --m-veil-top / --m-veil-h on the stage; the ink is the section's
+	   light ground */
+	.landing-v2.landing-home .landing-closing__stage {
+		--m-veil-ink: #eeeef0;
+	}
+	.landing-v2.landing-home .landing-closing__stage::before,
+	.landing-v2.landing-home .landing-closing__stage::after {
+		top: var(--m-veil-top, 0px);
+		height: var(--m-veil-h, 0px);
 	}
 	.landing-v2.landing-home .landing-closing__card {
 		flex: none;
@@ -2938,31 +2929,18 @@
 		margin: var(--fw-ind-gap) 0 0;
 		opacity: var(--fw-ink-op, 1);
 	}
-	/* the edges: the founders rail's veils (landing-founders ::before /
-	   ::after — 16 over the left margin, 48 into the right edge, the
-	   ground's #161616 to clear), over the rail's rows only; the near
-	   veil dissolves at the travel's end, the far one appears once
-	   scrolled (--fw-edge-*, landing-featured.js) */
+	/* the edges: the shared rail veils (shared-narrow.css; the state —
+	   right only at the start, both once scrolled, left only at the end
+	   — written on the section by landing-featured.js from the travel's
+	   progress through rail-veils.js's veilState), anchored here over
+	   the rail's rows only. The ink is the phone's LIVE ground
+	   (--m-veil-ink, m-ground.js: #161616 at the pin, fading to the
+	   light through the release), so the left veil that remains at the
+	   end never paints dark over a lightening ground (F3's complaint). */
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before,
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after {
-		content: '';
-		position: absolute;
 		bottom: calc(var(--fw-pad-bottom) + var(--m-ind-h, 1px) + var(--fw-ind-gap));
 		height: var(--fw-strip-h);
-		z-index: 2;
-		pointer-events: none;
-	}
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before {
-		left: 0;
-		width: var(--m-margin-safe-l, var(--m-margin));
-		background: linear-gradient(90deg, #161616 0%, rgba(22, 22, 22, 0) 100%);
-		opacity: calc(var(--fw-edge-l, 0) * var(--fw-ink-op, 1));
-	}
-	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after {
-		right: 0;
-		width: 48px;
-		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, #161616 100%);
-		opacity: calc(var(--fw-edge-r, 1) * var(--fw-ink-op, 1));
 	}
 	/* the desktop's blur band and its tint are retired here (Oscar, 3E) */
 	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__edge-tint,

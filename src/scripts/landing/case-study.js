@@ -41,6 +41,7 @@ import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initFloatCta } from './float-cta.js';
 import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.js';
+import { wireRailVeils } from './rail-veils.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initStatementBar } from './statement-bar.js';
 
@@ -120,6 +121,15 @@ export function initCaseStudy() {
   const nextBtn = document.querySelector('[data-cs-pager="next"]');
   /* THE REBUILD (2026-09-07): below the seam the MORE WORK rail is native
      scroll with snap (case-study-narrow.css) — the pager is the desktop's. */
+  /* ITEM 3 (Oscar, 2026-09-09) — on the phone the rail's edge veils
+     follow its scroll (rail-veils.js; the paint is shared-narrow.css's
+     on .cs-more's pseudo-elements, anchored in case-study-narrow.css):
+     right only at the start, both once scrolled, left only at the end.
+     They were 16 / 48, both always on. */
+  const moreHost = document.querySelector('[data-cs-more]');
+  if (isPhoneViewport() && moreHost instanceof HTMLElement && viewport instanceof HTMLElement) {
+    cleanups.push(wireRailVeils(moreHost, viewport));
+  }
   if (track instanceof HTMLElement && prevBtn instanceof HTMLButtonElement && nextBtn instanceof HTMLButtonElement && !isMobileViewport()) {
     const CARD_STEP_PX = 844; // 836 card + 8 gap
     const PER_VIEW = 2;

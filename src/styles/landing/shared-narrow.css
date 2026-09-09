@@ -906,3 +906,74 @@
 	.landing-v2.landing-v2 .sp-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	.landing-v2.landing-v2 .sp-modal__logo { height: 71px; left: 32px; }
 }
+
+/* ═══ THE RAIL VEILS — ONE SOURCE (item 3, Oscar, 2026-09-09) ═══════
+   Every horizontal rail on the phone veils its edges with the founders
+   rail's values, defined ONCE here: the host's ground over the LEFT
+   margin (--m-margin, 16 — the safe-area margin where one applies) and
+   48px into the RIGHT edge, a 90° linear gradient from the ground to
+   clear, opacity 1. One behaviour, the state written by rail-veils.js
+   (native scrollers) and landing-featured.js (the pinned rail's travel)
+   as --m-veil-l / --m-veil-r, 0…1 over a 24px ramp: at the START the
+   right veil only (the defaults below — the pre-JS frame); once
+   SCROLLED both; at the END the left only. The ink is --m-veil-ink,
+   each host's ground (#161616 unless the host says otherwise — a live
+   variable where the ground fades: the WHAT WE DO lists ride
+   --sv-ground, FEATURED WORK rides the phone ground m-ground.js
+   paints). --m-veil-op is a host's own exit multiplier (the founders
+   rail scrubs its veils out with its cards, N2). Each host anchors the
+   band — top / bottom / height — in its own sheet; nothing else about
+   a veil is per-rail. The hosts: WHO WE ARE (.landing-founders), OUR
+   NETWORK (.landing-network__stage), WHAT WE DO ×3
+   (.landing-sreel__listwin), FEATURED WORK (.landing-featured__stage,
+   pinned), MOST BRANDS (.landing-closing__stage), the case study's
+   MORE WORK (.cs-more), the /services galleries ×3 (.sv6-gal). */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2 {
+		--m-veil-l-w: var(--m-margin-safe-l, var(--m-margin));
+		--m-veil-r-w: 48px;
+	}
+	.landing-v2.landing-home .landing-founders::before,
+	.landing-v2.landing-home .landing-founders::after,
+	.landing-v2.landing-home .landing-network__stage::before,
+	.landing-v2.landing-home .landing-network__stage::after,
+	.landing-v2.landing-home .landing-sreel__listwin::before,
+	.landing-v2.landing-home .landing-sreel__listwin::after,
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before,
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after,
+	.landing-v2.landing-home .landing-closing__stage::before,
+	.landing-v2.landing-home .landing-closing__stage::after,
+	.landing-v2.case-page .cs-more::before,
+	.landing-v2.case-page .cs-more::after,
+	.landing-v2.services-6 .sv6-gal::before,
+	.landing-v2.services-6 .sv6-gal::after {
+		content: '';
+		position: absolute;
+		z-index: 2;
+		pointer-events: none;
+	}
+	.landing-v2.landing-home .landing-founders::before,
+	.landing-v2.landing-home .landing-network__stage::before,
+	.landing-v2.landing-home .landing-sreel__listwin::before,
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before,
+	.landing-v2.landing-home .landing-closing__stage::before,
+	.landing-v2.case-page .cs-more::before,
+	.landing-v2.services-6 .sv6-gal::before {
+		left: 0;
+		width: var(--m-veil-l-w);
+		background: linear-gradient(90deg, var(--m-veil-ink, #161616) 0%, transparent 100%);
+		opacity: calc(var(--m-veil-l, 0) * var(--m-veil-op, 1));
+	}
+	.landing-v2.landing-home .landing-founders::after,
+	.landing-v2.landing-home .landing-network__stage::after,
+	.landing-v2.landing-home .landing-sreel__listwin::after,
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after,
+	.landing-v2.landing-home .landing-closing__stage::after,
+	.landing-v2.case-page .cs-more::after,
+	.landing-v2.services-6 .sv6-gal::after {
+		right: 0;
+		width: var(--m-veil-r-w);
+		background: linear-gradient(90deg, transparent 0%, var(--m-veil-ink, #161616) 100%);
+		opacity: calc(var(--m-veil-r, 1) * var(--m-veil-op, 1));
+	}
+}

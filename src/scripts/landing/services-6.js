@@ -33,7 +33,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
-import { isMobileViewport, flowFooterSpacer } from './viewport.js';
+import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.js';
+import { wireRailVeils } from './rail-veils.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
@@ -342,6 +343,21 @@ export function initServices6() {
     });
   };
   cleanups.push(() => galTweens.forEach((tw) => { tw.scrollTrigger?.kill(); tw.kill(); }));
+  /* ITEM 3 (Oscar, 2026-09-09) — on the phone each gallery's native
+     strip carries the shared rail veils (rail-veils.js; the paint is
+     shared-narrow.css's on .sv6-gal's pseudo-elements, anchored in
+     services-narrow.css): right only at the start, both once scrolled,
+     left only at the end. The band is the boxes' image band — the first
+     box's image, measured, since the wrapped title above sets where the
+     strip begins. The strips had no veils before. */
+  if (isPhoneViewport()) {
+    gals.forEach((gal) => {
+      const strip = gal.querySelector('[data-sv6-gal-strip]');
+      const band = gal.querySelector('[data-sv6-gal-box] img');
+      if (!(gal instanceof HTMLElement) || !(strip instanceof HTMLElement)) return;
+      cleanups.push(wireRailVeils(gal, strip, { band: band instanceof HTMLElement ? band : null }));
+    });
+  }
 
   sizeBand();
   buildGals();

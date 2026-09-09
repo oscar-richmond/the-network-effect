@@ -144,7 +144,13 @@ export function initPhoneGround() {
          blur-out (landing-narrow.css) — one value, so they cannot desync */
       p.style.setProperty('--sv-fade-p', s.toFixed(3));
     });
-    if (featured instanceof HTMLElement) featured.style.setProperty('--fw-ink-op', (1 - f).toFixed(3));
+    if (featured instanceof HTMLElement) {
+      featured.style.setProperty('--fw-ink-op', (1 - f).toFixed(3));
+      /* item 3: the pinned rail's edge veils are painted in the LIVE
+         ground (rail-veils.js / shared-narrow.css), so the left veil
+         that remains at the travel's end fades to light with it */
+      featured.style.setProperty('--m-veil-ink', colour);
+    }
   };
 
   const trigger = ScrollTrigger.create({
@@ -167,6 +173,6 @@ export function initPhoneGround() {
     body.style.backgroundColor = '';
     if (outro instanceof HTMLElement) outro.style.backgroundColor = '';
     pillars.forEach((p) => { p.style.backgroundColor = ''; p.style.removeProperty('--sv-ink-op'); p.style.removeProperty('--sv-ground'); p.style.removeProperty('--sv-fade-p'); });
-    if (featured instanceof HTMLElement) featured.style.removeProperty('--fw-ink-op');
+    if (featured instanceof HTMLElement) { featured.style.removeProperty('--fw-ink-op'); featured.style.removeProperty('--m-veil-ink'); }
   };
 }

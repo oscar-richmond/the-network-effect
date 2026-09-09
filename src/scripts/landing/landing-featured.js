@@ -39,6 +39,7 @@ import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
+import { veilState, writeVeilState, clearVeilState } from './rail-veils.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 import { servicesLastImageLeavesTopAt } from './landing-services.js';
 
@@ -189,8 +190,6 @@ export function featuredPhonePin() {
   return phonePin;
 }
 
-const PHONE_EDGE_FRACTION = 1 / 8;
-
 function initPhoneFeatured(section, removeGate) {
   const stage = section.querySelector('[data-featured-stage]');
   const strip = section.querySelector('[data-featured-strip]');
@@ -286,19 +285,18 @@ function initPhoneFeatured(section, removeGate) {
     phonePin = { sectionTop: Math.round(top), travel: Math.round(travel()), releaseAt: Math.round(top + travel()) };
   };
   const applyProgress = (p) => {
-    /* F3 (Oscar, 2026-09-09): BOTH veils are gone at the travel's end,
-       on the travel's own progress. The near (right) veil always was —
-       min(1, (1 − p)/⅛); the far (left) one appeared over the first
-       eighth and then STAYED at 1 through the release, so it was still
-       painted (its 16px of #161616 → clear over the left margin) as the
-       ground faded to light under it — the gradient seen during the
-       fade. It now carries the same end factor: up by ⅛, gone by 1,
-       back on the way up. */
-    const endFade = Math.min(1, (1 - p) / PHONE_EDGE_FRACTION);
-    const l = Math.min(1, p / PHONE_EDGE_FRACTION) * endFade;
-    const r = endFade;
-    section.style.setProperty('--fw-edge-l', l.toFixed(3));
-    section.style.setProperty('--fw-edge-r', r.toFixed(3));
+    /* ITEM 3 (Oscar, 2026-09-09): the veils are the SHARED rail veils'
+       state (rail-veils.js's veilState — the one behaviour every phone
+       rail has: right only at the start, both once scrolled, left only
+       at the end, each over a 24px ramp), fed the travel in px. F3's
+       both-gone-at-the-end is superseded by that rule; what F3 was
+       really about — the left veil painting dark over a lightening
+       ground through the release — is answered by the ink instead: the
+       veils' colour is the phone's LIVE ground (--m-veil-ink, written
+       on this section by m-ground.js), so a veil that remains is always
+       the ground's own colour. */
+    const t = travel();
+    writeVeilState(section, veilState(p * t, t));
     const run = ind.clientWidth - (thumb.offsetWidth || 32);
     ind.style.setProperty('--ci-x', `${(p * Math.max(run, 0)).toFixed(1)}px`);
   };
@@ -347,7 +345,8 @@ function initPhoneFeatured(section, removeGate) {
     pin.remove();
     section.classList.remove('is-pinned-phone');
     section.style.marginTop = '';
-    ['--fw-travel', '--fw-edge-l', '--fw-edge-r'].forEach((p) => section.style.removeProperty(p));
+    section.style.removeProperty('--fw-travel');
+    clearVeilState(section);
     gsap.set(strip, { clearProps: 'transform' });
     phonePin = null;
   };

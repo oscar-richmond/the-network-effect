@@ -354,8 +354,21 @@
 	   centred under each at the label tier, the arrows centred in the
 	   gaps on the label row ── */
 	.landing-v2.landing-v2 .sv6-gal {
+		position: relative; /* the rail veils' containing block (item 3) */
 		margin-top: var(--sv-section-gap);
 		height: auto;
+		/* the ink: the page's light ground, the band's #161616 on dark */
+		--m-veil-ink: #eeeef0;
+	}
+	.landing-v2.landing-v2 .sv6-on-dark.sv6-gal { --m-veil-ink: #161616; }
+	/* item 3: the shared rail veils (shared-narrow.css, rail-veils.js)
+	   over the boxes' image band — its top depends on the wrapped title
+	   above, so services-6.js measures the first box's image and
+	   publishes --m-veil-top / --m-veil-h on the section */
+	.landing-v2.landing-v2 .sv6-gal::before,
+	.landing-v2.landing-v2 .sv6-gal::after {
+		top: var(--m-veil-top, 0px);
+		height: var(--m-veil-h, 0px);
 	}
 	.landing-v2.landing-v2 .sv6-gal__stage {
 		position: static;
