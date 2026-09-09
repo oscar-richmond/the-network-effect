@@ -986,3 +986,32 @@
 		opacity: calc(var(--m-veil-r, 1) * var(--m-veil-op, 1));
 	}
 }
+
+/* ── THE IMAGE BLUR-IN (2026-09-09) — the /work grid's row reveal
+   (work-narrow.css, R38 item 6 / R41) as the phone's one image
+   entrance: the image parks under a 12px blur and resolves over 0.6s
+   on the house ease once a quarter of its host has entered; mirrored
+   on the way back out through the bottom. img-reveal.js is the single
+   owner — it marks the hosts (`m-imgreveal`), writes the two vars
+   (--img-reveal-blur / --img-reveal-s, the grid's 12px / 0.6s) and
+   toggles `is-img-resolved` from the measured geometry. The host is
+   the image's own wrapper (the figure / window), so an existing
+   fade-rise on that wrapper composes underneath: the two transitions
+   live on different elements and different properties.
+   RM: no rule — the image is present, sharp, from the first paint.
+   Hosts: the /work rows' tiles (.work-m__img), every case study's hero
+   (.cs-hero__img), stream figures (.cs-row__img — the img OR the video
+   in it, so a pair resolves as one) and MORE WORK windows
+   (.cs-more__imgwin). Nothing above 767 carries the class. */
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+	/* armed one style pass after the park is painted (is-img-live), so
+	   the park itself never transitions in */
+	.landing-v2 .m-imgreveal.is-img-live > img,
+	.landing-v2 .m-imgreveal.is-img-live > video {
+		transition: filter var(--img-reveal-s, 0.6s) cubic-bezier(0.42, 0, 0.24, 1);
+	}
+	.landing-v2 .m-imgreveal:not(.is-img-resolved) > img,
+	.landing-v2 .m-imgreveal:not(.is-img-resolved) > video {
+		filter: blur(var(--img-reveal-blur, 12px));
+	}
+}

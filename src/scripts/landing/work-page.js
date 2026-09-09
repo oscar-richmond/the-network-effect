@@ -72,6 +72,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { initMobileEntrance } from './m-entrance.js';
+import { initImageReveal } from './img-reveal.js';
 import { wrapWordRevealElement, playLineRevealElement, wrapStaticLines } from '../line-reveal.js';
 import { createNavSweep, BOTTOM_SNAP_IDLE_MS, BOTTOM_EPSILON_PX, NAV_SHOW_HYSTERESIS_PX } from './nav-motion.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
@@ -185,6 +186,15 @@ export function initWorkPage() {
         start: 'top 80%',
       }));
     });
+    /* THE IMAGE BLUR-IN (2026-09-09, phone only): the grid's row reveal
+       (img-reveal.js, shared) on the rows' tiles — each figure parks its
+       image under the 12px blur and resolves at a quarter entered,
+       mirrored; the figure's own 16px fade-rise (work-narrow.css, fired
+       by the entrance above at 80%) composes underneath. */
+    cleanups.push(initImageReveal(
+      entries.map((entry) => entry.querySelector('.work-m__img')).filter((el) => el instanceof HTMLElement),
+      { entranceOf: (host) => host }, /* the fade-rise is the figure's own */
+    ));
     const reducedM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const footerEl = footer instanceof HTMLElement ? footer.querySelector('[data-landing-footer]') : null;
     if (footerEl instanceof HTMLElement) {

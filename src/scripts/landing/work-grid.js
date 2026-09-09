@@ -26,12 +26,16 @@ import { initViewCaseCursor } from './view-case-cursor.js';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createCoverSwap } from '../cover-swap.js';
 import { isMobileViewport, flowFooterSpacer } from './viewport.js';
+import { createImageReveal, writeRevealVars, IMG_REVEAL_THRESHOLD_T, IMG_REVEAL_MS, IMG_REVEAL_BLUR_PX } from './img-reveal.js';
 
 /* R38 item 6 — the row reveal's tunables (the R35 entrance staggers
-   are retired with the fade-rise). */
-export const GRID_REVEAL_THRESHOLD_T = 0.25; /* of the row's tallest tile entered */
-export const GRID_REVEAL_MS = 600;           /* the veil's fade / the image's un-blur */
-export const GRID_REVEAL_BLUR_PX = 12;       /* the image's blur under the veil */
+   are retired with the fade-rise). 2026-09-09: the mechanism is the
+   site's now (img-reveal.js — the phone's images everywhere carry it);
+   the constants live there and are re-exported here under their grid
+   names. */
+export const GRID_REVEAL_THRESHOLD_T = IMG_REVEAL_THRESHOLD_T; /* of the row's tallest tile entered */
+export const GRID_REVEAL_MS = IMG_REVEAL_MS;                   /* the veil's fade / the image's un-blur */
+export const GRID_REVEAL_BLUR_PX = IMG_REVEAL_BLUR_PX;         /* the image's blur under the veil */
 export const GRID_ROW_INK_GAP_PX = 120;      /* R39 item 1b: name ink bottom → next row's image top */
 const LINE_STAGGER_S = 0.12;
 
@@ -150,29 +154,14 @@ export function initWorkGrid() {
      RM: no veil (CSS), rows marked resolved at boot. */
   const rows = shownRows;
   const tilesOf = (row) => Array.from(row.querySelectorAll('[data-work-gtile]')).filter((el) => el instanceof HTMLElement);
-  grid.style.setProperty('--work-reveal-s', `${GRID_REVEAL_MS / 1000}s`);
-  grid.style.setProperty('--work-reveal-blur', `${GRID_REVEAL_BLUR_PX}px`);
-  const rowThreshold = (row) => Math.max(...tilesOf(row).map((t) => (t.querySelector('.work-gtile__media') ?? t).getBoundingClientRect().height), 0) * GRID_REVEAL_THRESHOLD_T;
-  const measureRows = () => {
-    const vh = window.innerHeight || 0;
-    rows.forEach((row) => {
-      const top = row.getBoundingClientRect().top;
-      const on = reduced || top + rowThreshold(row) <= vh;
-      row.classList.toggle('is-resolved', on);
-    });
-  };
-  let revealRaf = 0;
-  const onRevealScroll = () => { if (!revealRaf) revealRaf = requestAnimationFrame(() => { revealRaf = 0; measureRows(); }); };
-  measureRows();
-  window.addEventListener('scroll', onRevealScroll, { passive: true });
-  window.addEventListener('resize', onRevealScroll);
-  cleanups.push(() => {
-    window.removeEventListener('scroll', onRevealScroll);
-    window.removeEventListener('resize', onRevealScroll);
-    window.cancelAnimationFrame(revealRaf);
-    /* once per BOOT: the next boot replays from the parked (red) state */
-    rows.forEach((row) => row.classList.remove('is-resolved'));
-  });
+  writeRevealVars(grid, 'work-reveal');
+  const rowTallest = (row) => Math.max(...tilesOf(row).map((t) => (t.querySelector('.work-gtile__media') ?? t).getBoundingClientRect().height), 0);
+  const rowThreshold = (row) => rowTallest(row) * GRID_REVEAL_THRESHOLD_T;
+  /* the shared core (img-reveal.js): the row is the host, its tallest
+     tile the height, `is-resolved` the class — the same measure, the
+     same mirrored toggle, the same once-per-boot reset. */
+  const rowReveal = createImageReveal({ hosts: rows, reduced, className: 'is-resolved', heightOf: rowTallest });
+  cleanups.push(rowReveal.cleanup);
 
   /* ── The footer: the flow-page grammar — wrapped once (idempotent),
      played when it enters. */

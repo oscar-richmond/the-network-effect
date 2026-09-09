@@ -44,6 +44,7 @@ import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.
 import { wireRailVeils } from './rail-veils.js';
 import { SWAP_PHASE_MS, SWAP_CURVE } from '../cover-swap.js';
 import { initStatementBar } from './statement-bar.js';
+import { initImageReveal } from './img-reveal.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -667,6 +668,20 @@ export function initCaseStudy() {
     document.querySelector('[data-cs-bar]'),
     document.querySelector('[data-cs-intro]'),
   ));
+
+  /* THE IMAGE BLUR-IN (2026-09-09, phone only — img-reveal.js is the
+     /work grid's row reveal, shared): the hero, every stream figure
+     (singles and pairs; the video in a pair resolves with its
+     neighbour) and every MORE WORK window park under the 12px blur and
+     resolve at a quarter entered, mirrored. Composes under the
+     rise+fade these wrappers already carry (case-study.css: the
+     wrapper fades and rises, the image inside un-blurs). RM: the
+     stylesheet carries no blur under `reduce`. */
+  cleanups.push(initImageReveal(document.querySelectorAll('[data-cs-hero-img], .cs-row__img, .cs-more__imgwin'), {
+    /* the rise+fade lives on the hero figure itself, the ROW around a
+       stream figure, the CARD around a MORE WORK window */
+    entranceOf: (host) => host.closest('[data-cs-hero-img], .cs-row, .cs-more__card'),
+  }));
 
   if (reduced) {
     /* RM: static page; sticky remains (it's layout). The hidden
