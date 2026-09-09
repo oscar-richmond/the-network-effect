@@ -410,3 +410,21 @@
 	}
 	.landing-v2.landing-v2 .fd-col { margin-right: calc(-1 * var(--m-margin-safe-r, var(--m-margin))); }
 }
+
+/* ── THE PHONE (the 402 frame's chrome, 2026-09-09): the footer is IN
+   FLOW — the page scrolls onto it, no reveal (shared-narrow.css §1). The
+   sticky uncover above is the BAND's: restated here at this file's
+   specificity (0,5,0), which was otherwise out-cascading the shared
+   phone rule (0,4,1) — the footer stayed sticky with its negative margin
+   and no spacer, and the page ended 992 short with the footer under the
+   founders' blocks (the whole-site pass, 2026-09-09). The driver already
+   takes the footer itself as the reveal cue when the spacer is gone. ── */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2.founders-page .fd-footer-wrap .landing-footer {
+		position: relative;
+		top: auto;
+		margin-top: 0;
+		z-index: auto;
+	}
+	.landing-v2.landing-v2.founders-page .landing-footer-spacer { display: none; }
+}

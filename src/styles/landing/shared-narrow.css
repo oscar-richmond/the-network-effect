@@ -350,7 +350,9 @@
 		color: inherit;
 		white-space: nowrap;
 	}
-	.landing-v2.landing-v2 .landing-footer__ritem--privacy { cursor: pointer; }
+	/* the privacy row item is an .is-placeholder (no page behind it yet): no
+	   cursor affordance — the desktop's pointer rule (landing.css) is not
+	   mirrored here (the gate, 2026-09-09) */
 	.landing-v2.landing-v2 .landing-footer--light .landing-footer__dlink,
 	.landing-v2.landing-v2 .landing-footer--light .landing-footer__dst-line,
 	.landing-v2.landing-v2 .landing-footer--light .landing-footer__drow .landing-footer__ritem {
