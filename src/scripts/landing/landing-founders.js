@@ -19,7 +19,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { getLenisInstance } from './site-scroll.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -443,6 +443,105 @@ export function initLandingFounders() {
         lastOtherBlurEndPx: photoBlurEndPx - EXIT_PHOTO_BLUR_LAG_PX,
       };
     }
+  } else if (isPhoneViewport()) {
+    /* ── THE PHONE (Oscar, 2026-09-09 — Phase 2B): the desktop's
+       choreography on the phone's layout. The section PINS with the
+       rail's bottom flush to the viewport bottom (position: sticky, top
+       = 100dvh − the rail's measured bottom offset — live under the URL
+       bar; negative when the section is taller than the screen, as the
+       desktop's own bottom-aligned pin is), HOLDS for the desktop's 250,
+       then every item rises and blur-fades out at its own pace over the
+       desktop's 900 window with the desktop's distances and blur
+       durations verbatim; the track carries section + HOLD + RELEASE so
+       the sticky releases at 760, when the last blur has cleared. The
+       entry keeps the phone's approved drift (0.6 of the desktop's
+       amplitudes) and runs until the pin engages. OUR NETWORK sits
+       pinned beneath (landing-network.js) and is revealed as the items
+       leave — the founders' ground is transparent for it
+       (landing-narrow.css, keyed on body.m-ground-on). */
+    const inset = foundersDepartingEdgeInsetPx();
+    const railBottomOff = Math.max(1, section.offsetHeight - inset);
+    section.style.setProperty('--fd-rail-bottom', `${railBottomOff}px`);
+    section.classList.add('is-pinned-phone');
+    if (track instanceof HTMLElement) {
+      /* the release (760) is measured from the pin and already spans the
+         hold and the exit — the track is the section + the release */
+      track.style.height = `${section.offsetHeight + FOUNDERS_RELEASE_PX}px`;
+    }
+    const entryPx = railBottomOff;
+    const holdEnd = entryPx + FOUNDERS_HOLD_PX;
+    const photo = section.querySelector('.landing-founders__photo');
+    const headline = section.querySelector('.landing-founders__headline');
+    const nav = document.querySelector('.home__topbar');
+    const firstLine = section.querySelector('.landing-founders__line') ?? headline;
+    const navBottomPx = nav instanceof HTMLElement ? nav.getBoundingClientRect().bottom : 0;
+    const stickyTopPx = Math.min(0, parseFloat(getComputedStyle(section).top) || 0);
+    const headlineInkTopPx = firstLine instanceof HTMLElement
+      ? firstLine.getBoundingClientRect().top
+        - section.getBoundingClientRect().top
+        - (headline instanceof HTMLElement ? Number(gsap.getProperty(headline, 'y')) || 0 : 0)
+        + HEADLINE_INK_INSET_PX
+        + stickyTopPx
+      : 0;
+    const photoBlurStartPx = Math.min(
+      FOUNDERS_EXIT_PX,
+      Math.max(0, ((headlineInkTopPx - navBottomPx) / EXIT_HEADLINE_PX) * FOUNDERS_EXIT_PX),
+    );
+    const photoBlurEndPx = Math.max(
+      EXIT_BLUR_HEADLINE_PX, EXIT_BLUR_CTAS_PX, EXIT_BLUR_ROBBO_PX, EXIT_BLUR_ASHLEY_PX,
+    ) + EXIT_PHOTO_BLUR_LAG_PX;
+    const spec = [
+      { el: section.querySelector('[data-landing-founders-label]'), px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: section.querySelector('[data-landing-founders-label]'), blurDur: EXIT_BLUR_HEADLINE_PX },
+      { el: headline, px: DRIFT_HEADLINE_PX, exit: EXIT_HEADLINE_PX, mode: 'y', blurEl: headline, blurDur: EXIT_BLUR_HEADLINE_PX },
+      { el: section.querySelector('.landing-founders__ctas'), px: DRIFT_CTAS_PX, exit: EXIT_CTAS_PX, mode: 'y', blurEl: section.querySelector('.landing-founders__ctas'), blurDur: EXIT_BLUR_CTAS_PX },
+      { el: photo, px: DRIFT_PHOTO_PX, exit: EXIT_PHOTO_PX, mode: 'y' },
+      { el: section.querySelector('.landing-founders__portrait--robbo'), px: DRIFT_ROBBO_PX, exit: EXIT_ROBBO_PX, mode: 'top', blurEl: section.querySelector('.landing-founders__portrait--robbo .landing-founders__portrait-crop'), blurDur: EXIT_BLUR_ROBBO_PX },
+      { el: section.querySelector('.landing-founders__portrait--ashley'), px: DRIFT_ASHLEY_PX, exit: EXIT_ASHLEY_PX, mode: 'top', blurEl: section.querySelector('.landing-founders__portrait--ashley .landing-founders__portrait-crop'), blurDur: EXIT_BLUR_ASHLEY_PX },
+    ];
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: track,
+        start: 'top bottom',
+        end: `+=${entryPx + FOUNDERS_HOLD_PX + FOUNDERS_EXIT_PX}`,
+        scrub: true,
+      },
+    });
+    spec.forEach(({ el, px, exit, mode, blurEl, blurDur }) => {
+      if (!(el instanceof HTMLElement)) return;
+      const amp = px * DRIFT_SCALE_NARROW;
+      if (mode === 'top') {
+        tl.fromTo(el, { top: amp }, { top: 0, duration: entryPx, ease: 'none' }, 0);
+        if (exit) tl.to(el, { top: -exit, duration: FOUNDERS_EXIT_PX, ease: 'none' }, holdEnd);
+      } else {
+        tl.fromTo(el, { y: amp }, { y: 0, duration: entryPx, ease: 'none' }, 0);
+        if (exit) tl.to(el, { y: -exit, duration: FOUNDERS_EXIT_PX, ease: 'none' }, holdEnd);
+      }
+      if (blurEl instanceof HTMLElement && blurDur) {
+        tl.fromTo(
+          blurEl,
+          { filter: 'blur(0px)', opacity: 1 },
+          { filter: `blur(${EXIT_BLUR_PX}px)`, opacity: 0, duration: blurDur, ease: 'none' },
+          holdEnd,
+        );
+      }
+    });
+    const photoImg = photo instanceof HTMLElement ? photo.querySelector('img') : null;
+    if (photoImg instanceof HTMLElement && photoBlurEndPx > photoBlurStartPx) {
+      tl.fromTo(
+        photoImg,
+        { filter: 'blur(0px)', opacity: 1 },
+        { filter: `blur(${EXIT_BLUR_PX}px)`, opacity: 0, duration: photoBlurEndPx - photoBlurStartPx, ease: 'none' },
+        holdEnd + photoBlurStartPx,
+      );
+    }
+    driftTweens.push(tl);
+    if (import.meta.env.DEV) {
+      window.__landingFounders = {
+        phone: true, entryPx, holdPx: FOUNDERS_HOLD_PX, exitPx: FOUNDERS_EXIT_PX, holdEndPx: holdEnd,
+        releasePx: FOUNDERS_RELEASE_PX, railBottomOff, stickyTopPx, photoBlurStartPx: +photoBlurStartPx.toFixed(1), photoBlurEndPx,
+        trackHeight: track instanceof HTMLElement ? track.offsetHeight : null,
+      };
+    }
   } else {
     /* ── NARROW (the rebuild, 2026-09-07): the desktop's ENTRY DRIFT and
        nothing else. Each layer lags at its own amplitude — scaled to the
@@ -533,5 +632,10 @@ export function initLandingFounders() {
       t.scrollTrigger?.kill();
       t.kill();
     });
+    if (section.classList.contains('is-pinned-phone')) {
+      section.classList.remove('is-pinned-phone');
+      section.style.removeProperty('--fd-rail-bottom');
+      if (track instanceof HTMLElement) track.style.height = '';
+    }
   };
 }

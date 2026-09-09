@@ -72,13 +72,18 @@
 		--hero-card-stagger: 48px;
 	}
 
-	/* the stage stays fixed at 100svh: the geometry must NOT re-derive
-	   when the URL bar collapses (an under-fill strip during collapsed-bar
-	   is the accepted trade — the founders section slides over the stage
-	   regardless) */
+	/* THE STAGE IS LIVE (Oscar, 2026-09-09 — Phase 2A): 100dvh, as the
+	   desktop's. It was 100svh here so the runway would not re-derive on
+	   URL-bar collapse — but the fixed stage then under-filled the grown
+	   viewport by the bar's height, and the page ground showed beneath
+	   the risen image as a light block whenever the bar collapsed on a
+	   scroll back up. The GEOMETRY still never re-derives: the driver
+	   measures the SMALL viewport itself (a 100svh probe,
+	   landing-hero-scroll.js) rather than this stage's height, and its
+	   rebuild fires on width change only. */
 	.landing-v2 .landing-hero {
 		height: 100vh;
-		height: 100svh;
+		height: 100dvh;
 	}
 
 	/* ── the headline: a left-set block at the margins (the desktop's
@@ -1603,7 +1608,10 @@
 		letter-spacing: 0;
 		white-space: nowrap;
 	}
-	/* 1:140 — the ground over the rail's edges: 5% left, 6% right */
+	/* 1:140 — the ground over the rail's edges: 5% left, 6% right. The
+	   colour is the panel's LIVE ground (--sv-ground, written by
+	   m-ground.js through the AMPLIFY → FEATURED fade; the light at rest),
+	   so the veils never read as light strips over a darkening panel. */
 	.landing-v2.landing-home .landing-sreel__listwin::before,
 	.landing-v2.landing-home .landing-sreel__listwin::after {
 		content: '';
@@ -1616,12 +1624,12 @@
 	.landing-v2.landing-home .landing-sreel__listwin::before {
 		left: 0;
 		width: 5%;
-		background: linear-gradient(90deg, #eeeef0, rgba(238, 238, 240, 0));
+		background: linear-gradient(90deg, var(--sv-ground, #eeeef0), transparent);
 	}
 	.landing-v2.landing-home .landing-sreel__listwin::after {
 		right: 0;
 		width: 6%;
-		background: linear-gradient(90deg, rgba(238, 238, 240, 0), #eeeef0);
+		background: linear-gradient(90deg, transparent, var(--sv-ground, #eeeef0));
 	}
 	/* MORE INFO — 118×38: 16 · text · 6 · the 9px arrow · 16 */
 	.landing-v2.landing-home .landing-sreel__btn {
@@ -1798,7 +1806,10 @@
 		gap: var(--fw-gap);
 		margin: var(--fw-header-gap) 0 0;
 		padding: 0 0 0 var(--m-margin-safe-l, var(--m-margin));
-		transform: none !important;
+		/* (was !important — the phone's pinned rail (is-pinned-phone, end
+		   of this sheet) transforms this strip from its scrub; the band's
+		   native rail never carries a transform to defeat) */
+		transform: none;
 		will-change: auto;
 		overflow-x: auto;
 		overflow-y: hidden;
@@ -2604,5 +2615,236 @@
 		grid-row: 3;
 		justify-self: end;
 		margin: var(--cl-ind-gap) var(--m-margin-safe-r, var(--m-margin)) 0 0;
+	}
+}
+
+/* ═══ THE PHONE'S MOTION LAYER (Oscar, 2026-09-09 — "diagnose first,
+   then fix") ══════════════════════════════════════════════════════════
+   Motion and timing recovered onto the frame's layout; nothing here
+   changes a size, a type role or a spacing. Three devices, each keyed
+   on a class its driver adds (so a page without motion — reduced
+   motion, no script — keeps the sheets above exactly as they are):
+
+   body.m-ground-on           m-ground.js paints the document's canvas;
+                              the sections in the transition zones drop
+                              their own grounds (the seam class, R27).
+   .landing-founders.is-pinned-phone   WHO WE ARE pins on its rail's
+                              bottom (landing-founders.js).
+   .landing-network.is-pinned-phone    OUR NETWORK's stage pins on the
+                              strip's bottom (landing-network.js).
+   .landing-featured.is-pinned-phone   FEATURED WORK's pinned rail
+                              (landing-featured.js, Phase 3).
+   Every viewport-height value is dvh: the sticky offsets and the stage
+   heights follow the URL bar live (Phase 2A). */
+@media (max-width: 767px) {
+	/* ── the grounds ── */
+	.landing-v2.landing-home.m-ground-on .landing-hero__bg {
+		background: transparent;
+	}
+	.landing-v2.landing-home.m-ground-on .landing-founders-track,
+	.landing-v2.landing-home.m-ground-on .landing-founders {
+		background: transparent;
+	}
+	/* the services stage: SOLID (the module tweens the colour with the
+	   panels'); the painted tail gradient is retired */
+	.landing-v2.landing-home.m-ground-on .landing-outro {
+		background: #eeeef0;
+	}
+	/* the panels' ink drains with the fade (the panel itself stays
+	   opaque — the stack's occlusion needs it) */
+	.landing-v2.landing-home.m-ground-on .landing-sreel__pillar > * {
+		opacity: var(--sv-ink-op, 1);
+	}
+	.landing-v2.landing-home.m-ground-on .landing-featured,
+	.landing-v2.landing-home.m-ground-on .landing-featured__stage {
+		background: transparent;
+	}
+
+	/* ── WHO WE ARE: the pin (the rail's bottom flush to the viewport
+	   bottom; negative when the section is taller than the screen) ── */
+	.landing-v2.landing-home .landing-founders.is-pinned-phone {
+		position: sticky;
+		top: calc(100dvh - var(--fd-rail-bottom, 100dvh));
+		z-index: 2; /* above the network stage pinned beneath it */
+	}
+
+	/* ── OUR NETWORK: the stage pinned bottom-aligned on the strip,
+	   beneath WHO WE ARE (the section rides up over the founders track
+	   on a negative margin — landing-network.js). Both are TRANSPARENT:
+	   the ground is the page's (dark from the hero fade's end to the
+	   switch beneath the services stage), so the founders' items blur
+	   out over it and the network's content reveals through it — no
+	   opaque plane can pre-empt the hero → WHO WE ARE fade. ── */
+	.landing-v2.landing-home .landing-network.is-pinned-phone {
+		position: relative;
+		z-index: 1;
+		background: transparent;
+	}
+	.landing-v2.landing-home .landing-network.is-pinned-phone .landing-network__stage {
+		position: sticky;
+		/* bottom-aligned on the strip; clamped so the heading never pins
+		   above the nav on a short viewport (landing-network.js) */
+		top: max(var(--nw-pin-min-top, 0px), calc(100dvh - var(--nw-stage-h, 100dvh)));
+		background: transparent;
+		overflow: visible;
+	}
+	/* the strip is parked below the stage and rises on the driver's own
+	   transition (landing-network.js) — the in-flow fade-rise state is
+	   not this path's */
+	.landing-v2.landing-home .landing-network.is-pinned-phone .landing-network__strip,
+	.landing-v2.landing-home .landing-network.is-pinned-phone .landing-network__strip.is-visible {
+		opacity: 1;
+		transition: none;
+	}
+
+	/* ── FEATURED WORK: the pinned rail (Phase 3) ──
+	   The stage pins inside a wrapper one viewport + the travel tall; its
+	   content is bottom-anchored: FEATURED WORK's bottom 48 above the
+	   cards, the cards' bottom 48 above the 100×1 indicator, the
+	   indicator 52 above the viewport bottom. The cards are the /work
+	   grid's modules on the 370 measure (sq 181 · pt 181×260 · wide
+	   370×254 · land 276×181), top-aligned on 8 gutters, their names the
+	   grid's role (18 tall, 16 below the image). The tail after the
+	   wrapper is the fade-to-light's bare ground (the frame's 474). */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone {
+		--fw-header-gap: 48px;
+		--fw-ind-gap: 48px;
+		--fw-pad-bottom: 52px;
+		--fw-tail: 474px;
+		--fw-gap: 8px;
+		--fw-label-gap: 16px;
+		--fw-measure: calc(100vw - var(--m-margin-safe-l, var(--m-margin)) - var(--m-margin-safe-r, var(--m-margin)));
+		--fw-half: calc((var(--fw-measure) - var(--fw-gap)) / 2);
+		/* the tallest module (the portrait) + its name row */
+		--fw-strip-h: calc(var(--fw-half) * 260 / 181 + var(--fw-label-gap) + 18px);
+		height: auto;
+		padding: 0 0 var(--fw-tail);
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__pin {
+		height: calc(100dvh + var(--fw-travel, 0px));
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage {
+		position: sticky;
+		top: 0;
+		height: 100dvh;
+		padding: 0 0 var(--fw-pad-bottom);
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		overflow: hidden;
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__header {
+		margin: 0 var(--m-margin-safe-r, var(--m-margin)) var(--fw-header-gap) var(--m-margin-safe-l, var(--m-margin));
+		opacity: var(--fw-ink-op, 1);
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__viewall {
+		display: none;
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__strip {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: var(--fw-gap);
+		margin: 0;
+		padding: 0 0 0 var(--m-margin-safe-l, var(--m-margin));
+		height: var(--fw-strip-h);
+		overflow: visible;
+		scroll-snap-type: none;
+		transform: none;
+		will-change: transform;
+	}
+	/* the end spacer rides AFTER the whole order (the old rail's sat at
+	   9, inside this one's ten): gap + spacer = the margin, so the last
+	   card's right edge is the lead margin from the strip's end */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__strip::after {
+		order: 99;
+		flex: 0 0 calc(var(--m-margin-safe-r, var(--m-margin)) - var(--fw-gap));
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card {
+		flex: none;
+		width: var(--fw-half);
+		height: auto;
+		scroll-snap-align: none;
+		display: block;
+	}
+	/* the order (Oscar, 3B) and each project's /work grid module */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='pavilion-club'] { order: 1; --fw-ar: 1 / 1; }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='pavilion-summit'] { order: 2; --fw-ar: 181 / 260; }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='wilderness-reserve'] { order: 3; --fw-ar: 370 / 254; width: var(--fw-measure); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='tbc-ashley-walters'] { order: 4; --fw-ar: 181 / 260; }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='top-boy'] { order: 5; --fw-ar: 370 / 254; width: var(--fw-measure); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='tbc-adidas-spezial'] { order: 6; --fw-ar: 181 / 260; }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='adolescence'] { order: 7; --fw-ar: 1 / 1; }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='yoxman-food-festival'] { order: 8; --fw-ar: 370 / 254; width: var(--fw-measure); }
+	/* not on the /work grid (its ninth is not drawn) — the square, flagged */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='thunder-aviation'] { order: 9; --fw-ar: 1 / 1; }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__card[data-slug='animol'] { order: 10; --fw-ar: 276 / 181; width: calc(var(--fw-measure) * 276 / 370); }
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__imgwin {
+		height: auto;
+		aspect-ratio: var(--fw-ar, 1 / 1);
+	}
+	/* the name — the /work grid's tile role, 18 tall, 16 below */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__titleblock {
+		margin: var(--fw-label-gap) 0 0;
+		height: 18px;
+		font-family: var(--type-work-tile-face);
+		font-weight: var(--type-work-tile-weight);
+		font-synthesis: none;
+		font-size: var(--type-work-tile-size);
+		line-height: var(--type-work-tile-lh);
+		letter-spacing: var(--type-work-tile-ls);
+		text-transform: var(--type-work-tile-case);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: #eeeef0;
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__titleline {
+		opacity: var(--fw-ink-op, 1);
+	}
+	/* the indicator: centred, 48 below the cards, its ink draining with
+	   the fade */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .m-carousel-ind {
+		align-self: center;
+		margin: var(--fw-ind-gap) 0 0;
+		opacity: var(--fw-ink-op, 1);
+	}
+	/* the edges: the founders rail's veils (landing-founders ::before /
+	   ::after — 16 over the left margin, 48 into the right edge, the
+	   ground's #161616 to clear), over the rail's rows only; the near
+	   veil dissolves at the travel's end, the far one appears once
+	   scrolled (--fw-edge-*, landing-featured.js) */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before,
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after {
+		content: '';
+		position: absolute;
+		bottom: calc(var(--fw-pad-bottom) + var(--m-ind-h, 1px) + var(--fw-ind-gap));
+		height: var(--fw-strip-h);
+		z-index: 2;
+		pointer-events: none;
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::before {
+		left: 0;
+		width: var(--m-margin-safe-l, var(--m-margin));
+		background: linear-gradient(90deg, #161616 0%, rgba(22, 22, 22, 0) 100%);
+		opacity: calc(var(--fw-edge-l, 0) * var(--fw-ink-op, 1));
+	}
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__stage::after {
+		right: 0;
+		width: 48px;
+		background: linear-gradient(90deg, rgba(22, 22, 22, 0) 0%, #161616 100%);
+		opacity: calc(var(--fw-edge-r, 1) * var(--fw-ink-op, 1));
+	}
+	/* the desktop's blur band and its tint are retired here (Oscar, 3E) */
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .landing-featured__edge-tint,
+	.landing-v2.landing-home .landing-featured.is-pinned-phone .gradual-blur {
+		display: none;
+	}
+}
+
+/* the phone-only pool cards never render above the phone */
+@media (min-width: 768px) {
+	.landing-v2 .landing-featured__card--m {
+		display: none;
 	}
 }

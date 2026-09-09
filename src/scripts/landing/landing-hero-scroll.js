@@ -39,7 +39,18 @@ import { initSiteScroll } from './site-scroll.js';
    visit. Found 2026-09-02 by the logo-row probe; fixed in place. */
 import { wrapLineRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { createHeroRotatingGallery } from './hero-rotating-gallery.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, isPhoneViewport } from './viewport.js';
+
+/* THE PHONE'S GROUND (2026-09-09, m-ground.js): below 768 the page-level
+   ground module paints the hero → WHO WE ARE fade on the document's own
+   canvas, so this driver publishes its beats (the boundary, the
+   headline's wipe end, the band's first-ink crossing) instead of
+   tweening the stage's ground itself. Desktop: unread. */
+let lastBeats = null;
+/** @returns {{ boundaryAt: number, wipeEndAt: number, firstInkAt: number, fade: number[] } | null} */
+export function heroBeats() {
+  return lastBeats;
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -539,6 +550,16 @@ export function initLandingHeroScroll() {
      phone) so the runway never re-derives on URL-bar collapse, and the
      resize rebuild fires on WIDTH change only, for the same reason. */
   const isMob = isMobileViewport();
+  /** the small viewport's height (100svh) in px — measured off a probe,
+      since no script API reports it directly */
+  const smallViewportPx = () => {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none';
+    document.body.appendChild(probe);
+    const h = probe.getBoundingClientRect().height;
+    probe.remove();
+    return Number.isFinite(h) && h > 0 ? h : 0;
+  };
 
   /* THE GEOMETRY TOKENS — read from the page's own custom properties
      (landing-narrow.css sets them per band on .landing-home); the
@@ -729,9 +750,12 @@ export function initLandingHeroScroll() {
   const tweens = [];
 
   const build = () => {
-    /* Mobile: the stage's rendered height (100svh) — stable under
-       URL-bar collapse; desktop keeps the shipped innerHeight read. */
-    const vh = isMob ? hero.clientHeight || window.innerHeight : window.innerHeight;
+    /* Mobile: the SMALL viewport (a 100svh probe — the stage itself is
+       100dvh since Phase 2A, live under the URL bar), so the runway and
+       the beats are the same whatever state the bar is in at build and
+       never re-derive on its collapse; desktop keeps the shipped
+       innerHeight read. */
+    const vh = isMob ? smallViewportPx() || hero.clientHeight || window.innerHeight : window.innerHeight;
 
     /* ── Beat 1: travel left AND converge to a left-aligned stack ──
        (Oscar's rev.) Each LINE gets its own x tween to the shared
@@ -961,7 +985,11 @@ export function initLandingHeroScroll() {
         document.querySelector('[data-landing-founders]'),
         document.querySelector('[data-landing-founders-track]'),
       ].filter((el) => el instanceof HTMLElement);
-      if (heroBg instanceof HTMLElement) {
+      /* THE PHONE (2026-09-09): no ground tween here — the stage's
+         ground and the founders' are transparent (landing-narrow.css)
+         and m-ground.js scrubs the document's canvas from the beats
+         published below. */
+      if (heroBg instanceof HTMLElement && !isPhoneViewport()) {
         const fade = gsap.fromTo(
           [heroBg, ...foundersGround],
           { backgroundColor: HERO_GROUND_LIGHT },
@@ -1038,6 +1066,12 @@ export function initLandingHeroScroll() {
           ] : null,
         },
         logosTop: logos instanceof HTMLElement ? parseFloat(logos.style.top) : null,
+      };
+      lastBeats = {
+        boundaryAt: +boundaryAt.toFixed(1),
+        wipeEndAt: cardBeats.wipes.headline ? cardBeats.wipes.headline[1] : +boundaryAt.toFixed(1),
+        firstInkAt: +(boundaryAt + foundersFirstInkPx).toFixed(1),
+        fade: [+fadeStart.toFixed(1), +fadeEnd.toFixed(1)],
       };
     }
 

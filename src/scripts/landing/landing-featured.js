@@ -153,6 +153,163 @@ const CARD_STAGGER_MS = 100;
 const CARDS_AT_MS = 200;
 const VIEWALL_AT_MS = 400;
 
+/* ═══ THE PHONE'S PINNED RAIL (Oscar, 2026-09-09 — Phase 3) ═══════════
+   The desktop's master scrub, ported to the phone's layout: the stage
+   pins (CSS sticky, 100dvh — live under the URL bar) inside a wrapper
+   whose height is one viewport + the travel, and ONE scrubbed tween
+   maps the wrapper's scroll 1:1 onto the strip's x — free travel, no
+   snap, reversible. THE TRAVEL is derived: the strip's laid-out width
+   (its 16 lead, the cards on 8 gutters, the 16 end margin) minus the
+   viewport, so the LAST card's right edge rests exactly 16 from the
+   viewport's right edge at the end, at every width. There the wrapper
+   ends, the sticky releases and the page scrolls on — the desktop's
+   "departure by transform" is not carried (the pin releases instead,
+   Oscar's 3D), and the ground module fades the canvas to light over
+   that departure (m-ground.js reads featuredPhonePin()).
+
+   THE LAYOUT WHILE PINNED is bottom-anchored in CSS (52 / 48 / 48 from
+   the viewport bottom — landing-narrow.css), so it holds at every
+   height without a measurement. THE EDGES are the founders rail's veils
+   (its ::before / ::after gradients, reused): the near (right) veil is
+   up while there is travel left and dissolves over the final eighth so
+   the last card's 16 reads clean (the desktop drains its own tint at
+   the end of travel); the far (left) veil appears over the first eighth
+   — "the far edge appearing once scrolled". THE INDICATOR is the shared
+   100×1 contract, its --ci-x written from the travel's progress (the
+   strip is transformed, not scrolled, so the module's scroll listener
+   has nothing to hear). THE ENTRANCE is the section's own (the header's
+   word reveals, the cards' fade-rise), triggered on the header — the
+   content sits at the stage's foot, so the section's top is the wrong
+   anchor for it. Reduced motion: no pin, no scrub — the rail stays the
+   band's native scroller (the layout class is never added). */
+let phonePin = null;
+/** @returns {{ sectionTop: number, travel: number, releaseAt: number } | null} */
+export function featuredPhonePin() {
+  return phonePin;
+}
+
+const PHONE_EDGE_FRACTION = 1 / 8;
+
+function initPhoneFeatured(section, removeGate) {
+  const stage = section.querySelector('[data-featured-stage]');
+  const strip = section.querySelector('[data-featured-strip]');
+  const header = section.querySelector('.landing-featured__header');
+  const lines = Array.from(section.querySelectorAll('[data-featured-line]'));
+  const cards = Array.from(section.querySelectorAll('[data-featured-card]'));
+  if (!(stage instanceof HTMLElement) || !(strip instanceof HTMLElement)) return removeGate;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const cleanupEnt = initMobileEntrance(header instanceof HTMLElement ? header : section, {
+      lines,
+      media: cards,
+      start: 'top 90%',
+    });
+    return () => { removeGate(); cleanupEnt(); };
+  }
+
+  /* the wrapper the sticky stage pins inside (built here so the desktop
+     DOM stays exactly as it is) */
+  const pin = document.createElement('div');
+  pin.className = 'landing-featured__pin';
+  section.insertBefore(pin, stage);
+  pin.appendChild(stage);
+  section.classList.add('is-pinned-phone');
+
+  /* the cards' fade-rise staggers in the RAIL's order (the CSS order,
+     not the DOM's — the phone-only pool cards sit last in the markup).
+     Read AFTER is-pinned-phone is on: the rail's order rules key on it,
+     and before it the computed order is the band's. */
+  const byRailOrder = [...cards].sort(
+    (a, b) => (parseInt(getComputedStyle(a).order, 10) || 0) - (parseInt(getComputedStyle(b).order, 10) || 0),
+  );
+  const cleanupEnt = initMobileEntrance(header instanceof HTMLElement ? header : section, {
+    lines,
+    media: byRailOrder,
+    start: 'top 90%',
+  });
+
+  /* the indicator — the shared contract's markup, driven below */
+  const ind = document.createElement('span');
+  ind.className = 'm-carousel-ind';
+  ind.setAttribute('data-carousel-ind', '');
+  ind.setAttribute('aria-hidden', 'true');
+  const thumb = document.createElement('span');
+  thumb.className = 'm-carousel-ind__thumb';
+  thumb.setAttribute('data-carousel-thumb', '');
+  ind.appendChild(thumb);
+  strip.insertAdjacentElement('afterend', ind);
+
+  /* THE TRAVEL: the last card's right edge (in the strip's own box —
+     offsetLeft + width, transform-free) plus the end inset — the strip's
+     own lead margin, so the rail ends as it begins — minus the viewport:
+     at the end the last card rests exactly that inset from the right
+     edge, at every width. */
+  const travel = () => {
+    const last = cards
+      .filter((c) => c instanceof HTMLElement && getComputedStyle(c).display !== 'none')
+      .reduce((best, c) => (!best || c.offsetLeft > best.offsetLeft ? c : best), null);
+    if (!(last instanceof HTMLElement)) return 0;
+    const inset = parseFloat(getComputedStyle(strip).paddingLeft) || 0;
+    return Math.max(last.offsetLeft + last.offsetWidth + inset - (window.innerWidth || 0), 0);
+  };
+  const applyTravel = () => {
+    section.style.setProperty('--fw-travel', `${Math.round(travel())}px`);
+  };
+  const publish = () => {
+    const top = section.getBoundingClientRect().top + (window.scrollY || 0);
+    phonePin = { sectionTop: Math.round(top), travel: Math.round(travel()), releaseAt: Math.round(top + travel()) };
+  };
+  const applyProgress = (p) => {
+    const l = Math.min(1, p / PHONE_EDGE_FRACTION);
+    const r = Math.min(1, (1 - p) / PHONE_EDGE_FRACTION);
+    section.style.setProperty('--fw-edge-l', l.toFixed(3));
+    section.style.setProperty('--fw-edge-r', r.toFixed(3));
+    const run = ind.clientWidth - (thumb.offsetWidth || 32);
+    ind.style.setProperty('--ci-x', `${(p * Math.max(run, 0)).toFixed(1)}px`);
+  };
+  applyTravel();
+  applyProgress(0);
+
+  const tween = gsap.fromTo(
+    strip,
+    { x: 0 },
+    {
+      x: () => -travel(),
+      ease: 'none',
+      immediateRender: true,
+      scrollTrigger: {
+        trigger: pin,
+        start: 'top top',
+        end: () => `+=${Math.round(travel())}`,
+        scrub: true,
+        invalidateOnRefresh: true,
+        onRefreshInit: applyTravel,
+        onRefresh: (st) => { publish(); applyProgress(st.progress); },
+        onUpdate: (st) => applyProgress(st.progress),
+      },
+    },
+  );
+  publish();
+
+  if (import.meta.env.DEV) {
+    window.__landingFeaturedPhone = { travel, pin: () => phonePin };
+  }
+
+  return () => {
+    removeGate();
+    cleanupEnt();
+    tween.scrollTrigger?.kill();
+    tween.kill();
+    ind.remove();
+    section.insertBefore(stage, pin);
+    pin.remove();
+    section.classList.remove('is-pinned-phone');
+    ['--fw-travel', '--fw-edge-l', '--fw-edge-r'].forEach((p) => section.style.removeProperty(p));
+    gsap.set(strip, { clearProps: 'transform' });
+    phonePin = null;
+  };
+}
+
 export function initLandingFeatured() {
   const section = document.querySelector('[data-landing-featured]');
   if (!(section instanceof HTMLElement)) return () => {};
@@ -169,6 +326,11 @@ export function initLandingFeatured() {
   };
   section.addEventListener('click', onCardClick);
   const removeGate = () => section.removeEventListener('click', onCardClick);
+
+  /* THE PHONE (Oscar, 2026-09-09 — Phase 3): the desktop's mechanic,
+     ported — the section FIXES and the rail travels RIGHT as the page
+     scrolls DOWN, 1:1, reversible, finite (no loop, no clones). */
+  if (isPhoneViewport()) return initPhoneFeatured(section, removeGate);
 
   /* NARROW (the rebuild, 2026-09-07): the desktop's strip as a
      touch-scrolled rail (landing-narrow.css — the same cards, the same
@@ -240,7 +402,9 @@ export function initLandingFeatured() {
      reserve'. Data is rendered verbatim.) */
   const lines = Array.from(section.querySelectorAll('[data-featured-line]'));
   const viewall = section.querySelector('[data-featured-viewall]');
-  const cards = Array.from(section.querySelectorAll('[data-featured-card]'));
+  /* the phone-only pool cards (LandingFeatured.astro) are display:none
+     here — excluded so every desktop measurement sees the eight it did */
+  const cards = Array.from(section.querySelectorAll('[data-featured-card]:not(.landing-featured__card--m)'));
   if (!(stage instanceof HTMLElement) || !(strip instanceof HTMLElement)) return () => {};
 
   /* Travel derived live: strip scrollWidth already includes its

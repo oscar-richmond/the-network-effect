@@ -37,7 +37,18 @@
  */
 import { asset } from '../../utils/asset.js';
 import { LIVE_CASE_SLUGS } from '../../data/landing/case-studies.js';
-import { FEATURED_CARDS } from '../../data/landing/featured-work.js';
+import { FEATURED_CARDS, WORK_EXTRAS } from '../../data/landing/featured-work.js';
+
+/* THE PHONE'S RAIL (Oscar, 2026-09-09 — Phase 3B): the order names two
+   projects that live only in the /work pool — Music and Culture and
+   Adidas — so their tiles ride here as PHONE-ONLY cards (inert
+   placeholders, as on /work). display: none from 768 up
+   (landing-narrow.css): the desktop and the band render exactly what
+   they did (a display:none node has no box). */
+const PHONE_EXTRA_SLUGS = ['tbc-ashley-walters', 'tbc-adidas-spezial'];
+const PHONE_EXTRAS = PHONE_EXTRA_SLUGS
+  .map((slug) => WORK_EXTRAS.find((p) => p.slug === slug))
+  .filter(Boolean);
 import GradualBlur from '../GradualBlur.astro';
 import { imageSrcset } from '../../utils/thumb-srcset.js';
 
@@ -156,6 +167,33 @@ const cardSrcset = (src) => imageSrcset(src, [600, 680], 2000);
           <p class="landing-featured__desc" style={`top:${459 + 38 + 8.5}px`}>{card.desc}</p>
         </span>
         )
+      ))}
+      {/* the phone-only pool cards (see PHONE_EXTRAS above) */}
+      {PHONE_EXTRAS.map((card) => (
+        <span
+          class="landing-featured__card landing-featured__card--m is-placeholder"
+          data-featured-card
+          data-slug={card.slug}
+          data-live="false"
+          data-a4-note="unbuilt study: inert placeholder — no href, no data-work-link, unfocusable"
+        >
+          <figure class="landing-featured__imgwin" aria-hidden="true">
+            <img
+              src={card.workImg}
+              srcset={cardSrcset(card.workImg)}
+              sizes={CARD_SIZES}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              class="is-cover"
+            />
+          </figure>
+          <h3 class="landing-featured__titleblock">
+            {card.title.map((line) => (
+              <span class="landing-featured__titleline">{line}</span>
+            ))}
+          </h3>
+        </span>
       ))}
     </div>
 

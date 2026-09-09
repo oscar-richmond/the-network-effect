@@ -223,12 +223,20 @@ export function initLandingServices() {
     const parkTop = parseFloat(getComputedStyle(document.body).getPropertyValue('--sv-park-top')) || 67;
     const parkPitch = parseFloat(getComputedStyle(document.body).getPropertyValue('--sv-park-pitch')) || 31;
     const parks = pillars.map(() => parkTop);
+    /* THE PITCH IS INVARIANT (Oscar, 2026-09-09 — Phase 2C): every park
+       top is the frame's 67 + i × 31, at every viewport height. The
+       earlier clamp (min(natural, vh − panelH)) kept a 653-tall panel's
+       MORE INFO above the fold on short phones by parking it HIGHER —
+       and below ~782 of viewport that pulled CONNECT (and AMPLIFY) up
+       onto IMMERSE's park line: the compacted band is 31 tall (2 divider
+       + 8 + 13 title + 8) and its sticky offset must be exactly one
+       band below the panel above it. Frame 1:426 is drawn at 874 with
+       AMPLIFY's panel ending at 780; on a shorter viewport its foot sits
+       below the fold while parked and comes into view as the stack
+       releases — the geometry wins over the button's early visibility. */
     const setParks = () => {
-      const vh = window.innerHeight;
       pillars.forEach((pillar, i) => {
-        const natural = parkTop + i * parkPitch;
-        const h = pillar.offsetHeight;
-        parks[i] = Math.min(natural, Math.max(vh - h, -h));
+        parks[i] = parkTop + i * parkPitch;
         pillar.style.setProperty('--sv-park', `${Math.round(parks[i])}px`);
       });
     };

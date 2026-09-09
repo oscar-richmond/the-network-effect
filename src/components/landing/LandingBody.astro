@@ -220,6 +220,7 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   import { initLandingClosing } from '../../scripts/landing/landing-closing.js';
   import { initNavEntrance } from '../../scripts/landing/nav-motion.js';
   import { initSplash } from '../../scripts/landing/splash.js';
+  import { initPhoneGround } from '../../scripts/landing/m-ground.js';
 
   /* The splash boots FIRST so it owns the load before any section
      schedules its own arrival. It only exists when the pre-paint
@@ -261,8 +262,13 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
   let cleanupLandingAccess = initLandingAccess();
   let cleanupLandingClosing = initLandingClosing();
   let cleanupNavEntrance = initNavEntrance();
+  /* THE PHONE'S GROUND boots LAST: it reads the hero's and the featured
+     rail's published beats (m-ground.js), and its one trigger refreshes
+     after theirs. Phone only; a no-op elsewhere. */
+  let cleanupPhoneGround = initPhoneGround();
 
   document.addEventListener('astro:before-swap', () => {
+    cleanupPhoneGround();
     cleanupLandingHero();
     cleanupLandingFounders();
     cleanupCharRipple();
@@ -286,5 +292,6 @@ import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
     cleanupLandingAccess = initLandingAccess();
     cleanupLandingClosing = initLandingClosing();
     cleanupNavEntrance = initNavEntrance();
+    cleanupPhoneGround = initPhoneGround();
   });
 </script>

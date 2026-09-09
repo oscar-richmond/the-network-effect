@@ -20,7 +20,12 @@ import {
 import { asset } from '../../utils/asset.js';
 import { isMobileViewport, isPhoneViewport, isTouchPrimary } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
-import { FOUNDERS_HANDOFF_T, foundersDepartingEdgeInsetPx } from './landing-founders.js';
+import { FOUNDERS_HANDOFF_T, FOUNDERS_RELEASE_PX, foundersDepartingEdgeInsetPx } from './landing-founders.js';
+
+/* THE PHONE's hold once the arrival has played, before the stage scrolls
+   on — the desktop founders' own 250 ("slightly fix into place before
+   then scrolling on", Oscar). */
+const NETWORK_PHONE_HOLD_PX = 250;
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -326,50 +331,110 @@ export function initLandingNetwork() {
      toggle, no pin-anchored entrance. Everything ABOVE this line
      (marquee swaps + the term interaction, including the tap path)
      stays live; everything below is the desktop arrival. */
-  if (isMobileViewport()) {
-    /* THE REBUILD (2026-09-07): the section is in flow (no pin — it
-       follows WHO WE ARE, which no longer pins below the seam either),
+  /* THE PHONE (Oscar, 2026-09-09 — Phase 2B): the DESKTOP ARRIVAL, not
+     the band's in-flow entrance. The section sits beneath the pinned
+     WHO WE ARE (z 260 under its 261) pulled up by an overlap derived
+     so its stage — sticky, bottom-aligned on the strip's bottom (top =
+     100dvh − the stage's measured height, live under the URL bar) — is
+     already pinned when the founders' exit begins; the founders' items
+     rising and blurring out REVEAL it (their ground is transparent), and
+     the entrance plays at the desktop's own handoff gate below (the
+     departing rail's edge past the lower-third line; the title group at
+     the third line). The section's height carries the pin through that
+     arrival plus the desktop founders' hold (250) before it scrolls on.
+     Only the industries' separators and the reveal order are the
+     phone's (the frame's reading order); everything below is the
+     desktop's code path. */
+  const phone = isPhoneViewport();
+  const joinSeps = [];
+  if (phone) {
+    const bodyLines = Array.from(section.querySelectorAll('[data-landing-network-body] .landing-network__line'));
+    bodyLines.forEach((line, i) => {
+      if (i === bodyLines.length - 1) return;
+      const sep = document.createElement('span');
+      sep.className = 'landing-network__sep landing-network__sep--join';
+      sep.textContent = ' /';
+      line.appendChild(sep);
+      joinSeps.push(sep);
+    });
+  }
+  let cleanupPhonePin = () => {};
+  if (phone && document.body.classList.contains('landing-home')) {
+    const stageEl = section.querySelector('[data-landing-network-stage]');
+    section.classList.add('is-pinned-phone');
+    const layout = () => {
+      const stageH = stageEl instanceof HTMLElement ? stageEl.offsetHeight : window.innerHeight;
+      const vh = window.innerHeight || 0;
+      const inset = foundersDepartingEdgeInsetPx();
+      /* the overlap: the stage pinned by the founders' exit start —
+         their rail's inset + the release + this stage's own height */
+      const overlap = inset + FOUNDERS_RELEASE_PX + stageH;
+      /* the pinned run: the founders' release (760), the two handoff
+         lines (the departing edge crossing 2/3 then 1/3 of the
+         viewport — the desktop's gates), then the 250 hold */
+      const pinned = FOUNDERS_RELEASE_PX + vh * (1 - FOUNDERS_HANDOFF_T) + NETWORK_PHONE_HOLD_PX;
+      /* THE SHORT VIEWPORT: the stage (subtitle, title, list, strip —
+         ~837 at 402) is taller than most live phone viewports (the
+         frame's own device shows ~750–800 under Safari's bars), and a
+         pure bottom-aligned pin would hold it with its heading ABOVE the
+         viewport — content that is revealed only while pinned would
+         never be seen. So the sticky top is clamped: never above the
+         line that puts the first ink under the nav; the strip's bottom
+         then sits below the fold by the shortfall and scrolls into view
+         as the section moves on. Where the stage fits (402×874: top 37)
+         the clamp is inert and the strip's bottom is flush. The section
+         grows by the same shortfall so the hold after the arrival keeps
+         its 250. */
+      const nav = document.querySelector('.home__topbar');
+      const navBottom = nav instanceof HTMLElement ? nav.getBoundingClientRect().bottom : 0;
+      const firstInk = section.querySelector('[data-landing-network-subtitle]') ?? section.querySelector('[data-landing-network-title]');
+      const inkTop = firstInk instanceof HTMLElement && stageEl instanceof HTMLElement
+        ? firstInk.getBoundingClientRect().top - stageEl.getBoundingClientRect().top
+        : 0;
+      const minTop = Math.max(0, Math.round(navBottom - inkTop));
+      const extra = Math.max(0, minTop - (vh - stageH));
+      section.style.setProperty('--nw-stage-h', `${stageH}px`);
+      section.style.setProperty('--nw-pin-min-top', `${minTop}px`);
+      section.style.marginTop = `${-Math.round(overlap)}px`;
+      section.style.height = `${Math.round(stageH + pinned + extra)}px`;
+      return { stageH, overlap: Math.round(overlap), pinned: Math.round(pinned), minTop, extra: Math.round(extra), stickyTop: Math.max(minTop, vh - stageH) };
+    };
+    let last = layout();
+    let lastW = window.innerWidth;
+    let resizeTimer = 0;
+    const onResize = () => {
+      if (window.innerWidth === lastW) return; /* the URL bar's height-only resizes: the layout is dvh-live */
+      lastW = window.innerWidth;
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => { last = layout(); ScrollTrigger.refresh(); }, 200);
+    };
+    window.addEventListener('resize', onResize);
+    if (import.meta.env.DEV) window.__landingNetworkPhone = { layout: () => last };
+    cleanupPhonePin = () => {
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener('resize', onResize);
+      section.classList.remove('is-pinned-phone');
+      section.style.removeProperty('--nw-stage-h');
+      section.style.removeProperty('--nw-pin-min-top');
+      section.style.marginTop = '';
+      section.style.height = '';
+    };
+  }
+
+  if (isMobileViewport() && !phone) {
+    /* THE BAND (the rebuild, 2026-09-07): the section is in flow (no pin
+       — it follows WHO WE ARE, which does not pin in the band either),
        and arrives with the desktop's own vocabulary: the title, subtitle
        and sector lines WORD-REVEAL in place (the shared entrance's line
        wrap — the desktop's mechanism, one trigger instead of the
        desktop's pin-anchored pair), and the photo strip fade-rises
        (.is-visible, landing-narrow.css). The retired logo rows take no
-       part: the desktop removed them (R9). */
-    /* PHONE (Figma 1:11, 2026-09-09): the frame stacks the subtitle
-       ABOVE the title (landing-narrow.css reorders the flex column), so
-       the reveal's 120ms stagger runs in the frame's reading order —
-       subtitle, title, list — instead of the DOM's. Same wrap, same
-       trigger, same stagger; only the index each line takes. And the
-       frame flows the industries as ONE paragraph (1:32) — the authored
-       line blocks go inline (CSS) and a separator joins them — appended
-       to the END of each line but the last, BEFORE the wrap, so it
-       rides inside the line's reveal clip and dims with the rest
-       (.landing-network__sep); the wrap hoists edge whitespace, so the
-       inter-line space is the CSS ::before on the following line.
-       Removed on cleanup; the desktop DOM is never touched. */
-    const phone = isPhoneViewport();
-    const pick = (sel) => Array.from(section.querySelectorAll(sel));
-    const lines = phone
-      ? [
-          ...pick('[data-landing-network-subtitle] .landing-network__line'),
-          ...pick('[data-landing-network-title] .landing-network__line'),
-          ...pick('[data-landing-network-body] .landing-network__line'),
-        ]
-      : pick(
-          '[data-landing-network-title] .landing-network__line, [data-landing-network-subtitle] .landing-network__line, [data-landing-network-body] .landing-network__line',
-        );
-    const joinSeps = [];
-    if (phone) {
-      const bodyLines = pick('[data-landing-network-body] .landing-network__line');
-      bodyLines.forEach((line, i) => {
-        if (i === bodyLines.length - 1) return;
-        const sep = document.createElement('span');
-        sep.className = 'landing-network__sep landing-network__sep--join';
-        sep.textContent = ' /';
-        line.appendChild(sep);
-        joinSeps.push(sep);
-      });
-    }
+       part: the desktop removed them (R9). (The phone left this branch
+       on 2026-09-09 for the desktop arrival above; its separators are
+       appended before this point.) */
+    const lines = Array.from(section.querySelectorAll(
+      '[data-landing-network-title] .landing-network__line, [data-landing-network-subtitle] .landing-network__line, [data-landing-network-body] .landing-network__line',
+    ));
     const cleanupEnt = initMobileEntrance(section, {
       lines,
       media: [section.querySelector('[data-landing-network-strip]')].filter((el) => el instanceof HTMLElement),
@@ -380,7 +445,6 @@ export function initLandingNetwork() {
       wipeAnims.forEach((a) => a.cancel());
       cleanupHover.forEach((fn) => fn());
       cleanupEnt();
-      joinSeps.forEach((sep) => sep.remove());
     };
   }
 
@@ -468,9 +532,23 @@ export function initLandingNetwork() {
   fontsReady.then(() => {
     if (disposed) return;
 
+    /* THE PHONE's stagger runs in the frame's reading order within each
+       group (subtitle above title; the industries as one paragraph) —
+       the desktop keeps its DOM-order indices exactly. */
+    const phoneOrder = phone
+      ? [
+          ...section.querySelectorAll('[data-landing-network-subtitle] .landing-network__line'),
+          ...section.querySelectorAll('[data-landing-network-title] .landing-network__line'),
+        ]
+      : null;
     lines.forEach((line, i) => {
       if (!(line instanceof HTMLElement)) return;
-      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+      let idx = i;
+      if (phoneOrder) {
+        idx = delayedLines.includes(line) ? phoneOrder.indexOf(line) : mainLines.indexOf(line);
+        if (idx < 0) idx = i;
+      }
+      line.dataset.revealDelay = String(idx * LINE_STAGGER_S);
       /* Shared word reveal for every line — the sector lists' term
          buttons ride as whole atoms and the authored double-spaced
          separators survive (the wrap carries whitespace verbatim). */
@@ -629,5 +707,7 @@ export function initLandingNetwork() {
     groundTrigger?.kill();
     trigger?.kill();
     delayedTrigger?.kill();
+    cleanupPhonePin();
+    joinSeps.forEach((sep) => sep.remove());
   };
 }
