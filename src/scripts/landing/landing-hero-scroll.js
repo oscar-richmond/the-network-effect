@@ -561,6 +561,17 @@ export function initLandingHeroScroll() {
      cropped by the phone's width instead of shrunk to thumbnails. 0 (the
      desktop, the tablet) = three across between the margins. */
   const cardFrac = readPx('--hero-card-frac', 0);
+  /* THE PHONE'S ONE IMAGE (Oscar's 402 frame, 2026-09-09 — 1:272, a
+     370×420 window at the margins): > 0 = the SINGLE-CARD regime. The
+     machine is untouched — three tweens, the middle card as every
+     block's first coverer and the boundary card, the ground fade on its
+     mapping — only the rest geometry changes: the middle card spans the
+     measure (vw − 2·margin) at the frame's aspect (--hero-card-aspect,
+     420/370) and the outer two are parked a pitch either side of it,
+     off-canvas and display:none (landing-narrow.css), so their tweens
+     and planes run on nothing visible. 0 = the row regimes below. */
+  const singleCard = readPx('--hero-card-single', 0) > 0;
+  const cardAspect = readPx('--hero-card-aspect', HERO_CARD_ASPECT);
   /* > 0 = the intro's top is DERIVED here (the headline's measured
      bottom + this gap) — on the narrow build the headline wraps, so its
      height is not a constant the stylesheet can chain from. 0 = the
@@ -621,10 +632,14 @@ export function initLandingHeroScroll() {
     placeIntro();
     placeLogos();
     const vw = window.innerWidth || 1728;
-    const cardW = cardFrac > 0 ? Math.round(vw * cardFrac) : (vw - 2 * cardMargin - 2 * cardGap) / 3;
-    const cardH = cardW * HERO_CARD_ASPECT;
+    const cardW = singleCard
+      ? vw - 2 * cardMargin
+      : cardFrac > 0 ? Math.round(vw * cardFrac) : (vw - 2 * cardMargin - 2 * cardGap) / 3;
+    const cardH = cardW * cardAspect;
     const restTop = bandTopFor(vh);
-    const rowLeft = cardFrac > 0 ? (vw - cardW) / 2 - (cardW + cardGap) : cardMargin;
+    const rowLeft = singleCard
+      ? cardMargin - (cardW + cardGap)
+      : cardFrac > 0 ? (vw - cardW) / 2 - (cardW + cardGap) : cardMargin;
     gsap.set(cards, {
       top: restTop,
       left: (i) => rowLeft + i * (cardW + cardGap),

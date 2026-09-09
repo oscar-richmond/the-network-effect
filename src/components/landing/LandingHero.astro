@@ -29,7 +29,7 @@ import {
   HERO_LOGO_ROW_DUR_S,
   HERO_LOGO_ROW_PHASE_DELAY_S,
 } from '../../data/landing/hero-logos.js';
-import { imageSrcset } from '../../utils/thumb-srcset.js';
+import { imageSrcset, GATE_GIF } from '../../utils/thumb-srcset.js';
 
 /* THE REBUILD (2026-09-07): the cards render at every width. Below the
    seam a 780 variant serves the phone's 78vw card and the tablet's third;
@@ -38,6 +38,32 @@ import { imageSrcset } from '../../utils/thumb-srcset.js';
 /* the phone's card renders 304px wide: 260px resolves a 3× phone to the 780
    candidate (the density cap — THE FINAL GATE, 2026-09-08) */
 const HERO_CARD_SIZES = '(max-width: 767px) 260px, (max-width: 1359px) 33vw, 1728px';
+
+/* THE PHONE'S ONE IMAGE (Oscar's 402 frame, 2026-09-09 — 1:272 "2": a
+   370×420 window at page y697 showing 1:275, the GQ photograph the frame
+   uploads at 1536×1920; the same picture as the network strip's first
+   tile, shipped at the frame's resolution under /assets/landing/mobile).
+   The frame draws ONE image where the desktop draws three, so on the
+   phone the MIDDLE card carries this picture and the outer two carry
+   nothing: each card's <img> gains a <picture> wrapper whose phone-only
+   <source> resolves the middle card to this set and the outer cards to
+   the 1×1 gate GIF (thumb-srcset.js) — the preload scanner honours the
+   <source>, so the phone never fetches hero-1/2/3, and the outer cards
+   are display:none there (landing-narrow.css). Above 767 no <source>
+   matches and the <img> below is exactly what it was — same src, same
+   srcset, same sizes; <picture> is an inline wrapper with no box of its
+   own, so the desktop's paint is unchanged. The scroll machine still
+   runs its three cards (landing-hero-scroll.js's single-card regime
+   places the middle one at the margins and parks the other two). The
+   density cap: sizes is two thirds of the 370 window, so DPR 3 resolves
+   the 780 variant, not the 1140. RIGHTS: the frame's own upload,
+   placeholder-until-approved per the standing policy; the pictured
+   people are unnamed but real — founder confirmation before launch. */
+const HERO_PHONE_QUERY = '(max-width: 767px)';
+const heroPhoneSrc = asset('/assets/landing/mobile/hero.jpg');
+const heroPhoneSrcset = imageSrcset(heroPhoneSrc, [780, 1140], 1536);
+const heroPhoneSizes = 'calc((100vw - 32px) * 2 / 3)';
+const HERO_PHONE_CARD = 1;
 
 /* R14 (Oscar, 2026-09-02): the rolling logo row — the set rendered
    TWICE for the seamless wrap (the network carousel's own grammar). */
@@ -169,9 +195,16 @@ const heroEntryFlash = [
       (Oscar-supplied final, unflagged). loading=eager: the splash's
       readiness gates on their decode. */}
   <div class="landing-hero__cards" data-landing-hero-cards aria-hidden="true">
-    {heroCards.map((src) => (
+    {heroCards.map((src, i) => (
       <div class="landing-hero__card" data-landing-hero-card>
-        <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+        <picture>
+          {i === HERO_PHONE_CARD ? (
+            <source media={HERO_PHONE_QUERY} srcset={heroPhoneSrcset} sizes={heroPhoneSizes} />
+          ) : (
+            <source media={HERO_PHONE_QUERY} srcset={`${GATE_GIF} 8w`} sizes="1px" />
+          )}
+          <img src={src} srcset={imageSrcset(src, [780], 960)} sizes={HERO_CARD_SIZES} alt="" decoding="async" loading="eager" data-landing-hero-card-img />
+        </picture>
       </div>
     ))}
   </div>

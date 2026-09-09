@@ -291,6 +291,59 @@
 	.landing-v2.landing-home .landing-hero__intro-text br {
 		display: none;
 	}
+
+	/* ── THE 402 FRAME (Oscar, 2026-09-09 — GvANAN3kJOPV8AKOi3O9FF 1:11,
+	   page y = frame y − 49). The rest chain, top to bottom: headline
+	   1:13 at y180 (370×90) and 1:14 at y277 (370×90, a 7 gap between
+	   the two blocks), intro 1:270 at y399 (370×72), the logo row 1:213
+	   at y585 (402×64), the image 1:272 at y697 (370×420). The same
+	   machine as the row above reads these tokens; nothing about the
+	   rise, the wipes, the boundary or the ground fade changes. */
+	.landing-v2.landing-home {
+		--hero-headline-top: 180px;
+		--hero-headline-to-intro: 32px;
+		--hero-intro-to-logos: 114px;
+		--hero-logo-row-h: 64px;
+		/* 160×100 cells drawn 102.4×64 (the frame's cell) */
+		--hero-logo-zoom: 0.64;
+		--hero-logos-to-cards: 48px;
+		/* ONE image at the margins: the single-card regime
+		   (landing-hero-scroll.js) — the middle card spans the measure at
+		   the frame's 370×420 */
+		--hero-card-single: 1;
+		--hero-card-aspect: 1.1351;
+	}
+
+	/* the headline's two blocks span the measure: BUILT ON / TRUST. set
+	   left, POWERED BY / ACCESS. set RIGHT (the frame's offset
+	   composition — no em indent) */
+	.landing-v2.landing-home .landing-hero__headline-line {
+		align-self: stretch;
+	}
+	.landing-v2.landing-home .landing-hero__headline-line--serrif {
+		text-indent: 0;
+		text-align: right;
+		margin-top: 7px;
+	}
+
+	/* the logo row's cells: 102.4 on a 110.4 pitch = an 8 gap, i.e. 12.5
+	   unzoomed; the seamless-wrap contract (--marquee-set-w, set inline
+	   by hero-logos.js for the desktop's 192 pitch) is re-stated for this
+	   pitch — 9 cells × 172.5 — with !important, the one way a sheet
+	   outranks an inline custom property */
+	.landing-v2.landing-home .landing-hero__logo-cell {
+		margin-right: 12.5px;
+	}
+	.landing-v2.landing-home .landing-hero__logos-track {
+		--marquee-set-w: 1552.5px !important;
+	}
+
+	/* the outer two cards: parked by the driver, drawn by nothing — the
+	   phone's <source> resolves them to the gate GIF (LandingHero.astro) */
+	.landing-v2.landing-home .landing-hero__card:nth-child(1),
+	.landing-v2.landing-home .landing-hero__card:nth-child(3) {
+		display: none;
+	}
 }
 
 /* ── THE BAND: the desktop's own hero geometry at tablet proportions —
