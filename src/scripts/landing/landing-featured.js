@@ -36,8 +36,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 import { initViewCaseCursor } from './view-case-cursor.js';
-import { isMobileViewport } from './viewport.js';
+import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
+import { initCarouselIndicators } from './carousel-indicator.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -185,9 +186,38 @@ export function initLandingFeatured() {
       ...section.querySelectorAll('[data-featured-card]'),
     ].filter((el) => el instanceof HTMLElement);
     const cleanupEnt = initMobileEntrance(section, { lines: header, media });
+    /* THE PHONE (Figma 1:322, 2026-09-09): the 100×1 indicator centred
+       under the rail — the shared carousel-indicator contract (the
+       strip already carries data-carousel-strip), its markup built
+       here so the desktop DOM stays as it is; styles in mobile.css and
+       landing-narrow.css. */
+    let cleanupInd = () => {};
+    const strip = section.querySelector('[data-featured-strip]');
+    if (isPhoneViewport() && strip instanceof HTMLElement) {
+      const ind = document.createElement('span');
+      ind.className = 'm-carousel-ind';
+      ind.setAttribute('data-carousel-ind', '');
+      ind.setAttribute('aria-hidden', 'true');
+      const thumb = document.createElement('span');
+      thumb.className = 'm-carousel-ind__thumb';
+      thumb.setAttribute('data-carousel-thumb', '');
+      ind.appendChild(thumb);
+      strip.insertAdjacentElement('afterend', ind);
+      /* the stage is the module's root (a descendant of the scope it
+         searches); the strip and the indicator are its children */
+      const stage = strip.parentElement;
+      stage?.setAttribute('data-m-carousel', '');
+      const cleanupWire = initCarouselIndicators(section);
+      cleanupInd = () => {
+        cleanupWire();
+        ind.remove();
+        stage?.removeAttribute('data-m-carousel');
+      };
+    }
     return () => {
       removeGate();
       cleanupEnt();
+      cleanupInd();
     };
   }
 

@@ -1916,6 +1916,100 @@
 	}
 }
 
+/* THE PHONE (Figma 1:11, 2026-09-09) — values on the same mechanic (the
+   header's word-reveals, the cards' fade-rise, the native rail): the
+   band is the frame's 402×880 of #161616 (1:281) — FEATURED WORK
+   (heading, the bright ink) 229 below its top, the cards 48 below, the
+   100×1 indicator (1:322) CENTRED 48 below the cards, 52 to the band's
+   end; the fade back to the light ground (the desktop's departure, the
+   restored build's painted tail) then runs the frame's 229 gap to WE
+   CREATE ACCESS instead of sitting behind the cards. The cards are the
+   frame's FIVE in its order at its sizes — the width staggers with the
+   height (321×200 · 340×420 · 360×310 · 440×400 · 400×249, 8 gutters,
+   fluid on the 402 frame), each label (the title tier, #eeeef0) 24
+   below its image (card 5's 26 read as a slip); the data's other three
+   are not drawn, nor is VIEW ALL WORK (not in the frame). The indicator
+   is built by landing-featured.js on the shared carousel-indicator
+   contract, the dark band's fills (1:323 track, 1:324 thumb). */
+@media (max-width: 767px) {
+	.landing-v2.landing-home {
+		--fw-pad-top: 229px;
+		--fw-header-gap: 48px;
+		--fw-ind-gap: 48px;
+		--fw-pad-bottom: 52px;
+		--fw-tail: 229px;
+		--fw-u: calc(100vw / 402); /* the frame's unit — the cards fluid across 360–430 */
+		--fw-gap: 8px;
+		--fw-label-gap: 24px;
+	}
+	.landing-v2.landing-home .landing-featured {
+		--m-ind-track: #343439;
+		--m-ind-fill: #c1250e;
+	}
+	.landing-v2.landing-home .landing-featured__stage {
+		padding: var(--fw-pad-top) 0 calc(var(--fw-pad-bottom) + var(--fw-tail));
+	}
+	/* the header's line box at the heading's 30 (the h2 carried the
+	   browser's normal leading around its inline spans) */
+	.landing-v2.landing-home .landing-featured__header {
+		font-size: var(--type-heading-size);
+		line-height: var(--type-heading-lh);
+	}
+	.landing-v2.landing-home .landing-featured__hl {
+		color: #f9f9f9;
+	}
+	.landing-v2.landing-home .landing-featured__viewall {
+		display: none;
+	}
+	/* the five, the frame's order and sizes; the end margin stays last */
+	.landing-v2.landing-home .landing-featured__card {
+		width: calc(var(--fw-cw, 321.29) * var(--fw-u));
+	}
+	.landing-v2.landing-home .landing-featured__card[data-slug='wilderness-reserve'] { order: 1; --fw-cw: 321.29; --fw-ch: 200; }
+	.landing-v2.landing-home .landing-featured__card[data-slug='pavilion-club'] { order: 2; --fw-cw: 340; --fw-ch: 420; }
+	.landing-v2.landing-home .landing-featured__card[data-slug='pavilion-summit'] { order: 3; --fw-cw: 360; --fw-ch: 310; }
+	.landing-v2.landing-home .landing-featured__card[data-slug='yoxman-food-festival'] { order: 4; --fw-cw: 440; --fw-ch: 400; }
+	.landing-v2.landing-home .landing-featured__card[data-slug='top-boy'] { order: 5; --fw-cw: 400; --fw-ch: 249; }
+	.landing-v2.landing-home .landing-featured__card[data-slug='adolescence'],
+	.landing-v2.landing-home .landing-featured__card[data-slug='thunder-aviation'],
+	.landing-v2.landing-home .landing-featured__card[data-slug='animol'] {
+		display: none;
+	}
+	.landing-v2.landing-home .landing-featured__strip::after {
+		order: 9;
+	}
+	.landing-v2.landing-home .landing-featured__imgwin {
+		height: auto;
+		aspect-ratio: var(--fw-cw, 321.29) / var(--fw-ch, 200);
+	}
+	/* the name at the title tier, 24 below the image */
+	.landing-v2.landing-home .landing-featured__titleblock {
+		margin-top: var(--fw-label-gap);
+		font-family: var(--type-title-face);
+		font-weight: var(--type-title-weight);
+		font-size: var(--type-title-size);
+		line-height: var(--type-title-lh);
+		letter-spacing: var(--type-title-ls);
+	}
+	/* the indicator, centred under the rail (a stage grid item) */
+	.landing-v2.landing-home .landing-featured .m-carousel-ind {
+		justify-self: center;
+		margin-top: var(--fw-ind-gap);
+	}
+	/* the right-edge tint over the RAIL's rows only — at the phone's
+	   measure the heading reaches under it (WORK dimmed); the desktop's
+	   heading never does */
+	.landing-v2.landing-home .landing-featured__edge-tint {
+		top: calc(var(--fw-pad-top) + var(--type-heading-size) * var(--type-heading-lh) + var(--fw-header-gap));
+		height: auto;
+		bottom: calc(var(--fw-pad-bottom) + var(--fw-tail) + var(--fw-ind-gap) + var(--m-ind-h));
+	}
+	/* the rail's end: the margin less the flex gap before it */
+	.landing-v2.landing-home .landing-featured__strip::after {
+		flex-basis: calc(var(--m-margin-safe-r, var(--m-margin)) - var(--fw-gap));
+	}
+}
+
 /* ═══ WE CREATE ACCESS ═══════════════════════════════════════════════
    The desktop's composition (frame 0:91) at the phone's geometry: WHAT
    WE DO and the seven fragmented lines at the statement tier — every
