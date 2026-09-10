@@ -426,8 +426,9 @@ export function initLandingAccess() {
      mounted a live GL context and rendered ZERO planes on every
      load — the plain DOM images (the approved staging look) were
      doing all the work. Restoring a warp is a design decision for
-     later, not a cleanup: see access-wave.js (kept — the mobile
-     /services legacy hero wave still imports from it). */
+     later, not a cleanup. (access-wave.js was kept for the mobile
+     /services legacy hero wave; that build retired 2026-09-07 and
+     both modules were deleted 2026-09-10 — see git history.) */
 
   /* ── Arrival: the fragmented headline lines on the house reveal
      (reading order, the established 0.12s stagger); rows slide in

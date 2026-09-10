@@ -1,6 +1,7 @@
 /**
  * SV-ROWS — the hover-row machinery, SHARED (extracted verbatim from
- * services-v2.js, 2026-08-24, for the landing services redesign):
+ * the since-retired services-v2.js, 2026-08-24, for the landing
+ * services redesign):
  * accent fill + seamless rolling marquee + the cover-swap image
  * frame gliding between rows, with the lightbox latch for rapid
  * hovers, tap-to-activate on touch, keyboard focus parity, and

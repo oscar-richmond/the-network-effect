@@ -1,7 +1,8 @@
 /**
  * /services — the "Option 6" desktop driver (frame 38:2420,
- * 2026-08-26). DESKTOP ONLY: the page script initialises this above
- * the seam and the legacy services-v2 driver below it.
+ * 2026-08-26). Every width since the mobile pass (3429a4c,
+ * 2026-09-07); the legacy services-v2 driver that used to run below
+ * the seam retired then (deleted 2026-09-10).
  *
  * MECHANIC REUSE (the inventory, per the task):
  *  · HOVER TABLES — initSvRowsSections wholesale (sv-rows.js,
@@ -91,8 +92,8 @@ const M_FRAG_GAP_PX = 222;
 const M_GAL_ENTER_VH = 0.9;
 /* The landing's bottom pair (audit fix, 2026-08-27 — this build had
    NEITHER behaviour: the nav exit and idle snap only ever lived in
-   services-v2.js, which initialises below the seam. Constants are
-   the case-study/contact pair, verbatim). */
+   the since-retired services-v2.js driver. Constants are the
+   case-study/contact pair, verbatim). */
 
 export function initServices6() {
   const page = document.querySelector('[data-services-6]');

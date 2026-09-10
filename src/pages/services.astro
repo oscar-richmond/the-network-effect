@@ -30,10 +30,11 @@
  *  6. FOOTER — the standard BLUE theme (the light variant retired
  *     from use here; see the build report).
  *
- * MOBILE (≤1024) — NOT IN SCOPE: the entire previous build renders
- * unchanged inside the .sv-legacy wrapper below (display:contents
- * under the seam — geometry-invisible; display:none above it). Its
- * driver (services-v2.js) initialises only below the seam.
+ * MOBILE (≤1024) — this same build serves every width since the
+ * mobile pass (3429a4c, 2026-09-07); the legacy .sv-legacy build and
+ * its driver (services-v2.js) retired then and were deleted in the
+ * pre-launch cleanup (2026-09-10). Only services-v2.css remains, for
+ * the shared .sv-rows machinery (sv-rows.js) the tables reuse.
  *
  * BLEND WALK: difference lives on the pillar overlay texts only
  * (bare chains: section > text wrap > text). Everything else is
