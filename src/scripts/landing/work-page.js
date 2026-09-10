@@ -69,7 +69,6 @@
  */
 import { isMobileViewport, flowFooterSpacer } from './viewport.js';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { WORK_PROJECTS } from '../../data/landing/featured-work.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initImageReveal } from './img-reveal.js';

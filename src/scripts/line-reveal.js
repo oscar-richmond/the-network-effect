@@ -416,24 +416,6 @@ export function wrapWordRevealElement(el, opts = {}) {
 }
 
 /**
- * @param {HTMLElement} el
- */
-export function animateLineReveal(el) {
-  if (!(el instanceof HTMLElement)) return;
-
-  const wrapped = wrapLineRevealElement(el);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if (wrapped instanceof HTMLElement && wrapped.classList.contains('lr-clip')) {
-        playLineRevealElement(wrapped);
-      } else {
-        playLineRevealElement(el);
-      }
-    });
-  });
-}
-
-/**
  * @param {{
  *   readyEvent?: string,
  *   trigger?: 'ready' | 'scroll',

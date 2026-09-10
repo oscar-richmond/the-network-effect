@@ -43,8 +43,6 @@
 export const SHELL_MIN_WIDTH = 1360;
 export const TABLET_MIN_WIDTH = 768;
 export const MOBILE_MAX_WIDTH = SHELL_MIN_WIDTH - 1;
-export const isTabletViewport = () =>
-  window.matchMedia(`(min-width: ${TABLET_MIN_WIDTH}px) and (max-width: ${MOBILE_MAX_WIDTH}px)`).matches;
 export const isPhoneViewport = () =>
   window.matchMedia(`(max-width: ${TABLET_MIN_WIDTH - 1}px)`).matches;
 /** The narrow-build query as a string, for scripts that used to inline it. */
@@ -77,25 +75,3 @@ export const flowFooterSpacer = (selector = '.landing-footer-spacer') => {
   const el = document.querySelector(selector);
   return el instanceof HTMLElement && el.getClientRects().length > 0 ? el : null;
 };
-
-/**
- * Run on crossings of the seam, debounced to the same 300ms settle
- * the shell handover uses. Returns the cleanup. Most pages never need
- * this (the shell handover is a full navigation, which reboots
- * everything); it exists for bare-window resizes across the seam in
- * desktop browsers, where the document persists.
- * @param {(mobile: boolean) => void} onChange
- */
-export function onViewportSeamChange(onChange) {
-  const mq = window.matchMedia(query);
-  let timer = 0;
-  const handle = () => {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => onChange(mq.matches), 300);
-  };
-  mq.addEventListener('change', handle);
-  return () => {
-    window.clearTimeout(timer);
-    mq.removeEventListener('change', handle);
-  };
-}

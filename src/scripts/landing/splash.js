@@ -30,7 +30,7 @@
  * also checked directly as a belt.
  */
 
-import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S, ensureNavLinkChars } from './nav-motion.js';
+import { ensureLogoChars, sweepUnits, NAV_CHAR_STAGGER_S } from './nav-motion.js';
 import { wrapWordRevealElement, playLineRevealElement } from '../line-reveal.js';
 
 /* ── The register (every duration a named constant). */
@@ -60,21 +60,12 @@ const SEEN_KEY = 'ne-splash-seen';
    (first visit per tab), and `?entry=1` / `?entry=0` force it either
    way independently of `?splash`. */
 
-/** Should this load show the splash? `?splash=1` forces, `?splash=0` suppresses. */
-export function splashWanted() {
-  const params = new URLSearchParams(window.location.search);
-  const forced = params.get('splash');
-  if (forced === '1') return true;
-  if (forced === '0') return false;
-  /* The wipe is mid-handoff from an internal navigation — it owns
-     this load, never both. */
-  if (document.documentElement.getAttribute('data-ne-cover') === 'hold') return false;
-  try {
-    return !sessionStorage.getItem(SEEN_KEY);
-  } catch {
-    return true; /* private browsing: show it, never strand */
-  }
-}
+/* Whether a load shows the splash is decided pre-paint by the inline
+   gate in BaseLayout.astro, which sets html[data-ne-splash="on"]
+   (`?splash=1` forces, `?splash=0` suppresses, the wipe's
+   `data-ne-cover="hold"` wins, else first visit per tab on SEEN_KEY).
+   The old runtime `splashWanted()` copy of that decision was unused
+   and removed (2026-09-10). */
 
 export function markSplashSeen() {
   try {
