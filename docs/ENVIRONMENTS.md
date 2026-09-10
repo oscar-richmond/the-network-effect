@@ -138,6 +138,41 @@ instruction to deploy is not an instruction to release.**
 3. `/old` and `/services` are reference material. Leave them be.
 4. Production promotion is Oscar's call, every time.
 
+## Build flags (what a staging build carries that a production build does not)
+
+All flags live in `src/data/flags.js` and are read at build time from
+`import.meta.env.PUBLIC_*`. `scripts/stage.sh` passes three of them with
+`--build-env`, scoped to that one deployment — nothing is written to the
+Vercel project, so a later `vercel deploy --prod` sees none of them.
+
+| Flag | `astro dev` | plain build (production) | `npm run stage` | Gates |
+|---|---|---|---|---|
+| `PUBLIC_START_PROJECT` | on | **off** — CTAs are mailtos / styled placeholders | `=1` on | the START A PROJECT drawer (`/api/start-project` deploys either way, guarded) |
+| `PUBLIC_LANDING_SPLASH_B` | on | **off** — route not emitted | `=1` on | the `/landing-splash-b` route |
+| `PUBLIC_SPLASH_B_ON_ROOT` | off | **off** — `/` keeps the shipped splash (`splash.js`, once per session) | `=1` on | splash-B as the splash on `/` (replays on every arrival — no seen-key) |
+| `PUBLIC_HERO_ENTRY` | on | off | off | the red-ground hero entry animation |
+| `PUBLIC_HERO_ENTRY_SPLASH` | off | off | off | black splash in front of the hero entry (meaningless unless HERO_ENTRY) |
+| `PUBLIC_ARCHIVE` | on | **off** — `/old`, `/old/services` not emitted | off | the archived pre-rebuild site |
+| `PUBLIC_TYPE_SPECIMEN` | on | **off** — `/type-specimen` not emitted | off | the type-scale specimen page |
+
+Every verification of a staging candidate must therefore build with
+`PUBLIC_LANDING_SPLASH_B=1 PUBLIC_START_PROJECT=1 PUBLIC_SPLASH_B_ON_ROOT=1`,
+never with a plain `astro build` — the two trees differ in routes, in the
+CTAs and in the splash.
+
+Routes a production build emits: `/`, `/work` (+ the four live case
+studies), `/services`, `/founders`, `/contact`, `/404`, `/holding`,
+`/holding-2`, `/holding-3`, `scale-shell.html`, `sitemap.xml`, and the
+redirect stubs `/landing` and `/about-3` (both also 301 in `vercel.json`).
+Absent by construction: `/old`, `/old/services`, `/type-specimen`,
+`/landing-splash-b`.
+
+**Launch gater — fonts.** Every `@font-face` in `src/styles/fonts.css`
+points at `*-TRIAL-*` files (Dazzed-TRIAL ×6 weights, Serrif-TRIAL ×4), and
+the built CSS ships them under those names. Licensed files must replace
+them (same family names, so no CSS beyond `fonts.css` changes) before the
+site is promoted.
+
 ## Known, deliberately unaddressed
 
 `/old`, `/services`, and the shared menu still show
