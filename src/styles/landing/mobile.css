@@ -179,7 +179,14 @@
 
 	/* Breakers: the 2nd sep of row 1 (after FOUNDERS) and row 2's sep
 	   (after WORK) — glyph hidden, zero-height blocks force the line
-	   breaks. */
+	   breaks. THE FOUR-ITEM MENU (Oscar, 2026-09-10 — WORK / SERVICES /
+	   FOUNDERS / CONTACT, one row in the markup): the seps are the
+	   desktop's markup and never draw here — the phone's slashes are
+	   the links' last-char ::after below. The 2nd sep (after SERVICES)
+	   stays the ONE breaker: the pairs WORK / SERVICES / and FOUNDERS /
+	   CONTACT (the R3 pair grammar; the four at 32px run ~700 wide, so
+	   one line is impossible at any phone width — the type is not
+	   shrunk). The 1st and 3rd seps are display:none (below). */
 	.landing-v2 .site-menu__body .site-menu__row:first-child .site-menu__sep:nth-of-type(2),
 	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__sep {
 		display: block;
@@ -199,23 +206,27 @@
 	}
 
 	/* The slash, on the last letter's span (animates with it); every
-	   item except CONTACT (the grid's last cell). */
+	   item except the LAST. ONE rule draws all three (2026-09-10): the
+	   glyph, its 15px lead and the link's 15px trailing margin are the
+	   same declarations for each, so the separators cannot drift apart.
+	   (The five-item menu's `:nth-of-type(2)` exclusion — written when
+	   row 2's middle item ended a line — is gone: it was what left
+	   SERVICES without its slash once the menu became one row.) */
 	.landing-v2 .site-menu__body .site-menu__link > span:last-child::after {
 		content: '/';
 		padding-left: 15px;
 	}
 
-	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__link:nth-of-type(2) > span:last-child::after {
-		content: none;
-	}
-	/* the one-row menu (Work · Services · Founders, 2026-09-07): the LAST
-	   item carries no slash either — the rule above was written for the
-	   five-item menu whose last row ended on CONTACT (2026-09-09) */
+	/* the one-row menu (2026-09-07): the LAST item carries no slash */
 	.landing-v2 .site-menu__body .site-menu__row:last-child .site-menu__link:last-of-type > span:last-child::after {
 		content: none;
 	}
 
-	.landing-v2 .site-menu__body .site-menu__row:first-child .site-menu__sep:nth-of-type(1) { display: none; }
+	/* the markup seps that are NOT the breaker: hidden (the 1st was
+	   always; the 3rd — after FOUNDERS — joins it so FOUNDERS / CONTACT
+	   share a line, 2026-09-10) */
+	.landing-v2 .site-menu__body .site-menu__row:first-child .site-menu__sep:nth-of-type(1),
+	.landing-v2 .site-menu__body .site-menu__row:first-child .site-menu__sep:nth-of-type(3) { display: none; }
 
 	/* Item 4: 48 from CONTACT's box to the CTA row (24 link margin +
 	   24 here). Grid: CTAs full-row, then email left / Instagram

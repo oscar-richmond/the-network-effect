@@ -51,8 +51,14 @@ export const landingMenuLinks = [
   { href: 'work', label: 'Work', image: 'Work.jpg' },
   { href: 'services', label: 'Services', image: 'Services.jpg' },
   { href: 'founders', label: 'Founders', image: 'Founders.jpg' },
-  /* Contact points at the new /contact page (2026-08-08 — was the
-     LET'S CHAT mailto while no page existed). */
+  /* CONTACT REJOINS (Oscar, 2026-09-10): the LAST item, after Founders,
+     to the /contact page (it left on 2026-09-07 when the LET'S CHAT CTA
+     took the route; Oscar wants both). The menu is the phone's only
+     (the toggle is display:none from 768), so this list renders only
+     there. IMAGE: the desktop hover swap keys on it but never shows
+     on the phone (the 600w <source> wins), so the legacy contact.png
+     stands in — Oscar has supplied no Contact select (flagged). */
+  { href: 'contact', label: 'Contact', image: 'contact.png' },
 ];
 
 /** @typedef {{ href: string, label: string, external?: boolean }} MenuFooterLink */

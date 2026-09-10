@@ -2429,7 +2429,7 @@
 		left: 24px;
 		top: 40px;
 		width: 1680px;
-		height: 92px;
+		height: 111px; /* the index column: label + 5 links × 16 on 3px gaps (CONTACT joined 2026-09-10; was 92 for four) — a literal only, nothing reads it */
 	}
 
 	.landing-v2 .landing-footer__dgroup {

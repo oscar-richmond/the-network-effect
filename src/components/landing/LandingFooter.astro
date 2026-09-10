@@ -85,6 +85,12 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../data/landing/contact.js';
       <a class="landing-footer__dlink" href="/services" data-char-ripple-trigger><span data-char-ripple>Services</span></a>
       <a class="landing-footer__dlink" href="/founders" data-char-ripple-trigger><span data-char-ripple>The Founders</span></a>
       <a class="landing-footer__dlink" href="/work" data-char-ripple-trigger><span data-char-ripple>Selected Work</span></a>
+      {/* CONTACT (Oscar, 2026-09-10): the fifth index row, directly below
+          SELECTED WORK, to /contact — the same link markup, so it takes
+          the siblings' type, pitch and ripple on every width. The footer
+          is shared, so the DESKTOP index gains the row too (the group runs
+          40→151 inside the 830 literal; the statement sits at 472). */}
+      <a class="landing-footer__dlink" href="/contact" data-char-ripple-trigger><span data-char-ripple>Contact</span></a>
     </nav>
     {/* START A PROJECT — the frame gives no destination; wired to the
         CONFIRMED address (the shipped START A PROJECT behaviour). */}
