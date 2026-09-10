@@ -275,32 +275,9 @@
 	box-sizing: border-box;
 }
 
-/* Width is content-driven now (see above). Only the schedule CTA's
-   own left inset differs — its profile crop sits 8px from the edge. */
-.landing-v2 .ct-cta--schedule { padding-left: 8px; }
-
 /* The placeholder convention (footer coming-soon items): styled,
    rippling, dot-expanding, non-navigating. */
 .landing-v2 .ct-cta.is-placeholder { cursor: default; }
-
-.landing-v2 .ct-cta__profile {
-	width: 48px;
-	height: 48px;
-	flex: none;
-	/* The flex `gap` above is the TEXT->ARROW spec (8px); the crop
-	   sat 20px off its label under the old distribution, so it keeps
-	   that with an explicit 12px on top of the gap. */
-	margin-right: 12px;
-	/* SQUARE (Oscar's rev 2 — was a circle). */
-	overflow: hidden;
-}
-
-.landing-v2 .ct-cta__profile img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
-}
 
 .landing-v2 .ct-cta__arrow {
 	flex: none;
@@ -407,14 +384,6 @@
 	flex: none;
 	width: 12.4px;            /* the label's cap ink (token) */
 	height: 12.4px;
-}
-
-/* chip — the footer chip's own treatment. */
-.landing-v2 .ne-cta--chip {
-	height: 38px;
-	padding: 0 16px;
-	background: #eeeef0;
-	color: var(--landing-accent-blue, #232a89);
 }
 
 /* float — R37: brand-red fill, brand-black ink (the arrow inherits
@@ -1073,65 +1042,6 @@
 	pointer-events: none;
 }
 
-/* The sticky stage all beats play on. overflow hidden clips the
-   below-viewport parked cards. The ground fade (Beat F) tweens THIS
-   element's background. */
-.landing-v2 .landing-services__stage {
-	position: sticky;
-	top: 0;
-	height: 100vh;
-	height: 100dvh;
-	overflow: hidden;
-	background: var(--landing-ground);
-}
-
-/* The large centred title's positioning layer (z1, under the cards).
-   The title itself transforms during the Beat A morph — it carries
-   no blend, so the transform is free. */
-.landing-v2 .landing-services__center {
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.landing-v2 .landing-services__title {
-	will-change: transform;
-}
-
-/* Two lines, 40px on the hero headline's 40px leading (Oscar's spec:
-   same spacing as BUILT ON TRUST / POWERED BY ACCESS). Base face
-   Dazzed Bold; the OUR SERVICES. run is Serrif Medium. The block is
-   shrink-to-fit and flex-centred by the section, so the pair centres
-   TOGETHER; line 1's margin-left is derived at runtime so the O of
-   OUR sits on the first S of ACCESS (landing-services.js). */
-.landing-v2 .landing-services__title {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	width: max-content;
-	margin: 0;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 600;
-	font-size: 40px;
-	line-height: 40px;
-	letter-spacing: normal;
-	color: var(--landing-ink);
-}
-
-.landing-v2 .landing-services__line {
-	display: block;
-	white-space: nowrap;
-}
-
-.landing-v2 .landing-services__serrif {
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-}
-
 /* ── The stacked services build (Figma 13:1729 / 13:2066) ──────────
    New palette entries (first use on the main site): the MORE INFO
    ink #232A89, its fill #E4E4EA, and the divider #E0E0E7. */
@@ -1139,64 +1049,6 @@
 	--landing-accent-blue: #232a89;
 	--landing-svc-divider: #e0e0e7;
 	--landing-svc-btn-fill: #e4e4ea;
-}
-
-/* Cards — rigid, opaque, post-stack internals (offsets from the
-   card's own divider). Default transform = PARKED (the RM frame);
-   landing-services.js re-parks them below the viewport and scrubs
-   them up. DOM order = stack order (later cards paint above). */
-.landing-v2 .landing-svc-card {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 646px;
-	z-index: 3;
-	transform: translateY(var(--svc-parked-y, 158px));
-	will-change: transform;
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	color: var(--landing-ink);
-}
-
-.landing-v2 .landing-svc-card__bg {
-	position: absolute;
-	top: 1px;
-	left: 0;
-	width: 100%;
-	height: 645px;
-	background: #eeeef0;
-}
-
-/* Divider — three layers (the drain): wrapper carries the geometry;
-   the grey TRACK never animates (and remains the Beat F fade
-   target); the black FILL on top drains scaleX 1 -> 0 with origin
-   RIGHT (grey resolves left-to-right, the site's sweep direction)
-   as the card rises. Transform-only — no layout, and scaleX never
-   touches the 2px vertical axis, so no edge shimmer. All inside the
-   card's stacking context; no filters/opacity — the blend walk is
-   untouched. */
-.landing-v2 .landing-svc-card__dividerwrap {
-	position: absolute;
-	top: 0;
-	left: 24px;
-	width: calc(100% - 48px);
-	/* 1px (Oscar's rev — was the file's 2px), track + fill together. */
-	height: 1px;
-}
-
-.landing-v2 .landing-svc-card__divider {
-	position: absolute;
-	inset: 0;
-	background: var(--landing-svc-divider);
-}
-
-.landing-v2 .landing-svc-card__divider-fill {
-	position: absolute;
-	inset: 0;
-	background: #161616;
-	transform-origin: 100% 50%;
-	transform: scaleX(1);
-	will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1208,158 +1060,7 @@
 	.landing-v2 .landing-closing__stage {
 		position: static;
 	}
-
-	/* Static resting grey — no black state, no drain. */
-	.landing-v2 .landing-svc-card__divider-fill {
-		display: none;
-	}
-
-	/* Static compressed bands (all three rows — title row, image and
-	   secondary title all rest 32px from their line). */
-	.landing-v2 .landing-svc-card .landing-svc-card__titlerow {
-		top: 38px;
-	}
-
-	.landing-v2 .landing-svc-card .landing-svc-card__desc {
-		top: 62px;
-	}
-
-	.landing-v2 .landing-svc-card .landing-svc-card__img {
-		top: 32px;
-	}
-
-	.landing-v2 .landing-svc-card .landing-svc-card__listhead,
-	.landing-v2 .landing-svc-card .landing-svc-card__lists,
-	.landing-v2 .landing-svc-card .landing-svc-card__btnclip {
-		transform: translateY(-18px);
-	}
 }
-
-/* Title row — 48px title + 24px /0N, both white difference INSIDE
-   the card (blends against the card's own opaque bg/image only; the
-   card's transform context is safe by construction). The index sits
-   8px right of the title's rendered width (inline flex baseline
-   arrangement reproduces the file's 271/282/256 lefts). */
-.landing-v2 .landing-svc-card__titlerow {
-	position: absolute;
-	left: 24px;
-	/* 40px title (Oscar's rev — was 48): top re-derived so the title
-	   centre stays on the post-stack y76. */
-	top: 56px;
-	margin: 0;
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
-	font-weight: 600;
-	white-space: nowrap;
-}
-
-.landing-v2 .landing-svc-card__title {
-	font-size: 40px;
-	line-height: 40px;
-	color: #fff;
-	mix-blend-mode: difference;
-}
-
-.landing-v2 .landing-svc-card__index {
-	/* 16px (Oscar's rev — was 24). */
-	font-size: 16px;
-	line-height: 16px;
-	margin-top: 2px; /* keeps the index centre on the post-stack y66 */
-	color: #fff;
-	mix-blend-mode: difference;
-}
-
-/* Image — 380x480 window at x401 y50, SQUARE corners (the file's
-   mask is a plain rect — Oscar-confirmed). Exact crops inline. */
-.landing-v2 .landing-svc-card__img {
-	position: absolute;
-	left: 401px;
-	top: 50px;
-	width: 380px;
-	height: 480px;
-	overflow: hidden;
-}
-
-.landing-v2 .landing-svc-card__img img {
-	position: absolute;
-	max-width: none;
-	object-fit: cover;
-}
-
-.landing-v2 .landing-svc-card__desc {
-	position: absolute;
-	left: 845px;
-	top: 80px;
-	transform: translateY(-50%);
-	width: 574px;
-	margin: 0;
-	font-weight: 600;
-	/* 28px (Oscar's rev — was 32/34). */
-	font-size: 28px;
-	line-height: 30px;
-	text-transform: uppercase;
-}
-
-/* Right-column rhythm (Oscar's rev): header 64px below the desc,
-   list 24px below the header, button 80px below the list — tops
-   derived per row in LandingServicesStack.astro. */
-.landing-v2 .landing-svc-card__listhead {
-	position: absolute;
-	left: 845px;
-	top: var(--svc-head-top, 159px);
-	height: 19px;
-	display: flex;
-	align-items: center;
-	margin: 0;
-	font-weight: 600;
-	font-size: 16px;
-	line-height: 32px;
-	text-transform: uppercase;
-	white-space: nowrap;
-}
-
-.landing-v2 .landing-svc-card__lists {
-	position: absolute;
-	left: 845px;
-	top: var(--svc-list-top, 202px);
-	display: flex;
-}
-
-.landing-v2 .landing-svc-card__col {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.landing-v2 .landing-svc-card__col li {
-	height: 19px;
-	display: flex;
-	align-items: center;
-	white-space: nowrap;
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-	font-size: 16px;
-	line-height: 32px;
-}
-
-/* MORE INFO — non-navigating placeholder (no destinations yet). Top
-   is per-row (follows each list's length), inline. 14px label with
-   arrow/pads/gap scaled by the same 16->14 ratio — the founders-CTA
-   treatment (their 14px/10.472/7 precedent); the file's 147 width
-   was natural (16+95+8+12+16), so the button narrows naturally. */
-.landing-v2 .landing-svc-card__btnclip {
-	position: absolute;
-	left: 845px;
-	display: block;
-	overflow: hidden; /* the reveal clip (lr styles inject at runtime) */
-}
-
-.landing-v2 .landing-svc-card__btninner { display: block; }
 
 .landing-v2 .landing-svc-card__btn {
 	height: 32px; /* CTA height = the pager circles (Oscar's rev) */
@@ -1392,10 +1093,6 @@
 	.landing-v2 .landing-outro {
 		height: 100vh;
 		height: 100dvh;
-	}
-
-	.landing-v2 .landing-services__center {
-		display: none;
 	}
 }
 
@@ -1994,36 +1691,6 @@
 	background: linear-gradient(90deg, rgba(238, 238, 240, 0) 0%, #eeeef0 100%);
 }
 
-/* Centre headline — 32/32 #161616, 457px measure, mixed faces per
-   the file (WE + tail Dazzed Bold, middle clause Serrif Medium). */
-.landing-v2 .landing-access__headline {
-	position: absolute;
-	z-index: 4;
-	left: 50%;
-	width: 457px;
-	margin: 0 0 0 -228.5px;
-	top: calc(var(--access-center-y, 50dvh) - 64px);
-	text-align: center;
-	font-size: 32px;
-	line-height: 32px;
-	text-transform: uppercase;
-	color: #161616;
-}
-
-.landing-v2 .landing-access__hl-line { display: block; }
-
-.landing-v2 .landing-access__hl-dazzed {
-	font-family: 'Dazzed', var(--font-display, sans-serif);
-	font-weight: 600;
-	font-synthesis: none;
-}
-
-.landing-v2 .landing-access__hl-serrif {
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.landing-v2 .landing-access {
 		height: 100dvh;
@@ -2590,118 +2257,6 @@
 	pointer-events: none;
 }
 
-.landing-v2 .landing-footer__cols {
-	position: absolute;
-	left: 40px;
-	top: 40px;
-	display: flex;
-	align-items: flex-start;
-}
-
-.landing-v2 .landing-footer__col {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	width: 81px;
-}
-
-.landing-v2 .landing-footer__col--2 { margin-left: 266px; width: 124px; }
-
-.landing-v2 .landing-footer__label {
-	margin: 0;
-	font-weight: 600;
-	font-size: 14px;
-	line-height: 16px;
-	text-transform: uppercase;
-	color: var(--footer-muted);
-}
-
-.landing-v2 .landing-footer__link {
-	font-weight: 600;
-	font-size: 14px;
-	line-height: 16px;
-	text-transform: uppercase;
-	color: #fff;
-	text-decoration: none;
-	cursor: pointer;
-	white-space: nowrap;
-}
-
-.landing-v2 .landing-footer__link.is-placeholder { cursor: default; }
-
-.landing-v2 .landing-footer__start {
-	margin-left: 266px;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	font-weight: 600;
-	font-size: 14px;
-	line-height: 16px;
-	text-transform: uppercase;
-	color: #fff;
-	text-decoration: none;
-	white-space: nowrap;
-}
-
-.landing-v2 .landing-footer__img {
-	position: absolute;
-	left: 1191px;
-	top: 40px;
-	width: 240px;
-	height: 300px;
-	margin: 0;
-	overflow: hidden;
-}
-
-.landing-v2 .landing-footer__img img {
-	position: absolute;
-	max-width: none;
-	object-fit: cover;
-}
-
-.landing-v2 .landing-footer__statement {
-	position: absolute;
-	left: 40px;
-	top: 471px; /* block centre 543.5, ~145px tall (file) */
-	width: 1391px;
-}
-
-.landing-v2 .landing-footer__st-line {
-	margin: 0;
-	font-weight: 600;
-	font-size: 48px;
-	line-height: 48px;
-	text-transform: uppercase;
-	white-space: pre-wrap;
-}
-
-/* The file's deliberate leading indent on line 1 — an inline
-   spacer, NOT text-indent (which breaks the reveal wrap's line
-   grouping). ~300px = the file's ~25 leading spaces at 48px;
-   tunable. */
-.landing-v2 .landing-footer__st-indent {
-	display: inline-block;
-	width: 300px;
-	height: 1px;
-}
-
-.landing-v2 .landing-footer__st-serrif {
-	font-family: var(--font-serif-cond);
-	letter-spacing: var(--ts-serif-editorial-track); /* guide −2% */
-	font-weight: 500;
-	font-synthesis: none;
-	color: var(--footer-muted);
-	text-transform: uppercase;
-}
-
-.landing-v2 .landing-footer__row {
-	position: absolute;
-	left: 24px;
-	top: 736px;
-	width: calc(100% - 48px);
-	height: 35px;
-}
-
 .landing-v2 .landing-footer__rowitem {
 	position: absolute;
 	top: 19px;
@@ -2724,26 +2279,6 @@
 }
 
 .landing-v2 .landing-footer__rowitem.is-placeholder { cursor: default; }
-.landing-v2 .landing-footer__rowitem--email { left: 0; }
-.landing-v2 .landing-footer__social {
-	position: absolute;
-	left: 458.92px;
-	top: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-}
-.landing-v2 .landing-footer__social .landing-footer__rowitem { position: static; }
-.landing-v2 .landing-footer__rowitem--top { left: 767.84px; }
-.landing-v2 .landing-footer__rowitem--copyright { left: 1075.07px; cursor: default; }
-.landing-v2 .landing-footer__rowitem--siteby {
-	left: 1480.99px;
-	cursor: default;
-	font-weight: 600;
-	text-transform: none;
-	white-space: pre;
-}
-.landing-v2 .landing-footer__rowitem--siteby span { text-transform: uppercase; }
 
 /* ── FOOTER LIGHT THEME (the /services file's second official
    colourway, extracted 2026-08-08): #EEEEF0 ground / #161616 ink /
@@ -4056,57 +3591,14 @@
 		top: 454px;
 	}
 
-	.landing-v2.landing-home .landing-access__headline {
-		font-size: 56px;
-		line-height: 50px;
-		letter-spacing: -0.035em;
-	}
-
 	/* ── LABELS 12/14/0% ── */
 	.landing-v2.landing-home .landing-founders__label,
 	.landing-v2.landing-home .landing-network__label {
 		letter-spacing: 0;
 	}
 
-	/* ── MIXED DISPLAY 72/64 ── */
-	.landing-v2.landing-home .landing-services__title {
-		font-size: 72px;
-		line-height: 64px;
-		letter-spacing: -0.045em; /* sans runs */
-	}
-
-	.landing-v2.landing-home .landing-services__serrif {
-		letter-spacing: -0.04em; /* serif runs */
-	}
-
-	/* ── PILLAR HEADINGS 40/40/−2.5% ── */
-	.landing-v2.landing-home .landing-svc-card__title {
-		letter-spacing: -0.025em;
-	}
-
-	/* ── MICRO 10/12/0 ── */
-	.landing-v2.landing-home .landing-svc-card__index {
-		font-size: 10px;
-		line-height: 12px;
-		margin-top: 4px; /* keeps the index centre on the title cap (was 2 at 16px) */
-	}
-
 	.landing-v2.landing-home .landing-featured__index {
 		line-height: 12px; /* Micro leading (was 10) */
-	}
-
-	/* ── SERIF COPY / Body Small 25/29/−1% — pillar descriptions
-	   return to serif sentence case per the guide ("Supporting
-	   descriptions remain serif"; the doc's own example is
-	   sentence-cased). */
-	.landing-v2.landing-home .landing-svc-card__desc {
-		font-family: var(--font-serif-cond);
-		font-weight: 500;
-		font-synthesis: none;
-		font-size: var(--ts-serif-lead-size); /* Lead 26/32/−2% (was 25/29/−1%) */
-		line-height: var(--ts-serif-lead-lh);
-		letter-spacing: var(--ts-serif-lead-track);
-		text-transform: none;
 	}
 }
 
@@ -4141,11 +3633,6 @@
 		   resting value. */
 		padding: 0 0 var(--sreel-outro-pad, 250px);
 		background: #eeeef0; /* the fade's light origin */
-	}
-
-	/* The OLD stacked build hides whole (mobile keeps it). */
-	.landing-v2.landing-home .landing-services__stage {
-		display: none;
 	}
 
 	/* ══ FEATURED WORK — dark ground, irregular top-aligned carousel
@@ -4398,11 +3885,6 @@
 		top: calc(100vh - 1446px);
 		top: calc(100dvh - 1446px);
 		height: 1446px;
-	}
-
-	/* The OLD centre headline is the MOBILE composition now. */
-	.landing-v2.landing-home .landing-access__headline {
-		display: none;
 	}
 
 	/* ── Fragmented headline (label + seven Display XL lines). */
@@ -6181,12 +5663,6 @@ html.sb-landed .landing-v2.landing-home .landing-hero__card img {
 	body.landing-v2.landing-home > .landing-closing-tail { order: 8; }
 	body.landing-v2.landing-home > .landing-footer { order: 9; }
 	body.landing-v2.landing-home > .landing-footer-spacer { order: 10; }
-}
-
-@media (max-width: 1359px) {
-	/* "Site By Selfhood Studios": the row item's flex gap plus the authored
-	   space read as a double gap on this build */
-	.landing-v2 .landing-footer__rowitem--siteby { gap: 0; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

@@ -84,35 +84,6 @@
 		flex: 0 0 auto;
 		max-width: none;
 	}
-	/* the services stack: TWO-UP. The phone stacks three cards one-up
-	   under a 390 measure; at 768+ the row has the room, and two-up is
-	   what the desktop reel's three-across is at this width. The third
-	   card takes a full row below — deliberately, so the trio still
-	   reads as 1 · 2 · 3 in order rather than 3 · 1 · 2. */
-	/* the cards are direct children of the stage, beside the title
-	   block, so the stage is the grid: the title spans both columns,
-	   the cards pair up, and the page gutter moves from each card (the
-	   phone pads every card by the margin) to the stage, so the two
-	   columns share one 16px gutter rather than 32 + 16 + 32. */
-	.landing-v2.landing-v2 .landing-services__stage {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		column-gap: 16px;
-		padding-left: var(--m-margin-safe-l);
-		padding-right: var(--m-margin-safe-r);
-	}
-	.landing-v2.landing-v2 .landing-services__center {
-		grid-column: 1 / -1;
-	}
-	.landing-v2.landing-v2 .landing-svc-card,
-	.landing-v2.landing-v2.landing-home .landing-svc-card {
-		padding-left: 0;
-		padding-right: 0;
-	}
-	.landing-v2.landing-v2 .landing-svc-card:nth-child(3):last-child,
-	.landing-v2.landing-v2.landing-home .landing-svc-card:nth-child(3):last-child {
-		grid-column: 1 / -1;
-	}
 
 	/* ── /WORK ───────────────────────────────────────────────────── */
 	/* two-up: the phone's one 992px-wide image per row at 1024 is the

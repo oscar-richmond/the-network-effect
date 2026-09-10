@@ -46,19 +46,6 @@ body.case-page {
 	mix-blend-mode: difference;
 }
 
-.landing-v2 .cs-hero__subtitle {
-	margin: 14px 0 0 24px;
-	width: 725px;
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-	font-size: var(--ts-serif-body-size); /* Body / Default 21/28/−1.5% (was 20/32) */
-	line-height: var(--ts-serif-body-lh);
-	letter-spacing: var(--ts-serif-body-track);
-	color: #fff;
-	mix-blend-mode: difference;
-}
-
 .landing-v2 .cs-hero__img {
 	margin: 106px 0 0;
 	width: 100%;
@@ -110,98 +97,6 @@ body.case-page {
    (the mobile build keeps its shipped what-we-did/rail
    composition; the ≥1025 rebuild block shows + lays this out). */
 .landing-v2 .cs-facts { display: none; }
-
-/* ── C. What we did ─────────────────────────────────────────────── */
-.landing-v2 .cs-did {
-	position: relative;
-	margin-top: 80px;
-	/* min-height, not height: a wrapped column must not spill into
-	   the divider below (the columns are absolute, so this holds the
-	   section open). */
-	min-height: 148px;
-	font-size: 16px;
-}
-
-.landing-v2 .cs-did__label {
-	position: absolute;
-	left: 864px;
-	top: 0;
-	margin: 0;
-	font-weight: 600;
-	font-size: 16px;
-	line-height: 19px;
-	text-transform: uppercase;
-	color: #161616;
-}
-
-.landing-v2 .cs-did__cols {
-	position: absolute;
-	left: 1083px; /* the file's first-column start, kept */
-	right: 24px;  /* the page margin — the row can never run past it */
-	top: 0;
-	display: flex;
-	/* THE GUTTER (Oscar, 2026-08-10): 16px of CLEAR SPACE between the
-	   widest element of one column and the left edge of the next.
-	   Because the columns below are content-sized, this gap IS that
-	   clearance — measured ink to ink, not box to box. */
-	gap: 16px;
-	align-items: flex-start;
-}
-
-.landing-v2 .cs-did__col {
-	/* Content-sized, never stretched and never shrunk. The list items
-	   are `white-space: nowrap` (below), so an equal-width column
-	   (`flex: 1 1 0`) could not wrap a long item — it OVERFLOWED its
-	   own box instead and ran into the neighbour: on /work/
-	   wilderness-reserve "Health & Wellbeing Retreats" spilled 25px
-	   past its column and sat 1px inside CONNECT. Sizing each column
-	   to its own widest line is what makes the gap above a real
-	   guarantee rather than a box-edge one.
-
-	   flex-shrink STAYS 1 as the pressure valve: /work/pavilion-summit
-	   carries "Leadership Summits & Conferences" (273px), and three
-	   content-sized columns plus two 16px gaps come to 640px against
-	   the 621px available between 1083 and the 24px page margin. Left
-	   free-standing the row would have run 19px past that margin, so
-	   there the columns shrink and the long item wraps. Wrapped ink can
-	   never exceed its own box, so the 16px clearance is preserved
-	   either way — this only ever trades a line break for a margin
-	   breach, never for an overlap. */
-	flex: 0 1 auto;
-	width: max-content;
-}
-
-.landing-v2 .cs-did__pillar {
-	margin: 0;
-	font-weight: 600;
-	font-size: 16px;
-	line-height: 19px;
-	text-transform: uppercase;
-	color: #a6a6a8;
-}
-
-.landing-v2 .cs-did__list {
-	margin: 24px 0 0;
-	padding: 0;
-	list-style: none;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-	/* Base keeps the shipped 16/19 for MOBILE (no ≤1024 size override
-	   exists for this list); the Body/Default box lands in the ≥1025
-	   spacing block below. */
-	font-size: 16px;
-	line-height: 19px;
-	color: #161616;
-	/* NOT `white-space: nowrap` any more. The column is sized to its
-	   longest line (`width: max-content`), so items sit on one line
-	   without being forced to — and forcing it was the bug: under the
-	   old equal-width columns a long item could not wrap, so it
-	   overflowed its box and collided with the next column. */
-}
 
 /* ── Divider — 120 after what-we-did; 100 after the stream (file). */
 .landing-v2 .cs-divider {
@@ -258,19 +153,6 @@ body.case-page {
 
 .landing-v2 .cs-row__img { cursor: pointer; /* opens the lightbox */ }
 
-/* (The rail's desktop sticky/segment geometry is REMOVED — frame
-   36:1827. The type rules below stay: the MOBILE build's static
-   rail flow inherits them; its own block re-declares the layout.) */
-
-.landing-v2 .cs-rail__label {
-	margin: 0;
-	font-weight: 600;
-	font-size: 32px;
-	line-height: 32px;
-	text-transform: uppercase;
-	color: #161616;
-}
-
 .landing-v2 .cs-serrif {
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
@@ -282,20 +164,6 @@ body.case-page {
 	/* 485 kept — the rail column's authored measure, under the 620
 	   Body/Default cap. */
 	width: 485px;
-	font-family: var(--font-serif-cond);
-	font-weight: 500;
-	font-synthesis: none;
-	font-size: var(--ts-serif-body-size); /* Body / Default (was 16/18) */
-	line-height: var(--ts-serif-body-lh);
-	letter-spacing: var(--ts-serif-body-track);
-	color: #161616;
-}
-
-.landing-v2 .cs-rail__bullets {
-	margin: 24px 0 0;
-	padding: 0 0 0 24px;
-	width: 485px;
-	list-style: disc;
 	font-family: var(--font-serif-cond);
 	font-weight: 500;
 	font-synthesis: none;
@@ -442,17 +310,6 @@ body.case-page {
 	font-size: var(--ts-serif-section-size);
 	line-height: var(--ts-serif-section-lh);
 	letter-spacing: var(--ts-serif-section-track);
-}
-
-.landing-v2 .cs-more__cardindex {
-	display: inline-block;
-	margin-left: 6px; /* the /work 6px convention */
-	vertical-align: top;
-	margin-top: 4px; /* cap optics */
-	font-weight: 600;
-	font-size: 10px;
-	line-height: 10px;
-	text-transform: uppercase;
 }
 
 .landing-v2 .cs-more__carddesc {
@@ -856,12 +713,6 @@ body.case-page {
 		transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
 	}
 
-	/* The rail blocks settle with a shorter rise as they first pin. */
-	.landing-v2 .cs-rail-sticky {
-		transform: translateY(12px);
-		transition-duration: 0.6s, 0.6s;
-	}
-
 	/* The pager's glide (RM: instant jumps — no transition). */
 	.landing-v2 .cs-more__track {
 		transition: transform 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
@@ -878,9 +729,6 @@ body.case-page {
 }
 
 /* The mobile-only affordances must not exist above the seam. */
-@media (min-width: 1360px) {
-	.landing-v2 .cs-more__viewall { display: none; }
-}
 
 /* UA-bold heading gap (the SemiBold pass, 2026-09-02): the facts
    label/row labels carried no declared weight under the seam and
