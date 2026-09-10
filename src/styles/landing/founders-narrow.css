@@ -55,6 +55,11 @@
 		--fd-end-gap: 0px;                /* the desktop's strip below the band is the portrait's margin; none here */
 	}
 	body.landing-v2.founders-page { overflow: visible; }
+	/* The menu's scroll lock (menu.css `body.menu-open { overflow:
+	   hidden }`, 0,1,1) lost to the line above (0,2,1) on this page
+	   alone — the phone could scroll the founders behind the open
+	   menu. Restated at the winning specificity (2026-09-10). */
+	body.landing-v2.founders-page.menu-open { overflow: hidden; }
 
 	/* ── the stage and its content: in flow, the driver's transforms off ── */
 	.landing-v2.landing-v2 .fd-stage {

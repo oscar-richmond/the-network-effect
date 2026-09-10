@@ -32,11 +32,44 @@ function createClip(className) {
   return clip;
 }
 
+/* RE-WRAP GUARD (pre-launch hardening, 2026-09-10). A view that boots
+   twice on one document — /work's grid↔list toggle re-runs the list
+   view's entrance — used to hand the wrappers elements that already
+   held the previous boot's clips; the wrappers treated those clips as
+   atoms and nested a new clip around each (348 nested .lr-clip after
+   six switches, DOM 643→3775 over fifty). Each element's SOURCE markup
+   is remembered the first time it is wrapped (a WeakMap — nothing
+   written to the DOM) and put back before a re-wrap, so every boot
+   derives the same clips the first one did. A caller that resets the
+   content itself (work-page's wrapStaticLines idiom: textContent then
+   re-wrap) leaves no clips behind, so the fresh content is snapshotted
+   and wrapped as before. First boots are untouched. */
+/** @type {WeakMap<HTMLElement, string>} */
+const sourceHtml = new WeakMap();
+
+/**
+ * @param {HTMLElement} el
+ */
+function restoreSource(el) {
+  const src = sourceHtml.get(el);
+  if (src !== undefined && el.querySelector(':scope > .lr-clip')) {
+    el.innerHTML = src;
+    return;
+  }
+  sourceHtml.set(el, el.innerHTML);
+}
+
 /**
  * @param {HTMLElement} el
  * @returns {HTMLElement | null}
  */
 function revealElement(el) {
+  /* Already wrapped WHOLE (the block branch below moved this element
+     into a clip on an earlier boot): that clip is the wrap. */
+  if (el.classList.contains('lr-inner') && el.parentElement?.classList.contains('lr-clip')) {
+    return el.parentElement;
+  }
+  restoreSource(el);
   const children = Array.from(el.childNodes);
 
   if (
@@ -350,6 +383,7 @@ export function wrapWordRevealElement(el, opts = {}) {
   const base = parseFloat(el.dataset.revealDelay ?? '') || opts.baseDelay || 0;
   const wordStagger = opts.wordStagger ?? 0.04;
   const lineStagger = opts.lineStagger ?? 0.12;
+  restoreSource(el);
 
   /* Whitespace runs are carried VERBATIM (`spaceBefore` is the exact
      source string — double spaces and NBSPs survive; the network
