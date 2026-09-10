@@ -121,10 +121,17 @@ export function createImageReveal({
  * re-entering (the entrance is once-only, so the gate now holds)
  * un-blurs it at the quarter line, exactly as the grid.
  *
- * THE PARK: the host class is added by JS, so the parked blur would
- * itself TRANSITION in (0 → 12px) from the stylesheet's `none` — the
- * transition is therefore armed (`is-img-live`) only after one forced
- * style pass has painted the park.
+ * THE PARK (Oscar's ruling, 2026-09-10): the host class is AUTHORED IN
+ * THE MARKUP (`m-imgreveal` on every host's figure / window, phone-
+ * gated by the stylesheet's media query), so the park is painted from
+ * the first frame and never depends on this module having run; the
+ * `classList.add` below is idempotent cover for a host built without
+ * it. The un-blur transition is armed (`is-img-live`) only after one
+ * forced style pass, so an added park could never itself transition in
+ * (0 → 12px) from the stylesheet's `none`. Cleanup leaves an authored
+ * class in place (the next boot's park) and removes only one it added.
+ * No-JS: SiteShell's <noscript> style clears every park (and the
+ * grid's), so a visitor without scripts sees sharp images.
  *
  * @param {Iterable<Element>} hosts
  * @param {{ entranceOf?: (host: HTMLElement) => Element | null }} [opts]
@@ -135,6 +142,7 @@ export function initImageReveal(hosts, { entranceOf } = {}) {
   const list = Array.from(hosts).filter((el) => el instanceof HTMLElement);
   if (!list.length) return () => {};
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const added = list.filter((host) => !host.classList.contains(IMG_REVEAL_HOST_CLASS));
   const unwrite = list.map((host) => {
     host.classList.add(IMG_REVEAL_HOST_CLASS);
     return writeRevealVars(host);
@@ -159,6 +167,7 @@ export function initImageReveal(hosts, { entranceOf } = {}) {
     mo?.disconnect();
     reveal.cleanup();
     unwrite.forEach((fn) => fn());
-    list.forEach((host) => host.classList.remove(IMG_REVEAL_HOST_CLASS, IMG_REVEAL_LIVE_CLASS));
+    list.forEach((host) => host.classList.remove(IMG_REVEAL_LIVE_CLASS));
+    added.forEach((host) => host.classList.remove(IMG_REVEAL_HOST_CLASS));
   };
 }

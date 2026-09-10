@@ -149,7 +149,7 @@ import '../styles/fonts.css';
       <div class="fd-col__track" data-fd-coltrack>
         {[0, 1].map(() => (
           FOUNDERS_SLIDES[0].colImgs.map((src) => (
-            <div class="fd-col__slot">
+            <div class="fd-col__slot m-imgreveal">
               <img src={asset(src)} srcset={imageSrcset(src, [600], 960)} sizes="(max-width: 1359px) 200px, 960px" alt="" loading="eager" decoding="async" />
             </div>
           ))
@@ -179,7 +179,7 @@ import '../styles/fonts.css';
             the desktop frame shows (founders-narrow.css sizes the window
             and the crop; hidden ≥768, where the GIF gate above makes it
             free). Robbo's is in the first viewport: eager. */}
-        <figure class="fd-slide__portrait" data-fd-mportrait aria-hidden="true">
+        <figure class="fd-slide__portrait m-imgreveal" data-fd-mportrait aria-hidden="true">
           <img src={variantOr(slide.img, 870)} srcset={phonePortraitSrcset(slide.img)} sizes={PHONE_PORTRAIT_SIZES} alt="" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
         </figure>
         <div class="fd-slide__bio2" data-fd-el>
@@ -235,7 +235,7 @@ import '../styles/fonts.css';
         the difference-blended names beneath it). BLEND: the nav is
         in the SiteShell header, an entirely different subtree, so
         this element's clip can never become its blend ancestor. */}
-    <figure class="fd-sweep" data-fd-sweep aria-hidden="true">
+    <figure class="fd-sweep m-imgreveal" data-fd-sweep aria-hidden="true">
       {/* the phone declares 400px (the 402 frame draws it full-bleed, 2:95 —
           a 3× phone resolves to the 1200 candidate; was 260px for the old
           narrow band) */}

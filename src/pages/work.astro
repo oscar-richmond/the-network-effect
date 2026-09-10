@@ -215,12 +215,12 @@ const mSrcset = (src) => `${GATE_GIF} 8w, ${imageSrcset(src, [780, 1200], 2000)}
           <article class="work-m__entry" data-work-m-entry data-slug={p.slug}>
             {live ? (
               <a class="work-m__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${name} — view project`}>
-                <figure class="work-m__img">
+                <figure class="work-m__img m-imgreveal">
                   <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 220px, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
                 </figure>
               </a>
             ) : (
-              <figure class="work-m__img">
+              <figure class="work-m__img m-imgreveal">
                 <img src={p.workImg} srcset={imageSrcset(p.workImg, [680, 1200], 2000)} sizes="(max-width: 767px) 220px, (max-width: 1359px) 100vw, 1px" alt="" loading="lazy" decoding="async" width="1024" height="616" />
               </figure>
             )}
@@ -246,10 +246,10 @@ const mSrcset = (src) => `${GATE_GIF} 8w, ${imageSrcset(src, [780, 1200], 2000)}
           <article class="work-r__entry" data-work-m-entry data-slug={p.slug}>
             {live ? (
               <a class="work-r__imglink" href={`/work/${p.slug}`} data-work-link data-live="true" aria-label={`${name} — view project`}>
-                <figure class="work-r__img work-m__img">{img}</figure>
+                <figure class="work-r__img work-m__img m-imgreveal">{img}</figure>
               </a>
             ) : (
-              <figure class="work-r__img work-m__img is-placeholder" data-a4-note="unbuilt study: inert placeholder — no link">{img}</figure>
+              <figure class="work-r__img work-m__img m-imgreveal is-placeholder" data-a4-note="unbuilt study: inert placeholder — no link">{img}</figure>
             )}
             <h2 class="work-r__title work-m__title">{name}</h2>
           </article>

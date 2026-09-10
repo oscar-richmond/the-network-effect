@@ -71,6 +71,12 @@ const {
       block. tabindex="-1" on those targets is what lets the jump
       actually move focus, not just the scroll. */}
   <a class="skip-link" href="#main">Skip to content</a>
+  {/* THE IMAGE BLUR-IN's park is authored in the markup (m-imgreveal on
+      every phone host; the /work grid's rows park by lacking is-resolved)
+      so the blur is painted from the first frame (Oscar, 2026-09-10).
+      Without scripts nothing would ever resolve it — this clears every
+      park for that visitor. Inert whenever scripts run. */}
+  <noscript><style>.landing-v2 .m-imgreveal > img, .landing-v2 .m-imgreveal > video, .landing-v2.work-page .work-gtile__media img[data-gtile-base] { filter: none !important; }</style></noscript>
   {/* Top nav — the existing chrome and menu behaviour, unchanged. */}
   <header class="home__topbar home__topbar--about">
     <nav class="home__menu-cta" aria-label="Site">

@@ -125,7 +125,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
           402×500 full-bleed window at page y328; its crop is the study's
           own (heroFramingM — case-study-narrow.css reads the var below
           768 only; the desktop's frame keeps its centre). */}
-      <figure class="cs-hero__img" data-cs-hero-img style={study.heroFramingM ? `--cs-hero-pos-m:${study.heroFramingM}` : undefined}>
+      <figure class="cs-hero__img m-imgreveal" data-cs-hero-img style={study.heroFramingM ? `--cs-hero-pos-m:${study.heroFramingM}` : undefined}>
         <img src={study.heroImg} srcset={imageSrcset(study.heroImg, [1200, 1400], 2048)} sizes="(max-width: 1359px) 100vw, 1728px" alt={`${title} — hero image`} decoding="async" />
       </figure>
     </header>
@@ -194,7 +194,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
                landscape-slot need so heads aren't cut (Oscar's report
                on Pavilion Summit). */
             <figure
-              class="cs-row__img"
+              class="cs-row__img m-imgreveal"
               data-cs-lb-item
               style={row.framing?.[i] ? `--cs-img-pos:${row.framing[i]}` : undefined}
               tabindex="0"
@@ -281,7 +281,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-slug={m.slug}
               data-live="true"
             >
-              <figure class="cs-more__imgwin">
+              <figure class="cs-more__imgwin m-imgreveal">
                 <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 780, 1200], 2000)} sizes={MORE_SIZES} alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">
@@ -296,7 +296,7 @@ const ARROW_PATH = 'M44.3693 300L22.9417 277.21L1.51425 255.783L208.333 53.788H5
               data-live="false"
               data-a4-note="unbuilt study: inert placeholder — no href, unfocusable"
             >
-              <figure class="cs-more__imgwin">
+              <figure class="cs-more__imgwin m-imgreveal">
                 <img src={m.workImg} srcset={imageSrcset(m.workImg, [680, 780, 1200], 2000)} sizes={MORE_SIZES} alt="" loading="lazy" decoding="async" />
               </figure>
               <span class="cs-more__cardrow">

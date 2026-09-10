@@ -1012,7 +1012,15 @@
    Hosts: the /work rows' tiles (.work-m__img), every case study's hero
    (.cs-hero__img), stream figures (.cs-row__img — the img OR the video
    in it, so a pair resolves as one) and MORE WORK windows
-   (.cs-more__imgwin). Nothing above 767 carries the class. */
+   (.cs-more__imgwin), /contact's photograph (.ct__image), /founders'
+   portraits, strip tiles and sofa shot.
+   THE PARK IS AUTHORED (Oscar, 2026-09-10): every host carries
+   `m-imgreveal` in its markup, so the blur is painted from the first
+   frame whether or not the module has run — the JS only arms the
+   transition and toggles the resolve. The class is inert above 767 and
+   under `reduce` (this query), so the desktop and the band keep their
+   bytes; SiteShell's <noscript> style clears the park for a visitor
+   without scripts. */
 @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
 	/* armed one style pass after the park is painted (is-img-live), so
 	   the park itself never transitions in */
