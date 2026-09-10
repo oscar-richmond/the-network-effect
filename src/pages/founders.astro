@@ -31,13 +31,32 @@
  * band, the footer's sticky uncover. The old mobile-only anatomy is
  * retired.
  *
+ * THE PHONE (Figma d2vjAZ9BYqMqQhg662Yzuw 2:42 "Founder — iPhone 16 &
+ * 17 Pro", 402×4380, Oscar 2026-09-10 — founders-narrow.css's ≤767
+ * block + founders-phone.js): the SAME DOM again, as two static founder
+ * blocks — role / two-line name / the portrait IN the block / statement
+ * / list label / the list as one flowing paragraph — the strip between
+ * them as a continuous marquee, the sofa shot full-bleed before the
+ * footer, the two thumbs floating fixed at the viewport's foot. The
+ * band (768–1359) keeps the narrow build above.
+ *
  * IMAGERY pending founder sign-off. STAGING ONLY.
  */
 import SiteShell from '../layouts/SiteShell.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
 import { FOUNDERS_SLIDES } from '../data/landing/founders-page.js';
 import { asset } from '../utils/asset.js';
-import { imageSrcset } from '../utils/thumb-srcset.js';
+import { imageSrcset, variantOr, GATE_GIF } from '../utils/thumb-srcset.js';
+
+/* THE 402 FRAME (d2vjAZ9BYqMqQhg662Yzuw 2:42, Oscar 2026-09-10) — the
+   PHONE-ONLY portrait inside each founder's block (see the figure below).
+   Its srcset is the narrow gate INVERTED: the phone declares the 290px
+   trick (a 3× phone resolves to exactly the 870 candidate — the SAME
+   file the desktop frame's own img fetches, so one download serves
+   both); everything ≥768 declares 1px and picks the 1×1 GIF (Chrome
+   fetches hidden images, lazy or not — thumb-srcset.js). */
+const phonePortraitSrcset = (img) => `${GATE_GIF} 8w, ${imageSrcset(img, [870], 1728)}`;
+const PHONE_PORTRAIT_SIZES = '(max-width: 767px) 290px, 1px';
 import '../styles/home.css';
 import '../styles/landing/landing.css';
 import '../styles/landing/founders.css';
@@ -148,15 +167,28 @@ import '../styles/fonts.css';
             paragraphs (710,361), relationships label + three
             sentence-case rows (790,608..). All join the slide
             transition stagger (data-fd-el); hidden ≤1024. */}
-        <p class="fd-slide__role" data-fd-el>{slide.roleLine}</p>
-        <h3 class="fd-slide__staticname" data-fd-el>{slide.name}</h3>
+        <p class="fd-slide__role" data-fd-el data-m-lines={slide.phoneRoleLines.join('|')}>{slide.roleLine}</p>
+        {/* THE 402 FRAME (2:42, 2026-09-10) — data-m-* attributes carry the
+            phone's authored copy (the /services phoneLines precedent):
+            founders-phone.js reads them below 768 and the desktop never
+            does. The name breaks into its two words — ROBBO left,
+            MCCALLUM right-aligned (2:48 / 2:50). */}
+        <h3 class="fd-slide__staticname" data-fd-el data-m-lines={slide.name.split(' ').join('|')}>{slide.name}</h3>
+        {/* The phone's portrait — 370×480 at x16 between the name and the
+            statement (2:53 / 2:66), the frame's own crop of the same source
+            the desktop frame shows (founders-narrow.css sizes the window
+            and the crop; hidden ≥768, where the GIF gate above makes it
+            free). Robbo's is in the first viewport: eager. */}
+        <figure class="fd-slide__portrait" data-fd-mportrait aria-hidden="true">
+          <img src={variantOr(slide.img, 870)} srcset={phonePortraitSrcset(slide.img)} sizes={PHONE_PORTRAIT_SIZES} alt="" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+        </figure>
         <div class="fd-slide__bio2" data-fd-el>
-          {slide.bioParas.map((para) => (
-            <p class="fd-slide__bio2-para">{para}</p>
+          {slide.bioParas.map((para, k) => (
+            <p class="fd-slide__bio2-para" data-m-lines={k === 0 && slide.phoneBioLines ? slide.phoneBioLines.join('|') : undefined}>{para}</p>
           ))}
         </div>
-        <div class="fd-slide__rel" data-fd-el>
-          <p class="fd-slide__rel-label">{slide.relLabel}</p>
+        <div class="fd-slide__rel" data-fd-el data-m-items={JSON.stringify(slide.phoneRelItems)}>
+          <p class="fd-slide__rel-label" data-m-lines={slide.phoneRelLabelLines.join('|')}>{slide.relLabel}</p>
           {slide.relRows.map((row) => (
             <p class="fd-slide__rel-row">
               {row.map((item) => (
@@ -204,7 +236,10 @@ import '../styles/fonts.css';
         in the SiteShell header, an entirely different subtree, so
         this element's clip can never become its blend ancestor. */}
     <figure class="fd-sweep" data-fd-sweep aria-hidden="true">
-      <img src={asset('/assets/landing/founders/founders-photo.jpg')} srcset={imageSrcset('/assets/landing/founders/founders-photo.jpg', [780, 1200], 1600)} sizes="(max-width: 767px) 260px, (max-width: 1359px) 100vw, 1728px" alt="" loading="lazy" decoding="async" />
+      {/* the phone declares 400px (the 402 frame draws it full-bleed, 2:95 —
+          a 3× phone resolves to the 1200 candidate; was 260px for the old
+          narrow band) */}
+      <img src={asset('/assets/landing/founders/founders-photo.jpg')} srcset={imageSrcset('/assets/landing/founders/founders-photo.jpg', [780, 1200], 1600)} sizes="(max-width: 767px) 400px, (max-width: 1359px) 100vw, 1728px" alt="" loading="lazy" decoding="async" />
     </figure>
     </div>
 

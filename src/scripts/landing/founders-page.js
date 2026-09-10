@@ -42,7 +42,8 @@
  * lerp). Touch keeps the /work handling.
  */
 
-import { NARROW_QUERY, flowFooterSpacer } from './viewport.js';
+import { NARROW_QUERY, flowFooterSpacer, isPhoneViewport } from './viewport.js';
+import { initFoundersPhone } from './founders-phone.js';
 import gsap from 'gsap';
 import { wrapFooterReveals, playFooterReveals } from './footer-motion.js';
 import { createNavSweep } from './nav-motion.js';
@@ -181,6 +182,10 @@ export function initFoundersPage() {
 
   const cleanups = [];
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* THE PHONE (the 402 frame, 2026-09-10): its own branch below 768 —
+     two static blocks, the continuous strip, the floating thumbs
+     (founders-phone.js). The band (768–1359) keeps the narrow build. */
+  if (isPhoneViewport()) return initFoundersPhone(stage, { reduced, rowStaggerS: FD_ROW_STAGGER_S });
   const narrow = window.matchMedia(NARROW_QUERY).matches;
   if (narrow) {
     /* THE NARROW BUILD (the rebuild, 2026-09-07): normal document scroll —

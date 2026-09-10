@@ -17,6 +17,14 @@ body.founders-page {
 	overflow: hidden;
 }
 
+/* THE PHONE'S in-block portrait (the 402 frame, 2026-09-10 — founders.astro
+   .fd-slide__portrait): a phone-only element. Hidden everywhere from the
+   base sheet; founders-narrow.css's ≤767 block alone shows it. Its img's
+   srcset picks a 1×1 GIF above 767, so the hidden figure costs nothing. */
+.founders-page .fd-slide__portrait {
+	display: none;
+}
+
 .landing-v2 .fd-stage {
 	position: relative;
 	z-index: 1; /* over the fixed footer (the /work pattern) */

@@ -67,6 +67,14 @@ export const FOUNDERS_SLIDES = [
       '/assets/landing/founders-page/col-3.png',
       '/assets/landing/founders-page/col-4.png',
     ],
+    /* ── THE 402 FRAME (d2vjAZ9BYqMqQhg662Yzuw 2:42, Oscar 2026-09-10) —
+       PHONE-ONLY fields, read by founders-phone.js through data
+       attributes; the desktop renders none of them. The frame's list is
+       ONE flowing paragraph of ELEVEN items — the desktop's ten plus
+       "Cultural Operators" (flagged: not in the approved 6:67 list). */
+    phoneRoleLines: ['FOUNDER: PARTNERSHIPS,', 'STRATEGY & EXPERIENCES'],
+    phoneRelLabelLines: ['A STRATEGIC OPERATOR WITH', 'A GLOBAL NETWORK SPANNING'],
+    phoneRelItems: ['Talent', 'Hospitality', 'TV & Film', 'Music', 'Luxury', 'Fashion', 'Food & Beverage', 'Sports', 'Production', 'Founders', 'Cultural Operators'],
     listLabel: 'Relationships across:',
     /* Oscar's rev 5: BRANDS moves UP to line 1 (so a slash divider
        now falls between FOOD & BEVERAGE and BRANDS); the break
@@ -123,6 +131,18 @@ export const FOUNDERS_SLIDES = [
       '/assets/landing/founders-page/col-2.png',
       '/assets/landing/founders-page/col-1.png',
     ],
+    /* ── THE 402 FRAME (2:42) — PHONE-ONLY. The frame's list label reads
+       "FOUNDER: MUSIC, FILM & TELEVISION" (2:65) — the ROLE LINE again,
+       where the approved copy says THE NETWORK ADVANTAGE: built AS DRAWN,
+       FLAGGED (swap this one string to `relLabel`'s value to correct it).
+       The first statement paragraph carries an authored break after
+       "across" (2:59's paragraphs) — reproduced, flagged as a probable
+       stray newline (the desktop frame has none). The items are the
+       desktop's five with the frame's authored break inside the fourth. */
+    phoneRoleLines: ['FOUNDER: MUSIC, FILM &', 'TELEVISION'],
+    phoneRelLabelLines: ['FOUNDER: MUSIC, FILM & TELEVISION'],
+    phoneBioLines: ['One of the UK\u2019s most respected cultural voices with over 30 years across', 'music, film and television.'],
+    phoneRelItems: ['Cultural Credibility', 'Trusted Access to Talent', 'Industry Relationships', 'Authenticity Within\nCulture', 'Creative Influence'],
     listLabel: 'The network advantage:',
     /* Oscar's rev 5 — the deck's double-index quirk is RESOLVED, not
        preserved: "INDUSTRY RELATIONSHIPS" is ONE item carrying ONE

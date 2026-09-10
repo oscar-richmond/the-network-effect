@@ -428,3 +428,259 @@
 	}
 	.landing-v2.landing-v2.founders-page .landing-footer-spacer { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE PHONE (Figma d2vjAZ9BYqMqQhg662Yzuw, frame 2:42 "Founder — iPhone
+   16 & 17 Pro", 402×4380, page y = frame y − 49; Oscar 2026-09-10). The
+   frame is the total specification at 402, fluid 360–430; these rules
+   sit on top of the ≤1359 build above and reach the phone only — the
+   band (768–1359) keeps the sticky frame, the wipe, the strip's roll and
+   the sweep; the desktop is untouched.
+
+   THE LAYOUT (page y at 402): ROBBO's role line right-aligned at 181
+   (12/14 in the frame's 171 box); ROBBO at 225 / MCCALLUM right-aligned
+   at 273 (48/48, two authored lines); the portrait 370×480 at x16 from
+   361 (the frame's own crop: the 870 source drawn 383×533 at −5/−3);
+   the statement at 905 (Serrif Cond 20/24, −0.3; two paragraphs on a
+   blank line); the list label at 1161 (two authored lines); the list as
+   ONE flowing paragraph at 1221 (Serrif Cond 24/27, the items on " / ");
+   the strip at 1449 — 240×240 tiles on the 248 pitch, bleeding both
+   edges, rolling continuously (B3); ASHLEY's block from 1810 on the same
+   grammar (portrait 1990–2470, the frame's 393×547 at −11/−15); the
+   sofa shot full-bleed 323 tall at 2992 (the frame draws it 485 wide at
+   x−63 → 75.9% across); the global footer 40 below it (its statement
+   lands at the frame's 3455). Ground #eeeef0 throughout — the frame
+   draws no band.
+
+   TYPE from the frame at 402, fluid in vw between 360 and 430: the names
+   48 → clamp(43, 11.9403vw, 51.34); the statements 20 → clamp(17.91,
+   4.9751vw, 21.39); the list 24 → clamp(21.49, 5.9701vw, 25.67); the
+   12/14 labels fixed (the eyebrow tier's face, tracking 0 — the frame's
+   Inter maps to the site's sans as everywhere). The frame's statements
+   are white + difference over the ground (≈ #111) — rendered #161616,
+   the page's ink (flagged).
+
+   B4 — THE FLOATING THUMBS: the desktop indicator's two thumbs (the
+   same buttons) FIXED, centred, their bottom edge 51 above the
+   viewport's bottom (the frame's 775–823 in the 874 viewport), 64×48 on
+   a 16 gap; the label row and divider retire (the frame draws neither).
+   The active stroke keeps R19's ruling (#c1250e — the frame's #232a89
+   is the file's old value, flagged). They fade+rise (the media beat:
+   0.8s, 16px) — shown from load, gone once the sofa shot has fully
+   entered (founders-phone.js).
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2.founders-page {
+		--fdp-top: 181px;               /* the page top → the role line */
+		--fdp-role-name: 16px;          /* role box bottom (209) → ROBBO (225) */
+		--fdp-name-portrait: 40px;      /* MCCALLUM's box bottom (321) → the portrait (361) */
+		--fdp-portrait-statement: 64px; /* 841 → 905 */
+		--fdp-statement-label: 64px;    /* 1097 → 1161 */
+		--fdp-label-rows: 32px;         /* 1189 → 1221 */
+		--fdp-rows-strip: 120px;        /* 1329 → 1449 */
+		--fdp-strip-role: 120px;        /* 1690 → 1810 */
+		--fdp-rows-closing: 120px;      /* 2872 → 2992 */
+		--fdp-closing-h: 323px;         /* the sofa shot's band */
+		--fdp-closing-footer: 40px;     /* 3315 → the footer's box (its 100 padding lands the statement at 3455) */
+		--fdp-label-w: 171px;           /* the role line's box (2:51 / 2:64) */
+		--fdp-tile: 240px;              /* the strip's tiles (2:74…) */
+		--fdp-tile-gap: 8px;
+		--fdp-set-w: 992px;             /* one set of four on the 248 pitch — the marquee's wrap distance */
+		--fdp-car-dur: 27.56s;          /* 992px at the house marquee's 36 px/s (1728px / 48s) — founders-phone.js writes the measured value */
+		--fdp-thumb-w: 64px;
+		--fdp-thumb-h: 48px;
+		--fdp-thumb-gap: 16px;
+		--fdp-thumb-bottom: 51px;       /* 874 − 823 */
+		--fdp-name-size: clamp(43px, 11.9403vw, 51.34px);
+		--fdp-statement-size: clamp(17.91px, 4.9751vw, 21.39px);
+		--fdp-list-size: clamp(21.49px, 5.9701vw, 25.67px);
+	}
+
+	/* ── the page: the frame's absolute y's run from the page top — the
+	   fixed header takes no flow space ── */
+	.landing-v2.landing-v2 .fd-content { padding-top: 0; }
+	/* the sticky frame retires — each block carries its own portrait */
+	.landing-v2.landing-v2 .fd-portrait { display: none; }
+
+	/* ── the blocks ── */
+	.landing-v2.landing-v2 .fd-slide {
+		padding: 0 var(--m-margin-safe-r, var(--m-margin)) 0 var(--m-margin-safe-l, var(--m-margin));
+	}
+	/* (by slide, not by adjacency: in the DOM the strip precedes BOTH
+	   blocks, so the band's `.fd-col + .fd-slide` reaches Robbo's) */
+	.landing-v2.landing-v2 .fd-col + .fd-slide,
+	.landing-v2.landing-v2 .fd-slide[data-slide='0'] { padding-top: var(--fdp-top); }
+	.landing-v2.landing-v2 .fd-slide[data-slide='1'] { padding-top: var(--fdp-strip-role); }
+	/* the role line: right-aligned, on the frame's two authored lines
+	   (data-m-lines — the frame's 171 Inter box wraps there; the site's
+	   sans is wider, so the box is not the literal, the lines are) */
+	.landing-v2.landing-v2 .fd-slide__role,
+	.landing-v2.landing-v2 .fd-slide__rel-label {
+		font-size: 12px;
+		line-height: 14px;
+		letter-spacing: 0;
+	}
+	.landing-v2.landing-v2 .fd-slide__role { text-align: right; }
+	/* the name: two authored lines (founders-phone.js breaks it on the
+	   data-m-lines), the first flush left, the surname flush right */
+	.landing-v2.landing-v2 .fd-slide__staticname {
+		margin-top: var(--fdp-role-name);
+		font-size: var(--fdp-name-size);
+		line-height: 1;
+		letter-spacing: 0;
+	}
+	.landing-v2.landing-v2 .fd-slide__name-l { display: block; }
+	.landing-v2.landing-v2 .fd-slide__name-l--last { text-align: right; }
+	/* the portrait: the frame's window and its crop (the same 870 source
+	   the desktop frame shows; see founders.astro) */
+	.landing-v2.landing-v2 .fd-slide__portrait {
+		display: block;
+		position: relative;
+		width: 100%;
+		aspect-ratio: 370 / 480;
+		margin: var(--fdp-name-portrait) 0 0;
+		overflow: hidden;
+		background: #eeeef0;
+	}
+	.landing-v2.landing-v2 .fd-slide__portrait img {
+		position: absolute;
+		display: block;
+		max-width: none; /* the global img cap would hold the crop at the window's width */
+		object-fit: cover;
+	}
+	/* Robbo (2:57): 383×533 at (−5, −3) in the 370×480 window */
+	.landing-v2.landing-v2 .fd-slide[data-slide='0'] .fd-slide__portrait img {
+		left: -1.3514%;
+		top: -0.625%;
+		width: 103.5135%;
+		height: 111.0417%;
+	}
+	/* Ashley (2:71): 393×547 at (−11, −15) */
+	.landing-v2.landing-v2 .fd-slide[data-slide='1'] .fd-slide__portrait img {
+		left: -2.973%;
+		top: -3.125%;
+		width: 106.2162%;
+		height: 113.9583%;
+	}
+	/* the statement: 20/24, −0.3, the paragraphs on one blank line */
+	.landing-v2.landing-v2 .fd-slide__bio2 {
+		max-width: none;
+		margin-top: var(--fdp-portrait-statement);
+		font-size: var(--fdp-statement-size);
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+	}
+	.landing-v2.landing-v2 .fd-slide__bio2-para + .fd-slide__bio2-para { margin-top: 1.2em; }
+	/* the list: the label's authored lines, then ONE flowing paragraph
+	   (founders-phone.js builds .fd-slide__rel-flow from the data-m-items;
+	   the desktop's authored rows retire here) */
+	.landing-v2.landing-v2 .fd-slide__rel { margin-top: var(--fdp-statement-label); }
+	.landing-v2.landing-v2 .fd-slide__rel-label { margin-bottom: var(--fdp-label-rows); }
+	.landing-v2.landing-v2 .fd-slide__rel-row { display: none; }
+	.landing-v2.landing-v2 .fd-slide__rel-flow {
+		margin: 0;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-synthesis: none;
+		font-size: var(--fdp-list-size);
+		line-height: 1.125;
+		letter-spacing: 0;
+		text-transform: none;
+		color: #161616;
+	}
+	/* the frame sets its slashes in double spaces ("Talent  /  Hospitality",
+	   ≈11px a side at 24); one space + 0.2em of padding lands the same gap */
+	.landing-v2.landing-v2 .fd-slide__rel-flow .fd-slide__rel-sep { padding: 0 0.2em; }
+	/* the name's two words measure as two lines whatever the width (the
+	   line-reveal's measuring spans are inline-block from an inline style) */
+	.landing-v2.landing-v2 .fd-slide__staticname > .lw { display: block !important; }
+
+	/* ── B3 — the strip as a continuous marquee: the network rows'
+	   keyframes on the --marquee-set-w contract (landing.css), the track
+	   already doubled for the seamless wrap; leftward at the house pace;
+	   the phase starts where the frame draws it (the first tile 175 off
+	   the left edge: −175 / 992 of the loop) ── */
+	.landing-v2.landing-v2 .fd-col {
+		height: var(--fdp-tile);
+		margin: var(--fdp-rows-strip) 0 0;
+	}
+	/* (no transform rule here: the band's scroll-roll is founders-page.js's
+	   narrow branch, which never runs on the phone — the animation alone
+	   owns the track's transform; an !important would out-cascade it) */
+	.landing-v2.landing-v2 .fd-col__track {
+		--marquee-set-w: var(--fdp-set-w);
+		gap: var(--fdp-tile-gap);
+	}
+	.landing-v2.landing-v2 .fd-col__slot {
+		width: var(--fdp-tile);
+		height: var(--fdp-tile);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.landing-v2.landing-v2 .fd-col__track {
+			animation: landing-network-marquee-left var(--fdp-car-dur) linear infinite;
+			animation-delay: calc(var(--fdp-car-dur) * -0.17641);
+		}
+		/* the band's fade-rise build retires — the tiles take the blur-in (B2) */
+		.js .landing-v2.landing-v2 .fd-col__slot {
+			opacity: 1;
+			transform: none;
+			transition: none;
+		}
+	}
+
+	/* ── the sofa shot: full-bleed, static, the frame's crop; the
+	   blur-in is its entrance (B2) ── */
+	.landing-v2.landing-v2 .fd-sweep {
+		height: var(--fdp-closing-h);
+		aspect-ratio: auto;
+		margin: var(--fdp-rows-closing) 0 var(--fdp-closing-footer);
+		clip-path: none !important;
+		visibility: visible !important;
+	}
+	.landing-v2.landing-v2 .fd-sweep img { object-position: 75.9% 50%; }
+
+	/* ── B4 — the floating thumbs ── */
+	.landing-v2.landing-v2 .fd-ind {
+		position: fixed;
+		left: 50%;
+		top: auto;
+		bottom: var(--fdp-thumb-bottom);
+		height: auto;
+		margin: 0;
+		z-index: 2; /* inside the stage's context (260): over the flow, under the nav and the menu */
+		pointer-events: none;
+		transform: translate3d(-50%, 0, 0);
+	}
+	.landing-v2.landing-v2 .fd-ind__thumbs {
+		position: static;
+		display: flex;
+		flex-direction: row;
+		gap: var(--fdp-thumb-gap);
+		pointer-events: auto;
+	}
+	.landing-v2.landing-v2 .fd-ind__thumb {
+		width: var(--fdp-thumb-w);
+		height: var(--fdp-thumb-h);
+	}
+	.landing-v2.landing-v2 .fd-ind__labelrow { display: none; }
+	@media (prefers-reduced-motion: no-preference) {
+		.js .landing-v2.landing-v2 .fd-ind {
+			opacity: 0;
+			translate: 0 16px;
+			visibility: hidden;
+			transition:
+				opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				translate 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+				visibility 0s linear 0.8s;
+		}
+		.js .landing-v2.landing-v2 .fd-ind.is-float-shown {
+			opacity: 1;
+			translate: 0 0;
+			visibility: visible;
+			transition-delay: 0s;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.js .landing-v2.landing-v2 .fd-ind:not(.is-float-shown) { visibility: hidden; }
+	}
+}
