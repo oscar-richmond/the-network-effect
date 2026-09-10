@@ -74,6 +74,11 @@ export const SV6_PILLARS = [
     /* 38:2597 — Dazzed Bold 56/54/−3.5% uppercase ink, the 26-space
        leading indent, 1630 measure; bar 10×155. */
     statement: 'Designing immersive experiences, strategic partnerships and cultural moments that bring brands, talent and communities together.',
+    /* THE PHONE (Figma otZb9H4j24ZX1upxbGUXyu 0:26, 2026-09-10): the same
+       words on the frame's ten AUTHORED lines (30 pitch, all flush left)
+       — services-6.js breaks the statement here below 768 only; the
+       desktop's natural wrap is untouched. */
+    phoneLines: ['Designing', 'immersive', 'experiences,', 'strategic', 'partnerships and', 'cultural moments', 'that bring brands,', 'talent and', 'communities', 'together.'],
     barH: 155,
     label: 'WE BUILD',
     accent: '#c1250e',
@@ -195,6 +200,19 @@ export const SV6_FRAGMENTS = [
       { x: 636, t: 'CULTURAL' },
       { x: 955, t: 'MOMENTS' },
     ],
+    /* THE PHONE (Figma otZb9H4j24ZX1upxbGUXyu 0:234, 2026-09-10): six
+       authored lines on the 45 pitch at the frame's x (page-absolute at
+       402, fluid in 402nds — the closing statement's construction).
+       FLAG: the frame's last line reads "MOMENTS." with a full stop
+       where the desktop's has none — built as drawn. */
+    phoneLines: [
+      { x: 56, t: 'WE DON’T' },
+      { x: 16, t: 'JUST PRODUCE' },
+      { x: 73, t: 'EVENTS.' },
+      { x: 105, t: 'WE CREATE' },
+      { x: 87, t: 'CULTURAL' },
+      { x: 120, t: 'MOMENTS.' },
+    ],
   },
   {
     key: 'partners',
@@ -207,6 +225,19 @@ export const SV6_FRAGMENTS = [
       { x: 572, t: 'FOR BOTH' },
       { x: 891, t: 'TALENT' },
       { x: 733, t: '& BRANDS' },
+    ],
+    /* THE PHONE (0:177): ten authored lines on the 45 pitch. */
+    phoneLines: [
+      { x: 108.5, t: 'WE' },
+      { x: 16, t: 'ARE NOT' },
+      { x: 16, t: 'TRADITIONAL' },
+      { x: 46.8, t: 'WE ACT AS' },
+      { x: 130, t: 'STRATEGIC' },
+      { x: 16, t: 'RELATIONSHIP' },
+      { x: 16, t: 'PARTNERS' },
+      { x: 139.3, t: 'FOR BOTH' },
+      { x: 201, t: 'TALENT' },
+      { x: 139.3, t: '& BRANDS' },
     ],
   },
 ];

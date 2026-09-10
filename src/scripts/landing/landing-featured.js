@@ -39,8 +39,7 @@ import { initViewCaseCursor } from './view-case-cursor.js';
 import { isMobileViewport, isPhoneViewport } from './viewport.js';
 import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
-import { veilState, writeVeilState, clearVeilState } from './rail-veils.js';
-import { trackVisibleBottom } from './m-viewport.js';
+import { mountPinnedRail, drivePinnedRail, railTravel } from './m-pinned-rail.js';
 import { sreelHandoff, sreelGroundDarkness } from './landing-services-reel.js';
 import { servicesLastImageLeavesTopAt } from './landing-services.js';
 
@@ -209,17 +208,15 @@ function initPhoneFeatured(section, removeGate) {
   }
 
   /* the wrapper the sticky stage pins inside (built here so the desktop
-     DOM stays exactly as it is) */
-  const pin = document.createElement('div');
-  pin.className = 'landing-featured__pin';
-  section.insertBefore(pin, stage);
-  pin.appendChild(stage);
-  section.classList.add('is-pinned-phone');
-  /* ITEM 6 (Oscar, 2026-09-09): the stage's LENGTH is the small
+     DOM stays exactly as it is) — the SHARED pinned-rail mount
+     (m-pinned-rail.js, 2026-09-10: the /services galleries run the same
+     mechanic; this section's behaviour is unchanged, measured).
+     ITEM 6 (Oscar, 2026-09-09): the stage's LENGTH is the small
      viewport (--m-svh) and its content follows the live visible bottom
-     edge — m-viewport.js writes --m-vv-dy on the section, the CSS
-     translates the sticky stage by it (landing-narrow.css). */
-  const cleanupVv = trackVisibleBottom(section);
+     edge — m-viewport.js writes --m-vv-dy on the section (the mount
+     starts the tracker), the CSS translates the sticky stage by it
+     (landing-narrow.css). */
+  const { pin, unmount } = mountPinnedRail(section, stage, { pinClass: 'landing-featured__pin' });
 
   /* the cards' fade-rise staggers in the RAIL's order (the CSS order,
      not the DOM's — the phone-only pool cards sit last in the markup).
@@ -270,71 +267,44 @@ function initPhoneFeatured(section, removeGate) {
   ind.appendChild(thumb);
   strip.insertAdjacentElement('afterend', ind);
 
-  /* THE TRAVEL: the last card's right edge (in the strip's own box —
-     offsetLeft + width, transform-free) plus the end inset — the strip's
-     own lead margin, so the rail ends as it begins — minus the viewport:
-     at the end the last card rests exactly that inset from the right
-     edge, at every width. */
-  const travel = () => {
-    const last = cards
-      .filter((c) => c instanceof HTMLElement && getComputedStyle(c).display !== 'none')
-      .reduce((best, c) => (!best || c.offsetLeft > best.offsetLeft ? c : best), null);
-    if (!(last instanceof HTMLElement)) return 0;
-    const inset = parseFloat(getComputedStyle(strip).paddingLeft) || 0;
-    return Math.max(last.offsetLeft + last.offsetWidth + inset - (window.innerWidth || 0), 0);
-  };
-  const applyTravel = () => {
-    section.style.setProperty('--fw-travel', `${Math.round(travel())}px`);
-  };
+  /* THE TRAVEL and THE SCRUB are the shared pinned rail's (m-pinned-
+     rail.js): the last card's right edge + the strip's inset − the
+     viewport, so at the end the last card rests exactly 16 from the
+     right edge, at every width; one 1:1 scrubbed tween from the pin's
+     top; the veils = ITEM 3 (Oscar, 2026-09-09) — the SHARED rail
+     veils' state (rail-veils.js's veilState — the one behaviour every
+     phone rail has: right only at the start, both once scrolled, left
+     only at the end, each over a 24px ramp), fed the travel in px. F3's
+     both-gone-at-the-end is superseded by that rule; what F3 was really
+     about — the left veil painting dark over a lightening ground through
+     the release — is answered by the ink instead: the veils' colour is
+     the phone's LIVE ground (--m-veil-ink, written on this section by
+     m-ground.js), so a veil that remains is always the ground's own
+     colour. The indicator's --ci-x rides the same progress. */
+  const travel = () => railTravel(strip, cards);
   const publish = () => {
     const top = section.getBoundingClientRect().top + (window.scrollY || 0);
     phonePin = { sectionTop: Math.round(top), travel: Math.round(travel()), releaseAt: Math.round(top + travel()) };
   };
-  const applyProgress = (p) => {
-    /* ITEM 3 (Oscar, 2026-09-09): the veils are the SHARED rail veils'
-       state (rail-veils.js's veilState — the one behaviour every phone
-       rail has: right only at the start, both once scrolled, left only
-       at the end, each over a 24px ramp), fed the travel in px. F3's
-       both-gone-at-the-end is superseded by that rule; what F3 was
-       really about — the left veil painting dark over a lightening
-       ground through the release — is answered by the ink instead: the
-       veils' colour is the phone's LIVE ground (--m-veil-ink, written
-       on this section by m-ground.js), so a veil that remains is always
-       the ground's own colour. */
-    const t = travel();
-    writeVeilState(section, veilState(p * t, t));
-    const run = ind.clientWidth - (thumb.offsetWidth || 32);
-    ind.style.setProperty('--ci-x', `${(p * Math.max(run, 0)).toFixed(1)}px`);
-  };
-  applyTravel();
-  applyProgress(0);
-
-  const tween = gsap.fromTo(
+  const rail = drivePinnedRail({
+    section,
     strip,
-    { x: 0 },
-    {
-      x: () => -travel(),
-      ease: 'none',
-      immediateRender: true,
-      scrollTrigger: {
-        trigger: pin,
-        start: 'top top',
-        end: () => `+=${Math.round(travel())}`,
-        scrub: true,
-        invalidateOnRefresh: true,
-        onRefresh: (st) => { publish(); applyProgress(st.progress); },
-        onUpdate: (st) => applyProgress(st.progress),
-      },
+    items: cards,
+    pin,
+    travelProp: '--fw-travel',
+    onProgress: (p) => {
+      const run = ind.clientWidth - (thumb.offsetWidth || 32);
+      ind.style.setProperty('--ci-x', `${(p * Math.max(run, 0)).toFixed(1)}px`);
     },
-  );
+    onRefresh: publish,
+    /* the geometry is re-derived on the GLOBAL refreshInit — before any
+       trigger measures — and published there too, so the sections below
+       (WE CREATE ACCESS rides on the release, A1) read a fresh release in
+       their own refreshInit; the services' listener (the stack's dwell
+       margins) is registered before this one and runs first */
+    onRefreshInit: () => { applyArrival(); publish(); },
+  });
   publish();
-  /* the geometry is re-derived on the GLOBAL refreshInit — before any
-     trigger measures — and published there too, so the sections below
-     (WE CREATE ACCESS rides on the release, A1) read a fresh release in
-     their own refreshInit; the services' listener (the stack's dwell
-     margins) is registered before this one and runs first */
-  const onRefreshInit = () => { applyTravel(); applyArrival(); publish(); };
-  ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
 
   if (import.meta.env.DEV) {
     window.__landingFeaturedPhone = { travel, pin: () => phonePin };
@@ -343,18 +313,10 @@ function initPhoneFeatured(section, removeGate) {
   return () => {
     removeGate();
     cleanupEnt();
-    ScrollTrigger.removeEventListener('refreshInit', onRefreshInit);
-    tween.scrollTrigger?.kill();
-    tween.kill();
+    rail.cleanup();
     ind.remove();
-    section.insertBefore(stage, pin);
-    pin.remove();
-    section.classList.remove('is-pinned-phone');
+    unmount();
     section.style.marginTop = '';
-    section.style.removeProperty('--fw-travel');
-    clearVeilState(section);
-    cleanupVv();
-    gsap.set(strip, { clearProps: 'transform' });
     phonePin = null;
   };
 }

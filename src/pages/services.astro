@@ -103,7 +103,10 @@ import '../styles/fonts.css';
 
         {/* Statement + bar (the case-study intro pattern). */}
         <div class={`sv6-st${p.dark ? ' sv6-st--dark' : ''}`} data-sv6-st>
-          <p class="sv6-st__text" data-sv6-statement
+          {/* THE PHONE (Figma otZb9H4j24ZX1upxbGUXyu, 2026-09-10): data-m-lines
+              carries the frame's authored line breaks where it draws them
+              (statement /01); services-6.js applies them below 768 only. */}
+          <p class="sv6-st__text" data-sv6-statement data-m-lines={p.phoneLines ? p.phoneLines.join('|') : undefined}
             ><span class="sv6-st__indent" aria-hidden="true"></span>{p.statement}</p
           >
           <div class="sv6-st__bar" data-sv6-bar aria-hidden="true" style={`height:${p.barH}px`}></div>
@@ -186,7 +189,10 @@ import '../styles/fonts.css';
             </section>
 
             <section class={`sv6-frag${SV6_FRAGMENTS[pi].dark ? ' sv6-frag--dark sv6-on-dark' : ''}`} data-sv6-frag aria-label="Statement">
-              <div class="sv6-frag__stage" data-sv6-frag-stage>
+              {/* THE PHONE (2026-09-10): the frame's own line set (a different
+                  count and its authored x, 0:234 / 0:177) rides in data-m-lines;
+                  services-6.js rebuilds the stage from it below 768 only. */}
+              <div class="sv6-frag__stage" data-sv6-frag-stage data-m-lines={JSON.stringify(SV6_FRAGMENTS[pi].phoneLines)}>
                 {SV6_FRAGMENTS[pi].lines.map((line, li) => (
                   <Fragment>
                     <p class="sv6-frag__line" data-sv6-frag-line style={`left:${line.x}px;top:${li * 90}px`}>{line.t}</p>

@@ -35,6 +35,12 @@ import { initSiteScroll, getLenisInstance } from './site-scroll.js';
 import { initSvRowsSections } from './sv-rows.js';
 import { isMobileViewport, isPhoneViewport, flowFooterSpacer } from './viewport.js';
 import { wireRailVeils } from './rail-veils.js';
+/* THE PHONE (Figma otZb9H4j24ZX1upxbGUXyu 0:17, Oscar 2026-09-10): the
+   landing's shared mechanics, reused — the WHAT WE DO image wipe for
+   B1's fixed frame, Featured Work's pinned rail for B2's galleries. */
+import { createImageWipe } from './img-wipe.js';
+import { mountPinnedRail, drivePinnedRail } from './m-pinned-rail.js';
+import { smallViewportPx } from './m-viewport.js';
 import { bindBottomNavSweep } from './nav-motion.js';
 import { initStatementBar } from './statement-bar.js';
 import { initStatementDwell } from './statement-dwell.js';
@@ -60,6 +66,29 @@ const SV6_HERO_REST_INSET_PX = 24;
    keeps the hold legible inside one flick. */
 const FRAG_HOLD_PX_M = 240;
 const SV6_TEXT_ENTER_EXPAND_PX = 4;
+/* ═══ THE PHONE (Figma otZb9H4j24ZX1upxbGUXyu 0:17, 2026-09-10) ═══ */
+/* B1 — the row under the viewport's vertical midpoint is the active
+   row; a neighbour claims it only once the midpoint is this far inside
+   its box (an 8px dead band astride every divider — no flutter). */
+const M_ROW_HYST_PX = 4;
+/* the dark band's edges (0:19): page 3332 and 6254 against the CONNECT
+   pillar at 3169 and AMPLIFY at 6085 — 163 INTO the first image, 169
+   INTO the second (the frame's own edges, built as drawn; flagged) */
+const M_BAND_INTO_CONNECT_PX = 163;
+const M_BAND_INTO_AMPLIFY_PX = 169;
+/* the frame's gap from a row list's end line to the gallery heading
+   that follows, honoured at the PIN moment (the list's tail stays in
+   view above the pinned gallery); the frame's absolute 99 / 186 are
+   superseded by the pin (reported) */
+const M_GAL_ARRIVE_GAP_PX = 64;
+/* the frame's gap from a gallery's caption row to the fragment
+   statement's first line (0:101 → 0:234 and 0:125 → 0:177, both 222);
+   the fragment's own dwell padding counts toward it */
+const M_FRAG_GAP_PX = 222;
+/* the galleries' entrance — the heading's top at this share of the
+   viewport, derived as an absolute scroll from the pin (the stage is
+   sticky; Featured Work's own derived-arrival pattern) */
+const M_GAL_ENTER_VH = 0.9;
 /* The landing's bottom pair (audit fix, 2026-08-27 — this build had
    NEITHER behaviour: the nav exit and idle snap only ever lived in
    services-v2.js, which initialises below the seam. Constants are
@@ -81,6 +110,11 @@ export function initServices6() {
      services-6.css paints their equivalents. The pillar expansion
      keeps its scrub; its rest inset is the page margin here. */
   const narrow = isMobileViewport();
+  /* THE PHONE (2026-09-10): the 402 frame's build — its own row-list
+     frame (B1), pinned galleries (B2), authored statement and fragment
+     lines, the frame's band edges. The band (768–1359) keeps the
+     rebuild's narrow paths. */
+  const phone = isPhoneViewport();
   const readPx = (prop, fallback) => {
     const v = parseFloat(getComputedStyle(document.body).getPropertyValue(prop));
     return Number.isFinite(v) ? v : fallback;
@@ -96,6 +130,40 @@ export function initServices6() {
     new URLSearchParams(window.location.search).has('forcehover');
 
   if (!reduced) cleanups.push(initSiteScroll());
+
+  /* ── THE PHONE'S AUTHORED LINES (layout, before anything measures):
+     statement /01 breaks on the frame's ten lines (data-m-lines, from
+     the data file — the same words; the indent span goes), and each
+     fragment stage is rebuilt from the frame's own line set (a different
+     count and x than the desktop's; the closing statement's phone
+     construction: blocks on the 45 pitch, x in 402nds). Runs under RM
+     too (it is the layout, not the choreography). */
+  if (phone) {
+    page.querySelectorAll('[data-sv6-statement][data-m-lines]').forEach((text) => {
+      const lines = (text.getAttribute('data-m-lines') || '').split('|').filter(Boolean);
+      if (!lines.length) return;
+      text.textContent = '';
+      lines.forEach((line, i) => {
+        if (i) text.appendChild(document.createElement('br'));
+        text.appendChild(document.createTextNode(line));
+      });
+    });
+    page.querySelectorAll('[data-sv6-frag-stage][data-m-lines]').forEach((stage) => {
+      let lines = [];
+      try { lines = JSON.parse(stage.getAttribute('data-m-lines') || '[]'); } catch { lines = []; }
+      if (!Array.isArray(lines) || !lines.length) return;
+      stage.querySelectorAll('[data-sv6-frag-line]').forEach((l) => l.remove());
+      lines.forEach(({ x, t }) => {
+        const p = document.createElement('p');
+        p.className = 'sv6-frag__mline';
+        p.setAttribute('data-sv6-frag-line', '');
+        p.style.setProperty('--st-x', String((Number(x) || 16) - 16));
+        p.textContent = String(t);
+        stage.appendChild(p);
+      });
+      stage.classList.add('is-mlines');
+    });
+  }
 
   /* ── Hover tables — the shared machinery, wholesale. R3 (Oscar
      2026-08-27): fixedImg — the frame holds at the CSS fixed
@@ -131,12 +199,110 @@ export function initServices6() {
   const SV6_SLIDE_X_PX = 40;
   const SV6_SLIDE_S = 0.5;
   const SV6_SLIDE_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
-  if (!reduced) {
+  if (!reduced || phone) {
     /* the narrow build's indent is its own token (services-narrow.css:
-       16 phone / 24 band — the desktop's 40 for the narrower measure) */
+       24 phone (the landing rows' --sreel-slide-x) / 24 band — the
+       desktop's 40 for the narrower measure) */
     page.style.setProperty('--sv6-slide-x', `${narrow ? readPx('--sv-slide-x', 16) : SV6_SLIDE_X_PX}px`);
     page.style.setProperty('--sv6-slide-s', `${SV6_SLIDE_S}s`);
     page.style.setProperty('--sv6-slide-ease', SV6_SLIDE_EASE);
+  }
+  /* ═══ B1 — THE PHONE'S FIXED FRAME (Oscar, 2026-09-10) ═══
+     One 130×180 frame FIXED at the viewport's vertical middle, its right
+     edge 24 from the viewport's right (services-narrow.css .sv6-mframe),
+     shared by the three lists. The row whose box holds the midpoint is
+     the ACTIVE row: it indents (the landing rows' 24 / 0.5s / house
+     state curve — the same --sv6-slide-* vars) and the frame WIPES to
+     its image through the WHAT WE DO swap (img-wipe.js: 450ms clip-path
+     wipe, 6px edge blur, the under layer decoded first). The rows travel
+     to the frame; the frame never moves — so the active row's text is by
+     construction the one at the midpoint, the image centred on it within
+     the row's own 50 (reported). HYSTERESIS: a neighbour claims the
+     midpoint only once it is M_ROW_HYST_PX inside its box; the holder
+     keeps it to the same distance past its edges. ENTRY / EXIT: the frame
+     is off between lists — it fades + rises in (the media beat, 0.8s /
+     16px) as the first row's box claims the midpoint, adopting that
+     row's image outright (nothing to wipe from while unseen), and leaves
+     the same way once the last row's box has passed; mirrored on the
+     way back up. Scroll-driven only — no hover, no tap (the machinery's
+     tap path is off on the phone). RM: states without motion — the wipe
+     module swaps outright, the CSS drops the frame's and the indent's
+     transitions. */
+  if (phone) {
+    const tables = svImgCtl.map((ctl) => ctl.section).filter((s) => s instanceof HTMLElement);
+    const rowsOf = tables.map((t) => Array.from(t.querySelectorAll('[data-sv-row]')).filter((r) => r instanceof HTMLElement));
+    if (tables.length) {
+      const frame = document.createElement('div');
+      frame.className = 'sv6-mframe';
+      frame.setAttribute('data-sv6-mframe', '');
+      frame.setAttribute('aria-hidden', 'true');
+      const mkImg = (cls) => {
+        const img = document.createElement('img');
+        img.className = cls;
+        img.alt = '';
+        img.decoding = 'async';
+        return img;
+      };
+      const under = mkImg('sv6-mframe__img sv6-mframe__img--under');
+      const over = mkImg('sv6-mframe__img');
+      frame.append(under, over);
+      page.appendChild(frame);
+      const wipe = createImageWipe({ over, under, srcFor: (src) => src, reduced, initial: null });
+      let on = false;
+      let curT = -1;
+      let curR = -1;
+      const setActive = (t, r) => {
+        if (t === curT && r === curR) return;
+        if (curT >= 0) rowsOf[curT][curR]?.classList.remove('is-sactive');
+        curT = t;
+        curR = r;
+        if (t < 0) {
+          if (on) { on = false; frame.classList.remove('is-on'); }
+          return;
+        }
+        const row = rowsOf[t][r];
+        row.classList.add('is-sactive');
+        const src = row.dataset.img || '';
+        if (!on) {
+          on = true;
+          wipe.set(src);
+          frame.classList.add('is-on');
+        } else {
+          wipe.request(src);
+        }
+      };
+      const measure = () => {
+        const mid = (window.innerHeight || 0) / 2;
+        if (curT >= 0) {
+          const r = rowsOf[curT][curR].getBoundingClientRect();
+          if (mid >= r.top - M_ROW_HYST_PX && mid < r.bottom + M_ROW_HYST_PX) return; /* the holder keeps it */
+        }
+        for (let t = 0; t < tables.length; t += 1) {
+          const rows = rowsOf[t];
+          for (let r = 0; r < rows.length; r += 1) {
+            const b = rows[r].getBoundingClientRect();
+            if (mid >= b.top + M_ROW_HYST_PX && mid < b.bottom - M_ROW_HYST_PX) { setActive(t, r); return; }
+          }
+        }
+        setActive(-1, -1);
+      };
+      let raf = 0;
+      const onScroll = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; measure(); }); };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      schedule(measure, 600); /* the initial state once layout settles */
+      cleanups.push(() => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+        window.cancelAnimationFrame(raf);
+        wipe.dispose();
+        frame.remove();
+      });
+      if (import.meta.env.DEV) {
+        window.__sv6Frame = { active: () => [curT, curR], on: () => on, frame };
+      }
+    }
+  } else if (!reduced) {
     svImgCtl.forEach((ctl) => {
       const { section } = ctl;
       const rows = Array.from(section.querySelectorAll('[data-sv-row]'));
@@ -246,8 +412,14 @@ export function initServices6() {
     const amplify = page.querySelector('#amplify');
     if (!(band instanceof HTMLElement) || !(connect instanceof HTMLElement) || !(amplify instanceof HTMLElement)) return;
     const pageTop = page.getBoundingClientRect().top;
-    const top = connect.getBoundingClientRect().bottom - pageTop;
-    const bottom = amplify.getBoundingClientRect().top - pageTop;
+    /* THE PHONE (0:19): the frame's edges fall INSIDE the two pillar
+       images — 163 below CONNECT's top, 169 below AMPLIFY's — not on
+       their edges; built as drawn (the margins beside each image step
+       from one ground to the other at the rest width; flagged). */
+    const top = phone
+      ? connect.getBoundingClientRect().top - pageTop + M_BAND_INTO_CONNECT_PX
+      : connect.getBoundingClientRect().bottom - pageTop;
+    const bottom = amplify.getBoundingClientRect().top - pageTop + (phone ? M_BAND_INTO_AMPLIFY_PX : 0);
     band.style.top = `${top.toFixed(0)}px`;
     band.style.height = `${(bottom - top).toFixed(0)}px`;
   };
@@ -281,6 +453,22 @@ export function initServices6() {
     }));
   });
   cleanups.push(() => fragCleanups.forEach((fn) => fn()));
+  /* THE PHONE: the frame's 222 from the gallery's caption row to the
+     fragment's first line — the pinned gallery leaves its content 52
+     above the section's end (--sv-gal-pad-bottom) and the dwell pads
+     the fragment's top to centre it; the margin is whatever remains
+     (0 at 874, where the dwell's own pad already exceeds the frame's
+     gap — reported). Re-derived with the dwell on every resize. */
+  const applyFragMargins = () => {
+    if (!phone) return;
+    page.querySelectorAll('[data-sv6-frag]').forEach((sec) => {
+      if (!(sec instanceof HTMLElement)) return;
+      const pad = parseFloat(getComputedStyle(sec).paddingTop) || 0;
+      const galPad = readPx('--sv-gal-pad-bottom', 52);
+      sec.style.setProperty('--sv6-frag-margin', `${Math.max(0, Math.round(M_FRAG_GAP_PX - galPad - pad))}px`);
+    });
+  };
+  applyFragMargins();
 
   /* ── The closing statement (R36 item 7): the shared driver — dwell,
      white → red scrub, nav-over-red, entrance (closing-statement.js). */
@@ -350,7 +538,65 @@ export function initServices6() {
      left only at the end. The band is the boxes' image band — the first
      box's image, measured, since the wrapped title above sets where the
      strip begins. The strips had no veils before. */
-  if (isPhoneViewport()) {
+  /* ═══ B2 — THE PHONE'S PINNED GALLERIES (Oscar, 2026-09-10) ═══
+     Featured Work's mechanic, the shared module (m-pinned-rail.js): the
+     stage mounts in a pin wrapper one small viewport + the travel tall
+     and pins at the viewport's top with its content at its foot (52
+     from the visible edge, translated by --m-vv-dy so the browser's bar
+     never moves it); the strip travels RIGHT 1:1 with the scroll and
+     ends with the LAST image's right edge 16 from the viewport's right
+     (travel = the strip's laid-out width − the viewport; 1170 at 402);
+     the pin releases and the flow resumes. Captions and arrows are
+     inside the boxes, so they travel with the rail. THE VEILS (B3): the
+     shared rail-veil state written from the scrub's progress, painted on
+     the stage over the images' band exactly (bottom-anchored in CSS).
+     THE ARRIVAL: the section's margin is derived so the list's end line
+     above sits the frame's 64 over the heading at the pin moment (the
+     tail of the list stays in view while the gallery rolls). RM: no pin —
+     the native snap strip with the shared veils (the rebuild's path). */
+  const galRails = [];
+  if (phone && !reduced) {
+    gals.forEach((gal) => {
+      const stage = gal.querySelector('[data-sv6-gal-stage]');
+      const strip = gal.querySelector('[data-sv6-gal-strip]');
+      const title = gal.querySelector('[data-sv6-gal-title]');
+      const boxes = Array.from(gal.querySelectorAll('[data-sv6-gal-box]')).filter((b) => b instanceof HTMLElement);
+      if (!(gal instanceof HTMLElement) || !(stage instanceof HTMLElement) || !(strip instanceof HTMLElement)) return;
+      const { pin, unmount } = mountPinnedRail(gal, stage, { pinClass: 'sv6-gal__pin' });
+      const contentH = () => (title instanceof HTMLElement
+        ? strip.getBoundingClientRect().bottom - title.getBoundingClientRect().top
+        : strip.getBoundingClientRect().height);
+      /* Featured Work's ride (landing-featured.js applyArrival): the
+         section rides UP on a negative margin — the pin wrapper's top
+         sits under the list's tail — so that at the pin moment the end
+         line above stands the gap over the heading (the heading rests
+         svh − pad − content below the pin's top); the tail then scrolls
+         away over the travel's first stretch while the gallery holds. */
+      const applyArrival = () => {
+        const svh = smallViewportPx() || window.innerHeight || 0;
+        const padB = readPx('--sv-gal-pad-bottom', 52);
+        const headingRest = svh - padB - contentH();
+        gal.style.setProperty('--sv6-gal-margin', `${Math.round(M_GAL_ARRIVE_GAP_PX - headingRest)}px`);
+      };
+      applyArrival();
+      const rail = drivePinnedRail({
+        section: gal, strip, items: boxes, pin, travelProp: '--sv6-gal-travel',
+        onRefreshInit: applyArrival,
+      });
+      galRails.push({ gal, pin, stage, title, rail });
+      cleanups.push(() => {
+        rail.cleanup();
+        unmount();
+        gal.style.removeProperty('--sv6-gal-margin');
+      });
+    });
+  } else if (isPhoneViewport()) {
+    /* ITEM 3 (Oscar, 2026-09-09) — RM keeps the native strip: each
+       gallery's strip carries the shared rail veils (rail-veils.js; the
+       paint is shared-narrow.css's on .sv6-gal's pseudo-elements,
+       anchored in services-narrow.css): right only at the start, both
+       once scrolled, left only at the end. The band is the boxes' image
+       band — the first box's image, measured. */
     gals.forEach((gal) => {
       const strip = gal.querySelector('[data-sv6-gal-strip]');
       const band = gal.querySelector('[data-sv6-gal-box] img');
@@ -373,7 +619,7 @@ export function initServices6() {
     ));
   });
 
-  const onResize = () => { sizeBand(); };
+  const onResize = () => { sizeBand(); applyFragMargins(); };
   window.addEventListener('resize', onResize);
   cleanups.push(() => window.removeEventListener('resize', onResize));
 
@@ -405,7 +651,7 @@ export function initServices6() {
      on the SemiBold pass: a 54px (one 56/54 statement line) stale
      band. refreshInit runs before every ScrollTrigger measurement
      pass, which is exactly when layout is final. */
-  const onRefreshInit = () => sizeBand();
+  const onRefreshInit = () => { sizeBand(); applyFragMargins(); };
   ScrollTrigger.addEventListener('refreshInit', onRefreshInit);
   cleanups.push(() => ScrollTrigger.removeEventListener('refreshInit', onRefreshInit));
 
@@ -417,15 +663,30 @@ export function initServices6() {
        below run after this refresh. */
     schedule(() => { sizeBand(); }, 600);
 
-    /* Hero — word reveals at load. */
+    /* Hero — word reveals at load. THE PHONE: the two faces wrap
+       separately so FROM / ACCESS. (the frame's two authored lines —
+       the serif block wraps at its widest word) rise as two lines on the
+       0.12 stagger, then TO IMPACT., then the description. */
     const heroTitle = page.querySelector('[data-sv6-hero-title]');
     const heroDesc = page.querySelector('[data-sv6-hero-desc]');
-    [heroTitle, heroDesc].forEach((line, i) => {
-      if (!(line instanceof HTMLElement)) return;
-      line.dataset.revealDelay = String(i * LINE_STAGGER_S);
-      wrapWordRevealElement(line);
-      playLineRevealElement(line);
-    });
+    if (phone) {
+      let heroDelay = 0;
+      [page.querySelector('.sv6-hero__t-serif'), page.querySelector('.sv6-hero__t-sans'), heroDesc].forEach((line) => {
+        if (!(line instanceof HTMLElement)) return;
+        line.dataset.revealDelay = String(heroDelay);
+        wrapWordRevealElement(line);
+        playLineRevealElement(line);
+        const tops = new Set(Array.from(line.querySelectorAll(':scope > .lr-clip')).map((c) => Math.round(c.offsetTop / 4)));
+        heroDelay += LINE_STAGGER_S * Math.max(1, tops.size);
+      });
+    } else {
+      [heroTitle, heroDesc].forEach((line, i) => {
+        if (!(line instanceof HTMLElement)) return;
+        line.dataset.revealDelay = String(i * LINE_STAGGER_S);
+        wrapWordRevealElement(line);
+        playLineRevealElement(line);
+      });
+    }
 
     /* Pillar heroes — R3 (Oscar 2026-08-27): the landing hero
        video's margins->full-bleed expansion, ported (power1.inOut
@@ -591,9 +852,22 @@ export function initServices6() {
         line.dataset.revealDelay = String(i * LINE_STAGGER_S);
         wrapWordRevealElement(line);
       });
+      /* THE PHONE'S PINNED GALLERY: the section's top is the pin
+         wrapper's, a small viewport above the content — the cue is
+         derived so the TITLE (sticky, at the stage's foot) crosses the
+         same 65% line: pin top = 0.65·vh − (stage bottom − title top)
+         offset by the stage's height. Re-derived on refresh. */
+      const pinned = galRails.find((g) => g.gal === gal);
       triggers.push(ScrollTrigger.create({
         trigger: gal,
-        start: 'top 65%',
+        start: pinned
+          ? () => {
+            const vh = window.innerHeight || 0;
+            const stageR = pinned.stage.getBoundingClientRect();
+            const titleTop = pinned.title instanceof HTMLElement ? pinned.title.getBoundingClientRect().top : stageR.top;
+            return `top ${Math.round(vh * 0.65 - (stageR.height - (stageR.bottom - titleTop)))}px`;
+          }
+          : 'top 65%',
         once: true,
         onEnter: () => {
           titleLines.forEach((l) => l instanceof HTMLElement && playLineRevealElement(l));

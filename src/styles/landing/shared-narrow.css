@@ -942,7 +942,10 @@
    roll begins, ink the page's red). */
 @media (max-width: 767px) {
 	.landing-v2.landing-v2 {
-		--m-veil-l-w: var(--m-margin-safe-l, var(--m-margin));
+		/* B3 (Oscar, 2026-09-10): the two veils are IDENTICAL — width,
+		   gradient, opacity. The left was the lead margin (16) against the
+		   right's 48; every phone rail now reads one width from here. */
+		--m-veil-l-w: 48px;
 		--m-veil-r-w: 48px;
 	}
 	.landing-v2.landing-home .landing-founders::before,

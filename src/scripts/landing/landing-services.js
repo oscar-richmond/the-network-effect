@@ -47,15 +47,13 @@ import { initMobileEntrance } from './m-entrance.js';
 import { initCarouselIndicators } from './carousel-indicator.js';
 import { wireRailVeils } from './rail-veils.js';
 import { smallViewportPx } from './m-viewport.js';
+/* the desktop reel's wipe, verbatim — now the SHARED definition
+   (img-wipe.js, 2026-09-10: the /services phone row lists run the same
+   swap; this driver's behaviour is unchanged, measured) */
+import { createImageWipe } from './img-wipe.js';
 import { SERVICES_REEL_PILLARS } from '../../data/landing/services-reel.js';
 
 gsap.registerPlugin(ScrollTrigger);
-
-/* the desktop reel's wipe, verbatim (IMG_WIPE_* there) */
-const IMG_WIPE_MS = 450;
-const IMG_WIPE_EDGE_BLUR_PX = 6;
-const IMG_WIPE_CURVE = 'cubic-bezier(0.42, 0, 0.24, 1)';
-const IMG_DECODE_TIMEOUT_MS = 600;
 /* the reading line sits this far below the image's bottom on the phone
    (the tablet reads --sv-read-t = 0.5: beside the image's centre) */
 const READ_GAP_PX = 72; /* below the 48px fade band, so the active row reads sharp */
@@ -149,69 +147,22 @@ export function initLandingServices() {
 
   /* ── the images: an UNDER layer beneath each pillar's img (the
      desktop's construction), the wipe clipping the OVER off it ── */
-  let disposed = false;
-  const imgState = pillars.map((pillar) => {
+  /* the build-time srcset outranks src (the desktop reel's FINAL GATE
+     guard, landing-services-reel.js) — without it the swap never showed
+     below the seam (found driving the phone rail, 2026-09-09); the shared
+     wipe drops it before each layer's first write. */
+  const srcFor = (i, idx) => (idx < 0 ? SERVICES_REEL_PILLARS[i].img : SERVICES_REEL_PILLARS[i].services[idx].img);
+  const wipes = pillars.map((pillar, i) => {
     const over = pillar.querySelector('[data-sreel-img]');
     if (!(over instanceof HTMLImageElement)) return null;
     const under = over.cloneNode(false);
     under.removeAttribute('data-sreel-img');
     under.classList.add('landing-sreel__img--under');
     over.parentElement?.insertBefore(under, over);
-    return { over, under, current: -1, pending: null, busy: false };
+    /* -1 = the pillar's own image, on show at construction */
+    return createImageWipe({ over, under, srcFor: (idx) => srcFor(i, idx), reduced, initial: -1 });
   });
-  const srcFor = (i, idx) => (idx < 0 ? SERVICES_REEL_PILLARS[i].img : SERVICES_REEL_PILLARS[i].services[idx].img);
-  const playWipe = (i) => {
-    const st = imgState[i];
-    if (!st || st.busy || st.pending === null) return;
-    const target = st.pending;
-    st.pending = null;
-    if (target === st.current) return;
-    st.busy = true;
-    /* the build-time srcset outranks src (the desktop reel's FINAL GATE
-       guard, landing-services-reel.js) — without it the swap never
-       showed below the seam (found driving the phone rail, 2026-09-09) */
-    const unset = (img) => { if (img.hasAttribute('srcset')) { img.removeAttribute('srcset'); img.removeAttribute('sizes'); } };
-    if (reduced) {
-      unset(st.over);
-      st.over.src = srcFor(i, target);
-      st.current = target;
-      st.busy = false;
-      return;
-    }
-    unset(st.under);
-    st.under.src = srcFor(i, target);
-    const ready = st.under.decode ? st.under.decode().catch(() => {}) : Promise.resolve();
-    Promise.race([ready, new Promise((r) => setTimeout(r, IMG_DECODE_TIMEOUT_MS))]).then(() => {
-      if (disposed) return;
-      const out = st.over.animate(
-        [
-          { clipPath: 'inset(0 0 0 0%)', filter: 'blur(0px)' },
-          { clipPath: 'inset(0 0 0 50%)', filter: `blur(${IMG_WIPE_EDGE_BLUR_PX}px)`, offset: 0.5 },
-          { clipPath: 'inset(0 0 0 100%)', filter: 'blur(0px)' },
-        ],
-        { duration: IMG_WIPE_MS, easing: IMG_WIPE_CURVE, fill: 'forwards' },
-      );
-      out.onfinish = () => {
-        unset(st.over);
-        st.over.src = srcFor(i, target);
-        const overReady = st.over.decode ? st.over.decode().catch(() => {}) : Promise.resolve();
-        Promise.race([overReady, new Promise((r) => setTimeout(r, IMG_DECODE_TIMEOUT_MS))]).then(() => {
-          if (disposed) return;
-          out.cancel();
-          st.current = target;
-          st.busy = false;
-          playWipe(i);
-        });
-      };
-    });
-  };
-  const requestImage = (i, idx) => {
-    const st = imgState[i];
-    if (!st) return;
-    if (idx === st.current && st.pending === null) return;
-    st.pending = idx;
-    playWipe(i);
-  };
+  const requestImage = (i, idx) => wipes[i]?.request(idx);
 
   /* ── the active row: the one at the reading line ── */
   const activeIdx = pillars.map(() => -1);
@@ -409,7 +360,7 @@ export function initLandingServices() {
   }
 
   return () => {
-    disposed = true;
+    wipes.forEach((w) => w?.dispose());
     cleanups.forEach((fn) => fn());
     triggers.forEach((t) => t.kill());
     phoneCleanups.forEach((fn) => fn());

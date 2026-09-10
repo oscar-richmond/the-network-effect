@@ -534,6 +534,275 @@
 	}
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   THE PHONE (Figma otZb9H4j24ZX1upxbGUXyu, frame 0:17 "Services — 402",
+   402×9342, page y = frame y − 49; Oscar 2026-09-10). The frame is the
+   total specification at 402, fluid 360–430; these rules sit on top of
+   the ≤1359 build above and reach the phone only — the band (768–1359)
+   and the desktop are untouched.
+
+   THE LAYOUT (page y at 402): headline FROM / ACCESS. at 184 (two
+   authored lines, 48/45, the display-serif token, the sans TO IMPACT.
+   right-aligned to the 386 margin at 279), the description at 356;
+   IMMERSE at 532 (370×320 at rest, the image inset the margin, its
+   title block at x32 — title 28/23/−2%, /0N 14/11 4px to its right on
+   the cap, description Serrif Cond 20/22 8px below — centred in the
+   image); statement /01 at 916 (ten authored lines on the 30 pitch, no
+   indent, the derived bar at x380); WE BUILD at 1280 (label 12, list 32
+   below, rows on the 50 pitch: divider · 16 · text 19 · 14); gallery
+   /01 (heading 32/32, boxes 250×290 on 258, captions 24 below, arrows
+   centred on the caption row) — PINNED, Featured Work's mechanic
+   (m-pinned-rail.js); fragment /01 at 2684 (six authored lines on the
+   45 pitch at the frame's x, the shared dwell); the dark band from 163
+   INTO the CONNECT image to 169 INTO the AMPLIFY image (the frame's
+   edges — a step in the margins at the rest width, flagged); AMPLIFY's
+   image the frame's 370×481 crop, top-aligned; the closing 140 below
+   WE CREATE's end line; the global footer in flow.
+
+   B1 — THE FIXED FRAME (.sv6-mframe, built by services-6.js): 130×180
+   fixed at the viewport's vertical middle, its right edge 24 from the
+   viewport's right (x248–378 at 402); the row under the midpoint is
+   ACTIVE — it indents the landing's 24 on the landing's 0.5s curve and
+   the frame wipes to its image (img-wipe.js, the WHAT WE DO swap);
+   the frame fades+rises in (the media beat: 0.8s, 16px) as the first
+   row reaches the midpoint and leaves the same way past the last.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+	.landing-v2.landing-v2.services-6 {
+		--sv-hero-top: 184px;
+		--sv-hero-desc-gap: 32px;      /* TO IMPACT.'s box bottom (324) → the description (356) */
+		--sv-pillar-gap: 80px;         /* the description's bottom (452) → IMMERSE (532) */
+		--sv-section-gap: 64px;        /* the page's block gap: pillar → statement → list */
+		--sv-st-indent: 0px;           /* no first-line indent on the phone (the frame's lines are flush) */
+		--sv-row-pad-t: 16px;          /* the 50 pitch: the divider (absolute) · 16 · text line box 19 · 15 — the frame's 17-tall text box at +17 and ours share their centre (25.5) */
+		--sv-row-pad-b: 15px;
+		--sv-label-gap: 32px;          /* label (12) → list */
+		--sv-slide-x: 24px;            /* the landing rows' indent (--sreel-slide-x on the narrow build) */
+		--sv-gal-box-w: 250px;         /* the frame's fixed boxes on the 258 pitch */
+		--sv-gal-box-h: 290px;
+		--sv-gal-title-gap: 48px;      /* heading (64) → images */
+		--sv-gal-label-gap: 24px;      /* image → caption */
+		--sv-gal-pad-bottom: 52px;     /* the pinned stage's foot — Featured Work's indicator distance */
+		--sv-closing-gap: 140px;       /* WE CREATE's end line → the closing band's top */
+		--sv-frame-w: 130px;           /* B1 — the fixed frame */
+		--sv-frame-h: 180px;
+		--sv-frame-right: 24px;
+	}
+
+	/* ── HERO: FROM / ACCESS. on two lines (the block wraps at its
+	   widest word), TO IMPACT. flush right 5 below, tracking 0 on both
+	   (the frame); the description 4 × 24 ── */
+	.landing-v2.landing-v2 .sv6-hero__t-serif {
+		width: min-content;
+		letter-spacing: 0;
+	}
+	.landing-v2.landing-v2 .sv6-hero__t-sans {
+		margin-top: 5px;
+		text-align: right;
+		letter-spacing: 0;
+	}
+
+	/* ── PILLARS: the landing WHAT WE DO title grammar on the phone
+	   (landing-narrow.css: title 28/23/−2%, index 14/11 on the cap, 4
+	   apart), the description Serrif Cond 20/22 8 below, the whole block
+	   16 in from the image's edge (x32) ── */
+	.landing-v2.landing-v2 .sv6-pillar#amplify { background: none; } /* the band's edge is the frame's, inside the image */
+	.landing-v2.landing-v2 .sv6-pillar__titlerow {
+		font-size: clamp(25px, 6.9652vw, 30px);
+		line-height: 0.8214;
+	}
+	.landing-v2.landing-v2 .sv6-pillar__name {
+		font-family: var(--type-pillar-title-face);
+		font-weight: var(--type-pillar-title-weight);
+		font-size: clamp(25px, 6.9652vw, 30px);
+		line-height: 0.8214;
+		letter-spacing: var(--type-pillar-title-ls);
+		text-transform: var(--type-pillar-title-case);
+	}
+	.landing-v2.landing-v2 .sv6-pillar__num {
+		left: calc(100% + 4px);
+		top: 0;
+		font-size: 14px;
+		line-height: 11px;
+		letter-spacing: -0.02em;
+	}
+	.landing-v2.landing-v2 .sv6-pillar__sub {
+		margin-top: 8px;
+		font-family: var(--font-serif-cond);
+		font-weight: 500;
+		font-size: clamp(17.9px, 4.9751vw, 21.4px); /* 20 at 402 */
+		line-height: 1.1;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+	/* AMPLIFY (0:223): the frame draws the image 370×481 in the 320
+	   window, top-aligned — the source (3:2) at the window's width, its
+	   top 320 showing (fit-matched 2026-09-10: 49.7% across, 0 down) */
+	.landing-v2.landing-v2 .sv6-pillar#amplify .sv6-pillar__img {
+		height: 150.3125%;
+		object-position: 49.7% 0;
+	}
+
+	/* ── STATEMENTS: 348 measure (the frame's /03 box; /01's authored
+	   lines are narrower than it) — the bar's 6 + 16 ── */
+	.landing-v2.landing-v2 .sv6-st__text { padding-right: calc(var(--sv-bar-w) + 16px); }
+	.landing-v2.landing-v2 .sv6-st__indent { display: none; }
+	/* statement /02 (0:242): the frame draws NO accent bar on the band —
+	   built as drawn (flagged); its measure is the full 370 */
+	.landing-v2.landing-v2 .sv6-st--dark .sv6-st__bar { display: none; }
+	.landing-v2.landing-v2 .sv6-st--dark .sv6-st__text { padding-right: 0; }
+
+	/* ── ROW LISTS: label above, the list 32 below, no frame slot (B1's
+	   frame is fixed to the viewport, outside the flow) ── */
+	.landing-v2.landing-v2 .sv6-table {
+		display: block;
+	}
+	.landing-v2.landing-v2 .sv6-table .sv-rows__label { margin-bottom: var(--sv-label-gap); }
+	.landing-v2.landing-v2 .sv6-table .sv-rows__row {
+		min-height: 0;
+		padding: var(--sv-row-pad-t) 0 var(--sv-row-pad-b);
+	}
+	.landing-v2.landing-v2 .sv6-table .sv-rows__img { display: none; }
+	/* B1 — the fixed frame: two stacked layers (over / under), the wipe
+	   runs on the over (img-wipe.js) */
+	.landing-v2.landing-v2 .sv6 .sv6-mframe.sv6-mframe { /* over the page's `> :not(.sv6-darkband)` relative/z1 rule */
+		position: fixed;
+		top: 50%;
+		right: var(--sv-frame-right);
+		width: var(--sv-frame-w);
+		height: var(--sv-frame-h);
+		margin-top: calc(var(--sv-frame-h) / -2);
+		z-index: 2; /* inside the page's stacking context (260): over its flow (1), under the nav and the menu */
+		pointer-events: none;
+		overflow: hidden;
+		opacity: 0;
+		translate: 0 16px;
+		visibility: hidden;
+		transition:
+			opacity 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			translate 0.8s var(--holding-ease, cubic-bezier(0.22, 0.61, 0.36, 1)),
+			visibility 0s linear 0.8s;
+	}
+	.landing-v2.landing-v2 .sv6 .sv6-mframe.is-on {
+		opacity: 1;
+		translate: 0 0;
+		visibility: visible;
+		transition-delay: 0s;
+	}
+	.landing-v2.landing-v2 .sv6-mframe__img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* ── GALLERIES: the frame's fixed boxes, captions 24 below (centred),
+	   arrows centred on the caption row in each 8 gap; the heading at the
+	   frame's 32 leading ── */
+	.landing-v2.landing-v2 .sv6-gal { margin-top: var(--sv6-gal-margin, var(--sv-section-gap)); }
+	.landing-v2.landing-v2 .sv6-gal__title { line-height: 1; }
+	.landing-v2.landing-v2 .sv6-gal__box { width: var(--sv-gal-box-w); }
+	.landing-v2.landing-v2 .sv6-gal__box img {
+		height: var(--sv-gal-box-h);
+		aspect-ratio: auto;
+	}
+	.landing-v2.landing-v2 .sv6-gal__arrow {
+		top: calc(var(--sv-gal-box-h) + var(--sv-gal-label-gap) - 2px);
+	}
+	/* B2 — PINNED (m-pinned-rail.js mounts the stage in .sv6-gal__pin and
+	   flags the section): Featured Work's construction verbatim — the pin
+	   one small viewport + the travel tall, the stage sticky at the top,
+	   svh tall, its content at its foot (52 from the edge), translated by
+	   the live visible-edge delta (--m-vv-dy) so it never jumps under the
+	   browser's bar; the strip transform-driven, the veils on the stage
+	   over the images' band exactly (bottom-anchored: no measurement, no
+	   gap at the top) */
+	.landing-v2.landing-v2 .sv6-gal.is-pinned-phone .sv6-gal__pin {
+		height: calc(var(--m-svh, 100svh) + var(--sv6-gal-travel, 0px));
+	}
+	.landing-v2.landing-v2 .sv6-gal.is-pinned-phone .sv6-gal__stage {
+		position: sticky;
+		top: 0;
+		height: var(--m-svh, 100svh);
+		padding: 0 0 var(--sv-gal-pad-bottom);
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		overflow: hidden;
+		transform: translateY(var(--m-vv-dy, 0px));
+	}
+	.landing-v2.landing-v2 .sv6-gal.is-pinned-phone .sv6-gal__strip {
+		padding: 0 0 0 var(--m-margin-safe-l, var(--m-margin));
+		overflow: visible;
+		scroll-snap-type: none;
+		will-change: transform;
+	}
+	.landing-v2.landing-v2 .sv6-gal.is-pinned-phone .sv6-gal__box { scroll-snap-align: none; }
+	/* the veils move onto the stage (the section's own are unset) */
+	.landing-v2.landing-v2 .sv6-gal.is-pinned-phone::before,
+	.landing-v2.landing-v2 .sv6-gal.is-pinned-phone::after { content: none; }
+	.landing-v2.services-6 .sv6-gal.is-pinned-phone .sv6-gal__stage::before,
+	.landing-v2.services-6 .sv6-gal.is-pinned-phone .sv6-gal__stage::after {
+		content: '';
+		position: absolute;
+		z-index: 2;
+		pointer-events: none;
+		bottom: calc(var(--sv-gal-pad-bottom) + 12px + var(--sv-gal-label-gap)); /* the caption row (12) + its gap → the images' bottom edge */
+		height: var(--sv-gal-box-h);
+	}
+	.landing-v2.services-6 .sv6-gal.is-pinned-phone .sv6-gal__stage::before {
+		left: 0;
+		width: var(--m-veil-l-w);
+		background: linear-gradient(90deg, var(--m-veil-ink, #161616) 0%, transparent 100%);
+		opacity: calc(var(--m-veil-l, 0) * var(--m-veil-op, 1));
+	}
+	.landing-v2.services-6 .sv6-gal.is-pinned-phone .sv6-gal__stage::after {
+		right: 0;
+		width: var(--m-veil-r-w);
+		background: linear-gradient(90deg, transparent 0%, var(--m-veil-ink, #161616) 100%);
+		opacity: calc(var(--m-veil-r, 1) * var(--m-veil-op, 1));
+	}
+
+	/* ── FRAGMENTS: the frame's authored lines as blocks on the 45 pitch
+	   (the closing statement's phone construction: x in 402nds of the
+	   width, nowrap), the stage a plain block the dwell measures ── */
+	.landing-v2.landing-v2 .sv6-frag { margin-top: var(--sv6-frag-margin, 0px); }
+	.landing-v2.landing-v2 .sv6-frag__stage.is-mlines {
+		display: block;
+	}
+	.landing-v2.landing-v2 .sv6-frag__mline {
+		display: block;
+		margin: 0 0 0 calc(var(--st-x, 0) * var(--st-u, calc(100vw / 402)));
+		font-family: var(--type-statement-face);
+		font-weight: var(--type-statement-weight);
+		font-synthesis: none;
+		font-size: var(--type-statement-size);
+		line-height: var(--type-statement-lh);
+		letter-spacing: var(--type-statement-ls);
+		text-transform: var(--type-statement-case);
+		white-space: nowrap;
+		color: #161616;
+	}
+	.landing-v2.landing-v2 .sv6-frag--dark .sv6-frag__mline { color: #fff; }
+
+	/* ── CLOSING (0:246): the shared statement's fourteen phone lines,
+	   with this frame's two departures from the landing's set — TO
+	   CONNECT (line 4) and VALUE. (line 14) flush LEFT at x16 where the
+	   landing frame flushes them right (386 / 354). The stage's children
+	   are the desktop's nine lines then the fourteen: 13 and last. ── */
+	.landing-v2.landing-v2.services-6 .landing-closing-st__mline:nth-child(13),
+	.landing-v2.landing-v2.services-6 .landing-closing-st__mline:last-child {
+		margin: 0;
+		text-align: left;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.landing-v2.landing-v2 .sv6 .sv6-mframe.sv6-mframe { transition: none; }
+	}
+}
+
 /* ── the band: the desktop's proportions where the width allows — the
    hero's faces on one line, the 720/1728 pillar frame, the frame at the
    centre-right beside the list, the desktop's box count on the strips,
